@@ -21,9 +21,9 @@ async def copyFont(
     continueOnError=False,
 ) -> None:
     if glyphNames is not None:
-        from ..workflow.actions import SubsetGlyphsAction
+        from ..workflow.actions import SubsetGlyphs
 
-        subsetter = SubsetGlyphsAction(glyphNames=glyphNames)
+        subsetter = SubsetGlyphs(glyphNames=glyphNames)
         context = subsetter.connect(sourceBackend)
     else:
         context = async_nullcontext(sourceBackend)

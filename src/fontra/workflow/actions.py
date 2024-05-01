@@ -80,28 +80,43 @@ class OutputActionProtocol(Protocol):
         pass
 
 
-_actions = {}
+_actionRegistry = {
+    "filter": {},
+    "input": {},
+    "output": {},
+}
 
 
-def registerActionClass(name):
-    def wrapper(cls):
-        assert name not in _actions
-        cls.actionName = name
-        _actions[name] = cls
-        return cls
-
-    return wrapper
-
-
-def getActionClass(name):
-    cls = _actions.get(name)
-    if cls is None:
-        raise KeyError(f"No action found named '{name}'")
+def _actionRegistryWrapper(cls, actionName, actionType):
+    registry = _actionRegistry[actionType]
+    assert actionName not in registry
+    cls.actionName = actionName
+    registry[actionName] = cls
     return cls
 
 
+def getActionClass(actionType, actionName):
+    registry = _actionRegistry[actionType]
+    cls = registry.get(actionName)
+    if cls is None:
+        raise KeyError(f"No action found named '{actionName}'")
+    return cls
+
+
+def registerFilterAction(actionName):
+    return partial(_actionRegistryWrapper, actionName=actionName, actionType="filter")
+
+
+def registerInputAction(actionName):
+    return partial(_actionRegistryWrapper, actionName=actionName, actionType="input")
+
+
+def registerOutputAction(actionName):
+    return partial(_actionRegistryWrapper, actionName=actionName, actionType="output")
+
+
 @dataclass(kw_only=True)
-class BaseFilterAction:
+class BaseFilter:
     input: ReadableFontBackend | None = field(init=False, default=None)
     actionName: ClassVar[str]
 
@@ -203,9 +218,9 @@ class BaseFilterAction:
         return unitsPerEm
 
 
-@registerActionClass("scale")
+@registerFilterAction("scale")
 @dataclass(kw_only=True)
-class ScaleAction(BaseFilterAction):
+class Scale(BaseFilter):
     scaleFactor: float
     scaleUnitsPerEm: bool = True
 
@@ -271,7 +286,7 @@ class ScaleAction(BaseFilterAction):
 
 
 @dataclass(kw_only=True)
-class BaseGlyphSubsetterAction(BaseFilterAction):
+class BaseGlyphSubsetter(BaseFilter):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
     layoutHandling: str = LayoutHandling.SUBSET
 
@@ -363,9 +378,9 @@ def filterGlyphMap(glyphMap, glyphNames):
     }
 
 
-@registerActionClass("drop-unreachable-glyphs")
+@registerFilterAction("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
-class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
+class DropUnreachableGlyphs(BaseGlyphSubsetter):
     keepNotdef: bool = True
 
     async def _buildSubsettedGlyphSet(
@@ -383,9 +398,9 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
         return reachableGlyphs
 
 
-@registerActionClass("subset-glyphs")
+@registerFilterAction("subset-glyphs")
 @dataclass(kw_only=True)
-class SubsetGlyphsAction(BaseGlyphSubsetterAction):
+class SubsetGlyphs(BaseGlyphSubsetter):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
     dropGlyphNames: set[str] = field(default_factory=set)
@@ -415,9 +430,9 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
         return glyphNames
 
 
-@registerActionClass("input")
+@registerInputAction("fontra-read")
 @dataclass(kw_only=True)
-class InputAction:
+class FontraRead:
     source: str
 
     @asynccontextmanager
@@ -429,9 +444,9 @@ class InputAction:
             await backend.aclose()
 
 
-@registerActionClass("output")
+@registerOutputAction("fontra-write")
 @dataclass(kw_only=True)
-class OutputAction:
+class FontraWrite:
     destination: str
     input: ReadableFontBackend | None = field(init=False, default=None)
 
@@ -465,9 +480,9 @@ class OutputAction:
             await copyFont(self.validatedInput, output, continueOnError=continueOnError)
 
 
-@registerActionClass("rename-axes")
+@registerFilterAction("rename-axes")
 @dataclass(kw_only=True)
-class RenameAxesAction(BaseFilterAction):
+class RenameAxes(BaseFilter):
     axes: dict[str, dict]  # value dict keys: name, tag, label
     axisRenameMap: dict[str, str] = field(init=False, default_factory=dict)
 
@@ -514,9 +529,9 @@ def _renameAxis(axis, axes):
     return axis
 
 
-@registerActionClass("drop-unused-sources-and-layers")
+@registerFilterAction("drop-unused-sources-and-layers")
 @dataclass(kw_only=True)
-class DropInactiveSourcesAction(BaseFilterAction):
+class DropInactiveSources(BaseFilter):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return dropUnusedSourcesAndLayers(glyph)
 
@@ -534,9 +549,9 @@ def dropUnusedSourcesAndLayers(glyph):
     return glyph
 
 
-@registerActionClass("drop-axis-mappings")
+@registerFilterAction("drop-axis-mappings")
 @dataclass(kw_only=True)
-class DropAxisMappingsAction(BaseFilterAction):
+class DropAxisMappings(BaseFilter):
     axes: list[str] | None = None
 
     @async_cached_property
@@ -595,9 +610,9 @@ def _dropAxisMapping(axis, mapFuncs):
     return axis
 
 
-@registerActionClass("adjust-axes")
+@registerFilterAction("adjust-axes")
 @dataclass(kw_only=True)
-class AdjustAxesAction(BaseFilterAction):
+class AdjustAxes(BaseFilter):
     axes: dict[str, dict[str, Any]]
     remapSources: bool = True
 
@@ -654,9 +669,9 @@ class AdjustAxesAction(BaseFilterAction):
         return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
 
 
-@registerActionClass("decompose-composites")
+@registerFilterAction("decompose-composites")
 @dataclass(kw_only=True)
-class DecomposeCompositesAction(BaseFilterAction):
+class DecomposeComposites(BaseFilter):
     onlyVariableComposites: bool = False
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
@@ -801,9 +816,9 @@ def getActiveSources(sources):
 fontInfoNames = set(get_type_hints(FontInfo))
 
 
-@registerActionClass("set-font-info")
+@registerFilterAction("set-font-info")
 @dataclass(kw_only=True)
-class SetFontInfoAction(BaseFilterAction):
+class SetFontInfo(BaseFilter):
     fontInfo: dict[str, str]
 
     async def processFontInfo(self, fontInfo):
@@ -814,9 +829,9 @@ class SetFontInfoAction(BaseFilterAction):
         return structure(unstructure(fontInfo) | self.fontInfo, FontInfo)
 
 
-@registerActionClass("subset-axes")
+@registerFilterAction("subset-axes")
 @dataclass(kw_only=True)
-class SubsetAxesAction(BaseFilterAction):
+class SubsetAxes(BaseFilter):
     axisNames: set[str] = field(default_factory=set)
     dropAxisNames: set[str] = field(default_factory=set)
 
@@ -885,9 +900,9 @@ def getDefaultSourceLocation(axes):
     }
 
 
-@registerActionClass("move-default-location")
+@registerFilterAction("move-default-location")
 @dataclass(kw_only=True)
-class MoveDefaultLocationAction(BaseFilterAction):
+class MoveDefaultLocation(BaseFilter):
     newDefaultUserLocation: dict[str, float]
 
     @async_cached_property
@@ -990,9 +1005,9 @@ class MoveDefaultLocationAction(BaseFilterAction):
         return updateSourcesAndLayers(instancer, newLocations)
 
 
-@registerActionClass("trim-axes")
+@registerFilterAction("trim-axes")
 @dataclass(kw_only=True)
-class TrimAxesAction(BaseFilterAction):
+class TrimAxes(BaseFilter):
     axes: dict[str, dict[str, Any]]
 
     @async_cached_property
@@ -1134,9 +1149,9 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     )
 
 
-@registerActionClass("check-interpolation")
+@registerFilterAction("check-interpolation")
 @dataclass(kw_only=True)
-class CheckInterpolationAction(BaseFilterAction):
+class CheckInterpolation(BaseFilter):
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         # Each of the next two lines may raise an error if the glyph
@@ -1146,9 +1161,9 @@ class CheckInterpolationAction(BaseFilterAction):
         return instancer.glyph
 
 
-@registerActionClass("memory-cache")
+@registerFilterAction("memory-cache")
 @dataclass(kw_only=True)
-class MemoryCacheAction(BaseFilterAction):
+class MemoryCache(BaseFilter):
     def __post_init__(self):
         self._glyphCache = {}
 
@@ -1158,9 +1173,9 @@ class MemoryCacheAction(BaseFilterAction):
         return self._glyphCache[glyphName]
 
 
-@registerActionClass("disk-cache")
+@registerFilterAction("disk-cache")
 @dataclass(kw_only=True)
-class DiskCacheAction(BaseFilterAction):
+class DiskCache(BaseFilter):
     def __post_init__(self):
         self._tempDir = tempfile.TemporaryDirectory(
             prefix="fontra-workflow-disk-cache-"
@@ -1191,9 +1206,9 @@ class DiskCacheAction(BaseFilterAction):
         return glyph
 
 
-@registerActionClass("subset-by-development-status")
+@registerFilterAction("subset-by-development-status")
 @dataclass(kw_only=True)
-class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
+class SubsetByDevelopmentStatus(BaseGlyphSubsetter):
     statuses: list[int]
     sourceSelectBehavior: str = (
         "default"  # "any", "all" or "default" (the default source)
@@ -1234,9 +1249,9 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
         return selectedGlyphs
 
 
-@registerActionClass("drop-shapes")
+@registerFilterAction("drop-shapes")
 @dataclass(kw_only=True)
-class DropShapesAction(BaseFilterAction):
+class DropShapes(BaseFilter):
     dropPath: bool = True
     dropComponents: bool = True
     dropAnchors: bool = True
@@ -1259,9 +1274,9 @@ class DropShapesAction(BaseFilterAction):
         )
 
 
-@registerActionClass("amend-cmap")
+@registerFilterAction("amend-cmap")
 @dataclass(kw_only=True)
-class AmendCmapAction(BaseFilterAction):
+class AmendCmap(BaseFilter):
     cmap: dict[int | str, str | None] = field(default_factory=dict)
     cmapFile: str | None = None
 
@@ -1319,9 +1334,9 @@ def parseCodePointString(codePointString, actionName):
     return int(codePointString[2:], 16)
 
 
-@registerActionClass("round-coordinates")
+@registerFilterAction("round-coordinates")
 @dataclass(kw_only=True)
-class RoundCoordinatesAction(BaseFilterAction):
+class RoundCoordinates(BaseFilter):
     roundPathCoordinates: bool = True
     roundComponentOrigins: bool = True
     roundGlyphMetrics: bool = True
@@ -1387,9 +1402,9 @@ def roundCoordinates(
     return replace(glyph, **newFields)
 
 
-@registerActionClass("generate-palt-feature")
+@registerFilterAction("generate-palt-feature")
 @dataclass(kw_only=True)
-class GeneratePaltFeature(BaseFilterAction):
+class GeneratePaltFeature(BaseFilter):
     languageSystems: list[tuple[str, str]] = field(default_factory=list)
 
     async def processFeatures(self, features):

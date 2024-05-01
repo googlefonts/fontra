@@ -9,8 +9,8 @@ from typing import AsyncGenerator, NamedTuple
 
 from ..core.protocols import ReadableFontBackend
 from .actions import (
+    ActionError,
     ConnectableActionProtocol,
-    InputActionProtocol,
     OutputActionProtocol,
     getActionClass,
 )
@@ -68,11 +68,10 @@ async def _prepareEndPoints(
     outputs: list[OutputActionProtocol] = []
 
     for step in steps:
-        actionClass = getActionClass(step.name)
+        actionClass = getActionClass(step.actionType, step.actionName)
         action = actionClass(**step.arguments)
 
-        if isinstance(action, OutputActionProtocol):
-            # output
+        if step.actionType == "output":
             assert isinstance(action, ConnectableActionProtocol)
             assert currentInput is not None
 
@@ -87,8 +86,7 @@ async def _prepareEndPoints(
                 action.connect(outputStepsResult)
             )
             outputs.append(action)
-        elif isinstance(action, ConnectableActionProtocol):
-            # filter
+        elif step.actionType == "filter":
             assert isinstance(action, ReadableFontBackend)
             assert currentInput is not None
 
@@ -99,8 +97,7 @@ async def _prepareEndPoints(
             outputs.extend(moreOutput)
 
             currentInput = action
-        elif isinstance(action, InputActionProtocol):
-            # input
+        elif step.actionType == "input":
             action = await exitStack.enter_async_context(action.prepare())
             assert isinstance(action, ReadableFontBackend)
 
@@ -120,7 +117,8 @@ async def _prepareEndPoints(
 
 @dataclass(kw_only=True)
 class ActionStep:
-    name: str
+    actionType: str
+    actionName: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
     action: (
@@ -128,16 +126,31 @@ class ActionStep:
     ) = field(init=False, default=None)
 
 
+_actionTypes = ["input", "filter", "output"]
+
+
 def _structureSteps(rawSteps):
     structured = []
 
     for rawStep in rawSteps:
-        actionName = rawStep["action"]
+        actionName = None
+        for actionType in _actionTypes:
+            actionName = rawStep.get(actionType)
+            if actionName is None:
+                continue
+            break
+        if actionName is None:
+            raise ActionError("no action type keyword found in step")
         arguments = dict(rawStep)
-        arguments.pop("action")
+        del arguments[actionType]
         subSteps = _structureSteps(arguments.pop("steps", []))
         structured.append(
-            ActionStep(name=actionName, arguments=arguments, steps=subSteps)
+            ActionStep(
+                actionType=actionType,
+                actionName=actionName,
+                arguments=arguments,
+                steps=subSteps,
+            )
         )
 
     return structured

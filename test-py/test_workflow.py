@@ -28,7 +28,7 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
     scaleFactor = 2
 
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
-    actionClass = getActionClass("scale")
+    actionClass = getActionClass("filter", "scale")
     action = actionClass(scaleFactor=scaleFactor)
     assert isinstance(action, ConnectableActionProtocol)
     assert isinstance(action, ReadableFontBackend)
@@ -83,7 +83,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
     glyphNamesFile = pathlib.Path(tmp_path) / "subset-glyphs.txt"
     glyphNamesFile.write_text("B\nC Adieresis\n")
 
-    actionClass = getActionClass("subset-glyphs")
+    actionClass = getActionClass("filter", "subset-glyphs")
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
     assert isinstance(action, ConnectableActionProtocol)
     assert isinstance(action, ReadableFontBackend)
@@ -126,22 +126,22 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
             """
             steps:
 
-            - action: input
+            - input: fontra-read
               source: "test-py/data/mutatorsans/MutatorSans.designspace"
               steps:
-              - action: scale
+              - filter: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
-            - action: input
+            - input: fontra-read
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["C", "D"]
 
-            - action: output
+            - output: fontra-write
               destination: "testing.fontra"
             """
         ],
@@ -149,25 +149,25 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
             """
             steps:
 
-            - action: input
+            - input: fontra-read
               source: "test-py/data/mutatorsans/MutatorSans.designspace"
               steps:
-              - action: scale
+              - filter: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
-            - action: input
+            - input: fontra-read
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["C", "D"]
             """,
             """
             steps:
 
-            - action: output
+            - output: fontra-write
               destination: "testing.fontra"
             """,
         ],
@@ -209,11 +209,11 @@ def test_command(tmpdir, configYAMLSources):
             "plain",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-B.fontra"
-            - action: output
+            - output: fontra-write
               destination: "output1.fontra"
             """,
             False,
@@ -228,11 +228,11 @@ def test_command(tmpdir, configYAMLSources):
             "axis-merge-1",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input2-A.fontra"
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input2-B.fontra"
-            - action: output
+            - output: fontra-write
               destination: "output2.fontra"
             """,
             False,
@@ -248,23 +248,23 @@ def test_command(tmpdir, configYAMLSources):
             """
             steps:
 
-            - action: input
+            - input: fontra-read
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: scale
+              - filter: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["B", "Adieresis"]
                 glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
 
-            - action: input
+            - input: fontra-read
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset-glyphs
+              - filter: subset-glyphs
                 glyphNames: ["C", "D"]
 
-            - action: output
+            - output: fontra-write
               destination: "output3.fontra"
             """,
             False,
@@ -274,18 +274,18 @@ def test_command(tmpdir, configYAMLSources):
             "rename-axes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: rename-axes
+            - filter: rename-axes
               axes:
                 weight:
                   name: Thickness
                   tag: THCK
                   label: Thickness
 
-            - action: output
+            - output: fontra-write
               destination: "output-rename-axes.fontra"
             """,
             False,
@@ -295,13 +295,13 @@ def test_command(tmpdir, configYAMLSources):
             "drop-unused-sources-and-layers",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-drop-unused-sources-and-layers.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["S"]
-            - action: drop-unused-sources-and-layers
+            - filter: drop-unused-sources-and-layers
 
-            - action: output
+            - output: fontra-write
               destination: "output-drop-unused-sources-and-layers.fontra"
             """,
             False,
@@ -311,13 +311,13 @@ def test_command(tmpdir, configYAMLSources):
             "drop-axis-mappings",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mappings
+            - filter: drop-axis-mappings
 
-            - action: output
+            - output: fontra-write
               destination: "output-drop-axis-mapping.fontra"
             """,
             False,
@@ -327,14 +327,14 @@ def test_command(tmpdir, configYAMLSources):
             "drop-axis-mappings-with-explicit-axis",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mappings
+            - filter: drop-axis-mappings
               axes: ["weight"]
 
-            - action: output
+            - output: fontra-write
               destination: "output-drop-axis-mapping.fontra"
             """,
             False,
@@ -344,14 +344,14 @@ def test_command(tmpdir, configYAMLSources):
             "drop-axis-mappings-with-explicit-axis",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mappings
+            - filter: drop-axis-mappings
               axes: ["non-existent"]
 
-            - action: output
+            - output: fontra-write
               destination: "output-drop-axis-mapping-noop.fontra"
             """,
             False,
@@ -361,18 +361,18 @@ def test_command(tmpdir, configYAMLSources):
             "adjust-axes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: adjust-axes
+            - filter: adjust-axes
               axes:
                 weight:
                   minValue: 200
                   defaultValue: 400
                   maxValue: 800
 
-            - action: output
+            - output: fontra-write
               destination: "output-adjust-axes.fontra"
             """,
             False,
@@ -382,21 +382,21 @@ def test_command(tmpdir, configYAMLSources):
             "adjust-axes-no-mapping",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mappings
-            - action: adjust-axes
+            - filter: drop-axis-mappings
+            - filter: adjust-axes
               axes:
                 weight:
                   minValue: 200
                   defaultValue: 400
                   maxValue: 800
 
-            - action: output
+            - output: fontra-write
               destination: "output-adjust-axes-no-mapping.fontra"
             """,
             False,
@@ -406,13 +406,13 @@ def test_command(tmpdir, configYAMLSources):
             "adjust-axes-no-source-remap",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: adjust-axes
+            - filter: adjust-axes
               remapSources: false
               axes:
                 weight:
@@ -420,7 +420,7 @@ def test_command(tmpdir, configYAMLSources):
                   defaultValue: 400
                   maxValue: 800
 
-            - action: output
+            - output: fontra-write
               destination: "output-adjust-axes-no-source-remap.fontra"
             """,
             False,
@@ -430,14 +430,14 @@ def test_command(tmpdir, configYAMLSources):
             "adjust-axes-no-mapping-no-source-remap",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mappings
-            - action: adjust-axes
+            - filter: drop-axis-mappings
+            - filter: adjust-axes
               remapSources: false
               axes:
                 weight:
@@ -445,7 +445,7 @@ def test_command(tmpdir, configYAMLSources):
                   defaultValue: 400
                   maxValue: 800
 
-            - action: output
+            - output: fontra-write
               destination: "output-adjust-axes-no-mapping-no-source-remap.fontra"
             """,
             False,
@@ -455,11 +455,11 @@ def test_command(tmpdir, configYAMLSources):
             "adjust-axes-set-axis-values",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: []
-            - action: adjust-axes
+            - filter: adjust-axes
               axes:
                 weight:
                   valueLabels: [
@@ -468,7 +468,7 @@ def test_command(tmpdir, configYAMLSources):
                   ]
                   hidden: true
 
-            - action: output
+            - output: fontra-write
               destination: "output-adjust-axes-set-axis-values.fontra"
             """,
             False,
@@ -478,10 +478,10 @@ def test_command(tmpdir, configYAMLSources):
             "decompose-composites",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-composites.fontra"
-            - action: decompose-composites
-            - action: output
+            - filter: decompose-composites
+            - output: fontra-write
               destination: "output-decompose-composites.fontra"
             """,
             False,
@@ -491,11 +491,11 @@ def test_command(tmpdir, configYAMLSources):
             "decompose-only-variable-composites",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-composites.fontra"
-            - action: decompose-composites
+            - filter: decompose-composites
               onlyVariableComposites: true
-            - action: output
+            - output: fontra-write
               destination: "output-decompose-only-variable-composites.fontra"
             """,
             False,
@@ -505,11 +505,11 @@ def test_command(tmpdir, configYAMLSources):
             "decompose-variable-composites",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: decompose-composites
+            - filter: decompose-composites
               onlyVariableComposites: true
-            - action: output
+            - output: fontra-write
               destination: "output-decompose-variable-composites.fontra"
             """,
             False,
@@ -519,11 +519,11 @@ def test_command(tmpdir, configYAMLSources):
             "decompose-variable-composites-deep-axes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites-deep-axes.fontra"
-            - action: decompose-composites
+            - filter: decompose-composites
               onlyVariableComposites: true
-            - action: output
+            - output: fontra-write
               destination: "output-decompose-variable-composites-deep-axes.fontra"
             """,
             False,
@@ -533,14 +533,14 @@ def test_command(tmpdir, configYAMLSources):
             "set-font-info",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-set-font-info.fontra"
-            - action: set-font-info
+            - filter: set-font-info
               fontInfo:
                 familyName: "A Brand New Font"
                 unknownName: "Unknown, will be warned about"
                 designer: "Joe Font Designer"
-            - action: output
+            - output: fontra-write
               destination: "output-set-font-info.fontra"
             """,
             False,
@@ -550,10 +550,10 @@ def test_command(tmpdir, configYAMLSources):
             "drop-unreachable-glyphs-composed",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-drop-unreachable-glyphs.fontra"
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-drop-unreachable-glyphs-composed.fontra"
             """,
             False,
@@ -563,11 +563,11 @@ def test_command(tmpdir, configYAMLSources):
             "drop-unreachable-glyphs-decomposed",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-drop-unreachable-glyphs.fontra"
-            - action: decompose-composites
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: decompose-composites
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-drop-unreachable-glyphs-decomposed.fontra"
             """,
             False,
@@ -577,12 +577,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-keep-glyphs",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
 
-            - action: output
+            - output: fontra-write
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
             False,
@@ -592,12 +592,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-drop-glyphs",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               dropGlyphNames: ["B"]
 
-            - action: output
+            - output: fontra-write
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
             False,
@@ -607,12 +607,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-drop-glyphs",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               dropGlyphNamesFile: test-py/data/workflow/subset-drop-glyph-names.txt
 
-            - action: output
+            - output: fontra-write
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
             False,
@@ -622,12 +622,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-keep-axis",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               axisNames: ["weight"]
 
-            - action: output
+            - output: fontra-write
               destination: "output-subset-axes.fontra"
             """,
             False,
@@ -637,12 +637,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-drop-axis",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               dropAxisNames: ["width", "italic"]
 
-            - action: output
+            - output: fontra-write
               destination: "output-subset-axes.fontra"
             """,
             False,
@@ -652,16 +652,16 @@ def test_command(tmpdir, configYAMLSources):
             "subset-move-default-location",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-move-default-location.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               dropAxisNames: ["italic"]
-            - action: move-default-location
+            - filter: move-default-location
               newDefaultUserLocation:
                 width: 400
                 weight: 300
 
-            - action: output
+            - output: fontra-write
               destination: "output-move-default-location.fontra"
             """,
             False,
@@ -671,9 +671,9 @@ def test_command(tmpdir, configYAMLSources):
             "trim-axes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-trim-axes.fontra"
-            - action: trim-axes
+            - filter: trim-axes
               axes:
                 width:
                   minValue: 100
@@ -682,7 +682,7 @@ def test_command(tmpdir, configYAMLSources):
                   minValue: 200
                   maxValue: 800
 
-            - action: output
+            - output: fontra-write
               destination: "output-trim-axes.fontra"
             """,
             False,
@@ -692,10 +692,10 @@ def test_command(tmpdir, configYAMLSources):
             "error-glyph",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-error-glyph.fontra"
 
-            - action: output
+            - output: fontra-write
               destination: "output-error-glyph.fontra"
             """,
             True,
@@ -711,12 +711,12 @@ def test_command(tmpdir, configYAMLSources):
             "check-interpolation",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-check-interpolation.fontra"
 
-            - action: check-interpolation
+            - filter: check-interpolation
 
-            - action: output
+            - output: fontra-write
               destination: "output-check-interpolation.fontra"
             """,
             True,
@@ -732,13 +732,13 @@ def test_command(tmpdir, configYAMLSources):
             "merge-codepoint-conflict",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
 
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-merge-codepoint-conflict.fontra"
 
-            - action: output
+            - output: fontra-write
               destination: "output-merge-codepoint-conflict.fontra"
             """,
             False,
@@ -748,11 +748,11 @@ def test_command(tmpdir, configYAMLSources):
             "cache-tests",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: memory-cache
-            - action: disk-cache
-            - action: output
+            - filter: memory-cache
+            - filter: disk-cache
+            - output: fontra-write
               destination: "input1-A.fontra"
             """,
             False,
@@ -762,13 +762,13 @@ def test_command(tmpdir, configYAMLSources):
             "subset-by-development-status-default-yes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: drop-shapes
-            - action: subset-by-development-status
+            - filter: drop-shapes
+            - filter: subset-by-development-status
               statuses: [4]
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-subset-by-development-status-yes.fontra"
             """,
             False,
@@ -778,13 +778,13 @@ def test_command(tmpdir, configYAMLSources):
             "subset-by-development-status-default-no",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: drop-shapes
-            - action: subset-by-development-status
+            - filter: drop-shapes
+            - filter: subset-by-development-status
               statuses: [3]
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-subset-by-development-status-no.fontra"
             """,
             False,
@@ -794,14 +794,14 @@ def test_command(tmpdir, configYAMLSources):
             "subset-by-development-status-all-no",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: drop-shapes
-            - action: subset-by-development-status
+            - filter: drop-shapes
+            - filter: subset-by-development-status
               statuses: [4]
               sourceSelectBehavior: all
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-subset-by-development-status-no.fontra"
             """,
             False,
@@ -811,14 +811,14 @@ def test_command(tmpdir, configYAMLSources):
             "subset-by-development-status-any-yes",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: drop-shapes
-            - action: subset-by-development-status
+            - filter: drop-shapes
+            - filter: subset-by-development-status
               statuses: [3]
               sourceSelectBehavior: any
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-subset-by-development-status-yes.fontra"
             """,
             False,
@@ -828,14 +828,14 @@ def test_command(tmpdir, configYAMLSources):
             "subset-by-development-status-any-no",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-variable-composites.fontra"
-            - action: drop-shapes
-            - action: subset-by-development-status
+            - filter: drop-shapes
+            - filter: subset-by-development-status
               statuses: [2]
               sourceSelectBehavior: any
-            - action: drop-unreachable-glyphs
-            - action: output
+            - filter: drop-unreachable-glyphs
+            - output: fontra-write
               destination: "output-subset-by-development-status-no.fontra"
             """,
             False,
@@ -845,19 +845,19 @@ def test_command(tmpdir, configYAMLSources):
             "amend-cmap",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               axisNames: ["weight"]
-            - action: drop-shapes
-            - action: amend-cmap
+            - filter: drop-shapes
+            - filter: amend-cmap
               cmap:
                 U+0041: A
                 0x42:
                 U+0061:
                 0x62:
                 0x1234: B
-            - action: output
+            - output: fontra-write
               destination: "output-amend-cmap.fontra"
             """,
             False,
@@ -867,14 +867,14 @@ def test_command(tmpdir, configYAMLSources):
             "amend-cmap-from-file",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               axisNames: ["weight"]
-            - action: drop-shapes
-            - action: amend-cmap
+            - filter: drop-shapes
+            - filter: amend-cmap
               cmapFile: "test-py/data/workflow/amend-cmap-cmap.txt"
-            - action: output
+            - output: fontra-write
               destination: "output-amend-cmap.fontra"
             """,
             False,
@@ -884,11 +884,11 @@ def test_command(tmpdir, configYAMLSources):
             "merge-features",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-merge-features-A.fontra"
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-merge-features-B.fontra"
-            - action: output
+            - output: fontra-write
               destination: "output-merge-features.fontra"
             """,
             False,
@@ -898,11 +898,11 @@ def test_command(tmpdir, configYAMLSources):
             "subset-features",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/output-merge-features.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["A", "A.alt"]
-            - action: output
+            - output: fontra-write
               destination: "output-subset-features.fontra"
             """,
             False,
@@ -912,12 +912,12 @@ def test_command(tmpdir, configYAMLSources):
             "subset-features-closure",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/output-merge-features.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               layoutHandling: "closure"
               glyphNames: ["A"]
-            - action: output
+            - output: fontra-write
               destination: "output-subset-features.fontra"
             """,
             False,
@@ -927,22 +927,22 @@ def test_command(tmpdir, configYAMLSources):
             "round-coordinates",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-common/fonts/MutatorSans.fontra"
-            - action: subset-glyphs
+            - filter: subset-glyphs
               glyphNames: ["E", "Aacute"]
-            - action: subset-axes
+            - filter: subset-axes
               axisNames: ["weight"]
-            - action: move-default-location
+            - filter: move-default-location
               newDefaultUserLocation:
                 weight: 431
-            - action: trim-axes
+            - filter: trim-axes
               axes:
                 weight:
                   minValue: 223
                   maxValue: 734
-            - action: round-coordinates
-            - action: output
+            - filter: round-coordinates
+            - output: fontra-write
               destination: "output-round-coordinates.fontra"
             """,
             False,
@@ -952,10 +952,10 @@ def test_command(tmpdir, configYAMLSources):
             "generate-palt-feature",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-generate-palt-feature.fontra"
-            - action: generate-palt-feature
-            - action: output
+            - filter: generate-palt-feature
+            - output: fontra-write
               destination: "output-generate-palt-feature.fontra"
             """,
             False,
@@ -965,14 +965,14 @@ def test_command(tmpdir, configYAMLSources):
             "generate-palt-feature-single-source",
             """
             steps:
-            - action: input
+            - input: fontra-read
               source: "test-py/data/workflow/input-generate-palt-feature.fontra"
-            - action: subset-axes
+            - filter: subset-axes
               axisNames: []
-            - action: generate-palt-feature
+            - filter: generate-palt-feature
               languageSystems:
               - ["kana", "dflt"]
-            - action: output
+            - output: fontra-write
               destination: "output-generate-palt-feature-single-source.fontra"
             """,
             False,
