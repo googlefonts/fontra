@@ -34,6 +34,7 @@ from ..core.classes import (
     Axes,
     Component,
     DiscreteFontAxis,
+    FontAxis,
     FontInfo,
     FontSource,
     GlyphSource,
@@ -855,7 +856,7 @@ class SubsetAxes(BaseFilter):
         self.axisNames = set(self.axisNames)
         self.dropAxisNames = set(self.dropAxisNames)
 
-    def getAxisNamesToKeep(self, axes):
+    def getAxisNamesToKeep(self, axes: list[FontAxis | DiscreteFontAxis]) -> set[str]:
         axisNames = (
             set(axis.name for axis in axes)
             if not self.axisNames and self.dropAxisNames
