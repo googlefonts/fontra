@@ -837,11 +837,11 @@ fontInfoNames = set(get_type_hints(FontInfo))
 class SetFontInfo(BaseFilter):
     fontInfo: dict[str, str]
 
-    async def processFontInfo(self, fontInfo):
+    async def processFontInfo(self, fontInfo: FontInfo) -> FontInfo:
         extraNames = set(self.fontInfo) - fontInfoNames
         if extraNames:
             extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
-            logger.error(f"set-font-info: unknown name(s): {extraNamesString}")
+            logger.error(f"{self.actionName}: unknown name(s): {extraNamesString}")
         return structure(unstructure(fontInfo) | self.fontInfo, FontInfo)
 
 
