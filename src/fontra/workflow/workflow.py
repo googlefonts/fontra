@@ -117,6 +117,7 @@ async def _prepareEndPoints(
                 action = await exitStack.enter_async_context(
                     action.connect(outputStepsResult)
                 )
+                assert isinstance(action, OutputProcessorProtocol)
                 outputs.append(action)
             case _:
                 raise AssertionError("Expected code to be unreachable")
