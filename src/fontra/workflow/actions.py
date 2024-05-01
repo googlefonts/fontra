@@ -28,6 +28,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
 from ..backends.filenames import stringToFileName
+from ..backends.null import NullBackend
 from ..core.async_property import async_cached_property
 from ..core.classes import (
     Axes,
@@ -124,7 +125,7 @@ def registerOutputAction(actionName):
 
 @dataclass(kw_only=True)
 class BaseFilter:
-    input: ReadableFontBackend | None = field(init=False, default=None)
+    input: ReadableFontBackend = field(init=False, default=NullBackend())
     actionName: ClassVar[str]
 
     @cached_property
@@ -152,7 +153,7 @@ class BaseFilter:
         try:
             yield self
         finally:
-            self.input = None
+            self.input = NullBackend()
             await input.aclose()
             try:
                 del self.validatedInput
