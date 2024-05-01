@@ -4,8 +4,13 @@ from typing import Any
 from ..core.classes import Axes, FontInfo, FontSource, OpenTypeFeatures, VariableGlyph
 
 
-@dataclass(kw_only=True)
+@dataclass(frozen=True)
 class NullBackend:
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.instance = super(NullBackend, cls).__new__(cls)
+        return cls.instance
+
     async def aclose(self) -> None:
         pass
 

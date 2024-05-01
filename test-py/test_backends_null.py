@@ -15,3 +15,4 @@ async def test_nullBackend():
     assert {} == await backend.getCustomData()
     assert 1000 == await backend.getUnitsPerEm()
     await backend.aclose()
+    assert backend is NullBackend()  # assert it's a singleton
