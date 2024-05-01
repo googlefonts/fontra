@@ -5,7 +5,7 @@ import pathlib
 from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
-from typing import AsyncGenerator, ClassVar, NamedTuple
+from typing import AsyncGenerator, ClassVar
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
@@ -60,7 +60,8 @@ class Workflow:
             yield endPoints
 
 
-class WorkflowEndPoints(NamedTuple):
+@dataclass(frozen=True)
+class WorkflowEndPoints:
     endPoint: ReadableFontBackend
     outputs: list[OutputProcessorProtocol]
 
@@ -73,8 +74,9 @@ async def _prepareEndPoints(
     outputs: list[OutputProcessorProtocol] = []
 
     for step in steps:
-        currentInput, newOutputs = await step.setup(currentInput, exitStack)
-        outputs.extend(newOutputs)
+        endPoints = await step.setup(currentInput, exitStack)
+        currentInput = endPoints.endPoint
+        outputs.extend(endPoints.outputs)
 
     return WorkflowEndPoints(currentInput, outputs)
 
@@ -85,20 +87,20 @@ class ActionStep:
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
     actionType: ClassVar[str]
-    actionProtocol: ClassVar[type]
 
     def getAction(
         self,
     ) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
         actionClass = getActionClass(self.actionType, self.actionName)
         action = actionClass(**self.arguments)
-        assert isinstance(action, self.actionProtocol)
         assert isinstance(
             action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
         )
         return action
 
-    async def setup(self, currentInput, exitStack):
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
         raise NotImplementedError
 
 
@@ -114,65 +116,67 @@ def registerActionStepClass(cls):
 @registerActionStepClass
 @dataclass(kw_only=True)
 class InputActionStep(ActionStep):
-    actionProtocol = InputActionProtocol
     actionType = "input"
 
-    async def setup(self, currentInput, exitStack):
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
         action = self.getAction()
+        assert isinstance(action, InputActionProtocol)
 
         backend = await exitStack.enter_async_context(action.prepare())
         assert isinstance(backend, ReadableFontBackend)
 
         # set up nested steps
-        backend, outputs = await _prepareEndPoints(backend, self.steps, exitStack)
+        endPoints = await _prepareEndPoints(backend, self.steps, exitStack)
 
-        currentInput = FontBackendMerger(inputA=currentInput, inputB=backend)
-        return currentInput, outputs
+        endPoint = FontBackendMerger(inputA=currentInput, inputB=endPoints.endPoint)
+        return WorkflowEndPoints(endPoint=endPoint, outputs=endPoints.outputs)
 
 
 @registerActionStepClass
 @dataclass(kw_only=True)
 class FilterActionStep(ActionStep):
-    actionProtocol = FilterActionProtocol
     actionType = "filter"
 
-    async def setup(self, currentInput, exitStack):
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
         action = self.getAction()
-
-        assert currentInput is not None
+        assert isinstance(action, FilterActionProtocol)
 
         backend = await exitStack.enter_async_context(action.connect(currentInput))
 
         # set up nested steps
-        backend, outputs = await _prepareEndPoints(backend, self.steps, exitStack)
-
-        return backend, outputs
+        return await _prepareEndPoints(backend, self.steps, exitStack)
 
 
 @registerActionStepClass
 @dataclass(kw_only=True)
 class OutputActionStep(ActionStep):
-    actionProtocol = OutputActionProtocol
     actionType = "output"
 
-    async def setup(self, currentInput, exitStack):
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
         assert currentInput is not None
         action = self.getAction()
+        assert isinstance(action, OutputActionProtocol)
 
         outputs = []
 
         # set up nested steps
-        backend, moreOutput = await _prepareEndPoints(
-            currentInput, self.steps, exitStack
-        )
-        outputs.extend(moreOutput)
+        endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
+        outputs.extend(endPoints.outputs)
 
-        assert isinstance(backend, ReadableFontBackend)
-        processor = await exitStack.enter_async_context(action.connect(backend))
+        assert isinstance(endPoints.endPoint, ReadableFontBackend)
+        processor = await exitStack.enter_async_context(
+            action.connect(endPoints.endPoint)
+        )
         assert isinstance(processor, OutputProcessorProtocol)
         outputs.append(processor)
 
-        return currentInput, outputs
+        return WorkflowEndPoints(endPoint=currentInput, outputs=outputs)
 
 
 def _structureSteps(rawSteps):
