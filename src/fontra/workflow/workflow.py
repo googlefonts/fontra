@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import AsyncGenerator, NamedTuple
 
+from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
 from .actions import (
     ActionError,
@@ -51,6 +52,8 @@ class Workflow:
     async def endPoints(
         self, input: ReadableFontBackend | None = None
     ) -> AsyncGenerator[WorkflowEndPoints, None]:
+        if input is None:
+            input = NullBackend()
         async with AsyncExitStack() as exitStack:
             with chdir(self.parentDir):
                 endPoints = await _prepareEndPoints(input, self.steps, exitStack)
@@ -58,12 +61,12 @@ class Workflow:
 
 
 class WorkflowEndPoints(NamedTuple):
-    endPoint: ReadableFontBackend | None
+    endPoint: ReadableFontBackend
     outputs: list[OutputProcessorProtocol]
 
 
 async def _prepareEndPoints(
-    currentInput: ReadableFontBackend | None,
+    currentInput: ReadableFontBackend,
     steps: list[ActionStep],
     exitStack: AsyncExitStack,
 ) -> WorkflowEndPoints:
@@ -116,10 +119,7 @@ class InputActionStep(ActionStep):
         # set up nested steps
         backend, outputs = await _prepareEndPoints(backend, self.steps, exitStack)
 
-        if currentInput is None:
-            currentInput = backend
-        else:
-            currentInput = FontBackendMerger(inputA=currentInput, inputB=backend)
+        currentInput = FontBackendMerger(inputA=currentInput, inputB=backend)
         return currentInput, outputs
 
 
