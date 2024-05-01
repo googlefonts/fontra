@@ -328,7 +328,7 @@ class BaseGlyphSubsetter(BaseFilter):
         return glyphMap, features
 
     async def _buildSubsettedGlyphSet(
-        self, originalGlyphMap: dict[str, list[int]]
+        self, inputGlyphMap: dict[str, list[int]]
     ) -> set[str]:
         # Override
         raise NotImplementedError
@@ -401,12 +401,10 @@ class DropUnreachableGlyphs(BaseGlyphSubsetter):
     keepNotdef: bool = True
 
     async def _buildSubsettedGlyphSet(
-        self, originalGlyphMap: dict[str, list[int]]
+        self, inputGlyphMap: dict[str, list[int]]
     ) -> set[str]:
         reachableGlyphs = {
-            glyphName
-            for glyphName, codePoints in originalGlyphMap.items()
-            if codePoints
+            glyphName for glyphName, codePoints in inputGlyphMap.items() if codePoints
         }
 
         if self.keepNotdef:
@@ -436,11 +434,11 @@ class SubsetGlyphs(BaseGlyphSubsetter):
             self.dropGlyphNames = set(self.dropGlyphNames) | dropGlyphNames
 
     async def _buildSubsettedGlyphSet(
-        self, originalGlyphMap: dict[str, list[int]]
+        self, inputGlyphMap: dict[str, list[int]]
     ) -> set[str]:
         glyphNames = set(self.glyphNames)
         if not glyphNames and self.dropGlyphNames:
-            glyphNames = set(originalGlyphMap)
+            glyphNames = set(inputGlyphMap)
         if self.dropGlyphNames:
             glyphNames = glyphNames - set(self.dropGlyphNames)
 
@@ -1231,12 +1229,12 @@ class SubsetByDevelopmentStatus(BaseGlyphSubsetter):
     )
 
     async def _buildSubsettedGlyphSet(
-        self, originalGlyphMap: dict[str, list[int]]
+        self, inputGlyphMap: dict[str, list[int]]
     ) -> set[str]:
         statuses = set(self.statuses)
         selectedGlyphs = set()
 
-        for glyphName in originalGlyphMap:
+        for glyphName in inputGlyphMap:
             if self.sourceSelectBehavior == "default":
                 try:
                     instancer = await self.fontInstancer.getGlyphInstancer(
