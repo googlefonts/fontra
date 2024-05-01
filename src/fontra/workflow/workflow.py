@@ -11,6 +11,7 @@ from ..core.protocols import ReadableFontBackend
 from .actions import (
     ActionError,
     ConnectableActionProtocol,
+    InputActionProtocol,
     OutputActionProtocol,
     getActionClass,
 )
@@ -71,46 +72,54 @@ async def _prepareEndPoints(
         actionClass = getActionClass(step.actionType, step.actionName)
         action = actionClass(**step.arguments)
 
-        if step.actionType == "output":
-            assert isinstance(action, ConnectableActionProtocol)
-            assert currentInput is not None
+        match step.actionType:
+            case "input":
+                assert isinstance(action, InputActionProtocol)
+                action = await exitStack.enter_async_context(action.prepare())
+                assert isinstance(action, ReadableFontBackend)
 
-            # set up nested steps
-            outputStepsResult, moreOutput = await _prepareEndPoints(
-                currentInput, step.steps, exitStack
-            )
-            outputs.extend(moreOutput)
+                # set up nested steps
+                action, moreOutput = await _prepareEndPoints(
+                    action, step.steps, exitStack
+                )
+                outputs.extend(moreOutput)
 
-            assert isinstance(outputStepsResult, ReadableFontBackend)
-            action = await exitStack.enter_async_context(
-                action.connect(outputStepsResult)
-            )
-            outputs.append(action)
-        elif step.actionType == "filter":
-            assert isinstance(action, ReadableFontBackend)
-            assert currentInput is not None
+                if currentInput is None:
+                    currentInput = action
+                else:
+                    currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
+            case "filter":
+                assert isinstance(action, ReadableFontBackend)
+                assert currentInput is not None
 
-            action = await exitStack.enter_async_context(action.connect(currentInput))
+                action = await exitStack.enter_async_context(
+                    action.connect(currentInput)
+                )
 
-            # set up nested steps
-            action, moreOutput = await _prepareEndPoints(action, step.steps, exitStack)
-            outputs.extend(moreOutput)
+                # set up nested steps
+                action, moreOutput = await _prepareEndPoints(
+                    action, step.steps, exitStack
+                )
+                outputs.extend(moreOutput)
 
-            currentInput = action
-        elif step.actionType == "input":
-            action = await exitStack.enter_async_context(action.prepare())
-            assert isinstance(action, ReadableFontBackend)
-
-            # set up nested steps
-            action, moreOutput = await _prepareEndPoints(action, step.steps, exitStack)
-            outputs.extend(moreOutput)
-
-            if currentInput is None:
                 currentInput = action
-            else:
-                currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
-        else:
-            raise AssertionError("Expected code to be unreachable")
+            case "output":
+                assert isinstance(action, ConnectableActionProtocol)
+                assert currentInput is not None
+
+                # set up nested steps
+                outputStepsResult, moreOutput = await _prepareEndPoints(
+                    currentInput, step.steps, exitStack
+                )
+                outputs.extend(moreOutput)
+
+                assert isinstance(outputStepsResult, ReadableFontBackend)
+                action = await exitStack.enter_async_context(
+                    action.connect(outputStepsResult)
+                )
+                outputs.append(action)
+            case _:
+                raise AssertionError("Expected code to be unreachable")
 
     return WorkflowEndPoints(currentInput, outputs)
 
