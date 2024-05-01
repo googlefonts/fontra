@@ -140,6 +140,10 @@ class BaseFilter:
     def inputAxes(self):
         return self.validatedInput.getAxes()
 
+    @async_cached_property
+    def inputGlyphMap(self):
+        return self.validatedInput.getGlyphMap()
+
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
@@ -177,8 +181,7 @@ class BaseFilter:
         return await self.processSources(sources)
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
-        glyphMap = await self.validatedInput.getGlyphMap()
-        return await self.processGlyphMap(glyphMap)
+        return await self.processGlyphMap(await self.inputGlyphMap)
 
     async def getFeatures(self) -> OpenTypeFeatures:
         features = await self.validatedInput.getFeatures()
@@ -315,9 +318,23 @@ class BaseGlyphSubsetter(BaseFilter):
     async def _subsettedGlyphMapAndFeatures(
         self,
     ) -> tuple[dict[str, list[int]], OpenTypeFeatures]:
-        originalGlyphMap = await self.validatedInput.getGlyphMap()
-        reachableGlyphs = await self._buildSubsettedGlyphSet(originalGlyphMap)
+        inputGlyphMap = await self.inputGlyphMap
+        selectedGlyphs = await self._buildSubsettedGlyphSet(inputGlyphMap)
 
+        selectedGlyphs, features = await self._featuresClosure(selectedGlyphs)
+        selectedGlyphs = await self._componentsClosure(selectedGlyphs)
+        glyphMap = filterGlyphMap(inputGlyphMap, selectedGlyphs)
+        return glyphMap, features
+
+    async def _buildSubsettedGlyphSet(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> set[str]:
+        # Override
+        raise NotImplementedError
+
+    async def _featuresClosure(
+        self, selectedGlyphs
+    ) -> tuple[set[str], OpenTypeFeatures]:
         features = await self.validatedInput.getFeatures()
 
         if features.language != "fea" and features.text:
@@ -327,22 +344,14 @@ class BaseGlyphSubsetter(BaseFilter):
         elif features.text:
             subsettedFeatureText, subsettedGlyphMap = subsetFeatures(
                 features.text,
-                originalGlyphMap,
-                keepGlyphNames=reachableGlyphs,
+                await self.inputGlyphMap,
+                keepGlyphNames=selectedGlyphs,
                 layoutHandling=LayoutHandling(self.layoutHandling),
             )
-            reachableGlyphs = set(subsettedGlyphMap)
+            selectedGlyphs = set(subsettedGlyphMap)
             features = OpenTypeFeatures(text=subsettedFeatureText)
 
-        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
-        glyphMap = filterGlyphMap(originalGlyphMap, reachableGlyphs)
-        return glyphMap, features
-
-    async def _buildSubsettedGlyphSet(
-        self, originalGlyphMap: dict[str, list[int]]
-    ) -> set[str]:
-        # Override
-        raise NotImplementedError
+        return selectedGlyphs, features
 
     async def _componentsClosure(self, glyphNames) -> set[str]:
         glyphsToCheck = set(glyphNames)  # this set will shrink
