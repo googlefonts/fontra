@@ -92,6 +92,16 @@ class ActionStep:
         raise NotImplementedError
 
 
+_actionStepClasses = {}
+
+
+def registerActionStepClass(cls):
+    assert cls.actionType not in _actionStepClasses
+    _actionStepClasses[cls.actionType] = cls
+    return cls
+
+
+@registerActionStepClass
 @dataclass(kw_only=True)
 class InputActionStep(ActionStep):
     actionProtocol = InputActionProtocol
@@ -113,6 +123,7 @@ class InputActionStep(ActionStep):
         return currentInput, moreOutput
 
 
+@registerActionStepClass
 @dataclass(kw_only=True)
 class FilterActionStep(ActionStep):
     actionProtocol = FilterActionProtocol
@@ -131,6 +142,7 @@ class FilterActionStep(ActionStep):
         return action, moreOutput
 
 
+@registerActionStepClass
 @dataclass(kw_only=True)
 class OutputActionStep(ActionStep):
     actionProtocol = OutputActionProtocol
@@ -156,21 +168,12 @@ class OutputActionStep(ActionStep):
         return currentInput, outputs
 
 
-_stepClasses = {
-    "input": InputActionStep,
-    "filter": FilterActionStep,
-    "output": OutputActionStep,
-}
-
-_actionTypes = list(_stepClasses)
-
-
 def _structureSteps(rawSteps):
     structured = []
 
     for rawStep in rawSteps:
         actionName = None
-        for actionType in _actionTypes:
+        for actionType in _actionStepClasses:
             actionName = rawStep.get(actionType)
             if actionName is None:
                 continue
@@ -181,7 +184,7 @@ def _structureSteps(rawSteps):
         del arguments[actionType]
         subSteps = _structureSteps(arguments.pop("steps", []))
         structured.append(
-            _stepClasses[actionType](
+            _actionStepClasses[actionType](
                 actionName=actionName,
                 arguments=arguments,
                 steps=subSteps,
