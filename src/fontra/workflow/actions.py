@@ -50,7 +50,6 @@ from .features import LayoutHandling, mergeFeatures, subsetFeatures
 from .featurewriter import FeatureWriter, VariableScalar
 from .merger import cmapFromGlyphMap
 
-# All actions should use this logger, regardless of where they are defined
 logger = logging.getLogger(__name__)
 
 
