@@ -9,7 +9,7 @@ from typing import AsyncGenerator, ClassVar
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
-from .actions import (
+from .actions.base import (
     FilterActionProtocol,
     InputActionProtocol,
     OutputActionProtocol,
@@ -191,6 +191,13 @@ async def _prepareEndPoints(
 
 
 def _loadActionsEntryPoints():
+    from .actions import axes  # noqa: F401
+    from .actions import base  # noqa: F401
+    from .actions import features  # noqa: F401
+    from .actions import glyph  # noqa: F401
+    from .actions import misc  # noqa: F401
+    from .actions import subset  # noqa: F401
+
     for entryPoint in entry_points(group="fontra.workflow.actions"):
         _ = entryPoint.load()
 
