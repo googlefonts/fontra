@@ -69,8 +69,7 @@ async def _prepareEndPoints(
     outputs: list[OutputActionProtocol] = []
 
     for step in steps:
-        actionClass = getActionClass(step.actionType, step.actionName)
-        action = actionClass(**step.arguments)
+        action = step.getAction()
 
         match step.actionType:
             case "input":
@@ -130,6 +129,13 @@ class ActionStep:
     actionName: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
+
+    def getAction(self):
+        actionClass = self.getActionClass()
+        return actionClass(**self.arguments)
+
+    def getActionClass(self):
+        return getActionClass(self.actionType, self.actionName)
 
 
 _actionTypes = ["input", "filter", "output"]
