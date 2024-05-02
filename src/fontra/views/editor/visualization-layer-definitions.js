@@ -185,9 +185,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { iconSize: 12 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawLockedGlyph(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawGlyphLockIcon,
 });
 
 registerVisualizationLayerDefinition({
@@ -199,12 +197,10 @@ registerVisualizationLayerDefinition({
   screenParameters: { iconSize: 12 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawLockedGlyph(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawGlyphLockIcon,
 });
 
-function _drawLockedGlyph(context, positionedGlyph, parameters, model, controller) {
+function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, controller) {
   if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
     const box = positionedGlyph.glyph.controlBounds
       ? positionedGlyph.glyph.controlBounds
