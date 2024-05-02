@@ -182,22 +182,11 @@ registerVisualizationLayerDefinition({
   name: "Glyph locking",
   selectionMode: "editing",
   zIndex: 700,
-  screenParameters: {
-    iconSize: 12,
-  },
+  screenParameters: { iconSize: 12 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
-      const box = positionedGlyph.glyph.controlBounds
-        ? positionedGlyph.glyph.controlBounds
-        : { xMin: 0, yMin: 0 };
-      context.translate(box.xMin, box.yMin - 15);
-      context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
-      context.lineWidth = 2;
-      context.strokeStyle = parameters.strokeColor;
-      context.stroke(lockIconPath2D);
-    }
+    _drawLockedGlyph(context, positionedGlyph, parameters, model, controller);
   },
 });
 
@@ -207,24 +196,26 @@ registerVisualizationLayerDefinition({
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
-  screenParameters: {
-    iconSize: 12,
-  },
+  screenParameters: { iconSize: 12 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
-      const box = positionedGlyph.glyph.controlBounds
-        ? positionedGlyph.glyph.controlBounds
-        : { xMin: 0, yMin: 0 };
-      context.translate(box.xMin, box.yMin - 15);
-      context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
-      context.lineWidth = 2;
-      context.strokeStyle = parameters.strokeColor;
-      context.stroke(lockIconPath2D);
-    }
+    _drawLockedGlyph(context, positionedGlyph, parameters, model, controller);
   },
 });
+
+function _drawLockedGlyph(context, positionedGlyph, parameters, model, controller) {
+  if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
+    const box = positionedGlyph.glyph.controlBounds
+      ? positionedGlyph.glyph.controlBounds
+      : { xMin: 0, yMin: 0 };
+    context.translate(box.xMin, box.yMin - 15);
+    context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
+    context.lineWidth = 2;
+    context.strokeStyle = parameters.strokeColor;
+    context.stroke(lockIconPath2D);
+  }
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchors",
