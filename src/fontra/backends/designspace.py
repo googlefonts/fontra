@@ -59,6 +59,7 @@ VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
+CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 
 
 defaultUFOInfoAttrs = {
@@ -290,7 +291,7 @@ class DesignspaceBackend:
         layerNameMapping = {}
         # TODO: we need to gather customData from VariableGlyph
         # not sure how to do this currently
-        # customData = {}
+        customData = {}
 
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
@@ -305,6 +306,7 @@ class DesignspaceBackend:
                     )
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+                customData = ufoGlyph.lib.get(CUSTOM_DATA_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
 
         # When a glyph has axes with names that also exist as global axes, we need
@@ -344,7 +346,7 @@ class DesignspaceBackend:
             axes=axes,
             sources=sources,
             layers=layers,
-            # TODO: customData=customData,
+            customData=customData,
         )
 
     def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
@@ -464,6 +466,7 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
+                storeInLib(layerGlyph, CUSTOM_DATA_LIB_KEY, glyph.customData)
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
 

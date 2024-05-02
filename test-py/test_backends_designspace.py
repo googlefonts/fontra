@@ -222,17 +222,19 @@ async def test_addAnchor(writableTestFont):
     )
 
 
-""" async def test_add_glyph_set_locked(writableTestFont):
-    glyphName = "E"
+async def test_add_glyph_set_locked(writableTestFont):
+    glyphName = "space"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
-    glyph.customData["locked"] = True
+    glyph.customData["fontra.glyph.locked"] = True
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
-    assert glyph.customData.get("locked") == savedGlyph.customData.get("locked") """
+    assert glyph.customData.get("fontra.glyph.locked") == savedGlyph.customData.get(
+        "fontra.glyph.locked"
+    )
 
 
 async def test_addLocalAxisAndSource(writableTestFont):
