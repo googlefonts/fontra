@@ -237,6 +237,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneController.addEventListener("glyphEditCannotEditLocked", async () => {
+      // See the event handler for glyphEditCannotEditReadOnly above
       this._updateAxes();
       this._updateSources();
     });
