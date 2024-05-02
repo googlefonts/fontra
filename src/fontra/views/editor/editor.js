@@ -589,12 +589,9 @@ export class EditorController {
     );
   }
 
-  async showDialogGlyphEditCannotEditLocked(create = false) {
+  async showDialogGlyphEditCannotEditLocked() {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    await message(
-      `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
-      "The glyph is locked."
-    );
+    await message(`Can’t edit glyph “${glyphName}”`, "The glyph is locked.");
   }
 
   async showDialogGlyphEditLocationNotAtSource() {

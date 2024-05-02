@@ -168,7 +168,7 @@ registerVisualizationLayerDefinition({
   },
 });
 
-// the following icon SVG path code is from https://tabler.io/icons
+// the following icon SVG path code is from https://tabler.io/icons/icon/lock
 const lockIconPath2D = new Path2D(
   "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0 M8 11v-4a4 4 0 1 1 8 0v4"
 );
@@ -193,6 +193,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { iconSize: 19 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
+  selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   draw: _drawGlyphLockIcon,
 });
 
