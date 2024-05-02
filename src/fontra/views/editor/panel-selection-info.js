@@ -447,7 +447,6 @@ export default class SelectionInfoPanel extends Panel {
 
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        this.sceneController.selection = new Set();
         glyph.customData["fontra.glyph.locked"] =
           !glyph.customData["fontra.glyph.locked"];
 

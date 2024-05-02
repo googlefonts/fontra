@@ -11,7 +11,7 @@ import {
   withSavedState,
 } from "/core/utils.js";
 
-// the following icon SVG path code is from https://tablericons.com/
+// the following icon SVG path code is from https://tabler.io/icons
 const lockIconPath2D = new Path2D(
   "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0 M8 11v-4a4 4 0 1 1 8 0v4"
 );
@@ -190,10 +190,8 @@ registerVisualizationLayerDefinition({
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
-      context.translate(
-        positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-        -15
-      );
+      const box = positionedGlyph.unpositionedBounds;
+      context.translate(box.xMin, box.yMin - 15);
       context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
       context.lineWidth = 2;
       context.strokeStyle = parameters.strokeColor;
