@@ -222,7 +222,14 @@ async def test_addAnchor(writableTestFont):
     )
 
 
-async def test_add_glyph_set_locked(writableTestFont):
+async def test_read_glyph_locked(writableTestFont):
+    glyphName = "space"
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    assert glyph.customData.get("fontra.glyph.locked") is True
+
+
+async def test_add_glyph_locked(writableTestFont):
     glyphName = "space"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
