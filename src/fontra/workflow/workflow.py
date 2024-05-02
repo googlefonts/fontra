@@ -10,7 +10,6 @@ from typing import AsyncGenerator, ClassVar
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
 from .actions import (
-    ActionError,
     FilterActionProtocol,
     InputActionProtocol,
     OutputActionProtocol,
@@ -20,23 +19,8 @@ from .actions import (
 from .merger import FontBackendMerger
 
 
-@contextmanager
-def chdir(path):
-    # contextlib.chdir() requires Python >= 3.11
-    currentDir = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(currentDir)
-
-
-def _loadActionsEntryPoints():
-    for entryPoint in entry_points(group="fontra.workflow.actions"):
-        _ = entryPoint.load()
-
-
-_loadActionsEntryPoints()
+class WorkflowError(Exception):
+    pass
 
 
 @dataclass(kw_only=True)
@@ -47,6 +31,7 @@ class Workflow:
 
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
+        _loadActionsEntryPoints()
 
     @asynccontextmanager
     async def endPoints(
@@ -64,21 +49,6 @@ class Workflow:
 class WorkflowEndPoints:
     endPoint: ReadableFontBackend
     outputs: list[OutputProcessorProtocol]
-
-
-async def _prepareEndPoints(
-    currentInput: ReadableFontBackend,
-    steps: list[ActionStep],
-    exitStack: AsyncExitStack,
-) -> WorkflowEndPoints:
-    outputs: list[OutputProcessorProtocol] = []
-
-    for step in steps:
-        endPoints = await step.setup(currentInput, exitStack)
-        currentInput = endPoints.endPoint
-        outputs.extend(endPoints.outputs)
-
-    return WorkflowEndPoints(currentInput, outputs)
 
 
 @dataclass(kw_only=True)
@@ -179,7 +149,7 @@ class OutputActionStep(ActionStep):
         return WorkflowEndPoints(endPoint=currentInput, outputs=outputs)
 
 
-def _structureSteps(rawSteps):
+def _structureSteps(rawSteps) -> list[ActionStep]:
     structured = []
 
     for rawStep in rawSteps:
@@ -190,7 +160,7 @@ def _structureSteps(rawSteps):
                 continue
             break
         if actionName is None:
-            raise ActionError("no action type keyword found in step")
+            raise WorkflowError("no action type keyword found in step")
         arguments = dict(rawStep)
         del arguments[actionType]
         subSteps = _structureSteps(arguments.pop("steps", []))
@@ -203,3 +173,41 @@ def _structureSteps(rawSteps):
         )
 
     return structured
+
+
+async def _prepareEndPoints(
+    currentInput: ReadableFontBackend,
+    steps: list[ActionStep],
+    exitStack: AsyncExitStack,
+) -> WorkflowEndPoints:
+    outputs: list[OutputProcessorProtocol] = []
+
+    for step in steps:
+        endPoints = await step.setup(currentInput, exitStack)
+        currentInput = endPoints.endPoint
+        outputs.extend(endPoints.outputs)
+
+    return WorkflowEndPoints(currentInput, outputs)
+
+
+def _loadActionsEntryPoints():
+    from .actions import axes  # noqa: F401
+    from .actions import base  # noqa: F401
+    from .actions import features  # noqa: F401
+    from .actions import glyph  # noqa: F401
+    from .actions import misc  # noqa: F401
+    from .actions import subset  # noqa: F401
+
+    for entryPoint in entry_points(group="fontra.workflow.actions"):
+        _ = entryPoint.load()
+
+
+@contextmanager
+def chdir(path):
+    # contextlib.chdir() requires Python >= 3.11
+    currentDir = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(currentDir)
