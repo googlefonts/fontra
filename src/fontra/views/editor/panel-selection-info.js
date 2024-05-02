@@ -165,7 +165,6 @@ export default class SelectionInfoPanel extends Panel {
     const formContents = [];
     if (glyphName) {
       formContents.push({
-        key: "glyphLocking",
         type: "header",
         label: "Glyph info",
         auxiliaryElement: html.createDomElement("icon-button", {
