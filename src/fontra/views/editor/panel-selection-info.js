@@ -445,17 +445,15 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    varGlyph.customData["fontra.glyph.locked"] =
-      !varGlyph.customData["fontra.glyph.locked"];
+    const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
+    iconElement.src = varGlyph.customData["fontra.glyph.locked"]
+      ? "/tabler-icons/lock-open-2.svg"
+      : "/tabler-icons/lock.svg";
 
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        const iconElement =
-          this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
-        iconElement.src = glyph.customData["fontra.glyph.locked"]
-          ? "/tabler-icons/lock-open-2.svg"
-          : "/tabler-icons/lock.svg";
-
+        glyph.customData["fontra.glyph.locked"] =
+          !glyph.customData["fontra.glyph.locked"];
         return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
       },
       undefined,
