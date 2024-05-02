@@ -11,11 +11,6 @@ import {
   withSavedState,
 } from "/core/utils.js";
 
-// the following icon SVG path code is from https://tabler.io/icons
-const lockIconPath2D = new Path2D(
-  "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0 M8 11v-4a4 4 0 1 1 8 0v4"
-);
-
 export const visualizationLayerDefinitions = [];
 
 export function registerVisualizationLayerDefinition(newLayerDef) {
@@ -177,20 +172,51 @@ registerVisualizationLayerDefinition({
   },
 });
 
+// the following icon SVG path code is from https://tabler.io/icons
+const lockIconPath2D = new Path2D(
+  "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0 M8 11v-4a4 4 0 1 1 8 0v4"
+);
+
 registerVisualizationLayerDefinition({
   identifier: "fontra.glyph.locking",
   name: "Glyph locking",
   selectionMode: "editing",
-  userSwitchable: true,
   zIndex: 700,
   screenParameters: {
-    iconSize: 15,
+    iconSize: 12,
   },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
-      const box = positionedGlyph.unpositionedBounds;
+      const box = positionedGlyph.glyph.controlBounds
+        ? positionedGlyph.glyph.controlBounds
+        : { xMin: 0, yMin: 0 };
+      context.translate(box.xMin, box.yMin - 15);
+      context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
+      context.lineWidth = 2;
+      context.strokeStyle = parameters.strokeColor;
+      context.stroke(lockIconPath2D);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.glyph.locking.non-editing",
+  name: "Glyph lock icon for non-editing glyphs",
+  selectionMode: "notediting",
+  userSwitchable: true,
+  zIndex: 700,
+  screenParameters: {
+    iconSize: 12,
+  },
+  colors: { strokeColor: "#000C" },
+  colorsDarkMode: { strokeColor: "#FFFC" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
+      const box = positionedGlyph.glyph.controlBounds
+        ? positionedGlyph.glyph.controlBounds
+        : { xMin: 0, yMin: 0 };
       context.translate(box.xMin, box.yMin - 15);
       context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
       context.lineWidth = 2;
