@@ -589,9 +589,9 @@ export class EditorController {
     );
   }
 
-  async showDialogGlyphEditCannotEditLocked() {
+  async showDialogGlyphEditCannotEditLocked(placeholder = "edit") {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    await message(`Can’t edit glyph “${glyphName}”`, "The glyph is locked.");
+    await message(`Can’t ${placeholder} glyph “${glyphName}”`, "The glyph is locked.");
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
@@ -1270,6 +1270,13 @@ export class EditorController {
   }
 
   canCut() {
+    const glyphLocking =
+      this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
+        "fontra.glyph.locked"
+      ];
+    if (glyphLocking) {
+      return false;
+    }
     return (
       (this.sceneSettings.selectedGlyph &&
         !this.sceneSettings.selectedGlyph.isEditing) ||
@@ -1278,6 +1285,14 @@ export class EditorController {
   }
 
   async doCut(event = null) {
+    const glyphLocking =
+      this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
+        "fontra.glyph.locked"
+      ];
+    if (glyphLocking) {
+      this.showDialogGlyphEditCannotEditLocked("cut");
+      return;
+    }
     if (
       this.sceneSettings.selectedGlyph.isEditing &&
       !this.sceneController.selection.size
@@ -1510,6 +1525,13 @@ export class EditorController {
   }
 
   canPaste() {
+    const glyphLocking =
+      this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
+        "fontra.glyph.locked"
+      ];
+    if (glyphLocking) {
+      return false;
+    }
     return true;
   }
 
@@ -1725,6 +1747,13 @@ export class EditorController {
   }
 
   canDelete() {
+    const glyphLocking =
+      this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
+        "fontra.glyph.locked"
+      ];
+    if (glyphLocking) {
+      return false;
+    }
     return (
       (this.sceneSettings.selectedGlyph &&
         !this.sceneSettings.selectedGlyph.isEditing) ||
@@ -1734,6 +1763,14 @@ export class EditorController {
   }
 
   async doDelete(event) {
+    const glyphLocking =
+      this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
+        "fontra.glyph.locked"
+      ];
+    if (glyphLocking) {
+      this.showDialogGlyphEditCannotEditLocked("delete");
+      return;
+    }
     if (
       this.sceneSettings.selectedGlyph &&
       !this.sceneSettings.selectedGlyph.isEditing
