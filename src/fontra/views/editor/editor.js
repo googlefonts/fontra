@@ -2210,6 +2210,9 @@ export class EditorController {
   }
 
   spaceKeyUpHandler(event) {
+    if (isActiveElementTypeable()) {
+      return;
+    }
     this.canvasController.sceneView = this.defaultSceneView;
     this.canvasController.requestUpdate();
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
