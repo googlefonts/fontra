@@ -7,7 +7,8 @@ from typing import get_type_hints
 
 from ...core.classes import FontInfo, VariableGlyph, structure, unstructure
 from ..merger import cmapFromGlyphMap
-from .base import ActionError, BaseFilter, registerFilterAction
+from . import ActionError, registerFilterAction
+from .base import BaseFilter
 
 logger = logging.getLogger(__name__)
 

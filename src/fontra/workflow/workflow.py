@@ -9,7 +9,7 @@ from typing import AsyncGenerator, ClassVar
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
-from .actions.base import (
+from .actions import (
     FilterActionProtocol,
     InputActionProtocol,
     OutputActionProtocol,

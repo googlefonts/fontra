@@ -7,15 +7,8 @@ import pathlib
 import tempfile
 from contextlib import aclosing, asynccontextmanager
 from dataclasses import dataclass, field
-from functools import cached_property, partial
-from typing import (
-    Any,
-    AsyncContextManager,
-    AsyncGenerator,
-    ClassVar,
-    Protocol,
-    runtime_checkable,
-)
+from functools import cached_property
+from typing import Any, AsyncGenerator, ClassVar
 
 from ...backends import getFileSystemBackend, newFileSystemBackend
 from ...backends.copy import copyFont
@@ -33,77 +26,14 @@ from ...core.classes import (
 )
 from ...core.instancer import FontInstancer
 from ...core.protocols import ReadableFontBackend
+from . import (
+    OutputActionProtocol,
+    registerFilterAction,
+    registerInputAction,
+    registerOutputAction,
+)
 
 logger = logging.getLogger(__name__)
-
-
-class ActionError(Exception):
-    pass
-
-
-@runtime_checkable
-class FilterActionProtocol(Protocol):
-    def connect(
-        self, input: ReadableFontBackend
-    ) -> AsyncContextManager[ReadableFontBackend]:
-        pass
-
-
-@runtime_checkable
-class InputActionProtocol(Protocol):
-    def prepare(self) -> AsyncContextManager[ReadableFontBackend]:
-        pass
-
-
-@runtime_checkable
-class OutputActionProtocol(Protocol):
-    def connect(
-        self, input: ReadableFontBackend
-    ) -> AsyncContextManager[OutputProcessorProtocol]:
-        pass
-
-
-@runtime_checkable
-class OutputProcessorProtocol(Protocol):
-    async def process(
-        self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
-    ) -> None:
-        pass
-
-
-_actionRegistry: dict[str, dict[str, type]] = {
-    "filter": {},
-    "input": {},
-    "output": {},
-}
-
-
-def _actionRegistryWrapper(cls, actionName, actionType):
-    registry = _actionRegistry[actionType]
-    assert actionName not in registry
-    cls.actionName = actionName
-    registry[actionName] = cls
-    return cls
-
-
-def getActionClass(actionType: str, actionName: str) -> type:
-    registry = _actionRegistry[actionType]
-    cls = registry.get(actionName)
-    if cls is None:
-        raise KeyError(f"No action found named '{actionName}'")
-    return cls
-
-
-def registerFilterAction(actionName):
-    return partial(_actionRegistryWrapper, actionName=actionName, actionType="filter")
-
-
-def registerInputAction(actionName):
-    return partial(_actionRegistryWrapper, actionName=actionName, actionType="input")
-
-
-def registerOutputAction(actionName):
-    return partial(_actionRegistryWrapper, actionName=actionName, actionType="output")
 
 
 @registerInputAction("fontra-read")

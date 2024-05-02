@@ -19,8 +19,8 @@ from ...core.classes import (
     structure,
     unstructure,
 )
+from . import ActionError
 from .base import (
-    ActionError,
     BaseFilter,
     filterLocation,
     getActiveSources,
