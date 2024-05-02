@@ -64,9 +64,7 @@ registerVisualizationLayerDefinition({
   zIndex: 200,
   colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#585858" /* Must be six hex digits */ },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawEmptyGlyphLayer,
 });
 
 registerVisualizationLayerDefinition({
@@ -77,9 +75,7 @@ registerVisualizationLayerDefinition({
   zIndex: 200,
   colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#484848" /* Must be six hex digits */ },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawEmptyGlyphLayer,
 });
 
 function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller) {
@@ -393,9 +389,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#7778", errorColor: "#AAA" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", errorColor: "#999" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
-  },
+  draw: _drawSelectedGlyphLayer,
 });
 
 registerVisualizationLayerDefinition({
@@ -407,9 +401,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#BBB8", errorColor: "#AAA" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", errorColor: "#999" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
-  },
+  draw: _drawSelectedGlyphLayer,
 });
 
 function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
