@@ -175,21 +175,48 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.glyph.locking",
   name: "Glyph locking",
-  selectionMode: "all",
+  selectionMode: "editing",
   userSwitchable: true,
-  zIndex: 500,
-  screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004" },
-  colorsDarkMode: { strokeColor: "#FFF6" },
+  zIndex: 700,
+  screenParameters: {
+    strokeWidth: 1,
+    iconSize: 15,
+  },
+  colors: { strokeColor: "#000C" },
+  colorsDarkMode: { strokeColor: "#FFFC" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
+    const iconSize = parameters.iconSize;
 
     if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
       var img = new Image();
       img.src = "/tabler-icons/lock.svg";
       context.scale(1, -1);
-      context.drawImage(img, positionedGlyph.glyph.xAdvance / 2 - 15, 0, 30, 30);
+      context.drawImage(
+        img,
+        positionedGlyph.glyph.xAdvance / 2 - iconSize / 2,
+        10,
+        iconSize,
+        iconSize
+      );
+      context.scale(1, -1);
+
+      // the follwing icon SVG path code is from https://tablericons.com/
+      const iconPath = new Path2D();
+      iconPath.addPath(
+        new Path2D(
+          "M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z"
+        )
+      );
+      iconPath.addPath(new Path2D("M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"));
+      iconPath.addPath(new Path2D("M8 11v-4a4 4 0 1 1 8 0v4"));
+
+      context.translate(15, -15);
+      context.scale(iconSize / 15, (-1 * iconSize) / 15);
+      context.lineWidth = 2;
+      context.strokeStyle = parameters.strokeColor;
+      context.stroke(iconPath);
     }
   },
 });
