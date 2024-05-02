@@ -178,7 +178,7 @@ registerVisualizationLayerDefinition({
   name: "Glyph locking",
   selectionMode: "editing",
   zIndex: 700,
-  screenParameters: { iconSize: 12 },
+  screenParameters: { iconSize: 19 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: _drawGlyphLockIcon,
@@ -190,7 +190,7 @@ registerVisualizationLayerDefinition({
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
-  screenParameters: { iconSize: 12 },
+  screenParameters: { iconSize: 19 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
   draw: _drawGlyphLockIcon,
@@ -201,8 +201,11 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     const box = positionedGlyph.glyph.controlBounds
       ? positionedGlyph.glyph.controlBounds
       : { xMin: 0, yMin: 0 };
-    context.translate(box.xMin, box.yMin - 15);
-    context.scale(parameters.iconSize / 15, (-1 * parameters.iconSize) / 15);
+    context.translate(
+      positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
+      box.yMin - 24
+    );
+    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
     context.lineWidth = 2;
     context.strokeStyle = parameters.strokeColor;
     context.stroke(lockIconPath2D);
