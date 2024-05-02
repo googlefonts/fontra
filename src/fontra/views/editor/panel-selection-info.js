@@ -445,11 +445,11 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
+    varGlyph.customData["fontra.glyph.locked"] =
+      !varGlyph.customData["fontra.glyph.locked"];
+
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        glyph.customData["fontra.glyph.locked"] =
-          !glyph.customData["fontra.glyph.locked"];
-
         const iconElement =
           this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
         iconElement.src = glyph.customData["fontra.glyph.locked"]
