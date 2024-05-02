@@ -289,8 +289,6 @@ class DesignspaceBackend:
         layers = {}
         sourceNameMapping = {}
         layerNameMapping = {}
-        # TODO: we need to gather customData from VariableGlyph
-        # not sure how to do this currently
         customData = {}
 
         for ufoLayer in self.ufoLayers:
@@ -396,7 +394,6 @@ class DesignspaceBackend:
         assert isinstance(codePoints, list)
         assert all(isinstance(cp, int) for cp in codePoints)
         self.glyphMap[glyphName] = codePoints
-        print("putGlyph glyph.customData: ", glyph.customData)
 
         if self._glyphDependencies is not None:
             self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
