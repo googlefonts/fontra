@@ -170,9 +170,10 @@ export default class SelectionInfoPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "id": "glyphLocking",
           "style": `width: 1.3em;`,
-          "src": glyphLocked
-            ? "/tabler-icons/lock.svg"
-            : "/tabler-icons/lock-open-2.svg",
+          "src":
+            glyphLocked || this.fontController.readOnly
+              ? "/tabler-icons/lock.svg"
+              : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
           "data-tooltip": glyphLocked ? "Unlock glyph" : "Lock glyph",
           "data-tooltipposition": "left",
