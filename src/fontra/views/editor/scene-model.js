@@ -104,7 +104,7 @@ export class SceneModel {
   }
 
   isSelectedGlyphLocked() {
-    return this.getSelectedPositionedGlyph()?.varGlyph?.glyph.customData?.[
+    return !!this.getSelectedPositionedGlyph()?.varGlyph?.glyph.customData?.[
       "fontra.glyph.locked"
     ];
   }
