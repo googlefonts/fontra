@@ -872,28 +872,32 @@ registerVisualizationLayerDefinition({
     // Under layer
     context.fillStyle = parameters.underColor;
     for (const anchorIndex of selectedAnchorIndices || []) {
-      fillRoundNode(
-        context,
-        glyph.anchors[anchorIndex],
-        smoothSize + parameters.underlayOffset
-      );
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      fillRoundNode(context, anchor, smoothSize + parameters.underlayOffset);
     }
 
     // Selected anchor
     context.fillStyle = parameters.selectedColor;
     for (const anchorIndex of selectedAnchorIndices || []) {
-      fillRoundNode(context, glyph.anchors[anchorIndex], smoothSize);
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      fillRoundNode(context, anchor, smoothSize);
     }
 
     // Hovered anchor
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
     for (const anchorIndex of hoveredAnchorIndices || []) {
-      strokeRoundNode(
-        context,
-        glyph.anchors[anchorIndex],
-        smoothSize + parameters.hoverStrokeOffset
-      );
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      strokeRoundNode(context, anchor, smoothSize + parameters.hoverStrokeOffset);
     }
   },
 });
