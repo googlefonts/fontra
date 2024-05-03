@@ -175,7 +175,11 @@ export default class SelectionInfoPanel extends Panel {
               ? "/tabler-icons/lock.svg"
               : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
-          "data-tooltip": glyphLocked ? "Unlock glyph" : "Lock glyph",
+          "data-tooltip": this.fontController.readOnly
+            ? "Glyph is read-only"
+            : glyphLocked
+            ? "Unlock glyph"
+            : "Lock glyph",
           "data-tooltipposition": "left",
         }),
       });
