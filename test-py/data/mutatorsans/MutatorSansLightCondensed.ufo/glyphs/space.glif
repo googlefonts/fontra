@@ -4,4 +4,13 @@
   <unicode hex="0020"/>
   <outline>
   </outline>
+  <lib>
+    <dict>
+      <key>xyz.fontra.customData</key>
+      <dict>
+        <key>fontra.glyph.locked</key>
+        <true/>
+      </dict>
+    </dict>
+  </lib>
 </glyph>

@@ -13,6 +13,7 @@ import {
   splitGlyphNameExtension,
   throttleCalls,
 } from "/core/utils.js";
+import { dialog } from "/web-components/modal-dialog.js";
 import { Form } from "/web-components/ui-form.js";
 
 export default class SelectionInfoPanel extends Panel {
@@ -138,6 +139,9 @@ export default class SelectionInfoPanel extends Panel {
     this.haveInstance = !!instance;
 
     const selectedGlyphInfo = this.sceneController.sceneModel.getSelectedGlyphInfo();
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const glyphLocked = !!varGlyphController?.glyph.customData["fontra.glyph.locked"];
 
     if (
       selectedGlyphInfo?.isUndefined &&
@@ -160,6 +164,25 @@ export default class SelectionInfoPanel extends Panel {
 
     const formContents = [];
     if (glyphName) {
+      formContents.push({
+        type: "header",
+        label: "Glyph info",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "id": "glyphLocking",
+          "style": `width: 1.3em;`,
+          "src":
+            glyphLocked || this.fontController.readOnly
+              ? "/tabler-icons/lock.svg"
+              : "/tabler-icons/lock-open-2.svg",
+          "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
+          "data-tooltip": this.fontController.readOnly
+            ? "Glyph is read-only"
+            : glyphLocked
+            ? "Unlock glyph"
+            : "Lock glyph",
+          "data-tooltipposition": "left",
+        }),
+      });
       formContents.push({
         key: "glyphName",
         type: "text",
@@ -407,6 +430,43 @@ export default class SelectionInfoPanel extends Panel {
         await this._setupSelectionInfoHandlers(glyphName);
       }
     }
+  }
+
+  async _toggleGlyphLock(varGlyph) {
+    if (varGlyph.customData["fontra.glyph.locked"]) {
+      const result = await dialog(
+        `Are you sure you want to unlock glyph ${varGlyph.name}?`,
+        "",
+        [
+          { title: "Cancel", isCancelButton: true },
+          { title: "Yes", isDefaultButton: true, resultValue: "ok" },
+        ]
+      );
+
+      if (!result) {
+        // User cancelled
+        return;
+      }
+    }
+
+    const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
+    iconElement.src = varGlyph.customData["fontra.glyph.locked"]
+      ? "/tabler-icons/lock-open-2.svg"
+      : "/tabler-icons/lock.svg";
+
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        if (glyph.customData["fontra.glyph.locked"]) {
+          delete glyph.customData["fontra.glyph.locked"];
+        } else {
+          glyph.customData["fontra.glyph.locked"] = true;
+        }
+        return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
+      },
+      undefined,
+      undefined,
+      true // ignoreGlyphLock
+    );
   }
 
   async _resetTransformationForComponent(componentIndex) {

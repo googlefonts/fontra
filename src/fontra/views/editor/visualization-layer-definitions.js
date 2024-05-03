@@ -64,9 +64,7 @@ registerVisualizationLayerDefinition({
   zIndex: 200,
   colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#585858" /* Must be six hex digits */ },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawEmptyGlyphLayer,
 });
 
 registerVisualizationLayerDefinition({
@@ -77,9 +75,7 @@ registerVisualizationLayerDefinition({
   zIndex: 200,
   colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#484848" /* Must be six hex digits */ },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
-  },
+  draw: _drawEmptyGlyphLayer,
 });
 
 function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller) {
@@ -171,6 +167,53 @@ registerVisualizationLayerDefinition({
     strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
   },
 });
+
+// the following icon SVG path code is from https://tabler.io/icons/icon/lock
+const lockIconPath2D = new Path2D(
+  `M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z
+  M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0 M8 11v-4a4 4 0 1 1 8 0v4`
+);
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.glyph.locking",
+  name: "Glyph locking",
+  selectionMode: "editing",
+  zIndex: 700,
+  screenParameters: { iconSize: 19 },
+  colors: { strokeColor: "#000C" },
+  colorsDarkMode: { strokeColor: "#FFFC" },
+  draw: _drawGlyphLockIcon,
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.glyph.locking.non-editing",
+  name: "Glyph lock icon for non-editing glyphs",
+  selectionMode: "notediting",
+  userSwitchable: true,
+  zIndex: 700,
+  screenParameters: { iconSize: 19 },
+  colors: { strokeColor: "#000C" },
+  colorsDarkMode: { strokeColor: "#FFFC" },
+  selectionFilter: (positionedGlyph) => !positionedGlyph.isUndefined,
+  draw: _drawGlyphLockIcon,
+});
+
+function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, controller) {
+  if (
+    !!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"] ||
+    model.fontController.readOnly
+  ) {
+    const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;
+    context.translate(
+      positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
+      boundsYMin - 24
+    );
+    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    context.lineWidth = 2;
+    context.strokeStyle = parameters.strokeColor;
+    context.stroke(lockIconPath2D);
+  }
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchors",
@@ -352,9 +395,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#7778", errorColor: "#AAA" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", errorColor: "#999" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
-  },
+  draw: _drawSelectedGlyphLayer,
 });
 
 registerVisualizationLayerDefinition({
@@ -366,9 +407,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#BBB8", errorColor: "#AAA" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", errorColor: "#999" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
-  },
+  draw: _drawSelectedGlyphLayer,
 });
 
 function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {

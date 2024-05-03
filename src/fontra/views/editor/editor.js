@@ -188,6 +188,10 @@ export class EditorController {
       this.showDialogGlyphEditCannotEditReadOnly();
     });
 
+    this.sceneController.addEventListener("glyphEditCannotEditLocked", async () => {
+      this.showDialogGlyphEditCannotEditLocked();
+    });
+
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.showDialogGlyphEditLocationNotAtSource();
     });
@@ -583,6 +587,11 @@ export class EditorController {
       `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
       "The font is read-only."
     );
+  }
+
+  async showDialogGlyphEditCannotEditLocked() {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    await message(`Can’t edit glyph “${glyphName}”`, "The glyph is locked.");
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
@@ -1261,6 +1270,9 @@ export class EditorController {
   }
 
   canCut() {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
+      return false;
+    }
     return (
       (this.sceneSettings.selectedGlyph &&
         !this.sceneSettings.selectedGlyph.isEditing) ||
@@ -1501,6 +1513,9 @@ export class EditorController {
   }
 
   canPaste() {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
+      return false;
+    }
     return true;
   }
 
@@ -1716,6 +1731,9 @@ export class EditorController {
   }
 
   canDelete() {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
+      return false;
+    }
     return (
       (this.sceneSettings.selectedGlyph &&
         !this.sceneSettings.selectedGlyph.isEditing) ||

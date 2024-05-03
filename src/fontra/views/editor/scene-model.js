@@ -103,6 +103,12 @@ export class SceneModel {
     return getSelectedGlyphName(this.selectedGlyph, this.glyphLines);
   }
 
+  isSelectedGlyphLocked() {
+    return !!this.getSelectedPositionedGlyph()?.varGlyph?.glyph.customData[
+      "fontra.glyph.locked"
+    ];
+  }
+
   async getSelectedVariableGlyphController() {
     if (!this.selectedGlyph) {
       return undefined;
