@@ -1270,7 +1270,7 @@ export class EditorController {
   }
 
   canCut() {
-    if (this.sceneModel.isSelectedGlyphLocked() || this.fontController.readOnly) {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
       return false;
     }
     return (
@@ -1513,7 +1513,7 @@ export class EditorController {
   }
 
   canPaste() {
-    if (this.sceneModel.isSelectedGlyphLocked() || this.fontController.readOnly) {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
       return false;
     }
     return true;
@@ -1731,7 +1731,7 @@ export class EditorController {
   }
 
   canDelete() {
-    if (this.sceneModel.isSelectedGlyphLocked() || this.fontController.readOnly) {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
       return false;
     }
     return (
