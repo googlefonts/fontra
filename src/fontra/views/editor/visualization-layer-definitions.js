@@ -203,12 +203,10 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     !!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"] ||
     model.fontController.readOnly
   ) {
-    const box = positionedGlyph.glyph.controlBounds
-      ? positionedGlyph.glyph.controlBounds
-      : { xMin: 0, yMin: 0 };
+    const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;
     context.translate(
       positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-      box.yMin - 24
+      boundsYMin - 24
     );
     context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
     context.lineWidth = 2;
