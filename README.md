@@ -159,6 +159,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Edit OpenType features
 - Edit variation axes ✅
 - Visualize and edit variation axis mapping (avar) ✅
+- Visualize and edit cross-axis variation axis mapping (avar-2)
 
 ### Multiple windows
 
