@@ -438,7 +438,7 @@ export class EditorController {
               title: "Documentation",
               enabled: () => true,
               callback: () => {
-                window.open("https://gferreira.github.io/fontra-docs/");
+                window.open("https://docs.fontra.xyz");
               },
             },
             {
