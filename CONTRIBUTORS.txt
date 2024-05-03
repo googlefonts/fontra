@@ -8,3 +8,5 @@ Fabio Caccamo
 Nedislav Kamburov
 Roel Nieskens
 Nikolaus Waxweiler
+Fatih Erikli
+Olli Meier
