@@ -198,7 +198,10 @@ registerVisualizationLayerDefinition({
 });
 
 function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, controller) {
-  if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
+  if (
+    !!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"] ||
+    model.fontController.readOnly
+  ) {
     const box = positionedGlyph.glyph.controlBounds
       ? positionedGlyph.glyph.controlBounds
       : { xMin: 0, yMin: 0 };
