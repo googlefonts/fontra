@@ -1274,7 +1274,7 @@ export class EditorController {
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking) {
+    if (glyphLocking || this.fontController.readOnly) {
       return false;
     }
     return (
@@ -1529,7 +1529,7 @@ export class EditorController {
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking) {
+    if (glyphLocking || this.fontController.readOnly) {
       return false;
     }
     return true;
@@ -1751,7 +1751,7 @@ export class EditorController {
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking) {
+    if (glyphLocking || this.fontController.readOnly) {
       return false;
     }
     return (
