@@ -1270,11 +1270,11 @@ export class EditorController {
   }
 
   canCut() {
-    const glyphLocking =
+    const glyphLocked =
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking || this.fontController.readOnly) {
+    if (glyphLocked || this.fontController.readOnly) {
       return false;
     }
     return (
@@ -1285,11 +1285,11 @@ export class EditorController {
   }
 
   async doCut(event = null) {
-    const glyphLocking =
+    const glyphLocked =
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking) {
+    if (glyphLocked) {
       this.showDialogGlyphEditCannotEditLocked("cut");
       return;
     }
@@ -1525,11 +1525,11 @@ export class EditorController {
   }
 
   canPaste() {
-    const glyphLocking =
+    const glyphLocked =
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking || this.fontController.readOnly) {
+    if (glyphLocked || this.fontController.readOnly) {
       return false;
     }
     return true;
@@ -1747,11 +1747,11 @@ export class EditorController {
   }
 
   canDelete() {
-    const glyphLocking =
+    const glyphLocked =
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking || this.fontController.readOnly) {
+    if (glyphLocked || this.fontController.readOnly) {
       return false;
     }
     return (
@@ -1763,11 +1763,11 @@ export class EditorController {
   }
 
   async doDelete(event) {
-    const glyphLocking =
+    const glyphLocked =
       this.sceneModel.getSelectedPositionedGlyph()?.varGlyph.glyph.customData?.[
         "fontra.glyph.locked"
       ];
-    if (glyphLocking) {
+    if (glyphLocked) {
       this.showDialogGlyphEditCannotEditLocked("delete");
       return;
     }
