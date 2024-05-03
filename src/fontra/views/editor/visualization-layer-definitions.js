@@ -193,7 +193,7 @@ registerVisualizationLayerDefinition({
   screenParameters: { iconSize: 19 },
   colors: { strokeColor: "#000C" },
   colorsDarkMode: { strokeColor: "#FFFC" },
-  selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
+  selectionFilter: (positionedGlyph) => !positionedGlyph.isUndefined,
   draw: _drawGlyphLockIcon,
 });
 
