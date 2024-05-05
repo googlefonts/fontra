@@ -174,7 +174,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             html.createDomElement(
               "designspace-location",
               {
-                id: "designspace-location",
+                id: "font-location",
               },
               []
             ),
@@ -226,12 +226,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   setup() {
-    this.designspaceLocation = this.contentElement.querySelector(
-      "#designspace-location"
-    );
-    this.designspaceLocation.values = this.sceneSettings.location;
+    this.fontLocationElement = this.contentElement.querySelector("#font-location");
+    this.fontLocationElement.values = this.sceneSettings.location;
 
-    this.designspaceLocation.addEventListener(
+    this.fontLocationElement.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
         this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
@@ -239,7 +237,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
         this.sceneSettingsController.setItem(
           "location",
-          { ...this.designspaceLocation.values },
+          { ...this.fontLocationElement.values },
           { senderID: this }
         );
       })
@@ -270,7 +268,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        this.designspaceLocation.values = event.newValue;
+        this.fontLocationElement.values = event.newValue;
       },
       true
     );
@@ -466,7 +464,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   _updateResetAllAxesButtonState() {
     const location = this.sceneSettings.location;
     let locationEmpty = true;
-    for (const axis of this.designspaceLocation.axes) {
+    for (const axis of this.fontLocationElement.axes) {
       if (
         axis.name &&
         axis.name in location &&
@@ -478,7 +476,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     const button = this.contentElement.querySelector("#reset-font-axes-button");
     button.disabled = locationEmpty;
-    button.hidden = !this.designspaceLocation.axes.length;
+    button.hidden = !this.fontLocationElement.axes.length;
   }
 
   async onVisibilityHeaderClick(event) {
@@ -556,7 +554,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         axes.push(...localAxes);
       }
     }
-    this.designspaceLocation.axes = axes;
+    this.fontLocationElement.axes = axes;
 
     this._updateResetAllAxesButtonState();
   }
@@ -629,7 +627,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
-      !this.designspaceLocation.axes.length;
+      !this.fontLocationElement.axes.length;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
