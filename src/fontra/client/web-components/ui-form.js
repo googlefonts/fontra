@@ -44,6 +44,7 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-label.header {
+      overflow-x: unset;
       font-weight: bold;
       grid-column: 1 / span 2;
       text-align: left;
