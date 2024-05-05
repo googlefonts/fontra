@@ -1161,6 +1161,7 @@ function roundComponentOrigins(components) {
 }
 
 function getAxisInfoFromGlyph(glyph) {
+  // Fold NLI axes into single axes
   const axisInfo = {};
   for (const axis of glyph?.axes || []) {
     const baseName = getAxisBaseName(axis.name);
