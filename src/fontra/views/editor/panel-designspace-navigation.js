@@ -88,18 +88,33 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     details {
       display: flex;
+      outline: none;
+    }
+
+    summary:focus {
+        outline: none;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
     }
 
     details > summary {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1.6em 1fr;
       user-select: none;
       cursor: pointer;
-      align-items: center;
       font-weight: bold;
+      margin-bottom: 0.2em;
+    }
+
+    .section-summary {
       display: grid;
-      grid-template-columns: 1.5em 1fr 1.2em 1.2em;
+      grid-template-columns: 1fr 1.2em 1.2em;
+      align-items: center;
       gap: 0.2em;
       justify-content: space-between;
-      margin-bottom: 0.4em;
     }
 
     details > summary::before {
@@ -154,22 +169,24 @@ export default class DesignspaceNavigationPanel extends Panel {
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.summary({ class: "section-header" }, [
-              "Font axes",
-              html.createDomElement("icon-button", {
-                "src": `/tabler-icons/tool.svg`,
-                "class": "section-header-button",
-                "data-tooltip": "Edit font axes",
-                "data-tooltipposition": "bottom",
-              }),
-              html.createDomElement("icon-button", {
-                "id": "reset-font-axes-button",
-                "src": `/tabler-icons/refresh.svg`,
-                "class": "section-header-button",
-                "onclick": (event) => this.resetFontAxesToDefault(event),
-                "data-tooltip": "Reset font axes",
-                "data-tooltipposition": "bottom",
-              }),
+            html.summary({}, [
+              html.div({ class: "section-summary" }, [
+                "Font axes",
+                html.createDomElement("icon-button", {
+                  "src": `/tabler-icons/tool.svg`,
+                  "class": "section-header-button",
+                  "data-tooltip": "Edit font axes",
+                  "data-tooltipposition": "bottom",
+                }),
+                html.createDomElement("icon-button", {
+                  "id": "reset-font-axes-button",
+                  "src": `/tabler-icons/refresh.svg`,
+                  "class": "section-header-button",
+                  "onclick": (event) => this.resetFontAxesToDefault(event),
+                  "data-tooltip": "Reset font axes",
+                  "data-tooltipposition": "bottom",
+                }),
+              ]),
             ]),
             html.createDomElement("designspace-location", { id: "font-axes" }, []),
           ]
@@ -181,29 +198,31 @@ export default class DesignspaceNavigationPanel extends Panel {
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.summary({ class: "section-header" }, [
-              "Glyph axes",
-              html.createDomElement("icon-button", {
-                "src": `/tabler-icons/tool.svg`,
-                "class": "section-header-button",
-                "onclick": (event) => this.editLocalAxes(event),
-                "data-tooltip": "Edit glyph axes",
-                "data-tooltipposition": "bottom",
-              }),
-              html.createDomElement("icon-button", {
-                "id": "reset-glyph-axes-button",
-                "src": `/tabler-icons/refresh.svg`,
-                "class": "section-header-button",
-                "onclick": (event) => this.resetGlyphAxesToDefault(event),
-                "data-tooltip": "Reset glyph axes",
-                "data-tooltipposition": "bottom",
-              }),
+            html.summary({}, [
+              html.div({ class: "section-summary" }, [
+                "Glyph axes",
+                html.createDomElement("icon-button", {
+                  "src": `/tabler-icons/tool.svg`,
+                  "class": "section-header-button",
+                  "onclick": (event) => this.editLocalAxes(event),
+                  "data-tooltip": "Edit glyph axes",
+                  "data-tooltipposition": "bottom",
+                }),
+                html.createDomElement("icon-button", {
+                  "id": "reset-glyph-axes-button",
+                  "src": `/tabler-icons/refresh.svg`,
+                  "class": "section-header-button",
+                  "onclick": (event) => this.resetGlyphAxesToDefault(event),
+                  "data-tooltip": "Reset glyph axes",
+                  "data-tooltipposition": "bottom",
+                }),
+              ]),
             ]),
             html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
           ]
         ),
         html.details({ id: "glyph-sources-details", open: true }, [
-          html.summary({ class: "section-header" }, ["Glyph sources"]),
+          html.summary({}, [html.div({ class: "section-summary" }, ["Glyph sources"])]),
           html.createDomElement("ui-list", {
             id: "sources-list",
           }),
