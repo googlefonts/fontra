@@ -171,13 +171,7 @@ export default class DesignspaceNavigationPanel extends Panel {
                 "data-tooltipposition": "bottom",
               }),
             ]),
-            html.createDomElement(
-              "designspace-location",
-              {
-                id: "font-location",
-              },
-              []
-            ),
+            html.createDomElement("designspace-location", { id: "font-axes" }, []),
           ]
         ),
         html.details(
@@ -205,7 +199,7 @@ export default class DesignspaceNavigationPanel extends Panel {
                 "data-tooltipposition": "bottom",
               }),
             ]),
-            html.div({}, "Glyph axes content"),
+            html.createDomElement("designspace-location", { id: "glyph-location" }, []),
           ]
         ),
         html.details({ open: true }, [
@@ -226,10 +220,13 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   setup() {
-    this.fontLocationElement = this.contentElement.querySelector("#font-location");
-    this.fontLocationElement.values = this.sceneSettings.location;
+    this.fontAxesElement = this.contentElement.querySelector("#font-axes");
+    this.fontAxesElement.values = this.sceneSettings.location;
 
-    this.fontLocationElement.addEventListener(
+    this.glyphAxesElement = this.contentElement.querySelector("#glyph-location");
+    // this.glyphAxesElement.values = this.sceneSettings.location;
+
+    this.fontAxesElement.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
         this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
@@ -237,7 +234,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
         this.sceneSettingsController.setItem(
           "location",
-          { ...this.fontLocationElement.values },
+          { ...this.fontAxesElement.values },
           { senderID: this }
         );
       })
@@ -268,7 +265,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        this.fontLocationElement.values = event.newValue;
+        this.fontAxesElement.values = event.newValue;
       },
       true
     );
@@ -464,7 +461,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   _updateResetAllAxesButtonState() {
     const location = this.sceneSettings.location;
     let locationEmpty = true;
-    for (const axis of this.fontLocationElement.axes) {
+    for (const axis of this.fontAxesElement.axes) {
       if (
         axis.name &&
         axis.name in location &&
@@ -538,22 +535,17 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateAxes() {
-    const axes = [...this.globalAxes];
+    const fontAxes = [...this.globalAxes];
+    this.fontAxesElement.axes = fontAxes;
+
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     if (varGlyphController) {
-      const globalAxisNames = new Set(axes.map((axis) => axis.name));
-      const localAxes = getAxisInfoFromGlyph(varGlyphController).filter(
-        (axis) => !globalAxisNames.has(axis.name)
-      );
-      if (localAxes.length) {
-        if (axes.length) {
-          axes.push({ isDivider: true });
-        }
-        axes.push(...localAxes);
-      }
+      const localAxes = getAxisInfoFromGlyph(varGlyphController);
+      this.glyphAxesElement.axes = localAxes;
+    } else {
+      this.glyphAxesElement.axes = [];
     }
-    this.fontLocationElement.axes = axes;
 
     this._updateResetAllAxesButtonState();
   }
@@ -625,8 +617,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.setItems(sourceItems, false, true);
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
-    this.addRemoveSourceButtons.disableAddButton =
-      !this.fontLocationElement.axes.length;
+    this.addRemoveSourceButtons.disableAddButton = !this.fontAxesElement.axes.length;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
