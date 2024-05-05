@@ -196,7 +196,7 @@ export default class DesignspaceNavigationPanel extends Panel {
                 html.createDomElement("icon-button", {
                   "src": `/tabler-icons/tool.svg`,
                   "class": "section-header-button",
-                  "onclick": (event) => this.editLocalAxes(event),
+                  "onclick": (event) => this.editGlyphAxes(event),
                   "data-tooltip": "Edit glyph axes",
                   "data-tooltipposition": "bottom",
                 }),
@@ -1011,13 +1011,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     return { contentElement, warningElement };
   }
 
-  async editLocalAxes() {
+  async editGlyphAxes() {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     if (!varGlyphController) {
       return;
     }
-    const dialog = await dialogSetup("Edit local axes", null, [
+    const dialog = await dialogSetup("Edit glyph axes", null, [
       { title: "Cancel", isCancelButton: true },
       { title: "Okay", isDefaultButton: true, result: "ok" },
     ]);
