@@ -48,12 +48,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       box-sizing: border-box;
     }
 
-    .axis-buttons-container {
-      display: flex;
-      flex-direction: row;
-      gap: 0.2em;
-    }
-
     /* this is to counteract the undesired interaction between button.hidden
        and display: block */
     [hidden] {
@@ -157,18 +151,24 @@ export default class DesignspaceNavigationPanel extends Panel {
           {
             class: "font-axes",
             open: true,
-            ontoggle: (event) => console.log("toggle", event.target.open),
+            // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
             html.summary({ class: "section-header" }, [
               "Font axes",
               html.createDomElement("icon-button", {
-                src: `/tabler-icons/tool.svg`,
-                class: "section-header-button",
+                "src": `/tabler-icons/tool.svg`,
+                "class": "section-header-button",
+                "data-tooltip": "Edit font axes",
+                "data-tooltipposition": "bottom",
               }),
               html.createDomElement("icon-button", {
-                src: `/tabler-icons/refresh.svg`,
-                class: "section-header-button",
+                "id": "reset-font-axes-button",
+                "src": `/tabler-icons/refresh.svg`,
+                "class": "section-header-button",
+                "onclick": (event) => this.resetFontAxesToDefault(event),
+                "data-tooltip": "Reset font axes",
+                "data-tooltipposition": "bottom",
               }),
             ]),
             html.createDomElement(
@@ -184,41 +184,30 @@ export default class DesignspaceNavigationPanel extends Panel {
           {
             class: "glyph-axes",
             open: true,
-            ontoggle: (event) => console.log("toggle", event.target.open),
+            // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
             html.summary({ class: "section-header" }, [
               "Glyph axes",
               html.createDomElement("icon-button", {
-                src: `/tabler-icons/tool.svg`,
-                class: "section-header-button",
+                "src": `/tabler-icons/tool.svg`,
+                "class": "section-header-button",
+                "onclick": (event) => this.editLocalAxes(event),
+                "data-tooltip": "Edit glyph axes",
+                "data-tooltipposition": "bottom",
               }),
               html.createDomElement("icon-button", {
-                src: `/tabler-icons/refresh.svg`,
-                class: "section-header-button",
+                "id": "reset-glyph-axes-button",
+                "src": `/tabler-icons/refresh.svg`,
+                "class": "section-header-button",
+                "onclick": (event) => this.resetGlyphAxesToDefault(event),
+                "data-tooltip": "Reset glyph axes",
+                "data-tooltipposition": "bottom",
               }),
             ]),
             html.div({}, "Glyph axes content"),
           ]
         ),
-        html.div({ class: "axis-buttons-container" }, [
-          html.createDomElement("icon-button", {
-            "id": "reset-axes-button",
-            "src": "/tabler-icons/refresh.svg",
-            "onclick": (event) => this.resetAllAxesToDefault(event),
-            "disabled": false,
-            "hidden": true,
-            "data-tooltip": "Reset all axes",
-            "data-tooltipposition": "bottom-left",
-          }),
-          html.createDomElement("icon-button", {
-            "id": "edit-local-axes-button",
-            "src": "/tabler-icons/tool.svg",
-            "onclick": (event) => this.editLocalAxes(event),
-            "data-tooltip": "Edit local axes",
-            "data-tooltipposition": "bottom-left",
-          }),
-        ]),
         html.details({ open: true }, [
           html.summary({ class: "section-header" }, ["Glyph sources"]),
           html.createDomElement("ui-list", {
@@ -259,7 +248,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateAxes();
       this._updateSources();
-      this._updateEditLocalAxesButtonState();
       this._updateInterpolationErrorInfo();
     });
 
@@ -467,8 +455,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
-  resetAllAxesToDefault(event) {
+  resetFontAxesToDefault(event) {
     this.sceneSettings.location = {};
+  }
+
+  resetGlyphAxesToDefault(event) {
+    // TODO: implement
   }
 
   _updateResetAllAxesButtonState() {
@@ -484,7 +476,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         break;
       }
     }
-    const button = this.contentElement.querySelector("#reset-axes-button");
+    const button = this.contentElement.querySelector("#reset-font-axes-button");
     button.disabled = locationEmpty;
     button.hidden = !this.designspaceLocation.axes.length;
   }
@@ -1005,11 +997,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       ]
     );
     return { contentElement, warningElement };
-  }
-
-  _updateEditLocalAxesButtonState() {
-    const button = this.contentElement.querySelector("#edit-local-axes-button");
-    button.disabled = !this.sceneModel.selectedGlyph;
   }
 
   async editLocalAxes() {
