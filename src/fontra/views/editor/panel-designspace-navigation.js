@@ -42,8 +42,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       height: 100%;
       width: 100%;
       padding: 1em;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: auto;
+      align-content: start;
       gap: 0.4em;
       box-sizing: border-box;
     }
@@ -58,6 +59,17 @@ export default class DesignspaceNavigationPanel extends Panel {
       display: block;
       width: 1.5em;
       height: 1.5em;
+    }
+
+    #sources-list-container {
+      display: grid;
+      gap: 0.0em;
+    }
+
+    .details-contents-container {
+      // height: 100%;
+      // overflow: hidden;
+      min-height: 0;
     }
 
     #sources-list {
@@ -79,8 +91,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     details {
-      display: flex;
+      // display: grid;
       outline: none;
+      // overflow-y: auto;
+      min-height: 0;
     }
 
     summary:focus {
@@ -99,6 +113,18 @@ export default class DesignspaceNavigationPanel extends Panel {
       cursor: pointer;
       font-weight: bold;
       margin-bottom: 0.2em;
+    }
+
+    details > designspace-location {
+      // height: 100%;
+      min-height: 0;
+      overflow-y: hidden;
+      // height: fit-content;
+    }
+
+    details > source-list {
+      // min-height: 0;
+      // height: 100%;
     }
 
     .section-summary {
@@ -180,7 +206,9 @@ export default class DesignspaceNavigationPanel extends Panel {
                 }),
               ]),
             ]),
-            html.createDomElement("designspace-location", { id: "font-axes" }, []),
+            html.div({ class: "details-contents-container" }, [
+              html.createDomElement("designspace-location", { id: "font-axes" }, []),
+            ]),
           ]
         ),
         html.details(
@@ -210,21 +238,26 @@ export default class DesignspaceNavigationPanel extends Panel {
                 }),
               ]),
             ]),
-            html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
+            html.div({ class: "details-contents-container" }, [
+              html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
+            ]),
           ]
         ),
         html.details({ id: "glyph-sources-details", open: true }, [
           html.summary({}, [html.div({ class: "section-summary" }, ["Glyph sources"])]),
-          html.createDomElement("ui-list", {
-            id: "sources-list",
-          }),
-          html.createDomElement("add-remove-buttons", {
-            style: "padding: 0.5em 0 0 0;",
-            id: "sources-list-add-remove-buttons",
-          }),
-          html.createDomElement("div", {
-            id: "interpolation-error-info",
-          }),
+          html.div(
+            { id: "sources-list-container", class: "details-contents-container" },
+            [
+              html.createDomElement("ui-list", { id: "sources-list" }),
+              html.createDomElement("add-remove-buttons", {
+                style: "padding: 0.5em 0 0 0;",
+                id: "sources-list-add-remove-buttons",
+              }),
+              html.createDomElement("div", {
+                id: "interpolation-error-info",
+              }),
+            ]
+          ),
         ]),
       ]
     );
