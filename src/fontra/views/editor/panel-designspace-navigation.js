@@ -219,7 +219,6 @@ export default class DesignspaceNavigationPanel extends Panel {
             "data-tooltipposition": "bottom-left",
           }),
         ]),
-        html.hr(),
         html.details({ open: true }, [
           html.summary({ class: "section-header" }, ["Glyph sources"]),
           html.createDomElement("ui-list", {
