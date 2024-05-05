@@ -476,7 +476,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     const button = this.contentElement.querySelector("#reset-font-axes-button");
     button.disabled = locationEmpty;
-    button.hidden = !this.fontLocationElement.axes.length;
   }
 
   async onVisibilityHeaderClick(event) {
