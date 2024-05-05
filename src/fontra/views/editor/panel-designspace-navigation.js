@@ -630,7 +630,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.setItems(sourceItems, false, true);
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
 
-    this.glyphSourcesDetails.hidden = !sourceItems.length;
+    this.glyphSourcesDetails.hidden = !varGlyphController;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
