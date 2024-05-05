@@ -60,14 +60,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       height: 1.5em;
     }
 
-    hr {
-      border: none;
-      border-top: 1px solid var(--horizontal-rule-color);
-      width: 100%;
-      height: 1px;
-      grid-column: 1 / -1;
-    }
-
     #sources-list {
       min-height: 100px;
       flex-shrink: 1000;
