@@ -149,7 +149,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
         html.details(
           {
-            class: "font-axes",
+            id: "font-axes-details",
             open: true,
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
@@ -176,7 +176,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         ),
         html.details(
           {
-            class: "glyph-axes",
+            id: "glyph-axes-details",
             open: true,
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
@@ -199,10 +199,10 @@ export default class DesignspaceNavigationPanel extends Panel {
                 "data-tooltipposition": "bottom",
               }),
             ]),
-            html.createDomElement("designspace-location", { id: "glyph-location" }, []),
+            html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
           ]
         ),
-        html.details({ open: true }, [
+        html.details({ id: "glyph-sources-details", open: true }, [
           html.summary({ class: "section-header" }, ["Glyph sources"]),
           html.createDomElement("ui-list", {
             id: "sources-list",
@@ -219,11 +219,25 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
+  get fontAxesElement() {
+    return this.contentElement.querySelector("#font-axes");
+  }
+
+  get glyphAxesElement() {
+    return this.contentElement.querySelector("#glyph-axes");
+  }
+
+  get glyphAxesDetails() {
+    return this.contentElement.querySelector("#glyph-axes-details");
+  }
+
+  get glyphSourcesDetails() {
+    return this.contentElement.querySelector("#glyph-sources-details");
+  }
+
   setup() {
-    this.fontAxesElement = this.contentElement.querySelector("#font-axes");
     this.fontAxesElement.values = this.sceneSettings.location;
 
-    this.glyphAxesElement = this.contentElement.querySelector("#glyph-location");
     // this.glyphAxesElement.values = this.sceneSettings.location;
 
     this.fontAxesElement.addEventListener(
@@ -413,7 +427,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
     this.addRemoveSourceButtons.removeButtonCallback = () =>
       this.removeSource(this.sourcesList.getSelectedItemIndex());
-    this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
@@ -540,12 +553,12 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
-    if (varGlyphController) {
-      const localAxes = getAxisInfoFromGlyph(varGlyphController);
-      this.glyphAxesElement.axes = localAxes;
-    } else {
-      this.glyphAxesElement.axes = [];
-    }
+
+    const localAxes = varGlyphController
+      ? getAxisInfoFromGlyph(varGlyphController)
+      : [];
+    this.glyphAxesElement.axes = localAxes;
+    this.glyphAxesDetails.hidden = !localAxes.length;
 
     this._updateResetAllAxesButtonState();
   }
@@ -616,8 +629,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     this.sourcesList.setItems(sourceItems, false, true);
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
-    this.addRemoveSourceButtons.hidden = !sourceItems.length;
-    this.addRemoveSourceButtons.disableAddButton = !this.fontAxesElement.axes.length;
+
+    this.glyphSourcesDetails.hidden = !sourceItems.length;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
