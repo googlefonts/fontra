@@ -44,7 +44,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       padding: 1em;
       display: flex;
       flex-direction: column;
-      gap: 0.1em;
+      gap: 0.4em;
       box-sizing: border-box;
     }
 
