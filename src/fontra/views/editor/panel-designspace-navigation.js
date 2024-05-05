@@ -91,6 +91,42 @@ export default class DesignspaceNavigationPanel extends Panel {
       transform: translate(0, 0.3em);
       margin-right: 0.25em;
     }
+
+    details {
+      display: flex;
+    }
+
+    details > summary {
+      user-select: none;
+      cursor: pointer;
+      align-items: center;
+      font-weight: bold;
+      display: grid;
+      grid-template-columns: 1.5em 1fr 1.2em 1.2em;
+      gap: 0.2em;
+      justify-content: space-between;
+      margin-bottom: 0.4em;
+    }
+
+    details > summary::before {
+      content: "";
+      background-image: url("/tabler-icons/chevron-up.svg");
+      background-size: 100% 100%;
+      width: 1.6em;
+      height: 1.6em;
+      transition: 120ms;
+    }
+
+    details[open] > summary::before {
+      transform: rotate(180deg);
+    }
+
+    details[open] > summary {
+    }
+
+    .section-header-button {
+      width: 1.3em ;
+    }
   `;
 
   constructor(editorController) {
@@ -117,12 +153,53 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       [
         html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
-        html.createDomElement(
-          "designspace-location",
+        html.details(
           {
-            id: "designspace-location",
+            class: "font-axes",
+            open: true,
+            ontoggle: (event) => console.log("toggle", event.target.open),
           },
-          []
+          [
+            html.summary({ class: "section-header" }, [
+              "Font axes",
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/tool.svg`,
+                class: "section-header-button",
+              }),
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/refresh.svg`,
+                class: "section-header-button",
+              }),
+            ]),
+            html.createDomElement(
+              "designspace-location",
+              {
+                id: "designspace-location",
+              },
+              []
+            ),
+          ]
+        ),
+        html.details(
+          {
+            class: "glyph-axes",
+            open: true,
+            ontoggle: (event) => console.log("toggle", event.target.open),
+          },
+          [
+            html.summary({ class: "section-header" }, [
+              "Glyph axes",
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/tool.svg`,
+                class: "section-header-button",
+              }),
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/refresh.svg`,
+                class: "section-header-button",
+              }),
+            ]),
+            html.div({}, "Glyph axes content"),
+          ]
         ),
         html.div({ class: "axis-buttons-container" }, [
           html.createDomElement("icon-button", {
@@ -143,16 +220,19 @@ export default class DesignspaceNavigationPanel extends Panel {
           }),
         ]),
         html.hr(),
-        html.createDomElement("ui-list", {
-          id: "sources-list",
-        }),
-        html.createDomElement("add-remove-buttons", {
-          style: "padding: 0.5em 0 0 0;",
-          id: "sources-list-add-remove-buttons",
-        }),
-        html.createDomElement("div", {
-          id: "interpolation-error-info",
-        }),
+        html.details({ open: true }, [
+          html.summary({ class: "section-header" }, ["Glyph sources"]),
+          html.createDomElement("ui-list", {
+            id: "sources-list",
+          }),
+          html.createDomElement("add-remove-buttons", {
+            style: "padding: 0.5em 0 0 0;",
+            id: "sources-list-add-remove-buttons",
+          }),
+          html.createDomElement("div", {
+            id: "interpolation-error-info",
+          }),
+        ]),
       ]
     );
   }
