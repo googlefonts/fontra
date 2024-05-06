@@ -37,20 +37,19 @@ const localization = {
   },
 };
 
-const currentLanguage = "zh-CN";
-const useBrowserLanguage = true;
+const debugTranslation = false;
 
 export function translate(key) {
-  if (useBrowserLanguage) {
-    const language = navigator.language;
-    if (language in localization) {
-      return localization[language][key];
-    }
-  } else if (currentLanguage in localization) {
-    return localization[currentLanguage][key];
-  } else {
-    console.log(`Unsupported language: ${language}`);
+  if (debugTranslation) {
+    return key;
   }
   
+  const language = navigator.language;
+  if (language in localization) {
+    return localization[language][key];
+  } else {
+    console.log(`Current language: ${language} is not supported, falling back to "en".`);
+    return localization["en"][key];
+  }
 }
 
