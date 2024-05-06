@@ -578,7 +578,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ? getAxisInfoFromGlyph(varGlyphController)
       : [];
     this.glyphAxesElement.axes = localAxes;
-    this.glyphAxesAccordionItem.hidden = !localAxes.length;
+    this.glyphAxesAccordionItem.hidden = !varGlyphController;
 
     this._updateResetAllAxesButtonState();
   }
