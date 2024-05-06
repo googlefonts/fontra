@@ -76,6 +76,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
+import { translate } from './localization.js';
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -280,17 +281,17 @@ export class EditorController {
   initTopBar() {
     const menuBar = new MenuBar([
       {
-        title: "File",
+        title: translate("menubar.file"),
         getItems() {
           return [
             {
-              title: "New...",
+              title: translate("menubar.file.new"),
               enabled: () => false,
               callback: () => {},
               shortCut: undefined,
             },
             {
-              title: "Open...",
+              title: translate("menubar.file.open"),
               enabled: () => false,
               callback: () => {},
               shortCut: undefined,
@@ -299,7 +300,7 @@ export class EditorController {
         },
       },
       {
-        title: "Edit",
+        title: translate("menubar.edit"),
         getItems: () => {
           const menuItems = [...this.basicContextMenuItems];
           if (this.sceneSettings.selectedGlyph?.isEditing) {
@@ -311,11 +312,11 @@ export class EditorController {
         },
       },
       {
-        title: "View",
+        title: translate("menubar.view"),
         getItems: () => {
           const items = [
             {
-              title: "Zoom in",
+              title: translate("menubar.view.zoomin"),
               enabled: () => true,
               shortCut: { keysOrCodes: "+=", metaKey: true, globalOverride: true },
               callback: () => {
@@ -323,7 +324,7 @@ export class EditorController {
               },
             },
             {
-              title: "Zoom out",
+              title: translate("menubar.view.zoomout"),
               shortCut: { keysOrCodes: "-", metaKey: true, globalOverride: true },
               enabled: () => true,
               callback: () => {
@@ -331,7 +332,7 @@ export class EditorController {
               },
             },
             {
-              title: "Zoom to fit",
+              title: translate("menubar.view.zoomtofit"),
               enabled: () => {
                 let viewBox = this.sceneController.getSelectionBox();
                 if (!viewBox) {
@@ -362,12 +363,12 @@ export class EditorController {
         },
       },
       {
-        title: "Font",
+        title: translate("menubar.font"),
         enabled: () => true,
         getItems: () => {
           return [
             {
-              title: "Edit Font Info, Axes and Sources",
+              title: translate("menubar.font.edit"),
               enabled: () => true,
               callback: () => {
                 const url = new URL(window.location);
@@ -380,7 +381,7 @@ export class EditorController {
         },
       },
       {
-        title: "Glyph",
+        title: translate("menubar.glyph"),
         enabled: () => true,
         getItems: () => {
           return [
@@ -418,7 +419,7 @@ export class EditorController {
         },
       },
       {
-        title: "Extensions",
+        title: translate("menubar.extensions"),
         enabled: () => true,
         getItems: () => {
           return [
@@ -433,26 +434,26 @@ export class EditorController {
         },
       },
       {
-        title: "Help",
+        title: translate("menubar.help"),
         enabled: () => true,
         getItems: () => {
           return [
             {
-              title: "Homepage",
+              title: translate("menubar.help.homepage"),
               enabled: () => true,
               callback: () => {
                 window.open("https://fontra.xyz/");
               },
             },
             {
-              title: "Documentation",
+              title: translate("menubar.help.documentation"),
               enabled: () => true,
               callback: () => {
                 window.open("https://docs.fontra.xyz");
               },
             },
             {
-              title: "GitHub",
+              title: translate("menubar.help.github"),
               enabled: () => true,
               callback: () => {
                 window.open("https://github.com/googlefonts/fontra");
