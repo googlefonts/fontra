@@ -55,6 +55,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       display: none !important;
     }
 
+    .accordion-item {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+    }
+
     icon-button {
       display: block;
       width: 1.5em;
@@ -66,10 +72,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       gap: 0.0em;
     }
 
-    .details-contents-container {
-      // height: 100%;
-      // overflow: hidden;
-      min-height: 0;
+    .according-item-contents {
+      display: block;
+      box-sizing: border-box;
+      // height: calc(100% - 3em);
+      overflow: auto;
+      // min-height: 5em;
     }
 
     #sources-list {
@@ -90,68 +98,17 @@ export default class DesignspaceNavigationPanel extends Panel {
       margin-right: 0.25em;
     }
 
-    details {
-      // display: grid;
-      outline: none;
-      // overflow-y: auto;
-      min-height: 0;
-    }
-
-    summary:focus {
-        outline: none;
-    }
-
-    details summary::-webkit-details-marker {
-      display: none;
-    }
-
-    details > summary {
-      list-style: none;
+    .accordion-header {
       display: grid;
-      grid-template-columns: 1.6em 1fr;
-      user-select: none;
-      cursor: pointer;
-      font-weight: bold;
-      margin-bottom: 0.2em;
-    }
-
-    details > designspace-location {
-      // height: 100%;
-      min-height: 0;
-      overflow-y: hidden;
-      // height: fit-content;
-    }
-
-    details > source-list {
-      // min-height: 0;
-      // height: 100%;
-    }
-
-    .section-summary {
-      display: grid;
-      grid-template-columns: 1fr 1.2em 1.2em;
+      grid-template-columns: 1.2em 1fr 1.2em 1.2em;
       align-items: center;
       gap: 0.2em;
       justify-content: space-between;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    details > summary::before {
-      content: "";
-      background-image: url("/tabler-icons/chevron-up.svg");
-      background-size: 100% 100%;
-      width: 1.6em;
-      height: 1.6em;
-      transition: 120ms;
-    }
-
-    details[open] > summary::before {
-      transform: rotate(180deg);
-    }
-
-    details[open] > summary {
-    }
-
-    .section-header-button {
+    .accordion-header-button {
       width: 1.3em ;
     }
   `;
@@ -180,85 +137,104 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       [
         html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
-        html.details(
+        html.div(
           {
-            id: "font-axes-details",
+            class: "accordion-item",
+            id: "font-axes-accordion-item",
             open: true,
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.summary({}, [
-              html.div({ class: "section-summary" }, [
-                "Font axes",
-                html.createDomElement("icon-button", {
-                  "src": `/tabler-icons/tool.svg`,
-                  "class": "section-header-button",
-                  "data-tooltip": "Edit font axes",
-                  "data-tooltipposition": "bottom",
-                }),
-                html.createDomElement("icon-button", {
-                  "id": "reset-font-axes-button",
-                  "src": `/tabler-icons/refresh.svg`,
-                  "class": "section-header-button",
-                  "onclick": (event) => this.resetFontAxesToDefault(event),
-                  "data-tooltip": "Reset font axes",
-                  "data-tooltipposition": "bottom",
-                }),
-              ]),
+            html.div({ class: "accordion-header" }, [
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/chevron-up.svg`,
+                class: "accordion-header-button",
+              }),
+              "Font axes",
+              html.createDomElement("icon-button", {
+                "src": `/tabler-icons/tool.svg`,
+                "class": "accordion-header-button",
+                "data-tooltip": "Edit font axes",
+                "data-tooltipposition": "bottom",
+              }),
+              html.createDomElement("icon-button", {
+                "id": "reset-font-axes-button",
+                "src": `/tabler-icons/refresh.svg`,
+                "class": "accordion-header-button",
+                "onclick": (event) => this.resetFontAxesToDefault(event),
+                "data-tooltip": "Reset font axes",
+                "data-tooltipposition": "bottom",
+              }),
             ]),
-            html.div({ class: "details-contents-container" }, [
+            html.div({ class: "according-item-contents" }, [
               html.createDomElement("designspace-location", { id: "font-axes" }, []),
             ]),
           ]
         ),
-        html.details(
+        html.div(
           {
-            id: "glyph-axes-details",
+            class: "accordion-item",
+            id: "glyph-axes-accordion-item",
             open: true,
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.summary({}, [
-              html.div({ class: "section-summary" }, [
-                "Glyph axes",
-                html.createDomElement("icon-button", {
-                  "src": `/tabler-icons/tool.svg`,
-                  "class": "section-header-button",
-                  "onclick": (event) => this.editGlyphAxes(event),
-                  "data-tooltip": "Edit glyph axes",
-                  "data-tooltipposition": "bottom",
-                }),
-                html.createDomElement("icon-button", {
-                  "id": "reset-glyph-axes-button",
-                  "src": `/tabler-icons/refresh.svg`,
-                  "class": "section-header-button",
-                  "onclick": (event) => this.resetGlyphAxesToDefault(event),
-                  "data-tooltip": "Reset glyph axes",
-                  "data-tooltipposition": "bottom",
-                }),
-              ]),
+            html.div({ class: "accordion-header" }, [
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/chevron-up.svg`,
+                class: "accordion-header-button",
+              }),
+              "Glyph axes",
+              html.createDomElement("icon-button", {
+                "src": `/tabler-icons/tool.svg`,
+                "class": "accordion-header-button",
+                "onclick": (event) => this.editGlyphAxes(event),
+                "data-tooltip": "Edit glyph axes",
+                "data-tooltipposition": "bottom",
+              }),
+              html.createDomElement("icon-button", {
+                "id": "reset-glyph-axes-button",
+                "src": `/tabler-icons/refresh.svg`,
+                "class": "accordion-header-button",
+                "onclick": (event) => this.resetGlyphAxesToDefault(event),
+                "data-tooltip": "Reset glyph axes",
+                "data-tooltipposition": "bottom",
+              }),
             ]),
-            html.div({ class: "details-contents-container" }, [
+            html.div({ class: "according-item-contents" }, [
               html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
             ]),
           ]
         ),
-        html.details({ id: "glyph-sources-details", open: true }, [
-          html.summary({}, [html.div({ class: "section-summary" }, ["Glyph sources"])]),
-          html.div(
-            { id: "sources-list-container", class: "details-contents-container" },
-            [
-              html.createDomElement("ui-list", { id: "sources-list" }),
-              html.createDomElement("add-remove-buttons", {
-                style: "padding: 0.5em 0 0 0;",
-                id: "sources-list-add-remove-buttons",
+        html.div(
+          {
+            class: "accordion-item",
+            id: "glyph-sources-accordion-item",
+            open: true,
+          },
+          [
+            html.div({ class: "accordion-header" }, [
+              html.createDomElement("icon-button", {
+                src: `/tabler-icons/chevron-up.svg`,
+                class: "accordion-header-button",
               }),
-              html.createDomElement("div", {
-                id: "interpolation-error-info",
-              }),
-            ]
-          ),
-        ]),
+              "Glyph sources",
+            ]),
+            html.div(
+              { id: "sources-list-container", class: "according-item-contents" },
+              [
+                html.createDomElement("ui-list", { id: "sources-list" }),
+                html.createDomElement("add-remove-buttons", {
+                  style: "padding: 0.5em 0 0 0;",
+                  id: "sources-list-add-remove-buttons",
+                }),
+                html.createDomElement("div", {
+                  id: "interpolation-error-info",
+                }),
+              ]
+            ),
+          ]
+        ),
       ]
     );
   }
@@ -271,12 +247,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     return this.contentElement.querySelector("#glyph-axes");
   }
 
-  get glyphAxesDetails() {
-    return this.contentElement.querySelector("#glyph-axes-details");
+  get glyphAxesAccordionItem() {
+    return this.contentElement.querySelector("#glyph-axes-accordion-item");
   }
 
-  get glyphSourcesDetails() {
-    return this.contentElement.querySelector("#glyph-sources-details");
+  get glyphSourcesAccordionItem() {
+    return this.contentElement.querySelector("#glyph-sources-accordion-item");
   }
 
   setup() {
@@ -602,7 +578,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ? getAxisInfoFromGlyph(varGlyphController)
       : [];
     this.glyphAxesElement.axes = localAxes;
-    this.glyphAxesDetails.hidden = !localAxes.length;
+    this.glyphAxesAccordionItem.hidden = !localAxes.length;
 
     this._updateResetAllAxesButtonState();
   }
@@ -674,7 +650,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.setItems(sourceItems, false, true);
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
 
-    this.glyphSourcesDetails.hidden = !varGlyphController;
+    this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
