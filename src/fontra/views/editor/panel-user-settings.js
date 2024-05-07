@@ -1,4 +1,5 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
+import { translate } from "./localization.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
@@ -46,13 +47,13 @@ export default class UserSettingsPanel extends Panel {
       return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
     });
     items.push({
-      displayName: "Glyph editor appearance",
+      displayName: translate("panel.settings.glyph"),
       controller: this.editorController.visualizationLayersSettings,
       descriptions: layerItems,
     });
 
     items.push({
-      displayName: "Clipboard export format",
+      displayName: translate("panel.settings.clipboard"),
       controller: this.editorController.clipboardFormatController,
       descriptions: [
         {
@@ -68,7 +69,7 @@ export default class UserSettingsPanel extends Panel {
     });
 
     items.push({
-      displayName: "Experimental features",
+      displayName: translate("panel.settings.experimental"),
       controller: this.editorController.experimentalFeaturesController,
       descriptions: [
         {
@@ -90,16 +91,19 @@ export default class UserSettingsPanel extends Panel {
     });
 
     items.push({
-      displayName: "Theme settings",
+      displayName: translate("panel.settings.theme"),
       controller: themeController,
       descriptions: [
         {
           key: "theme",
           ui: "radio",
           options: [
-            { key: "automatic", displayName: "Automatic (use OS setting)" },
-            { key: "light", displayName: "Light" },
-            { key: "dark", displayName: "Dark" },
+            {
+              key: "automatic",
+              displayName: translate("panel.settings.theme.auto"),
+            },
+            { key: "light", displayName: translate("panel.settings.theme.light") },
+            { key: "dark", displayName: translate("panel.settings.theme.dark") },
           ],
         },
       ],
@@ -107,7 +111,7 @@ export default class UserSettingsPanel extends Panel {
 
     const serverInfo = await fetchJSON("/serverinfo");
     items.push({
-      displayName: "Server info",
+      displayName: translate("panel.settings.server"),
       controller: null,
       descriptions: Object.entries(serverInfo).flatMap((entry) => {
         return [

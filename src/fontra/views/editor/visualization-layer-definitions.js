@@ -12,6 +12,7 @@ import {
   unionIndexSets,
   withSavedState,
 } from "/core/utils.js";
+import { translate } from "./localization.js";
 
 export const visualizationLayerDefinitions = [];
 
@@ -29,7 +30,7 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.upm.grid",
-  name: "Units-per-em grid",
+  name: translate("panel.settings.glyph.upmgrid"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,

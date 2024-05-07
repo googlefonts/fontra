@@ -386,7 +386,7 @@ export class EditorController {
         getItems: () => {
           return [
             {
-              title: "Add source...",
+              title: translate("menubar.glyph.add"),
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -395,7 +395,7 @@ export class EditorController {
               },
             },
             {
-              title: "Delete source...",
+              title: translate("menubar.glyph.delete"),
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -407,7 +407,7 @@ export class EditorController {
               },
             },
             {
-              title: "Edit local axes...",
+              title: translate("menubar.glyph.editaxes"),
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -424,7 +424,7 @@ export class EditorController {
         getItems: () => {
           return [
             {
-              title: "Plugin manager",
+              title: translate("menubar.extensions.plugin"),
               enabled: () => true,
               callback: () => {
                 window.open("/plugins/plugins.html");
@@ -1057,8 +1057,8 @@ export class EditorController {
     this.basicContextMenuItems.push({
       title: () =>
         this.sceneSettings.selectedGlyph?.isEditing
-          ? "Delete selection"
-          : "Delete glyph",
+          ? translate("action.deleteselection")
+          : translate("action.deleteglyph"),
       enabled: () => this.canDelete(),
       callback: (event) => this.doDelete(event),
       shortCut: {
@@ -1072,7 +1072,7 @@ export class EditorController {
 
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
-        title: selectNone ? "Select None" : "Select All",
+        title: selectNone ? translate("action.selectnone") : translate("action.selectall"),
         enabled: () => this.canSelectAllNone(selectNone),
         callback: () => this.doSelectAllNone(selectNone),
         shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
@@ -1265,7 +1265,10 @@ export class EditorController {
 
   getUndoRedoLabel(isRedo) {
     const info = this.sceneController.getUndoRedoInfo(isRedo);
-    return (isRedo ? "Redo" : "Undo") + (info ? " " + info.label : "");
+    return (
+      (isRedo ? translate("action.redo") : translate("action.undo")) +
+      (info ? " " + info.label : "")
+    );
   }
 
   canUndoRedo(isRedo) {
