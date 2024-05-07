@@ -22,6 +22,10 @@ export class DesignspaceLocation extends UnlitElement {
       cursor: pointer;
     }
 
+    .slider-label.disabled {
+      color: #999;
+    }
+
     .info-box {
       display: none;
       grid-column: 1 / -1;
@@ -107,6 +111,7 @@ export class DesignspaceLocation extends UnlitElement {
     this._sliders = {};
     const elements = [];
     for (const axis of this.axes) {
+      const sliderDisabled = false; //true;
       if (axis.isDivider) {
         elements.push(html.hr());
         continue;
@@ -133,7 +138,7 @@ export class DesignspaceLocation extends UnlitElement {
       elements.push(
         html.div(
           {
-            class: "slider-label",
+            class: sliderDisabled ? "slider-label disabled" : "slider-label",
             onclick: (event) => this._toggleInfoBox(infoBox, event),
           },
           [axis.name]
@@ -154,6 +159,7 @@ export class DesignspaceLocation extends UnlitElement {
         parms.maxValue = axis.maxValue;
       }
       const slider = html.createDomElement("range-slider", parms);
+      slider.disabled = sliderDisabled;
       this._sliders[axis.name] = slider;
       elements.push(slider);
       elements.push(infoBox);
