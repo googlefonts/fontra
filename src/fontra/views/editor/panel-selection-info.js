@@ -1,3 +1,4 @@
+import { translate } from "./localization.js";
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
@@ -178,8 +179,8 @@ export default class SelectionInfoPanel extends Panel {
           "data-tooltip": this.fontController.readOnly
             ? "Glyph is read-only"
             : glyphLocked
-            ? "Unlock glyph"
-            : "Lock glyph",
+              ? "Unlock glyph"
+              : "Lock glyph",
           "data-tooltipposition": "left",
         }),
       });
@@ -423,7 +424,9 @@ export default class SelectionInfoPanel extends Panel {
     }
 
     if (!formContents.length) {
-      this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
+      this.infoForm.setFieldDescriptions([
+        { type: "text", value: translate("selection.none") },
+      ]);
     } else {
       this.infoForm.setFieldDescriptions(formContents);
       if (glyphController) {

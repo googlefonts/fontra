@@ -35,6 +35,7 @@ const localization = {
     "panel.settings.theme.light": "Light",
     "panel.settings.theme.dark": "Dark",
     "panel.settings.server": "Server info",
+    "selection.none": "(No selection)",
   },
   "zh-CN": {
     "action.redo": "重做",
@@ -72,6 +73,7 @@ const localization = {
     "panel.settings.theme.light": "亮色",
     "panel.settings.theme.dark": "暗色",
     "panel.settings.server": "服务器信息",
+    "selection.none": "（未选择）",
   },
 };
 
@@ -86,8 +88,9 @@ export function translate(key) {
   if (language in localization) {
     return localization[language][key];
   } else {
-    console.log(`Current language: ${language} is not supported, falling back to "en".`);
+    console.log(
+      `Current language: ${language} is not supported, falling back to "en".`
+    );
     return localization["en"][key];
   }
 }
-
