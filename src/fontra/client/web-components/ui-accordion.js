@@ -100,7 +100,10 @@ export class Accordion extends UnlitElement {
 
       itemElements.push(itemElement);
     }
-    return html.div({ class: "ui-accordion-contents" }, itemElements);
+    return [
+      html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
+      html.div({ class: "ui-accordion-contents" }, itemElements),
+    ];
   }
 
   getItemElement(itemID) {
