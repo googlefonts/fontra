@@ -14,6 +14,7 @@ from fontra.core.classes import (
     FontAxis,
     GlyphAxis,
     GlyphSource,
+    Guideline,
     Layer,
     MultipleAxisMapping,
     OpenTypeFeatures,
@@ -191,6 +192,52 @@ async def test_addLocalAxis(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_getGuidelinesGlobal(writableTestFont):
+    sources = await writableTestFont.getSources()
+    sources = unstructure(sources)
+
+    for source in sources.values():
+        if source["name"] == "LightCondensed":
+            assert source["guidelines"] == []
+
+
+async def test_getGuidelinesLocal(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+
+    layerName = "MutatorSansLightCondensed/foreground"
+    layer = glyph.layers[layerName]
+
+    assert 1 == len(layer.glyph.guidelines)
+    assert Guideline(name="E Bar", x=0, y=334, angle=0) == layer.glyph.guidelines[0]
+    assert (
+        Guideline(
+            name="E Bar", x=0, y=334, angle=0, customData={"identifier": "wb94MzpUaN"}
+        )
+        == layer.glyph.guidelines[0]
+    )
+
+
+async def test_addGuidelinesLocal(writableTestFont):
+    glyphName = "E"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "test"
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+    glyph.layers[layerName].glyph.guidelines.append(
+        Guideline(name="Left", x=60, y=0, angle=90)
+    )
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert (
+        glyph.layers[layerName].glyph.guidelines
+        == savedGlyph.layers[layerName].glyph.guidelines
+    )
 
 
 async def test_getAnchors(writableTestFont):
