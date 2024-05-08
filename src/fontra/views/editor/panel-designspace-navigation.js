@@ -69,6 +69,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       min-height: 0;
     }
 
+    .accordion-item[hidden] {
+      display: none;
+    }
+
     icon-button {
       display: block;
       width: 1.5em;
@@ -77,10 +81,14 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     #sources-list-container {
       display: grid;
-      gap: 0.0em;
+      gap: 0.2em;
     }
 
-    .according-item-contents {
+    .accordion-item-close #sources-list-container {
+      display: none;
+    }
+
+    .accordion-item-contents {
       display: block;
       box-sizing: border-box;
       // height: calc(100% - 3em);
@@ -118,6 +126,17 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     .accordion-header-button {
       width: 1.3em ;
+    }
+
+    .accordion-item-close .accordion-item-contents {
+      display: none;
+    }
+
+    .accordion-chevron {
+      transition: 120ms;
+    }
+    .accordion-item-close .accordion-chevron {
+      transform: rotate(180deg);
     }
   `;
 
@@ -170,7 +189,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         label: "Glyph sources",
         open: true,
         content: html.div(
-          { id: "sources-list-container", class: "according-item-contents" },
+          { id: "sources-list-container", class: "accordion-item-contents" },
           [
             html.createDomElement("ui-list", { id: "sources-list" }),
             html.createDomElement("add-remove-buttons", {
@@ -190,6 +209,17 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   getContentElement_inline() {
+    const toggleItem = (event) => {
+      let el = event.target;
+      for (const i of range(3)) {
+        if (el.classList.contains("accordion-item")) {
+          break;
+        }
+        el = el.parentElement;
+      }
+      el.classList.toggle("accordion-item-close");
+    };
+
     const contentElement = html.div(
       {
         id: "designspace-navigation",
@@ -204,10 +234,10 @@ export default class DesignspaceNavigationPanel extends Panel {
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.div({ class: "accordion-header" }, [
+            html.div({ class: "accordion-header", onclick: toggleItem }, [
               html.createDomElement("icon-button", {
                 src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button",
+                class: "accordion-header-button accordion-chevron",
               }),
               "Font axes",
               html.createDomElement("icon-button", {
@@ -225,7 +255,7 @@ export default class DesignspaceNavigationPanel extends Panel {
                 "data-tooltipposition": "bottom",
               }),
             ]),
-            html.div({ class: "according-item-contents" }, [
+            html.div({ class: "accordion-item-contents" }, [
               html.createDomElement("designspace-location", { id: "font-axes" }, []),
             ]),
           ]
@@ -238,10 +268,10 @@ export default class DesignspaceNavigationPanel extends Panel {
             // ontoggle: (event) => console.log("toggle", event.target.open),
           },
           [
-            html.div({ class: "accordion-header" }, [
+            html.div({ class: "accordion-header", onclick: toggleItem }, [
               html.createDomElement("icon-button", {
                 src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button",
+                class: "accordion-header-button accordion-chevron",
               }),
               "Glyph axes",
               html.createDomElement("icon-button", {
@@ -260,7 +290,7 @@ export default class DesignspaceNavigationPanel extends Panel {
                 "data-tooltipposition": "bottom",
               }),
             ]),
-            html.div({ class: "according-item-contents" }, [
+            html.div({ class: "accordion-item-contents" }, [
               html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
             ]),
           ]
@@ -272,15 +302,15 @@ export default class DesignspaceNavigationPanel extends Panel {
             open: true,
           },
           [
-            html.div({ class: "accordion-header" }, [
+            html.div({ class: "accordion-header", onclick: toggleItem }, [
               html.createDomElement("icon-button", {
                 src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button",
+                class: "accordion-header-button accordion-chevron",
               }),
               "Glyph sources",
             ]),
             html.div(
-              { id: "sources-list-container", class: "according-item-contents" },
+              { id: "sources-list-container", class: "accordion-item-contents" },
               [
                 html.createDomElement("ui-list", { id: "sources-list" }),
                 html.createDomElement("add-remove-buttons", {
