@@ -331,8 +331,11 @@ export class SceneModel {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
-    const { lineIndex: selectedLineIndex, glyphIndex: selectedGlyphIndex } =
-      this.selectedGlyph || {};
+    const {
+      lineIndex: selectedLineIndex,
+      glyphIndex: selectedGlyphIndex,
+      isEditing: selectedGlyphIsEditing,
+    } = this.selectedGlyph || {};
     const editLayerName = this.sceneSettings.editLayerName;
 
     let y = 0;
@@ -358,12 +361,11 @@ export class SceneModel {
       const positionedLine = { glyphs: [] };
       let x = 0;
       for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
+        const isSelectedGlyph =
+          lineIndex == selectedLineIndex && glyphIndex == selectedGlyphIndex;
+
         const thisGlyphEditLayerName =
-          editLayerName &&
-          lineIndex == selectedLineIndex &&
-          glyphIndex == selectedGlyphIndex
-            ? editLayerName
-            : undefined;
+          editLayerName && isSelectedGlyph ? editLayerName : undefined;
 
         const varGlyph = await this.fontController.getGlyph(glyphInfo.glyphName);
         let glyphInstance = await this.getGlyphInstance(
@@ -384,6 +386,8 @@ export class SceneModel {
           glyphName: glyphInfo.glyphName,
           character: glyphInfo.character,
           isUndefined: isUndefined,
+          isSelected: isSelectedGlyph,
+          isEditing: !!(isSelectedGlyph && selectedGlyphIsEditing),
         });
         x += glyphInstance.xAdvance;
       }
