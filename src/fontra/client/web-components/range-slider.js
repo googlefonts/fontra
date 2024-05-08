@@ -6,6 +6,7 @@ const colors = {
   "thumb-color": ["#333", "#ddd"],
   "thumb-color-at-default": ["#ccc", "#777"],
   "track-color": ["#ccc", "#222"],
+  "disabled-color": ["#ccc", "#777"],
 };
 
 export class RangeSlider extends html.UnlitElement {
@@ -17,7 +18,6 @@ export class RangeSlider extends html.UnlitElement {
       --thumb-width: 14px;
       --track-height: 5px;
       --disabled-factor: 0.7;
-      --disabled-color: #999;
     }
 
     .wrapper {
@@ -26,6 +26,10 @@ export class RangeSlider extends html.UnlitElement {
       gap: 0.5em;
       font-family: fontra-ui-regular, sans-serif;
       font-feature-settings: "tnum" 1;
+    }
+
+    .wrapper.disabled {
+      height: var(--thumb-height);
     }
 
     .range-container {
@@ -52,6 +56,7 @@ export class RangeSlider extends html.UnlitElement {
       width: 100%;
       background: transparent;
       height: 1rem;
+      vertical-align: middle;
     }
 
     .slider:disabled {
@@ -72,8 +77,6 @@ export class RangeSlider extends html.UnlitElement {
 
     .slider:disabled::-webkit-slider-thumb {
       height: calc(var(--thumb-height) * var(--disabled-factor));
-      width: calc(var(--thumb-width) * var(--disabled-factor));
-      border-radius: calc(7px * var(--disabled-factor));
       background: var(--disabled-color);
       cursor: unset;
       margin-top: calc(-4.5px * var(--disabled-factor));
@@ -94,7 +97,6 @@ export class RangeSlider extends html.UnlitElement {
     }
 
     .slider:disabled::-webkit-slider-runnable-track {
-      border-radius: calc(5px * var(--disabled-factor));
       height: calc(var(--track-height) * var(--disabled-factor));
       background: var(--disabled-color);
     }
@@ -110,7 +112,6 @@ export class RangeSlider extends html.UnlitElement {
 
     .slider:disabled::-moz-range-thumb {
       height: calc(var(--thumb-height) * var(--disabled-factor));
-      width: calc(var(--thumb-width) * var(--disabled-factor));
       background: var(--disabled-color);
       cursor: unset;
     }
@@ -185,14 +186,16 @@ export class RangeSlider extends html.UnlitElement {
       font-family: fontra-ui-regular;
       font-feature-settings: "tnum" 1;
       font-size: 0.9em;
+      vertical-align: middle;
     }
 
     .numeric-input > .slider-input > .slider-numeric-input:disabled {
       background-color: unset;
-      border: 1px solid var(--disabled-color);
+      //background-color: red;
       color: var(--disabled-color);
-      padding: 0px;
-      //font-size: 0.6em; // not sure about setting the font size smaller
+      padding: 0 3px;
+      font-size: 0.8em;
+      border-radius: unset;
     }
 
     .tickmarks {
@@ -388,7 +391,7 @@ export class RangeSlider extends html.UnlitElement {
     const isAtDefault = this.value == this.defaultValue;
     return html.div(
       {
-        class: "wrapper",
+        class: this.disabled ? "wrapper disabled" : "wrapper",
       },
       [
         html.div({ class: "numeric-input" }, [
