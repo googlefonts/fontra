@@ -40,12 +40,11 @@ export class Accordion extends UnlitElement {
   .ui-accordion-item .open-close-icon {
     height: 1.5em;
     width: 1.5em;
-    transform: rotate(180deg);
     transition: 120ms;
   }
 
   .ui-accordion-item.ui-accordion-item-closed .open-close-icon {
-    transform: rotate(0deg);
+    transform: rotate(180deg);
   }
 
   .ui-accordion-item.ui-accordion-item-closed .ui-accordion-item-content {
