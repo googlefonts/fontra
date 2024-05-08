@@ -38,13 +38,6 @@ export default class DesignspaceNavigationPanel extends Panel {
   identifier = "designspace-navigation";
   iconPath = "/images/sliders.svg";
 
-  static styles = `
-    // ui-accordion {
-    //   display: block;
-    //   height: 100%;
-    // }
-  `;
-
   constructor(editorController) {
     super(editorController);
     this.fontController = this.editorController.fontController;
