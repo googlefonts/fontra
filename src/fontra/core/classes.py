@@ -413,6 +413,7 @@ registerHook(
 )
 registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(Anchor, customData=_unstructureDictSortedRecursively)
+registerHook(Guideline, customData=_unstructureDictSortedRecursively)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
     GlyphSource,

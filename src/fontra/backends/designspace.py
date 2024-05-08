@@ -39,6 +39,7 @@ from ..core.classes import (
     FontSource,
     GlyphAxis,
     GlyphSource,
+    Guideline,
     Layer,
     MultipleAxisMapping,
     OpenTypeFeatures,
@@ -1075,6 +1076,7 @@ class UFOGlyph:
     width: float | None = 0
     height: float | None = None
     anchors: list = []
+    guidelines: list = []
     lib: dict
 
 
@@ -1186,6 +1188,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         components=components,
         xAdvance=glyph.width,
         anchors=unpackAnchors(glyph.anchors),
+        guidelines=unpackGuidelines(glyph.guidelines),
     )
 
     # TODO: yAdvance, verticalOrigin
@@ -1207,6 +1210,21 @@ def unpackVariableComponents(lib):
 
 def unpackAnchors(anchors):
     return [Anchor(name=a.get("name"), x=a["x"], y=a["y"]) for a in anchors]
+
+
+def unpackGuidelines(guidelines):
+    return [
+        Guideline(
+            name=g.get("name"),
+            x=g["x"],
+            y=g["y"],
+            angle=g["angle"],
+            # TODO: how do we handle customData like
+            # color=g.get("color"),
+            # identifier=g.get("color"),
+        )
+        for g in guidelines
+    ]
 
 
 def readGlyphOrCreate(
@@ -1236,6 +1254,10 @@ def populateUFOLayerGlyph(
     variableComponents = []
     layerGlyph.anchors = [
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
+    ]
+    layerGlyph.guidelines = [
+        {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
+        for g in staticGlyph.guidelines
     ]
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
