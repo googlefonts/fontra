@@ -80,6 +80,9 @@ export class Accordion extends UnlitElement {
           item.label,
         ]
       );
+      if (item.auxiliaryHeaderElement) {
+        headerElement.appendChild(item.auxiliaryHeaderElement);
+      }
 
       const contentElement = html.div(
         { class: "ui-accordion-item-content", hidden: !item.open },
