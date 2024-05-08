@@ -1060,6 +1060,7 @@ export class SceneController {
         const decomposeInfo = decomposed[layerName];
         const path = layerGlyph.path;
         const components = layerGlyph.components;
+        const anchors = layerGlyph.anchors;
 
         for (const contour of decomposeInfo.path.iterContours()) {
           // Hm, rounding should be optional
@@ -1067,6 +1068,13 @@ export class SceneController {
           path.appendContour(contour);
         }
         components.push(...decomposeInfo.components);
+        for (const anchor of decomposeInfo.anchors) {
+          // preserve existing anchors
+          const exists = anchors.some((a) => a.name === anchor.name);
+          if (!exists) {
+            anchors.push(anchor);
+          }
+        }
 
         // Next, delete the components we decomposed
         for (const componentIndex of reversed(componentSelection)) {
