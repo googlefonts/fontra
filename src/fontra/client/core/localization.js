@@ -1,18 +1,23 @@
+import { ObservableController } from "./observable-object.js";
 import { fetchJSON } from "./utils.js";
 
 const debugTranslation = false;
-const availableLanguages = ["en", "zh-CN"];
+let localizationData = {};
 
-var locale = "en"; // Default to English
-const currentlanguage = navigator.language;
-if (availableLanguages.includes(currentlanguage)) {
-  locale = currentlanguage;
+export const languageController = new ObservableController({ language: "en" });
+languageController.synchronizeWithLocalStorage("fontra-language-");
+
+function languageChanged(locale) {
+  fetchJSON(`/lang/${locale}.json`).then((data) => {
+    localizationData = data;
+  });
 }
 
-var localizationData = {};
-fetchJSON(`/lang/${locale}.json`).then((data) => {
-  localizationData = data;
+languageController.addKeyListener("language", (event) => {
+  languageChanged(languageController.model.language);
 });
+
+languageChanged(languageController.model.language || "en");
 
 export function translate(key) {
   if (debugTranslation) {

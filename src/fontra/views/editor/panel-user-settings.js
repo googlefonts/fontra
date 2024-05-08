@@ -1,7 +1,7 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
+import { languageController, translate } from "/core/localization.js";
 import { themeController } from "/core/theme-settings.js";
 import { fetchJSON } from "/core/utils.js";
 
@@ -63,6 +63,21 @@ export default class UserSettingsPanel extends Panel {
             { key: "glif", displayName: "GLIF (RoboFont)" },
             { key: "svg", displayName: "SVG" },
             { key: "fontra-json", displayName: "JSON (Fontra)" },
+          ],
+        },
+      ],
+    });
+
+    items.push({
+      displayName: "Language",
+      controller: languageController,
+      descriptions: [
+        {
+          key: "language",
+          ui: "radio",
+          options: [
+            { key: "en", displayName: "English" },
+            { key: "zh-CN", displayName: "Simplified Chinese" },
           ],
         },
       ],
