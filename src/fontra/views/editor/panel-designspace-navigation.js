@@ -39,105 +39,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   iconPath = "/images/sliders.svg";
 
   static styles = `
-    ui-accordion {
-      display: block;
-      height: 100%;
-    }
-
-    /* ---------------------------------------------------- */
-
-    #designspace-navigation {
-      height: 100%;
-      width: 100%;
-      padding: 1em;
-      display: grid;
-      grid-template-rows: auto;
-      align-content: start;
-      gap: 0.4em;
-      box-sizing: border-box;
-    }
-
-    /* this is to counteract the undesired interaction between button.hidden
-       and display: block */
-    [hidden] {
-      display: none !important;
-    }
-
-    .accordion-item {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      min-height: 0;
-    }
-
-    .accordion-item[hidden] {
-      display: none;
-    }
-
-    icon-button {
-      display: block;
-      width: 1.5em;
-      height: 1.5em;
-    }
-
-    #sources-list-container {
-      display: grid;
-      gap: 0.2em;
-    }
-
-    .accordion-item-close #sources-list-container {
-      display: none;
-    }
-
-    .accordion-item-contents {
-      display: block;
-      box-sizing: border-box;
-      // height: calc(100% - 3em);
-      overflow: auto;
-      // min-height: 5em;
-    }
-
-    #sources-list {
-      min-height: 100px;
-      flex-shrink: 1000;
-    }
-
-    #interpolation-error-info {
-      text-wrap: wrap;
-    }
-
-    inline-svg {
-      display: inline-block;
-      height: 1.35em;
-      width: 1.35em;
-      color: var(--fontra-light-red-color);
-      transform: translate(0, 0.3em);
-      margin-right: 0.25em;
-    }
-
-    .accordion-header {
-      display: grid;
-      grid-template-columns: 1.2em 1fr 1.2em 1.2em;
-      align-items: center;
-      gap: 0.2em;
-      justify-content: space-between;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .accordion-header-button {
-      width: 1.3em ;
-    }
-
-    .accordion-item-close .accordion-item-contents {
-      display: none;
-    }
-
-    .accordion-chevron {
-      transition: 120ms;
-    }
-    .accordion-item-close .accordion-chevron {
-      transform: rotate(180deg);
-    }
+    // ui-accordion {
+    //   display: block;
+    //   height: 100%;
+    // }
   `;
 
   constructor(editorController) {
@@ -158,14 +63,6 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   getContentElement() {
-    if (true) {
-      return this.getContentElement_inline();
-    } else {
-      return this.getContentElement_accordion();
-    }
-  }
-
-  getContentElement_accordion() {
     const accordion = new Accordion();
     accordion.items = [
       {
@@ -173,6 +70,19 @@ export default class DesignspaceNavigationPanel extends Panel {
         label: "Font axes",
         open: true,
         content: html.createDomElement("designspace-location", { id: "font-axes" }, []),
+        auxiliaryHeaderElement: groupAccordionHeaderButtons([
+          makeAccordionHeaderButton({
+            icon: "tool",
+            tooltip: "Edit font axes",
+            // onclick: (event) => console.log("edit font axes"),
+          }),
+          makeAccordionHeaderButton({
+            icon: "refresh",
+            id: "reset-font-axes-button",
+            tooltip: "Reset font axes",
+            onclick: (event) => this.resetFontAxesToDefault(),
+          }),
+        ]),
       },
       {
         id: "glyph-axes-accordion-item",
@@ -183,6 +93,19 @@ export default class DesignspaceNavigationPanel extends Panel {
           { id: "glyph-axes" },
           []
         ),
+        auxiliaryHeaderElement: groupAccordionHeaderButtons([
+          makeAccordionHeaderButton({
+            icon: "tool",
+            tooltip: "Edit glyph axes",
+            onclick: (event) => this.editGlyphAxes(),
+          }),
+          makeAccordionHeaderButton({
+            icon: "refresh",
+            id: "reset-glyph-axes-button",
+            tooltip: "Reset glyph axes",
+            onclick: (event) => this.resetFontAxesToDefault(),
+          }),
+        ]),
       },
       {
         id: "glyph-sources-accordion-item",
@@ -206,129 +129,6 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.qs = accordion.shadowRoot.querySelector.bind(accordion.shadowRoot);
     return accordion;
-  }
-
-  getContentElement_inline() {
-    const toggleItem = (event) => {
-      let el = event.target;
-      for (const i of range(3)) {
-        if (el.classList.contains("accordion-item")) {
-          break;
-        }
-        el = el.parentElement;
-      }
-      el.classList.toggle("accordion-item-close");
-    };
-
-    const contentElement = html.div(
-      {
-        id: "designspace-navigation",
-      },
-      [
-        html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
-        html.div(
-          {
-            class: "accordion-item",
-            id: "font-axes-accordion-item",
-            open: true,
-            // ontoggle: (event) => console.log("toggle", event.target.open),
-          },
-          [
-            html.div({ class: "accordion-header", onclick: toggleItem }, [
-              html.createDomElement("icon-button", {
-                src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button accordion-chevron",
-              }),
-              "Font axes",
-              html.createDomElement("icon-button", {
-                "src": `/tabler-icons/tool.svg`,
-                "class": "accordion-header-button",
-                "data-tooltip": "Edit font axes",
-                "data-tooltipposition": "bottom",
-              }),
-              html.createDomElement("icon-button", {
-                "id": "reset-font-axes-button",
-                "src": `/tabler-icons/refresh.svg`,
-                "class": "accordion-header-button",
-                "onclick": (event) => this.resetFontAxesToDefault(event),
-                "data-tooltip": "Reset font axes",
-                "data-tooltipposition": "bottom",
-              }),
-            ]),
-            html.div({ class: "accordion-item-contents" }, [
-              html.createDomElement("designspace-location", { id: "font-axes" }, []),
-            ]),
-          ]
-        ),
-        html.div(
-          {
-            class: "accordion-item",
-            id: "glyph-axes-accordion-item",
-            open: true,
-            // ontoggle: (event) => console.log("toggle", event.target.open),
-          },
-          [
-            html.div({ class: "accordion-header", onclick: toggleItem }, [
-              html.createDomElement("icon-button", {
-                src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button accordion-chevron",
-              }),
-              "Glyph axes",
-              html.createDomElement("icon-button", {
-                "src": `/tabler-icons/tool.svg`,
-                "class": "accordion-header-button",
-                "onclick": (event) => this.editGlyphAxes(event),
-                "data-tooltip": "Edit glyph axes",
-                "data-tooltipposition": "bottom",
-              }),
-              html.createDomElement("icon-button", {
-                "id": "reset-glyph-axes-button",
-                "src": `/tabler-icons/refresh.svg`,
-                "class": "accordion-header-button",
-                "onclick": (event) => this.resetGlyphAxesToDefault(event),
-                "data-tooltip": "Reset glyph axes",
-                "data-tooltipposition": "bottom",
-              }),
-            ]),
-            html.div({ class: "accordion-item-contents" }, [
-              html.createDomElement("designspace-location", { id: "glyph-axes" }, []),
-            ]),
-          ]
-        ),
-        html.div(
-          {
-            class: "accordion-item",
-            id: "glyph-sources-accordion-item",
-            open: true,
-          },
-          [
-            html.div({ class: "accordion-header", onclick: toggleItem }, [
-              html.createDomElement("icon-button", {
-                src: `/tabler-icons/chevron-up.svg`,
-                class: "accordion-header-button accordion-chevron",
-              }),
-              "Glyph sources",
-            ]),
-            html.div(
-              { id: "sources-list-container", class: "accordion-item-contents" },
-              [
-                html.createDomElement("ui-list", { id: "sources-list" }),
-                html.createDomElement("add-remove-buttons", {
-                  style: "padding: 0.5em 0 0 0;",
-                  id: "sources-list-add-remove-buttons",
-                }),
-                html.createDomElement("div", {
-                  id: "interpolation-error-info",
-                }),
-              ]
-            ),
-          ]
-        ),
-      ]
-    );
-
-    this.qs = contentElement.querySelector.bind(contentElement);
-    return contentElement;
   }
 
   get fontAxesElement() {
@@ -595,7 +395,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     }
     const button = this.qs("#reset-font-axes-button");
-    // button.disabled = locationEmpty;
+    button.disabled = locationEmpty;
   }
 
   async onVisibilityHeaderClick(event) {
@@ -1438,6 +1238,32 @@ function makeClickableIconHeader(iconPath, onClick) {
       }),
     ]
   );
+}
+
+function groupAccordionHeaderButtons(buttons) {
+  return html.div(
+    { style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto)` },
+    buttons
+  );
+}
+
+function makeAccordionHeaderButton(button) {
+  const options = {
+    style: "width: 1.4em; height: 1.4em;",
+    src: `/tabler-icons/${button.icon}.svg`,
+    onclick: button.onclick,
+  };
+
+  if (button.id) {
+    options.id = button.id;
+  }
+
+  if (button.tooltip) {
+    options["data-tooltip"] = button.tooltip;
+    options["data-tooltipposition"] = "bottom";
+  }
+
+  return html.createDomElement("icon-button", options);
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
