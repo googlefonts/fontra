@@ -76,7 +76,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
-import { translate } from './localization.js';
+import { translate } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -1072,7 +1072,9 @@ export class EditorController {
 
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
-        title: selectNone ? translate("action.selectnone") : translate("action.selectall"),
+        title: selectNone
+          ? translate("action.selectnone")
+          : translate("action.selectall"),
         enabled: () => this.canSelectAllNone(selectNone),
         callback: () => this.doSelectAllNone(selectNone),
         shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
@@ -2194,8 +2196,8 @@ export class EditorController {
         const glyphNames = glyphName
           ? [glyphName]
           : truncate
-          ? usedBy.slice(0, MAX_NUM_GLYPHS)
-          : usedBy;
+            ? usedBy.slice(0, MAX_NUM_GLYPHS)
+            : usedBy;
 
         const glyphInfos = glyphNames.map((glyphName) =>
           this.fontController.glyphInfoFromGlyphName(glyphName)

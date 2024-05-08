@@ -1,7 +1,7 @@
-import { translate } from "./localization.js";
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
