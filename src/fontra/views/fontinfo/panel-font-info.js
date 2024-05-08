@@ -1,12 +1,13 @@
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
+import { translate } from "../core/localization.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { Form } from "/web-components/ui-form.js";
 
 const fontInfoFields = [
   // [property name, UI label, type]
-  ["familyName", "Family Name", "edit-text"],
+  ["familyName", translate("fontinfo.familyname"), "edit-text"],
   ["copyright", "Copyright", "edit-text"],
   ["trademark", "Trademark", "edit-text"],
   ["description", "Description", "edit-text"],

@@ -156,7 +156,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.baseline",
-  name: "Baseline",
+  name: translate("panel.settings.glyph.baseline"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -189,8 +189,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.glyph.locking.non-editing",
-  name: "Glyph lock icon for non-editing glyphs",
+  identifier: translate("fontra.glyph.locking.non-editing"),
+  name: translate("panel.settings.glyph.lockicon"),
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
@@ -241,7 +241,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
-  name: "Anchor names",
+  name: translate("panel.settings.glyph.anchornames"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -284,7 +284,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
-  name: "Sidebearings for non-editing glyphs",
+  name: translate("panel.settings.glyph.sidebearings"),
   selectionMode: "notediting",
   userSwitchable: true,
   defaultOn: false,
@@ -329,7 +329,7 @@ function _drawMiniSideBearings(
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
-  name: "Drag crosshair",
+  name: translate("panel.settings.glyph.dragcrosshair"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -356,7 +356,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
-  name: "Drag “ghost” path",
+  name: translate("panel.settings.glyph.dragghostpath"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -651,7 +651,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.contour.index",
-  name: "Contour indices",
+  name: translate("panel.settings.glyph.contour"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -698,7 +698,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.index",
-  name: "Component names and indices",
+  name: translate("panel.settings.glyph.component"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -907,7 +907,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: "Coordinates",
+  name: translate("panel.settings.glyph.coordinates"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,

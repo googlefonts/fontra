@@ -27,6 +27,18 @@
   "menubar.help.github": "GitHub",
   "panel.settings.glyph": "字符形编辑器外观",
   "panel.settings.glyph.upmgrid": "Units-per-em 网格",
+  "panel.settings.glyph.referencefont": "参考字体",
+  "panel.settings.glyph.sidebearings": "非编辑字符形的边距",
+  "panel.settings.glyph.cjkframe": "CJK 字框",
+  "panel.settings.glyph.baseline": "基线",
+  "panel.settings.glyph.dragcrosshair": "拖拽准星",
+  "panel.settings.glyph.dragghostpath": "拖拽前路径",
+  "panel.settings.glyph.anchornames": "锚点名称",
+  "panel.settings.glyph.contour": "轮廓索引",
+  "panel.settings.glyph.component": "组件名称与索引",
+  "panel.settings.glyph.coordinates": "坐标",
+  "panel.settings.glyph.powerruler": "Power 测量尺",
+  "panel.settings.glyph.lockicon": "非编辑字符形的锁定图标",
   "panel.settings.clipboard": "剪贴板导出格式",
   "panel.settings.experimental": "实验性功能",
   "panel.settings.theme": "主题设置",
@@ -34,5 +46,7 @@
   "panel.settings.theme.light": "亮色",
   "panel.settings.theme.dark": "暗色",
   "panel.settings.server": "服务器信息",
-  "selection.none": "（未选择）"
+  "panel.glyphs.search": "搜索字符形",
+  "selection.none": "（未选择）",
+  "fontinfo.familyname": "字体家族名称"
 }

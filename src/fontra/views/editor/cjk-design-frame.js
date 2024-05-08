@@ -2,8 +2,8 @@ import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
+import { translate } from "/core/localization.js";
 import { range } from "/core/utils.js";
-
 const cjkDesignFrameGlyphName = "_cjkDesignFrame";
 
 export class CJKDesignFrame {
@@ -23,7 +23,7 @@ export class CJKDesignFrame {
 
     registerVisualizationLayerDefinition({
       identifier: "fontra.cjk.design.frame",
-      name: "CJK Design Frame",
+      name: translate("panel.settings.glyph.cjkframe"),
       selectionMode: "editing",
       userSwitchable: true,
       defaultOn: false,

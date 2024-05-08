@@ -24,6 +24,7 @@ import "/third-party/lib-font/unbrotli.js";
 import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
+import { translate } from "/core/localization.js";
 
 let referenceFontModel;
 
@@ -32,7 +33,7 @@ const DEFAULT_FONT_SIZE = 100;
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
-  name: "Reference font",
+  name: translate("panel.settings.glyph.referencefont"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
