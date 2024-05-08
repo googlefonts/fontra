@@ -386,6 +386,7 @@ export class SceneModel {
           glyphName: glyphInfo.glyphName,
           character: glyphInfo.character,
           isUndefined: isUndefined,
+          isSelected: isSelectedGlyph,
           isEditing: !!(isSelectedGlyph && selectedGlyphIsEditing),
         });
         x += glyphInstance.xAdvance;
