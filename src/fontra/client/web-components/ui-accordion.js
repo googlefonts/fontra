@@ -9,7 +9,6 @@ export class Accordion extends UnlitElement {
     display: grid;
     grid-template-rows: auto;
     align-content: start;
-    align-items: start;
     gap: 0.5em;
     text-wrap: wrap;
     width: 100%;
