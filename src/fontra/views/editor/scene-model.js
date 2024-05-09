@@ -289,10 +289,11 @@ export class SceneModel {
   }
 
   async updateScene() {
-    this.updateBackgroundGlyphs();
     this.updateSceneCancelSignal.shouldCancel = true;
     const cancelSignal = {};
     this.updateSceneCancelSignal = cancelSignal;
+
+    this.updateBackgroundGlyphs();
 
     // const startTime = performance.now();
     const result = await this.buildScene(cancelSignal);
