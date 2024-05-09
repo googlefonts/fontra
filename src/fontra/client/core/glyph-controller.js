@@ -895,6 +895,7 @@ export async function decomposeComponents(
 
   const newPaths = [];
   const newComponents = [];
+  const newAnchors = [];
   for (const index of componentIndices) {
     const component = components[index];
     const baseGlyph = await getGlyphFunc(component.name);
@@ -921,9 +922,17 @@ export async function decomposeComponents(
         location: { ...nestedCompo.location },
       });
     }
+    for (const anchor of compoInstance.anchors) {
+      const [x, y] = t.transformPoint(anchor.x, anchor.y);
+      newAnchors.push({
+        name: anchor.name,
+        x,
+        y,
+      });
+    }
   }
   const newPath = joinPaths(newPaths);
-  return { path: newPath, components: newComponents };
+  return { path: newPath, components: newComponents, anchors: newAnchors };
 }
 
 function makeAxisMapFunc(axis) {
