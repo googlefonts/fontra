@@ -350,7 +350,7 @@ export function rgbaToCSS(rgba) {
   if (alpha !== undefined && 0 <= alpha && alpha < 1) {
     channels.push(alpha);
   }
-  return `${channels.length === 4 ? "rgba" : "rgb"}(${channels.join(",")})`;
+  return `rgb(${channels.join(",")})`;
 }
 
 export function clamp(number, min, max) {
