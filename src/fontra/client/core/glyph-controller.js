@@ -923,12 +923,11 @@ export async function decomposeComponents(
       });
     }
     for (const anchor of compoInstance.anchors) {
-      const { name, x, y } = anchor;
-      const [newX, newY] = t.transformPoint(x, y);
+      const [x, y] = t.transformPoint(anchor.x, anchor.y);
       newAnchors.push({
-        name,
-        x: newX,
-        y: newY,
+        name: anchor.name,
+        x,
+        y,
       });
     }
   }
