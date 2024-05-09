@@ -1055,8 +1055,8 @@ registerVisualizationLayerDefinition({
 
     const color = [...statusFieldDefinitions[status].color];
     if (positionedGlyph.isEditing) {
-      // in editing mode make opacity 50%
-      color[3] = color[3] * 0.5;
+      // in editing mode reduce opacity
+      color[3] = color[3] * 0.4;
     }
 
     const thickness = clamp(
@@ -1065,9 +1065,7 @@ registerVisualizationLayerDefinition({
       parameters.maxThickness
     );
     context.fillStyle = rgbaToCSS(color);
-    context.beginPath();
-    context.rect(0, -100 - thickness, positionedGlyph.glyph.xAdvance, thickness);
-    context.fill();
+    context.fillRect(0, -100 - thickness, positionedGlyph.glyph.xAdvance, thickness);
   },
 });
 
