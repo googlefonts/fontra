@@ -14,7 +14,7 @@ export class DesignspaceLocation extends UnlitElement {
     :host {
       display: grid;
       grid-template-columns: 25% auto;
-      gap: 0.4em;
+      gap: 0.2em 0.4em;
       overflow: auto;
     }
 
