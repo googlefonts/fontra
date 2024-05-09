@@ -1024,7 +1024,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.status.color",
-  name: "Status color",
+  name: "Development status color",
   selectionMode: "all",
   userSwitchable: true,
   defaultOn: false,
