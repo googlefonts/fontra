@@ -179,8 +179,8 @@ export default class SelectionInfoPanel extends Panel {
           "data-tooltip": this.fontController.readOnly
             ? "Glyph is read-only"
             : glyphLocked
-              ? "Unlock glyph"
-              : "Lock glyph",
+            ? "Unlock glyph"
+            : "Lock glyph",
           "data-tooltipposition": "left",
         }),
       });
