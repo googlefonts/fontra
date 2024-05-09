@@ -105,7 +105,10 @@ export default class DesignspaceNavigationPanel extends Panel {
         label: "Glyph sources",
         open: true,
         content: html.div(
-          { id: "sources-list-container", class: "accordion-item-contents" },
+          {
+            style:
+              "display: grid; grid-template-rows: 1fr auto auto; height: 100%; box-sizing: border-box;",
+          },
           [
             html.createDomElement("ui-list", { id: "sources-list" }),
             html.createDomElement("add-remove-buttons", {
