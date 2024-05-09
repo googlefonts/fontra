@@ -363,8 +363,8 @@ describe("rgbaToCSS", () => {
     expect(rgbaToCSS([1, 0, 0, 1])).to.be.equal("rgb(255,0,0)");
   });
   it("should convert an array of decimals to rgba string", () => {
-    expect(rgbaToCSS([0, 0, 0, 0])).to.be.equal("rgba(0,0,0,0)");
-    expect(rgbaToCSS([0, 0, 0, 0.2])).to.be.equal("rgba(0,0,0,51)");
+    expect(rgbaToCSS([0, 0, 0, 0])).to.be.equal("rgb(0,0,0,0)");
+    expect(rgbaToCSS([0, 0, 0, 0.2])).to.be.equal("rgb(0,0,0,0.2)");
   });
   it("should always create rgb if the opacity is 1", () => {
     expect(rgbaToCSS([0, 0, 0, 1])).to.be.equal("rgb(0,0,0)");

@@ -3,9 +3,11 @@ import { subVectors } from "../core/vector.js";
 import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
+  clamp,
   enumerate,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  rgbaToCSS,
   round,
   unionIndexSets,
   withSavedState,
@@ -1017,6 +1019,53 @@ registerVisualizationLayerDefinition({
         2 * parameters.canDragOffCurveIndicatorRadius
       );
     }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.status.color",
+  name: "Status color",
+  selectionMode: "all",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 100,
+  screenParameters: {
+    minThickness: 3,
+    maxThickness: 15,
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const statusFieldDefinitions =
+      model.fontController.customData["fontra.sourceStatusFieldDefinitions"];
+    if (!statusFieldDefinitions) {
+      return;
+    }
+
+    const sourceIndex = positionedGlyph.glyph.sourceIndex;
+    if (sourceIndex === undefined) {
+      return;
+    }
+
+    const status =
+      positionedGlyph.varGlyph.sources[sourceIndex].customData[
+        "fontra.development.status"
+      ];
+    if (status === undefined) {
+      return;
+    }
+
+    const color = [...statusFieldDefinitions[status].color];
+    if (positionedGlyph.isEditing) {
+      // in editing mode reduce opacity
+      color[3] = color[3] * 0.4;
+    }
+
+    const thickness = clamp(
+      0.05 * model.fontController.unitsPerEm,
+      parameters.minThickness,
+      parameters.maxThickness
+    );
+    context.fillStyle = rgbaToCSS(color);
+    context.fillRect(0, -100 - thickness, positionedGlyph.glyph.xAdvance, thickness);
   },
 });
 
