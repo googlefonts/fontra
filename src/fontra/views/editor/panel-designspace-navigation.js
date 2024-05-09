@@ -62,7 +62,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         id: "font-axes-accordion-item",
         label: "Font axes",
         open: true,
-        content: html.createDomElement("designspace-location", { id: "font-axes" }, []),
+        content: html.createDomElement(
+          "designspace-location",
+          { id: "font-axes", style: "height: 100%;" },
+          []
+        ),
         auxiliaryHeaderElement: groupAccordionHeaderButtons([
           makeAccordionHeaderButton({
             icon: "tool",
@@ -83,7 +87,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         open: true,
         content: html.createDomElement(
           "designspace-location",
-          { id: "glyph-axes" },
+          { id: "glyph-axes", style: "height: 100%;" },
           []
         ),
         auxiliaryHeaderElement: groupAccordionHeaderButtons([

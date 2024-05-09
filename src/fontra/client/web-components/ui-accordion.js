@@ -21,6 +21,7 @@ export class Accordion extends UnlitElement {
     grid-template-rows: auto 1fr;
     gap: 0.2em;
     min-height: 0;
+    box-sizing: border-box;
   }
 
   .ui-accordion-item[hidden] {
@@ -34,6 +35,7 @@ export class Accordion extends UnlitElement {
     align-items: center;
     font-weight: bold;
     cursor: pointer;
+    box-sizing: border-box;
   }
 
   .ui-accordion-item .open-close-icon {
@@ -54,7 +56,7 @@ export class Accordion extends UnlitElement {
     display: block;
     // min-height: 0;
     box-sizing: border-box;
-    overflow: auto;
+    overflow: hidden;
   }
   `;
 
