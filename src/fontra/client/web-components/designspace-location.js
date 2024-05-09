@@ -132,10 +132,8 @@ export class DesignspaceLocation extends UnlitElement {
       }
       this._createSlider(elements, axis);
 
-      // TODO: the following loop is only of demonstrating the disabled state
-      for (const axis of this.axes) {
-        this._createSlider(elements, axis, true);
-      }
+      // TODO: the following is only of demonstrating the disabled state
+      this._createSlider(elements, axis, true);
       elements.push(html.hr({ class: "spacer" }));
       // TODO: end of demonstration
     }
