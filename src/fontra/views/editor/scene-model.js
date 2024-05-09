@@ -27,6 +27,7 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
     this.editingLayers = {};
+    this.updateSceneCancelSignal = {};
 
     this.sceneSettingsController.addKeyListener(
       ["glyphLines", "align", "selectedGlyph"],
@@ -288,11 +289,23 @@ export class SceneModel {
   }
 
   async updateScene() {
+    this.updateSceneCancelSignal.shouldCancel = true;
+    const cancelSignal = {};
+    this.updateSceneCancelSignal = cancelSignal;
+
     this.updateBackgroundGlyphs();
+
     // const startTime = performance.now();
-    await this.buildScene();
+    const result = await this.buildScene(cancelSignal);
     // const elapsed = performance.now() - startTime;
     // console.log("buildScene", elapsed);
+
+    if (cancelSignal.shouldCancel) {
+      return;
+    }
+
+    this.longestLineLength = result.longestLineLength;
+    this.sceneSettings.positionedLines = result.positionedLines;
 
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     const cachedGlyphNames = difference(
@@ -327,7 +340,7 @@ export class SceneModel {
     }
   }
 
-  async buildScene() {
+  async buildScene(cancelSignal) {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
@@ -357,6 +370,10 @@ export class SceneModel {
       await loaderSpinner(fontController.loadGlyphs(neededGlyphs));
     }
 
+    if (cancelSignal.shouldCancel) {
+      return;
+    }
+
     for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
       const positionedLine = { glyphs: [] };
       let x = 0;
@@ -372,6 +389,11 @@ export class SceneModel {
           glyphInfo.glyphName,
           thisGlyphEditLayerName
         );
+
+        if (cancelSignal.shouldCancel) {
+          return;
+        }
+
         const isUndefined = !glyphInstance;
         if (isUndefined) {
           glyphInstance = fontController.getDummyGlyphInstanceController(
@@ -439,8 +461,8 @@ export class SceneModel {
       }
       positionedLines.push(positionedLine);
     }
-    this.longestLineLength = longestLineLength;
-    this.sceneSettings.positionedLines = positionedLines;
+
+    return { longestLineLength, positionedLines };
   }
 
   async getGlyphInstance(glyphName, layerName) {
