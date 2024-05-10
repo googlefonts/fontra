@@ -54,7 +54,6 @@ export class Accordion extends UnlitElement {
 
   .ui-accordion-item-content {
     display: block;
-    // min-height: 0;
     box-sizing: border-box;
     overflow: hidden;
   }
