@@ -15,6 +15,7 @@ function languageChanged(locale) {
 
 languageController.addKeyListener("language", (event) => {
   languageChanged(languageController.model.language);
+  window.location.reload(true);
 });
 
 languageChanged(languageController.model.language || "en");
