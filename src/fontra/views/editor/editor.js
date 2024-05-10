@@ -2116,7 +2116,6 @@ export class EditorController {
           if (isNaN(tempGuideline.x) && relativeScaleX != null) {
             newGuideline.x = Math.round(layerGlyph.xAdvance * relativeScaleX);
           }
-          console.log("add newGuideline: ", newGuideline);
           layerGlyph.guidelines.push({ ...newGuideline });
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
