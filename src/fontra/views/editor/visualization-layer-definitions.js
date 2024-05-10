@@ -1065,7 +1065,12 @@ registerVisualizationLayerDefinition({
       parameters.maxThickness
     );
     context.fillStyle = rgbaToCSS(color);
-    context.fillRect(0, -100 - thickness, positionedGlyph.glyph.xAdvance, thickness);
+    context.fillRect(
+      0,
+      -0.12 * model.fontController.unitsPerEm - thickness,
+      positionedGlyph.glyph.xAdvance,
+      thickness
+    );
   },
 });
 
