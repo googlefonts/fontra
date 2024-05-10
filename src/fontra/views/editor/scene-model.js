@@ -488,6 +488,17 @@ export class SceneModel {
       return { selection: anchorSelection };
     }
 
+    const guidelineLocalSelection = this.guidelineLocalSelectionAtPoint(point, size);
+    if (guidelineLocalSelection.size) {
+      return { selection: guidelineLocalSelection };
+    }
+
+    // TODO: Guidelines Global
+    // const guidelineGlobalSelection = this.guidelineGlobalSelectionAtPoint(point, size);
+    // if (guidelineGlobalSelection.size) {
+    //   return { selection: guidelineGlobalSelection };
+    // }
+
     const { selection: segmentSelection, pathHit: pathHit } =
       this.segmentSelectionAtPoint(point, size);
     if (pathHit) {
@@ -626,6 +637,29 @@ export class SceneModel {
     }
     return new Set([]);
   }
+
+  guidelineLocalSelectionAtPoint(point, size) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    const guidelines = positionedGlyph.glyph.guidelines;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
+    for (const [i, guideline] of enumerate(guidelines)) {
+      const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
+      if (guidelineMatch) {
+        return new Set([`guidelineLocal/${i}`]);
+      }
+    }
+    return new Set([]);
+  }
+
+  // TODO: Guidelines Global
+  //guidelineGlobalSelectionAtPoint(point, size) {
+  // }
 
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();

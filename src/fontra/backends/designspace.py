@@ -1219,7 +1219,7 @@ def unpackGuidelines(guidelines):
             x=g["x"],
             y=g["y"],
             angle=g["angle"],
-            # TODO: how do we handle customData like
+            # TODO: Guidelines, how do we handle customData like:
             # color=g.get("color"),
             # identifier=g.get("color"),
         )

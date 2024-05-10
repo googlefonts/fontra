@@ -57,6 +57,9 @@ export class StaticGlyph {
     source.components =
       (noCopy ? obj.components : obj.components?.map(copyComponent)) || [];
     source.anchors = noCopy ? obj.anchors || [] : copyCustomData(obj.anchors || []);
+    source.guidelines = noCopy
+      ? obj.guidelines || []
+      : copyCustomData(obj.guidelines || []);
     return source;
   }
 
