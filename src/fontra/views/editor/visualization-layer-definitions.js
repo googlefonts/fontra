@@ -282,6 +282,107 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.guidelines",
+  name: "Guidelines",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 500,
+  screenParameters: {
+    fontSize: 10,
+    strokeWidth: 1,
+    strokeLength: 1000,
+    originMarkerRadius: 4,
+    strokeDash: 3,
+  },
+  colors: {
+    strokeColor: "#0006",
+    boxColor: "#FFFB",
+    color: "#000",
+  },
+  colorsDarkMode: {
+    strokeColor: "#FFF8",
+    boxColor: "#1118",
+    color: "#FFF",
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const fontSize = parameters.fontSize;
+    const margin = 0.5 * fontSize;
+    const moveUp = fontSize * 0.05; // move up -> visually centered
+    const dashPattern = [parameters.strokeDash * 2, parameters.strokeDash];
+    const originMarkerRadius = parameters.originMarkerRadius;
+    const strokeWidth = parameters.strokeWidth;
+    const strokeLength = parameters.strokeLength;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    // TODO: Global Guidelines
+
+    // Draw local guidelines
+    for (const localGuideline of positionedGlyph.glyph.guidelines) {
+      // move to the origin of the guideline
+      context.translate(localGuideline.x, localGuideline.y);
+      context.rotate((localGuideline.angle * Math.PI) / 180);
+      context.scale(1, -1);
+
+      // draw guideline origin marker
+      strokeCircle(context, 0, 0, originMarkerRadius);
+
+      let textWidth;
+      let textHeight;
+      // draw name
+      if (localGuideline.name) {
+        const strLine = `${localGuideline.name}`;
+        textWidth = Math.max(context.measureText(strLine).width);
+        textHeight = Math.max(getTextHeight(context, strLine));
+
+        context.fillStyle = parameters.strokeColor;
+        context.fillText(
+          strLine,
+          -textWidth / 2 - margin * 2 - originMarkerRadius / 2 - strokeWidth * 2,
+          textHeight / 2 - moveUp
+        );
+      }
+
+      // draw the line
+      if (localGuideline.name) {
+        // with name
+        strokeLineDashed(
+          context,
+          -strokeLength,
+          0,
+          -textWidth - margin * 4,
+          0,
+          dashPattern
+        );
+        strokeLineDashed(
+          context,
+          -margin * 2,
+          0,
+          -originMarkerRadius / 2 - strokeWidth * 2,
+          0,
+          dashPattern
+        );
+        strokeLineDashed(
+          context,
+          originMarkerRadius / 2 + strokeWidth * 2,
+          0,
+          strokeLength,
+          0,
+          dashPattern
+        );
+      } else {
+        // without name
+        strokeLineDashed(context, strokeLength, 0, strokeLength, 0, dashPattern);
+      }
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
   name: "Sidebearings for non-editing glyphs",
   selectionMode: "notediting",
@@ -852,6 +953,67 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.guidelines",
+  name: "Selected guidelines",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    smoothSize: 8,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+    underlayOffset: 2,
+  },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const smoothSize = parameters.smoothSize;
+
+    const {
+      guidelineLocal: hoveredGuidelineLocalIndices,
+      guidelineGlobal: hoveredGuidelineGlobalIndices,
+    } = parseSelection(model.hoverSelection);
+    const {
+      guidelineLocal: selectedGuidelineLocalIndices,
+      guidelineGlobal: selectedGuidelineGlobalIndices,
+    } = parseSelection(model.selection);
+
+    // TODO: Guidelines Global
+
+    // Under layer
+    context.fillStyle = parameters.underColor;
+    for (const i of selectedGuidelineLocalIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
+    }
+
+    // Selected guideline
+    context.fillStyle = parameters.selectedColor;
+    for (const i of selectedGuidelineLocalIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      fillRoundNode(context, guideline, smoothSize);
+    }
+
+    // Hovered guideline
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const i of hoveredGuidelineLocalIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.selected.anchors",
   name: "Selected anchors",
   selectionMode: "editing",
@@ -1264,6 +1426,14 @@ export function strokeLine(context, x1, y1, x2, y2) {
   context.stroke();
 }
 
+function strokeLineDashed(context, x1, y1, x2, y2, pattern = [5, 5]) {
+  context.beginPath();
+  context.setLineDash(pattern);
+  context.moveTo(x1, y1);
+  context.lineTo(x2, y2);
+  context.stroke();
+}
+
 function strokeCircle(context, cx, cy, radius) {
   context.beginPath();
   context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
@@ -1357,4 +1527,9 @@ function drawRoundRect(context, x, y, width, height, radii) {
     context.rect(x, y, width, height);
   }
   context.fill();
+}
+
+function getTextHeight(context, text) {
+  const metrics = context.measureText(text);
+  return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 }

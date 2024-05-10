@@ -152,6 +152,9 @@ export class PointerTool extends BaseTool {
         point: pointIndices,
         component: componentIndices,
         anchor: anchorIndices,
+        guidelineLocal: guidelineLocalIndices,
+        // TODO: Guidelines Global
+        // guidelineGlobal: guidelineGlobalIndices,
       } = parseSelection(sceneController.selection);
       if (componentIndices?.length && !pointIndices?.length && !anchorIndices?.length) {
         componentIndices.sort();
@@ -165,6 +168,14 @@ export class PointerTool extends BaseTool {
         anchorIndices.sort();
         sceneController.doubleClickedAnchorIndices = anchorIndices;
         sceneController._dispatchEvent("doubleClickedAnchors");
+      } else if (
+        guidelineLocalIndices?.length &&
+        !pointIndices?.length &&
+        !componentIndices?.length
+      ) {
+        guidelineLocalIndices.sort();
+        sceneController.doubleClickedGuidelineLocalIndices = guidelineLocalIndices;
+        sceneController._dispatchEvent("doubleClickedGuidelinesLocal");
       } else if (pointIndices?.length && !sceneController.hoverPathHit) {
         await this.handlePointsDoubleClick(pointIndices);
       } else if (sceneController.hoverPathHit) {

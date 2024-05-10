@@ -192,6 +192,18 @@ export class EditorController {
       this.doubleClickedAnchorsCallback(event);
     });
 
+    this.sceneController.addEventListener(
+      "doubleClickedGuidelinesLocal",
+      async (event) => {
+        this.doubleClickedGuidelinesLocalCallback(event);
+      }
+    );
+
+    // TODO: Guidelines Global
+    // this.sceneController.addEventListener("doubleClickedGuidelinesGlobal", async (event) => {
+    //   this.doubleClickedGuidelinesGlobalCallback(event);
+    // });
+
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
       this.showDialogGlyphEditCannotEditReadOnly();
     });
@@ -1013,6 +1025,31 @@ export class EditorController {
     });
   }
 
+  async doubleClickedGuidelinesLocalCallback(event) {
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    const instance = glyphController.instance;
+
+    const guidelineIndex = this.sceneController.doubleClickedGuidelineLocalIndices[0];
+    let guideline = instance.guidelines[guidelineIndex];
+    const { guideline: newGuideline } = await this.doAddEditGuidelineDialog(guideline);
+    if (!newGuideline) {
+      return;
+    }
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const oldGuideline = layerGlyph.guidelines[guidelineIndex];
+        layerGlyph.guidelines[guidelineIndex] = {
+          name: newGuideline.name ? newGuideline.name : oldGuideline.name,
+          x: !isNaN(newGuideline.x) ? newGuideline.x : oldGuideline.x,
+          y: !isNaN(newGuideline.y) ? newGuideline.y : oldGuideline.y,
+          angle: !isNaN(newGuideline.angle) ? newGuideline.angle : oldGuideline.angle,
+        };
+      }
+      this.sceneController.selection = new Set([`guidelineLocal/${guidelineIndex}`]);
+      return "Edit Guideline";
+    });
+  }
+
   initContextMenuItems() {
     this.basicContextMenuItems = [];
     for (const isRedo of [false, true]) {
@@ -1091,6 +1128,15 @@ export class EditorController {
       title: "Add Anchor",
       enabled: () => this.canAddAnchor(),
       callback: () => this.doAddAnchor(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      // TODO: Guidelines Global with altKey, something like this:
+      //title: (event) => {return `Add ${event.altKey ? "Local" : "Global"} Guideline`},
+      title: "Add Guideline",
+      enabled: () => this.canAddGuideline(),
+      callback: (event) => this.doAddGuideline(event.altKey),
       shortCut: undefined,
     });
 
@@ -2037,6 +2083,206 @@ export class EditorController {
     return { contentElement, warningElement };
   }
 
+  // TODO: We may want to make a more general code for adding and editing
+  // so we can handle both anchors and guidelines with the same code
+  // Guidelines Local
+  canAddGuideline() {
+    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+  }
+
+  async doAddGuideline(global = false) {
+    const point = this.sceneController.selectedGlyphPoint(this.contextMenuPosition);
+    const { guideline: tempGuideline } = await this.doAddEditGuidelineDialog(
+      undefined,
+      point,
+      global
+    );
+    if (!tempGuideline) {
+      return;
+    }
+
+    const newGuideline = {
+      name: tempGuideline.name ? tempGuideline.name : "guidelineName",
+      x: !isNaN(tempGuideline.x) ? tempGuideline.x : Math.round(point.x),
+      y: !isNaN(tempGuideline.y) ? tempGuideline.y : Math.round(point.y),
+      angle: !isNaN(tempGuideline.angle) ? tempGuideline.angle : 0,
+    };
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+    const relativeScaleX = instance.xAdvance ? point.x / instance.xAdvance : null;
+
+    if (!global) {
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          if (isNaN(tempGuideline.x) && relativeScaleX != null) {
+            newGuideline.x = Math.round(layerGlyph.xAdvance * relativeScaleX);
+          }
+          console.log("add newGuideline: ", newGuideline);
+          layerGlyph.guidelines.push({ ...newGuideline });
+        }
+        const newGuidelineIndex = instance.guidelines.length - 1;
+        this.sceneController.selection = new Set([
+          `guidelinesLocal/${newGuidelineIndex}`,
+        ]);
+        return "Add Guideline";
+      });
+    }
+    // TODO: Guidelines Global
+  }
+
+  async doAddEditGuidelineDialog(
+    guideline = undefined,
+    point = undefined,
+    global = false
+  ) {
+    const titlePrefix = guideline ? "Edit" : "Add";
+    if (!guideline && !point) {
+      // Need at least one of the two
+      return {};
+    }
+
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+
+    const validateInput = () => {
+      const warnings = [];
+      const editedGuidelineName =
+        nameController.model.guidelineName ||
+        nameController.model.suggestedGuidelineName;
+      if (!editedGuidelineName.length) {
+        warnings.push("⚠️ The name must not be empty");
+      }
+      if (
+        !(
+          nameController.model.guidelineName ||
+          nameController.model.guidelineX ||
+          nameController.model.guidelineY ||
+          nameController.model.guidelineAngle
+        )
+      ) {
+        warnings.push("");
+      }
+      for (const n of ["X", "Y", "Angle"]) {
+        const value = nameController.model[`guideline${n}`];
+        if (isNaN(value)) {
+          if (value !== undefined) {
+            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+          }
+        }
+      }
+      if (
+        editedGuidelineName !== guideline?.name &&
+        instance.guidelines.some((guideline) => guideline.name === editedGuidelineName)
+      ) {
+        warnings.push("⚠️ The guideline name should be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
+
+    const guidelineNameDefault = guideline ? guideline.name : "guidelineName";
+    const nameController = new ObservableController({
+      guidelineName: guidelineNameDefault,
+      guidelineX: undefined,
+      guidelineY: undefined,
+      guidelineAngle: undefined,
+      suggestedGuidelineName: guidelineNameDefault,
+      suggestedGuidelineX: guideline ? guideline.x : Math.round(point.x),
+      suggestedGuidelineY: guideline ? guideline.y : Math.round(point.y),
+      suggestedGuidelineAngle: guideline ? guideline.angle : 0,
+    });
+
+    nameController.addKeyListener("guidelineName", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineX", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineY", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineAngle", (event) => {
+      validateInput();
+    });
+
+    const disable =
+      nameController.model.guidelineName ||
+      nameController.model.guidelineX ||
+      nameController.model.guidelineY ||
+      nameController.model.guidelineAngle
+        ? false
+        : true;
+    const { contentElement, warningElement } =
+      this._guidelinePropertiesContentElement(nameController);
+    const dialog = await dialogSetup(
+      `${titlePrefix} ${global ? "Global" : "Local"} Guideline`,
+      null,
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: titlePrefix, isDefaultButton: true, disabled: disable },
+      ]
+    );
+
+    dialog.setContent(contentElement);
+
+    setTimeout(
+      () => contentElement.querySelector("#guideline-name-text-input")?.focus(),
+      0
+    );
+
+    validateInput();
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const newGuideline = {
+      name: nameController.model.guidelineName,
+      x: Number(nameController.model.guidelineX),
+      y: Number(nameController.model.guidelineY),
+      angle: Number(nameController.model.guidelineAngle),
+    };
+
+    return { guideline: newGuideline };
+  }
+
+  _guidelinePropertiesContentElement(controller) {
+    const warningElement = html.div({
+      id: "warning-text-guideline-name",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: auto auto;
+          align-items: center;
+          height: 100%;
+          min-height: 0;
+        `,
+      },
+      [
+        ...labeledTextInput("Name:", controller, "guidelineName", {
+          placeholderKey: "suggestedGuidelineName",
+          id: "guideline-name-text-input",
+        }),
+        ...labeledTextInput("x:", controller, "guidelineX", {
+          placeholderKey: "suggestedGuidelineX",
+        }),
+        ...labeledTextInput("y:", controller, "guidelineY", {
+          placeholderKey: "suggestedGuidelineY",
+        }),
+        ...labeledTextInput("angle:", controller, "guidelineAngle", {
+          placeholderKey: "suggestedGuidelineAngle",
+        }),
+        html.br(),
+        warningElement,
+      ]
+    );
+    return { contentElement, warningElement };
+  }
+
   canSelectAllNone(selectNone) {
     return this.sceneSettings.selectedGlyph?.isEditing;
   }
@@ -2057,27 +2303,76 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      guidelineLocal: guidelineLocalIndices,
+      guidelineGlobal: guidelineGlobalIndices,
     } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    // TODO: guidelinesIndices = guidelinesIndices || [];
+    guidelineLocalIndices = guidelineLocalIndices || [];
+    guidelineGlobalIndices = guidelineGlobalIndices || [];
 
     let selectObjects = false;
     let selectAnchors = false;
-    // TODO: let selectGuidelines;
+    let selectGuidelines = false;
 
-    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
-      selectObjects = true;
-      selectAnchors = false;
+    const instance = positionedGlyph.glyph.instance;
+    const hasObjects =
+      instance.components.length > 0 || instance.path.pointTypes.length > 0;
+    const hasAnchors = instance.anchors.length > 0;
+    const hasGuidelines = instance.guidelines.length > 0;
+
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      !anchorIndices.length &&
+      !guidelineLocalIndices.length &&
+      !guidelineGlobalIndices.length
+    ) {
+      if (hasObjects) {
+        selectObjects = true;
+      } else if (hasAnchors) {
+        selectAnchors = true;
+      } else if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
-    if ((pointIndices.length || componentIndices.length) && !anchorIndices.length) {
-      selectObjects = true;
-      selectAnchors = true;
+
+    if (
+      (pointIndices.length || componentIndices.length) &&
+      !anchorIndices.length &&
+      !guidelineLocalIndices.length &&
+      !guidelineGlobalIndices.length
+    ) {
+      if (hasAnchors) {
+        selectObjects = true;
+        selectAnchors = true;
+      } else if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
-    if ((pointIndices.length || componentIndices.length) && anchorIndices.length) {
-      selectObjects = false;
-      selectAnchors = true;
+
+    if (
+      (pointIndices.length || componentIndices.length) &&
+      anchorIndices.length &&
+      !guidelineLocalIndices.length &&
+      !guidelineGlobalIndices.length
+    ) {
+      if (hasAnchors) {
+        selectAnchors = true;
+      }
+    }
+
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      anchorIndices.length &&
+      !guidelineLocalIndices.length &&
+      !guidelineGlobalIndices.length
+    ) {
+      if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
 
     let newSelection = new Set();
@@ -2100,6 +2395,12 @@ export class EditorController {
       }
     }
 
+    if (selectGuidelines) {
+      for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
+        newSelection.add(`guidelineLocal/${guidelineIndex}`);
+      }
+      // TODO: Guidelines Global selection
+    }
     this.sceneController.selection = newSelection;
   }
 

@@ -577,6 +577,10 @@ export class StaticGlyphController {
     return this.instance.anchors;
   }
 
+  get guidelines() {
+    return this.instance.guidelines;
+  }
+
   get path() {
     return this.instance.path;
   }
