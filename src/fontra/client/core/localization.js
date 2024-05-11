@@ -27,3 +27,10 @@ export function translate(key) {
 
   return localizationData[key] || `!${key}!`;
 }
+
+export function localizePage() {
+  document.querySelectorAll("[data-tool]").forEach((el) => {
+    const key = el.getAttribute("data-tool");
+    el.setAttribute("data-tooltip", translate(key));
+  });
+}

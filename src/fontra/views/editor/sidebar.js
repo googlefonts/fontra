@@ -1,5 +1,6 @@
 import { clamp, hyphenatedToLabel } from "../../core/utils.js";
 import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 
 export const MIN_SIDEBAR_WIDTH = 200;
 export const MAX_SIDEBAR_WIDTH = 500;
@@ -41,7 +42,7 @@ export class Sidebar {
         {
           "class": "sidebar-tab",
           "data-sidebarName": panelElement.identifier,
-          "data-tooltip": hyphenatedToLabel(panelElement.identifier),
+          "data-tooltip": translate("sidebar." + panelElement.identifier),
           "data-tooltipposition": this.identifier === "right" ? "left" : "right",
         },
         [html.createDomElement("inline-svg", { src: panelElement.iconPath })]

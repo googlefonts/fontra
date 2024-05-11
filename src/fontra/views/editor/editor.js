@@ -316,7 +316,7 @@ export class EditorController {
         getItems: () => {
           const items = [
             {
-              title: translate("menubar.view.zoomin"),
+              title: translate("zoom-in"),
               enabled: () => true,
               shortCut: { keysOrCodes: "+=", metaKey: true, globalOverride: true },
               callback: () => {
@@ -324,7 +324,7 @@ export class EditorController {
               },
             },
             {
-              title: translate("menubar.view.zoomout"),
+              title: translate("zoom-out"),
               shortCut: { keysOrCodes: "-", metaKey: true, globalOverride: true },
               enabled: () => true,
               callback: () => {
@@ -332,7 +332,7 @@ export class EditorController {
               },
             },
             {
-              title: translate("menubar.view.zoomtofit"),
+              title: translate("zoom-fit-selection"),
               enabled: () => {
                 let viewBox = this.sceneController.getSelectionBox();
                 if (!viewBox) {
@@ -707,7 +707,7 @@ export class EditorController {
           "class":
             wrapperID === "edit-tools" ? "tool-button selected" : "subtool-button",
           "data-tool": tool.identifier,
-          "data-tooltip": hyphenatedToLabel(tool.identifier),
+          "data-tooltip": translate("editor." + tool.identifier),
           "data-tooltipposition": index ? "right" : "bottom",
         },
         [

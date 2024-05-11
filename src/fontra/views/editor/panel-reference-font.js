@@ -664,10 +664,8 @@ export default class ReferenceFontPanel extends Panel {
             id: "reference-font",
           },
           [
-            div({ class: "title" }, ["Reference font"]),
-            div({}, [
-              "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below:",
-            ]),
+            div({ class: "title" }, [translate("panel.referencefont")]),
+            div({}, [translate("panel.referencefont.info")]),
             this.filesUIList,
             div(
               {
@@ -679,14 +677,20 @@ export default class ReferenceFontPanel extends Panel {
                 `,
               },
               [
-                label({ for: "char-override" }, "Custom character:"),
+                label(
+                  { for: "char-override" },
+                  translate("panel.referencefont.customcharacter")
+                ),
                 input({
                   type: "text",
                   id: "char-override",
                   value: this.model.charOverride,
                   oninput: (event) => (this.model.charOverride = event.target.value),
                 }),
-                label({ for: "language-code" }, "Language:"),
+                label(
+                  { for: "language-code" },
+                  translate("panel.referencefont.language")
+                ),
                 this.languageCodeInput,
               ]
             ),

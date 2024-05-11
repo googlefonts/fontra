@@ -104,11 +104,13 @@
 
   <script type="module">
     import { EditorController } from "/editor/editor.js";
+    import { localizePage } from "/core/localization.js";
 
     async function startApp() {
       window.editorController = await EditorController.fromWebSocket();
     }
 
     startApp();
+    localizePage();
   </script>
 </html>
