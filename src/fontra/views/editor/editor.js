@@ -453,7 +453,7 @@ export class EditorController {
               },
             },
             {
-              title: translate("menubar.help.github"),
+              title: "GitHub",
               enabled: () => true,
               callback: () => {
                 window.open("https://github.com/googlefonts/fontra");

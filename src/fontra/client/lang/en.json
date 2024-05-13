@@ -25,7 +25,6 @@
   "menubar.help": "Help",
   "menubar.help.homepage": "Homepage",
   "menubar.help.documentation": "Documentation",
-  "menubar.help.github": "GitHub",
   "panel.settings.glyph": "Glyph editor appearance",
   "panel.settings.glyph.upmgrid": "Units-per-em grid",
   "panel.settings.glyph.referencefont": "Reference font",

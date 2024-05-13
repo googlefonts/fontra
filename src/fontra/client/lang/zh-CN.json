@@ -25,7 +25,6 @@
   "menubar.help": "帮助",
   "menubar.help.homepage": "主页",
   "menubar.help.documentation": "文档",
-  "menubar.help.github": "GitHub",
   "panel.settings.glyph": "字符形编辑器外观",
   "panel.settings.glyph.upmgrid": "Units-per-em 网格",
   "panel.settings.glyph.referencefont": "参考字体",
