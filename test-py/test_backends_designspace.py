@@ -195,7 +195,7 @@ async def test_addLocalAxis(writableTestFont):
 
 
 # TODO: Global Guidelines keyword FontSources
-# async def test_getGuidelinesGlobal(writableTestFont):
+# async def test_getGuidelinesFont(writableTestFont):
 #     sources = await writableTestFont.getSources()
 #     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 #     for source in dsSources:
@@ -204,7 +204,7 @@ async def test_addLocalAxis(writableTestFont):
 #             assert source.get("guidelines") == []
 
 
-async def test_getGuidelinesLocal(writableTestFont):
+async def test_getGuidelinesGlyph(writableTestFont):
     glyph = await writableTestFont.getGlyph("E")
 
     layerName = "MutatorSansLightCondensed/foreground"
@@ -221,7 +221,7 @@ async def test_getGuidelinesLocal(writableTestFont):
     # )
 
 
-async def test_addGuidelinesLocal(writableTestFont):
+async def test_addGuidelinesGlyph(writableTestFont):
     glyphName = "E"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)

@@ -152,9 +152,9 @@ export class PointerTool extends BaseTool {
         point: pointIndices,
         component: componentIndices,
         anchor: anchorIndices,
-        guidelineLocal: guidelineLocalIndices,
-        // TODO: Guidelines Global
-        // guidelineGlobal: guidelineGlobalIndices,
+        guidelineGlyph: guidelineGlyphIndices,
+        // TODO: Guidelines Font
+        // guidelineFont: guidelineFontIndices,
       } = parseSelection(sceneController.selection);
       if (componentIndices?.length && !pointIndices?.length && !anchorIndices?.length) {
         componentIndices.sort();
@@ -169,13 +169,13 @@ export class PointerTool extends BaseTool {
         sceneController.doubleClickedAnchorIndices = anchorIndices;
         sceneController._dispatchEvent("doubleClickedAnchors");
       } else if (
-        guidelineLocalIndices?.length &&
+        guidelineGlyphIndices?.length &&
         !pointIndices?.length &&
         !componentIndices?.length
       ) {
-        guidelineLocalIndices.sort();
-        sceneController.doubleClickedGuidelineLocalIndices = guidelineLocalIndices;
-        sceneController._dispatchEvent("doubleClickedGuidelinesLocal");
+        guidelineGlyphIndices.sort();
+        sceneController.doubleClickedGuidelineGlyphIndices = guidelineGlyphIndices;
+        sceneController._dispatchEvent("doubleClickedGuidelinesGlyph");
       } else if (pointIndices?.length && !sceneController.hoverPathHit) {
         await this.handlePointsDoubleClick(pointIndices);
       } else if (sceneController.hoverPathHit) {

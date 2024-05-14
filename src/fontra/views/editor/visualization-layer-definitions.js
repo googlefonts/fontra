@@ -970,19 +970,19 @@ registerVisualizationLayerDefinition({
     const smoothSize = parameters.smoothSize;
 
     const {
-      guidelineLocal: hoveredGuidelineLocalIndices,
-      guidelineGlobal: hoveredGuidelineGlobalIndices,
+      guidelineGlyph: hoveredGuidelineGlyphIndices,
+      guidelineFont: hoveredGuidelineFontIndices,
     } = parseSelection(model.hoverSelection);
     const {
-      guidelineLocal: selectedGuidelineLocalIndices,
-      guidelineGlobal: selectedGuidelineGlobalIndices,
+      guidelineGlyph: selectedGuidelineGlyphIndices,
+      guidelineFont: selectedGuidelineFontIndices,
     } = parseSelection(model.selection);
 
-    // TODO: Guidelines Global
+    // TODO: Guidelines Font
 
     // Under layer
     context.fillStyle = parameters.underColor;
-    for (const i of selectedGuidelineLocalIndices || []) {
+    for (const i of selectedGuidelineGlyphIndices || []) {
       const guideline = glyph.guidelines[i];
       if (!guideline) {
         continue;
@@ -992,7 +992,7 @@ registerVisualizationLayerDefinition({
 
     // Selected guideline
     context.fillStyle = parameters.selectedColor;
-    for (const i of selectedGuidelineLocalIndices || []) {
+    for (const i of selectedGuidelineGlyphIndices || []) {
       const guideline = glyph.guidelines[i];
       if (!guideline) {
         continue;
@@ -1003,7 +1003,7 @@ registerVisualizationLayerDefinition({
     // Hovered guideline
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
-    for (const i of hoveredGuidelineLocalIndices || []) {
+    for (const i of hoveredGuidelineGlyphIndices || []) {
       const guideline = glyph.guidelines[i];
       if (!guideline) {
         continue;
