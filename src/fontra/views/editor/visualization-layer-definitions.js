@@ -317,16 +317,22 @@ registerVisualizationLayerDefinition({
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
 
-    // TODO: Global Guidelines
+    // TODO: Guidelines Font
+    // Draw font guidelines
+    // const sourceIndex = positionedGlyph.glyph.sourceIndex;
+    // if (sourceIndex != undefined) {
+    //   const source = model.fontController.sources[sourceIndex];
+    //   console.log('source: ', source)
+    // }
 
-    // Draw local guidelines
-    for (const localGuideline of positionedGlyph.glyph.guidelines) {
+    // Draw glyph guidelines
+    for (const guidelineGlyph of positionedGlyph.glyph.guidelines) {
       context.save();
       context.strokeStyle = parameters.strokeColor;
       context.lineWidth = parameters.strokeWidth;
       // move to the origin of the guideline
-      context.translate(localGuideline.x, localGuideline.y);
-      context.rotate((localGuideline.angle * Math.PI) / 180);
+      context.translate(guidelineGlyph.x, guidelineGlyph.y);
+      context.rotate((guidelineGlyph.angle * Math.PI) / 180);
       context.scale(1, -1);
 
       // draw guideline origin marker
@@ -335,8 +341,8 @@ registerVisualizationLayerDefinition({
       let textWidth;
       let textHeight;
       // draw name
-      if (localGuideline.name) {
-        const strLine = `${localGuideline.name}`;
+      if (guidelineGlyph.name) {
+        const strLine = `${guidelineGlyph.name}`;
         textWidth = Math.max(context.measureText(strLine).width);
         textHeight = Math.max(getTextHeight(context, strLine));
 
@@ -349,7 +355,7 @@ registerVisualizationLayerDefinition({
       }
 
       // draw the line
-      if (localGuideline.name) {
+      if (guidelineGlyph.name) {
         // with name
         strokeLineDashed(
           context,
