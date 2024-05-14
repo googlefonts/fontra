@@ -295,7 +295,6 @@ registerVisualizationLayerDefinition({
     originMarkerRadius: 4,
     strokeDash: 3,
     margin: 5,
-    moveUp: 1,
   },
   colors: {
     strokeColor: "#0006",
@@ -360,12 +359,12 @@ function _drawGuideline(context, parameters, guideline) {
         parameters.margin * 2 -
         parameters.originMarkerRadius / 2 -
         parameters.strokeWidth * 2,
-      textHeight / 2 - parameters.fontSize * 0.1 // move up -> visually centered
+      textHeight / 2 - parameters.fontSize * 0.01 // move up -> visually centered
     );
   }
 
   // draw the line
-  if (guideline.name) {
+  if (guideline.name !== undefined) {
     // with name
     strokeLineDashed(
       context,
@@ -393,10 +392,22 @@ function _drawGuideline(context, parameters, guideline) {
     );
   } else {
     // without name
-    strokeLineDashed(context, parameters.strokeLength, 0, parameters.strokeLength, 0, [
-      parameters.strokeDash * 2,
-      parameters.strokeDash,
-    ]);
+    strokeLineDashed(
+      context,
+      -parameters.strokeLength,
+      0,
+      -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
+      0,
+      [parameters.strokeDash * 2, parameters.strokeDash]
+    );
+    strokeLineDashed(
+      context,
+      parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
+      0,
+      parameters.strokeLength,
+      0,
+      [parameters.strokeDash * 2, parameters.strokeDash]
+    );
   }
   context.restore();
 }

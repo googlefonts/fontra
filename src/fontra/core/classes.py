@@ -97,7 +97,7 @@ class FontMetric:
 
 @dataclass(kw_only=True)
 class Guideline:
-    name: Optional[str]
+    name: Optional[str] = None
     x: float
     y: float
     angle: float
