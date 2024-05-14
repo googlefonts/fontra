@@ -289,32 +289,6 @@
       "subtype": "Any"
     }
   },
-  "HorizontalGuideline": {
-    "name": {
-      "type": "str",
-      "optional": true
-    },
-    "y": {
-      "type": "float"
-    },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    }
-  },
-  "VerticalGuideline": {
-    "name": {
-      "type": "str",
-      "optional": true
-    },
-    "x": {
-      "type": "float"
-    },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    }
-  },
   "Axes": {
     "axes": {
       "type": "list",
