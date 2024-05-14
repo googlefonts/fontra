@@ -1045,12 +1045,16 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    const status =
+    let status =
       positionedGlyph.varGlyph.sources[sourceIndex].customData[
         "fontra.development.status"
       ];
+
     if (status === undefined) {
-      return;
+      status = statusFieldDefinitions.find((statusDef) => statusDef.isDefault)?.value;
+      if (status === undefined) {
+        return;
+      }
     }
 
     const color = [...statusFieldDefinitions[status].color];
