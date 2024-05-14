@@ -85,9 +85,7 @@ class FontSource:
     name: str
     location: Location = field(default_factory=dict)
     verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
-    guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
-        default_factory=list
-    )
+    guidelines: list[Guideline] = field(default_factory=list)
     customData: CustomData = field(default_factory=dict)
 
 
@@ -103,20 +101,6 @@ class Guideline:
     x: float
     y: float
     angle: float
-    customData: CustomData = field(default_factory=dict)
-
-
-@dataclass(kw_only=True)
-class HorizontalGuideline:
-    name: Optional[str]
-    y: float
-    customData: CustomData = field(default_factory=dict)
-
-
-@dataclass(kw_only=True)
-class VerticalGuideline:
-    name: Optional[str]
-    x: float
     customData: CustomData = field(default_factory=dict)
 
 
@@ -206,9 +190,7 @@ class StaticGlyph:
     yAdvance: Optional[float] = None
     verticalOrigin: Optional[float] = None
     anchors: list[Anchor] = field(default_factory=list)
-    guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
-        default_factory=list
-    )
+    guidelines: list[Guideline] = field(default_factory=list)
 
     def convertToPackedPaths(self):
         return replace(self, path=self.path.asPackedPath())
