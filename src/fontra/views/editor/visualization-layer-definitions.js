@@ -1049,11 +1049,13 @@ registerVisualizationLayerDefinition({
       positionedGlyph.varGlyph.sources[sourceIndex].customData[
         "fontra.development.status"
       ];
-    if (status === undefined) {
-      return;
-    }
 
-    const color = [...statusFieldDefinitions[status].color];
+    const defaultStatusValue = statusFieldDefinitions.find(
+      (statusDef) => statusDef.isDefault
+    )?.value;
+    const statusValue = status !== undefined ? status : defaultStatusValue;
+
+    const color = [...statusFieldDefinitions[statusValue].color];
     if (positionedGlyph.isEditing) {
       // in editing mode reduce opacity
       color[3] = color[3] * 0.4;
