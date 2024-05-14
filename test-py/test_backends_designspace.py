@@ -194,14 +194,19 @@ async def test_addLocalAxis(writableTestFont):
     assert asdict(glyph) == asdict(savedGlyph)
 
 
-# TODO: Global Guidelines keyword FontSources
-# async def test_getGuidelinesFont(writableTestFont):
-#     sources = await writableTestFont.getSources()
-#     dsSources = unpackSources(writableTestFont.dsDoc.sources)
-#     for source in dsSources:
-#         if source['filename'] == 'MutatorSansLightCondensed.ufo':
-#             print('source: ', source)
-#             assert source.get("guidelines") == []
+async def test_getGuidelinesFont(writableTestFont):
+    guidelinesFontTestData = [
+        Guideline(name="Guideline Cap Height", x=0, y=700, angle=0),
+        Guideline(name="Guideline Left", x=60, y=0, angle=90.0),
+        Guideline(name="Guideline Baseline Overshoot", x=0, y=-10, angle=0),
+    ]
+
+    sources = await writableTestFont.getSources()
+    sources = unstructure(sources)
+    sourcesList = list(sources.values())  # ignore UUIDs
+    for source in sourcesList:
+        if source["name"] == "MutatorSansLightCondensed.ufo":
+            assert source.guidelines == guidelinesFontTestData
 
 
 async def test_getGuidelinesGlyph(writableTestFont):
@@ -469,6 +474,11 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [
+            {"name": "Guideline Cap Height", "x": 0, "y": 700, "angle": 0},
+            {"name": "Guideline Left", "x": 60, "y": 0, "angle": 90.0},
+            {"name": "Guideline Baseline Overshoot", "x": 0, "y": -10, "angle": 0},
+        ],
     },
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},
@@ -480,6 +490,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 0.0, "weight": 150.0, "width": 1000.0},
@@ -491,6 +502,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 1000.0},
@@ -502,6 +514,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 0.0},
@@ -513,6 +526,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 1000.0},
@@ -524,6 +538,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 569.078},
@@ -535,6 +550,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
     {
         "location": {"italic": 1.0, "weight": 150.0, "width": 0.0},
@@ -546,6 +562,7 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [],
     },
 ]
 

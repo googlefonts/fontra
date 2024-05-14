@@ -1024,6 +1024,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
+        guidelines=unpackGuidelines(fontInfo.guidelines),
     )
 
 
@@ -1082,6 +1083,7 @@ class UFOGlyph:
 
 class UFOFontInfo:
     unitsPerEm = 1000
+    guidelines: list = []
 
 
 class UFOManager:
