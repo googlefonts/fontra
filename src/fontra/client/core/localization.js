@@ -29,8 +29,15 @@ export function translate(key) {
 }
 
 export function localizePage() {
+  // Translate all elements' data-tooltip that have data-tool attribute
   document.querySelectorAll("[data-tool]").forEach((el) => {
     const key = el.getAttribute("data-tool");
     el.setAttribute("data-tooltip", translate(key));
+  });
+
+  // Translate all elements' innerHTML that have data-translate-key attribute
+  document.querySelectorAll("[data-translate-key]").forEach((el) => {
+    const key = el.getAttribute("data-translate-key");
+    el.innerHTML = translate(key);
   });
 }
