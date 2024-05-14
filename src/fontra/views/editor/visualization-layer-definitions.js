@@ -317,12 +317,13 @@ registerVisualizationLayerDefinition({
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
 
-    context.strokeStyle = parameters.strokeColor;
-    context.lineWidth = parameters.strokeWidth;
     // TODO: Global Guidelines
 
     // Draw local guidelines
     for (const localGuideline of positionedGlyph.glyph.guidelines) {
+      context.save();
+      context.strokeStyle = parameters.strokeColor;
+      context.lineWidth = parameters.strokeWidth;
       // move to the origin of the guideline
       context.translate(localGuideline.x, localGuideline.y);
       context.rotate((localGuideline.angle * Math.PI) / 180);
@@ -378,6 +379,7 @@ registerVisualizationLayerDefinition({
         // without name
         strokeLineDashed(context, strokeLength, 0, strokeLength, 0, dashPattern);
       }
+      context.restore();
     }
   },
 });
