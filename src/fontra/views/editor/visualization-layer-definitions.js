@@ -1045,17 +1045,19 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    const status =
+    let status =
       positionedGlyph.varGlyph.sources[sourceIndex].customData[
         "fontra.development.status"
       ];
 
-    const defaultStatusValue = statusFieldDefinitions.find(
-      (statusDef) => statusDef.isDefault
-    )?.value;
-    const statusValue = status !== undefined ? status : defaultStatusValue;
+    if (status === undefined) {
+      status = statusFieldDefinitions.find((statusDef) => statusDef.isDefault)?.value;
+      if (status === undefined) {
+        return;
+      }
+    }
 
-    const color = [...statusFieldDefinitions[statusValue].color];
+    const color = [...statusFieldDefinitions[status].color];
     if (positionedGlyph.isEditing) {
       // in editing mode reduce opacity
       color[3] = color[3] * 0.4;
