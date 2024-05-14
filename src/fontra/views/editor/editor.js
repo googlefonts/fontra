@@ -1820,7 +1820,15 @@ export class EditorController {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
     } = parseSelection(this.sceneController.selection);
+    // TODO: Guidelines Font
+    // if (guidelineFontSelection) {
+    //   for (const guidelineIndex of reversed(guidelineFontSelection)) {
+    //     XXX
+    //   }
+    // }
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
@@ -1838,6 +1846,11 @@ export class EditorController {
           if (anchorSelection) {
             for (const anchorIndex of reversed(anchorSelection)) {
               layerGlyph.anchors.splice(anchorIndex, 1);
+            }
+          }
+          if (guidelineGlyphSelection) {
+            for (const guidelineIndex of reversed(guidelineGlyphSelection)) {
+              layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
           }
         }

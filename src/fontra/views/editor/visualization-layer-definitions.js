@@ -308,7 +308,7 @@ registerVisualizationLayerDefinition({
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const fontSize = parameters.fontSize;
     const margin = 0.5 * fontSize;
-    const moveUp = fontSize * 0.05; // move up -> visually centered
+    const moveUp = fontSize * 0.1; // move up -> visually centered
     const dashPattern = [parameters.strokeDash * 2, parameters.strokeDash];
     const originMarkerRadius = parameters.originMarkerRadius;
     const strokeWidth = parameters.strokeWidth;
