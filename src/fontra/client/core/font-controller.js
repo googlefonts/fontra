@@ -42,6 +42,8 @@ export class FontController {
     this._rootObject = {};
     this._rootObject.glyphMap = getGlyphMapProxy(glyphMap, this.characterMap);
     this._rootObject.axes = ensureDenseAxes(await this.font.getAxes());
+    // TODO: Guidelines Font, to the guidelines we need the font sources
+    // this._rootObject.sources = await this.font.getSources();
     this._rootObject.unitsPerEm = await this.font.getUnitsPerEm();
     this._rootObject.customData = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
