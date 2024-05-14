@@ -237,7 +237,8 @@ function makeRollbackChange(
   contours,
   participatingPointIndices,
   componentRollback,
-  anchorRollback
+  anchorRollback,
+  guidelineGlyphRollback
 ) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
@@ -264,6 +265,9 @@ function makeRollbackChange(
   }
   if (anchorRollback.length) {
     changes.push(consolidateChanges(anchorRollback, ["anchors"]));
+  }
+  if (guidelineGlyphRollback.length) {
+    changes.push(consolidateChanges(guidelineGlyphRollback, ["guidelines"]));
   }
   return consolidateChanges(changes);
 }
