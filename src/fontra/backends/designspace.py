@@ -1216,14 +1216,18 @@ def unpackAnchors(anchors):
 
 def unpackGuidelines(guidelines):
     return [
-        Guideline(
-            name=g.get("name"),
-            x=g["x"],
-            y=g["y"],
-            angle=g["angle"],
-            # TODO: Guidelines, how do we handle customData like:
-            # color=g.get("color"),
-            # identifier=g.get("color"),
+        (
+            Guideline(
+                name=g.get("name"),
+                x=g["x"],
+                y=g["y"],
+                angle=g["angle"],
+                # TODO: Guidelines, how do we handle customData like:
+                # color=g.get("color"),
+                # identifier=g.get("color"),
+            )
+            if g.get("name")
+            else Guideline(x=g["x"], y=g["y"], angle=g["angle"])
         )
         for g in guidelines
     ]
@@ -1258,7 +1262,11 @@ def populateUFOLayerGlyph(
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
     ]
     layerGlyph.guidelines = [
-        {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
+        (
+            {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
+            if g.name
+            else {"x": g.x, "y": g.y, "angle": g.angle}
+        )
         for g in staticGlyph.guidelines
     ]
     for component in staticGlyph.components:

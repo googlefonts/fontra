@@ -2108,11 +2108,13 @@ export class EditorController {
     }
 
     const newGuideline = {
-      name: tempGuideline.name ? tempGuideline.name : "guidelineName",
       x: !isNaN(tempGuideline.x) ? tempGuideline.x : Math.round(point.x),
       y: !isNaN(tempGuideline.y) ? tempGuideline.y : Math.round(point.y),
       angle: !isNaN(tempGuideline.angle) ? tempGuideline.angle : 0,
     };
+    if (tempGuideline.name) {
+      newGuideline.name = tempGuideline.name;
+    }
     const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
     const relativeScaleX = instance.xAdvance ? point.x / instance.xAdvance : null;
 
@@ -2152,19 +2154,6 @@ export class EditorController {
       const editedGuidelineName =
         nameController.model.guidelineName ||
         nameController.model.suggestedGuidelineName;
-      if (!editedGuidelineName.length) {
-        warnings.push("⚠️ The name must not be empty");
-      }
-      if (
-        !(
-          nameController.model.guidelineName ||
-          nameController.model.guidelineX ||
-          nameController.model.guidelineY ||
-          nameController.model.guidelineAngle
-        )
-      ) {
-        warnings.push("");
-      }
       for (const n of ["X", "Y", "Angle"]) {
         const value = nameController.model[`guideline${n}`];
         if (isNaN(value)) {
@@ -2183,7 +2172,7 @@ export class EditorController {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
-    const guidelineNameDefault = guideline ? guideline.name : "guidelineName";
+    const guidelineNameDefault = guideline ? guideline.name : undefined;
     const nameController = new ObservableController({
       guidelineName: guidelineNameDefault,
       guidelineX: undefined,
