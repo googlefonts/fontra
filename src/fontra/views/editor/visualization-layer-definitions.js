@@ -294,6 +294,8 @@ registerVisualizationLayerDefinition({
     strokeLength: 1000,
     originMarkerRadius: 4,
     strokeDash: 3,
+    margin: 5,
+    moveUp: 1,
   },
   colors: {
     strokeColor: "#0006",
@@ -306,89 +308,98 @@ registerVisualizationLayerDefinition({
     color: "#FFF",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    const fontSize = parameters.fontSize;
-    const margin = 0.5 * fontSize;
-    const moveUp = fontSize * 0.1; // move up -> visually centered
-    const dashPattern = [parameters.strokeDash * 2, parameters.strokeDash];
-    const originMarkerRadius = parameters.originMarkerRadius;
-    const strokeWidth = parameters.strokeWidth;
-    const strokeLength = parameters.strokeLength;
-
-    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.font = `${parameters.fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
-
-    // TODO: Guidelines Font
-    // Draw font guidelines
-    // const sourceIndex = positionedGlyph.glyph.sourceIndex;
-    // if (sourceIndex != undefined) {
-    //   const source = model.fontController.sources[sourceIndex];
-    //   console.log('source: ', source)
-    // }
 
     // Draw glyph guidelines
     for (const guidelineGlyph of positionedGlyph.glyph.guidelines) {
-      context.save();
-      context.strokeStyle = parameters.strokeColor;
-      context.lineWidth = parameters.strokeWidth;
-      // move to the origin of the guideline
-      context.translate(guidelineGlyph.x, guidelineGlyph.y);
-      context.rotate((guidelineGlyph.angle * Math.PI) / 180);
-      context.scale(1, -1);
-
-      // draw guideline origin marker
-      strokeCircle(context, 0, 0, originMarkerRadius);
-
-      let textWidth;
-      let textHeight;
-      // draw name
-      if (guidelineGlyph.name) {
-        const strLine = `${guidelineGlyph.name}`;
-        textWidth = Math.max(context.measureText(strLine).width);
-        textHeight = Math.max(getTextHeight(context, strLine));
-
-        context.fillStyle = parameters.strokeColor;
-        context.fillText(
-          strLine,
-          -textWidth / 2 - margin * 2 - originMarkerRadius / 2 - strokeWidth * 2,
-          textHeight / 2 - moveUp
-        );
-      }
-
-      // draw the line
-      if (guidelineGlyph.name) {
-        // with name
-        strokeLineDashed(
-          context,
-          -strokeLength,
-          0,
-          -textWidth - margin * 4,
-          0,
-          dashPattern
-        );
-        strokeLineDashed(
-          context,
-          -margin * 2,
-          0,
-          -originMarkerRadius / 2 - strokeWidth * 2,
-          0,
-          dashPattern
-        );
-        strokeLineDashed(
-          context,
-          originMarkerRadius / 2 + strokeWidth * 2,
-          0,
-          strokeLength,
-          0,
-          dashPattern
-        );
-      } else {
-        // without name
-        strokeLineDashed(context, strokeLength, 0, strokeLength, 0, dashPattern);
-      }
-      context.restore();
+      _drawGuideline(context, parameters, guidelineGlyph);
     }
+
+    // Draw font guidelines
+    const sourceIndex = positionedGlyph.glyph.sourceIndex;
+    if (sourceIndex === undefined) {
+      return;
+    }
+
+    // TODO: Guidelines Font
+    // const source = positionedGlyph.varGlyph.sources[sourceIndex];
+    // console.log('source: ', source)
+    // for (const guidelineFont of source.guidelines) {
+    //   console.log('guidelineFont: ', guidelineFont)
+    //   parameters.strokeDash = guidelineFont.strokeDash / 2
+    //   _drawGuideline(context, parameters, guidelineFont)
+    // }
   },
 });
+
+function _drawGuideline(context, parameters, guideline) {
+  context.save();
+  context.strokeStyle = parameters.strokeColor;
+  context.lineWidth = parameters.strokeWidth;
+  // move to the origin of the guideline
+  context.translate(guideline.x, guideline.y);
+  context.rotate((guideline.angle * Math.PI) / 180);
+  context.scale(1, -1);
+
+  // draw guideline origin marker
+  strokeCircle(context, 0, 0, parameters.originMarkerRadius);
+
+  let textWidth;
+  let textHeight;
+  // draw name
+  if (guideline.name) {
+    const strLine = `${guideline.name}`;
+    textWidth = Math.max(context.measureText(strLine).width);
+    textHeight = Math.max(getTextHeight(context, strLine));
+
+    context.fillStyle = parameters.strokeColor;
+    context.fillText(
+      strLine,
+      -textWidth / 2 -
+        parameters.margin * 2 -
+        parameters.originMarkerRadius / 2 -
+        parameters.strokeWidth * 2,
+      textHeight / 2 - parameters.fontSize * 0.1 // move up -> visually centered
+    );
+  }
+
+  // draw the line
+  if (guideline.name) {
+    // with name
+    strokeLineDashed(
+      context,
+      -parameters.strokeLength,
+      0,
+      -textWidth - parameters.margin * 4,
+      0,
+      [parameters.strokeDash * 2, parameters.strokeDash]
+    );
+    strokeLineDashed(
+      context,
+      -parameters.margin * 2,
+      0,
+      -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
+      0,
+      [parameters.strokeDash * 2, parameters.strokeDash]
+    );
+    strokeLineDashed(
+      context,
+      parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
+      0,
+      parameters.strokeLength,
+      0,
+      [parameters.strokeDash * 2, parameters.strokeDash]
+    );
+  } else {
+    // without name
+    strokeLineDashed(context, parameters.strokeLength, 0, parameters.strokeLength, 0, [
+      parameters.strokeDash * 2,
+      parameters.strokeDash,
+    ]);
+  }
+  context.restore();
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
