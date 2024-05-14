@@ -488,15 +488,15 @@ export class SceneModel {
       return { selection: anchorSelection };
     }
 
-    const guidelineLocalSelection = this.guidelineLocalSelectionAtPoint(point, size);
-    if (guidelineLocalSelection.size) {
-      return { selection: guidelineLocalSelection };
+    const guidelineGlyphSelection = this.guidelineGlyphSelectionAtPoint(point, size);
+    if (guidelineGlyphSelection.size) {
+      return { selection: guidelineGlyphSelection };
     }
 
-    // TODO: Guidelines Global
-    // const guidelineGlobalSelection = this.guidelineGlobalSelectionAtPoint(point, size);
-    // if (guidelineGlobalSelection.size) {
-    //   return { selection: guidelineGlobalSelection };
+    // TODO: Guidelines Font
+    // const guidelineFontSelection = this.guidelineFontSelectionAtPoint(point, size);
+    // if (guidelineFontSelection.size) {
+    //   return { selection: guidelineFontSelection };
     // }
 
     const { selection: segmentSelection, pathHit: pathHit } =
@@ -638,7 +638,7 @@ export class SceneModel {
     return new Set([]);
   }
 
-  guidelineLocalSelectionAtPoint(point, size) {
+  guidelineGlyphSelectionAtPoint(point, size) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -651,14 +651,14 @@ export class SceneModel {
     for (const [i, guideline] of enumerate(guidelines)) {
       const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
       if (guidelineMatch) {
-        return new Set([`guidelineLocal/${i}`]);
+        return new Set([`guidelineGlyph/${i}`]);
       }
     }
     return new Set([]);
   }
 
-  // TODO: Guidelines Global
-  //guidelineGlobalSelectionAtPoint(point, size) {
+  // TODO: Guidelines Font
+  //guidelineFontSelectionAtPoint(point, size) {
   // }
 
   selectionAtRect(selRect, pointFilterFunc) {

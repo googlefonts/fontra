@@ -22,8 +22,8 @@ export class EditBehaviorFactory {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
-      guidelineLocal: guidelineLocalSelection,
-      guidelineGlobal: guidelineGlobalSelection,
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
@@ -39,12 +39,12 @@ export class EditBehaviorFactory {
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
-    this.guidelinesLocal = unpackGuidelines(
+    this.guidelinesGlyph = unpackGuidelines(
       instance.guidelines,
-      guidelineLocalSelection || []
+      guidelineGlyphSelection || []
     );
-    // TODO: Guidelines Global
-    // this.guidelineGlobal = unpackGuidelines(instance.guidelines, guidelineLocalSelection || []);
+    // TODO: Guidelines Font
+    // this.guidelineFont = unpackGuidelines(instance.guidelines, guidelineGlyphSelection || []);
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -66,7 +66,7 @@ export class EditBehaviorFactory {
         this.contours,
         this.components,
         this.anchors,
-        this.guidelinesLocal,
+        this.guidelinesGlyph,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -83,7 +83,7 @@ class EditBehavior {
     contours,
     components,
     anchors,
-    guidelinesLocal,
+    guidelinesGlyph,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -142,19 +142,19 @@ class EditBehavior {
       anchorRollbackChanges.push(anchorRollback);
     }
 
-    const guidelineLocalRollbackChanges = [];
-    this.guidelineLocalEditFuncs = [];
-    for (const [guidelineIndex, guideline] of enumerate(guidelinesLocal)) {
+    const guidelineGlyphRollbackChanges = [];
+    this.guidelineGlyphEditFuncs = [];
+    for (const [guidelineIndex, guideline] of enumerate(guidelinesGlyph)) {
       if (!guideline) {
         continue;
       }
-      const [editFunc, guidelineLocalRollback] = makeGuidelineEditFunc(
-        guidelinesLocal[guidelineIndex],
+      const [editFunc, guidelineGlyphRollback] = makeGuidelineEditFunc(
+        guidelinesGlyph[guidelineIndex],
         guidelineIndex,
         this.roundFunc
       );
-      this.guidelineLocalEditFuncs.push(editFunc);
-      guidelineLocalRollbackChanges.push(guidelineLocalRollback);
+      this.guidelineGlyphEditFuncs.push(editFunc);
+      guidelineGlyphRollbackChanges.push(guidelineGlyphRollback);
     }
 
     this.rollbackChange = makeRollbackChange(
@@ -162,7 +162,7 @@ class EditBehavior {
       participatingPointIndices,
       componentRollbackChanges,
       anchorRollbackChanges,
-      guidelineLocalRollbackChanges
+      guidelineGlyphRollbackChanges
     );
   }
 
@@ -213,7 +213,7 @@ class EditBehavior {
     const anchorChanges = this.anchorEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
-    const guidelineLocalChanges = this.guidelineLocalEditFuncs?.map((editFunc) => {
+    const guidelineGlyphChanges = this.guidelineGlyphEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
     const changes = [];
@@ -226,8 +226,8 @@ class EditBehavior {
     if (anchorChanges && anchorChanges.length) {
       changes.push(consolidateChanges(anchorChanges, ["anchors"]));
     }
-    if (guidelineLocalChanges && guidelineLocalChanges.length) {
-      changes.push(consolidateChanges(guidelineLocalChanges, ["guidelines"]));
+    if (guidelineGlyphChanges && guidelineGlyphChanges.length) {
+      changes.push(consolidateChanges(guidelineGlyphChanges, ["guidelines"]));
     }
     return consolidateChanges(changes);
   }

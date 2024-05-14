@@ -185,15 +185,15 @@ export class EditorController {
     });
 
     this.sceneController.addEventListener(
-      "doubleClickedGuidelinesLocal",
+      "doubleClickedGuidelinesGlyph",
       async (event) => {
-        this.doubleClickedGuidelinesLocalCallback(event);
+        this.doubleClickedGuidelinesGlyphCallback(event);
       }
     );
 
-    // TODO: Guidelines Global
-    // this.sceneController.addEventListener("doubleClickedGuidelinesGlobal", async (event) => {
-    //   this.doubleClickedGuidelinesGlobalCallback(event);
+    // TODO: Guidelines Font
+    // this.sceneController.addEventListener("doubleClickedGuidelinesFont", async (event) => {
+    //   this.doubleClickedGuidelinesFontCallback(event);
     // });
 
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
@@ -1019,11 +1019,11 @@ export class EditorController {
     });
   }
 
-  async doubleClickedGuidelinesLocalCallback(event) {
+  async doubleClickedGuidelinesGlyphCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
 
-    const guidelineIndex = this.sceneController.doubleClickedGuidelineLocalIndices[0];
+    const guidelineIndex = this.sceneController.doubleClickedGuidelineGlyphIndices[0];
     let guideline = instance.guidelines[guidelineIndex];
     const { guideline: newGuideline } = await this.doAddEditGuidelineDialog(guideline);
     if (!newGuideline) {
@@ -1039,7 +1039,7 @@ export class EditorController {
           angle: !isNaN(newGuideline.angle) ? newGuideline.angle : oldGuideline.angle,
         };
       }
-      this.sceneController.selection = new Set([`guidelineLocal/${guidelineIndex}`]);
+      this.sceneController.selection = new Set([`guidelineGlyph/${guidelineIndex}`]);
       return "Edit Guideline";
     });
   }
@@ -1126,7 +1126,7 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push({
-      // TODO: Guidelines Global with altKey, something like this:
+      // TODO: Guidelines Font with altKey, something like this:
       //title: (event) => {return `Add ${event.altKey ? "Local" : "Global"} Guideline`},
       title: "Add Guideline",
       enabled: () => this.canAddGuideline(),
@@ -2113,12 +2113,12 @@ export class EditorController {
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
         this.sceneController.selection = new Set([
-          `guidelinesLocal/${newGuidelineIndex}`,
+          `guidelinesGlyph/${newGuidelineIndex}`,
         ]);
         return "Add Guideline";
       });
     }
-    // TODO: Guidelines Global
+    // TODO: Guidelines Font
   }
 
   async doAddEditGuidelineDialog(
@@ -2295,14 +2295,14 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
-      guidelineLocal: guidelineLocalIndices,
-      guidelineGlobal: guidelineGlobalIndices,
+      guidelineGlyph: guidelineGlyphIndices,
+      guidelineFont: guidelineFontIndices,
     } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    guidelineLocalIndices = guidelineLocalIndices || [];
-    guidelineGlobalIndices = guidelineGlobalIndices || [];
+    guidelineGlyphIndices = guidelineGlyphIndices || [];
+    guidelineFontIndices = guidelineFontIndices || [];
 
     let selectObjects = false;
     let selectAnchors = false;
@@ -2318,8 +2318,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       !anchorIndices.length &&
-      !guidelineLocalIndices.length &&
-      !guidelineGlobalIndices.length
+      !guidelineGlyphIndices.length &&
+      !guidelineFontIndices.length
     ) {
       if (hasObjects) {
         selectObjects = true;
@@ -2333,8 +2333,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       !anchorIndices.length &&
-      !guidelineLocalIndices.length &&
-      !guidelineGlobalIndices.length
+      !guidelineGlyphIndices.length &&
+      !guidelineFontIndices.length
     ) {
       if (hasAnchors) {
         selectObjects = true;
@@ -2347,8 +2347,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       anchorIndices.length &&
-      !guidelineLocalIndices.length &&
-      !guidelineGlobalIndices.length
+      !guidelineGlyphIndices.length &&
+      !guidelineFontIndices.length
     ) {
       if (hasAnchors) {
         selectAnchors = true;
@@ -2359,8 +2359,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       anchorIndices.length &&
-      !guidelineLocalIndices.length &&
-      !guidelineGlobalIndices.length
+      !guidelineGlyphIndices.length &&
+      !guidelineFontIndices.length
     ) {
       if (hasGuidelines) {
         selectGuidelines = true;
@@ -2389,9 +2389,9 @@ export class EditorController {
 
     if (selectGuidelines) {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
-        newSelection.add(`guidelineLocal/${guidelineIndex}`);
+        newSelection.add(`guidelineGlyph/${guidelineIndex}`);
       }
-      // TODO: Guidelines Global selection
+      // TODO: Guidelines Font selection
     }
     this.sceneController.selection = newSelection;
   }
