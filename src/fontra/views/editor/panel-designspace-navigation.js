@@ -374,7 +374,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+      const sourceIndex =
+        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
+      this.editSourceProperties(sourceIndex);
     });
 
     this.fontController.addChangeListener(
@@ -472,7 +474,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneSettings.location
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
-      sourceItem.interpolationContribution = interpolationContributions[index];
+      sourceItem.interpolationContribution =
+        interpolationContributions[sourceItem.sourceIndex];
     }
   }
 
