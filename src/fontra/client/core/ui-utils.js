@@ -114,8 +114,13 @@ export function labeledTextInput(label, controller, key, options) {
     inputElement.className = options.class;
   }
   inputElement.value = formatter.toString(controller.model[key]);
+  if (inputElement.type === "checkbox") {
+    inputElement.checked = controller.model[key];
+  }
   inputElement[options.continuous ? "oninput" : "onchange"] = () => {
-    const { value, error } = formatter.fromString(inputElement.value);
+    const inputValue =
+      inputElement.type === "checkbox" ? inputElement.checked : inputElement.value;
+    const { value, error } = formatter.fromString(inputValue);
     if (!error) {
       controller.model[key] = value;
     }
@@ -158,6 +163,18 @@ export const DefaultFormatter = {
     return {
       value: value,
     };
+  },
+};
+
+export const BooleanFormatter = {
+  toString: (value) => (value != undefined ? value.toString() : ""),
+  fromString: (value) => {
+    const boolean = Boolean(value);
+    if (boolean !== true && boolean !== false) {
+      return { error: "not a boolean" };
+    } else {
+      return { value: boolean };
+    }
   },
 };
 

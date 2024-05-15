@@ -327,16 +327,16 @@ function makeGuidelineEditFunc(guideline, guidelineIndex, roundFunc) {
       const editedGuideline = transform.constrained(oldGuideline);
       return makeGuidelineChange(
         guidelineIndex,
-        roundFunc(editedGuideline.x),
-        roundFunc(editedGuideline.y),
-        oldGuideline.angle
+        !isNaN(editedGuideline.x) ? roundFunc(editedGuideline.x) : 0,
+        !isNaN(editedGuideline.y) ? roundFunc(editedGuideline.y) : 0,
+        !isNaN(oldGuideline.angle) ? oldGuideline.angle : 0
       );
     },
     makeGuidelineChange(
       guidelineIndex,
-      oldGuideline.x,
-      oldGuideline.y,
-      oldGuideline.angle
+      !isNaN(oldGuideline.x) ? roundFunc(oldGuideline.x) : 0,
+      !isNaN(oldGuideline.y) ? roundFunc(oldGuideline.y) : 0,
+      !isNaN(oldGuideline.angle) ? oldGuideline.angle : 0
     ),
   ];
 }
@@ -492,7 +492,10 @@ function unpackAnchors(anchors, selectedAnchorIndices) {
 function unpackGuidelines(guidelines, selectedGuidelineIndices) {
   const unpackedGuidelines = new Array(guidelines.length);
   for (const i of selectedGuidelineIndices) {
-    unpackedGuidelines[i] = guidelines[i];
+    const guideline = guidelines[i];
+    if (!guideline.locked) {
+      unpackedGuidelines[i] = guidelines[i];
+    }
   }
   return unpackedGuidelines;
 }
