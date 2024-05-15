@@ -141,7 +141,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Delete glyphs ✅
 - Add / remove (variable) components ✅
 - Anchors ✅
-- Guidelines ✅
+- Guidelines (glyph level aka local) ✅
+- Guidelines (font level aka global)
 - View background layers
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
