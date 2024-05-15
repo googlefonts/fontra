@@ -98,9 +98,10 @@ class FontMetric:
 @dataclass(kw_only=True)
 class Guideline:
     name: Optional[str] = None
-    x: float
-    y: float
-    angle: float
+    x: float = 0
+    y: float = 0
+    angle: float = 0
+    locked: bool = False
     customData: CustomData = field(default_factory=dict)
 
 

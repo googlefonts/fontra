@@ -222,10 +222,10 @@ async def test_addGuidelinesGlyph(writableTestFont):
     layerName = "test"
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
     glyph.layers[layerName].glyph.guidelines.append(
-        Guideline(name="Left", x=60, y=0, angle=90)
+        Guideline(name="Left", x=60, angle=90)
     )
     # add guideline without a name
-    glyph.layers[layerName].glyph.guidelines.append(Guideline(x=0, y=0, angle=0))
+    glyph.layers[layerName].glyph.guidelines.append(Guideline(y=500))
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
@@ -465,9 +465,9 @@ getSourcesTestData = [
             "xHeight": {"value": 500},
         },
         "guidelines": [
-            {"name": "Guideline Cap Height", "x": 0, "y": 700, "angle": 0},
-            {"name": "Guideline Left", "x": 60, "y": 0, "angle": 90.0},
-            {"name": "Guideline Baseline Overshoot", "x": 0, "y": -10, "angle": 0},
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
     },
     {
@@ -514,9 +514,9 @@ getSourcesTestData = [
             "xHeight": {"value": 500},
         },
         "guidelines": [
-            {"name": "Guideline Cap Height", "x": 0, "y": 700, "angle": 0},
-            {"name": "Guideline Left", "x": 60, "y": 0, "angle": 90.0},
-            {"name": "Guideline Baseline Overshoot", "x": 0, "y": -10, "angle": 0},
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
     },
     {
@@ -530,9 +530,9 @@ getSourcesTestData = [
             "xHeight": {"value": 500},
         },
         "guidelines": [
-            {"name": "Guideline Cap Height", "x": 0, "y": 700, "angle": 0},
-            {"name": "Guideline Left", "x": 60, "y": 0, "angle": 90.0},
-            {"name": "Guideline Baseline Overshoot", "x": 0, "y": -10, "angle": 0},
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
     },
     {
@@ -546,9 +546,9 @@ getSourcesTestData = [
             "xHeight": {"value": 500},
         },
         "guidelines": [
-            {"name": "Guideline Cap Height", "x": 0, "y": 700, "angle": 0},
-            {"name": "Guideline Left", "x": 60, "y": 0, "angle": 90.0},
-            {"name": "Guideline Baseline Overshoot", "x": 0, "y": -10, "angle": 0},
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
     },
     {

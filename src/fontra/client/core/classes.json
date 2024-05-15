@@ -284,6 +284,9 @@
     "angle": {
       "type": "float"
     },
+    "locked": {
+      "type": "bool"
+    },
     "customData": {
       "type": "dict",
       "subtype": "Any"
