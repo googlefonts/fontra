@@ -394,9 +394,7 @@ export class EditorController {
                 const designspaceNavigationPanel = this.getSidebarPanel(
                   "designspace-navigation"
                 );
-                designspaceNavigationPanel.removeSource(
-                  designspaceNavigationPanel.sourcesList.getSelectedItemIndex()
-                );
+                designspaceNavigationPanel.removeSource();
               },
             },
             {

@@ -214,16 +214,20 @@ export default class DesignspaceNavigationPanel extends Panel {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         let index = event.newValue;
+
+        let sourceListItem = this.sourceListGetSourceItem(index);
+
         if (
-          varGlyphController?.sources[index]?.layerName !==
-          this.sourcesList.items[index]?.layerName
+          varGlyphController?.sources[index]?.layerName !== sourceListItem?.layerName
         ) {
           // the selectedSourceIndex event may come at a time that the
           // sourcesList hasn't been updated yet, so could be out of
           // sync. Prevent setting it to a wrong value.
-          index = undefined;
+          sourceListItem = undefined;
         }
-        this.sourcesList.setSelectedItemIndex(index);
+
+        this.sourcesList.setSelectedItem(sourceListItem);
+
         this._updateRemoveSourceButtonState();
         this._updateEditingStatus();
       }
@@ -349,13 +353,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
-    this.addRemoveSourceButtons.removeButtonCallback = () =>
-      this.removeSource(this.sourcesList.getSelectedItemIndex());
+    this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-      const sourceIndex = this.sourcesList.getSelectedItemIndex();
+      const selectedItem = this.sourcesList.getSelectedItem();
+      const sourceIndex = selectedItem?.sourceIndex;
       this.sceneSettings.selectedSourceIndex = sourceIndex;
       if (sourceIndex != undefined) {
         const varGlyphController =
@@ -373,7 +377,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+      const sourceIndex =
+        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
+      this.editSourceProperties(sourceIndex);
     });
 
     this.fontController.addChangeListener(
@@ -386,6 +392,21 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  sourceListGetSourceItem(sourceIndex) {
+    if (sourceIndex == undefined) {
+      return undefined;
+    }
+    return this.sourcesList.items.find((item) => item.sourceIndex == sourceIndex);
+  }
+
+  sourceListSetSelectedSource(sourceIndex) {
+    if (sourceIndex != undefined) {
+      this.sourcesList.setSelectedItem(this.sourceListGetSourceItem(sourceIndex));
+    } else {
+      this.sourcesList.setSelectedItemIndex(undefined);
+    }
   }
 
   resetAllAxesToDefault(event) {
@@ -461,7 +482,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneSettings.location
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
-      sourceItem.interpolationContribution = interpolationContributions[index];
+      sourceItem.interpolationContribution =
+        interpolationContributions[sourceItem.sourceIndex];
     }
   }
 
@@ -513,6 +535,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         visible: backgroundLayers[layerName] === source.name,
         editing: editingLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
+        sourceIndex: index,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
@@ -554,8 +577,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceItems.push(sourceController.model);
     }
+
     this.sourcesList.setItems(sourceItems, false, true);
-    this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
+    this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
       !this.designspaceLocation.axes.length;
@@ -594,10 +618,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneController.editingLayers = editingLayers;
   }
 
-  async removeSource(sourceIndex) {
-    if (sourceIndex === undefined) {
+  async removeSource() {
+    const sourceItem = this.sourcesList.getSelectedItem();
+    if (!sourceItem) {
       return;
     }
+    const sourceIndex = sourceItem.sourceIndex;
+
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
     const source = glyph.sources[sourceIndex];
