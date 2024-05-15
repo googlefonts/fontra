@@ -1144,6 +1144,8 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push({
+      // TODO: Guidelines handle altKey, something like this:
+      //title: (event) => {return `Add ${event.altKey ? "Unlock" : "Lock"} Guideline(s)`},
       title: () => "Lock Guideline(s)",
       enabled: () => this.canLockGuideline(),
       callback: () => this.doLockGuideline(),
