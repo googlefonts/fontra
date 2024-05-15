@@ -1866,6 +1866,11 @@ export class EditorController {
           }
           if (guidelineGlyphSelection) {
             for (const guidelineIndex of reversed(guidelineGlyphSelection)) {
+              const guideline = layerGlyph.guidelines[guidelineIndex];
+              if (guideline.locked) {
+                // don't delete locked guidelines
+                continue;
+              }
               layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
           }
