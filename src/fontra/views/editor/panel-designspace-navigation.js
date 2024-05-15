@@ -214,16 +214,19 @@ export default class DesignspaceNavigationPanel extends Panel {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         let index = event.newValue;
+
+        let sourceListItem = this.sourceListGetSourceItem(index);
+
         if (
-          varGlyphController?.sources[index]?.layerName !==
-          this.sourcesList.items[index]?.layerName
+          varGlyphController?.sources[index]?.layerName !== sourceListItem?.layerName
         ) {
           // the selectedSourceIndex event may come at a time that the
           // sourcesList hasn't been updated yet, so could be out of
           // sync. Prevent setting it to a wrong value.
-          index = undefined;
+          sourceListItem = undefined;
         }
-        this.sourceListSetSelectedSource(index);
+
+        this.sourcesList.setSelectedItem(sourceListItem);
 
         this._updateRemoveSourceButtonState();
         this._updateEditingStatus();
@@ -391,11 +394,16 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
+  sourceListGetSourceItem(sourceIndex) {
+    if (sourceIndex == undefined) {
+      return undefined;
+    }
+    return this.sourcesList.items.find((item) => item.sourceIndex == sourceIndex);
+  }
+
   sourceListSetSelectedSource(sourceIndex) {
     if (sourceIndex != undefined) {
-      this.sourcesList.setSelectedItem(
-        this.sourcesList.items.find((item) => item.sourceIndex == sourceIndex)
-      );
+      this.sourcesList.setSelectedItem(this.sourceListGetSourceItem(sourceIndex));
     } else {
       this.sourcesList.setSelectedItemIndex(undefined);
     }
@@ -569,6 +577,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceItems.push(sourceController.model);
     }
+
     this.sourcesList.setItems(sourceItems, false, true);
     this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
