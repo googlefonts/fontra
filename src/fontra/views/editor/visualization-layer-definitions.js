@@ -295,6 +295,7 @@ registerVisualizationLayerDefinition({
     originMarkerRadius: 4,
     strokeDash: 3,
     margin: 5,
+    iconSize: 12,
   },
   colors: {
     strokeColor: "#0006",
@@ -345,7 +346,18 @@ function _drawGuideline(context, parameters, guideline) {
   context.scale(1, -1);
 
   // draw guideline origin marker
-  strokeCircle(context, 0, 0, parameters.originMarkerRadius);
+  if (guideline.locked) {
+    context.save();
+    context.translate(-parameters.iconSize / 2, -parameters.iconSize / 2);
+    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    context.scale(1, -1);
+    context.lineWidth = 2;
+    context.strokeStyle = parameters.strokeColor;
+    context.stroke(lockIconPath2D);
+    context.restore();
+  } else {
+    strokeCircle(context, 0, 0, parameters.originMarkerRadius);
+  }
 
   let textWidth;
   let textHeight;

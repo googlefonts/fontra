@@ -23,7 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
-import { labeledTextInput } from "../core/ui-utils.js";
+import { BooleanFormatter, labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -1037,6 +1037,9 @@ export class EditorController {
           x: !isNaN(newGuideline.x) ? newGuideline.x : oldGuideline.x,
           y: !isNaN(newGuideline.y) ? newGuideline.y : oldGuideline.y,
           angle: !isNaN(newGuideline.angle) ? newGuideline.angle : oldGuideline.angle,
+          locked: [true, false].includes(newGuideline.locked)
+            ? newGuideline.locked
+            : oldGuideline.locked,
         };
       }
       this.sceneController.selection = new Set([`guidelineGlyph/${guidelineIndex}`]);
@@ -1132,6 +1135,12 @@ export class EditorController {
       enabled: () => this.canAddGuideline(),
       callback: (event) => this.doAddGuideline(event.altKey),
       shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      title: () => "Lock Guideline(s)",
+      enabled: () => this.canLockGuideline(),
+      callback: () => this.doLockGuideline(),
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -2089,6 +2098,45 @@ export class EditorController {
     return { contentElement, warningElement };
   }
 
+  canLockGuideline() {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
+      return false;
+    }
+    const {
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
+    } = parseSelection(this.sceneController.selection);
+    const guidelinSelection = new Array().concat(
+      guidelineGlyphSelection || [],
+      guidelineFontSelection || []
+    );
+    return guidelinSelection.length;
+  }
+
+  async doLockGuideline() {
+    const {
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
+    } = parseSelection(this.sceneController.selection);
+
+    // Lock glyph guidelines
+    if (guidelineGlyphSelection) {
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          for (const guidelineIndex of guidelineGlyphSelection) {
+            const guidelineGlyph = layerGlyph.guidelines[guidelineIndex];
+            if (!guidelineGlyph) {
+              continue;
+            }
+            guidelineGlyph.locked = true;
+          }
+        }
+        return "Lock Guideline(s)";
+      });
+    }
+    // TODO: Guidelines Font locking
+  }
+
   // TODO: We may want to make a more general code for adding and editing
   // so we can handle both anchors and guidelines with the same code
   // Guidelines
@@ -2111,6 +2159,7 @@ export class EditorController {
       x: !isNaN(tempGuideline.x) ? tempGuideline.x : Math.round(point.x),
       y: !isNaN(tempGuideline.y) ? tempGuideline.y : Math.round(point.y),
       angle: !isNaN(tempGuideline.angle) ? tempGuideline.angle : 0,
+      locked: tempGuideline.locked !== undefined ? tempGuideline.locked : false,
     };
     if (tempGuideline.name) {
       newGuideline.name = tempGuideline.name;
@@ -2178,10 +2227,12 @@ export class EditorController {
       guidelineX: undefined,
       guidelineY: undefined,
       guidelineAngle: undefined,
+      guidelineLocked: guideline ? guideline.locked : false,
       suggestedGuidelineName: guidelineNameDefault,
       suggestedGuidelineX: guideline ? guideline.x : Math.round(point.x),
       suggestedGuidelineY: guideline ? guideline.y : Math.round(point.y),
       suggestedGuidelineAngle: guideline ? guideline.angle : 0,
+      suggestedGuidelineLocked: guideline ? guideline.locked : false,
     });
 
     nameController.addKeyListener("guidelineName", (event) => {
@@ -2196,6 +2247,9 @@ export class EditorController {
     nameController.addKeyListener("guidelineAngle", (event) => {
       validateInput();
     });
+    nameController.addKeyListener("guidelineLocked", (event) => {
+      validateInput();
+    });
 
     const disable =
       nameController.model.guidelineName ||
@@ -2207,7 +2261,7 @@ export class EditorController {
     const { contentElement, warningElement } =
       this._guidelinePropertiesContentElement(nameController);
     const dialog = await dialogSetup(
-      `${titlePrefix} ${global ? "Global" : "Local"} Guideline`,
+      `${titlePrefix} ${global ? "Font" : "Glyph"} Guideline`,
       null,
       [
         { title: "Cancel", isCancelButton: true },
@@ -2234,6 +2288,7 @@ export class EditorController {
       x: Number(nameController.model.guidelineX),
       y: Number(nameController.model.guidelineY),
       angle: Number(nameController.model.guidelineAngle),
+      locked: nameController.model.guidelineLocked,
     };
 
     return { guideline: newGuideline };
@@ -2269,6 +2324,11 @@ export class EditorController {
         }),
         ...labeledTextInput("angle:", controller, "guidelineAngle", {
           placeholderKey: "suggestedGuidelineAngle",
+        }),
+        ...labeledTextInput("locked:", controller, "guidelineLocked", {
+          placeholderKey: "suggestedGuidelineLocked",
+          type: "checkbox",
+          formatter: BooleanFormatter,
         }),
         html.br(),
         warningElement,
@@ -2391,7 +2451,10 @@ export class EditorController {
 
     if (selectGuidelines) {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
-        newSelection.add(`guidelineGlyph/${guidelineIndex}`);
+        const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
+        if (!guideline.locked) {
+          newSelection.add(`guidelineGlyph/${guidelineIndex}`);
+        }
       }
       // TODO: Guidelines Font selection
     }

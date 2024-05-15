@@ -1219,9 +1219,9 @@ def unpackGuidelines(guidelines):
         (
             Guideline(
                 name=g.get("name"),
-                x=g["x"],
-                y=g["y"],
-                angle=g["angle"],
+                x=g.get("x", 0),
+                y=g.get("y", 0),
+                angle=g.get("angle", 0),
                 locked=g.get("locked", False),
                 # TODO: Guidelines, how do we handle customData like:
                 # color=g.get("color"),
@@ -1229,7 +1229,10 @@ def unpackGuidelines(guidelines):
             )
             if g.get("name")
             else Guideline(
-                x=g["x"], y=g["y"], angle=g["angle"], locked=g.get("locked", False)
+                x=g.get("x", 0),
+                y=g.get("y", 0),
+                angle=g.get("angle", 0),
+                locked=g.get("locked", False),
             )
         )
         for g in guidelines
