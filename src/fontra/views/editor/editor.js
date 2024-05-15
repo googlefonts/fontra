@@ -2098,7 +2098,7 @@ export class EditorController {
 
   // TODO: We may want to make a more general code for adding and editing
   // so we can handle both anchors and guidelines with the same code
-  // Guidelines Local
+  // Guidelines
   canAddGuideline() {
     return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
