@@ -216,9 +216,9 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     // context.stroke(lockIconPath2D);
     _drawLockIcon(
       context,
+      parameters,
       positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-      boundsYMin - 24,
-      parameters
+      boundsYMin - 24
     );
   }
 }
@@ -354,12 +354,14 @@ function _drawGuideline(context, parameters, guideline) {
   // draw guideline origin marker
   if (guideline.locked) {
     context.save();
-    context.translate(-parameters.iconSize / 2, -parameters.iconSize / 2);
-    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    context.rotate((guideline.angle * Math.PI) / 180);
     context.scale(1, -1);
-    context.lineWidth = 2;
-    context.strokeStyle = parameters.strokeColor;
-    context.stroke(lockIconPath2D);
+    _drawLockIcon(
+      context,
+      parameters,
+      -parameters.iconSize / 2,
+      parameters.iconSize / 2
+    );
     context.restore();
   } else {
     strokeCircle(context, 0, 0, parameters.originMarkerRadius);
@@ -1042,9 +1044,9 @@ registerVisualizationLayerDefinition({
       if (guideline.locked) {
         _drawLockIcon(
           context,
+          parameters,
           guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          parameters
+          guideline.y + parameters.iconSize / 2
         );
       } else {
         fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
@@ -1061,16 +1063,16 @@ registerVisualizationLayerDefinition({
       if (guideline.locked) {
         _drawLockIcon(
           context,
+          parameters,
           guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          parameters
+          guideline.y + parameters.iconSize / 2
         );
       } else {
         fillRoundNode(context, guideline, smoothSize);
       }
     }
 
-    // Hovered guideline
+    // // Hovered guideline
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
     for (const i of hoveredGuidelineGlyphIndices || []) {
@@ -1081,9 +1083,9 @@ registerVisualizationLayerDefinition({
       if (guideline.locked) {
         _drawLockIcon(
           context,
+          parameters,
           guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          parameters
+          guideline.y + parameters.iconSize / 2
         );
       } else {
         strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
@@ -1092,7 +1094,7 @@ registerVisualizationLayerDefinition({
   },
 });
 
-function _drawLockIcon(context, x, y, parameters) {
+function _drawLockIcon(context, parameters, x, y) {
   context.save();
   context.translate(x, y);
   context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
