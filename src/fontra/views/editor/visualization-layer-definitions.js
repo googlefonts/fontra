@@ -206,14 +206,20 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     model.fontController.readOnly
   ) {
     const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;
-    context.translate(
+    // context.translate(
+    //   positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
+    //   boundsYMin - 24
+    // );
+    // context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    // context.lineWidth = 2;
+    // context.strokeStyle = parameters.strokeColor;
+    // context.stroke(lockIconPath2D);
+    _drawLockIcon(
+      context,
       positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-      boundsYMin - 24
+      boundsYMin - 24,
+      parameters
     );
-    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
-    context.lineWidth = 2;
-    context.strokeStyle = parameters.strokeColor;
-    context.stroke(lockIconPath2D);
   }
 }
 
@@ -1007,6 +1013,7 @@ registerVisualizationLayerDefinition({
     strokeWidth: 1,
     hoverStrokeOffset: 4,
     underlayOffset: 2,
+    iconSize: 12,
   },
   colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
   colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
@@ -1032,7 +1039,16 @@ registerVisualizationLayerDefinition({
       if (!guideline) {
         continue;
       }
-      fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
+      if (guideline.locked) {
+        _drawLockIcon(
+          context,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          parameters
+        );
+      } else {
+        fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
+      }
     }
 
     // Selected guideline
@@ -1042,7 +1058,16 @@ registerVisualizationLayerDefinition({
       if (!guideline) {
         continue;
       }
-      fillRoundNode(context, guideline, smoothSize);
+      if (guideline.locked) {
+        _drawLockIcon(
+          context,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          parameters
+        );
+      } else {
+        fillRoundNode(context, guideline, smoothSize);
+      }
     }
 
     // Hovered guideline
@@ -1053,10 +1078,29 @@ registerVisualizationLayerDefinition({
       if (!guideline) {
         continue;
       }
-      strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
+      if (guideline.locked) {
+        _drawLockIcon(
+          context,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          parameters
+        );
+      } else {
+        strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
+      }
     }
   },
 });
+
+function _drawLockIcon(context, x, y, parameters) {
+  context.save();
+  context.translate(x, y);
+  context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+  context.lineWidth = 2;
+  context.strokeStyle = parameters.strokeColor;
+  context.stroke(lockIconPath2D);
+  context.restore();
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.selected.anchors",
