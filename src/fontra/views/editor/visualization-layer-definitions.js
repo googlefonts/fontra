@@ -306,7 +306,7 @@ registerVisualizationLayerDefinition({
     boxColor: "#1118",
     color: "#FFF",
   },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
+  draw: async (context, positionedGlyph, parameters, model, controller) => {
     context.font = `${parameters.fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
 
@@ -321,14 +321,17 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    // TODO: Guidelines Font
-    // const source = positionedGlyph.varGlyph.sources[sourceIndex];
-    // console.log('source: ', source)
-    // for (const guidelineFont of source.guidelines) {
-    //   console.log('guidelineFont: ', guidelineFont)
-    //   parameters.strokeDash = guidelineFont.strokeDash / 2
-    //   _drawGuideline(context, parameters, guidelineFont)
-    // }
+    const sources = await model.fontController.getSources();
+    const source = sources[sourceIndex];
+    if (source === undefined) {
+      return;
+    }
+
+    for (const guidelineFont of source.guidelines) {
+      console.log("guidelineFont: ", guidelineFont);
+      parameters.strokeDash = guidelineFont.strokeDash / 2;
+      _drawGuideline(context, parameters, guidelineFont);
+    }
   },
 });
 
