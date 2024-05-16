@@ -184,6 +184,7 @@ export class MenuPanel extends SimpleElement {
     this.shadowRoot.appendChild(this.menuElement);
     this.tabIndex = 0;
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    this.addEventListener("keyup", (event) => this.handleKeyUp(event));
     MenuPanel.openMenuPanels.push(this);
   }
 
@@ -266,6 +267,9 @@ export class MenuPanel extends SimpleElement {
   }
 
   handleKeyDown(event) {
+    if (event.altKey) {
+      this.handleAltKey(event);
+    }
     this.searchMenuItems(event.key);
     switch (event.key) {
       case "Escape":
@@ -283,6 +287,19 @@ export class MenuPanel extends SimpleElement {
           selectedItem.onmouseup(event);
         }
         break;
+    }
+  }
+
+  handleKeyUp(event) {
+    this.handleAltKey(event);
+  }
+
+  handleAltKey(event) {
+    for (const [index, item] of enumerate(this.menuItems)) {
+      if (item.altKey) {
+        const contextItem = this.menuElement.children[index];
+        contextItem.children[1].textContent = item.title(event);
+      }
     }
   }
 
