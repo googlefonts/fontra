@@ -425,20 +425,28 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _updateResetAllAxesButtonState() {
-    const location = this.sceneSettings.location;
-    let locationEmpty = true;
-    for (const axis of this.fontAxesElement.axes) {
-      if (
-        axis.name &&
-        axis.name in location &&
-        location[axis.name] !== axis.defaultValue
-      ) {
-        locationEmpty = false;
-        break;
+    for (const [location, axesElement, buttonID] of [
+      [this.sceneSettings.location, this.fontAxesElement, "reset-font-axes-button"],
+      [
+        this.sceneSettings.glyphLocation,
+        this.glyphAxesElement,
+        "reset-glyph-axes-button",
+      ],
+    ]) {
+      let locationEmpty = true;
+      for (const axis of axesElement.axes) {
+        if (
+          axis.name &&
+          axis.name in location &&
+          location[axis.name] !== axis.defaultValue
+        ) {
+          locationEmpty = false;
+          break;
+        }
       }
+      const button = this.qs(`#${buttonID}`);
+      button.disabled = locationEmpty;
     }
-    const button = this.qs("#reset-font-axes-button");
-    button.disabled = locationEmpty;
   }
 
   async onVisibilityHeaderClick(event) {
