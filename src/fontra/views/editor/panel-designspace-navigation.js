@@ -100,7 +100,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             icon: "refresh",
             id: "reset-glyph-axes-button",
             tooltip: "Reset glyph axes",
-            onclick: (event) => this.resetFontAxesToDefault(),
+            onclick: (event) => this.resetGlyphAxesToDefault(),
           }),
         ]),
       },
@@ -149,8 +149,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   setup() {
     this.fontAxesElement.values = this.sceneSettings.location;
-
-    // this.glyphAxesElement.values = this.sceneSettings.location;
+    this.glyphAxesElement.values = this.sceneSettings.glyphLocation;
 
     this.fontAxesElement.addEventListener(
       "locationChanged",
@@ -161,6 +160,19 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneSettingsController.setItem(
           "location",
           { ...this.fontAxesElement.values },
+          { senderID: this }
+        );
+      })
+    );
+
+    this.glyphAxesElement.addEventListener(
+      "locationChanged",
+      scheduleCalls(async (event) => {
+        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.autoViewBox = false;
+        this.sceneSettingsController.setItem(
+          "glyphLocation",
+          { ...this.glyphAxesElement.values },
           { senderID: this }
         );
       })
@@ -181,7 +193,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      "location",
+      ["location", "glyphLocation"],
       (event) => {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -191,7 +203,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        this.fontAxesElement.values = event.newValue;
+        if (event.key === "location") {
+          this.fontAxesElement.values = event.newValue;
+        } else {
+          // (event.key === "glyphLocation")
+          this.glyphAxesElement.values = event.newValue;
+        }
       },
       true
     );
@@ -399,7 +416,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   resetGlyphAxesToDefault(event) {
-    // TODO: implement
+    this.sceneSettings.glyphLocation = {};
   }
 
   _updateResetAllAxesButtonState() {

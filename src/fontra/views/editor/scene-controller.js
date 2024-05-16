@@ -63,6 +63,7 @@ export class SceneController {
       editLayerName: null,
       glyphLines: [],
       location: {},
+      glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
       selectedSourceIndex: null,
