@@ -1144,11 +1144,10 @@ export class EditorController {
       shortCut: undefined,
     });
 
-    const hasLockedGuidelines = this.selectionHasLockedGuidelines();
     this.glyphEditContextMenuItems.push({
-      title: () => this.getLockGuidelineLabel(hasLockedGuidelines),
+      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
       enabled: () => this.canLockGuideline(),
-      callback: (event) => this.doLockGuideline(!hasLockedGuidelines),
+      callback: (event) => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
