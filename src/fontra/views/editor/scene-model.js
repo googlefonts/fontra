@@ -129,8 +129,7 @@ export class SceneModel {
   }
 
   getGlobalLocation() {
-    const { globalLocation } = this._getSplitLocation();
-    return globalLocation;
+    return this.sceneSettings.location;
   }
 
   getLocalLocations(filterShownGlyphs = false) {
@@ -157,31 +156,13 @@ export class SceneModel {
     return localLocations;
   }
 
-  _getSplitLocation() {
-    const location = this.sceneSettings.location;
-
-    const globalAxisNames = Object.fromEntries(
-      this.fontController.globalAxes.map((axis) => [axis.name])
-    );
-    const globalLocation = {};
-    const localLocation = {};
-    for (const [name, value] of Object.entries(location)) {
-      if (name in globalAxisNames) {
-        globalLocation[name] = value;
-      } else {
-        localLocation[name] = value;
-      }
-    }
-    return { globalLocation, localLocation };
-  }
-
   _syncLocalLocations() {
-    const { globalLocation, localLocation } = this._getSplitLocation();
+    const glyphLocation = this.sceneSettings.glyphLocation;
 
     const glyphName = this.sceneSettings.selectedGlyphName;
     if (glyphName !== undefined) {
-      if (Object.keys(localLocation).length) {
-        this._localLocations[glyphName] = localLocation;
+      if (Object.keys(glyphLocation).length) {
+        this._localLocations[glyphName] = glyphLocation;
       } else {
         delete this._localLocations[glyphName];
       }
@@ -189,13 +170,8 @@ export class SceneModel {
   }
 
   _syncLocationFromGlyphName() {
-    const { globalLocation } = this._getSplitLocation();
-
     const glyphName = this.sceneSettings.selectedGlyphName;
-    this.sceneSettings.location = {
-      ...globalLocation,
-      ...this._localLocations[glyphName],
-    };
+    this.sceneSettings.glyphLocation = { ...this._localLocations[glyphName] };
   }
 
   setLocalLocations(localLocations) {
