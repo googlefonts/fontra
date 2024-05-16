@@ -2396,7 +2396,7 @@ export class EditorController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
-    viewInfo["location"] = this.sceneController.getGlobalLocation();
+    viewInfo["location"] = this.sceneSettings.location;
     const localLocations = this.sceneController.getLocalLocations(true);
     if (Object.keys(localLocations).length) {
       viewInfo["localLocations"] = localLocations;

@@ -700,10 +700,6 @@ export class SceneController {
     return layerNames;
   }
 
-  getGlobalLocation() {
-    return this.sceneModel.getGlobalLocation();
-  }
-
   getLocalLocations(filterShownGlyphs = false) {
     return this.sceneModel.getLocalLocations(filterShownGlyphs);
   }

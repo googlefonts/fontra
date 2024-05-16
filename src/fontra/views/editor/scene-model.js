@@ -131,10 +131,6 @@ export class SceneModel {
     );
   }
 
-  getGlobalLocation() {
-    return this.sceneSettings.location;
-  }
-
   getLocalLocations(filterShownGlyphs = false) {
     let localLocations;
     if (filterShownGlyphs) {
@@ -446,7 +442,7 @@ export class SceneModel {
 
   async getGlyphInstance(glyphName, layerName) {
     const location = {
-      ...this.getGlobalLocation(),
+      ...this.sceneSettings.location,
       ...this._localLocations[glyphName],
     };
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
