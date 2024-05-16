@@ -1136,7 +1136,8 @@ export class EditorController {
 
     this.glyphEditContextMenuItems.push({
       // TODO: Guidelines Font with altKey, something like this:
-      //title: (event) => {return `Add ${event.altKey ? "Local" : "Global"} Guideline`},
+      //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
+      //altKey: true,
       title: "Add Guideline",
       enabled: () => this.canAddGuideline(),
       callback: (event) => this.doAddGuideline(event.altKey),
@@ -1144,11 +1145,14 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push({
-      // TODO: Guidelines handle altKey, something like this:
-      //title: (event) => {return `Add ${event.altKey ? "Unlock" : "Lock"} Guideline(s)`},
-      title: () => "Lock Guideline(s)",
+      title: (event) => {
+        return event
+          ? `${event.altKey ? "Unlock" : "Lock"} Guideline(s)`
+          : "Lock Guideline(s)";
+      },
       enabled: () => this.canLockGuideline(),
-      callback: () => this.doLockGuideline(),
+      callback: (event) => this.doLockGuideline(event),
+      altKey: true,
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -2127,11 +2131,12 @@ export class EditorController {
     return guidelinSelection.length;
   }
 
-  async doLockGuideline() {
+  async doLockGuideline(event) {
     const {
       guidelineGlyph: guidelineGlyphSelection,
       guidelineFont: guidelineFontSelection,
     } = parseSelection(this.sceneController.selection);
+    const identifier = event.altKey ? "Unlock" : "Lock";
 
     // Lock glyph guidelines
     if (guidelineGlyphSelection) {
@@ -2142,10 +2147,10 @@ export class EditorController {
             if (!guidelineGlyph) {
               continue;
             }
-            guidelineGlyph.locked = true;
+            guidelineGlyph.locked = !event.altKey;
           }
         }
-        return "Lock Guideline(s)";
+        return `${identifier} Guideline(s)`;
       });
     }
     // TODO: Guidelines Font locking
