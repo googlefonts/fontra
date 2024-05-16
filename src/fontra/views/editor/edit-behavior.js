@@ -327,16 +327,18 @@ function makeGuidelineEditFunc(guideline, guidelineIndex, roundFunc) {
       const editedGuideline = transform.constrained(oldGuideline);
       return makeGuidelineChange(
         guidelineIndex,
-        !isNaN(editedGuideline.x) ? roundFunc(editedGuideline.x) : 0,
-        !isNaN(editedGuideline.y) ? roundFunc(editedGuideline.y) : 0,
-        !isNaN(oldGuideline.angle) ? oldGuideline.angle : 0
+        editedGuideline.x,
+        editedGuideline.y,
+        editedGuideline.angle,
+        roundFunc
       );
     },
     makeGuidelineChange(
       guidelineIndex,
-      !isNaN(oldGuideline.x) ? roundFunc(oldGuideline.x) : 0,
-      !isNaN(oldGuideline.y) ? roundFunc(oldGuideline.y) : 0,
-      !isNaN(oldGuideline.angle) ? oldGuideline.angle : 0
+      oldGuideline.x,
+      oldGuideline.y,
+      oldGuideline.angle,
+      roundFunc
     ),
   ];
 }
@@ -408,14 +410,20 @@ function makeAnchorChange(anchorIndex, x, y) {
   };
 }
 
-function makeGuidelineChange(guidelineIndex, x, y, angle) {
+function makeGuidelineChange(guidelineIndex, x, y, angle, roundFunc) {
+  let c = [];
+  if (x !== undefined) {
+    c.push({ f: "=", a: ["x", roundFunc(x)] });
+  }
+  if (y !== undefined) {
+    c.push({ f: "=", a: ["y", roundFunc(y)] });
+  }
+  if (angle !== undefined) {
+    c.push({ f: "=", a: ["angle", angle] });
+  }
   return {
     p: [guidelineIndex],
-    c: [
-      { f: "=", a: ["x", x] },
-      { f: "=", a: ["y", y] },
-      { f: "=", a: ["angle", angle] },
-    ],
+    c: c,
   };
 }
 
