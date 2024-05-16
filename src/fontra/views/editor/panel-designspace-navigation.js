@@ -703,10 +703,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
-    const location = glyphController.mapLocationGlobalToLocal(
-      // TODO: FIX for glyphLocation
-      this.sceneSettings.location
-    );
+    const location = glyphController.mapLocationGlobalToLocal({
+      ...this.sceneSettings.location,
+      ...this.sceneSettings.glyphLocation,
+    });
 
     const {
       location: newLocation,
@@ -897,7 +897,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     dialog.setContent(contentElement);
 
     setTimeout(
-      () => contentElement.shadowRoot.querySelector("#source-name-text-input")?.focus(),
+      () => contentElement.querySelector("#source-name-text-input")?.focus(),
       0
     );
 
