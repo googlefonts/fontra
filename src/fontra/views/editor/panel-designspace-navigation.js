@@ -497,7 +497,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const interpolationContributions = varGlyphController.getInterpolationContributions(
-      this.sceneSettings.location
+      { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation }
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
       sourceItem.interpolationContribution =
@@ -532,8 +532,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const sourceInterpolationStatus =
       varGlyphController?.sourceInterpolationStatus || [];
     const interpolationContributions =
-      varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
-      [];
+      varGlyphController?.getInterpolationContributions({
+        ...this.sceneSettings.location,
+        ...this.sceneSettings.glyphLocation,
+      }) || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
     let editingLayers = { ...this.sceneController.editingLayers };
 
@@ -692,6 +694,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyph = glyphController.glyph;
 
     const location = glyphController.mapLocationGlobalToLocal(
+      // TODO: FIX for glyphLocation
       this.sceneSettings.location
     );
 

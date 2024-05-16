@@ -36,10 +36,13 @@ export class SceneModel {
       }
     );
 
-    this.sceneSettingsController.addKeyListener("location", (event) => {
-      this._syncLocalLocations();
-      this.updateScene();
-    });
+    this.sceneSettingsController.addKeyListener(
+      ["location", "glyphLocation"],
+      (event) => {
+        this._syncLocalLocations();
+        this.updateScene();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener(
       "selectedGlyphName",
@@ -443,8 +446,8 @@ export class SceneModel {
 
   async getGlyphInstance(glyphName, layerName) {
     const location = {
-      ...this._localLocations[glyphName],
       ...this.getGlobalLocation(),
+      ...this._localLocations[glyphName],
     };
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
   }

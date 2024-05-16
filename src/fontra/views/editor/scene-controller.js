@@ -129,7 +129,10 @@ export class SceneController {
         }
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
+        const sourceIndex = varGlyphController?.getSourceIndex({
+          ...this.sceneSettings.location,
+          ...this.sceneSettings.glyphLocation,
+        });
         this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
           senderID: this,
         });
@@ -148,6 +151,8 @@ export class SceneController {
         }
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
+
+        // TODO: FIX for glyphLocation
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
         this.sceneSettingsController.setItem("location", location, { senderID: this });
