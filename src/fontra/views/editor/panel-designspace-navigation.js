@@ -58,7 +58,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   getContentElement() {
     const accordion = new Accordion();
     accordion.appendStyle(`
-      inline-svg {
+      .interpolation-error-icon {
         display: inline-block;
         height: 1.35em;
         width: 1.35em;
@@ -1111,7 +1111,12 @@ export default class DesignspaceNavigationPanel extends Panel {
               .join(" ") + ": "
           : "";
       const msg = `${nestedGlyphs}${error.message}`;
-      infoElement.appendChild(new InlineSVG(`/tabler-icons/${icon}.svg`));
+      infoElement.appendChild(
+        html.createDomElement("inline-svg", {
+          class: "interpolation-error-icon",
+          src: `/tabler-icons/${icon}.svg`,
+        })
+      );
       infoElement.append(msg);
       infoElement.appendChild(html.br());
     }
