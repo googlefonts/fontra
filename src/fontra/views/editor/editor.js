@@ -23,7 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
-import { BooleanFormatter, labeledTextInput } from "../core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -2337,11 +2337,7 @@ export class EditorController {
         ...labeledTextInput("angle:", controller, "guidelineAngle", {
           placeholderKey: "suggestedGuidelineAngle",
         }),
-        ...labeledTextInput("locked:", controller, "guidelineLocked", {
-          placeholderKey: "suggestedGuidelineLocked",
-          type: "checkbox",
-          formatter: BooleanFormatter,
-        }),
+        ...labeledCheckbox("locked", controller, "guidelineLocked", {}),
         html.br(),
         warningElement,
       ]
