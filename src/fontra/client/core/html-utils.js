@@ -164,4 +164,6 @@ export const link = createDomElement.bind(null, "link");
 export const select = createDomElement.bind(null, "select");
 export const option = createDomElement.bind(null, "option");
 export const style = createDomElement.bind(null, "style");
+export const details = createDomElement.bind(null, "details");
+export const summary = createDomElement.bind(null, "summary");
 // Let's add more once needed

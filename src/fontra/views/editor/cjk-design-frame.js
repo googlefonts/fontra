@@ -14,9 +14,12 @@ export class CJKDesignFrame {
       this.updateCJKDesignFrame(cjkDesignFrameGlyphName)
     );
 
-    editor.sceneSettingsController.addKeyListener("location", (event) => {
-      this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
-    });
+    editor.sceneSettingsController.addKeyListener(
+      ["location", "glyphLocation"],
+      (event) => {
+        this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
+      }
+    );
 
     registerVisualizationLayerDefinition({
       identifier: "fontra.cjk.design.frame",

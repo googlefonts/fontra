@@ -470,7 +470,7 @@ export class VariableGlyphController {
     });
   }
 
-  findNearestSourceFromGlobalLocation(location, skipInactive = false) {
+  findNearestSourceFromUserLocation(location, skipInactive = false) {
     location = this.mapLocationGlobalToLocal(location);
     const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
 
