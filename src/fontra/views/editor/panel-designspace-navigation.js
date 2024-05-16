@@ -71,7 +71,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           makeAccordionHeaderButton({
             icon: "tool",
             tooltip: "Edit font axes",
-            // onclick: (event) => console.log("edit font axes"),
+            onclick: (event) => {
+              const url = new URL(window.location);
+              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
+              url.hash = "#axes-panel";
+              window.open(url.toString());
+            },
           }),
           makeAccordionHeaderButton({
             icon: "refresh",
