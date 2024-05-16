@@ -2270,18 +2270,12 @@ export class EditorController {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
-    const guidelineNameDefault = guideline ? guideline.name : undefined;
     const nameController = new ObservableController({
-      guidelineName: guidelineNameDefault,
-      guidelineX: undefined,
-      guidelineY: undefined,
-      guidelineAngle: undefined,
+      guidelineName: guideline ? guideline.name : undefined,
+      guidelineX: guideline ? guideline.x : Math.round(point.x),
+      guidelineY: guideline ? guideline.y : Math.round(point.y),
+      guidelineAngle: guideline ? guideline.angle : undefined,
       guidelineLocked: guideline ? guideline.locked : false,
-      suggestedGuidelineName: guidelineNameDefault,
-      suggestedGuidelineX: guideline ? guideline.x : Math.round(point.x),
-      suggestedGuidelineY: guideline ? guideline.y : Math.round(point.y),
-      suggestedGuidelineAngle: guideline ? guideline.angle : 0,
-      suggestedGuidelineLocked: guideline ? guideline.locked : false,
     });
 
     nameController.addKeyListener("guidelineName", (event) => {
@@ -2362,18 +2356,11 @@ export class EditorController {
       },
       [
         ...labeledTextInput("Name:", controller, "guidelineName", {
-          placeholderKey: "suggestedGuidelineName",
           id: "guideline-name-text-input",
         }),
-        ...labeledTextInput("x:", controller, "guidelineX", {
-          placeholderKey: "suggestedGuidelineX",
-        }),
-        ...labeledTextInput("y:", controller, "guidelineY", {
-          placeholderKey: "suggestedGuidelineY",
-        }),
-        ...labeledTextInput("angle:", controller, "guidelineAngle", {
-          placeholderKey: "suggestedGuidelineAngle",
-        }),
+        ...labeledTextInput("x:", controller, "guidelineX", {}),
+        ...labeledTextInput("y:", controller, "guidelineY", {}),
+        ...labeledTextInput("angle:", controller, "guidelineAngle", {}),
         ...labeledCheckbox("locked", controller, "guidelineLocked", {}),
         html.br(),
         warningElement,
