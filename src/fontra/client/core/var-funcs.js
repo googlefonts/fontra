@@ -2,6 +2,8 @@ import { VariationError } from "./errors.js";
 
 export function addItemwise(a, b) {
   if (typeof a !== typeof b) {
+    console.log("a", a, typeof a);
+    console.log("b", b, typeof b);
     throw new VariationError(`incompatible object types: typeof ${a} != typeof ${b}`);
   } else if (typeof a === "string") {
     if (a !== b) {
