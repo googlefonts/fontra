@@ -88,6 +88,14 @@ describe("var-funcs tests", () => {
       );
       expect(addItemwise(null, null)).to.equal(null);
     });
+
+    it("add bool", () => {
+      expect(() => addItemwise(true, false)).to.throw(
+        "unexpected different booleans: true != false"
+      );
+      expect(addItemwise(true, true)).to.equal(true);
+      expect(addItemwise(false, false)).to.equal(false);
+    });
   });
 
   describe("testing subtraction", () => {
@@ -170,6 +178,14 @@ describe("var-funcs tests", () => {
       );
       expect(subItemwise(null, null)).to.equal(null);
     });
+
+    it("sub bool", () => {
+      expect(() => subItemwise(true, false)).to.throw(
+        "unexpected different booleans: true != false"
+      );
+      expect(subItemwise(true, true)).to.equal(true);
+      expect(subItemwise(false, false)).to.equal(false);
+    });
   });
 
   describe("testing multiplication", () => {
@@ -215,6 +231,10 @@ describe("var-funcs tests", () => {
 
     it("mul null", () => {
       expect(mulScalar(null, 3)).to.equal(null);
+    });
+
+    it("mul bool", () => {
+      expect(mulScalar(false, 3)).to.equal(false);
     });
   });
 });
