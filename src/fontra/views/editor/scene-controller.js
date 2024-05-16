@@ -152,10 +152,19 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
 
-        // TODO: FIX for glyphLocation
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
-        this.sceneSettingsController.setItem("location", location, { senderID: this });
+        const { fontLocation, glyphLocation } = splitLocation(
+          location,
+          varGlyphController.axes
+        );
+
+        this.sceneSettingsController.setItem("location", fontLocation, {
+          senderID: this,
+        });
+        this.sceneSettingsController.setItem("glyphLocation", glyphLocation, {
+          senderID: this,
+        });
       },
       true
     );
@@ -1198,4 +1207,21 @@ export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
     glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
     glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
   );
+}
+
+function splitLocation(location, glyphAxes) {
+  const glyphAxisNames = new Set(glyphAxes.map((axis) => axis.name));
+
+  const fontLocation = {};
+  const glyphLocation = {};
+
+  for (const [axisName, axisValue] of Object.entries(location)) {
+    if (glyphAxisNames.has(axisName)) {
+      glyphLocation[axisName] = axisValue;
+    } else {
+      fontLocation[axisName] = axisValue;
+    }
+  }
+
+  return { fontLocation, glyphLocation };
 }
