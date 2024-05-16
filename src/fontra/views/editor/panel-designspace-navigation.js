@@ -57,6 +57,16 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   getContentElement() {
     const accordion = new Accordion();
+    accordion.appendStyle(`
+      inline-svg {
+        display: inline-block;
+        height: 1.35em;
+        width: 1.35em;
+        color: var(--fontra-light-red-color);
+        transform: translate(0, 0.3em);
+        margin-right: 0.25em;
+      }
+    `);
     accordion.items = [
       {
         id: "font-axes-accordion-item",
