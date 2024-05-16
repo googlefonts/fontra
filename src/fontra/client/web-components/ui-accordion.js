@@ -107,8 +107,8 @@ export class Accordion extends UnlitElement {
     ];
   }
 
-  getItemElement(itemID) {
-    return this.shadowRoot.querySelector(`#${itemID}`);
+  querySelector(selector) {
+    return this.shadowRoot.querySelector(selector);
   }
 
   _toggleItem(itemElement) {
