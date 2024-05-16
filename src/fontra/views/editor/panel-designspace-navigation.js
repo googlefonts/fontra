@@ -142,24 +142,23 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
     ];
 
-    this.qs = accordion.shadowRoot.querySelector.bind(accordion.shadowRoot);
     return accordion;
   }
 
   get fontAxesElement() {
-    return this.qs("#font-axes");
+    return this.contentElement.querySelector("#font-axes");
   }
 
   get glyphAxesElement() {
-    return this.qs("#glyph-axes");
+    return this.contentElement.querySelector("#glyph-axes");
   }
 
   get glyphAxesAccordionItem() {
-    return this.qs("#glyph-axes-accordion-item");
+    return this.contentElement.querySelector("#glyph-axes-accordion-item");
   }
 
   get glyphSourcesAccordionItem() {
-    return this.qs("#glyph-sources-accordion-item");
+    return this.contentElement.querySelector("#glyph-sources-accordion-item");
   }
 
   setup() {
@@ -353,7 +352,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       width: "1.2em",
     });
 
-    this.sourcesList = this.qs("#sources-list");
+    this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.appendStyle(`
       .clickable-icon-header {
         transition: 150ms;
@@ -368,7 +367,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
-    this.addRemoveSourceButtons = this.qs("#sources-list-add-remove-buttons");
+    this.addRemoveSourceButtons = this.contentElement.querySelector(
+      "#sources-list-add-remove-buttons"
+    );
 
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
     this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
@@ -454,7 +455,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           break;
         }
       }
-      const button = this.qs(`#${buttonID}`);
+      const button = this.contentElement.querySelector(`#${buttonID}`);
       button.disabled = locationEmpty;
     }
   }
@@ -1078,7 +1079,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateInterpolationErrorInfo() {
-    const infoElement = this.qs("#interpolation-error-info");
+    const infoElement = this.contentElement.querySelector("#interpolation-error-info");
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
