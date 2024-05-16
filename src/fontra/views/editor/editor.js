@@ -1053,7 +1053,7 @@ export class EditorController {
     });
   }
 
-  async initContextMenuItems() {
+  initContextMenuItems() {
     this.basicContextMenuItems = [];
     for (const isRedo of [false, true]) {
       this.basicContextMenuItems.push({
@@ -2112,13 +2112,13 @@ export class EditorController {
     return { contentElement, warningElement };
   }
 
-  async selectionHasLockedGuidelines() {
+  selectionHasLockedGuidelines() {
     const {
       guidelineGlyph: guidelineGlyphSelection,
       guidelineFont: guidelineFontSelection,
     } = parseSelection(this.sceneController.selection);
 
-    const instance = await this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
+    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
     for (const guidelineIndex of guidelineGlyphSelection || []) {
       const guidelineGlyph = instance.guidelines[guidelineIndex];
       if (guidelineGlyph.locked) {
@@ -2132,7 +2132,7 @@ export class EditorController {
     return false;
   }
 
-  async getLockGuidelineLabel(hasLockedGuidelines) {
+  getLockGuidelineLabel(hasLockedGuidelines) {
     const {
       guidelineGlyph: guidelineGlyphSelection,
       guidelineFont: guidelineFontSelection,
