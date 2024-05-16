@@ -1017,8 +1017,18 @@ registerVisualizationLayerDefinition({
     underlayOffset: 2,
     iconSize: 12,
   },
-  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  colors: {
+    hoveredColorIcon: "#555",
+    hoveredColor: "#BBB",
+    selectedColor: "#000",
+    underColor: "#FFFA",
+  },
+  colorsDarkMode: {
+    hoveredColorIcon: "#BBB",
+    hoveredColor: "#BBB",
+    selectedColor: "#FFF",
+    underColor: "#0008",
+  },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const smoothSize = parameters.smoothSize;
@@ -1061,6 +1071,7 @@ registerVisualizationLayerDefinition({
         continue;
       }
       if (guideline.locked) {
+        context.strokeStyle = parameters.selectedColor;
         _drawLockIcon(
           context,
           parameters,
@@ -1081,6 +1092,7 @@ registerVisualizationLayerDefinition({
         continue;
       }
       if (guideline.locked) {
+        context.strokeStyle = parameters.hoveredColorIcon;
         _drawLockIcon(
           context,
           parameters,
