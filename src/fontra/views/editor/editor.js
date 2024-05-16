@@ -137,7 +137,15 @@ export class EditorController {
     this.sceneModel = this.sceneController.sceneModel;
 
     this.sceneSettingsController.addKeyListener(
-      ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
+      [
+        "align",
+        "location",
+        "glyphLocation",
+        "selectedGlyph",
+        "selection",
+        "text",
+        "viewBox",
+      ],
       (event) => {
         if (event.senderInfo?.senderID !== this && !event.senderInfo?.adjustViewBox) {
           this.updateWindowLocation(); // scheduled with delay
@@ -615,7 +623,7 @@ export class EditorController {
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
-          this.sceneSettings.location,
+          { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation },
           true
         );
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
@@ -1583,6 +1591,7 @@ export class EditorController {
       // Force sync between location and selectedSourceIndex, as the glyph's
       // source list may have changed
       this.sceneSettings.location = { ...this.sceneSettings.location };
+      this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -2104,9 +2113,10 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
-        this.sceneSettings.location
-      );
+      newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation({
+        ...this.sceneSettings.location,
+        ...this.sceneSettings.glyphLocation,
+      });
     } else {
       const numSources = varGlyphController.sources.length;
       newSourceIndex =
@@ -2271,6 +2281,7 @@ export class EditorController {
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
     this.sceneSettings.location = { ...this.sceneSettings.location };
+    this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }

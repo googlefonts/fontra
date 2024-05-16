@@ -121,17 +121,20 @@ export class SceneController {
     );
 
     // Set up the mutual dependencies between location and selectedSourceIndex
-    this.sceneSettingsController.addKeyListener("location", async (event) => {
-      if (event.senderInfo?.senderID === this) {
-        return;
+    this.sceneSettingsController.addKeyListener(
+      ["location", "glyphLocation"],
+      async (event) => {
+        if (event.senderInfo?.senderID === this) {
+          return;
+        }
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
+        this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
+          senderID: this,
+        });
       }
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
-      const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
-      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-        senderID: this,
-      });
-    });
+    );
 
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
