@@ -1053,7 +1053,7 @@ export class EditorController {
     });
   }
 
-  initContextMenuItems() {
+  async initContextMenuItems() {
     this.basicContextMenuItems = [];
     for (const isRedo of [false, true]) {
       this.basicContextMenuItems.push({
@@ -1144,15 +1144,11 @@ export class EditorController {
       shortCut: undefined,
     });
 
+    const hasLockedGuidelines = this.selectionHasLockedGuidelines();
     this.glyphEditContextMenuItems.push({
-      title: (event) => {
-        return event
-          ? `${event.altKey ? "Unlock" : "Lock"} Guideline(s)`
-          : "Lock Guideline(s)";
-      },
+      title: () => this.getLockGuidelineLabel(hasLockedGuidelines),
       enabled: () => this.canLockGuideline(),
-      callback: (event) => this.doLockGuideline(event),
-      altKey: true,
+      callback: (event) => this.doLockGuideline(!hasLockedGuidelines),
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -2116,6 +2112,40 @@ export class EditorController {
     return { contentElement, warningElement };
   }
 
+  async selectionHasLockedGuidelines() {
+    const {
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
+    } = parseSelection(this.sceneController.selection);
+
+    const instance = await this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
+    for (const guidelineIndex of guidelineGlyphSelection || []) {
+      const guidelineGlyph = instance.guidelines[guidelineIndex];
+      if (guidelineGlyph.locked) {
+        return true;
+      }
+    }
+
+    //TODO: Guidelines Font
+    // check if any of the selected guidelines are locked
+
+    return false;
+  }
+
+  async getLockGuidelineLabel(hasLockedGuidelines) {
+    const {
+      guidelineGlyph: guidelineGlyphSelection,
+      guidelineFont: guidelineFontSelection,
+    } = parseSelection(this.sceneController.selection);
+    const guidelinSelection = new Array().concat(
+      guidelineGlyphSelection || [],
+      guidelineFontSelection || []
+    );
+
+    const s = guidelinSelection.length > 1 ? "s" : "";
+    return `${hasLockedGuidelines ? "Unlock" : "Lock"} Guideline${s}`;
+  }
+
   canLockGuideline() {
     if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
       return false;
@@ -2131,12 +2161,12 @@ export class EditorController {
     return guidelinSelection.length;
   }
 
-  async doLockGuideline(event) {
+  async doLockGuideline(locking = false) {
     const {
       guidelineGlyph: guidelineGlyphSelection,
       guidelineFont: guidelineFontSelection,
     } = parseSelection(this.sceneController.selection);
-    const identifier = event.altKey ? "Unlock" : "Lock";
+    const identifier = locking ? "Unlock" : "Lock";
 
     // Lock glyph guidelines
     if (guidelineGlyphSelection) {
@@ -2147,7 +2177,7 @@ export class EditorController {
             if (!guidelineGlyph) {
               continue;
             }
-            guidelineGlyph.locked = !event.altKey;
+            guidelineGlyph.locked = locking;
           }
         }
         return `${identifier} Guideline(s)`;
