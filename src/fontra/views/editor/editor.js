@@ -2213,20 +2213,16 @@ export class EditorController {
     if (tempGuideline.name) {
       newGuideline.name = tempGuideline.name;
     }
-    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-    const relativeScaleX = instance.xAdvance ? point.x / instance.xAdvance : null;
 
     if (!global) {
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         for (const layerGlyph of Object.values(layerGlyphs)) {
-          if (isNaN(tempGuideline.x) && relativeScaleX != null) {
-            newGuideline.x = Math.round(layerGlyph.xAdvance * relativeScaleX);
-          }
           layerGlyph.guidelines.push({ ...newGuideline });
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
         this.sceneController.selection = new Set([
-          `guidelinesGlyph/${newGuidelineIndex}`,
+          `guidelineGlyph/${newGuidelineIndex}`,
         ]);
         return "Add Guideline";
       });
