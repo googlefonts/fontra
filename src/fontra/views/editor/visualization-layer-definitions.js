@@ -1052,29 +1052,21 @@ registerVisualizationLayerDefinition({
         continue;
       }
       if (guideline.locked) {
-        context.strokeStyle = parameters.hoveredColor;
-        _drawLockIcon(
-          context,
-          parameters,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          11
-        );
-        context.strokeStyle = parameters.underColorIcon;
-        _drawLockIcon(
-          context,
-          parameters,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          7
-        );
-        context.strokeStyle = parameters.hoveredColorIcon;
-        _drawLockIcon(
-          context,
-          parameters,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2
-        );
+        const drawIcons = [
+          [parameters.hoveredColor, 11],
+          [parameters.underColorIcon, 7],
+          [parameters.hoveredColorIcon, 2],
+        ];
+        for (const [color, strokeSize] of drawIcons) {
+          context.strokeStyle = color;
+          _drawLockIcon(
+            context,
+            parameters,
+            guideline.x - parameters.iconSize / 2,
+            guideline.y + parameters.iconSize / 2,
+            strokeSize
+          );
+        }
       } else {
         strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
       }
