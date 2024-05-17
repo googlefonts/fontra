@@ -441,7 +441,7 @@ export class VariableGlyphController {
     const localDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
     const sourceLocation = this.sources[sourceIndex].location;
-    return this.mapLocationLocalToGlobal({
+    return this.mapSourceLocationToUserLocation({
       ...defaultLocation,
       ...sourceLocation,
     });
@@ -480,7 +480,7 @@ export class VariableGlyphController {
     return location;
   }
 
-  mapLocationLocalToGlobal(location) {
+  mapSourceLocationToUserLocation(location) {
     // Fold NLI Axis into single user-facing axes
     location = mapLocationFoldNLI(location);
     // Un-apply global axis mapping (user-facing avar)
