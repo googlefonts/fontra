@@ -2134,7 +2134,7 @@ export class EditorController {
     } = parseSelection(this.sceneController.selection);
 
     const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-    if (guidelineSelection?.some((index) => instance.guidelines[index].locked)) {
+    if (guidelineSelection?.some((index) => instance.guidelines[index]?.locked)) {
       return true;
     }
 
