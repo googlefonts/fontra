@@ -2115,11 +2115,8 @@ export class EditorController {
     } = parseSelection(this.sceneController.selection);
 
     const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-    for (const guidelineIndex of guidelineSelection || []) {
-      const guideline = instance.guidelines[guidelineIndex];
-      if (guideline.locked) {
-        return true;
-      }
+    if (guidelineSelection?.some((index) => instance.guidelines[index].locked)) {
+      return true;
     }
 
     // TODO: Font Guidelines
