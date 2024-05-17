@@ -1083,13 +1083,13 @@ registerVisualizationLayerDefinition({
 });
 
 function _drawLockIcon(context, parameters, x, y, lineWidth = 2) {
-  context.save();
-  context.translate(x, y);
-  context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
-  context.lineWidth = lineWidth;
-  context.strokeStyle = parameters.strokeColor;
-  context.stroke(lockIconPath2D);
-  context.restore();
+  withSavedState(context, () => {
+    context.translate(x, y);
+    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    context.lineWidth = lineWidth;
+    context.strokeStyle = parameters.strokeColor;
+    context.stroke(lockIconPath2D);
+  });
 }
 
 registerVisualizationLayerDefinition({
