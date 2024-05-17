@@ -85,25 +85,25 @@ export class VariableGlyphController {
     this._continuousAxes = Array.from(this.axes);
     const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
 
-    for (let globalAxis of this.fontAxes) {
+    for (let fontAxis of this.fontAxes) {
       // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
-      const mapFunc = makeAxisMapFunc(globalAxis);
-      if (globalAxis.values) {
+      const mapFunc = makeAxisMapFunc(fontAxis);
+      if (fontAxis.values) {
         this._discreteAxes.push({
-          name: globalAxis.name,
-          defaultValue: mapFunc(globalAxis.defaultValue),
-          values: globalAxis.values.map(mapFunc),
+          name: fontAxis.name,
+          defaultValue: mapFunc(fontAxis.defaultValue),
+          values: fontAxis.values.map(mapFunc),
         });
         continue;
       }
-      globalAxis = {
-        name: globalAxis.name,
-        minValue: mapFunc(globalAxis.minValue),
-        defaultValue: mapFunc(globalAxis.defaultValue),
-        maxValue: mapFunc(globalAxis.maxValue),
+      fontAxis = {
+        name: fontAxis.name,
+        minValue: mapFunc(fontAxis.minValue),
+        defaultValue: mapFunc(fontAxis.defaultValue),
+        maxValue: mapFunc(fontAxis.maxValue),
       };
-      if (!glyphAxisNames.has(globalAxis.name)) {
-        this._continuousAxes.push(globalAxis);
+      if (!glyphAxisNames.has(fontAxis.name)) {
+        this._continuousAxes.push(fontAxis);
       }
     }
     this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
