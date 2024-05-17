@@ -347,6 +347,8 @@ function _drawGuideline(context, parameters, guideline) {
 
       let textWidth;
       let textHeight;
+      let moveText;
+      const halfMarker = parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2;
       // draw name
       if (guideline.name) {
         const strLine = `${guideline.name}`;
@@ -354,54 +356,38 @@ function _drawGuideline(context, parameters, guideline) {
         textHeight = Math.max(getTextHeight(context, strLine));
 
         context.fillStyle = parameters.strokeColor;
+        moveText =
+          0 - // this is centered to the guideline origin
+          textWidth / 2 - // move half width left -> right aligned to origin
+          halfMarker - // move half of the marker radius left + stroke width
+          parameters.margin * // move one margin to left to get a short line on the left
+            2; // move another margin left to get the margin on the right
         context.fillText(
           strLine,
-          -textWidth / 2 -
-            parameters.margin * 2 -
-            parameters.originMarkerRadius / 2 -
-            parameters.strokeWidth * 2,
+          moveText,
           textHeight / 2 - parameters.fontSize * 0.2 // move up -> visually centered
         );
       }
 
-      // draw lines
+      // collect lines
+      let lines = [[halfMarker, parameters.strokeLength]];
       if (guideline.name !== undefined) {
         // with name
-        const lines = [
-          [-textWidth - parameters.margin * 4, -parameters.strokeLength],
-          [
-            -parameters.margin * 2,
-            -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
-          ],
-          [
-            parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
-            parameters.strokeLength,
-          ],
-        ];
-        for (const [x1, x2] of lines) {
-          strokeLineDashed(context, x1, 0, x2, 0, [
-            parameters.strokeDash * 2,
-            parameters.strokeDash,
-          ]);
-        }
+        lines.push([
+          -textWidth / 2 + moveText - parameters.margin,
+          -parameters.strokeLength,
+        ]);
+        lines.push([-parameters.margin * 2, -halfMarker]);
       } else {
         // without name
-        strokeLineDashed(
-          context,
-          -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
-          0,
-          -parameters.strokeLength,
-          0,
-          [parameters.strokeDash * 2, parameters.strokeDash]
-        );
-        strokeLineDashed(
-          context,
-          parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
-          0,
-          parameters.strokeLength,
-          0,
-          [parameters.strokeDash * 2, parameters.strokeDash]
-        );
+        lines.push([-halfMarker, -parameters.strokeLength]);
+      }
+      // draw lines
+      for (const [x1, x2] of lines) {
+        strokeLineDashed(context, x1, 0, x2, 0, [
+          parameters.strokeDash * 2,
+          parameters.strokeDash,
+        ]);
       }
     });
   });
