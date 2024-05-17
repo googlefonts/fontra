@@ -23,7 +23,6 @@ export class EditBehaviorFactory {
       component: componentSelection,
       anchor: anchorSelection,
       guideline: guidelineSelection,
-      //fontGuideline: fontGuidelineSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
@@ -40,8 +39,6 @@ export class EditBehaviorFactory {
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
     this.guidelines = unpackGuidelines(instance.guidelines, guidelineSelection || []);
-    // TODO: Font Guidelines
-    // this.fontGuidelines = unpackGuidelines(fontSource.guidelines, fontGuidelineSelection || []);
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
