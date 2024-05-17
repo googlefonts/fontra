@@ -152,7 +152,7 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
 
-        const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
+        const location = varGlyphController.getUserLocationFromSourceIndex(sourceIndex);
 
         const { fontLocation, glyphLocation } = splitLocation(
           location,
@@ -1047,7 +1047,7 @@ export class SceneController {
         !(source.layerName in layerLocations)
       ) {
         layerLocations[source.layerName] =
-          varGlyph.mapSourceLocationToGlobal(sourceIndex);
+          varGlyph.getUserLocationFromSourceIndex(sourceIndex);
       }
     }
 

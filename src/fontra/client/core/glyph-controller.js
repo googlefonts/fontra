@@ -433,7 +433,7 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  mapSourceLocationToGlobal(sourceIndex) {
+  getUserLocationFromSourceIndex(sourceIndex) {
     const fontDefaultLocation = mapForward(
       makeDefaultLocation(this.fontAxes),
       this.fontAxes
