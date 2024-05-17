@@ -142,7 +142,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Add / remove (variable) components ✅
 - Anchors ✅
 - Guidelines (local, glyph level) ✅
-- Guidelines (font level aka global)
+- Guidelines (global, font level)
 - View background layers
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
