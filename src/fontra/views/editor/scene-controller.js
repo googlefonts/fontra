@@ -63,6 +63,7 @@ export class SceneController {
       editLayerName: null,
       glyphLines: [],
       location: {},
+      glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
       selectedSourceIndex: null,
@@ -120,17 +121,23 @@ export class SceneController {
     );
 
     // Set up the mutual dependencies between location and selectedSourceIndex
-    this.sceneSettingsController.addKeyListener("location", async (event) => {
-      if (event.senderInfo?.senderID === this) {
-        return;
+    this.sceneSettingsController.addKeyListener(
+      ["location", "glyphLocation"],
+      async (event) => {
+        if (event.senderInfo?.senderID === this) {
+          return;
+        }
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const sourceIndex = varGlyphController?.getSourceIndex({
+          ...this.sceneSettings.location,
+          ...this.sceneSettings.glyphLocation,
+        });
+        this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
+          senderID: this,
+        });
       }
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
-      const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
-      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-        senderID: this,
-      });
-    });
+    );
 
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
@@ -144,9 +151,20 @@ export class SceneController {
         }
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
+
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
-        this.sceneSettingsController.setItem("location", location, { senderID: this });
+        const { fontLocation, glyphLocation } = splitLocation(
+          location,
+          varGlyphController.axes
+        );
+
+        this.sceneSettingsController.setItem("location", fontLocation, {
+          senderID: this,
+        });
+        this.sceneSettingsController.setItem("glyphLocation", glyphLocation, {
+          senderID: this,
+        });
       },
       true
     );
@@ -682,10 +700,6 @@ export class SceneController {
     return layerNames;
   }
 
-  getGlobalLocation() {
-    return this.sceneModel.getGlobalLocation();
-  }
-
   getLocalLocations(filterShownGlyphs = false) {
     return this.sceneModel.getLocalLocations(filterShownGlyphs);
   }
@@ -1189,4 +1203,21 @@ export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
     glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
     glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
   );
+}
+
+function splitLocation(location, glyphAxes) {
+  const glyphAxisNames = new Set(glyphAxes.map((axis) => axis.name));
+
+  const fontLocation = {};
+  const glyphLocation = {};
+
+  for (const [axisName, axisValue] of Object.entries(location)) {
+    if (glyphAxisNames.has(axisName)) {
+      glyphLocation[axisName] = axisValue;
+    } else {
+      fontLocation[axisName] = axisValue;
+    }
+  }
+
+  return { fontLocation, glyphLocation };
 }

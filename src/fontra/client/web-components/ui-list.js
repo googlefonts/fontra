@@ -219,6 +219,10 @@ export class UIList extends UnlitElement {
   }
 
   setSelectedItem(item, shouldDispatchEvent = false) {
+    if (!item) {
+      this.setSelectedItemIndex(undefined, shouldDispatchEvent);
+      return;
+    }
     let index = -1;
     if (item && this.itemEqualFunc) {
       const itemEqualFunc = this.itemEqualFunc;

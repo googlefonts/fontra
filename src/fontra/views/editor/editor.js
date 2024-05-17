@@ -137,7 +137,15 @@ export class EditorController {
     this.sceneModel = this.sceneController.sceneModel;
 
     this.sceneSettingsController.addKeyListener(
-      ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
+      [
+        "align",
+        "location",
+        "glyphLocation",
+        "selectedGlyph",
+        "selection",
+        "text",
+        "viewBox",
+      ],
       (event) => {
         if (event.senderInfo?.senderID !== this && !event.senderInfo?.adjustViewBox) {
           this.updateWindowLocation(); // scheduled with delay
@@ -406,9 +414,7 @@ export class EditorController {
                 const designspaceNavigationPanel = this.getSidebarPanel(
                   "designspace-navigation"
                 );
-                designspaceNavigationPanel.removeSource(
-                  designspaceNavigationPanel.sourcesList.getSelectedItemIndex()
-                );
+                designspaceNavigationPanel.removeSource();
               },
             },
             {
@@ -628,8 +634,8 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
-          this.sceneSettings.location,
+        const nearestSourceIndex = glyphController.findNearestSourceFromUserLocation(
+          { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation },
           true
         );
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
@@ -1138,11 +1144,10 @@ export class EditorController {
       shortCut: undefined,
     });
 
-    const hasLockedGuidelines = this.selectionHasLockedGuidelines();
     this.glyphEditContextMenuItems.push({
-      title: () => this.getLockGuidelineLabel(hasLockedGuidelines),
+      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
       enabled: () => this.canLockGuideline(),
-      callback: (event) => this.doLockGuideline(!hasLockedGuidelines),
+      callback: (event) => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -1642,6 +1647,7 @@ export class EditorController {
       // Force sync between location and selectedSourceIndex, as the glyph's
       // source list may have changed
       this.sceneSettings.location = { ...this.sceneSettings.location };
+      this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -2492,9 +2498,10 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
-        this.sceneSettings.location
-      );
+      newSourceIndex = varGlyphController.findNearestSourceFromUserLocation({
+        ...this.sceneSettings.location,
+        ...this.sceneSettings.glyphLocation,
+      });
     } else {
       const numSources = varGlyphController.sources.length;
       newSourceIndex =
@@ -2659,6 +2666,7 @@ export class EditorController {
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
     this.sceneSettings.location = { ...this.sceneSettings.location };
+    this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
@@ -2773,7 +2781,7 @@ export class EditorController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
-    viewInfo["location"] = this.sceneController.getGlobalLocation();
+    viewInfo["location"] = this.sceneSettings.location;
     const localLocations = this.sceneController.getLocalLocations(true);
     if (Object.keys(localLocations).length) {
       viewInfo["localLocations"] = localLocations;

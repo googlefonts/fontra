@@ -26,6 +26,7 @@ import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
+import { Accordion } from "/web-components/ui-accordion.js";
 
 import Panel from "./panel.js";
 import { NumberFormatter } from "/core/ui-utils.js";
@@ -36,62 +37,6 @@ const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 export default class DesignspaceNavigationPanel extends Panel {
   identifier = "designspace-navigation";
   iconPath = "/images/sliders.svg";
-
-  static styles = `
-    #designspace-navigation {
-      height: 100%;
-      width: 100%;
-      padding: 1em;
-      display: flex;
-      flex-direction: column;
-      gap: 0.1em;
-      box-sizing: border-box;
-    }
-
-    .axis-buttons-container {
-      display: flex;
-      flex-direction: row;
-      gap: 0.2em;
-    }
-
-    /* this is to counteract the undesired interaction between button.hidden
-       and display: block */
-    [hidden] {
-      display: none !important;
-    }
-
-    icon-button {
-      display: block;
-      width: 1.5em;
-      height: 1.5em;
-    }
-
-    hr {
-      border: none;
-      border-top: 1px solid var(--horizontal-rule-color);
-      width: 100%;
-      height: 1px;
-      grid-column: 1 / -1;
-    }
-
-    #sources-list {
-      min-height: 100px;
-      flex-shrink: 1000;
-    }
-
-    #interpolation-error-info {
-      text-wrap: wrap;
-    }
-
-    inline-svg {
-      display: inline-block;
-      height: 1.35em;
-      width: 1.35em;
-      color: var(--fontra-light-red-color);
-      transform: translate(0, 0.3em);
-      margin-right: 0.25em;
-    }
-  `;
 
   constructor(editorController) {
     super(editorController);
@@ -111,59 +56,116 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   getContentElement() {
-    return html.div(
+    const accordion = new Accordion();
+    accordion.appendStyle(`
+      .interpolation-error-icon {
+        display: inline-block;
+        height: 1.35em;
+        width: 1.35em;
+        color: var(--fontra-light-red-color);
+        transform: translate(0, 0.3em);
+        margin-right: 0.25em;
+      }
+    `);
+    accordion.items = [
       {
-        id: "designspace-navigation",
-      },
-      [
-        html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
-        html.createDomElement(
+        id: "font-axes-accordion-item",
+        label: "Font axes",
+        open: true,
+        content: html.createDomElement(
           "designspace-location",
-          {
-            id: "designspace-location",
-          },
+          { id: "font-axes", style: "height: 100%;" },
           []
         ),
-        html.div({ class: "axis-buttons-container" }, [
-          html.createDomElement("icon-button", {
-            "id": "reset-axes-button",
-            "src": "/tabler-icons/refresh.svg",
-            "onclick": (event) => this.resetAllAxesToDefault(event),
-            "disabled": false,
-            "hidden": true,
-            "data-tooltip": "Reset all axes",
-            "data-tooltipposition": "bottom-left",
+        auxiliaryHeaderElement: groupAccordionHeaderButtons([
+          makeAccordionHeaderButton({
+            icon: "tool",
+            tooltip: "Edit font axes",
+            onclick: (event) => {
+              const url = new URL(window.location);
+              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
+              url.hash = "#axes-panel";
+              window.open(url.toString());
+            },
           }),
-          html.createDomElement("icon-button", {
-            "id": "edit-local-axes-button",
-            "src": "/tabler-icons/tool.svg",
-            "onclick": (event) => this.editLocalAxes(event),
-            "data-tooltip": "Edit local axes",
-            "data-tooltipposition": "bottom-left",
+          makeAccordionHeaderButton({
+            icon: "refresh",
+            id: "reset-font-axes-button",
+            tooltip: "Reset font axes",
+            onclick: (event) => this.resetFontAxesToDefault(),
           }),
         ]),
-        html.hr(),
-        html.createDomElement("ui-list", {
-          id: "sources-list",
-        }),
-        html.createDomElement("add-remove-buttons", {
-          style: "padding: 0.5em 0 0 0;",
-          id: "sources-list-add-remove-buttons",
-        }),
-        html.createDomElement("div", {
-          id: "interpolation-error-info",
-        }),
-      ]
-    );
+      },
+      {
+        id: "glyph-axes-accordion-item",
+        label: "Glyph axes",
+        open: true,
+        content: html.createDomElement(
+          "designspace-location",
+          { id: "glyph-axes", style: "height: 100%;" },
+          []
+        ),
+        auxiliaryHeaderElement: groupAccordionHeaderButtons([
+          makeAccordionHeaderButton({
+            icon: "tool",
+            tooltip: "Edit glyph axes",
+            onclick: (event) => this.editGlyphAxes(),
+          }),
+          makeAccordionHeaderButton({
+            icon: "refresh",
+            id: "reset-glyph-axes-button",
+            tooltip: "Reset glyph axes",
+            onclick: (event) => this.resetGlyphAxesToDefault(),
+          }),
+        ]),
+      },
+      {
+        id: "glyph-sources-accordion-item",
+        label: "Glyph sources",
+        open: true,
+        content: html.div(
+          {
+            style:
+              "display: grid; grid-template-rows: 1fr auto auto; height: 100%; box-sizing: border-box;",
+          },
+          [
+            html.createDomElement("ui-list", { id: "sources-list" }),
+            html.createDomElement("add-remove-buttons", {
+              style: "padding: 0.5em 0 0 0;",
+              id: "sources-list-add-remove-buttons",
+            }),
+            html.createDomElement("div", {
+              id: "interpolation-error-info",
+            }),
+          ]
+        ),
+      },
+    ];
+
+    return accordion;
+  }
+
+  get fontAxesElement() {
+    return this.contentElement.querySelector("#font-axes");
+  }
+
+  get glyphAxesElement() {
+    return this.contentElement.querySelector("#glyph-axes");
+  }
+
+  get glyphAxesAccordionItem() {
+    return this.contentElement.querySelector("#glyph-axes-accordion-item");
+  }
+
+  get glyphSourcesAccordionItem() {
+    return this.contentElement.querySelector("#glyph-sources-accordion-item");
   }
 
   setup() {
-    this.designspaceLocation = this.contentElement.querySelector(
-      "#designspace-location"
-    );
-    this.designspaceLocation.values = this.sceneSettings.location;
+    this.fontAxesElement.values = this.sceneSettings.location;
+    this.glyphAxesElement.values = this.sceneSettings.glyphLocation;
 
-    this.designspaceLocation.addEventListener(
+    this.fontAxesElement.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
         this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
@@ -171,7 +173,20 @@ export default class DesignspaceNavigationPanel extends Panel {
 
         this.sceneSettingsController.setItem(
           "location",
-          { ...this.designspaceLocation.values },
+          { ...this.fontAxesElement.values },
+          { senderID: this }
+        );
+      })
+    );
+
+    this.glyphAxesElement.addEventListener(
+      "locationChanged",
+      scheduleCalls(async (event) => {
+        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.autoViewBox = false;
+        this.sceneSettingsController.setItem(
+          "glyphLocation",
+          { ...this.glyphAxesElement.values },
           { senderID: this }
         );
       })
@@ -180,7 +195,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateAxes();
       this._updateSources();
-      this._updateEditLocalAxesButtonState();
       this._updateInterpolationErrorInfo();
     });
 
@@ -193,7 +207,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      "location",
+      ["location", "glyphLocation"],
       (event) => {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -203,7 +217,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        this.designspaceLocation.values = event.newValue;
+        if (event.key === "location") {
+          this.fontAxesElement.values = event.newValue;
+        } else {
+          // (event.key === "glyphLocation")
+          this.glyphAxesElement.values = event.newValue;
+        }
       },
       true
     );
@@ -214,16 +233,20 @@ export default class DesignspaceNavigationPanel extends Panel {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         let index = event.newValue;
+
+        let sourceListItem = this.sourceListGetSourceItem(index);
+
         if (
-          varGlyphController?.sources[index]?.layerName !==
-          this.sourcesList.items[index]?.layerName
+          varGlyphController?.sources[index]?.layerName !== sourceListItem?.layerName
         ) {
           // the selectedSourceIndex event may come at a time that the
           // sourcesList hasn't been updated yet, so could be out of
           // sync. Prevent setting it to a wrong value.
-          index = undefined;
+          sourceListItem = undefined;
         }
-        this.sourcesList.setSelectedItemIndex(index);
+
+        this.sourcesList.setSelectedItem(sourceListItem);
+
         this._updateRemoveSourceButtonState();
         this._updateEditingStatus();
       }
@@ -349,13 +372,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
-    this.addRemoveSourceButtons.removeButtonCallback = () =>
-      this.removeSource(this.sourcesList.getSelectedItemIndex());
-    this.addRemoveSourceButtons.hidden = true;
+    this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-      const sourceIndex = this.sourcesList.getSelectedItemIndex();
+      const selectedItem = this.sourcesList.getSelectedItem();
+      const sourceIndex = selectedItem?.sourceIndex;
       this.sceneSettings.selectedSourceIndex = sourceIndex;
       if (sourceIndex != undefined) {
         const varGlyphController =
@@ -373,7 +395,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+      const sourceIndex =
+        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
+      this.editSourceProperties(sourceIndex);
     });
 
     this.fontController.addChangeListener(
@@ -388,26 +412,52 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
-  resetAllAxesToDefault(event) {
+  sourceListGetSourceItem(sourceIndex) {
+    if (sourceIndex == undefined) {
+      return undefined;
+    }
+    return this.sourcesList.items.find((item) => item.sourceIndex == sourceIndex);
+  }
+
+  sourceListSetSelectedSource(sourceIndex) {
+    if (sourceIndex != undefined) {
+      this.sourcesList.setSelectedItem(this.sourceListGetSourceItem(sourceIndex));
+    } else {
+      this.sourcesList.setSelectedItemIndex(undefined);
+    }
+  }
+
+  resetFontAxesToDefault(event) {
     this.sceneSettings.location = {};
   }
 
+  resetGlyphAxesToDefault(event) {
+    this.sceneSettings.glyphLocation = {};
+  }
+
   _updateResetAllAxesButtonState() {
-    const location = this.sceneSettings.location;
-    let locationEmpty = true;
-    for (const axis of this.designspaceLocation.axes) {
-      if (
-        axis.name &&
-        axis.name in location &&
-        location[axis.name] !== axis.defaultValue
-      ) {
-        locationEmpty = false;
-        break;
+    for (const [location, axesElement, buttonID] of [
+      [this.sceneSettings.location, this.fontAxesElement, "reset-font-axes-button"],
+      [
+        this.sceneSettings.glyphLocation,
+        this.glyphAxesElement,
+        "reset-glyph-axes-button",
+      ],
+    ]) {
+      let locationEmpty = true;
+      for (const axis of axesElement.axes) {
+        if (
+          axis.name &&
+          axis.name in location &&
+          location[axis.name] !== axis.defaultValue
+        ) {
+          locationEmpty = false;
+          break;
+        }
       }
+      const button = this.contentElement.querySelector(`#${buttonID}`);
+      button.disabled = locationEmpty;
     }
-    const button = this.contentElement.querySelector("#reset-axes-button");
-    button.disabled = locationEmpty;
-    button.hidden = !this.designspaceLocation.axes.length;
   }
 
   async onVisibilityHeaderClick(event) {
@@ -458,10 +508,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const interpolationContributions = varGlyphController.getInterpolationContributions(
-      this.sceneSettings.location
+      { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation }
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
-      sourceItem.interpolationContribution = interpolationContributions[index];
+      sourceItem.interpolationContribution =
+        interpolationContributions[sourceItem.sourceIndex];
     }
   }
 
@@ -470,22 +521,17 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateAxes() {
-    const axes = [...this.globalAxes];
+    const fontAxes = [...this.globalAxes];
+    this.fontAxesElement.axes = fontAxes;
+
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
-    if (varGlyphController) {
-      const globalAxisNames = new Set(axes.map((axis) => axis.name));
-      const localAxes = getAxisInfoFromGlyph(varGlyphController).filter(
-        (axis) => !globalAxisNames.has(axis.name)
-      );
-      if (localAxes.length) {
-        if (axes.length) {
-          axes.push({ isDivider: true });
-        }
-        axes.push(...localAxes);
-      }
-    }
-    this.designspaceLocation.axes = axes;
+
+    const localAxes = varGlyphController
+      ? getAxisInfoFromGlyph(varGlyphController)
+      : [];
+    this.glyphAxesElement.axes = localAxes;
+    this.glyphAxesAccordionItem.hidden = !varGlyphController;
 
     this._updateResetAllAxesButtonState();
   }
@@ -497,8 +543,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const sourceInterpolationStatus =
       varGlyphController?.sourceInterpolationStatus || [];
     const interpolationContributions =
-      varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
-      [];
+      varGlyphController?.getInterpolationContributions({
+        ...this.sceneSettings.location,
+        ...this.sceneSettings.glyphLocation,
+      }) || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
     let editingLayers = { ...this.sceneController.editingLayers };
 
@@ -513,6 +561,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         visible: backgroundLayers[layerName] === source.name,
         editing: editingLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
+        sourceIndex: index,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
@@ -554,11 +603,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceItems.push(sourceController.model);
     }
+
     this.sourcesList.setItems(sourceItems, false, true);
-    this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
-    this.addRemoveSourceButtons.hidden = !sourceItems.length;
-    this.addRemoveSourceButtons.disableAddButton =
-      !this.designspaceLocation.axes.length;
+    this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
+
+    this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
@@ -594,10 +643,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneController.editingLayers = editingLayers;
   }
 
-  async removeSource(sourceIndex) {
-    if (sourceIndex === undefined) {
+  async removeSource() {
+    const sourceItem = this.sourcesList.getSelectedItem();
+    if (!sourceItem) {
       return;
     }
+    const sourceIndex = sourceItem.sourceIndex;
+
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
     const source = glyph.sources[sourceIndex];
@@ -652,9 +704,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
-    const location = glyphController.mapLocationGlobalToLocal(
-      this.sceneSettings.location
-    );
+    const location = glyphController.mapLocationGlobalToLocal({
+      ...this.sceneSettings.location,
+      ...this.sceneSettings.glyphLocation,
+    });
 
     const {
       location: newLocation,
@@ -928,18 +981,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     return { contentElement, warningElement };
   }
 
-  _updateEditLocalAxesButtonState() {
-    const button = this.contentElement.querySelector("#edit-local-axes-button");
-    button.disabled = !this.sceneModel.selectedGlyph;
-  }
-
-  async editLocalAxes() {
+  async editGlyphAxes() {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     if (!varGlyphController) {
       return;
     }
-    const dialog = await dialogSetup("Edit local axes", null, [
+    const dialog = await dialogSetup("Edit glyph axes", null, [
       { title: "Cancel", isCancelButton: true },
       { title: "Okay", isDefaultButton: true, result: "ok" },
     ]);
@@ -1064,7 +1112,12 @@ export default class DesignspaceNavigationPanel extends Panel {
               .join(" ") + ": "
           : "";
       const msg = `${nestedGlyphs}${error.message}`;
-      infoElement.appendChild(new InlineSVG(`/tabler-icons/${icon}.svg`));
+      infoElement.appendChild(
+        html.createDomElement("inline-svg", {
+          class: "interpolation-error-icon",
+          src: `/tabler-icons/${icon}.svg`,
+        })
+      );
       infoElement.append(msg);
       infoElement.appendChild(html.br());
     }
@@ -1098,6 +1151,7 @@ function roundComponentOrigins(components) {
 }
 
 function getAxisInfoFromGlyph(glyph) {
+  // Fold NLI axes into single axes
   const axisInfo = {};
   for (const axis of glyph?.axes || []) {
     const baseName = getAxisBaseName(axis.name);
@@ -1260,6 +1314,32 @@ function makeClickableIconHeader(iconPath, onClick) {
       }),
     ]
   );
+}
+
+function groupAccordionHeaderButtons(buttons) {
+  return html.div(
+    { style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto)` },
+    buttons
+  );
+}
+
+function makeAccordionHeaderButton(button) {
+  const options = {
+    style: "width: 1.4em; height: 1.4em;",
+    src: `/tabler-icons/${button.icon}.svg`,
+    onclick: button.onclick,
+  };
+
+  if (button.id) {
+    options.id = button.id;
+  }
+
+  if (button.tooltip) {
+    options["data-tooltip"] = button.tooltip;
+    options["data-tooltipposition"] = "bottom";
+  }
+
+  return html.createDomElement("icon-button", options);
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
