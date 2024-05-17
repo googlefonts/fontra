@@ -358,7 +358,7 @@ function _drawGuideline(context, parameters, guideline) {
         parameters.margin * 2 -
         parameters.originMarkerRadius / 2 -
         parameters.strokeWidth * 2,
-      textHeight / 2 - parameters.fontSize * 0.01 // move up -> visually centered
+      textHeight / 2 - parameters.fontSize * 0.2 // move up -> visually centered
     );
   }
 
