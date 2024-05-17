@@ -36,9 +36,9 @@ import {
 import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
-  constructor(glyph, globalAxes) {
+  constructor(glyph, fontAxes) {
     this.glyph = glyph;
-    this.globalAxes = globalAxes;
+    this.fontAxes = fontAxes;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -85,7 +85,7 @@ export class VariableGlyphController {
     this._continuousAxes = Array.from(this.axes);
     const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
 
-    for (let globalAxis of this.globalAxes) {
+    for (let globalAxis of this.fontAxes) {
       // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
       const mapFunc = makeAxisMapFunc(globalAxis);
       if (globalAxis.values) {
@@ -127,7 +127,7 @@ export class VariableGlyphController {
       }
       const seen = new Set();
       let found = true;
-      for (const axis of this.axes.concat(this.globalAxes)) {
+      for (const axis of this.axes.concat(this.fontAxes)) {
         if (seen.has(axis.name)) {
           continue;
         }
@@ -435,8 +435,8 @@ export class VariableGlyphController {
 
   mapSourceLocationToGlobal(sourceIndex) {
     const globalDefaultLocation = mapForward(
-      makeDefaultLocation(this.globalAxes),
-      this.globalAxes
+      makeDefaultLocation(this.fontAxes),
+      this.fontAxes
     );
     const localDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
@@ -474,7 +474,7 @@ export class VariableGlyphController {
 
   mapLocationGlobalToLocal(location) {
     // Apply global axis mapping (user-facing avar)
-    location = mapForward(location, this.globalAxes);
+    location = mapForward(location, this.fontAxes);
     // Expand folded NLI axes to their "real" axes
     location = mapLocationExpandNLI(location, this.axes);
     return location;
@@ -484,7 +484,7 @@ export class VariableGlyphController {
     // Fold NLI Axis into single user-facing axes
     location = mapLocationFoldNLI(location);
     // Un-apply global axis mapping (user-facing avar)
-    location = mapBackward(location, this.globalAxes);
+    location = mapBackward(location, this.fontAxes);
     return location;
   }
 }
