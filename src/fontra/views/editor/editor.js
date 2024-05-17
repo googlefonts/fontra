@@ -2130,12 +2130,10 @@ export class EditorController {
       guideline: guidelineSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
-    const guidelinSelection = new Array().concat(
-      guidelineSelection || []
-      //fontGuidelineSelection || []
-    );
+    const numGuidelines = guidelineSelection?.length || 0;
+    // + (fontGuidelineSelection?.length || 0);
 
-    const s = guidelinSelection.length > 1 ? "s" : "";
+    const s = numGuidelines > 1 ? "s" : "";
     return `${hasLockedGuidelines ? "Unlock" : "Lock"} Guideline${s}`;
   }
 
@@ -2147,11 +2145,10 @@ export class EditorController {
       guideline: guidelineSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
-    const guidelinSelection = new Array().concat(
-      guidelineSelection || []
-      //fontGuidelineSelection || []
-    );
-    return guidelinSelection.length;
+    const numGuidelines = guidelineSelection?.length || 0;
+    // + (fontGuidelineSelection?.length || 0);
+
+    return numGuidelines;
   }
 
   async doLockGuideline(locking = false) {
