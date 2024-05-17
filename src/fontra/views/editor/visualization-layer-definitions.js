@@ -289,7 +289,6 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     fontSize: 10,
     strokeWidth: 1,
-    strokeLength: 1000,
     originMarkerRadius: 4,
     strokeDash: 3,
     margin: 5,
@@ -308,6 +307,8 @@ registerVisualizationLayerDefinition({
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.font = `${parameters.fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
+    const { xMin, yMin, xMax, yMax } = controller.getViewBox();
+    parameters.strokeLength = Math.sqrt((xMax - xMin) ** 2 + (yMax - yMin) ** 2);
 
     // Draw glyph guidelines
     for (const guideline of positionedGlyph.glyph.guidelines) {
@@ -994,16 +995,18 @@ registerVisualizationLayerDefinition({
     iconSize: 12,
   },
   colors: {
-    hoveredColorIcon: "#555",
+    hoveredColorIcon: "#0006",
     hoveredColor: "#BBB",
     selectedColor: "#000",
     underColor: "#FFFA",
+    underColorIcon: "#f6f6f6",
   },
   colorsDarkMode: {
     hoveredColorIcon: "#BBB",
     hoveredColor: "#BBB",
     selectedColor: "#FFF",
     underColor: "#0008",
+    underColorIcon: "#333",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
@@ -1068,6 +1071,22 @@ registerVisualizationLayerDefinition({
         continue;
       }
       if (guideline.locked) {
+        context.strokeStyle = parameters.hoveredColor;
+        _drawLockIcon(
+          context,
+          parameters,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          11
+        );
+        context.strokeStyle = parameters.underColorIcon;
+        _drawLockIcon(
+          context,
+          parameters,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          7
+        );
         context.strokeStyle = parameters.hoveredColorIcon;
         _drawLockIcon(
           context,
@@ -1082,11 +1101,11 @@ registerVisualizationLayerDefinition({
   },
 });
 
-function _drawLockIcon(context, parameters, x, y) {
+function _drawLockIcon(context, parameters, x, y, lineWidth = 2) {
   context.save();
   context.translate(x, y);
   context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
-  context.lineWidth = 2;
+  context.lineWidth = lineWidth;
   context.strokeStyle = parameters.strokeColor;
   context.stroke(lockIconPath2D);
   context.restore();
