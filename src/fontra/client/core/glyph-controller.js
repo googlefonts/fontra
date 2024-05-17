@@ -119,7 +119,7 @@ export class VariableGlyphController {
   }
 
   _getSourceIndex(location) {
-    location = this.mapLocationGlobalToLocal(location);
+    location = this.mapUserLocationToSourceLocation(location);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
       if (source.inactive) {
@@ -340,7 +340,7 @@ export class VariableGlyphController {
   }
 
   getInterpolationContributions(location) {
-    location = this.mapLocationGlobalToLocal(location);
+    location = this.mapUserLocationToSourceLocation(location);
     const contributions = this.model.getSourceContributions(location);
 
     let sourceIndex = 0;
@@ -396,7 +396,7 @@ export class VariableGlyphController {
 
   async instantiateController(location, layerName, getGlyphFunc) {
     let sourceIndex = this.getSourceIndex(location);
-    location = this.mapLocationGlobalToLocal(location);
+    location = this.mapUserLocationToSourceLocation(location);
 
     if (!layerName || !(layerName in this.layers)) {
       if (sourceIndex !== undefined) {
@@ -448,7 +448,7 @@ export class VariableGlyphController {
   }
 
   findNearestSourceFromUserLocation(location, skipInactive = false) {
-    location = this.mapLocationGlobalToLocal(location);
+    location = this.mapUserLocationToSourceLocation(location);
     const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
 
     // Ensure locations are *not* sparse
@@ -472,7 +472,7 @@ export class VariableGlyphController {
     return sourceIndexMapping[nearestIndex];
   }
 
-  mapLocationGlobalToLocal(location) {
+  mapUserLocationToSourceLocation(location) {
     // Apply global axis mapping (user-facing avar)
     location = mapForward(location, this.fontAxes);
     // Expand folded NLI axes to their "real" axes
@@ -876,7 +876,8 @@ export async function decomposeComponents(
       // Missing base glyph
       continue;
     }
-    const parentSourceLocation = baseGlyph.mapLocationGlobalToLocal(parentLocation);
+    const parentSourceLocation =
+      baseGlyph.mapUserLocationToSourceLocation(parentLocation);
 
     const location = {
       ...parentSourceLocation,
