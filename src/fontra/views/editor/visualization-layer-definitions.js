@@ -366,37 +366,30 @@ function _drawGuideline(context, parameters, guideline) {
   // draw the line
   if (guideline.name !== undefined) {
     // with name
-    strokeLineDashed(
-      context,
-      -parameters.strokeLength,
-      0,
-      -textWidth - parameters.margin * 4,
-      0,
-      [parameters.strokeDash * 2, parameters.strokeDash]
-    );
-    strokeLineDashed(
-      context,
-      -parameters.margin * 2,
-      0,
-      -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
-      0,
-      [parameters.strokeDash * 2, parameters.strokeDash]
-    );
-    strokeLineDashed(
-      context,
-      parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
-      0,
-      parameters.strokeLength,
-      0,
-      [parameters.strokeDash * 2, parameters.strokeDash]
-    );
+    const lines = [
+      [-textWidth - parameters.margin * 4, -parameters.strokeLength],
+      [
+        -parameters.margin * 2,
+        -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
+      ],
+      [
+        parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2,
+        parameters.strokeLength,
+      ],
+    ];
+    for (const [x1, x2] of lines) {
+      strokeLineDashed(context, x1, 0, x2, 0, [
+        parameters.strokeDash * 2,
+        parameters.strokeDash,
+      ]);
+    }
   } else {
     // without name
     strokeLineDashed(
       context,
-      -parameters.strokeLength,
-      0,
       -parameters.originMarkerRadius / 2 - parameters.strokeWidth * 2,
+      0,
+      -parameters.strokeLength,
       0,
       [parameters.strokeDash * 2, parameters.strokeDash]
     );
