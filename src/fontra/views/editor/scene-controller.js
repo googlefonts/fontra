@@ -62,7 +62,7 @@ export class SceneController {
       align: "center",
       editLayerName: null,
       glyphLines: [],
-      location: {},
+      userLocation: {},
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
@@ -122,7 +122,7 @@ export class SceneController {
 
     // Set up the mutual dependencies between location and selectedSourceIndex
     this.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationUser", "glyphLocation"],
       async (event) => {
         if (event.senderInfo?.senderID === this) {
           return;
@@ -130,7 +130,7 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.location,
+          ...this.sceneSettings.fontLocationUser,
           ...this.sceneSettings.glyphLocation,
         });
         this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
@@ -159,7 +159,7 @@ export class SceneController {
           varGlyphController.axes
         );
 
-        this.sceneSettingsController.setItem("location", fontLocation, {
+        this.sceneSettingsController.setItem("fontLocationUser", fontLocation, {
           senderID: this,
         });
         this.sceneSettingsController.setItem("glyphLocation", glyphLocation, {
@@ -900,7 +900,7 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        location: this.sceneSettings.location,
+        location: this.sceneSettings.fontLocationUser,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -949,7 +949,7 @@ export class SceneController {
         // Pass a copy of the location to ensure the listeners are called even
         // if the location didn't change: its dependents may vary depending on
         // the glyph data (eg. a source being there or not)
-        this.sceneSettings.location = { ...undoInfo.location };
+        this.sceneSettings.fontLocationUser = { ...undoInfo.location };
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();

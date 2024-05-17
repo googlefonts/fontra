@@ -15,7 +15,7 @@ export class CJKDesignFrame {
     );
 
     editor.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationUser", "glyphLocation"],
       (event) => {
         this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
       }

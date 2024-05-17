@@ -306,11 +306,13 @@ export default class ReferenceFontPanel extends Panel {
       }
     );
 
-    editorController.sceneSettingsController.addKeyListener("location", () => {
+    editorController.sceneSettingsController.addKeyListener("fontLocationUser", () => {
       const fontVariationSettings = [];
       for (const axis of this.editorController.fontController.globalAxes) {
         fontVariationSettings.push(
-          `'${axis.tag}' ${this.editorController.sceneSettings.location[axis.name]}`
+          `'${axis.tag}' ${
+            this.editorController.sceneSettings.fontLocationUser[axis.name]
+          }`
         );
       }
       const cssString = fontVariationSettings.join(",");

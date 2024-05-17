@@ -37,7 +37,7 @@ export class SceneModel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationUser", "glyphLocation"],
       (event) => {
         this._syncLocalLocations();
         this.updateScene();
@@ -442,7 +442,7 @@ export class SceneModel {
 
   async getGlyphInstance(glyphName, layerName) {
     const location = {
-      ...this.sceneSettings.location,
+      ...this.sceneSettings.fontLocationUser,
       ...this._localLocations[glyphName],
     };
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
