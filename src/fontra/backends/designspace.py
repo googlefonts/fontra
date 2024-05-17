@@ -710,8 +710,8 @@ class DesignspaceBackend:
                 outputLocation=mapping.outputLocation,
             )
 
-        self._writeDesignSpaceDocument()
         self.updateAxisInfo()
+        self._writeDesignSpaceDocument()
         self.loadUFOLayers()
 
     async def getSources(self) -> dict[str, FontSource]:
@@ -777,6 +777,8 @@ class DesignspaceBackend:
 
     def _writeDesignSpaceDocument(self):
         self.dsDoc.write(self.dsDoc.path)
+        for source in self.dsDoc.sources:
+            source.location = {**self.defaultLocation, **source.location}
         self.dsDocModTime = os.stat(self.dsDoc.path).st_mtime
 
     async def watchExternalChanges(
