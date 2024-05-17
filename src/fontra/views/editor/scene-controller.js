@@ -900,7 +900,8 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        location: this.sceneSettings.fontLocationUser,
+        fontLocation: this.sceneSettings.fontLocationUser,
+        glyphLocation: this.sceneSettings.glyphLocation,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -944,12 +945,13 @@ export class SceneController {
     const undoInfo = await this.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
-      if (undoInfo.location) {
+      if (undoInfo.fontLocation) {
         this.scrollAdjustBehavior = "pin-glyph-center";
         // Pass a copy of the location to ensure the listeners are called even
         // if the location didn't change: its dependents may vary depending on
         // the glyph data (eg. a source being there or not)
-        this.sceneSettings.fontLocationUser = { ...undoInfo.location };
+        this.sceneSettings.fontLocationUser = { ...undoInfo.fontLocation };
+        this.sceneSettings.glyphLocation = { ...undoInfo.glyphLocation };
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();
