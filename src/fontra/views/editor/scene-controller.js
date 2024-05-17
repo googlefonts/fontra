@@ -62,7 +62,7 @@ export class SceneController {
       align: "center",
       editLayerName: null,
       glyphLines: [],
-      userLocation: {},
+      fontLocationUser: {},
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
