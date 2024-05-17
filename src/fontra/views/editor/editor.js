@@ -1531,10 +1531,12 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      guideline: guidelineIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
     let anchors;
+    let guidelines;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1559,11 +1561,20 @@ export class EditorController {
         }
       }
     }
+    if (guidelineIndices) {
+      guidelines = guidelineIndices.map((i) => editInstance.guidelines[i]);
+      if (doCut) {
+        for (const guidelineIndex of reversed(guidelineIndices)) {
+          editInstance.guidelines.splice(guidelineIndex, 1);
+        }
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
       path: path,
       components: components,
       anchors: anchors,
+      guidelines: guidelines,
     });
     return {
       instance: instance,
@@ -1766,6 +1777,13 @@ export class EditorController {
           selection.add(`anchor/${anchorIndex}`);
         }
 
+        for (const guidelineIndex of range(
+          firstLayerGlyph.guidelines.length,
+          firstLayerGlyph.guidelines.length + defaultPasteGlyph.guidelines.length
+        )) {
+          selection.add(`guideline/${guidelineIndex}`);
+        }
+
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] ||
@@ -1776,6 +1794,7 @@ export class EditorController {
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
           layerGlyph.anchors.push(...pasteGlyph.anchors);
+          layerGlyph.guidelines.push(...pasteGlyph.guidelines);
         }
         this.sceneController.selection = selection;
         return "Paste";
@@ -2378,13 +2397,13 @@ export class EditorController {
       component: componentIndices,
       anchor: anchorIndices,
       guideline: guidelineIndices,
-      fontGuideline: fontGuidelineIndices,
+      //fontGuideline: fontGuidelineIndices,
     } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
     guidelineIndices = guidelineIndices || [];
-    fontGuidelineIndices = fontGuidelineIndices || [];
+    //fontGuidelineIndices = fontGuidelineIndices || [];
 
     let selectObjects = false;
     let selectAnchors = false;
@@ -2400,8 +2419,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       !anchorIndices.length &&
-      !guidelineIndices.length &&
-      !fontGuidelineIndices.length
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
     ) {
       if (hasObjects) {
         selectObjects = true;
@@ -2415,8 +2434,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       !anchorIndices.length &&
-      !guidelineIndices.length &&
-      !fontGuidelineIndices.length
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
     ) {
       if (hasAnchors) {
         selectObjects = true;
@@ -2429,8 +2448,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       anchorIndices.length &&
-      !guidelineIndices.length &&
-      !fontGuidelineIndices.length
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
     ) {
       if (hasAnchors) {
         selectAnchors = true;
@@ -2441,8 +2460,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       anchorIndices.length &&
-      !guidelineIndices.length &&
-      !fontGuidelineIndices.length
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
     ) {
       if (hasGuidelines) {
         selectGuidelines = true;
