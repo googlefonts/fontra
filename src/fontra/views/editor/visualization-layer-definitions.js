@@ -206,14 +206,6 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     model.fontController.readOnly
   ) {
     const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;
-    // context.translate(
-    //   positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-    //   boundsYMin - 24
-    // );
-    // context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
-    // context.lineWidth = 2;
-    // context.strokeStyle = parameters.strokeColor;
-    // context.stroke(lockIconPath2D);
     _drawLockIcon(
       context,
       parameters,
