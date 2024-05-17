@@ -1216,24 +1216,15 @@ def unpackAnchors(anchors):
 
 def unpackGuidelines(guidelines):
     return [
-        (
-            Guideline(
-                name=g.get("name"),
-                x=g.get("x", 0),
-                y=g.get("y", 0),
-                angle=g.get("angle", 0),
-                locked=g.get("locked", False),
-                # TODO: Guidelines, how do we handle customData like:
-                # color=g.get("color"),
-                # identifier=g.get("identifier"),
-            )
-            if g.get("name")
-            else Guideline(
-                x=g.get("x", 0),
-                y=g.get("y", 0),
-                angle=g.get("angle", 0),
-                locked=g.get("locked", False),
-            )
+        Guideline(
+            name=g.get("name"),
+            x=g.get("x", 0),
+            y=g.get("y", 0),
+            angle=g.get("angle", 0),
+            locked=g.get("locked", False),
+            # TODO: Guidelines, how do we handle customData like:
+            # color=g.get("color"),
+            # identifier=g.get("identifier"),
         )
         for g in guidelines
     ]
@@ -1268,11 +1259,7 @@ def populateUFOLayerGlyph(
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
     ]
     layerGlyph.guidelines = [
-        (
-            {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
-            if g.name
-            else {"x": g.x, "y": g.y, "angle": g.angle}
-        )
+        {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
         for g in staticGlyph.guidelines
     ]
     for component in staticGlyph.components:
