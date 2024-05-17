@@ -2368,7 +2368,8 @@ export class EditorController {
         ...labeledTextInput("x:", controller, "guidelineX", {}),
         ...labeledTextInput("y:", controller, "guidelineY", {}),
         ...labeledTextInput("angle:", controller, "guidelineAngle", {}),
-        ...labeledCheckbox("locked", controller, "guidelineLocked", {}),
+        html.div(),
+        labeledCheckbox("locked", controller, "guidelineLocked", {}),
         html.br(),
         warningElement,
       ]

@@ -96,13 +96,11 @@ function didReorder(a, b) {
 
 export function labeledCheckbox(label, controller, key, options) {
   const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
-  const items = [html.div()];
   const inputWrapper = html.div();
   const inputElement = html.input({ type: "checkbox", id: checkboxID });
   inputElement.checked = controller.model[key];
   inputWrapper.appendChild(inputElement);
   inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
-  items.push(inputWrapper);
 
   inputElement.onchange = () => {
     controller.model[key] = inputElement.checked;
@@ -112,7 +110,7 @@ export function labeledCheckbox(label, controller, key, options) {
     inputElement.checked = event.newValue;
   });
 
-  return items;
+  return inputWrapper;
 }
 
 export function labeledTextInput(label, controller, key, options) {
