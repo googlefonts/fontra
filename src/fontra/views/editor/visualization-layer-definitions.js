@@ -315,22 +315,6 @@ registerVisualizationLayerDefinition({
     }
 
     // TODO: Font Guidelines
-    // Draw font guidelines
-    // const sourceIndex = positionedGlyph.glyph.sourceIndex;
-    // if (sourceIndex === undefined) {
-    //   return;
-    // }
-
-    // const sources = await model.fontController.getSources();
-    // const source = sources[sourceIndex];
-    // if (source === undefined) {
-    //   return;
-    // }
-
-    // for (const fontGuideline of source.guidelines) {
-    //   parameters.strokeDash = fontGuideline.strokeDash / 2;
-    //   _drawGuideline(context, parameters, fontGuideline);
-    // }
   },
 });
 
