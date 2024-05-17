@@ -197,7 +197,7 @@ async def test_addLocalAxis(writableTestFont):
 # NOTE: font guidelines are tested via test_getSources, no need to repeat here
 
 
-async def test_getGuidelinesGlyph(writableTestFont):
+async def test_getGuidelines(writableTestFont):
     glyph = await writableTestFont.getGlyph("E")
 
     layerName = "MutatorSansLightCondensed/foreground"
@@ -214,7 +214,7 @@ async def test_getGuidelinesGlyph(writableTestFont):
     # )
 
 
-async def test_addGuidelinesGlyph(writableTestFont):
+async def test_addGuidelines(writableTestFont):
     glyphName = "E"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)

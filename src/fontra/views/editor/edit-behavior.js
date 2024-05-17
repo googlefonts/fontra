@@ -22,8 +22,8 @@ export class EditBehaviorFactory {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
@@ -39,12 +39,9 @@ export class EditBehaviorFactory {
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
-    this.guidelinesGlyph = unpackGuidelines(
-      instance.guidelines,
-      guidelineGlyphSelection || []
-    );
-    // TODO: Guidelines Font
-    // this.guidelineFont = unpackGuidelines(instance.guidelines, guidelineGlyphSelection || []);
+    this.guidelines = unpackGuidelines(instance.guidelines, guidelineSelection || []);
+    // TODO: Font Guidelines
+    // this.fontGuidelines = unpackGuidelines(fontSource.guidelines, fontGuidelineSelection || []);
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -66,7 +63,7 @@ export class EditBehaviorFactory {
         this.contours,
         this.components,
         this.anchors,
-        this.guidelinesGlyph,
+        this.guidelines,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -83,7 +80,7 @@ class EditBehavior {
     contours,
     components,
     anchors,
-    guidelinesGlyph,
+    guidelines,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -142,19 +139,19 @@ class EditBehavior {
       anchorRollbackChanges.push(anchorRollback);
     }
 
-    const guidelineGlyphRollbackChanges = [];
-    this.guidelineGlyphEditFuncs = [];
-    for (const [guidelineIndex, guideline] of enumerate(guidelinesGlyph)) {
+    const guidelineRollbackChanges = [];
+    this.guidelineEditFuncs = [];
+    for (const [guidelineIndex, guideline] of enumerate(guidelines)) {
       if (!guideline) {
         continue;
       }
-      const [editFunc, guidelineGlyphRollback] = makeGuidelineEditFunc(
-        guidelinesGlyph[guidelineIndex],
+      const [editFunc, guidelineRollback] = makeGuidelineEditFunc(
+        guidelines[guidelineIndex],
         guidelineIndex,
         this.roundFunc
       );
-      this.guidelineGlyphEditFuncs.push(editFunc);
-      guidelineGlyphRollbackChanges.push(guidelineGlyphRollback);
+      this.guidelineEditFuncs.push(editFunc);
+      guidelineRollbackChanges.push(guidelineRollback);
     }
 
     this.rollbackChange = makeRollbackChange(
@@ -162,7 +159,7 @@ class EditBehavior {
       participatingPointIndices,
       componentRollbackChanges,
       anchorRollbackChanges,
-      guidelineGlyphRollbackChanges
+      guidelineRollbackChanges
     );
   }
 
@@ -213,7 +210,7 @@ class EditBehavior {
     const anchorChanges = this.anchorEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
-    const guidelineGlyphChanges = this.guidelineGlyphEditFuncs?.map((editFunc) => {
+    const guidelineChanges = this.guidelineEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
     const changes = [];
@@ -226,8 +223,8 @@ class EditBehavior {
     if (anchorChanges && anchorChanges.length) {
       changes.push(consolidateChanges(anchorChanges, ["anchors"]));
     }
-    if (guidelineGlyphChanges && guidelineGlyphChanges.length) {
-      changes.push(consolidateChanges(guidelineGlyphChanges, ["guidelines"]));
+    if (guidelineChanges && guidelineChanges.length) {
+      changes.push(consolidateChanges(guidelineChanges, ["guidelines"]));
     }
     return consolidateChanges(changes);
   }
@@ -238,7 +235,7 @@ function makeRollbackChange(
   participatingPointIndices,
   componentRollback,
   anchorRollback,
-  guidelineGlyphRollback
+  guidelineRollback
 ) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
@@ -266,8 +263,8 @@ function makeRollbackChange(
   if (anchorRollback.length) {
     changes.push(consolidateChanges(anchorRollback, ["anchors"]));
   }
-  if (guidelineGlyphRollback.length) {
-    changes.push(consolidateChanges(guidelineGlyphRollback, ["guidelines"]));
+  if (guidelineRollback.length) {
+    changes.push(consolidateChanges(guidelineRollback, ["guidelines"]));
   }
   return consolidateChanges(changes);
 }

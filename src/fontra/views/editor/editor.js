@@ -192,16 +192,13 @@ export class EditorController {
       this.doubleClickedAnchorsCallback(event);
     });
 
-    this.sceneController.addEventListener(
-      "doubleClickedGuidelinesGlyph",
-      async (event) => {
-        this.doubleClickedGuidelinesGlyphCallback(event);
-      }
-    );
+    this.sceneController.addEventListener("doubleClickedGuidelines", async (event) => {
+      this.doubleClickedGuidelinesCallback(event);
+    });
 
-    // TODO: Guidelines Font
-    // this.sceneController.addEventListener("doubleClickedGuidelinesFont", async (event) => {
-    //   this.doubleClickedGuidelinesFontCallback(event);
+    // TODO: Font Guidelines
+    // this.sceneController.addEventListener("doubleClickedFontGuidelines", async (event) => {
+    //   this.doubleClickedFontGuidelinesCallback(event);
     // });
 
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
@@ -1025,11 +1022,11 @@ export class EditorController {
     });
   }
 
-  async doubleClickedGuidelinesGlyphCallback(event) {
+  async doubleClickedGuidelinesCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
 
-    const guidelineIndex = this.sceneController.doubleClickedGuidelineGlyphIndices[0];
+    const guidelineIndex = this.sceneController.doubleClickedGuidelineIndices[0];
     let guideline = instance.guidelines[guidelineIndex];
     const { guideline: newGuideline } = await this.doAddEditGuidelineDialog(guideline);
     if (!newGuideline) {
@@ -1048,7 +1045,7 @@ export class EditorController {
             : oldGuideline.locked,
         };
       }
-      this.sceneController.selection = new Set([`guidelineGlyph/${guidelineIndex}`]);
+      this.sceneController.selection = new Set([`guideline/${guidelineIndex}`]);
       return "Edit Guideline";
     });
   }
@@ -1135,7 +1132,7 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push({
-      // TODO: Guidelines Font with altKey, something like this:
+      // TODO: Font Guidelines with altKey, something like this:
       //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
       //altKey: true,
       title: "Add Guideline",
@@ -1837,12 +1834,12 @@ export class EditorController {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
-    // TODO: Guidelines Font
-    // if (guidelineFontSelection) {
-    //   for (const guidelineIndex of reversed(guidelineFontSelection)) {
+    // TODO: Font Guidelines
+    // if (fontGuidelineSelection) {
+    //   for (const guidelineIndex of reversed(fontGuidelineSelection)) {
     //     XXX
     //   }
     // }
@@ -1865,8 +1862,8 @@ export class EditorController {
               layerGlyph.anchors.splice(anchorIndex, 1);
             }
           }
-          if (guidelineGlyphSelection) {
-            for (const guidelineIndex of reversed(guidelineGlyphSelection)) {
+          if (guidelineSelection) {
+            for (const guidelineIndex of reversed(guidelineSelection)) {
               const guideline = layerGlyph.guidelines[guidelineIndex];
               if (guideline.locked) {
                 // don't delete locked guidelines
@@ -2113,19 +2110,19 @@ export class EditorController {
 
   selectionHasLockedGuidelines() {
     const {
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
 
     const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-    for (const guidelineIndex of guidelineGlyphSelection || []) {
-      const guidelineGlyph = instance.guidelines[guidelineIndex];
-      if (guidelineGlyph.locked) {
+    for (const guidelineIndex of guidelineSelection || []) {
+      const guideline = instance.guidelines[guidelineIndex];
+      if (guideline.locked) {
         return true;
       }
     }
 
-    //TODO: Guidelines Font
+    // TODO: Font Guidelines
     // check if any of the selected guidelines are locked
 
     return false;
@@ -2133,12 +2130,12 @@ export class EditorController {
 
   getLockGuidelineLabel(hasLockedGuidelines) {
     const {
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     const guidelinSelection = new Array().concat(
-      guidelineGlyphSelection || [],
-      guidelineFontSelection || []
+      guidelineSelection || []
+      //fontGuidelineSelection || []
     );
 
     const s = guidelinSelection.length > 1 ? "s" : "";
@@ -2150,39 +2147,43 @@ export class EditorController {
       return false;
     }
     const {
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     const guidelinSelection = new Array().concat(
-      guidelineGlyphSelection || [],
-      guidelineFontSelection || []
+      guidelineSelection || []
+      //fontGuidelineSelection || []
     );
     return guidelinSelection.length;
   }
 
   async doLockGuideline(locking = false) {
     const {
-      guidelineGlyph: guidelineGlyphSelection,
-      guidelineFont: guidelineFontSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     const identifier = locking ? "Unlock" : "Lock";
 
     // Lock glyph guidelines
-    if (guidelineGlyphSelection) {
+    if (guidelineSelection) {
       await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         for (const layerGlyph of Object.values(layerGlyphs)) {
-          for (const guidelineIndex of guidelineGlyphSelection) {
-            const guidelineGlyph = layerGlyph.guidelines[guidelineIndex];
-            if (!guidelineGlyph) {
+          for (const guidelineIndex of guidelineSelection) {
+            const guideline = layerGlyph.guidelines[guidelineIndex];
+            if (!guideline) {
               continue;
             }
-            guidelineGlyph.locked = locking;
+            guideline.locked = locking;
           }
         }
         return `${identifier} Guideline(s)`;
       });
     }
-    // TODO: Guidelines Font locking
+    // TODO: Font Guidelines locking
+    // Lock font guidelines
+    // if (fontGuidelineSelection) {
+    //   XXX
+    // }
   }
 
   // TODO: We may want to make a more general code for adding and editing
@@ -2220,13 +2221,11 @@ export class EditorController {
           layerGlyph.guidelines.push({ ...newGuideline });
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
-        this.sceneController.selection = new Set([
-          `guidelineGlyph/${newGuidelineIndex}`,
-        ]);
+        this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
         return "Add Guideline";
       });
     }
-    // TODO: Guidelines Font
+    // TODO: Font Guidelines
   }
 
   async doAddEditGuidelineDialog(
@@ -2384,14 +2383,14 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
-      guidelineGlyph: guidelineGlyphIndices,
-      guidelineFont: guidelineFontIndices,
+      guideline: guidelineIndices,
+      fontGuideline: fontGuidelineIndices,
     } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    guidelineGlyphIndices = guidelineGlyphIndices || [];
-    guidelineFontIndices = guidelineFontIndices || [];
+    guidelineIndices = guidelineIndices || [];
+    fontGuidelineIndices = fontGuidelineIndices || [];
 
     let selectObjects = false;
     let selectAnchors = false;
@@ -2407,8 +2406,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       !anchorIndices.length &&
-      !guidelineGlyphIndices.length &&
-      !guidelineFontIndices.length
+      !guidelineIndices.length &&
+      !fontGuidelineIndices.length
     ) {
       if (hasObjects) {
         selectObjects = true;
@@ -2422,8 +2421,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       !anchorIndices.length &&
-      !guidelineGlyphIndices.length &&
-      !guidelineFontIndices.length
+      !guidelineIndices.length &&
+      !fontGuidelineIndices.length
     ) {
       if (hasAnchors) {
         selectObjects = true;
@@ -2436,8 +2435,8 @@ export class EditorController {
     if (
       (pointIndices.length || componentIndices.length) &&
       anchorIndices.length &&
-      !guidelineGlyphIndices.length &&
-      !guidelineFontIndices.length
+      !guidelineIndices.length &&
+      !fontGuidelineIndices.length
     ) {
       if (hasAnchors) {
         selectAnchors = true;
@@ -2448,8 +2447,8 @@ export class EditorController {
       !pointIndices.length &&
       !componentIndices.length &&
       anchorIndices.length &&
-      !guidelineGlyphIndices.length &&
-      !guidelineFontIndices.length
+      !guidelineIndices.length &&
+      !fontGuidelineIndices.length
     ) {
       if (hasGuidelines) {
         selectGuidelines = true;
@@ -2480,10 +2479,10 @@ export class EditorController {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
         const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
         if (!guideline.locked) {
-          newSelection.add(`guidelineGlyph/${guidelineIndex}`);
+          newSelection.add(`guideline/${guidelineIndex}`);
         }
       }
-      // TODO: Guidelines Font selection
+      // TODO: Font Guidelines selection
     }
     this.sceneController.selection = newSelection;
   }
