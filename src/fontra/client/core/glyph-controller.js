@@ -80,21 +80,11 @@ export class VariableGlyphController {
     return this._discreteAxes;
   }
 
-  get localToGlobalMapping() {
-    if (this._localToGlobalMapping === undefined) {
-      this._setupAxisMapping();
-    }
-    return this._localToGlobalMapping;
-  }
-
   _setupAxisMapping() {
     this._discreteAxes = [];
     this._continuousAxes = Array.from(this.axes);
-    this._localToGlobalMapping = [];
-    const localAxisDict = {};
-    for (const localAxis of this.axes) {
-      localAxisDict[localAxis.name] = localAxis;
-    }
+    const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
+
     for (let globalAxis of this.globalAxes) {
       // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
       const mapFunc = makeAxisMapFunc(globalAxis);
@@ -104,10 +94,6 @@ export class VariableGlyphController {
           defaultValue: mapFunc(globalAxis.defaultValue),
           values: globalAxis.values.map(mapFunc),
         });
-        // We don't support local discrete axes.
-        // TODO: a name conflict between a discrete global axis and a
-        // continuous local axis is a true conflict. We don't catch that
-        // now, and TBH I'm not sure how to resolve that.
         continue;
       }
       globalAxis = {
@@ -116,15 +102,7 @@ export class VariableGlyphController {
         defaultValue: mapFunc(globalAxis.defaultValue),
         maxValue: mapFunc(globalAxis.maxValue),
       };
-      const localAxis = localAxisDict[globalAxis.name];
-      if (localAxis) {
-        const mapping = [
-          [localAxis.minValue, globalAxis.minValue],
-          [localAxis.defaultValue, globalAxis.defaultValue],
-          [localAxis.maxValue, globalAxis.maxValue],
-        ];
-        this._localToGlobalMapping.push({ name: globalAxis.name, mapping: mapping });
-      } else {
+      if (!glyphAxisNames.has(globalAxis.name)) {
         this._continuousAxes.push(globalAxis);
       }
     }
@@ -215,7 +193,6 @@ export class VariableGlyphController {
     delete this._combinedAxes;
     delete this._discreteAxes;
     delete this._continuousAxes;
-    delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -498,8 +475,6 @@ export class VariableGlyphController {
   mapLocationGlobalToLocal(location) {
     // Apply global axis mapping (user-facing avar)
     location = mapForward(location, this.globalAxes);
-    // Map axes that exist both globally and locally to their local ranges
-    location = mapBackward(location, this.localToGlobalMapping);
     // Expand folded NLI axes to their "real" axes
     location = mapLocationExpandNLI(location, this.axes);
     return location;
@@ -508,8 +483,6 @@ export class VariableGlyphController {
   mapLocationLocalToGlobal(location) {
     // Fold NLI Axis into single user-facing axes
     location = mapLocationFoldNLI(location);
-    // Map axes that exist both globally and locally to their global ranges
-    location = mapForward(location, this.localToGlobalMapping);
     // Un-apply global axis mapping (user-facing avar)
     location = mapBackward(location, this.globalAxes);
     return location;
