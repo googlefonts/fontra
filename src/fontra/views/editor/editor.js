@@ -1137,7 +1137,7 @@ export class EditorController {
       //altKey: true,
       title: "Add Guideline",
       enabled: () => this.canAddGuideline(),
-      callback: (event) => this.doAddGuideline(event.altKey),
+      callback: () => this.doAddGuideline(),
       shortCut: undefined,
     });
 
@@ -2292,7 +2292,7 @@ export class EditorController {
     const { contentElement, warningElement } =
       this._guidelinePropertiesContentElement(nameController);
     const dialog = await dialogSetup(
-      `${titlePrefix} ${global ? "Font" : "Glyph"} Guideline`,
+      `${titlePrefix} ${global ? "Font " : ""}Guideline`,
       null,
       [
         { title: "Cancel", isCancelButton: true },
