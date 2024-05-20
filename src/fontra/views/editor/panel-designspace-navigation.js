@@ -926,7 +926,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   _sourcePropertiesLocationAxes(glyph) {
     const localAxisNames = glyph.axes.map((axis) => axis.name);
-    const globalAxes = mapAxesFromUserSpaceToDesignspace(
+    const globalAxes = mapAxesFromUserSpaceToSourceSpace(
       // Don't include global axes that also exist as local axes
       this.globalAxes.filter((axis) => !localAxisNames.includes(axis.name))
     );
@@ -1129,7 +1129,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 }
 
-function mapAxesFromUserSpaceToDesignspace(axes) {
+function mapAxesFromUserSpaceToSourceSpace(axes) {
   return axes.map((axis) => {
     const newAxis = { ...axis };
     if (axis.mapping) {
