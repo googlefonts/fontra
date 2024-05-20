@@ -944,7 +944,7 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        fontLocation: this.sceneSettings.fontLocationUser,
+        fontLocation: this.sceneSettings.fontLocationSourceMapped,
         glyphLocation: this.sceneSettings.glyphLocation,
       };
       if (!this._cancelGlyphEditing) {
@@ -994,7 +994,7 @@ export class SceneController {
         // Pass a copy of the location to ensure the listeners are called even
         // if the location didn't change: its dependents may vary depending on
         // the glyph data (eg. a source being there or not)
-        this.sceneSettings.fontLocationUser = { ...undoInfo.fontLocation };
+        this.sceneSettings.fontLocationSourceMapped = { ...undoInfo.fontLocation };
         this.sceneSettings.glyphLocation = { ...undoInfo.glyphLocation };
       }
       await this.sceneModel.updateScene();
