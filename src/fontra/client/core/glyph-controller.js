@@ -339,9 +339,9 @@ export class VariableGlyphController {
     return Object.values(splitSources);
   }
 
-  getInterpolationContributions(location) {
-    location = this.mapUserLocationToSourceLocation(location);
-    const contributions = this.model.getSourceContributions(location);
+  getInterpolationContributions(sourceLocation) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
+    const contributions = this.model.getSourceContributions(sourceLocation);
 
     let sourceIndex = 0;
     const orderedContributions = [];

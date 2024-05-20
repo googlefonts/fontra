@@ -510,7 +510,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const interpolationContributions = varGlyphController.getInterpolationContributions(
-      { ...this.sceneSettings.fontLocationUser, ...this.sceneSettings.glyphLocation }
+      {
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
       sourceItem.interpolationContribution =
