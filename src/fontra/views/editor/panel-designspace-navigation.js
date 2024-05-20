@@ -18,8 +18,6 @@ import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
-  mapForward,
-  normalizeLocation,
   piecewiseLinearMap,
 } from "/core/var-model.js";
 import { IconButton } from "/web-components/icon-button.js";
