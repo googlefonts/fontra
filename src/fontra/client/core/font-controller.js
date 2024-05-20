@@ -12,7 +12,7 @@ import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
 import { chain, getCharFromCodePoint, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
-import { locationToString } from "./var-model.js";
+import { locationToString, mapBackward, mapForward } from "./var-model.js";
 
 const GLYPH_CACHE_SIZE = 2000;
 const NUM_TASKS = 12;
@@ -703,6 +703,14 @@ export class FontController {
       glyphInfo["character"] = getCharFromCodePoint(codePoint);
     }
     return glyphInfo;
+  }
+
+  mapUserLocationToSourceLocation(userLocation) {
+    return mapForward(userLocation, this.globalAxes);
+  }
+
+  mapSourceLocationToUserLocation(userLocation) {
+    return mapBackward(userLocation, this.globalAxes);
   }
 }
 
