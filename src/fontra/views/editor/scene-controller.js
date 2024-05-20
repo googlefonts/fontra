@@ -164,10 +164,12 @@ export class SceneController {
     }
 
     // Set up the mutual dependencies between location and selectedSourceIndex
+    const locationSelectedSourceToken = Symbol("location-selectedSourceIndex");
+
     this.sceneSettingsController.addKeyListener(
-      ["fontLocationUser", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       async (event) => {
-        if (event.senderInfo?.senderID === this) {
+        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
           return;
         }
         const varGlyphController =
@@ -177,7 +179,7 @@ export class SceneController {
           ...this.sceneSettings.glyphLocation,
         });
         this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-          senderID: this,
+          senderID: locationSelectedSourceToken,
         });
       }
     );
@@ -185,7 +187,7 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
       async (event) => {
-        if (event.senderInfo?.senderID === this) {
+        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
           return;
         }
         const sourceIndex = event.newValue;
@@ -203,13 +205,13 @@ export class SceneController {
         );
 
         this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
-          senderID: this,
+          senderID: locationSelectedSourceToken,
         });
         this.sceneSettingsController.setItem(
           "glyphLocation",
           varGlyphController.foldNLIAxes(glyphLocation),
           {
-            senderID: this,
+            senderID: locationSelectedSourceToken,
           }
         );
       },
