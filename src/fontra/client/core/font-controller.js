@@ -712,6 +712,16 @@ export class FontController {
   mapSourceLocationToUserLocation(sourceLocation) {
     return mapBackward(sourceLocation, this.globalAxes);
   }
+
+  mapSourceLocationToMappedSourceLocation(sourceLocation) {
+    // TODO: apply avar-2 mapping
+    return { ...sourceLocation };
+  }
+
+  mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
+    // TODO: undo avar-2 mapping if possible
+    return { ...mappedSourceLocation };
+  }
 }
 
 export function reverseUndoRecord(undoRecord) {
