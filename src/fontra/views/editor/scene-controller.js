@@ -63,6 +63,8 @@ export class SceneController {
       editLayerName: null,
       glyphLines: [],
       fontLocationUser: {},
+      fontLocationSource: {},
+      fontLocationSourceMapped: {},
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
@@ -119,6 +121,48 @@ export class SceneController {
       },
       true
     );
+
+    // Set up the dependencies between fontLocationUser, fontLocationSource and fontLocationSourceMapped
+    const locationDependencies = [
+      ["fontLocationUser", "fontLocationSource", "mapUserLocationToSourceLocation"],
+      ["fontLocationSource", "fontLocationUser", "mapSourceLocationToUserLocation"],
+      [
+        "fontLocationSource",
+        "fontLocationSourceMapped",
+        "mapSourceLocationToMappedSourceLocation",
+      ],
+      [
+        "fontLocationSourceMapped",
+        "fontLocationSource",
+        "mapMappedSourceLocationToSourceLocation",
+      ],
+    ];
+
+    for (const [sourceKey, destinationKey, mapMethodName] of locationDependencies) {
+      const mapMethod = this.fontController[mapMethodName].bind(this.fontController);
+
+      this.sceneSettingsController.addKeyListener(
+        sourceKey,
+        (event) => {
+          if (event.senderInfo?.senderStack?.includes(destinationKey)) {
+            return;
+          }
+
+          this.sceneSettingsController.setItem(
+            destinationKey,
+            mapMethod(event.newValue),
+            {
+              senderID: this,
+              senderStack: (event.senderInfo?.senderStack || []).concat([
+                sourceKey,
+                destinationKey,
+              ]),
+            }
+          );
+        },
+        true
+      );
+    }
 
     // Set up the mutual dependencies between location and selectedSourceIndex
     this.sceneSettingsController.addKeyListener(
