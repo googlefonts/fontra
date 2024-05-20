@@ -622,9 +622,9 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromUserLocation(
+        const nearestSourceIndex = glyphController.findNearestSourceFromSourceLocation(
           {
-            ...this.sceneSettings.fontLocationUser,
+            ...this.sceneSettings.fontLocationSourceMapped,
             ...this.sceneSettings.glyphLocation,
           },
           true
@@ -2116,8 +2116,8 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromUserLocation({
-        ...this.sceneSettings.fontLocationUser,
+      newSourceIndex = varGlyphController.findNearestSourceFromSourceLocation({
+        ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
     } else {

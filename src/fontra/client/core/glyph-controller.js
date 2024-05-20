@@ -109,17 +109,17 @@ export class VariableGlyphController {
     this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
   }
 
-  getSourceIndex(location) {
-    const locationStr = locationToString(location);
+  getSourceIndex(sourceLocation) {
+    const locationStr = locationToString(sourceLocation);
     // TODO: fix the unboundedness of the _locationToSourceIndex cache
     if (!(locationStr in this._locationToSourceIndex)) {
-      this._locationToSourceIndex[locationStr] = this._getSourceIndex(location);
+      this._locationToSourceIndex[locationStr] = this._getSourceIndex(sourceLocation);
     }
     return this._locationToSourceIndex[locationStr];
   }
 
-  _getSourceIndex(location) {
-    location = this.mapUserLocationToSourceLocation(location);
+  _getSourceIndex(sourceLocation) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
       if (source.inactive) {
@@ -136,7 +136,7 @@ export class VariableGlyphController {
           axis.defaultValue,
           Object.fromEntries(axis.mapping || [])
         );
-        let varValue = location[axis.name];
+        let varValue = sourceLocation[axis.name];
         let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
           varValue = axisDefaultValue;
@@ -381,9 +381,9 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  async instantiate(location, getGlyphFunc) {
+  async instantiate(sourceLocation, getGlyphFunc) {
     let { instance, errors } = this.model.interpolateFromDeltas(
-      location,
+      sourceLocation,
       await this.getDeltas(getGlyphFunc)
     );
     if (errors) {
@@ -394,9 +394,9 @@ export class VariableGlyphController {
     return { instance, errors };
   }
 
-  async instantiateController(location, layerName, getGlyphFunc) {
-    let sourceIndex = this.getSourceIndex(location);
-    location = this.mapUserLocationToSourceLocation(location);
+  async instantiateController(sourceLocation, layerName, getGlyphFunc) {
+    let sourceIndex = this.getSourceIndex(sourceLocation);
+    sourceLocation = this.expandNLIAxes(sourceLocation);
 
     if (!layerName || !(layerName in this.layers)) {
       if (sourceIndex !== undefined) {
@@ -416,7 +416,7 @@ export class VariableGlyphController {
       return await this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     }
 
-    const { instance, errors } = await this.instantiate(location, getGlyphFunc);
+    const { instance, errors } = await this.instantiate(sourceLocation, getGlyphFunc);
 
     if (!instance) {
       throw new Error("assert -- instance is undefined");
@@ -429,7 +429,7 @@ export class VariableGlyphController {
       errors
     );
 
-    await instanceController.setupComponents(getGlyphFunc, location);
+    await instanceController.setupComponents(getGlyphFunc, sourceLocation);
     return instanceController;
   }
 
@@ -447,9 +447,9 @@ export class VariableGlyphController {
     });
   }
 
-  findNearestSourceFromUserLocation(location, skipInactive = false) {
-    location = this.mapUserLocationToSourceLocation(location);
-    const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
+  findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
+    const splitLoc = splitDiscreteLocation(sourceLocation, this.discreteAxes);
 
     // Ensure locations are *not* sparse
 
@@ -457,7 +457,7 @@ export class VariableGlyphController {
       this.combinedAxes.map((axis) => [axis.name, axis.defaultValue])
     );
 
-    const targetLocation = { ...defaultLocation, ...location };
+    const targetLocation = { ...defaultLocation, ...sourceLocation };
     const sourceIndexMapping = [];
     const activeLocations = [];
     for (const [index, source] of enumerate(this.sources)) {
@@ -470,6 +470,14 @@ export class VariableGlyphController {
 
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
     return sourceIndexMapping[nearestIndex];
+  }
+
+  expandNLIAxes(sourceLocation) {
+    return mapLocationExpandNLI(sourceLocation, this.axes);
+  }
+
+  foldNLIAxes(sourceLocation) {
+    return mapLocationFoldNLI(sourceLocation);
   }
 
   mapUserLocationToSourceLocation(location) {

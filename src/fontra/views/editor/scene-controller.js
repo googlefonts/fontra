@@ -174,7 +174,7 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.fontLocationUser,
+          ...this.sceneSettings.fontLocationSourceMapped,
           ...this.sceneSettings.glyphLocation,
         });
         this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {

@@ -442,7 +442,7 @@ export class SceneModel {
 
   async getGlyphInstance(glyphName, layerName) {
     const location = {
-      ...this.sceneSettings.fontLocationUser,
+      ...this.sceneSettings.fontLocationSourceMapped,
       ...this._localLocations[glyphName],
     };
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
