@@ -2285,7 +2285,9 @@ export class EditorController {
 
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
-    this.sceneSettings.fontLocationUser = { ...this.sceneSettings.fontLocationUser };
+    this.sceneSettings.fontLocationSourceMapped = {
+      ...this.sceneSettings.fontLocationSourceMapped,
+    };
     this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
