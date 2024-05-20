@@ -28,7 +28,6 @@ import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
-  mapBackward,
   mapForward,
   normalizeLocation,
   piecewiseLinearMap,
@@ -475,22 +474,6 @@ export class VariableGlyphController {
 
   foldNLIAxes(sourceLocation) {
     return mapLocationFoldNLI(sourceLocation);
-  }
-
-  mapUserLocationToSourceLocation(location) {
-    // Apply global axis mapping (user-facing avar)
-    location = mapForward(location, this.fontAxes);
-    // Expand folded NLI axes to their "real" axes
-    location = mapLocationExpandNLI(location, this.axes);
-    return location;
-  }
-
-  mapSourceLocationToUserLocation(location) {
-    // Fold NLI Axis into single user-facing axes
-    location = mapLocationFoldNLI(location);
-    // Un-apply global axis mapping (user-facing avar)
-    location = mapBackward(location, this.fontAxes);
-    return location;
   }
 }
 
