@@ -76,7 +76,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
-import { translate, localizePage } from "/core/localization.js";
+import { localizePage, translate } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
