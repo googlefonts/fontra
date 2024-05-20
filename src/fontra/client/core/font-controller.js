@@ -75,7 +75,7 @@ export class FontController {
     return this._rootObject.axes;
   }
 
-  get globalAxes() {
+  get fontAxes() {
     return this._rootObject.axes.axes;
   }
 
@@ -216,7 +216,7 @@ export class FontController {
   }
 
   makeVariableGlyphController(glyph) {
-    return new VariableGlyphController(glyph, this.globalAxes);
+    return new VariableGlyphController(glyph, this.fontAxes);
   }
 
   updateGlyphDependencies(glyph) {
@@ -707,11 +707,11 @@ export class FontController {
   }
 
   mapUserLocationToSourceLocation(userLocation) {
-    return mapForward(userLocation, this.globalAxes);
+    return mapForward(userLocation, this.fontAxes);
   }
 
   mapSourceLocationToUserLocation(sourceLocation) {
-    return mapBackward(sourceLocation, this.globalAxes);
+    return mapBackward(sourceLocation, this.fontAxes);
   }
 
   mapSourceLocationToMappedSourceLocation(sourceLocation) {

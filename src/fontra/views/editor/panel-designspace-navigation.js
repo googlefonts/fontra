@@ -522,7 +522,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   get fontAxes() {
-    return this.fontController.globalAxes.filter((axis) => !axis.hidden);
+    return this.fontController.fontAxes.filter((axis) => !axis.hidden);
   }
 
   async _updateAxes() {

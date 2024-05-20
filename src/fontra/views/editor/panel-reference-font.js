@@ -308,7 +308,7 @@ export default class ReferenceFontPanel extends Panel {
 
     editorController.sceneSettingsController.addKeyListener("fontLocationUser", () => {
       const fontVariationSettings = [];
-      for (const axis of this.editorController.fontController.globalAxes) {
+      for (const axis of this.editorController.fontController.fontAxes) {
         fontVariationSettings.push(
           `'${axis.tag}' ${
             this.editorController.sceneSettings.fontLocationUser[axis.name]
