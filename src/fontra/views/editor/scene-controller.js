@@ -152,7 +152,6 @@ export class SceneController {
             destinationKey,
             mapMethod(event.newValue),
             {
-              senderID: this,
               senderStack: (event.senderInfo?.senderStack || []).concat([
                 sourceKey,
                 destinationKey,
