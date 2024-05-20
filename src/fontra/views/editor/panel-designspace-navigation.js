@@ -532,10 +532,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
 
-    const localAxes = varGlyphController
+    const glyphAxes = varGlyphController
       ? getAxisInfoFromGlyph(varGlyphController)
       : [];
-    this.glyphAxesElement.axes = localAxes;
+    this.glyphAxesElement.axes = glyphAxes;
     this.glyphAxesAccordionItem.hidden = !varGlyphController;
 
     this._updateResetAllAxesButtonState();
@@ -925,10 +925,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _sourcePropertiesLocationAxes(glyph) {
-    const localAxisNames = glyph.axes.map((axis) => axis.name);
+    const glyphAxisNames = glyph.axes.map((axis) => axis.name);
     const fontAxes = mapAxesFromUserSpaceToSourceSpace(
-      // Don't include global axes that also exist as local axes
-      this.fontAxes.filter((axis) => !localAxisNames.includes(axis.name))
+      // Don't include font axes that also exist as glyph axes
+      this.fontAxes.filter((axis) => !glyphAxisNames.includes(axis.name))
     );
     return [
       ...fontAxes,
