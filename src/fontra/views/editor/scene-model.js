@@ -177,7 +177,7 @@ export class SceneModel {
     this._glyphLocations = glyphLocations || {};
   }
 
-  updateLocalLocations(glyphLocations) {
+  updateGlyphLocations(glyphLocations) {
     this._glyphLocations = { ...this._glyphLocations, ...glyphLocations };
   }
 

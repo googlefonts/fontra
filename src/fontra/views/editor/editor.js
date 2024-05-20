@@ -945,7 +945,7 @@ export class EditorController {
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
-    const localLocations = {};
+    const glyphLocations = {};
     const glyphInfos = [];
 
     const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
@@ -971,11 +971,11 @@ export class EditorController {
       const glyphName = instance.components[componentIndex].name;
       const location = instance.components[componentIndex].location;
       if (location) {
-        localLocations[glyphName] = location;
+        glyphLocations[glyphName] = location;
       }
       glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
-    this.sceneController.updateLocalLocations(localLocations);
+    this.sceneController.updateGlyphLocations(glyphLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     glyphLines[selectedGlyphInfo.lineIndex].splice(
@@ -2370,7 +2370,7 @@ export class EditorController {
     }
     this._previousURLText = viewInfo["text"];
 
-    this.sceneModel.setGlyphLocations(viewInfo["localLocations"]);
+    this.sceneModel.setGlyphLocations(viewInfo["glyphLocations"]);
 
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
@@ -2404,9 +2404,9 @@ export class EditorController {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
-    const localLocations = this.sceneController.getGlyphLocations(true);
-    if (Object.keys(localLocations).length) {
-      viewInfo["localLocations"] = localLocations;
+    const glyphLocations = this.sceneController.getGlyphLocations(true);
+    if (Object.keys(glyphLocations).length) {
+      viewInfo["glyphLocations"] = glyphLocations;
     }
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {
