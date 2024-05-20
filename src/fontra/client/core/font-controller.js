@@ -709,8 +709,8 @@ export class FontController {
     return mapForward(userLocation, this.globalAxes);
   }
 
-  mapSourceLocationToUserLocation(userLocation) {
-    return mapBackward(userLocation, this.globalAxes);
+  mapSourceLocationToUserLocation(sourceLocation) {
+    return mapBackward(sourceLocation, this.globalAxes);
   }
 }
 
