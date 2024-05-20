@@ -549,7 +549,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       varGlyphController?.sourceInterpolationStatus || [];
     const interpolationContributions =
       varGlyphController?.getInterpolationContributions({
-        ...this.sceneSettings.fontLocationUser,
+        ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       }) || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
