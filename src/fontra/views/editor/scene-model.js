@@ -37,7 +37,7 @@ export class SceneModel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      ["fontLocationUser", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       (event) => {
         this._syncLocalLocations();
         this.updateScene();

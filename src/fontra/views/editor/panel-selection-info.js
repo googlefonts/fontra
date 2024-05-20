@@ -49,7 +49,7 @@ export default class SelectionInfoPanel extends Panel {
     this.sceneController = this.editorController.sceneController;
 
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "selection", "fontLocationUser", "glyphLocation"],
+      ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
       (event) => this.throttledUpdate()
     );
 
