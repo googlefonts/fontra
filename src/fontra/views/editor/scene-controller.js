@@ -753,8 +753,8 @@ export class SceneController {
     return this.sceneModel.getGlyphLocations(filterShownGlyphs);
   }
 
-  updateGlyphLocations(localLocations) {
-    this.sceneModel.updateGlyphLocations(localLocations);
+  updateGlyphLocations(glyphLocations) {
+    this.sceneModel.updateGlyphLocations(glyphLocations);
   }
 
   getSceneBounds() {
