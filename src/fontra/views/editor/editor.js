@@ -76,7 +76,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
-import { translate } from "/core/localization.js";
+import { translate, localizePage } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -97,6 +97,7 @@ export class EditorController {
     remoteFontEngine.receiver = editorController;
     remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
     remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
+    localizePage();
     await editorController.start();
     return editorController;
   }
