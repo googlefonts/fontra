@@ -521,12 +521,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
   }
 
-  get globalAxes() {
+  get fontAxes() {
     return this.fontController.globalAxes.filter((axis) => !axis.hidden);
   }
 
   async _updateAxes() {
-    const fontAxes = [...this.globalAxes];
+    const fontAxes = [...this.fontAxes];
     this.fontAxesElement.axes = fontAxes;
 
     const varGlyphController =
@@ -926,13 +926,13 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   _sourcePropertiesLocationAxes(glyph) {
     const localAxisNames = glyph.axes.map((axis) => axis.name);
-    const globalAxes = mapAxesFromUserSpaceToSourceSpace(
+    const fontAxes = mapAxesFromUserSpaceToSourceSpace(
       // Don't include global axes that also exist as local axes
-      this.globalAxes.filter((axis) => !localAxisNames.includes(axis.name))
+      this.fontAxes.filter((axis) => !localAxisNames.includes(axis.name))
     );
     return [
-      ...globalAxes,
-      ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
+      ...fontAxes,
+      ...(fontAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
       ...glyph.axes,
     ];
   }
