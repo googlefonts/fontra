@@ -749,8 +749,8 @@ export class SceneController {
     return layerNames;
   }
 
-  getLocalLocations(filterShownGlyphs = false) {
-    return this.sceneModel.getLocalLocations(filterShownGlyphs);
+  getGlyphLocations(filterShownGlyphs = false) {
+    return this.sceneModel.getGlyphLocations(filterShownGlyphs);
   }
 
   updateLocalLocations(localLocations) {

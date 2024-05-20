@@ -2370,7 +2370,7 @@ export class EditorController {
     }
     this._previousURLText = viewInfo["text"];
 
-    this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
+    this.sceneModel.setGlyphLocations(viewInfo["localLocations"]);
 
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
@@ -2404,7 +2404,7 @@ export class EditorController {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
-    const localLocations = this.sceneController.getLocalLocations(true);
+    const localLocations = this.sceneController.getGlyphLocations(true);
     if (Object.keys(localLocations).length) {
       viewInfo["localLocations"] = localLocations;
     }
