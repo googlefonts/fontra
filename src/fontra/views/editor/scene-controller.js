@@ -196,19 +196,23 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
 
-        const location = varGlyphController.getUserLocationFromSourceIndex(sourceIndex);
-
+        const location =
+          varGlyphController.getSourceLocationFromSourceIndex(sourceIndex);
         const { fontLocation, glyphLocation } = splitLocation(
           location,
           varGlyphController.axes
         );
 
-        this.sceneSettingsController.setItem("fontLocationUser", fontLocation, {
+        this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
           senderID: this,
         });
-        this.sceneSettingsController.setItem("glyphLocation", glyphLocation, {
-          senderID: this,
-        });
+        this.sceneSettingsController.setItem(
+          "glyphLocation",
+          varGlyphController.foldNLIAxes(glyphLocation),
+          {
+            senderID: this,
+          }
+        );
       },
       true
     );
@@ -1093,7 +1097,7 @@ export class SceneController {
         !(source.layerName in layerLocations)
       ) {
         layerLocations[source.layerName] =
-          varGlyph.getUserLocationFromSourceIndex(sourceIndex);
+          varGlyph.getSourceLocationFromSourceIndex(sourceIndex);
       }
     }
 

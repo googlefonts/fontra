@@ -433,7 +433,7 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  getUserLocationFromSourceIndex(sourceIndex) {
+  getSourceLocationFromSourceIndex(sourceIndex) {
     const fontDefaultLocation = mapForward(
       makeDefaultLocation(this.fontAxes),
       this.fontAxes
@@ -441,10 +441,7 @@ export class VariableGlyphController {
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
     const sourceLocation = this.sources[sourceIndex].location;
-    return this.mapSourceLocationToUserLocation({
-      ...defaultLocation,
-      ...sourceLocation,
-    });
+    return { ...defaultLocation, ...sourceLocation };
   }
 
   findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
@@ -867,7 +864,7 @@ async function* iterFlattenedComponentPaths(
 export async function decomposeComponents(
   components,
   componentIndices,
-  parentLocation,
+  parentSourceLocation,
   getGlyphFunc
 ) {
   if (!componentIndices) {
@@ -884,13 +881,11 @@ export async function decomposeComponents(
       // Missing base glyph
       continue;
     }
-    const parentSourceLocation =
-      baseGlyph.mapUserLocationToSourceLocation(parentLocation);
-
     const location = {
       ...parentSourceLocation,
-      ...mapLocationExpandNLI(component.location, baseGlyph.axes),
+      ...component.location,
     };
+
     const { instance: compoInstance, errors } = await baseGlyph.instantiate(
       location,
       getGlyphFunc
