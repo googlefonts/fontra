@@ -709,8 +709,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
-    const location = glyphController.mapUserLocationToSourceLocation({
-      ...this.sceneSettings.fontLocationUser,
+    const location = glyphController.expandNLIAxes({
+      ...this.sceneSettings.fontLocationSourceMapped,
       ...this.sceneSettings.glyphLocation,
     });
 
