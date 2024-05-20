@@ -532,9 +532,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
 
-    const glyphAxes = varGlyphController
-      ? getAxisInfoFromGlyph(varGlyphController)
-      : [];
+    const glyphAxes = varGlyphController ? foldNLIAxes(varGlyphController.axes) : [];
     this.glyphAxesElement.axes = glyphAxes;
     this.glyphAxesAccordionItem.hidden = !varGlyphController;
 
@@ -1155,10 +1153,10 @@ function roundComponentOrigins(components) {
   });
 }
 
-function getAxisInfoFromGlyph(glyph) {
+function foldNLIAxes(axes) {
   // Fold NLI axes into single axes
   const axisInfo = {};
-  for (const axis of glyph?.axes || []) {
+  for (const axis of axes || []) {
     const baseName = getAxisBaseName(axis.name);
     if (axisInfo[baseName]) {
       continue;
