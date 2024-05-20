@@ -406,12 +406,12 @@ export class EditorController {
               },
             },
             {
-              title: "Edit local axes...",
+              title: "Edit glyph axes...",
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
               callback: () => {
-                this.getSidebarPanel("designspace-navigation").editLocalAxes();
+                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
               },
             },
           ];
