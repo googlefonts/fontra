@@ -526,7 +526,7 @@ registerVisualizationLayerDefinition({
       }
     }
 
-    // // Hovered guideline
+    // Hovered guideline
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
     for (const i of hoveredGuidelineIndices || []) {
