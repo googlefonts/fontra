@@ -264,7 +264,7 @@ export class VariableGlyphController {
 
   async getDeltas(getGlyphFunc) {
     if (this._deltas === undefined) {
-      const masterValues = await ensureComponentCompatibility(
+      const masterValues = await ensureGlyphCompatibility(
         this.sources
           .filter((source) => !source.inactive)
           .map((source) => this.layers[source.layerName].glyph),
@@ -1048,7 +1048,7 @@ function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
 
-async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
+async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
   const baseGlyphFallbackValues = {};
 
   glyphs.forEach((glyph) =>
@@ -1073,6 +1073,8 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
     }
   }
 
+  const guidelinesAreCompatible = areGuidelinesCompatible(glyphs);
+
   return glyphs.map((glyph) =>
     StaticGlyph.fromObject(
       {
@@ -1086,10 +1088,41 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
             },
           };
         }),
+        guidelines: guidelinesAreCompatible
+          ? glyph.guidelines.map((guideline) => {
+              return {
+                ...guideline,
+                locked: false,
+                angle: guideline.angle || 0,
+              };
+            })
+          : [],
       },
       true // noCopy
     )
   );
+}
+
+function areGuidelinesCompatible(glyphs) {
+  const referenceGuidelines = glyphs[0].guidelines;
+
+  for (const glyphIndex in glyphs.slice(1)) {
+    const glyph = glyphs[glyphIndex];
+    // check number
+    if (glyph.guidelines.length !== referenceGuidelines.length) {
+      return false;
+    }
+    // check name
+    for (const guidelineIndex in referenceGuidelines) {
+      if (
+        glyph.guidelines[guidelineIndex].name !==
+        referenceGuidelines[guidelineIndex].name
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 function stripComponentLocations(glyph) {
