@@ -509,26 +509,6 @@ registerVisualizationLayerDefinition({
       }
     }
 
-    // Selected guideline
-    context.fillStyle = parameters.selectedColor;
-    for (const i of selectedGuidelineIndices || []) {
-      const guideline = glyph.guidelines[i];
-      if (!guideline) {
-        continue;
-      }
-      if (guideline.locked) {
-        _drawLockIcon(
-          context,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2,
-          parameters.selectedColor,
-          parameters.iconSize
-        );
-      } else {
-        fillRoundNode(context, guideline, smoothSize);
-      }
-    }
-
     // Hovered guideline
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
@@ -557,8 +537,38 @@ registerVisualizationLayerDefinition({
         strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
       }
     }
+
+    // Selected guideline
+    context.fillStyle = parameters.selectedColor;
+    for (const i of selectedGuidelineIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      if (guideline.locked) {
+        _drawLockIcon(
+          context,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2,
+          parameters.selectedColor,
+          parameters.iconSize
+        );
+      } else {
+        fillRoundNode(context, guideline, smoothSize);
+      }
+    }
   },
 });
+
+function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
+  withSavedState(context, () => {
+    context.translate(x, y);
+    context.scale(iconSize / 24, (-1 * iconSize) / 24);
+    context.lineWidth = lineWidth;
+    context.strokeStyle = strokeColor;
+    context.stroke(lockIconPath2D);
+  });
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
@@ -1129,16 +1139,6 @@ registerVisualizationLayerDefinition({
     }
   },
 });
-
-function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
-  withSavedState(context, () => {
-    context.translate(x, y);
-    context.scale(iconSize / 24, (-1 * iconSize) / 24);
-    context.lineWidth = lineWidth;
-    context.strokeStyle = strokeColor;
-    context.stroke(lockIconPath2D);
-  });
-}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
