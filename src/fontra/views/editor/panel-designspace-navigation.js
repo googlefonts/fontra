@@ -452,7 +452,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         checked: this.sceneSettings.fontAxesUseSourceCoordinates,
       },
     ];
-    const buttonRect = event.target.getBoundingClientRect();
+
+    const button = this.contentElement.querySelector("#font-axes-view-options-button");
+    const buttonRect = button.getBoundingClientRect();
     showMenu(menuItems, { x: buttonRect.left, y: buttonRect.bottom });
   }
 
