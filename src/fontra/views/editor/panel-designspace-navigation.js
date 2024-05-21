@@ -204,6 +204,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateInterpolationErrorInfo();
     });
 
+    this.sceneSettingsController.addKeyListener(
+      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden"],
+      (event) => {
+        this._updateAxes();
+      }
+    );
+
     this.sceneController.addCurrentGlyphChangeListener(
       scheduleCalls((event) => {
         this._updateAxes();
@@ -447,9 +454,17 @@ export default class DesignspaceNavigationPanel extends Panel {
         callback: () => {
           this.sceneSettings.fontAxesUseSourceCoordinates =
             !this.sceneSettings.fontAxesUseSourceCoordinates;
-          this._updateAxes();
         },
         checked: this.sceneSettings.fontAxesUseSourceCoordinates,
+      },
+      {
+        title: "Show hidden axes",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesShowHidden =
+            !this.sceneSettings.fontAxesShowHidden;
+        },
+        checked: this.sceneSettings.fontAxesShowHidden,
       },
     ];
 
@@ -555,7 +570,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   get fontAxes() {
-    return this.fontController.fontAxes.filter((axis) => !axis.hidden);
+    return this.sceneSettings.fontAxesShowHidden
+      ? this.fontController.fontAxes
+      : this.fontController.fontAxes.filter((axis) => !axis.hidden);
   }
 
   async _updateAxes() {

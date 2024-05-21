@@ -66,6 +66,7 @@ export class SceneController {
       fontLocationSource: {},
       fontLocationSourceMapped: {},
       fontAxesUseSourceCoordinates: false,
+      fontAxesShowHidden: false,
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
