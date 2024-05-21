@@ -122,7 +122,8 @@ export class SceneController {
       true
     );
 
-    // Set up the dependencies between fontLocationUser, fontLocationSource and fontLocationSourceMapped
+    // Set up the dependencies between fontLocationUser, fontLocationSource and
+    // fontLocationSourceMapped
     const locationDependencies = [
       ["fontLocationUser", "fontLocationSource", "mapUserLocationToSourceLocation"],
       ["fontLocationSource", "fontLocationUser", "mapSourceLocationToUserLocation"],
