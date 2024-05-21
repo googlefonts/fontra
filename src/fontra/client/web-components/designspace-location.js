@@ -1,13 +1,20 @@
 import { RangeSlider } from "./range-slider.js";
+import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement, htmlToElement } from "/core/html-utils.js";
 
+const colors = {
+  "disabled-color": ["#ccc", "#777"],
+};
+
 export class DesignspaceLocation extends UnlitElement {
   static styles = `
+    ${themeColorCSS(colors)}
+
     :host {
       display: grid;
       grid-template-columns: 25% auto;
-      gap: 0.4em;
+      gap: 0.2em 0.4em;
       overflow: auto;
     }
 
@@ -15,6 +22,8 @@ export class DesignspaceLocation extends UnlitElement {
       text-align: right;
       overflow: hidden; /* this needs to be set so that width respects fit-content */
       text-overflow: ellipsis;
+      vertical-align: middle;
+      margin-top: 1px;
     }
 
     .slider-label:hover {
@@ -22,11 +31,17 @@ export class DesignspaceLocation extends UnlitElement {
       cursor: pointer;
     }
 
+    .slider-label.disabled {
+      color: var(--disabled-color);
+      font-size: 0.8em;
+      margin-top: 3px;
+    }
+
     .info-box {
       display: none;
       grid-column: 1 / -1;
       margin-bottom: 0.5em;
-      color: #999; /* lazy comprimise for light and dark modes */
+      color: var(--disabled-color);
     }
 
     .info-box.visible {
@@ -39,6 +54,10 @@ export class DesignspaceLocation extends UnlitElement {
       width: 100%;
       height: 1px;
       grid-column: 1 / -1;
+    }
+
+    hr.spacer {
+      border-top: unset;
     }
   `;
 
@@ -111,54 +130,59 @@ export class DesignspaceLocation extends UnlitElement {
         elements.push(html.hr());
         continue;
       }
-      const modelValue = this.values[axis.name];
-      const infoBox = htmlToElement(
-        `<div class="info-box">
-          ${
-            axis.values && axis.values.length > 0
-              ? `
-          <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
-          <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
-            ", "
-          )}</strong></span>
-          `
-              : `
-          <span>Min: <strong>${axis.minValue}</strong></span>&nbsp; |
-          <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
-          <span>Max: <strong>${axis.maxValue}</strong></span>
-          `
-          }
-        </div>`
-      );
-      elements.push(
-        html.div(
-          {
-            class: "slider-label",
-            onclick: (event) => this._toggleInfoBox(infoBox, event),
-          },
-          [axis.name]
-        )
-      );
-      const parms = {
-        defaultValue: axis.defaultValue,
-        value: modelValue !== undefined ? modelValue : axis.defaultValue,
-        onChangeCallback: (event) =>
-          this._dispatchLocationChangedEvent(axis.name, event.value),
-      };
-      if (axis.values) {
-        // Discrete axis
-        parms.values = axis.values;
-      } else {
-        // Continuous axis
-        parms.minValue = axis.minValue;
-        parms.maxValue = axis.maxValue;
-      }
-      const slider = html.createDomElement("range-slider", parms);
-      this._sliders[axis.name] = slider;
-      elements.push(slider);
-      elements.push(infoBox);
+      this._createSlider(elements, axis);
     }
     return elements;
+  }
+
+  _createSlider(elements, axis, sliderDisabled = false) {
+    const modelValue = this.values[axis.name];
+    const infoBox = htmlToElement(
+      `<div class="info-box">
+        ${
+          axis.values && axis.values.length > 0
+            ? `
+        <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
+        <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
+          ", "
+        )}</strong></span>
+        `
+            : `
+        <span>Min: <strong>${axis.minValue}</strong></span>&nbsp; |
+        <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
+        <span>Max: <strong>${axis.maxValue}</strong></span>
+        `
+        }
+      </div>`
+    );
+    elements.push(
+      html.div(
+        {
+          class: sliderDisabled ? "slider-label disabled" : "slider-label",
+          onclick: (event) => this._toggleInfoBox(infoBox, event),
+        },
+        [axis.name]
+      )
+    );
+    const parms = {
+      defaultValue: axis.defaultValue,
+      value: modelValue !== undefined ? modelValue : axis.defaultValue,
+      onChangeCallback: (event) =>
+        this._dispatchLocationChangedEvent(axis.name, event.value),
+    };
+    if (axis.values) {
+      // Discrete axis
+      parms.values = axis.values;
+    } else {
+      // Continuous axis
+      parms.minValue = axis.minValue;
+      parms.maxValue = axis.maxValue;
+    }
+    const slider = html.createDomElement("range-slider", parms);
+    slider.disabled = sliderDisabled;
+    this._sliders[axis.name] = slider;
+    elements.push(slider);
+    elements.push(infoBox);
   }
 
   _toggleInfoBox(infoBox, event) {
