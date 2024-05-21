@@ -80,7 +80,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             icon: "menu-2",
             id: "font-axes-view-options-button",
             tooltip: "View options",
-            onclick: (event) => console.log("view options", event),
+            onclick: (event) => this.showFontAxesViewOptionsMenu(event),
           }),
           makeAccordionHeaderButton({
             icon: "tool",
@@ -429,6 +429,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     } else {
       this.sourcesList.setSelectedItemIndex(undefined);
     }
+  }
+
+  showFontAxesViewOptionsMenu(event) {
+    const menuItems = [
+      {
+        title: "Use source coordinates",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesUseSourceCoordinates =
+            !this.sceneSettings.fontAxesUseSourceCoordinates;
+        },
+        checked: this.sceneSettings.fontAxesUseSourceCoordinates,
+      },
+    ];
+    const buttonRect = event.target.getBoundingClientRect();
+    showMenu(menuItems, { x: buttonRect.left, y: buttonRect.bottom });
   }
 
   resetFontAxesToDefault(event) {
