@@ -316,7 +316,7 @@ export class VariableGlyphController {
       if (source.layerName in layerGlyphs) {
         continue;
       }
-      layerGlyphs[source.layerName] = stripComponentLocations(
+      layerGlyphs[source.layerName] = stripGuidelinesAndComponentLocations(
         this.layers[source.layerName].glyph
       );
     }
@@ -1126,8 +1126,8 @@ function areGuidelinesCompatible(glyphs) {
   return true;
 }
 
-function stripComponentLocations(glyph) {
-  if (!glyph.components.length) {
+function stripGuidelinesAndComponentLocations(glyph) {
+  if (!glyph.components.length && !glyph.guidelines.length) {
     return glyph;
   }
   return StaticGlyph.fromObject(
@@ -1139,6 +1139,7 @@ function stripComponentLocations(glyph) {
           location: {},
         };
       }),
+      guidelines: [],
     },
     true // noCopy
   );
