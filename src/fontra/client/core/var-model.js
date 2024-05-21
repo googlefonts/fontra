@@ -336,6 +336,24 @@ export function normalizeLocation(location, axisList) {
   return out;
 }
 
+export function unnormalizeLocation(location, axisList) {
+  // The opposite of normalizeLocation
+  const out = {};
+  for (const axis of axisList) {
+    let v = location[axis.name];
+    if (v === undefined) {
+      v = axis.defaultValue;
+    }
+    out[axis.name] = unnormalizeValue(
+      v,
+      axis.minValue,
+      clamp(axis.defaultValue, axis.minValue, axis.maxValue),
+      clamp(axis.maxValue, axis.minValue, axis.maxValue)
+    );
+  }
+  return out;
+}
+
 export function supportScalar(location, support, ot = true) {
   // Returns the scalar multiplier at location, for a master
   // with support.  If ot is True, then a peak value of zero

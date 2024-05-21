@@ -10,6 +10,7 @@ import {
   normalizeValue,
   piecewiseLinearMap,
   supportScalar,
+  unnormalizeLocation,
   unnormalizeValue,
 } from "../src/fontra/client/core/var-model.js";
 import { parametrize } from "./test-support.js";
@@ -195,6 +196,56 @@ describe("var-model tests", () => {
     it("buggy axis min/max", () => {
       const axes = [{ name: "wght", minValue: 0, defaultValue: 0, maxValue: -500 }];
       expect(normalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 0 });
+    });
+  });
+
+  describe("unnormalizeLocation tests", () => {
+    it("-1,0,1", () => {
+      const axes = [{ name: "wght", minValue: 100, defaultValue: 400, maxValue: 900 }];
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 400 });
+      expect(unnormalizeLocation({ wght: -1 }, axes)).to.deep.equal({ wght: 100 });
+      expect(unnormalizeLocation({ wght: 1 }, axes)).to.deep.equal({ wght: 900 });
+      expect(unnormalizeLocation({ wght: 0.5 }, axes)).to.deep.equal({ wght: 650 });
+      expect(unnormalizeLocation({ wght: 2 }, axes)).to.deep.equal({ wght: 900 });
+      expect(unnormalizeLocation({ wght: -2 }, axes)).to.deep.equal({ wght: 100 });
+    });
+
+    it("0,0,1", () => {
+      const axes = [{ name: "wght", minValue: 0, defaultValue: 0, maxValue: 1000 }];
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 0 });
+      expect(unnormalizeLocation({ wght: -1 }, axes)).to.deep.equal({ wght: 0.0 });
+      expect(unnormalizeLocation({ wght: 1 }, axes)).to.deep.equal({ wght: 1000 });
+      expect(unnormalizeLocation({ wght: 0.5 }, axes)).to.deep.equal({ wght: 500 });
+      expect(unnormalizeLocation({ wght: 2 }, axes)).to.deep.equal({ wght: 1000 });
+    });
+
+    it("0,1,1", () => {
+      const axes = [{ name: "wght", minValue: 0, defaultValue: 1000, maxValue: 1000 }];
+      expect(unnormalizeLocation({ wght: -1 }, axes)).to.deep.equal({ wght: 0 });
+      expect(unnormalizeLocation({ wght: -2 }, axes)).to.deep.equal({ wght: 0 });
+      expect(unnormalizeLocation({ wght: -0.5 }, axes)).to.deep.equal({ wght: 500 });
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 1000 });
+      expect(unnormalizeLocation({ wght: 0.5 }, axes)).to.deep.equal({ wght: 1000 });
+    });
+
+    it("buggy axis low default", () => {
+      const axes = [{ name: "wght", minValue: 500, defaultValue: 0, maxValue: 1000 }];
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 500 });
+      expect(unnormalizeLocation({ wght: 0.2 }, axes)).to.deep.equal({ wght: 600 });
+      expect(unnormalizeLocation({ wght: 1 }, axes)).to.deep.equal({ wght: 1000 });
+    });
+
+    it("buggy axis high default", () => {
+      const axes = [{ name: "wght", minValue: 0, defaultValue: 1000, maxValue: 500 }];
+      expect(unnormalizeLocation({ wght: -1 }, axes)).to.deep.equal({ wght: 0 });
+      expect(unnormalizeLocation({ wght: -0.2 }, axes)).to.deep.equal({ wght: 400 });
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 500 });
+      expect(unnormalizeLocation({ wght: 1 }, axes)).to.deep.equal({ wght: 500 });
+    });
+
+    it("buggy axis min/max", () => {
+      const axes = [{ name: "wght", minValue: 0, defaultValue: 0, maxValue: -500 }];
+      expect(unnormalizeLocation({ wght: 0 }, axes)).to.deep.equal({ wght: 0 });
     });
   });
 
