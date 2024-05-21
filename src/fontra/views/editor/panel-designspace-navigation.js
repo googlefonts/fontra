@@ -205,7 +205,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      "fontAxesUseSourceCoordinates",
+      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden"],
       (event) => {
         this._updateAxes();
       }
@@ -457,6 +457,15 @@ export default class DesignspaceNavigationPanel extends Panel {
         },
         checked: this.sceneSettings.fontAxesUseSourceCoordinates,
       },
+      {
+        title: "Show hidden axes",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesShowHidden =
+            !this.sceneSettings.fontAxesShowHidden;
+        },
+        checked: this.sceneSettings.fontAxesShowHidden,
+      },
     ];
 
     const button = this.contentElement.querySelector("#font-axes-view-options-button");
@@ -561,7 +570,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   get fontAxes() {
-    return this.fontController.fontAxes.filter((axis) => !axis.hidden);
+    return this.sceneSettings.fontAxesShowHidden
+      ? this.fontController.fontAxes
+      : this.fontController.fontAxes.filter((axis) => !axis.hidden);
   }
 
   async _updateAxes() {
