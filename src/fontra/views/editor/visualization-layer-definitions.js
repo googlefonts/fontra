@@ -208,9 +208,10 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
     const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;
     _drawLockIcon(
       context,
-      parameters,
       positionedGlyph.glyph.xAdvance / 2 - parameters.iconSize / 2,
-      boundsYMin - 24
+      boundsYMin - 24,
+      parameters.strokeColor,
+      parameters.iconSize
     );
   }
 }
@@ -386,9 +387,10 @@ function _drawGuideline(context, parameters, guideline) {
     if (guideline.locked) {
       _drawLockIcon(
         context,
-        parameters,
         -parameters.iconSize / 2,
-        parameters.iconSize / 2
+        parameters.iconSize / 2,
+        parameters.strokeColor,
+        parameters.iconSize
       );
     } else {
       strokeCircle(context, 0, 0, parameters.originMarkerRadius);
@@ -497,9 +499,10 @@ registerVisualizationLayerDefinition({
       if (guideline.locked) {
         _drawLockIcon(
           context,
-          parameters,
           guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2
+          guideline.y + parameters.iconSize / 2,
+          parameters.strokeColor,
+          parameters.iconSize
         );
       } else {
         fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
@@ -514,12 +517,12 @@ registerVisualizationLayerDefinition({
         continue;
       }
       if (guideline.locked) {
-        context.strokeStyle = parameters.selectedColor;
         _drawLockIcon(
           context,
-          parameters,
           guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2
+          guideline.y + parameters.iconSize / 2,
+          parameters.selectedColor,
+          parameters.iconSize
         );
       } else {
         fillRoundNode(context, guideline, smoothSize);
@@ -541,12 +544,12 @@ registerVisualizationLayerDefinition({
           [parameters.hoveredColorIcon, 2],
         ];
         for (const [color, strokeSize] of drawIcons) {
-          context.strokeStyle = color;
           _drawLockIcon(
             context,
-            parameters,
             guideline.x - parameters.iconSize / 2,
             guideline.y + parameters.iconSize / 2,
+            color,
+            parameters.iconSize,
             strokeSize
           );
         }
@@ -1127,12 +1130,12 @@ registerVisualizationLayerDefinition({
   },
 });
 
-function _drawLockIcon(context, parameters, x, y, lineWidth = 2) {
+function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
   withSavedState(context, () => {
     context.translate(x, y);
-    context.scale(parameters.iconSize / 24, (-1 * parameters.iconSize) / 24);
+    context.scale(iconSize / 24, (-1 * iconSize) / 24);
     context.lineWidth = lineWidth;
-    context.strokeStyle = parameters.strokeColor;
+    context.strokeStyle = strokeColor;
     context.stroke(lockIconPath2D);
   });
 }
