@@ -191,7 +191,6 @@ export class RangeSlider extends html.UnlitElement {
 
     .numeric-input > .slider-input > .slider-numeric-input:disabled {
       background-color: unset;
-      //background-color: red;
       color: var(--disabled-color);
       padding: 0 3px;
       font-size: 0.8em;

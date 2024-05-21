@@ -41,7 +41,7 @@ export class DesignspaceLocation extends UnlitElement {
       display: none;
       grid-column: 1 / -1;
       margin-bottom: 0.5em;
-      color: var(--disabled-color); /* use same color as 'disabled' instead of lazy comprimise */
+      color: var(--disabled-color);
     }
 
     .info-box.visible {
@@ -131,11 +131,6 @@ export class DesignspaceLocation extends UnlitElement {
         continue;
       }
       this._createSlider(elements, axis);
-
-      // TODO: the following is only of demonstrating the disabled state
-      this._createSlider(elements, axis, true);
-      elements.push(html.hr({ class: "spacer" }));
-      // TODO: end of demonstration
     }
     return elements;
   }
