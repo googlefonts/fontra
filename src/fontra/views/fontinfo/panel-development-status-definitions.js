@@ -43,8 +43,8 @@ addStyleSheet(`
 }
 `);
 
-export class DevelopmentStatusDefinitions extends BaseInfoPanel {
-  static title = "Status Color Settings"; // Development Status Definitions -> too long
+export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
+  static title = "Status definitions";
   static id = "development-status-sefinitions-panel";
   static fontAttributes = ["fontInfo", "unitsPerEm"];
 

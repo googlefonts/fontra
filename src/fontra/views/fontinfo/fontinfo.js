@@ -3,7 +3,7 @@ import * as html from "../core/html-utils.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
-import { DevelopmentStatusDefinitions } from "./panel-development-status-definitions.js";
+import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
 import { message } from "/web-components/modal-dialog.js";
@@ -48,7 +48,7 @@ export class FontInfoController {
       FontInfoPanel,
       AxesPanel,
       SourcesPanel,
-      DevelopmentStatusDefinitions,
+      DevelopmentStatusDefinitionsPanel,
     ]) {
       panelClass.fontAttributes.forEach((fontAttr) => {
         subscribePattern[fontAttr] = null;
