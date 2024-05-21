@@ -1156,6 +1156,7 @@ registerVisualizationLayerDefinition({
       component: componentSelection,
       componentOrigin: componentOriginSelection,
       anchor: anchorSelection,
+      guideline: guidelineSelection,
     } = parseSelection(model.sceneSettings.combinedSelection);
     componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
 
@@ -1171,7 +1172,8 @@ registerVisualizationLayerDefinition({
     for (const pt of chain(
       iterPointsByIndex(glyph.path, pointSelection),
       iterComponentOriginsByIndex(glyph.instance.components, componentSelection),
-      iterAnchorsPointsByIndex(glyph.anchors, anchorSelection)
+      iterAnchorsPointsByIndex(glyph.anchors, anchorSelection),
+      iterGuidelinesPointsByIndex(glyph.guidelines, guidelineSelection)
     )) {
       const xString = `${round(pt.x, 1)}`;
       const yString = `${round(pt.y, 1)}`;
@@ -1560,6 +1562,15 @@ function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
   }
   for (const index of anchorIndices) {
     yield anchors[index];
+  }
+}
+
+function* iterGuidelinesPointsByIndex(guidelines, guidelineIndices) {
+  if (!guidelineIndices || !guidelines.length) {
+    return;
+  }
+  for (const index of guidelineIndices) {
+    yield guidelines[index];
   }
 }
 
