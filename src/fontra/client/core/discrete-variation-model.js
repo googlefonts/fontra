@@ -1,6 +1,10 @@
 import { VariationError } from "./errors.js";
 import { enumerate, isObjectEmpty, product, range, zip } from "./utils.js";
-import { VariationModel, normalizeLocation } from "./var-model.js";
+import {
+  VariationModel,
+  makeSparseNormalizedLocation,
+  normalizeLocation,
+} from "./var-model.js";
 
 export class DiscreteVariationModel {
   constructor(locations, discreteAxes, continuousAxes) {
@@ -19,7 +23,7 @@ export class DiscreteVariationModel {
       } else {
         this._locationIndices[key].push(index);
       }
-      const normalizedLocation = sparsifyLocation(
+      const normalizedLocation = makeSparseNormalizedLocation(
         normalizeLocation(splitLoc.location, continuousAxes)
       );
       if (!(key in this._locations)) {
@@ -216,17 +220,6 @@ function getAllDiscreteLocations(discreteAxes) {
     ...product(...discreteAxes.map((axis) => axis.values.map((v) => [axis.name, v]))),
   ];
   return descreteLocations.map((locs) => Object.fromEntries(locs));
-}
-
-export function sparsifyLocation(location) {
-  // location must be normalized
-  const sparseLocation = {};
-  for (const [name, value] of Object.entries(location)) {
-    if (value) {
-      sparseLocation[name] = value;
-    }
-  }
-  return sparseLocation;
 }
 
 export function findNearestLocationIndex(targetLocation, locations) {

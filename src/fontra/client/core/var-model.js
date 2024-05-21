@@ -536,6 +536,17 @@ export function makeSparseLocation(location, axisList) {
   );
 }
 
+export function makeSparseNormalizedLocation(location) {
+  // location must be normalized
+  const sparseLocation = {};
+  for (const [name, value] of Object.entries(location)) {
+    if (value) {
+      sparseLocation[name] = value;
+    }
+  }
+  return sparseLocation;
+}
+
 export function mapAxesFromUserSpaceToSourceSpace(axes) {
   return axes.map((axis) => {
     const newAxis = { ...axis };
