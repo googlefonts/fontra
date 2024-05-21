@@ -204,6 +204,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateInterpolationErrorInfo();
     });
 
+    this.sceneSettingsController.addKeyListener(
+      "fontAxesUseSourceCoordinates",
+      (event) => {
+        this._updateAxes();
+      }
+    );
+
     this.sceneController.addCurrentGlyphChangeListener(
       scheduleCalls((event) => {
         this._updateAxes();
@@ -447,7 +454,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         callback: () => {
           this.sceneSettings.fontAxesUseSourceCoordinates =
             !this.sceneSettings.fontAxesUseSourceCoordinates;
-          this._updateAxes();
         },
         checked: this.sceneSettings.fontAxesUseSourceCoordinates,
       },
