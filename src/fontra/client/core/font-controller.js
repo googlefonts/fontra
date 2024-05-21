@@ -9,6 +9,7 @@ import {
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
+import { MultipleAxisMapping } from "./multiple-axis-mapping.js";
 import { TaskPool } from "./task-pool.js";
 import { chain, getCharFromCodePoint, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -47,6 +48,10 @@ export class FontController {
     this._rootClassDef = (await getClassSchema())["Font"];
     this.backendInfo = await this.font.getBackEndInfo();
     this.readOnly = await this.font.isReadOnly();
+    this._multipleAxisMapping = new MultipleAxisMapping(
+      this._rootObject.axes.axes,
+      this._rootObject.axes.mappings
+    );
     if (initListener) {
       this.addChangeListener({ axes: null }, (change, isExternalChange) =>
         this._purgeInstanceCacheAndVarGlyphAttributeCache()
@@ -715,8 +720,7 @@ export class FontController {
   }
 
   mapSourceLocationToMappedSourceLocation(sourceLocation) {
-    // TODO: apply avar-2 mapping
-    return { ...sourceLocation };
+    return { ...this._multipleAxisMapping.mapLocation(sourceLocation) };
   }
 
   mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
