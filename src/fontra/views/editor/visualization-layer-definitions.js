@@ -417,11 +417,7 @@ function _drawGuideline(context, parameters, guideline) {
           halfMarker - // move half of the marker radius left + stroke width
           parameters.margin * // move one margin to left to get a short line on the left
             2; // move another margin left to get the margin on the right
-        context.fillText(
-          strLine,
-          moveText,
-          textHeight / 2 - parameters.fontSize * 0.2 // move up -> visually centered
-        );
+        context.fillText(strLine, moveText, textHeight / 2);
       }
 
       // collect lines
