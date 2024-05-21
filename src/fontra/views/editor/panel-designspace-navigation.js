@@ -1362,7 +1362,10 @@ function makeClickableIconHeader(iconPath, onClick) {
 function groupAccordionHeaderButtons(buttons) {
   return html.div(
     {
-      style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto); gap: 0.15em;`,
+      style: `display: grid;
+      grid-template-columns: repeat(${buttons.length}, auto);
+      gap: 0.15em;
+      `,
     },
     buttons
   );
