@@ -19,7 +19,7 @@
   "menubar.glyph": "Glyph",
   "menubar.glyph.add": "Add source...",
   "menubar.glyph.delete": "Delete source...",
-  "menubar.glyph.editaxes": "Edit Local Axes...",
+  "menubar.glyph.editaxes": "Edit glyph axes...",
   "menubar.extensions": "Extensions",
   "menubar.extensions.plugin": "Plugin Manager",
   "menubar.help": "Help",

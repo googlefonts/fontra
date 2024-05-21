@@ -19,7 +19,7 @@
   "menubar.glyph": "字符形",
   "menubar.glyph.add": "添加源……",
   "menubar.glyph.delete": "删除源……",
-  "menubar.glyph.editaxes": "编辑局部参数轴……",
+  "menubar.glyph.editaxes": "编辑字符形参数轴……",
   "menubar.extensions": "扩展",
   "menubar.extensions.plugin": "插件管理器",
   "menubar.help": "帮助",
