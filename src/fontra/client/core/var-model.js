@@ -309,7 +309,7 @@ export function normalizeValue(v, lower, dflt, upper) {
 }
 
 export function unnormalizeValue(v, lower, dflt, upper) {
-  //
+  // The opposite of normalizeValue
   if (v < 0) {
     v = dflt + v * (dflt - lower);
   } else {
