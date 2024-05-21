@@ -85,4 +85,31 @@ describe("MultipleAxisMapping Tests", () => {
       testItem.outputLocation
     );
   });
+
+  it("Test empty mappings", () => {
+    const mam = new MultipleAxisMapping(axes, []);
+    const loc = { a: 12, b: 31 };
+    expect(mam.mapLocation(loc)).to.deep.equal(loc);
+  });
+
+  it("Test undefined mappings", () => {
+    const mam = new MultipleAxisMapping(axes, undefined);
+    const loc = { a: 12, b: 31 };
+    expect(mam.mapLocation(loc)).to.deep.equal(loc);
+  });
+
+  it("Test invalid mappings", () => {
+    const mam = new MultipleAxisMapping(axes, [
+      {
+        inputLocation: {},
+        outputLocation: {},
+      },
+      {
+        inputLocation: {},
+        outputLocation: {},
+      },
+    ]);
+    const loc = { a: 12, b: 31 };
+    expect(mam.mapLocation(loc)).to.deep.equal(loc);
+  });
 });

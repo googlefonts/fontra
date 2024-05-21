@@ -13,7 +13,9 @@ export class MultipleAxisMapping {
   constructor(fontAxes, mappings) {
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
     this.mappings = mappings;
-    this._setupModel();
+    if (mappings?.length) {
+      this._setupModel();
+    }
   }
 
   _setupModel() {
@@ -40,7 +42,13 @@ export class MultipleAxisMapping {
       outputLocations.splice(0, 0, {});
     }
 
-    this.model = new VariationModel(inputLocations, axisNames);
+    try {
+      this.model = new VariationModel(inputLocations, axisNames);
+    } catch (exc) {
+      console.log(`Can't create VariationModel for MultipleAxisMapping: ${exc}`);
+      return;
+    }
+
     this.deltas = {};
 
     for (const axisName of axisNames) {
@@ -60,6 +68,9 @@ export class MultipleAxisMapping {
   }
 
   mapLocation(sourceLocation) {
+    if (!this.model) {
+      return sourceLocation;
+    }
     const normalizedLocation = normalizeLocation(
       sourceLocation,
       this.fontAxesSourceSpace
