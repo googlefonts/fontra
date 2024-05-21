@@ -77,6 +77,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         ),
         auxiliaryHeaderElement: groupAccordionHeaderButtons([
           makeAccordionHeaderButton({
+            icon: "menu-2",
+            id: "font-axes-view-options-button",
+            tooltip: "View options",
+            onclick: (event) => console.log("view options", event),
+          }),
+          makeAccordionHeaderButton({
             icon: "tool",
             tooltip: "Edit font axes",
             onclick: (event) => {
@@ -1321,7 +1327,9 @@ function makeClickableIconHeader(iconPath, onClick) {
 
 function groupAccordionHeaderButtons(buttons) {
   return html.div(
-    { style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto)` },
+    {
+      style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto); gap: 0.15em;`,
+    },
     buttons
   );
 }
