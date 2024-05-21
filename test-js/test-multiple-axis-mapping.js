@@ -54,6 +54,14 @@ describe("MultipleAxisMapping Tests", () => {
       outputLocation: { Diagonal: 12.5, Horizontal: 0, Vertical: 16.5 },
     },
     {
+      inputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 10 },
+      outputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 26.5 },
+    },
+    {
+      inputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 100 },
+      outputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 100 },
+    },
+    {
       inputLocation: { Diagonal: 25 },
       outputLocation: { Diagonal: 25, Horizontal: 0, Vertical: 33 },
     },
