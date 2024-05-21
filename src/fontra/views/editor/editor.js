@@ -2281,7 +2281,7 @@ export class EditorController {
       guidelineName: guideline ? guideline.name : undefined,
       guidelineX: guideline ? guideline.x : Math.round(point.x),
       guidelineY: guideline ? guideline.y : Math.round(point.y),
-      guidelineAngle: guideline ? guideline.angle : undefined,
+      guidelineAngle: guideline ? guideline.angle : 0,
       guidelineLocked: guideline ? guideline.locked : false,
     });
 
