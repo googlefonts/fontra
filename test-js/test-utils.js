@@ -11,6 +11,7 @@ import {
   fileNameExtension,
   getCharFromCodePoint,
   guessCharFromGlyphName,
+  hexToRgbaList,
   hyphenatedToCamelCase,
   hyphenatedToLabel,
   loadURLFragment,
@@ -368,6 +369,25 @@ describe("rgbaToCSS", () => {
   });
   it("should always create rgb if the opacity is 1", () => {
     expect(rgbaToCSS([0, 0, 0, 1])).to.be.equal("rgb(0,0,0)");
+  });
+});
+
+describe("hexToRgbaList", () => {
+  it("should convert a hex color string to rgba array of decimals", () => {
+    let array = hexToRgbaList("#FF0000");
+    expect(array).deep.equals([255, 0, 0, 1]); // red
+  });
+  it("should convert short hex color string to rgba array of decimals", () => {
+    const array = hexToRgbaList("#F00");
+    expect(array).deep.equals([255, 0, 0, 1]); // red
+  });
+  it("should convert a hex color string with opacity to rgba array of decimals", () => {
+    const array = hexToRgbaList("#FF000080");
+    expect(array).deep.equals([255, 0, 0, 0.5]); // red with 80% opacity
+  });
+  it("should convert short hex color string with opacity to rgba array of decimals", () => {
+    const array = hexToRgbaList("#F008");
+    expect(array).deep.equals([255, 0, 0, 0.53]); // red with 80% opacity
   });
 });
 
