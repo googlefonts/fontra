@@ -18,6 +18,7 @@ import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
+  mapAxesFromUserSpaceToSourceSpace,
   piecewiseLinearMap,
 } from "/core/var-model.js";
 import { IconButton } from "/web-components/icon-button.js";
@@ -1178,25 +1179,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       infoElement.appendChild(html.br());
     }
   }
-}
-
-function mapAxesFromUserSpaceToSourceSpace(axes) {
-  return axes.map((axis) => {
-    const newAxis = { ...axis };
-    if (axis.mapping) {
-      const mappingDict = Object.fromEntries(axis.mapping);
-      const properties = axis.values
-        ? ["defaultValue"]
-        : ["minValue", "defaultValue", "maxValue"];
-      for (const prop of properties) {
-        newAxis[prop] = piecewiseLinearMap(axis[prop], mappingDict);
-      }
-      if (axis.values) {
-        axis.values.map((value) => piecewiseLinearMap(value, mappingDict));
-      }
-    }
-    return newAxis;
-  });
 }
 
 function roundComponentOrigins(components) {

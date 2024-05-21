@@ -535,3 +535,22 @@ export function makeSparseLocation(location, axisList) {
       .map((axis) => [axis.name, location[axis.name]])
   );
 }
+
+export function mapAxesFromUserSpaceToSourceSpace(axes) {
+  return axes.map((axis) => {
+    const newAxis = { ...axis };
+    if (axis.mapping) {
+      const mappingDict = Object.fromEntries(axis.mapping);
+      const properties = axis.values
+        ? ["defaultValue"]
+        : ["minValue", "defaultValue", "maxValue"];
+      for (const prop of properties) {
+        newAxis[prop] = piecewiseLinearMap(axis[prop], mappingDict);
+      }
+      if (axis.values) {
+        axis.values.map((value) => piecewiseLinearMap(value, mappingDict));
+      }
+    }
+    return newAxis;
+  });
+}
