@@ -6,7 +6,6 @@ import {
 import {
   DiscreteVariationModel,
   findNearestLocationIndex,
-  sparsifyLocation,
   splitDiscreteLocation,
 } from "./discrete-variation-model.js";
 import { VariationError } from "./errors.js";
@@ -28,6 +27,7 @@ import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
+  makeSparseNormalizedLocation,
   mapForward,
   normalizeLocation,
   piecewiseLinearMap,
@@ -216,7 +216,9 @@ export class VariableGlyphController {
       source.inactive
         ? null
         : locationToString(
-            sparsifyLocation(normalizeLocation(source.location, this.combinedAxes))
+            makeSparseNormalizedLocation(
+              normalizeLocation(source.location, this.combinedAxes)
+            )
           )
     );
     const bag = {};
