@@ -308,6 +308,16 @@ export function normalizeValue(v, lower, dflt, upper) {
   return v;
 }
 
+export function unnormalizeValue(v, lower, dflt, upper) {
+  //
+  if (v < 0) {
+    v = dflt + v * (dflt - lower);
+  } else {
+    v = dflt + v * (upper - dflt);
+  }
+  return clamp(v, lower, upper);
+}
+
 export function normalizeLocation(location, axisList) {
   // Normalizes location based on axis min/default/max values from axes.
   const out = {};

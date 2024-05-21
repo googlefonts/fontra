@@ -10,6 +10,7 @@ import {
   normalizeValue,
   piecewiseLinearMap,
   supportScalar,
+  unnormalizeValue,
 } from "../src/fontra/client/core/var-model.js";
 import { parametrize } from "./test-support.js";
 
@@ -132,6 +133,17 @@ describe("var-model tests", () => {
       expect(normalizeValue(650, 100, 400, 900)).to.equal(0.5);
       expect(normalizeValue(0, 100, 400, 900)).to.equal(-1.0);
       expect(normalizeValue(1000, 100, 400, 900)).to.equal(1.0);
+    });
+  });
+
+  describe("unnormalizeValue test", () => {
+    it("misc", () => {
+      expect(unnormalizeValue(0, 100, 400, 900)).to.equal(400);
+      expect(unnormalizeValue(-1, 100, 400, 900)).to.equal(100);
+      expect(unnormalizeValue(-0.5, 100, 400, 900)).to.equal(250);
+      expect(unnormalizeValue(0.5, 100, 400, 900)).to.equal(650);
+      expect(unnormalizeValue(-2, 100, 400, 900)).to.equal(100);
+      expect(unnormalizeValue(2, 100, 400, 900)).to.equal(900);
     });
   });
 
