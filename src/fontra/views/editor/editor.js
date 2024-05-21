@@ -141,6 +141,7 @@ export class EditorController {
         "align",
         "fontLocationUser",
         "glyphLocation",
+        "fontAxesUseSourceCoordinates",
         "selectedGlyph",
         "selection",
         "text",
@@ -2372,6 +2373,9 @@ export class EditorController {
 
     this.sceneModel.setGlyphLocations(viewInfo["glyphLocations"]);
 
+    if (viewInfo["fontAxesUseSourceCoordinates"]) {
+      this.sceneSettings.fontAxesUseSourceCoordinates = true;
+    }
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
@@ -2404,6 +2408,9 @@ export class EditorController {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
+    if (this.sceneSettings.fontAxesUseSourceCoordinates) {
+      viewInfo["fontAxesUseSourceCoordinates"] = true;
+    }
     const glyphLocations = this.sceneController.getGlyphLocations(true);
     if (Object.keys(glyphLocations).length) {
       viewInfo["glyphLocations"] = glyphLocations;

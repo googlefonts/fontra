@@ -77,6 +77,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         ),
         auxiliaryHeaderElement: groupAccordionHeaderButtons([
           makeAccordionHeaderButton({
+            icon: "menu-2",
+            id: "font-axes-view-options-button",
+            tooltip: "View options",
+            onclick: (event) => this.showFontAxesViewOptionsMenu(event),
+          }),
+          makeAccordionHeaderButton({
             icon: "tool",
             tooltip: "Edit font axes",
             onclick: (event) => {
@@ -160,7 +166,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   setup() {
-    this.fontAxesElement.values = this.sceneSettings.fontLocationUser;
+    this._setFontLocationValues();
     this.glyphAxesElement.values = this.sceneSettings.glyphLocation;
 
     this.fontAxesElement.addEventListener(
@@ -170,7 +176,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneController.autoViewBox = false;
 
         this.sceneSettingsController.setItem(
-          "fontLocationUser",
+          this.sceneSettings.fontAxesUseSourceCoordinates
+            ? "fontLocationSource"
+            : "fontLocationUser",
           { ...this.fontAxesElement.values },
           { senderID: this }
         );
@@ -205,7 +213,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      ["fontLocationUser", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       (event) => {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -215,11 +223,10 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        if (event.key === "fontLocationUser") {
-          this.fontAxesElement.values = event.newValue;
-        } else {
-          // (event.key === "glyphLocation")
+        if (event.key === "glyphLocation") {
           this.glyphAxesElement.values = event.newValue;
+        } else {
+          this._setFontLocationValues();
         }
       },
       true
@@ -410,6 +417,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
+  _setFontLocationValues() {
+    const locationKey = this.sceneSettings.fontAxesUseSourceCoordinates
+      ? "fontLocationSource"
+      : "fontLocationUser";
+    this.fontAxesElement.values = this.sceneSettings[locationKey];
+  }
+
   sourceListGetSourceItem(sourceIndex) {
     if (sourceIndex == undefined) {
       return undefined;
@@ -423,6 +437,25 @@ export default class DesignspaceNavigationPanel extends Panel {
     } else {
       this.sourcesList.setSelectedItemIndex(undefined);
     }
+  }
+
+  showFontAxesViewOptionsMenu(event) {
+    const menuItems = [
+      {
+        title: "Use source coordinates",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesUseSourceCoordinates =
+            !this.sceneSettings.fontAxesUseSourceCoordinates;
+          this._updateAxes();
+        },
+        checked: this.sceneSettings.fontAxesUseSourceCoordinates,
+      },
+    ];
+
+    const button = this.contentElement.querySelector("#font-axes-view-options-button");
+    const buttonRect = button.getBoundingClientRect();
+    showMenu(menuItems, { x: buttonRect.left, y: buttonRect.bottom });
   }
 
   resetFontAxesToDefault(event) {
@@ -526,8 +559,11 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateAxes() {
-    const fontAxes = [...this.fontAxes];
+    const fontAxes = this.sceneSettings.fontAxesUseSourceCoordinates
+      ? mapAxesFromUserSpaceToSourceSpace(this.fontAxes)
+      : [...this.fontAxes];
     this.fontAxesElement.axes = fontAxes;
+    this._setFontLocationValues();
 
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
@@ -1131,11 +1167,15 @@ function mapAxesFromUserSpaceToSourceSpace(axes) {
   return axes.map((axis) => {
     const newAxis = { ...axis };
     if (axis.mapping) {
-      for (const prop of ["minValue", "defaultValue", "maxValue"]) {
-        newAxis[prop] = piecewiseLinearMap(
-          axis[prop],
-          Object.fromEntries(axis.mapping)
-        );
+      const mappingDict = Object.fromEntries(axis.mapping);
+      const properties = axis.values
+        ? ["defaultValue"]
+        : ["minValue", "defaultValue", "maxValue"];
+      for (const prop of properties) {
+        newAxis[prop] = piecewiseLinearMap(axis[prop], mappingDict);
+      }
+      if (axis.values) {
+        axis.values.map((value) => piecewiseLinearMap(value, mappingDict));
       }
     }
     return newAxis;
@@ -1321,7 +1361,12 @@ function makeClickableIconHeader(iconPath, onClick) {
 
 function groupAccordionHeaderButtons(buttons) {
   return html.div(
-    { style: `display: grid; grid-template-columns: repeat(${buttons.length}, auto)` },
+    {
+      style: `display: grid;
+      grid-template-columns: repeat(${buttons.length}, auto);
+      gap: 0.15em;
+      `,
+    },
     buttons
   );
 }
