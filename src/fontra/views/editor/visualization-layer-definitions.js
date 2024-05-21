@@ -237,6 +237,59 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.anchors",
+  name: "Selected anchors",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    smoothSize: 8,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+    underlayOffset: 2,
+  },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const smoothSize = parameters.smoothSize;
+
+    const { anchor: hoveredAnchorIndices } = parseSelection(model.hoverSelection);
+    const { anchor: selectedAnchorIndices } = parseSelection(model.selection);
+
+    // Under layer
+    context.fillStyle = parameters.underColor;
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      fillRoundNode(context, anchor, smoothSize + parameters.underlayOffset);
+    }
+
+    // Selected anchor
+    context.fillStyle = parameters.selectedColor;
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      fillRoundNode(context, anchor, smoothSize);
+    }
+
+    // Hovered anchor
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const anchorIndex of hoveredAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      if (!anchor) {
+        continue;
+      }
+      strokeRoundNode(context, anchor, smoothSize + parameters.hoverStrokeOffset);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
   name: "Anchor names",
   selectionMode: "editing",
@@ -392,6 +445,117 @@ function _drawGuideline(context, parameters, guideline) {
     });
   });
 }
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.guidelines",
+  name: "Selected guidelines",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    smoothSize: 8,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+    underlayOffset: 2,
+    iconSize: 12,
+  },
+  colors: {
+    hoveredColorIcon: "#0006",
+    hoveredColor: "#BBB",
+    selectedColor: "#000",
+    underColor: "#FFFA",
+    underColorIcon: "#f6f6f6",
+  },
+  colorsDarkMode: {
+    hoveredColorIcon: "#BBB",
+    hoveredColor: "#BBB",
+    selectedColor: "#FFF",
+    underColor: "#0008",
+    underColorIcon: "#333",
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const smoothSize = parameters.smoothSize;
+
+    const {
+      guideline: hoveredGuidelineIndices,
+      fontGuideline: hoveredFontGuidelineIndices,
+    } = parseSelection(model.hoverSelection);
+    const {
+      guideline: selectedGuidelineIndices,
+      fontGuideline: selectedFontGuidelineIndices,
+    } = parseSelection(model.selection);
+
+    // TODO: Font Guidelines
+
+    // Under layer
+    context.fillStyle = parameters.underColor;
+    for (const i of selectedGuidelineIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      if (guideline.locked) {
+        _drawLockIcon(
+          context,
+          parameters,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2
+        );
+      } else {
+        fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
+      }
+    }
+
+    // Selected guideline
+    context.fillStyle = parameters.selectedColor;
+    for (const i of selectedGuidelineIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      if (guideline.locked) {
+        context.strokeStyle = parameters.selectedColor;
+        _drawLockIcon(
+          context,
+          parameters,
+          guideline.x - parameters.iconSize / 2,
+          guideline.y + parameters.iconSize / 2
+        );
+      } else {
+        fillRoundNode(context, guideline, smoothSize);
+      }
+    }
+
+    // // Hovered guideline
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const i of hoveredGuidelineIndices || []) {
+      const guideline = glyph.guidelines[i];
+      if (!guideline) {
+        continue;
+      }
+      if (guideline.locked) {
+        const drawIcons = [
+          [parameters.hoveredColor, 11],
+          [parameters.underColorIcon, 7],
+          [parameters.hoveredColorIcon, 2],
+        ];
+        for (const [color, strokeSize] of drawIcons) {
+          context.strokeStyle = color;
+          _drawLockIcon(
+            context,
+            parameters,
+            guideline.x - parameters.iconSize / 2,
+            guideline.y + parameters.iconSize / 2,
+            strokeSize
+          );
+        }
+      } else {
+        strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
+      }
+    }
+  },
+});
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
@@ -963,117 +1127,6 @@ registerVisualizationLayerDefinition({
   },
 });
 
-registerVisualizationLayerDefinition({
-  identifier: "fontra.selected.guidelines",
-  name: "Selected guidelines",
-  selectionMode: "editing",
-  zIndex: 500,
-  screenParameters: {
-    smoothSize: 8,
-    strokeWidth: 1,
-    hoverStrokeOffset: 4,
-    underlayOffset: 2,
-    iconSize: 12,
-  },
-  colors: {
-    hoveredColorIcon: "#0006",
-    hoveredColor: "#BBB",
-    selectedColor: "#000",
-    underColor: "#FFFA",
-    underColorIcon: "#f6f6f6",
-  },
-  colorsDarkMode: {
-    hoveredColorIcon: "#BBB",
-    hoveredColor: "#BBB",
-    selectedColor: "#FFF",
-    underColor: "#0008",
-    underColorIcon: "#333",
-  },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    const glyph = positionedGlyph.glyph;
-    const smoothSize = parameters.smoothSize;
-
-    const {
-      guideline: hoveredGuidelineIndices,
-      fontGuideline: hoveredFontGuidelineIndices,
-    } = parseSelection(model.hoverSelection);
-    const {
-      guideline: selectedGuidelineIndices,
-      fontGuideline: selectedFontGuidelineIndices,
-    } = parseSelection(model.selection);
-
-    // TODO: Font Guidelines
-
-    // Under layer
-    context.fillStyle = parameters.underColor;
-    for (const i of selectedGuidelineIndices || []) {
-      const guideline = glyph.guidelines[i];
-      if (!guideline) {
-        continue;
-      }
-      if (guideline.locked) {
-        _drawLockIcon(
-          context,
-          parameters,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2
-        );
-      } else {
-        fillRoundNode(context, guideline, smoothSize + parameters.underlayOffset);
-      }
-    }
-
-    // Selected guideline
-    context.fillStyle = parameters.selectedColor;
-    for (const i of selectedGuidelineIndices || []) {
-      const guideline = glyph.guidelines[i];
-      if (!guideline) {
-        continue;
-      }
-      if (guideline.locked) {
-        context.strokeStyle = parameters.selectedColor;
-        _drawLockIcon(
-          context,
-          parameters,
-          guideline.x - parameters.iconSize / 2,
-          guideline.y + parameters.iconSize / 2
-        );
-      } else {
-        fillRoundNode(context, guideline, smoothSize);
-      }
-    }
-
-    // // Hovered guideline
-    context.strokeStyle = parameters.hoveredColor;
-    context.lineWidth = parameters.strokeWidth;
-    for (const i of hoveredGuidelineIndices || []) {
-      const guideline = glyph.guidelines[i];
-      if (!guideline) {
-        continue;
-      }
-      if (guideline.locked) {
-        const drawIcons = [
-          [parameters.hoveredColor, 11],
-          [parameters.underColorIcon, 7],
-          [parameters.hoveredColorIcon, 2],
-        ];
-        for (const [color, strokeSize] of drawIcons) {
-          context.strokeStyle = color;
-          _drawLockIcon(
-            context,
-            parameters,
-            guideline.x - parameters.iconSize / 2,
-            guideline.y + parameters.iconSize / 2,
-            strokeSize
-          );
-        }
-      } else {
-        strokeRoundNode(context, guideline, smoothSize + parameters.hoverStrokeOffset);
-      }
-    }
-  },
-});
-
 function _drawLockIcon(context, parameters, x, y, lineWidth = 2) {
   withSavedState(context, () => {
     context.translate(x, y);
@@ -1083,59 +1136,6 @@ function _drawLockIcon(context, parameters, x, y, lineWidth = 2) {
     context.stroke(lockIconPath2D);
   });
 }
-
-registerVisualizationLayerDefinition({
-  identifier: "fontra.selected.anchors",
-  name: "Selected anchors",
-  selectionMode: "editing",
-  zIndex: 500,
-  screenParameters: {
-    smoothSize: 8,
-    strokeWidth: 1,
-    hoverStrokeOffset: 4,
-    underlayOffset: 2,
-  },
-  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    const glyph = positionedGlyph.glyph;
-    const smoothSize = parameters.smoothSize;
-
-    const { anchor: hoveredAnchorIndices } = parseSelection(model.hoverSelection);
-    const { anchor: selectedAnchorIndices } = parseSelection(model.selection);
-
-    // Under layer
-    context.fillStyle = parameters.underColor;
-    for (const anchorIndex of selectedAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
-      if (!anchor) {
-        continue;
-      }
-      fillRoundNode(context, anchor, smoothSize + parameters.underlayOffset);
-    }
-
-    // Selected anchor
-    context.fillStyle = parameters.selectedColor;
-    for (const anchorIndex of selectedAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
-      if (!anchor) {
-        continue;
-      }
-      fillRoundNode(context, anchor, smoothSize);
-    }
-
-    // Hovered anchor
-    context.strokeStyle = parameters.hoveredColor;
-    context.lineWidth = parameters.strokeWidth;
-    for (const anchorIndex of hoveredAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
-      if (!anchor) {
-        continue;
-      }
-      strokeRoundNode(context, anchor, smoothSize + parameters.hoverStrokeOffset);
-    }
-  },
-});
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
