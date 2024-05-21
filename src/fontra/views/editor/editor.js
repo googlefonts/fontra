@@ -139,7 +139,7 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
-        "location",
+        "fontLocationUser",
         "glyphLocation",
         "selectedGlyph",
         "selection",
@@ -406,12 +406,12 @@ export class EditorController {
               },
             },
             {
-              title: "Edit local axes...",
+              title: "Edit glyph axes...",
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
               callback: () => {
-                this.getSidebarPanel("designspace-navigation").editLocalAxes();
+                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
               },
             },
           ];
@@ -622,8 +622,11 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromUserLocation(
-          { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation },
+        const nearestSourceIndex = glyphController.findNearestSourceFromSourceLocation(
+          {
+            ...this.sceneSettings.fontLocationSourceMapped,
+            ...this.sceneSettings.glyphLocation,
+          },
           true
         );
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
@@ -942,7 +945,7 @@ export class EditorController {
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
-    const localLocations = {};
+    const glyphLocations = {};
     const glyphInfos = [];
 
     const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
@@ -968,11 +971,11 @@ export class EditorController {
       const glyphName = instance.components[componentIndex].name;
       const location = instance.components[componentIndex].location;
       if (location) {
-        localLocations[glyphName] = location;
+        glyphLocations[glyphName] = location;
       }
       glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
-    this.sceneController.updateLocalLocations(localLocations);
+    this.sceneController.updateGlyphLocations(glyphLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     glyphLines[selectedGlyphInfo.lineIndex].splice(
@@ -1590,7 +1593,9 @@ export class EditorController {
       }
       // Force sync between location and selectedSourceIndex, as the glyph's
       // source list may have changed
-      this.sceneSettings.location = { ...this.sceneSettings.location };
+      this.sceneSettings.fontLocationSourceMapped = {
+        ...this.sceneSettings.fontLocationSourceMapped,
+      };
       this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
@@ -2113,8 +2118,8 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromUserLocation({
-        ...this.sceneSettings.location,
+      newSourceIndex = varGlyphController.findNearestSourceFromSourceLocation({
+        ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
     } else {
@@ -2280,7 +2285,9 @@ export class EditorController {
 
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
-    this.sceneSettings.location = { ...this.sceneSettings.location };
+    this.sceneSettings.fontLocationSourceMapped = {
+      ...this.sceneSettings.fontLocationSourceMapped,
+    };
     this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
@@ -2363,10 +2370,10 @@ export class EditorController {
     }
     this._previousURLText = viewInfo["text"];
 
-    this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
+    this.sceneModel.setGlyphLocations(viewInfo["glyphLocations"]);
 
     if (viewInfo["location"]) {
-      this.sceneSettings.location = viewInfo["location"];
+      this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
@@ -2396,10 +2403,10 @@ export class EditorController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
-    viewInfo["location"] = this.sceneSettings.location;
-    const localLocations = this.sceneController.getLocalLocations(true);
-    if (Object.keys(localLocations).length) {
-      viewInfo["localLocations"] = localLocations;
+    viewInfo["location"] = this.sceneSettings.fontLocationUser;
+    const glyphLocations = this.sceneController.getGlyphLocations(true);
+    if (Object.keys(glyphLocations).length) {
+      viewInfo["glyphLocations"] = glyphLocations;
     }
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {

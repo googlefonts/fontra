@@ -18,8 +18,6 @@ import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
-  mapForward,
-  normalizeLocation,
   piecewiseLinearMap,
 } from "/core/var-model.js";
 import { IconButton } from "/web-components/icon-button.js";
@@ -162,7 +160,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   setup() {
-    this.fontAxesElement.values = this.sceneSettings.location;
+    this.fontAxesElement.values = this.sceneSettings.fontLocationUser;
     this.glyphAxesElement.values = this.sceneSettings.glyphLocation;
 
     this.fontAxesElement.addEventListener(
@@ -172,7 +170,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneController.autoViewBox = false;
 
         this.sceneSettingsController.setItem(
-          "location",
+          "fontLocationUser",
           { ...this.fontAxesElement.values },
           { senderID: this }
         );
@@ -207,7 +205,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationUser", "glyphLocation"],
       (event) => {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -217,7 +215,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           // Sent by us, ignore
           return;
         }
-        if (event.key === "location") {
+        if (event.key === "fontLocationUser") {
           this.fontAxesElement.values = event.newValue;
         } else {
           // (event.key === "glyphLocation")
@@ -428,7 +426,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   resetFontAxesToDefault(event) {
-    this.sceneSettings.location = {};
+    this.sceneSettings.fontLocationUser = {};
   }
 
   resetGlyphAxesToDefault(event) {
@@ -437,7 +435,11 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   _updateResetAllAxesButtonState() {
     for (const [location, axesElement, buttonID] of [
-      [this.sceneSettings.location, this.fontAxesElement, "reset-font-axes-button"],
+      [
+        this.sceneSettings.fontLocationUser,
+        this.fontAxesElement,
+        "reset-font-axes-button",
+      ],
       [
         this.sceneSettings.glyphLocation,
         this.glyphAxesElement,
@@ -508,7 +510,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const interpolationContributions = varGlyphController.getInterpolationContributions(
-      { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation }
+      {
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }
     );
     for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
       sourceItem.interpolationContribution =
@@ -516,21 +521,19 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
   }
 
-  get globalAxes() {
-    return this.fontController.globalAxes.filter((axis) => !axis.hidden);
+  get fontAxes() {
+    return this.fontController.fontAxes.filter((axis) => !axis.hidden);
   }
 
   async _updateAxes() {
-    const fontAxes = [...this.globalAxes];
+    const fontAxes = [...this.fontAxes];
     this.fontAxesElement.axes = fontAxes;
 
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
 
-    const localAxes = varGlyphController
-      ? getAxisInfoFromGlyph(varGlyphController)
-      : [];
-    this.glyphAxesElement.axes = localAxes;
+    const glyphAxes = varGlyphController ? foldNLIAxes(varGlyphController.axes) : [];
+    this.glyphAxesElement.axes = glyphAxes;
     this.glyphAxesAccordionItem.hidden = !varGlyphController;
 
     this._updateResetAllAxesButtonState();
@@ -544,7 +547,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       varGlyphController?.sourceInterpolationStatus || [];
     const interpolationContributions =
       varGlyphController?.getInterpolationContributions({
-        ...this.sceneSettings.location,
+        ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       }) || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
@@ -704,8 +707,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
-    const location = glyphController.mapLocationGlobalToLocal({
-      ...this.sceneSettings.location,
+    const location = glyphController.expandNLIAxes({
+      ...this.sceneSettings.fontLocationSourceMapped,
       ...this.sceneSettings.glyphLocation,
     });
 
@@ -920,14 +923,14 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _sourcePropertiesLocationAxes(glyph) {
-    const localAxisNames = glyph.axes.map((axis) => axis.name);
-    const globalAxes = mapAxesFromUserSpaceToDesignspace(
-      // Don't include global axes that also exist as local axes
-      this.globalAxes.filter((axis) => !localAxisNames.includes(axis.name))
+    const glyphAxisNames = glyph.axes.map((axis) => axis.name);
+    const fontAxes = mapAxesFromUserSpaceToSourceSpace(
+      // Don't include font axes that also exist as glyph axes
+      this.fontAxes.filter((axis) => !glyphAxisNames.includes(axis.name))
     );
     return [
-      ...globalAxes,
-      ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
+      ...fontAxes,
+      ...(fontAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
       ...glyph.axes,
     ];
   }
@@ -1124,7 +1127,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 }
 
-function mapAxesFromUserSpaceToDesignspace(axes) {
+function mapAxesFromUserSpaceToSourceSpace(axes) {
   return axes.map((axis) => {
     const newAxis = { ...axis };
     if (axis.mapping) {
@@ -1150,10 +1153,10 @@ function roundComponentOrigins(components) {
   });
 }
 
-function getAxisInfoFromGlyph(glyph) {
+function foldNLIAxes(axes) {
   // Fold NLI axes into single axes
   const axisInfo = {};
-  for (const axis of glyph?.axes || []) {
+  for (const axis of axes || []) {
     const baseName = getAxisBaseName(axis.name);
     if (axisInfo[baseName]) {
       continue;

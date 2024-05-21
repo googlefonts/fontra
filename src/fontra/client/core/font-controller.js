@@ -12,7 +12,7 @@ import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
 import { chain, getCharFromCodePoint, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
-import { locationToString } from "./var-model.js";
+import { locationToString, mapBackward, mapForward } from "./var-model.js";
 
 const GLYPH_CACHE_SIZE = 2000;
 const NUM_TASKS = 12;
@@ -75,7 +75,7 @@ export class FontController {
     return this._rootObject.axes;
   }
 
-  get globalAxes() {
+  get fontAxes() {
     return this._rootObject.axes.axes;
   }
 
@@ -216,7 +216,7 @@ export class FontController {
   }
 
   makeVariableGlyphController(glyph) {
-    return new VariableGlyphController(glyph, this.globalAxes);
+    return new VariableGlyphController(glyph, this.fontAxes);
   }
 
   updateGlyphDependencies(glyph) {
@@ -349,16 +349,17 @@ export class FontController {
     return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
-  async getGlyphInstance(glyphName, location, layerName) {
+  async getGlyphInstance(glyphName, sourceLocation, layerName) {
     if (!this.hasGlyph(glyphName)) {
       return Promise.resolve(null);
     }
-    // instanceCacheKey must be unique for glyphName + location + layerName
-    const instanceCacheKey = glyphName + locationToString(location) + (layerName || "");
+    // instanceCacheKey must be unique for glyphName + sourceLocation + layerName
+    const instanceCacheKey =
+      glyphName + locationToString(sourceLocation) + (layerName || "");
 
     let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
-      instancePromise = this._getGlyphInstance(glyphName, location, layerName);
+      instancePromise = this._getGlyphInstance(glyphName, sourceLocation, layerName);
       const deletedItem = this._glyphInstancePromiseCache.put(
         instanceCacheKey,
         instancePromise
@@ -375,14 +376,14 @@ export class FontController {
     return await instancePromise;
   }
 
-  async _getGlyphInstance(glyphName, location, layerName) {
+  async _getGlyphInstance(glyphName, sourceLocation, layerName) {
     const varGlyph = await this.getGlyph(glyphName);
     if (!varGlyph) {
       return null;
     }
     const getGlyphFunc = this.getGlyph.bind(this);
     const instanceController = await varGlyph.instantiateController(
-      location,
+      sourceLocation,
       layerName,
       getGlyphFunc
     );
@@ -394,9 +395,9 @@ export class FontController {
     return new StaticGlyphController(glyphName, dummyGlyph, undefined);
   }
 
-  async getSourceIndex(glyphName, location) {
+  async getSourceIndex(glyphName, sourceLocation) {
     const glyph = await this.getGlyph(glyphName);
-    return glyph?.getSourceIndex(location);
+    return glyph?.getSourceIndex(sourceLocation);
   }
 
   addGlyphChangeListener(glyphName, listener) {
@@ -703,6 +704,24 @@ export class FontController {
       glyphInfo["character"] = getCharFromCodePoint(codePoint);
     }
     return glyphInfo;
+  }
+
+  mapUserLocationToSourceLocation(userLocation) {
+    return mapForward(userLocation, this.fontAxes);
+  }
+
+  mapSourceLocationToUserLocation(sourceLocation) {
+    return mapBackward(sourceLocation, this.fontAxes);
+  }
+
+  mapSourceLocationToMappedSourceLocation(sourceLocation) {
+    // TODO: apply avar-2 mapping
+    return { ...sourceLocation };
+  }
+
+  mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
+    // TODO: undo avar-2 mapping if possible
+    return { ...mappedSourceLocation };
   }
 }
 

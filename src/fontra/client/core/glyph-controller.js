@@ -28,7 +28,6 @@ import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
-  mapBackward,
   mapForward,
   normalizeLocation,
   piecewiseLinearMap,
@@ -36,9 +35,9 @@ import {
 import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
-  constructor(glyph, globalAxes) {
+  constructor(glyph, fontAxes) {
     this.glyph = glyph;
-    this.globalAxes = globalAxes;
+    this.fontAxes = fontAxes;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -80,68 +79,46 @@ export class VariableGlyphController {
     return this._discreteAxes;
   }
 
-  get localToGlobalMapping() {
-    if (this._localToGlobalMapping === undefined) {
-      this._setupAxisMapping();
-    }
-    return this._localToGlobalMapping;
-  }
-
   _setupAxisMapping() {
     this._discreteAxes = [];
     this._continuousAxes = Array.from(this.axes);
-    this._localToGlobalMapping = [];
-    const localAxisDict = {};
-    for (const localAxis of this.axes) {
-      localAxisDict[localAxis.name] = localAxis;
-    }
-    for (let globalAxis of this.globalAxes) {
+    const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
+
+    for (let fontAxis of this.fontAxes) {
       // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
-      const mapFunc = makeAxisMapFunc(globalAxis);
-      if (globalAxis.values) {
+      const mapFunc = makeAxisMapFunc(fontAxis);
+      if (fontAxis.values) {
         this._discreteAxes.push({
-          name: globalAxis.name,
-          defaultValue: mapFunc(globalAxis.defaultValue),
-          values: globalAxis.values.map(mapFunc),
+          name: fontAxis.name,
+          defaultValue: mapFunc(fontAxis.defaultValue),
+          values: fontAxis.values.map(mapFunc),
         });
-        // We don't support local discrete axes.
-        // TODO: a name conflict between a discrete global axis and a
-        // continuous local axis is a true conflict. We don't catch that
-        // now, and TBH I'm not sure how to resolve that.
         continue;
       }
-      globalAxis = {
-        name: globalAxis.name,
-        minValue: mapFunc(globalAxis.minValue),
-        defaultValue: mapFunc(globalAxis.defaultValue),
-        maxValue: mapFunc(globalAxis.maxValue),
+      fontAxis = {
+        name: fontAxis.name,
+        minValue: mapFunc(fontAxis.minValue),
+        defaultValue: mapFunc(fontAxis.defaultValue),
+        maxValue: mapFunc(fontAxis.maxValue),
       };
-      const localAxis = localAxisDict[globalAxis.name];
-      if (localAxis) {
-        const mapping = [
-          [localAxis.minValue, globalAxis.minValue],
-          [localAxis.defaultValue, globalAxis.defaultValue],
-          [localAxis.maxValue, globalAxis.maxValue],
-        ];
-        this._localToGlobalMapping.push({ name: globalAxis.name, mapping: mapping });
-      } else {
-        this._continuousAxes.push(globalAxis);
+      if (!glyphAxisNames.has(fontAxis.name)) {
+        this._continuousAxes.push(fontAxis);
       }
     }
     this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
   }
 
-  getSourceIndex(location) {
-    const locationStr = locationToString(location);
+  getSourceIndex(sourceLocation) {
+    const locationStr = locationToString(sourceLocation);
     // TODO: fix the unboundedness of the _locationToSourceIndex cache
     if (!(locationStr in this._locationToSourceIndex)) {
-      this._locationToSourceIndex[locationStr] = this._getSourceIndex(location);
+      this._locationToSourceIndex[locationStr] = this._getSourceIndex(sourceLocation);
     }
     return this._locationToSourceIndex[locationStr];
   }
 
-  _getSourceIndex(location) {
-    location = this.mapLocationGlobalToLocal(location);
+  _getSourceIndex(sourceLocation) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
       if (source.inactive) {
@@ -149,7 +126,7 @@ export class VariableGlyphController {
       }
       const seen = new Set();
       let found = true;
-      for (const axis of this.axes.concat(this.globalAxes)) {
+      for (const axis of this.axes.concat(this.fontAxes)) {
         if (seen.has(axis.name)) {
           continue;
         }
@@ -158,7 +135,7 @@ export class VariableGlyphController {
           axis.defaultValue,
           Object.fromEntries(axis.mapping || [])
         );
-        let varValue = location[axis.name];
+        let varValue = sourceLocation[axis.name];
         let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
           varValue = axisDefaultValue;
@@ -215,7 +192,6 @@ export class VariableGlyphController {
     delete this._combinedAxes;
     delete this._discreteAxes;
     delete this._continuousAxes;
-    delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -362,9 +338,9 @@ export class VariableGlyphController {
     return Object.values(splitSources);
   }
 
-  getInterpolationContributions(location) {
-    location = this.mapLocationGlobalToLocal(location);
-    const contributions = this.model.getSourceContributions(location);
+  getInterpolationContributions(sourceLocation) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
+    const contributions = this.model.getSourceContributions(sourceLocation);
 
     let sourceIndex = 0;
     const orderedContributions = [];
@@ -404,9 +380,9 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  async instantiate(location, getGlyphFunc) {
+  async instantiate(sourceLocation, getGlyphFunc) {
     let { instance, errors } = this.model.interpolateFromDeltas(
-      location,
+      sourceLocation,
       await this.getDeltas(getGlyphFunc)
     );
     if (errors) {
@@ -417,9 +393,9 @@ export class VariableGlyphController {
     return { instance, errors };
   }
 
-  async instantiateController(location, layerName, getGlyphFunc) {
-    let sourceIndex = this.getSourceIndex(location);
-    location = this.mapLocationGlobalToLocal(location);
+  async instantiateController(sourceLocation, layerName, getGlyphFunc) {
+    let sourceIndex = this.getSourceIndex(sourceLocation);
+    sourceLocation = this.expandNLIAxes(sourceLocation);
 
     if (!layerName || !(layerName in this.layers)) {
       if (sourceIndex !== undefined) {
@@ -439,7 +415,7 @@ export class VariableGlyphController {
       return await this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     }
 
-    const { instance, errors } = await this.instantiate(location, getGlyphFunc);
+    const { instance, errors } = await this.instantiate(sourceLocation, getGlyphFunc);
 
     if (!instance) {
       throw new Error("assert -- instance is undefined");
@@ -452,27 +428,24 @@ export class VariableGlyphController {
       errors
     );
 
-    await instanceController.setupComponents(getGlyphFunc, location);
+    await instanceController.setupComponents(getGlyphFunc, sourceLocation);
     return instanceController;
   }
 
-  mapSourceLocationToGlobal(sourceIndex) {
-    const globalDefaultLocation = mapForward(
-      makeDefaultLocation(this.globalAxes),
-      this.globalAxes
+  getSourceLocationFromSourceIndex(sourceIndex) {
+    const fontDefaultLocation = mapForward(
+      makeDefaultLocation(this.fontAxes),
+      this.fontAxes
     );
-    const localDefaultLocation = makeDefaultLocation(this.axes);
-    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
+    const glyphDefaultLocation = makeDefaultLocation(this.axes);
+    const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
     const sourceLocation = this.sources[sourceIndex].location;
-    return this.mapLocationLocalToGlobal({
-      ...defaultLocation,
-      ...sourceLocation,
-    });
+    return { ...defaultLocation, ...sourceLocation };
   }
 
-  findNearestSourceFromUserLocation(location, skipInactive = false) {
-    location = this.mapLocationGlobalToLocal(location);
-    const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
+  findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
+    sourceLocation = this.expandNLIAxes(sourceLocation);
+    const splitLoc = splitDiscreteLocation(sourceLocation, this.discreteAxes);
 
     // Ensure locations are *not* sparse
 
@@ -480,7 +453,7 @@ export class VariableGlyphController {
       this.combinedAxes.map((axis) => [axis.name, axis.defaultValue])
     );
 
-    const targetLocation = { ...defaultLocation, ...location };
+    const targetLocation = { ...defaultLocation, ...sourceLocation };
     const sourceIndexMapping = [];
     const activeLocations = [];
     for (const [index, source] of enumerate(this.sources)) {
@@ -495,24 +468,12 @@ export class VariableGlyphController {
     return sourceIndexMapping[nearestIndex];
   }
 
-  mapLocationGlobalToLocal(location) {
-    // Apply global axis mapping (user-facing avar)
-    location = mapForward(location, this.globalAxes);
-    // Map axes that exist both globally and locally to their local ranges
-    location = mapBackward(location, this.localToGlobalMapping);
-    // Expand folded NLI axes to their "real" axes
-    location = mapLocationExpandNLI(location, this.axes);
-    return location;
+  expandNLIAxes(sourceLocation) {
+    return mapLocationExpandNLI(sourceLocation, this.axes);
   }
 
-  mapLocationLocalToGlobal(location) {
-    // Fold NLI Axis into single user-facing axes
-    location = mapLocationFoldNLI(location);
-    // Map axes that exist both globally and locally to their global ranges
-    location = mapForward(location, this.localToGlobalMapping);
-    // Un-apply global axis mapping (user-facing avar)
-    location = mapBackward(location, this.globalAxes);
-    return location;
+  foldNLIAxes(sourceLocation) {
+    return mapLocationFoldNLI(sourceLocation);
   }
 }
 
@@ -886,7 +847,7 @@ async function* iterFlattenedComponentPaths(
 export async function decomposeComponents(
   components,
   componentIndices,
-  parentLocation,
+  parentSourceLocation,
   getGlyphFunc
 ) {
   if (!componentIndices) {
@@ -903,12 +864,11 @@ export async function decomposeComponents(
       // Missing base glyph
       continue;
     }
-    const parentSourceLocation = baseGlyph.mapLocationGlobalToLocal(parentLocation);
-
     const location = {
       ...parentSourceLocation,
-      ...mapLocationExpandNLI(component.location, baseGlyph.axes),
+      ...component.location,
     };
+
     const { instance: compoInstance, errors } = await baseGlyph.instantiate(
       location,
       getGlyphFunc
