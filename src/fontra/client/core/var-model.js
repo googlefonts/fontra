@@ -297,7 +297,7 @@ export function normalizeValue(v, lower, dflt, upper) {
       `Invalid axis values, must be minimum, default, maximum: ${lower}, ${dflt}, ${upper}`
     );
   }
-  v = Math.max(Math.min(v, upper), lower);
+  v = clamp(v, lower, upper);
   if (v === dflt) {
     v = 0.0;
   } else if (v < dflt) {
