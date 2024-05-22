@@ -31,6 +31,7 @@ export class RangeSlider extends html.UnlitElement {
 
     .wrapper.disabled {
       height: var(--thumb-height);
+      margin-top: -3px;
     }
 
     .range-container {
