@@ -1560,7 +1560,9 @@ function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
     return;
   }
   for (const index of anchorIndices) {
-    yield anchors[index];
+    if (anchors[index]) {
+      yield anchors[index];
+    }
   }
 }
 
@@ -1569,7 +1571,9 @@ function* iterGuidelinesPointsByIndex(guidelines, guidelineIndices) {
     return;
   }
   for (const index of guidelineIndices) {
-    yield guidelines[index];
+    if (guidelines[index]) {
+      yield guidelines[index];
+    }
   }
 }
 
