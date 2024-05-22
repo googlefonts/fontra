@@ -16,6 +16,7 @@ import {
 } from "/core/utils.js";
 import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
+  isLocationAtDefault,
   locationToString,
   makeSparseLocation,
   mapAxesFromUserSpaceToSourceSpace,
@@ -503,32 +504,18 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _updateResetAllAxesButtonState() {
-    for (const [location, axesElement, buttonID] of [
-      [
-        this.sceneSettings.fontLocationUser,
-        this.fontAxesElement,
-        "reset-font-axes-button",
-      ],
-      [
-        this.sceneSettings.glyphLocation,
-        this.glyphAxesElement,
-        "reset-glyph-axes-button",
-      ],
-    ]) {
-      let locationEmpty = true;
-      for (const axis of axesElement.axes) {
-        if (
-          axis.name &&
-          axis.name in location &&
-          location[axis.name] !== axis.defaultValue
-        ) {
-          locationEmpty = false;
-          break;
-        }
-      }
-      const button = this.contentElement.querySelector(`#${buttonID}`);
-      button.disabled = locationEmpty;
-    }
+    let button;
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    button = this.contentElement.querySelector("#reset-font-axes-button");
+    button.disabled = isLocationAtDefault(
+      this.sceneSettings.fontLocationSourceMapped,
+      fontAxesSourceSpace
+    );
+    button = this.contentElement.querySelector("#reset-glyph-axes-button");
+    button.disabled = isLocationAtDefault(
+      this.sceneSettings.glyphLocation,
+      this.glyphAxesElement.axes
+    );
   }
 
   async onVisibilityHeaderClick(event) {

@@ -25,19 +25,17 @@ import { enumerate, parseSelection, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
-  VariationModel,
   locationToString,
   makeSparseNormalizedLocation,
-  mapForward,
+  mapAxesFromUserSpaceToSourceSpace,
   normalizeLocation,
-  piecewiseLinearMap,
 } from "./var-model.js";
 import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, fontAxes) {
     this.glyph = glyph;
-    this.fontAxes = fontAxes;
+    this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -84,24 +82,10 @@ export class VariableGlyphController {
     this._continuousAxes = Array.from(this.axes);
     const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
 
-    for (let fontAxis of this.fontAxes) {
-      // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
-      const mapFunc = makeAxisMapFunc(fontAxis);
+    for (let fontAxis of this._fontAxesSourceSpace) {
       if (fontAxis.values) {
-        this._discreteAxes.push({
-          name: fontAxis.name,
-          defaultValue: mapFunc(fontAxis.defaultValue),
-          values: fontAxis.values.map(mapFunc),
-        });
-        continue;
-      }
-      fontAxis = {
-        name: fontAxis.name,
-        minValue: mapFunc(fontAxis.minValue),
-        defaultValue: mapFunc(fontAxis.defaultValue),
-        maxValue: mapFunc(fontAxis.maxValue),
-      };
-      if (!glyphAxisNames.has(fontAxis.name)) {
+        this._discreteAxes.push(fontAxis);
+      } else if (!glyphAxisNames.has(fontAxis.name)) {
         this._continuousAxes.push(fontAxis);
       }
     }
@@ -126,22 +110,18 @@ export class VariableGlyphController {
       }
       const seen = new Set();
       let found = true;
-      for (const axis of this.axes.concat(this.fontAxes)) {
+      for (const axis of this.axes.concat(this._fontAxesSourceSpace)) {
         if (seen.has(axis.name)) {
           continue;
         }
         seen.add(axis.name);
-        const axisDefaultValue = piecewiseLinearMap(
-          axis.defaultValue,
-          Object.fromEntries(axis.mapping || [])
-        );
         let varValue = sourceLocation[axis.name];
         let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
-          varValue = axisDefaultValue;
+          varValue = axis.defaultValue;
         }
         if (sourceValue === undefined) {
-          sourceValue = axisDefaultValue;
+          sourceValue = axis.defaultValue;
         }
         if (Math.abs(varValue - sourceValue) > 0.000000001) {
           found = false;
@@ -435,10 +415,7 @@ export class VariableGlyphController {
   }
 
   getSourceLocationFromSourceIndex(sourceIndex) {
-    const fontDefaultLocation = mapForward(
-      makeDefaultLocation(this.fontAxes),
-      this.fontAxes
-    );
+    const fontDefaultLocation = makeDefaultLocation(this._fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
     const sourceLocation = this.sources[sourceIndex].location;
@@ -895,14 +872,6 @@ export async function decomposeComponents(
   }
   const newPath = joinPaths(newPaths);
   return { path: newPath, components: newComponents, anchors: newAnchors };
-}
-
-function makeAxisMapFunc(axis) {
-  if (!axis.mapping) {
-    return (v) => v;
-  }
-  const mapping = Object.fromEntries(axis.mapping);
-  return (v) => piecewiseLinearMap(v, mapping);
 }
 
 export function getAxisBaseName(axisName) {

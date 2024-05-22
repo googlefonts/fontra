@@ -565,3 +565,12 @@ export function mapAxesFromUserSpaceToSourceSpace(axes) {
     return newAxis;
   });
 }
+
+export function isLocationAtDefault(location, axes) {
+  for (const axis of axes) {
+    if (axis.name in location && location[axis.name] !== axis.defaultValue) {
+      return false;
+    }
+  }
+  return true;
+}
