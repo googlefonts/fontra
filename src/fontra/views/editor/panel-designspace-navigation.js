@@ -351,7 +351,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         menuItems: statusFieldDefinitions.map((statusDef) => {
           return {
             title: statusDef.label,
-            enabled: () => true,
             statusDef: statusDef,
           };
         }),
@@ -451,7 +450,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     const menuItems = [
       {
         title: "Apply single axis mapping",
-        enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesUseSourceCoordinates =
             !this.sceneSettings.fontAxesUseSourceCoordinates;
@@ -460,7 +458,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       {
         title: "Apply multiple axis mapping",
-        enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesSkipMapping =
             !this.sceneSettings.fontAxesSkipMapping;
@@ -469,7 +466,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       {
         title: "Show hidden axes",
-        enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesShowHidden =
             !this.sceneSettings.fontAxesShowHidden;
