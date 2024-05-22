@@ -999,6 +999,10 @@ export class EditorController {
 
   async doubleClickedAnchorsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    if (!glyphController.canEdit) {
+      this.sceneController._dispatchEvent("glyphEditLocationNotAtSource");
+      return;
+    }
     const instance = glyphController.instance;
 
     const anchorIndex = this.sceneController.doubleClickedAnchorIndices[0];
@@ -1024,6 +1028,11 @@ export class EditorController {
 
   async doubleClickedGuidelinesCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    if (!glyphController.canEdit) {
+      this.sceneController._dispatchEvent("glyphEditLocationNotAtSource");
+      return;
+    }
+
     const instance = glyphController.instance;
 
     const guidelineIndex = this.sceneController.doubleClickedGuidelineIndices[0];
