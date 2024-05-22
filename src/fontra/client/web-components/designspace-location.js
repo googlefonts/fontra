@@ -4,7 +4,7 @@ import * as html from "/core/html-utils.js";
 import { UnlitElement, htmlToElement } from "/core/html-utils.js";
 
 const colors = {
-  "disabled-text-color": ["#777", "#ccc"],
+  "disabled-color": ["#ccc", "#777"],
 };
 
 export class DesignspaceLocation extends UnlitElement {
@@ -33,14 +33,14 @@ export class DesignspaceLocation extends UnlitElement {
 
     .slider-group {
       display: grid;
-      gap: 0em;
+      gap: 0.1em;
     }
 
     .info-box {
       display: none;
       grid-column: 1 / -1;
       margin-bottom: 0.5em;
-      color: var(--disabled-text-color);
+      color: var(--disabled-color);
     }
 
     .info-box.visible {
