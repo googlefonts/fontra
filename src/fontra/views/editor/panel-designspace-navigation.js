@@ -450,13 +450,13 @@ export default class DesignspaceNavigationPanel extends Panel {
   showFontAxesViewOptionsMenu(event) {
     const menuItems = [
       {
-        title: "Use source coordinates",
+        title: "Apply single axis mapping",
         enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesUseSourceCoordinates =
             !this.sceneSettings.fontAxesUseSourceCoordinates;
         },
-        checked: this.sceneSettings.fontAxesUseSourceCoordinates,
+        checked: !this.sceneSettings.fontAxesUseSourceCoordinates,
       },
       {
         title: "Apply multiple axis mapping",
