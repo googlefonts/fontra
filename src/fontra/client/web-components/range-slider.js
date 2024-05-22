@@ -7,7 +7,7 @@ const colors = {
   "thumb-color-at-default": ["#ccc", "#777"],
   "track-color": ["#ccc", "#222"],
   "disabled-color": ["#ddd", "#333"],
-  "disabled-text-color": ["#777", "#ccc"],
+  "disabled-text-color": ["#999", "#aaa"],
 };
 
 export class RangeSlider extends html.UnlitElement {
