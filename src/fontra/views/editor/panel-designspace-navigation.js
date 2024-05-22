@@ -206,7 +206,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden"],
+      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden", "fontAxesSkipMapping"],
       (event) => {
         this._updateAxes();
       }
@@ -466,6 +466,15 @@ export default class DesignspaceNavigationPanel extends Panel {
             !this.sceneSettings.fontAxesShowHidden;
         },
         checked: this.sceneSettings.fontAxesShowHidden,
+      },
+      {
+        title: "Skip multiple axis mapping",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesSkipMapping =
+            !this.sceneSettings.fontAxesSkipMapping;
+        },
+        checked: this.sceneSettings.fontAxesSkipMapping,
       },
     ];
 
