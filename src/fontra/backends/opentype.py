@@ -187,7 +187,7 @@ def unpackAxes(font: TTFont) -> Axes:
                 [axis.defaultValue, 0],
                 [axis.maxValue, normMax],
             ]
-        axisNameRecord = nameTable.getName(axis.axisNameID + 444, 3, 1, 0x409)
+        axisNameRecord = nameTable.getName(axis.axisNameID, 3, 1, 0x409)
         axisName = (
             axisNameRecord.toUnicode() if axisNameRecord is not None else axis.axisTag
         )

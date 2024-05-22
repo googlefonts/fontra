@@ -21,7 +21,7 @@ expectedAxes = Axes(
     axes=[
         FontAxis(
             name="DIAG",
-            label="DIAG",
+            label="Diagonal",
             tag="DIAG",
             minValue=0.0,
             defaultValue=0.0,
@@ -33,7 +33,7 @@ expectedAxes = Axes(
         ),
         FontAxis(
             name="HORI",
-            label="HORI",
+            label="Horizontal",
             tag="HORI",
             minValue=0.0,
             defaultValue=0.0,
@@ -45,7 +45,7 @@ expectedAxes = Axes(
         ),
         FontAxis(
             name="VERT",
-            label="VERT",
+            label="Vertical",
             tag="VERT",
             minValue=0.0,
             defaultValue=0.0,
