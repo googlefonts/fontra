@@ -6,7 +6,8 @@ const colors = {
   "thumb-color": ["#333", "#ddd"],
   "thumb-color-at-default": ["#ccc", "#777"],
   "track-color": ["#ccc", "#222"],
-  "disabled-color": ["#ccc", "#777"],
+  "disabled-color": ["#ddd", "#2e2e2e"],
+  "disabled-text-color": ["#999", "#aaa"],
 };
 
 export class RangeSlider extends html.UnlitElement {
@@ -30,6 +31,7 @@ export class RangeSlider extends html.UnlitElement {
 
     .wrapper.disabled {
       height: var(--thumb-height);
+      margin-top: -3px;
     }
 
     .range-container {
@@ -191,7 +193,7 @@ export class RangeSlider extends html.UnlitElement {
 
     .numeric-input > .slider-input > .slider-numeric-input:disabled {
       background-color: unset;
-      color: var(--disabled-color);
+      color: var(--disabled-text-color);
       padding: 0 3px;
       font-size: 0.8em;
       border-radius: unset;

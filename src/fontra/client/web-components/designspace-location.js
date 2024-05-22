@@ -33,7 +33,7 @@ export class DesignspaceLocation extends UnlitElement {
 
     .slider-group {
       display: grid;
-      gap: 0em;
+      gap: 0.1em;
     }
 
     .info-box {
