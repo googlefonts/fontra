@@ -360,39 +360,59 @@ export function hexToRgbaList(hexColor) {
   if (/^#[A-Fa-f0-9]{8}$/.test(hexColor)) {
     c = hexColor.substring(1).split("");
     return [
-      parseInt(c[0] + c[1], 16),
-      parseInt(c[2] + c[3], 16),
-      parseInt(c[4] + c[5], 16),
+      round(parseInt(c[0] + c[1], 16) / 255, 2),
+      round(parseInt(c[2] + c[3], 16) / 255, 2),
+      round(parseInt(c[4] + c[5], 16) / 255, 2),
       round(parseInt(c[6] + c[7], 16) / 255, 2),
     ];
   } else if (/^#[A-Fa-f0-9]{6}$/.test(hexColor)) {
     c = hexColor.substring(1).split("");
     return [
-      parseInt(c[0] + c[1], 16),
-      parseInt(c[2] + c[3], 16),
-      parseInt(c[4] + c[5], 16),
+      round(parseInt(c[0] + c[1], 16) / 255, 2),
+      round(parseInt(c[2] + c[3], 16) / 255, 2),
+      round(parseInt(c[4] + c[5], 16) / 255, 2),
       1,
     ];
   } else if (/^#[A-Fa-f0-9]{4}$/.test(hexColor)) {
     c = hexColor.substring(1).split("");
     return [
-      parseInt(c[0] + c[0], 16),
-      parseInt(c[1] + c[1], 16),
-      parseInt(c[2] + c[2], 16),
+      round(parseInt(c[0] + c[0], 16) / 255, 2),
+      round(parseInt(c[1] + c[1], 16) / 255, 2),
+      round(parseInt(c[2] + c[2], 16) / 255, 2),
       round(parseInt(c[3] + c[3], 16) / 255, 2),
     ];
   } else if (/^#[A-Fa-f0-9]{3}$/.test(hexColor)) {
     console.log("hexColor: ", hexColor);
     c = hexColor.substring(1).split("");
     return [
-      parseInt(c[0] + c[0], 16),
-      parseInt(c[1] + c[1], 16),
-      parseInt(c[2] + c[2], 16),
+      round(parseInt(c[0] + c[0], 16) / 255, 2),
+      round(parseInt(c[1] + c[1], 16) / 255, 2),
+      round(parseInt(c[2] + c[2], 16) / 255, 2),
       1,
     ];
   } else {
     new Error("Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA");
   }
+}
+
+export function rgbaToHex(rgba) {
+  const [r, g, b, a] = rgba;
+  const red = Math.round(r * 255)
+    .toString(16)
+    .padStart(2, "0");
+  const green = Math.round(g * 255)
+    .toString(16)
+    .padStart(2, "0");
+  const blue = Math.round(b * 255)
+    .toString(16)
+    .padStart(2, "0");
+  const alpha = Math.round(a * 255)
+    .toString(16)
+    .padStart(2, "0");
+  if (alpha === "ff") {
+    return `#${red}${green}${blue}`;
+  }
+  return `#${red}${green}${blue}${alpha}`;
 }
 
 export function clamp(number, min, max) {

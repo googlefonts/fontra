@@ -26,6 +26,7 @@ import {
   reversed,
   reversedEnumerate,
   rgbaToCSS,
+  rgbaToHex,
   round,
   scheduleCalls,
   splitGlyphNameExtension,
@@ -375,19 +376,28 @@ describe("rgbaToCSS", () => {
 describe("hexToRgbaList", () => {
   it("should convert a hex color string to rgba array of decimals", () => {
     let array = hexToRgbaList("#FF0000");
-    expect(array).deep.equals([255, 0, 0, 1]); // red
+    expect(array).deep.equals([1, 0, 0, 1]); // red
   });
   it("should convert short hex color string to rgba array of decimals", () => {
     const array = hexToRgbaList("#F00");
-    expect(array).deep.equals([255, 0, 0, 1]); // red
+    expect(array).deep.equals([1, 0, 0, 1]); // red
   });
   it("should convert a hex color string with opacity to rgba array of decimals", () => {
     const array = hexToRgbaList("#FF000080");
-    expect(array).deep.equals([255, 0, 0, 0.5]); // red with 80% opacity
+    expect(array).deep.equals([1, 0, 0, 0.5]); // red with 80% opacity
   });
   it("should convert short hex color string with opacity to rgba array of decimals", () => {
     const array = hexToRgbaList("#F008");
-    expect(array).deep.equals([255, 0, 0, 0.53]); // red with 80% opacity
+    expect(array).deep.equals([1, 0, 0, 0.53]); // red with 80% opacity
+  });
+});
+
+describe("rgbaToHex", () => {
+  it("should convert rgba array of decimals to a hex color string", () => {
+    expect(rgbaToHex([1, 0, 0, 1])).deep.equals("#ff0000");
+  });
+  it("should convert rgba array of decimals to a hex color string with opacity ", () => {
+    expect(rgbaToHex([1, 0, 0, 0.5])).deep.equals("#ff000080");
   });
 });
 
