@@ -1003,6 +1003,7 @@ export class EditorController {
       this.sceneController._dispatchEvent("glyphEditLocationNotAtSource");
       return;
     }
+
     const instance = glyphController.instance;
 
     const anchorIndex = this.sceneController.doubleClickedAnchorIndices[0];
