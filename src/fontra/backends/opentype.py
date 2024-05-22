@@ -30,7 +30,7 @@ class OTFBackend:
     def __init__(self, *, path: PathLike) -> None:
         self.path = path
         self.font = TTFont(path, lazy=True)
-        self.globalAxes = unpackAxes(self.font)
+        self.axes = unpackAxes(self.font)
         gvar = self.font.get("gvar")
         self.gvarVariations = gvar.variations if gvar is not None else None
         self.charStrings = (
@@ -61,7 +61,7 @@ class OTFBackend:
         glyph = VariableGlyph(name=glyphName)
         staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
-        defaultLocation = {axis.name: 0.0 for axis in self.globalAxes}
+        defaultLocation = {axis.name: 0.0 for axis in self.axes.axes}
         sources = [
             GlyphSource(
                 location=defaultLocation,
@@ -116,7 +116,7 @@ class OTFBackend:
         return FontInfo()
 
     async def getAxes(self) -> Axes:
-        return Axes(axes=self.globalAxes)
+        return self.axes
 
     async def getSources(self) -> dict[str, FontSource]:
         return {}
@@ -149,10 +149,10 @@ def getLocationsFromVarstore(
         yield location
 
 
-def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
+def unpackAxes(font: TTFont) -> Axes:
     fvar = font.get("fvar")
     if fvar is None:
-        return []
+        return Axes()
     nameTable = font["name"]
     avar = font.get("avar")
     avarMapping = (
@@ -199,7 +199,7 @@ def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
                 hidden=bool(axis.flags & 0x0001),  # HIDDEN_AXIS
             )
         )
-    return axisList
+    return Axes(axes=axisList)
 
 
 def buildStaticGlyph(glyphSet, glyphName):
