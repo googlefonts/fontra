@@ -635,6 +635,7 @@ export class FontController {
   }
 
   async reloadEverything() {
+    delete this._multipleAxisMapping;
     this._glyphsPromiseCache.clear();
     this._glyphInstancePromiseCache.clear();
     this._glyphInstancePromiseCacheKeys = {};

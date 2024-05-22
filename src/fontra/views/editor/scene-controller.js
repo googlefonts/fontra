@@ -252,6 +252,16 @@ export class SceneController {
       true
     );
 
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        // the MultipleAxisMapping may have changed, force to re-sync the location
+        this.sceneSettings.fontLocationSource = {
+          ...this.sceneSettings.fontLocationSource,
+        };
+      }
+    );
+
     // Set up convenience property "selectedGlyphName"
     this.sceneSettingsController.addKeyListener(
       ["selectedGlyph", "glyphLines"],
