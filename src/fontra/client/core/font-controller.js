@@ -51,7 +51,7 @@ export class FontController {
 
     if (initListener) {
       this.addChangeListener({ axes: null }, (change, isExternalChange) =>
-        this._purgeInstanceCacheAndVarGlyphAttributeCache()
+        this._purgeCachesRelatedToAxesChanges()
       );
     }
     this._resolveInitialized();
@@ -625,7 +625,7 @@ export class FontController {
     delete this._glyphInstancePromiseCacheKeys[glyphName];
   }
 
-  async _purgeInstanceCacheAndVarGlyphAttributeCache() {
+  async _purgeCachesRelatedToAxesChanges() {
     delete this._multipleAxisMapping;
     this._glyphInstancePromiseCache.clear();
     for (const varGlyphPromise of this._glyphsPromiseCache.values()) {
