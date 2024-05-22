@@ -100,6 +100,8 @@ export class MultipleAxisMapping {
     if (!this.model) {
       return mappedSourceLocation;
     }
+    // I know of no way to reverse the mapping operation, so we'll just return
+    // the default location
     return {};
   }
 }
