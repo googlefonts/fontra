@@ -468,13 +468,13 @@ export default class DesignspaceNavigationPanel extends Panel {
         checked: this.sceneSettings.fontAxesShowHidden,
       },
       {
-        title: "Skip multiple axis mapping",
+        title: "Apply multiple axis mapping",
         enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesSkipMapping =
             !this.sceneSettings.fontAxesSkipMapping;
         },
-        checked: this.sceneSettings.fontAxesSkipMapping,
+        checked: !this.sceneSettings.fontAxesSkipMapping,
       },
     ];
 
