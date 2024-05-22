@@ -25,13 +25,10 @@ import { enumerate, parseSelection, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
-  VariationModel,
   locationToString,
   makeSparseNormalizedLocation,
   mapAxesFromUserSpaceToSourceSpace,
-  mapForward,
   normalizeLocation,
-  piecewiseLinearMap,
 } from "./var-model.js";
 import { VarPackedPath, joinPaths } from "./var-path.js";
 
@@ -875,14 +872,6 @@ export async function decomposeComponents(
   }
   const newPath = joinPaths(newPaths);
   return { path: newPath, components: newComponents, anchors: newAnchors };
-}
-
-function makeAxisMapFunc(axis) {
-  if (!axis.mapping) {
-    return (v) => v;
-  }
-  const mapping = Object.fromEntries(axis.mapping);
-  return (v) => piecewiseLinearMap(v, mapping);
 }
 
 export function getAxisBaseName(axisName) {
