@@ -564,6 +564,7 @@ class DesignspaceBackend:
                 value = getattr(self.defaultFontInfo, infoAttr, None)
                 if value is not None:
                     setattr(info, infoAttr, value)
+            reader.writeInfo(info)
             _ = reader.getGlyphSet()  # this creates the default layer
             reader.writeLayerContents()
             ufoLayerName = reader.getDefaultLayerName()
