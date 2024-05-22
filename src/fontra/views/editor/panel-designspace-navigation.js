@@ -459,15 +459,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         checked: this.sceneSettings.fontAxesUseSourceCoordinates,
       },
       {
-        title: "Show hidden axes",
-        enabled: () => true,
-        callback: () => {
-          this.sceneSettings.fontAxesShowHidden =
-            !this.sceneSettings.fontAxesShowHidden;
-        },
-        checked: this.sceneSettings.fontAxesShowHidden,
-      },
-      {
         title: "Apply multiple axis mapping",
         enabled: () => true,
         callback: () => {
@@ -475,6 +466,15 @@ export default class DesignspaceNavigationPanel extends Panel {
             !this.sceneSettings.fontAxesSkipMapping;
         },
         checked: !this.sceneSettings.fontAxesSkipMapping,
+      },
+      {
+        title: "Show hidden axes",
+        enabled: () => true,
+        callback: () => {
+          this.sceneSettings.fontAxesShowHidden =
+            !this.sceneSettings.fontAxesShowHidden;
+        },
+        checked: this.sceneSettings.fontAxesShowHidden,
       },
     ];
 
