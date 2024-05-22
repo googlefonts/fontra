@@ -1,9 +1,12 @@
 from os import PathLike
 from typing import Any, Generator
 
+from fontTools.misc.fixedTools import fixedToFloat
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables.otTables import NO_VARIATION_INDEX
+from fontTools.varLib.varStore import VarStoreInstancer
 
 from fontra.core.protocols import ReadableFontBackend
 
@@ -15,6 +18,7 @@ from ..core.classes import (
     FontSource,
     GlyphSource,
     Layer,
+    MultipleAxisMapping,
     OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
@@ -30,7 +34,7 @@ class OTFBackend:
     def __init__(self, *, path: PathLike) -> None:
         self.path = path
         self.font = TTFont(path, lazy=True)
-        self.globalAxes = unpackAxes(self.font)
+        self.axes = unpackAxes(self.font)
         gvar = self.font.get("gvar")
         self.gvarVariations = gvar.variations if gvar is not None else None
         self.charStrings = (
@@ -61,7 +65,7 @@ class OTFBackend:
         glyph = VariableGlyph(name=glyphName)
         staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
-        defaultLocation = {axis.name: 0.0 for axis in self.globalAxes}
+        defaultLocation = {axis.name: 0.0 for axis in self.axes.axes}
         sources = [
             GlyphSource(
                 location=defaultLocation,
@@ -116,7 +120,7 @@ class OTFBackend:
         return FontInfo()
 
     async def getAxes(self) -> Axes:
-        return Axes(axes=self.globalAxes)
+        return self.axes
 
     async def getSources(self) -> dict[str, FontSource]:
         return {}
@@ -149,10 +153,10 @@ def getLocationsFromVarstore(
         yield location
 
 
-def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
+def unpackAxes(font: TTFont) -> Axes:
     fvar = font.get("fvar")
     if fvar is None:
-        return []
+        return Axes()
     nameTable = font["name"]
     avar = font.get("avar")
     avarMapping = (
@@ -169,21 +173,21 @@ def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
         mapping = avarMapping.get(axis.axisTag, [])
         if mapping:
             mapping = [
-                (
+                [
                     axis.defaultValue
                     + (inValue * posExtent if inValue >= 0 else inValue * negExtent),
                     outValue,
-                )
+                ]
                 for inValue, outValue in mapping
                 if normMin <= outValue <= normMax
             ]
         else:
             mapping = [
-                (axis.minValue, normMin),
-                (axis.defaultValue, 0),
-                (axis.maxValue, normMax),
+                [axis.minValue, normMin],
+                [axis.defaultValue, 0],
+                [axis.maxValue, normMax],
             ]
-        axisNameRecord = nameTable.getName(axis.axisNameID + 444, 3, 1, 0x409)
+        axisNameRecord = nameTable.getName(axis.axisNameID, 3, 1, 0x409)
         axisName = (
             axisNameRecord.toUnicode() if axisNameRecord is not None else axis.axisTag
         )
@@ -199,7 +203,42 @@ def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
                 hidden=bool(axis.flags & 0x0001),  # HIDDEN_AXIS
             )
         )
-    return axisList
+
+    mappings = []
+
+    if avar is not None and avar.majorVersion >= 2:
+        fvarAxes = fvar.axes
+        varStore = avar.table.VarStore
+        varIdxMap = avar.table.VarIdxMap
+
+        locations = set()
+        for i, varIdx in enumerate(varIdxMap.mapping):
+            if varIdx == NO_VARIATION_INDEX:
+                continue
+
+            for loc in getLocationsFromVarstore(varIdx >> 16, varStore, fvarAxes):
+                locations.add(tuplifyLocation(loc))
+
+        for locTuple in sorted(locations):
+            inputLocation = dict(locTuple)
+            instancer = VarStoreInstancer(varStore, fvarAxes, inputLocation)
+
+            outputLocation = {}
+            for i, varIdx in enumerate(varIdxMap.mapping):
+                if varIdx == NO_VARIATION_INDEX:
+                    continue
+
+                outputLocation[fvarAxes[i].axisTag] = fixedToFloat(
+                    instancer[varIdx], 14
+                )
+
+            mappings.append(
+                MultipleAxisMapping(
+                    inputLocation=inputLocation, outputLocation=outputLocation
+                )
+            )
+
+    return Axes(axes=axisList, mappings=mappings)
 
 
 def buildStaticGlyph(glyphSet, glyphName):
