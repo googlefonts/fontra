@@ -18,6 +18,7 @@ import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
+  mapAxesFromUserSpaceToSourceSpace,
   piecewiseLinearMap,
 } from "/core/var-model.js";
 import { IconButton } from "/web-components/icon-button.js";
@@ -205,7 +206,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden"],
+      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden", "fontAxesSkipMapping"],
       (event) => {
         this._updateAxes();
       }
@@ -350,7 +351,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         menuItems: statusFieldDefinitions.map((statusDef) => {
           return {
             title: statusDef.label,
-            enabled: () => true,
             statusDef: statusDef,
           };
         }),
@@ -449,17 +449,23 @@ export default class DesignspaceNavigationPanel extends Panel {
   showFontAxesViewOptionsMenu(event) {
     const menuItems = [
       {
-        title: "Use source coordinates",
-        enabled: () => true,
+        title: "Apply single axis mapping",
         callback: () => {
           this.sceneSettings.fontAxesUseSourceCoordinates =
             !this.sceneSettings.fontAxesUseSourceCoordinates;
         },
-        checked: this.sceneSettings.fontAxesUseSourceCoordinates,
+        checked: !this.sceneSettings.fontAxesUseSourceCoordinates,
+      },
+      {
+        title: "Apply multiple axis mapping",
+        callback: () => {
+          this.sceneSettings.fontAxesSkipMapping =
+            !this.sceneSettings.fontAxesSkipMapping;
+        },
+        checked: !this.sceneSettings.fontAxesSkipMapping,
       },
       {
         title: "Show hidden axes",
-        enabled: () => true,
         callback: () => {
           this.sceneSettings.fontAxesShowHidden =
             !this.sceneSettings.fontAxesShowHidden;
@@ -1178,25 +1184,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       infoElement.appendChild(html.br());
     }
   }
-}
-
-function mapAxesFromUserSpaceToSourceSpace(axes) {
-  return axes.map((axis) => {
-    const newAxis = { ...axis };
-    if (axis.mapping) {
-      const mappingDict = Object.fromEntries(axis.mapping);
-      const properties = axis.values
-        ? ["defaultValue"]
-        : ["minValue", "defaultValue", "maxValue"];
-      for (const prop of properties) {
-        newAxis[prop] = piecewiseLinearMap(axis[prop], mappingDict);
-      }
-      if (axis.values) {
-        axis.values.map((value) => piecewiseLinearMap(value, mappingDict));
-      }
-    }
-    return newAxis;
-  });
 }
 
 function roundComponentOrigins(components) {

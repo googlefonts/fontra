@@ -67,6 +67,7 @@ export class SceneController {
       fontLocationSourceMapped: {},
       fontAxesUseSourceCoordinates: false,
       fontAxesShowHidden: false,
+      fontAxesSkipMapping: false,
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
@@ -127,21 +128,38 @@ export class SceneController {
     // Set up the dependencies between fontLocationUser, fontLocationSource and
     // fontLocationSourceMapped
     const locationDependencies = [
-      ["fontLocationUser", "fontLocationSource", "mapUserLocationToSourceLocation"],
-      ["fontLocationSource", "fontLocationUser", "mapSourceLocationToUserLocation"],
+      [
+        "fontLocationUser",
+        "fontLocationSource",
+        "mapUserLocationToSourceLocation",
+        false,
+      ],
+      [
+        "fontLocationSource",
+        "fontLocationUser",
+        "mapSourceLocationToUserLocation",
+        false,
+      ],
       [
         "fontLocationSource",
         "fontLocationSourceMapped",
         "mapSourceLocationToMappedSourceLocation",
+        true,
       ],
       [
         "fontLocationSourceMapped",
         "fontLocationSource",
         "mapMappedSourceLocationToSourceLocation",
+        true,
       ],
     ];
 
-    for (const [sourceKey, destinationKey, mapMethodName] of locationDependencies) {
+    for (const [
+      sourceKey,
+      destinationKey,
+      mapMethodName,
+      maySkip,
+    ] of locationDependencies) {
       const mapMethod = this.fontController[mapMethodName].bind(this.fontController);
 
       this.sceneSettingsController.addKeyListener(
@@ -151,9 +169,14 @@ export class SceneController {
             return;
           }
 
+          const mapFunc =
+            maySkip && this.sceneSettings.fontAxesSkipMapping
+              ? (loc) => loc
+              : mapMethod;
+
           this.sceneSettingsController.setItem(
             destinationKey,
-            mapMethod(event.newValue),
+            mapFunc(event.newValue),
             {
               senderStack: (event.senderInfo?.senderStack || []).concat([
                 sourceKey,
@@ -165,6 +188,13 @@ export class SceneController {
         true
       );
     }
+
+    // Trigger recalculating the mapped location
+    this.sceneSettingsController.addKeyListener("fontAxesSkipMapping", (event) => {
+      this.sceneSettings.fontLocationSource = {
+        ...this.sceneSettings.fontLocationSource,
+      };
+    });
 
     // Set up the mutual dependencies between location and selectedSourceIndex
     const locationSelectedSourceToken = Symbol("location-selectedSourceIndex");
