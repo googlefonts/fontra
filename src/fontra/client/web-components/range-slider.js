@@ -6,7 +6,7 @@ const colors = {
   "thumb-color": ["#333", "#ddd"],
   "thumb-color-at-default": ["#ccc", "#777"],
   "track-color": ["#ccc", "#222"],
-  "disabled-color": ["#ddd", "#333"],
+  "disabled-color": ["#ddd", "#2e2e2e"],
   "disabled-text-color": ["#999", "#aaa"],
 };
 
