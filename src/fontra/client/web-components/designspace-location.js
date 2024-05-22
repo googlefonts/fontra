@@ -63,6 +63,7 @@ export class DesignspaceLocation extends UnlitElement {
 
   static properties = {
     axes: { type: Array },
+    phantomAxes: { type: Array },
   };
 
   get model() {
@@ -117,6 +118,10 @@ export class DesignspaceLocation extends UnlitElement {
         }
       }
     }
+  }
+
+  set phantomValues(phantomValues) {
+    console.log(phantomValues);
   }
 
   render() {

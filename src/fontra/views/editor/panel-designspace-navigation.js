@@ -434,6 +434,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ? "fontLocationSource"
       : "fontLocationUser";
     this.fontAxesElement.values = this.sceneSettings[locationKey];
+    this.fontAxesElement.phantomValues = this.sceneSettings.fontLocationSourceMapped;
   }
 
   sourceListGetSourceItem(sourceIndex) {
@@ -596,10 +597,16 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateAxes() {
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const fontAxes = this.sceneSettings.fontAxesUseSourceCoordinates
-      ? mapAxesFromUserSpaceToSourceSpace(this.fontAxes)
+      ? fontAxesSourceSpace
       : [...this.fontAxes];
     this.fontAxesElement.axes = fontAxes;
+    if (this.sceneSettings.fontAxesShowEffectiveLocation) {
+      this.fontAxesElement.phantomAxes = fontAxesSourceSpace;
+    } else {
+      this.fontAxesElement.phantomAxes = [];
+    }
     this._setFontLocationValues();
 
     const varGlyphController =
