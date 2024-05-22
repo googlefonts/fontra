@@ -95,4 +95,11 @@ export class MultipleAxisMapping {
 
     return mappedLocation;
   }
+
+  unmapLocation(mappedSourceLocation) {
+    if (!this.model) {
+      return mappedSourceLocation;
+    }
+    return {};
+  }
 }

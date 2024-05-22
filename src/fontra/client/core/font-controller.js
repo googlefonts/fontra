@@ -724,8 +724,7 @@ export class FontController {
   }
 
   mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
-    // TODO: undo avar-2 mapping if possible
-    return { ...mappedSourceLocation };
+    return { ...this._multipleAxisMapping.unmapLocation(mappedSourceLocation) };
   }
 }
 
