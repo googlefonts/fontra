@@ -227,6 +227,7 @@ def unpackAxes(font: TTFont) -> Axes:
             for i, varIdx in enumerate(varIdxMap.mapping):
                 if varIdx == NO_VARIATION_INDEX:
                     continue
+
                 outputLocation[fvarAxes[i].axisTag] = fixedToFloat(
                     instancer[varIdx], 14
                 )
