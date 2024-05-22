@@ -48,13 +48,10 @@ export class FontController {
     this._rootClassDef = (await getClassSchema())["Font"];
     this.backendInfo = await this.font.getBackEndInfo();
     this.readOnly = await this.font.isReadOnly();
-    this._multipleAxisMapping = new MultipleAxisMapping(
-      this._rootObject.axes.axes,
-      this._rootObject.axes.mappings
-    );
+
     if (initListener) {
       this.addChangeListener({ axes: null }, (change, isExternalChange) =>
-        this._purgeInstanceCacheAndVarGlyphAttributeCache()
+        this._purgeCachesRelatedToAxesChanges()
       );
     }
     this._resolveInitialized();
@@ -628,7 +625,8 @@ export class FontController {
     delete this._glyphInstancePromiseCacheKeys[glyphName];
   }
 
-  async _purgeInstanceCacheAndVarGlyphAttributeCache() {
+  async _purgeCachesRelatedToAxesChanges() {
+    delete this._multipleAxisMapping;
     this._glyphInstancePromiseCache.clear();
     for (const varGlyphPromise of this._glyphsPromiseCache.values()) {
       const varGlyph = await varGlyphPromise;
@@ -719,12 +717,22 @@ export class FontController {
     return mapBackward(sourceLocation, this.fontAxes);
   }
 
+  get multipleAxisMapping() {
+    if (!this._multipleAxisMapping) {
+      this._multipleAxisMapping = new MultipleAxisMapping(
+        this.axes.axes,
+        this.axes.mappings
+      );
+    }
+    return this._multipleAxisMapping;
+  }
+
   mapSourceLocationToMappedSourceLocation(sourceLocation) {
-    return { ...this._multipleAxisMapping.mapLocation(sourceLocation) };
+    return { ...this.multipleAxisMapping.mapLocation(sourceLocation) };
   }
 
   mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
-    return { ...this._multipleAxisMapping.unmapLocation(mappedSourceLocation) };
+    return { ...this.multipleAxisMapping.unmapLocation(mappedSourceLocation) };
   }
 }
 
