@@ -72,24 +72,21 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       this.infoForm.labelWidth = "max-content";
 
       this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
-        const [rootKey, itemKey] = JSON.parse(fieldItem.key);
-        const undoLabel = `change ${itemKey ? itemKey : rootKey}`;
+        const statusValue = fieldItem.key;
+        const statusDef = this.fontController.customData[
+          "fontra.sourceStatusFieldDefinitions"
+        ].find((statusDef) => statusDef.value === statusValue);
 
-        const root = {
-          fontInfo: await this.fontController.getFontInfo(),
-          unitsPerEm: this.fontController.unitsPerEm,
+        console.log("edit-text value", value);
+        const updatedStatusDef = {
+          ...statusDef,
+          label: value,
         };
-        const changes = recordChanges(root, (root) => {
-          if (itemKey) {
-            const subject = root[rootKey];
-            subject[itemKey] = value;
-          } else {
-            root[rootKey] = value;
-          }
-        });
-        if (changes.hasChange) {
-          await this.postChange(changes.change, changes.rollbackChange, undoLabel);
-        }
+        this.replaceStatusDef(
+          statusDef.value,
+          updatedStatusDef,
+          "change status definition label"
+        );
       };
 
       const formContents = [];
@@ -110,7 +107,7 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
         type: "universal-row",
         field1: {
           type: "edit-text",
-          key: "StatusLabel",
+          key: statusDef.value,
           value: statusDef.label,
           width: "6em",
         },
@@ -122,9 +119,15 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
             style: `margin: 0; padding: 0; outline: none;`,
             value: rgbaToHex(statusDef.color),
             onchange: (event) => {
-              console.log("event.target.value", event.target.value);
-              console.log("statusDef.color", statusDef.color);
-              console.log("rgbaToHex(statusDef.color)", rgbaToHex(statusDef.color));
+              const updatedStatusDef = {
+                ...statusDef,
+                color: hexToRgbaList(event.target.value),
+              };
+              this.replaceStatusDef(
+                statusDef.value,
+                updatedStatusDef,
+                "change status definition color"
+              );
             },
           }),
         },
@@ -137,7 +140,25 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
             "style": `width: auto; margin: 0; padding: 0; outline: none;`,
             "checked": statusDef.isDefault,
             "onclick": (event) => {
-              console.log("StatusIsDefault", event.target.checked);
+              const undoLabel = `change status definition isDefault`;
+              if (event.target.checked) {
+                // if checked, set all other status definitions to false
+                for (const statusDefTemp of this.fontController.customData[
+                  "fontra.sourceStatusFieldDefinitions"
+                ]) {
+                  delete statusDefTemp["isDefault"];
+                  this.replaceStatusDef(statusDefTemp.value, statusDefTemp, undoLabel);
+                }
+                // set this status definition to true
+                const updatedStatusDef = {
+                  ...statusDef,
+                  isDefault: true,
+                };
+                this.replaceStatusDef(statusDef.value, updatedStatusDef, undoLabel);
+              } else {
+                delete statusDef["isDefault"];
+                this.replaceStatusDef(statusDef.value, statusDef, undoLabel);
+              }
             },
             "data-tooltip": "Is Default",
             "data-tooltipposition": "left",
@@ -283,10 +304,10 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
   //   }
 
   async newStatusDef(statusDef = undefined) {
-    // TODO: check for duplicates
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
     if (!statusFieldDefinitions) {
+      // if not present, create default status definitions
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"] = [];
     }
     const nextStatusValue = !statusFieldDefinitions
@@ -295,15 +316,14 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
           .map((statusDef) => statusDef.value)
           .sort()
           .pop() + 1;
-    console.log("nextStatusValue", nextStatusValue);
-    // fix duplicates and isDefault
+
+    // fix duplicates
     if (
       statusDef &&
       statusFieldDefinitions.some((statusDef) => statusDef.value === statusDef.value)
     ) {
-      console.info(
-        "Status definition with value already exists, changed value to next available value."
-      );
+      // Status definition with value already exists,
+      // changed value to next available value.
       statusDef = {
         ...statusDef,
         value: nextStatusValue,
@@ -312,9 +332,8 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
 
     // fix isDefault
     if (statusDef && statusFieldDefinitions.some((statusDef) => statusDef.isDefault)) {
-      console.info(
-        "Status definition with isDefault already exists, changed value to false."
-      );
+      // Status definition with isDefault already exists,
+      // changed value to false.
       delete statusDef["isDefault"];
     }
 
@@ -327,21 +346,39 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     }
 
     if (!statusDef) {
-      console.info("No status definition provided or found. Use default.");
+      // No status definition provided or found.
+      // Use default.
       statusDef = {
         color: [1, 0, 0, 1],
-        label: "Status definition name",
+        label: `Status definition ${nextStatusValue}`,
         value: nextStatusValue,
       };
     }
-    //fontController.customData["fontra.sourceStatusFieldDefinitions"].push(statusDef);
 
     const undoLabel = `add status definition ${statusDef.value} '${statusDef.label}'`;
-    console.log("undoLabel: ", undoLabel);
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"].push(statusDef);
     });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
+  }
+
+  async replaceStatusDef(statusDefValue, updatedStatusDef, undoLabel) {
+    const index = this.fontController.customData[
+      "fontra.sourceStatusFieldDefinitions"
+    ].findIndex((statusDef) => statusDef.value === statusDefValue);
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      root.customData["fontra.sourceStatusFieldDefinitions"].splice(
+        index,
+        1,
+        updatedStatusDef
+      );
+    });
+
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
       this.setupUI();
@@ -353,7 +390,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       "fontra.sourceStatusFieldDefinitions"
     ].findIndex((statusDef) => statusDef.value === statusDefValue);
     const undoLabel = `delete status definition ${statusDefValue}`;
-    console.log("undoLabel: ", undoLabel);
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"].splice(index, 1);
