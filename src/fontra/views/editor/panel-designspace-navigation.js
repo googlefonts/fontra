@@ -505,7 +505,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   _updateResetAllAxesButtonState() {
     for (const [location, axesElement, buttonID] of [
       [
-        this.sceneSettings.fontLocationUser,
+        this.sceneSettings.fontAxesUseSourceCoordinates
+          ? this.sceneSettings.fontLocationSourceMapped
+          : this.sceneSettings.fontLocationUser,
         this.fontAxesElement,
         "reset-font-axes-button",
       ],
