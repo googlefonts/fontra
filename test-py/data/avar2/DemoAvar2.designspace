@@ -1,11 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<designspace format="5.0">
+<designspace format="5.1">
   <axes>
     <axis tag="DIAG" name="Diagonal" minimum="0" maximum="100" default="0"/>
-    <axis tag="HORI" name="Horizontal" minimum="0" maximum="100" default="0" hidden="true"/>
-    <axis tag="VERT" name="Vertical" minimum="0" maximum="100" default="0" hidden="true"/>
+    <axis tag="HORI" name="Horizontal" minimum="0" maximum="100" default="0" hidden="1"/>
+    <axis tag="VERT" name="Vertical" minimum="0" maximum="100" default="0" hidden="1"/>
     <mappings description="Mappings group one">
-
       <mapping description="Default mapping">
         <input>
           <dimension name="Diagonal" xvalue="0"/>
@@ -15,7 +14,6 @@
           <dimension name="Vertical" xvalue="0"/>
         </output>
       </mapping>
-
       <mapping>
         <input>
           <dimension name="Diagonal" xvalue="25"/>
@@ -25,7 +23,6 @@
           <dimension name="Vertical" xvalue="33"/>
         </output>
       </mapping>
-
       <mapping>
         <input>
           <dimension name="Diagonal" xvalue="75"/>
@@ -35,7 +32,6 @@
           <dimension name="Vertical" xvalue="67"/>
         </output>
       </mapping>
-
       <mapping>
         <input>
           <dimension name="Diagonal" xvalue="100"/>
@@ -45,19 +41,26 @@
           <dimension name="Vertical" xvalue="100"/>
         </output>
       </mapping>
-
     </mappings>
   </axes>
   <sources>
-    <source filename="DemoAvar2_Regular.ufo" stylename="Regular"/>
+    <source filename="DemoAvar2_Regular.ufo" stylename="Regular">
+      <location>
+        <dimension name="Diagonal" xvalue="0"/>
+        <dimension name="Horizontal" xvalue="0"/>
+        <dimension name="Vertical" xvalue="0"/>
+      </location>
+    </source>
     <source filename="DemoAvar2_Horizontal.ufo" stylename="Horizontal" layer="public.default">
       <location>
+        <dimension name="Diagonal" xvalue="0"/>
         <dimension name="Horizontal" xvalue="100"/>
         <dimension name="Vertical" xvalue="0"/>
       </location>
     </source>
     <source filename="DemoAvar2_Vertical.ufo" stylename="Vertical" layer="public.default">
       <location>
+        <dimension name="Diagonal" xvalue="0"/>
         <dimension name="Horizontal" xvalue="0"/>
         <dimension name="Vertical" xvalue="100"/>
       </location>
