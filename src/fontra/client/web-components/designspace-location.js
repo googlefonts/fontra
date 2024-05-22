@@ -4,7 +4,7 @@ import * as html from "/core/html-utils.js";
 import { UnlitElement, htmlToElement } from "/core/html-utils.js";
 
 const colors = {
-  "disabled-color": ["#ccc", "#777"],
+  "disabled-text-color": ["#777", "#ccc"],
 };
 
 export class DesignspaceLocation extends UnlitElement {
@@ -40,7 +40,7 @@ export class DesignspaceLocation extends UnlitElement {
       display: none;
       grid-column: 1 / -1;
       margin-bottom: 0.5em;
-      color: var(--disabled-color);
+      color: var(--disabled-text-color);
     }
 
     .info-box.visible {
