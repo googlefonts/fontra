@@ -173,19 +173,19 @@ def unpackAxes(font: TTFont) -> Axes:
         mapping = avarMapping.get(axis.axisTag, [])
         if mapping:
             mapping = [
-                (
+                [
                     axis.defaultValue
                     + (inValue * posExtent if inValue >= 0 else inValue * negExtent),
                     outValue,
-                )
+                ]
                 for inValue, outValue in mapping
                 if normMin <= outValue <= normMax
             ]
         else:
             mapping = [
-                (axis.minValue, normMin),
-                (axis.defaultValue, 0),
-                (axis.maxValue, normMax),
+                [axis.minValue, normMin],
+                [axis.defaultValue, 0],
+                [axis.maxValue, normMax],
             ]
         axisNameRecord = nameTable.getName(axis.axisNameID + 444, 3, 1, 0x409)
         axisName = (
