@@ -3,7 +3,7 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import { labeledTextInput } from "../core/ui-utils.js";
-import { enumerate, hexToRgbaList } from "../core/utils.js";
+import { enumerate, hexToRgbaList, rgbaToCSS } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { Form } from "/web-components/ui-form.js";
@@ -40,7 +40,7 @@ const defaultStatusFieldDefinitions = {
 };
 
 addStyleSheet(`
-.fontra-ui-font-info-axes-panel {
+.fontra-ui-font-info-statusDefs-panel {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
@@ -54,32 +54,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
 
   async setupUI() {
     const statusDefinitions = getStatusFieldDefinitions(this.fontController);
-    console.log("statusDefinitions", statusDefinitions);
-
-    // TODO: page content status color definitions
-
-    const container = html.div({
-      style: "display: grid; gap: 0.5em;",
-    });
-
-    for (const statusDef of statusDefinitions) {
-      console.log("statusDef", statusDef);
-      // container.appendChild(
-      //   new statusBox(axes, index, this.postChange.bind(this), this.deleteAxis.bind(this))
-      // );
-    }
-
-    //setupSortableList(container);
-
-    // container.addEventListener("reordered", (event) => {
-    //   const reorderedAxes = [];
-    //   for (const [index, axisBox] of enumerate(container.children)) {
-    //     reorderedAxes.push(axisBox.axis);
-    //     axisBox.axisIndex = index;
-    //   }
-    //   this.replaceAxes(reorderedAxes, "Reorder axes");
-    // });
-
     this.panelElement.innerHTML = "";
     this.panelElement.style = `
     gap: 1em;
@@ -92,9 +66,95 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
         onclick: (event) => this.newStatusDefinition(statusDefinitions),
       })
     );
+    for (const statusDef of statusDefinitions) {
+      this.infoForm = new Form();
+      this.infoForm.className = "fontra-ui-font-info-axes-panel";
+      this.infoForm.labelWidth = "max-content";
 
-    //this.panelElement.innerHTML = "";
-    //this.panelElement.appendChild(this.infoForm);
+      this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+        const [rootKey, itemKey] = JSON.parse(fieldItem.key);
+        const undoLabel = `change ${itemKey ? itemKey : rootKey}`;
+
+        const root = {
+          fontInfo: await this.fontController.getFontInfo(),
+          unitsPerEm: this.fontController.unitsPerEm,
+        };
+        const changes = recordChanges(root, (root) => {
+          if (itemKey) {
+            const subject = root[rootKey];
+            subject[itemKey] = value;
+          } else {
+            root[rootKey] = value;
+          }
+        });
+        if (changes.hasChange) {
+          await this.postChange(changes.change, changes.rollbackChange, undoLabel);
+        }
+      };
+
+      const formContents = [];
+
+      // formContents.push({
+      //   type: "edit-number",
+      //   key: JSON.stringify(["color"]),
+      //   label: "Value",
+      //   value: statusDef.value,
+      //   minValue: 0,
+      //   integer: true,
+      // });
+      // formContents.push({
+      //   type: "edit-text",
+      //   key: JSON.stringify(["label"]),
+      //   label: "Label",
+      //   value: statusDef.label,
+      // });
+      // formContents.push({
+      //   type: "edit-text", // edit-color does not exist, yet
+      //   key: JSON.stringify(["color"]),
+      //   label: "Color",
+      //   value: rgbaToCSS(statusDef.color),
+      // });
+      // formContents.push({
+      //   type: "edit-text",
+      //   key: JSON.stringify(["isDefault"]),
+      //   label: "Is Default",
+      //   value: statusDef.isDefault,
+      // });
+
+      formContents.push({
+        type: "header",
+        label: "Transformation",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/refresh.svg",
+          //"onclick": (event) => this._resetTransformationForComponent(index),
+          "data-tooltip": "Delete status definition",
+          "data-tooltipposition": "left",
+        }),
+      });
+
+      formContents.push({
+        type: "universal-row",
+        field1: {
+          type: "text",
+          key: `StatusDefinition${statusDef.value}`,
+          value: `Status Definition:`,
+        },
+        field2: {
+          type: "edit-text",
+          key: "StatusLabel",
+          value: statusDef.label,
+        },
+        field3: {
+          type: "edit-text",
+          key: "StatusLabel",
+          value: rgbaToCSS(statusDef.color),
+        },
+      });
+
+      this.infoForm.setFieldDescriptions(formContents);
+      this.panelElement.appendChild(this.infoForm);
+    }
   }
 
   async newStatusDefinition() {
@@ -180,6 +240,7 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     console.log("newStatus", newStatus);
 
     const undoLabel = `add status definition '${newStatus.name}'`;
+    console.log("undoLabel: ", undoLabel);
     const root = {
       customData: this.fontController.customData["fontra.sourceStatusFieldDefinitions"],
     };
