@@ -463,6 +463,17 @@ export class SceneModel {
       return { selection: anchorSelection };
     }
 
+    const guidelineSelection = this.guidelineSelectionAtPoint(point, size);
+    if (guidelineSelection.size) {
+      return { selection: guidelineSelection };
+    }
+
+    // TODO: Font Guidelines
+    // const fontGuidelineSelection = this.fontGuidelineSelectionAtPoint(point, size);
+    // if (fontGuidelineSelection.size) {
+    //   return { selection: fontGuidelineSelection };
+    // }
+
     const { selection: segmentSelection, pathHit: pathHit } =
       this.segmentSelectionAtPoint(point, size);
     if (pathHit) {
@@ -601,6 +612,29 @@ export class SceneModel {
     }
     return new Set([]);
   }
+
+  guidelineSelectionAtPoint(point, size) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    const guidelines = positionedGlyph.glyph.guidelines;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
+    for (const [i, guideline] of enumerate(guidelines)) {
+      const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
+      if (guidelineMatch) {
+        return new Set([`guideline/${i}`]);
+      }
+    }
+    return new Set([]);
+  }
+
+  // TODO: Font Guidelines
+  //fontGuidelineSelectionAtPoint(point, size) {
+  // }
 
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();

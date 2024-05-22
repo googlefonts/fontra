@@ -39,6 +39,7 @@ from ..core.classes import (
     FontSource,
     GlyphAxis,
     GlyphSource,
+    Guideline,
     Layer,
     MultipleAxisMapping,
     OpenTypeFeatures,
@@ -1026,6 +1027,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
+        guidelines=unpackGuidelines(fontInfo.guidelines),
     )
 
 
@@ -1078,11 +1080,13 @@ class UFOGlyph:
     width: float | None = 0
     height: float | None = None
     anchors: list = []
+    guidelines: list = []
     lib: dict
 
 
 class UFOFontInfo:
     unitsPerEm = 1000
+    guidelines: list = []
 
 
 class UFOManager:
@@ -1189,6 +1193,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         components=components,
         xAdvance=glyph.width,
         anchors=unpackAnchors(glyph.anchors),
+        guidelines=unpackGuidelines(glyph.guidelines),
     )
 
     # TODO: yAdvance, verticalOrigin
@@ -1210,6 +1215,22 @@ def unpackVariableComponents(lib):
 
 def unpackAnchors(anchors):
     return [Anchor(name=a.get("name"), x=a["x"], y=a["y"]) for a in anchors]
+
+
+def unpackGuidelines(guidelines):
+    return [
+        Guideline(
+            name=g.get("name"),
+            x=g.get("x", 0),
+            y=g.get("y", 0),
+            angle=g.get("angle", 0),
+            locked=g.get("locked", False),
+            # TODO: Guidelines, how do we handle customData like:
+            # color=g.get("color"),
+            # identifier=g.get("identifier"),
+        )
+        for g in guidelines
+    ]
 
 
 def readGlyphOrCreate(
@@ -1239,6 +1260,10 @@ def populateUFOLayerGlyph(
     variableComponents = []
     layerGlyph.anchors = [
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
+    ]
+    layerGlyph.guidelines = [
+        {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
+        for g in staticGlyph.guidelines
     ]
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:

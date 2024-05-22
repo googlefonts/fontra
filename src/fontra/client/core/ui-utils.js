@@ -94,6 +94,25 @@ function didReorder(a, b) {
   return false;
 }
 
+export function labeledCheckbox(label, controller, key, options) {
+  const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
+  const inputWrapper = html.div();
+  const inputElement = html.input({ type: "checkbox", id: checkboxID });
+  inputElement.checked = controller.model[key];
+  inputWrapper.appendChild(inputElement);
+  inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
+
+  inputElement.onchange = () => {
+    controller.model[key] = inputElement.checked;
+  };
+
+  controller.addKeyListener(key, (event) => {
+    inputElement.checked = event.newValue;
+  });
+
+  return inputWrapper;
+}
+
 export function labeledTextInput(label, controller, key, options) {
   options = { continuous: true, ...options };
   const items = [];

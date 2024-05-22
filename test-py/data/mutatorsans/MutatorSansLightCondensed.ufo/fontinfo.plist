@@ -13,7 +13,44 @@
     <key>familyName</key>
     <string>MutatorMathTest</string>
     <key>guidelines</key>
-    <array/>
+    <array>
+      <dict>
+        <key>angle</key>
+        <integer>0</integer>
+        <key>identifier</key>
+        <string>bbcXFRAeZO</string>
+        <key>name</key>
+        <string>Guideline Cap Height</string>
+        <key>x</key>
+        <integer>0</integer>
+        <key>y</key>
+        <integer>700</integer>
+      </dict>
+      <dict>
+        <key>angle</key>
+        <real>90.0</real>
+        <key>identifier</key>
+        <string>2QljbewJUL</string>
+        <key>name</key>
+        <string>Guideline Left</string>
+        <key>x</key>
+        <integer>60</integer>
+        <key>y</key>
+        <integer>0</integer>
+      </dict>
+      <dict>
+        <key>angle</key>
+        <integer>0</integer>
+        <key>identifier</key>
+        <string>egYzirLFsS</string>
+        <key>name</key>
+        <string>Guideline Baseline Overshoot</string>
+        <key>x</key>
+        <integer>0</integer>
+        <key>y</key>
+        <integer>-10</integer>
+      </dict>
+    </array>
     <key>italicAngle</key>
     <integer>0</integer>
     <key>openTypeNameLicense</key>

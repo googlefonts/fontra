@@ -222,7 +222,7 @@ export class VariableGlyphController {
 
   async getDeltas(getGlyphFunc) {
     if (this._deltas === undefined) {
-      const masterValues = await ensureComponentCompatibility(
+      const masterValues = await ensureGlyphCompatibility(
         this.sources
           .filter((source) => !source.inactive)
           .map((source) => this.layers[source.layerName].glyph),
@@ -274,7 +274,7 @@ export class VariableGlyphController {
       if (source.layerName in layerGlyphs) {
         continue;
       }
-      layerGlyphs[source.layerName] = stripComponentLocations(
+      layerGlyphs[source.layerName] = stripGuidelinesAndComponentLocations(
         this.layers[source.layerName].glyph
       );
     }
@@ -515,6 +515,10 @@ export class StaticGlyphController {
 
   get anchors() {
     return this.instance.anchors;
+  }
+
+  get guidelines() {
+    return this.instance.guidelines;
   }
 
   get path() {
@@ -975,7 +979,7 @@ function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
 
-async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
+async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
   const baseGlyphFallbackValues = {};
 
   glyphs.forEach((glyph) =>
@@ -1000,6 +1004,9 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
     }
   }
 
+  const guidelinesAreCompatible = areGuidelinesCompatible(glyphs);
+  const identityGuideline = { x: 0, y: 0, angle: 0 };
+
   return glyphs.map((glyph) =>
     StaticGlyph.fromObject(
       {
@@ -1013,14 +1020,45 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
             },
           };
         }),
+        guidelines: guidelinesAreCompatible
+          ? glyph.guidelines.map((guideline) => {
+              return {
+                ...identityGuideline,
+                ...guideline,
+                locked: false,
+              };
+            })
+          : [],
       },
       true // noCopy
     )
   );
 }
 
-function stripComponentLocations(glyph) {
-  if (!glyph.components.length) {
+function areGuidelinesCompatible(glyphs) {
+  const referenceGuidelines = glyphs[0].guidelines;
+
+  for (const glyphIndex in glyphs.slice(1)) {
+    const glyph = glyphs[glyphIndex];
+    // check number
+    if (glyph.guidelines.length !== referenceGuidelines.length) {
+      return false;
+    }
+    // check name
+    for (const guidelineIndex in referenceGuidelines) {
+      if (
+        glyph.guidelines[guidelineIndex].name !==
+        referenceGuidelines[guidelineIndex].name
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function stripGuidelinesAndComponentLocations(glyph) {
+  if (!glyph.components.length && !glyph.guidelines.length) {
     return glyph;
   }
   return StaticGlyph.fromObject(
@@ -1032,6 +1070,7 @@ function stripComponentLocations(glyph) {
           location: {},
         };
       }),
+      guidelines: [],
     },
     true // noCopy
   );

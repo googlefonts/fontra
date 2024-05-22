@@ -76,6 +76,14 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
                 assert unscaledAnchor.y * scaleFactor == scaledAnchor.y
                 assert unscaledAnchor.name == scaledAnchor.name
 
+            for unscaledGuideline, scaledGuideline in zip(
+                unscaledLayerGlyph.guidelines, scaledLayerGlyph.guidelines
+            ):
+                assert unscaledGuideline.x * scaleFactor == scaledGuideline.x
+                assert unscaledGuideline.y * scaleFactor == scaledGuideline.y
+                assert unscaledGuideline.name == scaledGuideline.name
+                assert unscaledGuideline.angle == scaledGuideline.angle
+
 
 async def test_subsetAction(testFontraFont, tmp_path) -> None:
     glyphNames = {"A"}

@@ -26,6 +26,10 @@ function makeTestStaticGlyphObject() {
       { name: "top", x: 100, y: 100 },
       { name: "bottom", x: 100, y: 0 },
     ],
+    guidelines: [
+      { name: "top", x: 100, y: 100, angle: 0 },
+      { name: "center", x: 100, y: 0, angle: 90 },
+    ],
   };
 }
 
@@ -123,6 +127,21 @@ describe("glyph-controller Tests", () => {
     );
     const expectedAnchors = [];
     expect(staticGlyphController.anchors).to.deep.equal(expectedAnchors);
+  });
+
+  it("get StaticGlyphController guidelines", () => {
+    const sgObj = makeTestStaticGlyphObject();
+    const staticGlyph = StaticGlyph.fromObject(sgObj);
+    const staticGlyphController = new StaticGlyphController(
+      "dummy",
+      staticGlyph,
+      undefined
+    );
+    const expectedGuidelines = [
+      { name: "top", x: 100, y: 100, angle: 0 },
+      { name: "center", x: 100, y: 0, angle: 90 },
+    ];
+    expect(staticGlyphController.guidelines).to.deep.equal(expectedGuidelines);
   });
 
   it("get StaticGlyphController bounds", () => {

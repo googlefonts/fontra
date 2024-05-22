@@ -22,6 +22,7 @@ export class EditBehaviorFactory {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
+      guideline: guidelineSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
@@ -37,6 +38,7 @@ export class EditBehaviorFactory {
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
+    this.guidelines = unpackGuidelines(instance.guidelines, guidelineSelection || []);
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -58,6 +60,7 @@ export class EditBehaviorFactory {
         this.contours,
         this.components,
         this.anchors,
+        this.guidelines,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -74,6 +77,7 @@ class EditBehavior {
     contours,
     components,
     anchors,
+    guidelines,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -132,11 +136,27 @@ class EditBehavior {
       anchorRollbackChanges.push(anchorRollback);
     }
 
+    const guidelineRollbackChanges = [];
+    this.guidelineEditFuncs = [];
+    for (const [guidelineIndex, guideline] of enumerate(guidelines)) {
+      if (!guideline) {
+        continue;
+      }
+      const [editFunc, guidelineRollback] = makeGuidelineEditFunc(
+        guidelines[guidelineIndex],
+        guidelineIndex,
+        this.roundFunc
+      );
+      this.guidelineEditFuncs.push(editFunc);
+      guidelineRollbackChanges.push(guidelineRollback);
+    }
+
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
       componentRollbackChanges,
-      anchorRollbackChanges
+      anchorRollbackChanges,
+      guidelineRollbackChanges
     );
   }
 
@@ -187,6 +207,9 @@ class EditBehavior {
     const anchorChanges = this.anchorEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
+    const guidelineChanges = this.guidelineEditFuncs?.map((editFunc) => {
+      return editFunc(transform);
+    });
     const changes = [];
     if (pathChanges && pathChanges.length) {
       changes.push(consolidateChanges(pathChanges, ["path"]));
@@ -197,6 +220,9 @@ class EditBehavior {
     if (anchorChanges && anchorChanges.length) {
       changes.push(consolidateChanges(anchorChanges, ["anchors"]));
     }
+    if (guidelineChanges && guidelineChanges.length) {
+      changes.push(consolidateChanges(guidelineChanges, ["guidelines"]));
+    }
     return consolidateChanges(changes);
   }
 }
@@ -205,7 +231,8 @@ function makeRollbackChange(
   contours,
   participatingPointIndices,
   componentRollback,
-  anchorRollback
+  anchorRollback,
+  guidelineRollback
 ) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
@@ -232,6 +259,9 @@ function makeRollbackChange(
   }
   if (anchorRollback.length) {
     changes.push(consolidateChanges(anchorRollback, ["anchors"]));
+  }
+  if (guidelineRollback.length) {
+    changes.push(consolidateChanges(guidelineRollback, ["guidelines"]));
   }
   return consolidateChanges(changes);
 }
@@ -281,6 +311,29 @@ function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
       );
     },
     makeAnchorChange(anchorIndex, oldAnchor.x, oldAnchor.y),
+  ];
+}
+
+function makeGuidelineEditFunc(guideline, guidelineIndex, roundFunc) {
+  const oldGuideline = { ...guideline };
+  return [
+    (transform) => {
+      const editedGuideline = transform.constrained(oldGuideline);
+      return makeGuidelineChange(
+        guidelineIndex,
+        editedGuideline.x,
+        editedGuideline.y,
+        editedGuideline.angle,
+        roundFunc
+      );
+    },
+    makeGuidelineChange(
+      guidelineIndex,
+      oldGuideline.x,
+      oldGuideline.y,
+      oldGuideline.angle,
+      roundFunc
+    ),
   ];
 }
 
@@ -348,6 +401,23 @@ function makeAnchorChange(anchorIndex, x, y) {
       { f: "=", a: ["x", x] },
       { f: "=", a: ["y", y] },
     ],
+  };
+}
+
+function makeGuidelineChange(guidelineIndex, x, y, angle, roundFunc) {
+  let c = [];
+  if (x !== undefined) {
+    c.push({ f: "=", a: ["x", roundFunc(x)] });
+  }
+  if (y !== undefined) {
+    c.push({ f: "=", a: ["y", roundFunc(y)] });
+  }
+  if (angle !== undefined) {
+    c.push({ f: "=", a: ["angle", angle] });
+  }
+  return {
+    p: [guidelineIndex],
+    c: c,
   };
 }
 
@@ -419,6 +489,17 @@ function unpackAnchors(anchors, selectedAnchorIndices) {
     unpackedAnchors[anchorIndex] = anchors[anchorIndex];
   }
   return unpackedAnchors;
+}
+
+function unpackGuidelines(guidelines, selectedGuidelineIndices) {
+  const unpackedGuidelines = new Array(guidelines.length);
+  for (const i of selectedGuidelineIndices) {
+    const guideline = guidelines[i];
+    if (!guideline.locked) {
+      unpackedGuidelines[i] = guidelines[i];
+    }
+  }
+  return unpackedGuidelines;
 }
 
 function makePointEditFuncs(contours, behavior) {

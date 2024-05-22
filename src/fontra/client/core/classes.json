@@ -284,31 +284,8 @@
     "angle": {
       "type": "float"
     },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    }
-  },
-  "HorizontalGuideline": {
-    "name": {
-      "type": "str",
-      "optional": true
-    },
-    "y": {
-      "type": "float"
-    },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    }
-  },
-  "VerticalGuideline": {
-    "name": {
-      "type": "str",
-      "optional": true
-    },
-    "x": {
-      "type": "float"
+    "locked": {
+      "type": "bool"
     },
     "customData": {
       "type": "dict",

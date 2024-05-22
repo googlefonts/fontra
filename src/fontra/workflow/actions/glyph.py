@@ -58,7 +58,10 @@ class Scale(BaseFilter):
             replace(a, x=a.x * self.scaleFactor, y=a.y * self.scaleFactor)
             for a in glyph.anchors
         ]
-        # TODO: guidelines
+        guidelines = [
+            replace(g, x=g.x * self.scaleFactor, y=g.y * self.scaleFactor)
+            for g in glyph.guidelines
+        ]
         return replace(
             glyph,
             xAdvance=xAdvance,
@@ -69,6 +72,7 @@ class Scale(BaseFilter):
                 self._scaleComponentOrigin(component) for component in glyph.components
             ],
             anchors=anchors,
+            guidelines=guidelines,
         )
 
     def _scaleComponentOrigin(self, component: Component) -> Component:
