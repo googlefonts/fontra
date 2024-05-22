@@ -31,12 +31,6 @@ export class DesignspaceLocation extends UnlitElement {
       cursor: pointer;
     }
 
-    .slider-label.disabled {
-      color: var(--disabled-color);
-      font-size: 0.8em;
-      margin-top: 3px;
-    }
-
     .info-box {
       display: none;
       grid-column: 1 / -1;
@@ -135,12 +129,12 @@ export class DesignspaceLocation extends UnlitElement {
         elements.push(html.hr());
         continue;
       }
-      this._createSlider(elements, axis);
+      this._setupAxis(elements, axis);
     }
     return elements;
   }
 
-  _createSlider(elements, axis, sliderDisabled = false) {
+  _setupAxis(elements, axis) {
     const modelValue = this.values[axis.name];
     const infoBox = htmlToElement(
       `<div class="info-box">
@@ -163,17 +157,25 @@ export class DesignspaceLocation extends UnlitElement {
     elements.push(
       html.div(
         {
-          class: sliderDisabled ? "slider-label disabled" : "slider-label",
+          class: "slider-label",
           onclick: (event) => this._toggleInfoBox(infoBox, event),
         },
         [axis.name]
       )
     );
+    const slider = this._createSlider(axis, modelValue);
+    this._sliders[axis.name] = slider;
+    elements.push(slider);
+    elements.push(infoBox);
+  }
+
+  _createSlider(axis, modelValue, sliderDisabled = false) {
     const parms = {
       defaultValue: axis.defaultValue,
       value: modelValue !== undefined ? modelValue : axis.defaultValue,
       onChangeCallback: (event) =>
         this._dispatchLocationChangedEvent(axis.name, event.value),
+      disabled: sliderDisabled,
     };
     if (axis.values) {
       // Discrete axis
@@ -183,11 +185,7 @@ export class DesignspaceLocation extends UnlitElement {
       parms.minValue = axis.minValue;
       parms.maxValue = axis.maxValue;
     }
-    const slider = html.createDomElement("range-slider", parms);
-    slider.disabled = sliderDisabled;
-    this._sliders[axis.name] = slider;
-    elements.push(slider);
-    elements.push(infoBox);
+    return html.createDomElement("range-slider", parms);
   }
 
   _toggleInfoBox(infoBox, event) {
