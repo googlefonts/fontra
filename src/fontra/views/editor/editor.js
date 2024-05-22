@@ -2708,9 +2708,7 @@ export class EditorController {
   async reloadData(reloadPattern) {
     if (!reloadPattern) {
       // A reloadPattern of undefined or null means: reload all the things
-      await this.fontController.reloadEverything();
-      await this.sceneModel.updateScene();
-      this.canvasController.requestUpdate();
+      await this.reloadEverything();
       return;
     }
 
@@ -2722,9 +2720,23 @@ export class EditorController {
         }
       } else {
         // TODO
-        console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
+        // console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
+        await this.reloadEverything();
+        return;
       }
     }
+  }
+
+  async reloadEverything() {
+    await this.fontController.reloadEverything();
+
+    // the MultipleAxisMapping may have changed, force to re-sync the location
+    this.sceneSettings.fontLocationSource = {
+      ...this.sceneSettings.fontLocationSource,
+    };
+
+    await this.sceneModel.updateScene();
+    this.canvasController.requestUpdate();
   }
 
   async reloadGlyphs(glyphNames) {
