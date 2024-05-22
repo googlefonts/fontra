@@ -1,9 +1,12 @@
 from os import PathLike
 from typing import Any, Generator
 
+from fontTools.misc.fixedTools import fixedToFloat
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables.otTables import NO_VARIATION_INDEX
+from fontTools.varLib.varStore import VarStoreInstancer
 
 from fontra.core.protocols import ReadableFontBackend
 
@@ -15,6 +18,7 @@ from ..core.classes import (
     FontSource,
     GlyphSource,
     Layer,
+    MultipleAxisMapping,
     OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
@@ -199,7 +203,41 @@ def unpackAxes(font: TTFont) -> Axes:
                 hidden=bool(axis.flags & 0x0001),  # HIDDEN_AXIS
             )
         )
-    return Axes(axes=axisList)
+
+    mappings = []
+
+    if avar is not None and avar.majorVersion >= 2:
+        fvarAxes = fvar.axes
+        varStore = avar.table.VarStore
+        varIdxMap = avar.table.VarIdxMap
+
+        locations = set()
+        for i, varIdx in enumerate(varIdxMap.mapping):
+            if varIdx == NO_VARIATION_INDEX:
+                continue
+
+            for loc in getLocationsFromVarstore(varIdx >> 16, varStore, fvarAxes):
+                locations.add(tuplifyLocation(loc))
+
+        for locTuple in sorted(locations):
+            inputLocation = dict(locTuple)
+            instancer = VarStoreInstancer(varStore, fvarAxes, inputLocation)
+
+            outputLocation = {}
+            for i, varIdx in enumerate(varIdxMap.mapping):
+                if varIdx == NO_VARIATION_INDEX:
+                    continue
+                outputLocation[fvarAxes[i].axisTag] = fixedToFloat(
+                    instancer[varIdx], 14
+                )
+
+            mappings.append(
+                MultipleAxisMapping(
+                    inputLocation=inputLocation, outputLocation=outputLocation
+                )
+            )
+
+    return Axes(axes=axisList, mappings=mappings)
 
 
 def buildStaticGlyph(glyphSet, glyphName):

@@ -3,7 +3,7 @@ import pathlib
 import pytest
 
 from fontra.backends import getFileSystemBackend
-from fontra.core.classes import Axes, FontAxis
+from fontra.core.classes import Axes, FontAxis, MultipleAxisMapping
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -26,7 +26,7 @@ expectedAxes = Axes(
             minValue=0.0,
             defaultValue=0.0,
             maxValue=100.0,
-            mapping=[(0.0, 0.0), (100.0, 1.0)],
+            mapping=[[0.0, 0.0], [100.0, 1.0]],
             valueLabels=[],
             hidden=False,
             customData={},
@@ -38,7 +38,7 @@ expectedAxes = Axes(
             minValue=0.0,
             defaultValue=0.0,
             maxValue=100.0,
-            mapping=[(0.0, 0.0), (100.0, 1.0)],
+            mapping=[[0.0, 0.0], [100.0, 1.0]],
             valueLabels=[],
             hidden=True,
             customData={},
@@ -50,13 +50,47 @@ expectedAxes = Axes(
             minValue=0.0,
             defaultValue=0.0,
             maxValue=100.0,
-            mapping=[(0.0, 0.0), (100.0, 1.0)],
+            mapping=[[0.0, 0.0], [100.0, 1.0]],
             valueLabels=[],
             hidden=True,
             customData={},
         ),
     ],
-    mappings=[],
+    mappings=[
+        MultipleAxisMapping(
+            description=None,
+            groupDescription=None,
+            inputLocation={
+                "DIAG": 0.25,
+            },
+            outputLocation={
+                "HORI": 0.0,
+                "VERT": 0.33001708984375,
+            },
+        ),
+        MultipleAxisMapping(
+            description=None,
+            groupDescription=None,
+            inputLocation={
+                "DIAG": 0.75,
+            },
+            outputLocation={
+                "HORI": 1.0,
+                "VERT": 0.6700032552083334,
+            },
+        ),
+        MultipleAxisMapping(
+            description=None,
+            groupDescription=None,
+            inputLocation={
+                "DIAG": 1.0,
+            },
+            outputLocation={
+                "HORI": 1.0,
+                "VERT": 1.0,
+            },
+        ),
+    ],
     elidedFallBackname=None,
     customData={},
 )
