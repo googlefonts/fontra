@@ -504,23 +504,18 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _updateResetAllAxesButtonState() {
-    for (const [location, axesElement, buttonID] of [
-      [
-        this.sceneSettings.fontAxesUseSourceCoordinates
-          ? this.sceneSettings.fontLocationSourceMapped
-          : this.sceneSettings.fontLocationUser,
-        this.fontAxesElement,
-        "reset-font-axes-button",
-      ],
-      [
-        this.sceneSettings.glyphLocation,
-        this.glyphAxesElement,
-        "reset-glyph-axes-button",
-      ],
-    ]) {
-      const button = this.contentElement.querySelector(`#${buttonID}`);
-      button.disabled = isLocationAtDefault(location, axesElement.axes);
-    }
+    let button;
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    button = this.contentElement.querySelector("#reset-font-axes-button");
+    button.disabled = isLocationAtDefault(
+      this.sceneSettings.fontLocationSourceMapped,
+      fontAxesSourceSpace
+    );
+    button = this.contentElement.querySelector("#reset-glyph-axes-button");
+    button.disabled = isLocationAtDefault(
+      this.sceneSettings.glyphLocation,
+      this.glyphAxesElement.axes
+    );
   }
 
   async onVisibilityHeaderClick(event) {
