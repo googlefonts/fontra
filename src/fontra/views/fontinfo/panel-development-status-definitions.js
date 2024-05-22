@@ -123,10 +123,10 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
 
       formContents.push({
         type: "header",
-        label: "Transformation",
+        label: `Status Definition ${statusDef.value}`,
         auxiliaryElement: html.createDomElement("icon-button", {
           "style": `width: 1.3em;`,
-          "src": "/tabler-icons/refresh.svg",
+          "src": "/tabler-icons/trash.svg",
           //"onclick": (event) => this._resetTransformationForComponent(index),
           "data-tooltip": "Delete status definition",
           "data-tooltipposition": "left",
@@ -136,19 +136,22 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       formContents.push({
         type: "universal-row",
         field1: {
-          type: "text",
-          key: `StatusDefinition${statusDef.value}`,
-          value: `Status Definition:`,
+          type: "edit-text",
+          key: "StatusLabel",
+          value: statusDef.label,
+          width: "6em",
         },
         field2: {
           type: "edit-text",
           key: "StatusLabel",
-          value: statusDef.label,
+          value: rgbaToCSS(statusDef.color),
+          width: "6em",
         },
         field3: {
           type: "edit-text",
-          key: "StatusLabel",
-          value: rgbaToCSS(statusDef.color),
+          key: "StatusIsDefault",
+          value: statusDef.isDefault,
+          width: "6em",
         },
       });
 
