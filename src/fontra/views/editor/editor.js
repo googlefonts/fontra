@@ -142,6 +142,7 @@ export class EditorController {
         "fontLocationUser",
         "glyphLocation",
         "fontAxesUseSourceCoordinates",
+        "fontAxesShowEffectiveLocation",
         "fontAxesShowHidden",
         "fontAxesSkipMapping",
         "selectedGlyph",
@@ -2378,6 +2379,9 @@ export class EditorController {
     if (viewInfo["fontAxesUseSourceCoordinates"]) {
       this.sceneSettings.fontAxesUseSourceCoordinates = true;
     }
+    if (viewInfo["fontAxesShowEffectiveLocation"]) {
+      this.sceneSettings.fontAxesShowEffectiveLocation = true;
+    }
     if (viewInfo["fontAxesShowHidden"]) {
       this.sceneSettings.fontAxesShowHidden = true;
     }
@@ -2418,6 +2422,9 @@ export class EditorController {
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
     if (this.sceneSettings.fontAxesUseSourceCoordinates) {
       viewInfo["fontAxesUseSourceCoordinates"] = true;
+    }
+    if (this.sceneSettings.fontAxesShowEffectiveLocation) {
+      viewInfo["fontAxesShowEffectiveLocation"] = true;
     }
     if (this.sceneSettings.fontAxesShowHidden) {
       viewInfo["fontAxesShowHidden"] = true;

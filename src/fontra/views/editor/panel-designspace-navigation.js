@@ -206,7 +206,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden", "fontAxesSkipMapping"],
+      [
+        "fontAxesUseSourceCoordinates",
+        "fontAxesShowEffectiveLocation",
+        "fontAxesShowHidden",
+        "fontAxesSkipMapping",
+      ],
       (event) => {
         this._updateAxes();
       }
@@ -463,6 +468,15 @@ export default class DesignspaceNavigationPanel extends Panel {
             !this.sceneSettings.fontAxesSkipMapping;
         },
         checked: !this.sceneSettings.fontAxesSkipMapping,
+      },
+      { title: "-" },
+      {
+        title: "Show effective location",
+        callback: () => {
+          this.sceneSettings.fontAxesShowEffectiveLocation =
+            !this.sceneSettings.fontAxesShowEffectiveLocation;
+        },
+        checked: this.sceneSettings.fontAxesShowEffectiveLocation,
       },
       {
         title: "Show hidden axes",
