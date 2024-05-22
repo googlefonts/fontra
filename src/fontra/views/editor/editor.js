@@ -2729,12 +2729,6 @@ export class EditorController {
 
   async reloadEverything() {
     await this.fontController.reloadEverything();
-
-    // the MultipleAxisMapping may have changed, force to re-sync the location
-    this.sceneSettings.fontLocationSource = {
-      ...this.sceneSettings.fontLocationSource,
-    };
-
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
