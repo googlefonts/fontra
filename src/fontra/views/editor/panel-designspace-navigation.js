@@ -16,6 +16,7 @@ import {
 } from "/core/utils.js";
 import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
+  isLocationAtDefault,
   locationToString,
   makeSparseLocation,
   mapAxesFromUserSpaceToSourceSpace,
@@ -517,19 +518,8 @@ export default class DesignspaceNavigationPanel extends Panel {
         "reset-glyph-axes-button",
       ],
     ]) {
-      let locationEmpty = true;
-      for (const axis of axesElement.axes) {
-        if (
-          axis.name &&
-          axis.name in location &&
-          location[axis.name] !== axis.defaultValue
-        ) {
-          locationEmpty = false;
-          break;
-        }
-      }
       const button = this.contentElement.querySelector(`#${buttonID}`);
-      button.disabled = locationEmpty;
+      button.disabled = isLocationAtDefault(location, axesElement.axes);
     }
   }
 
