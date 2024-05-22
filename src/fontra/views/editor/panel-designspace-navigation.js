@@ -206,7 +206,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["fontAxesUseSourceCoordinates", "fontAxesShowHidden", "fontAxesSkipMapping"],
+      [
+        "fontAxesUseSourceCoordinates",
+        "fontAxesShowEffectiveLocation",
+        "fontAxesShowHidden",
+        "fontAxesSkipMapping",
+      ],
       (event) => {
         this._updateAxes();
       }
@@ -429,6 +434,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ? "fontLocationSource"
       : "fontLocationUser";
     this.fontAxesElement.values = this.sceneSettings[locationKey];
+    this.fontAxesElement.phantomValues = this.sceneSettings.fontLocationSourceMapped;
   }
 
   sourceListGetSourceItem(sourceIndex) {
@@ -463,6 +469,15 @@ export default class DesignspaceNavigationPanel extends Panel {
             !this.sceneSettings.fontAxesSkipMapping;
         },
         checked: !this.sceneSettings.fontAxesSkipMapping,
+      },
+      { title: "-" },
+      {
+        title: "Show effective location",
+        callback: () => {
+          this.sceneSettings.fontAxesShowEffectiveLocation =
+            !this.sceneSettings.fontAxesShowEffectiveLocation;
+        },
+        checked: this.sceneSettings.fontAxesShowEffectiveLocation,
       },
       {
         title: "Show hidden axes",
@@ -582,10 +597,16 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateAxes() {
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const fontAxes = this.sceneSettings.fontAxesUseSourceCoordinates
-      ? mapAxesFromUserSpaceToSourceSpace(this.fontAxes)
+      ? fontAxesSourceSpace
       : [...this.fontAxes];
     this.fontAxesElement.axes = fontAxes;
+    if (this.sceneSettings.fontAxesShowEffectiveLocation) {
+      this.fontAxesElement.phantomAxes = fontAxesSourceSpace;
+    } else {
+      this.fontAxesElement.phantomAxes = [];
+    }
     this._setFontLocationValues();
 
     const varGlyphController =

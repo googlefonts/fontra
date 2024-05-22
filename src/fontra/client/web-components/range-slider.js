@@ -180,7 +180,7 @@ export class RangeSlider extends html.UnlitElement {
       background-color: var(--text-input-background-color);
       color: var(--ui-element-foreground-color);
 
-      padding: 3px;
+      padding: 2px 3px;
 
       text-align: center;
       font-family: fontra-ui-regular;

@@ -14,7 +14,7 @@ export class DesignspaceLocation extends UnlitElement {
     :host {
       display: grid;
       grid-template-columns: 25% auto;
-      gap: 0.2em 0.4em;
+      gap: 0.3em;
       overflow: auto;
     }
 
@@ -31,10 +31,9 @@ export class DesignspaceLocation extends UnlitElement {
       cursor: pointer;
     }
 
-    .slider-label.disabled {
-      color: var(--disabled-color);
-      font-size: 0.8em;
-      margin-top: 3px;
+    .slider-group {
+      display: grid;
+      gap: 0em;
     }
 
     .info-box {
@@ -63,6 +62,7 @@ export class DesignspaceLocation extends UnlitElement {
 
   static properties = {
     axes: { type: Array },
+    phantomAxes: { type: Array },
   };
 
   get model() {
@@ -101,9 +101,24 @@ export class DesignspaceLocation extends UnlitElement {
 
   set values(values) {
     this._values = { ...values };
+    this._setSliderValues(values, this._sliders);
+  }
 
+  get phantomValues() {
+    if (!this._phantomValues) {
+      this._phantomValues = {};
+    }
+    return this._phantomValues;
+  }
+
+  set phantomValues(phantomValues) {
+    this._phantomValues = { ...phantomValues };
+    this._setSliderValues(phantomValues, this._phantomSliders);
+  }
+
+  _setSliderValues(values, sliders) {
     for (const [axisName, value] of Object.entries(values)) {
-      const slider = this._sliders?.[axisName];
+      const slider = sliders?.[axisName];
       if (slider) {
         slider.value = value;
       }
@@ -111,7 +126,7 @@ export class DesignspaceLocation extends UnlitElement {
 
     for (const axis of this.axes || []) {
       if (!(axis.name in values)) {
-        const slider = this._sliders?.[axis.name];
+        const slider = sliders?.[axis.name];
         if (slider) {
           slider.value = axis.defaultValue;
         }
@@ -124,19 +139,27 @@ export class DesignspaceLocation extends UnlitElement {
       return;
     }
     this._sliders = {};
+    this._phantomSliders = {};
+
+    const phantomAxesByName = {};
+    for (const phantomAxis of this.phantomAxes || []) {
+      phantomAxesByName[phantomAxis.name] = phantomAxis;
+    }
     const elements = [];
     for (const axis of this.axes) {
       if (axis.isDivider) {
         elements.push(html.hr());
         continue;
       }
-      this._createSlider(elements, axis);
+      this._setupAxis(elements, axis, phantomAxesByName[axis.name]);
     }
     return elements;
   }
 
-  _createSlider(elements, axis, sliderDisabled = false) {
+  _setupAxis(elements, axis, phantomAxis) {
     const modelValue = this.values[axis.name];
+    const phantomModelValue = phantomAxis ? this.phantomValues[axis.name] : undefined;
+
     const infoBox = htmlToElement(
       `<div class="info-box">
         ${
@@ -158,17 +181,31 @@ export class DesignspaceLocation extends UnlitElement {
     elements.push(
       html.div(
         {
-          class: sliderDisabled ? "slider-label disabled" : "slider-label",
+          class: "slider-label",
           onclick: (event) => this._toggleInfoBox(infoBox, event),
         },
         [axis.name]
       )
     );
+    const slider = this._createSlider(axis, modelValue);
+    this._sliders[axis.name] = slider;
+    const sliderGroupContents = [slider];
+    if (phantomAxis) {
+      const phantomSlider = this._createSlider(phantomAxis, phantomModelValue, true);
+      this._phantomSliders[axis.name] = phantomSlider;
+      sliderGroupContents.push(phantomSlider);
+    }
+    elements.push(html.div({ class: "slider-group" }, sliderGroupContents));
+    elements.push(infoBox);
+  }
+
+  _createSlider(axis, modelValue, sliderDisabled = false) {
     const parms = {
       defaultValue: axis.defaultValue,
       value: modelValue !== undefined ? modelValue : axis.defaultValue,
       onChangeCallback: (event) =>
         this._dispatchLocationChangedEvent(axis.name, event.value),
+      disabled: sliderDisabled,
     };
     if (axis.values) {
       // Discrete axis
@@ -178,11 +215,7 @@ export class DesignspaceLocation extends UnlitElement {
       parms.minValue = axis.minValue;
       parms.maxValue = axis.maxValue;
     }
-    const slider = html.createDomElement("range-slider", parms);
-    slider.disabled = sliderDisabled;
-    this._sliders[axis.name] = slider;
-    elements.push(slider);
-    elements.push(infoBox);
+    return html.createDomElement("range-slider", parms);
   }
 
   _toggleInfoBox(infoBox, event) {
