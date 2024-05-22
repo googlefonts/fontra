@@ -378,18 +378,22 @@ export class EditorController {
         title: "Font",
         enabled: () => true,
         getItems: () => {
-          return [
-            {
-              title: "Edit Font Info, Axes and Sources",
-              enabled: () => true,
-              callback: () => {
-                const url = new URL(window.location);
-                url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
-                url.hash = "";
-                window.open(url.toString());
-              },
-            },
+          const menuItems = [
+            ["Font Info", "#font-info-panel", true],
+            ["Axes", "#axes-panel", true],
+            ["Sources", "#sources-panel", false],
+            ["Status definitions", "#development-status-definitions-panel", true],
           ];
+          return menuItems.map(([title, panelID, enabled]) => ({
+            title,
+            enabled: () => enabled,
+            callback: () => {
+              const url = new URL(window.location);
+              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
+              url.hash = panelID;
+              window.open(url.toString());
+            },
+          }));
         },
       },
       {
