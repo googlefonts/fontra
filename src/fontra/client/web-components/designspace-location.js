@@ -195,8 +195,7 @@ export class DesignspaceLocation extends UnlitElement {
       this._phantomSliders[axis.name] = phantomSlider;
       sliderGroupContents.push(phantomSlider);
     }
-    const sliderGroup = html.div({ class: "slider-group" }, sliderGroupContents);
-    elements.push(sliderGroup);
+    elements.push(html.div({ class: "slider-group" }, sliderGroupContents));
     elements.push(infoBox);
   }
 
