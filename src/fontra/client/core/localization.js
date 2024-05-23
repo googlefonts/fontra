@@ -25,7 +25,6 @@ languageChanged(languageController.model.language || "en");
 function formatString(template, ...args) {
   return template.replace(/%\d+/g, (match) => {
     const index = parseInt(match.substring(1), 10);
-    console.log(args.length);
 
     // Validation: Check that the index is a non-negative integer, and within bounds
     return Number.isInteger(index) && index >= 0 && index < args.length
