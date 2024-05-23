@@ -1,18 +1,8 @@
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { ObservableController } from "../core/observable-object.js";
-import { labeledTextInput } from "../core/ui-utils.js";
-import {
-  enumerate,
-  hexToRgbaList,
-  range,
-  rgbaToCSS,
-  rgbaToHex,
-} from "../core/utils.js";
+import { enumerate, hexToRgbaList, range, rgbaToHex } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
-import { Form } from "/web-components/ui-form.js";
 
 const defaultStatusFieldDefinitions = {
   "fontra.sourceStatusFieldDefinitions": [
@@ -64,7 +54,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     const statusDefsContainer = html.div({
       style: "display: grid; gap: 0.5em;",
     });
-    console.log("statusDefinitions", statusDefinitions);
     for (const index of range(statusDefinitions.length)) {
       statusDefsContainer.appendChild(
         new StatusDefBox(
@@ -94,11 +83,11 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
   }
 
   async newStatusDef(statusDef = undefined) {
-    console.log("newStatusDef", statusDef);
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
     if (!statusFieldDefinitions) {
       // if not present, create default status definitions
+      // TODO: This does not work, if there is no "fontra.sourceStatusFieldDefinitions" set, yet.
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"] = [];
     }
     const nextStatusValue = !statusFieldDefinitions
@@ -168,11 +157,7 @@ function getStatusFieldDefinitions(fontController) {
 }
 
 addStyleSheet(`
-:root {
-  --fontra-ui-font-info-status-definitions-panel-max-list-height: 12em;
-}
-
-.fontra-ui-font-info-status-definitions-panel-axis-box {
+.fontra-ui-font-info-status-definitions-panel-status-def-box {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
@@ -184,44 +169,27 @@ addStyleSheet(`
   grid-column-gap: 1em;
 }
 
-.fontra-ui-font-info-status-definitions-panel-axis-box-values,
-.fontra-ui-font-info-status-definitions-panel-axis-box-names {
-  display: grid;
-  grid-template-columns: minmax(4.5em, max-content) max-content;
-  gap: 0.5em;
-  align-items: start;
-  align-content: start;
-}
-
-.fontra-ui-font-info-status-definitions-panel-axis-box-mapping-list {
-  width: 8em;
-  max-height: var(--fontra-ui-font-info-status-definitions-panel-max-list-height);
-}
-
-.fontra-ui-font-info-status-definitions-panel-axis-box-label-list {
-  max-width: max-content;
-  max-height: var(--fontra-ui-font-info-status-definitions-panel-max-list-height);
-}
-
-.fontra-ui-font-info-status-definitions-panel-axis-box-delete {
+.fontra-ui-font-info-status-definitions-panel-status-def-box-delete {
   justify-self: end;
   align-self: start;
 }
 
-select {
-  font-family: "fontra-ui-regular";
-}
-
-.fontra-ui-font-info-status-definitions-panel-axis-box-header {
-  font-weight: bold;
+.fontra-ui-font-info-status-definitions-panel-status-def-box-color {
+  width: 8em;
+  height: 1.6em;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: none;
+  border-color: transparent;
+  border-radius: 0.25em;
 }
 `);
 
 class StatusDefBox extends HTMLElement {
   constructor(fontController, statusDefs, statusIndex, postChange, setupUI) {
     super();
-    this.classList.add("fontra-ui-font-info-status-definitions-panel-axis-box");
-    this.draggable = true;
+    this.classList.add("fontra-ui-font-info-status-definitions-panel-status-def-box");
     this.fontController = fontController;
     this.statusDefs = statusDefs;
     this.statusIndex = statusIndex;
@@ -232,18 +200,6 @@ class StatusDefBox extends HTMLElement {
 
   get statusDef() {
     return this.statusDefs[this.statusIndex];
-  }
-
-  editStatusDef(editFunc, undoLabel) {
-    const root = { customData: this.fontController.customData };
-    const changes = recordChanges(root, (root) => {
-      editFunc(
-        root.customData["fontra.sourceStatusFieldDefinitions"][this.statusIndex]
-      );
-    });
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    }
   }
 
   replaceStatusDef(newStatusDef, undoLabel, statusIndex = this.statusIndex) {
@@ -274,28 +230,52 @@ class StatusDefBox extends HTMLElement {
     }
   }
 
+  changeStatusDefIsDefault(statusDef, event) {
+    const undoLabel = `change status definition isDefault`;
+    if (!event.target.checked) {
+      delete statusDef["isDefault"];
+      this.replaceStatusDef(statusDef, undoLabel);
+      return;
+    }
+
+    // If checked: Set all status definitions to false, first.
+    for (const [index, statusDefTemp] of enumerate(
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"]
+    )) {
+      delete statusDefTemp["isDefault"];
+      this.replaceStatusDef(statusDefTemp, undoLabel, index);
+    }
+    // Then: set this status definition to true
+    const updatedStatusDef = {
+      ...statusDef,
+      isDefault: true,
+    };
+    this.replaceStatusDef(updatedStatusDef, undoLabel);
+  }
+
   _updateContents() {
     this.innerHTML = "";
     const statusDef = this.statusDef;
-    this.appendChild(
+    this.append(
       html.input({
-        type: "color",
-        style: `width: 8em; height: 1.6em; margin: 0; padding: 0; outline: none; border: none; border-color: transparent`,
-        value: rgbaToHex(statusDef.color),
-        onchange: (event) => {
+        "type": "color",
+        "class": "fontra-ui-font-info-status-definitions-panel-status-def-box-color",
+        "value": rgbaToHex(statusDef.color),
+        "onchange": (event) => {
           const updatedStatusDef = {
             ...statusDef,
             color: hexToRgbaList(event.target.value),
           };
           this.replaceStatusDef(updatedStatusDef, "change status definition color");
         },
+        "data-tooltip": "Specify the color for this status definition",
+        "data-tooltipposition": "top",
       })
     );
 
-    this.appendChild(
+    this.append(
       html.input({
         type: "text",
-        style: `height: 1.6em; margin: 0; padding: 3px; outline: none;`,
         value: statusDef.label,
         onchange: (event) => {
           const updatedStatusDef = {
@@ -307,53 +287,37 @@ class StatusDefBox extends HTMLElement {
       })
     );
 
-    this.appendChild(
-      html.div({ style: "height: 1.6em;" }, [
-        html.input({
-          "type": "checkbox",
-          "style": `margin: 0; padding: 0; outline: none;`,
-          "checked": statusDef.isDefault,
-          "id": "statusDefIsDefault",
-          "data-tooltip": "Is Default",
-          "data-tooltipposition": "left",
-          "onchange": (event) => {
-            const undoLabel = `change status definition isDefault`;
-            if (event.target.checked) {
-              // if checked, set all other status definitions to false
-              for (const [index, statusDefTemp] of enumerate(
-                this.fontController.customData["fontra.sourceStatusFieldDefinitions"]
-              )) {
-                delete statusDefTemp["isDefault"];
-                this.replaceStatusDef(statusDefTemp, undoLabel, index);
-              }
-              // set this status definition to true
-              const updatedStatusDef = {
-                ...statusDef,
-                isDefault: true,
-              };
-              this.replaceStatusDef(updatedStatusDef, undoLabel);
-            } else {
-              delete statusDef["isDefault"];
-              this.replaceStatusDef(statusDef, undoLabel);
-            }
-          },
-        }),
-        html.label(
-          {
-            for: "statusDefIsDefault",
-            style: "padding: 3px",
-          },
-          [`Is Default`]
-        ),
-      ])
+    const checkBoxIdentifier = `statusDefIsDefault${this.statusIndex}`;
+    this.append(
+      html.div(
+        {
+          "style": "display: inline-flex; height: 1.6em;",
+          "data-tooltip":
+            "If set: This color will be used if a source status is not set.",
+          "data-tooltipposition": "top",
+        },
+        [
+          html.input({
+            type: "checkbox",
+            checked: statusDef.isDefault,
+            id: checkBoxIdentifier,
+            onchange: (event) => this.changeStatusDefIsDefault(statusDef, event),
+          }),
+          html.label(
+            {
+              for: checkBoxIdentifier,
+              style: "padding: 3px",
+            },
+            ["Is Default"]
+          ),
+        ]
+      )
     );
 
-    this.appendChild(
+    this.append(
       html.createDomElement("icon-button", {
-        //type: "button",
-        "style": `width: 1.3em; height: 1.6em; align: right;`,
+        "class": "fontra-ui-font-info-status-definitions-panel-status-def-box-delete",
         "src": "/tabler-icons/trash.svg",
-        //value: "Delete",
         "onclick": (event) => this.deleteStatusDef(this.statusIndex),
         "data-tooltip": "Delete status definition",
         "data-tooltipposition": "left",
