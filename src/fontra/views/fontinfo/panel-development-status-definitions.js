@@ -1,7 +1,7 @@
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { enumerate, hexToRgbaList, range, rgbaToHex } from "../core/utils.js";
+import { enumerate, hexToRgba, range, rgbaToHex } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 const defaultStatusFieldDefinitions = {
@@ -264,7 +264,7 @@ class StatusDefBox extends HTMLElement {
         "onchange": (event) => {
           const updatedStatusDef = {
             ...statusDef,
-            color: hexToRgbaList(event.target.value),
+            color: hexToRgba(event.target.value),
           };
           this.replaceStatusDef(updatedStatusDef, "change status definition color");
         },

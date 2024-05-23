@@ -353,66 +353,42 @@ export function rgbaToCSS(rgba) {
   return `rgb(${channels.join(",")})`;
 }
 
-export function hexToRgbaList(hexColor) {
-  // TODO: for now this works,
-  // but need to be refactored: recude redundancies
-  let c;
-  if (/^#[A-Fa-f0-9]{8}$/.test(hexColor)) {
-    c = hexColor.substring(1).split("");
-    return [
-      round(parseInt(c[0] + c[1], 16) / 255, 2),
-      round(parseInt(c[2] + c[3], 16) / 255, 2),
-      round(parseInt(c[4] + c[5], 16) / 255, 2),
-      round(parseInt(c[6] + c[7], 16) / 255, 2),
-    ];
-  } else if (/^#[A-Fa-f0-9]{6}$/.test(hexColor)) {
-    c = hexColor.substring(1).split("");
-    return [
-      round(parseInt(c[0] + c[1], 16) / 255, 2),
-      round(parseInt(c[2] + c[3], 16) / 255, 2),
-      round(parseInt(c[4] + c[5], 16) / 255, 2),
-      1,
-    ];
-  } else if (/^#[A-Fa-f0-9]{4}$/.test(hexColor)) {
-    c = hexColor.substring(1).split("");
-    return [
-      round(parseInt(c[0] + c[0], 16) / 255, 2),
-      round(parseInt(c[1] + c[1], 16) / 255, 2),
-      round(parseInt(c[2] + c[2], 16) / 255, 2),
-      round(parseInt(c[3] + c[3], 16) / 255, 2),
-    ];
-  } else if (/^#[A-Fa-f0-9]{3}$/.test(hexColor)) {
-    console.log("hexColor: ", hexColor);
-    c = hexColor.substring(1).split("");
-    return [
-      round(parseInt(c[0] + c[0], 16) / 255, 2),
-      round(parseInt(c[1] + c[1], 16) / 255, 2),
-      round(parseInt(c[2] + c[2], 16) / 255, 2),
-      1,
-    ];
+export function hexToRgba(hexColor) {
+  let c = hexColor.substring(1).split("");
+  let r = [];
+  if (/^#[A-Fa-f0-9]{8}$/.test(hexColor) || /^#[A-Fa-f0-9]{6}$/.test(hexColor)) {
+    for (const i of range(0, c.length, 2)) {
+      r.push(round(parseInt(c[i] + c[i + 1], 16) / 255, 2));
+    }
+  } else if (/^#[A-Fa-f0-9]{4}$/.test(hexColor) || /^#[A-Fa-f0-9]{3}$/.test(hexColor)) {
+    for (const i of range(c.length)) {
+      r.push(round(parseInt(c[i] + c[i], 16) / 255, 2));
+    }
   } else {
+    r = [1, 0, 0, 1];
     new Error("Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA");
   }
+  if (r.length === 3) {
+    r.push(1);
+  }
+  return r;
 }
 
 export function rgbaToHex(rgba) {
-  const [r, g, b, a] = rgba;
-  const red = Math.round(r * 255)
-    .toString(16)
-    .padStart(2, "0");
-  const green = Math.round(g * 255)
-    .toString(16)
-    .padStart(2, "0");
-  const blue = Math.round(b * 255)
-    .toString(16)
-    .padStart(2, "0");
-  const alpha = Math.round(a * 255)
-    .toString(16)
-    .padStart(2, "0");
-  if (alpha === "ff") {
-    return `#${red}${green}${blue}`;
+  const channels = rgba.slice(0, 3).map((channel) =>
+    Math.round(channel * 255)
+      .toString(16)
+      .padStart(2, "0")
+  );
+  const alpha = rgba[3];
+  if (alpha !== undefined && 0 <= alpha && alpha < 1) {
+    channels.push(
+      Math.round(alpha * 255)
+        .toString(16)
+        .padStart(2, "0")
+    );
   }
-  return `#${red}${green}${blue}${alpha}`;
+  return `#${channels.join("")}`;
 }
 
 export function clamp(number, min, max) {
