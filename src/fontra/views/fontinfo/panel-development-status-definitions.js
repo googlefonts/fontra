@@ -170,12 +170,12 @@ addStyleSheet(`
 
 .fontra-ui-font-info-status-definitions-panel-status-def-box-delete {
   justify-self: end;
-  align-self: start;
+  /*align-self: start;*/
 }
 
 .fontra-ui-font-info-status-definitions-panel-status-def-box-color {
   width: 8em;
-  height: 1.6em;
+  /*height: 1.6em; without height: best compromise for all browsers*/
   margin: 0;
   padding: 0;
   outline: none;
@@ -287,7 +287,7 @@ class StatusDefBox extends HTMLElement {
     this.append(
       html.div(
         {
-          "style": "display: inline-flex; height: 1.6em;",
+          "style": "margin: auto;",
           "data-tooltip":
             "If set: This color will be used if a source status is not set.",
           "data-tooltipposition": "top",
@@ -302,7 +302,7 @@ class StatusDefBox extends HTMLElement {
           html.label(
             {
               for: checkBoxIdentifier,
-              style: "padding: 3px",
+              style: "margin: auto;/*padding: 3px*/",
             },
             ["Is Default"]
           ),
