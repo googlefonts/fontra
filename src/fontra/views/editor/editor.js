@@ -408,7 +408,7 @@ export class EditorController {
               },
             },
             {
-              title: translate("menubar.glyph.editaxes"),
+              title: translate("menubar.glyph.edit-axes"),
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -1058,8 +1058,8 @@ export class EditorController {
     this.basicContextMenuItems.push({
       title: () =>
         this.sceneSettings.selectedGlyph?.isEditing
-          ? translate("action.deleteselection")
-          : translate("action.deleteglyph"),
+          ? translate("action.delete-selection")
+          : translate("action.delete-glyph"),
       enabled: () => this.canDelete(),
       callback: (event) => this.doDelete(event),
       shortCut: {
@@ -1074,8 +1074,8 @@ export class EditorController {
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
         title: selectNone
-          ? translate("action.selectnone")
-          : translate("action.selectall"),
+          ? translate("action.select-none")
+          : translate("action.select-all"),
         enabled: () => this.canSelectAllNone(selectNone),
         callback: () => this.doSelectAllNone(selectNone),
         shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
@@ -1102,9 +1102,11 @@ export class EditorController {
 
     this.glyphSelectedContextMenuItems = [];
     for (const selectPrevious of [true, false]) {
-      const prevNext = selectPrevious ? "previous" : "next";
+      const prevNext = selectPrevious
+        ? translate("menubar.view.select.part.previous")
+        : translate("menubar.view.select.part.next");
       this.glyphSelectedContextMenuItems.push({
-        title: `Select ${prevNext} source`,
+        title: translate("menubar.view.select.part.all", prevNext),
         enabled: () => true,
         callback: () => this.doSelectPreviousNextSource(selectPrevious),
         shortCut: {
@@ -1117,7 +1119,11 @@ export class EditorController {
     }
 
     this.glyphSelectedContextMenuItems.push({
-      title: () => `Find glyphs that use '${this.sceneSettings.selectedGlyphName}'`,
+      title: () =>
+        translate(
+          "menubar.view.find-glyphs-that-use",
+          this.sceneSettings.selectedGlyphName
+        ),
       enabled: () =>
         this.fontController.backendInfo.features["find-glyphs-that-use-glyph"],
       callback: () => this.doFindGlyphsThatUseGlyph(),
