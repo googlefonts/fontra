@@ -34,14 +34,13 @@ function formatString(template, ...args) {
   });
 }
 
+/**
+ * Translate the key to the corresponding value in the localizationData
+ * @param {string} key - The key to translate
+ * @param {...string} [args] - The arguments to replace in the translated value
+ * @returns {string} The translated value
+ */
 export function translate(key, ...args) {
-  /**
-   * Translate the key to the corresponding value in the localizationData
-   * @param {string} key - The key to translate
-   * @param {...string} [args] - The arguments to replace in the translated value
-   * @returns {string} The translated value
-   */
-
   const translation = localizationData[key];
 
   if (typeof key !== "string" || translation === undefined || debugTranslation) {
@@ -51,14 +50,13 @@ export function translate(key, ...args) {
   return args.length > 0 ? formatString(translation, ...args) : translation;
 }
 
+/**
+ * Translate the key to the corresponding value in the localizationData, with pluralization
+ * @param {string} key - The key to translate
+ * @param {number} quantity - The argument to replace in the translated value
+ * @returns {string} The translated value
+ */
 export function translatePlural(key, quantity = 0) {
-  /**
-   * Translate the key to the corresponding value in the localizationData, with pluralization
-   * @param {string} key - The key to translate
-   * @param {number} quantity - The argument to replace in the translated value
-   * @returns {string} The translated value
-   */
-
   const translation = localizationData[key];
 
   if (typeof key !== "string" || translation === undefined || debugTranslation) {
