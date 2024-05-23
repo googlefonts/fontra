@@ -56,13 +56,13 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     const statusDefinitions = getStatusFieldDefinitions(this.fontController);
     this.panelElement.innerHTML = "";
     this.panelElement.style = `
-    gap: 1em;
+    gap: 0.5em;
     `;
     this.panelElement.appendChild(
       html.input({
         type: "button",
         style: `justify-self: start;`,
-        value: "New status definition...",
+        value: "New status definition",
         onclick: (event) => this.newStatusDef(),
       })
     );
@@ -170,138 +170,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       this.panelElement.appendChild(this.infoForm);
     }
   }
-
-  // commented out for now
-  //   async newStatusDefinition() {
-  //     const statusDefinitions =
-  //       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
-  //     const validateInput = () => {
-  //       const warnings = [];
-  //       const editedStatusDefName =
-  //         controller.model.statusDefName || controller.model.suggestedstatusDefName;
-  //       for (const n of ["Value"]) {
-  //         const value = controller.model[`statusDef${n}`];
-  //         if (isNaN(value)) {
-  //           if (value !== undefined) {
-  //             warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
-  //           }
-  //         }
-  //       }
-  //       if (
-  //         statusDefinitions &&
-  //         statusDefinitions.some((statusDef) => statusDef.name === editedStatusDefName)
-  //       ) {
-  //         warnings.push("⚠️ The statusDef name should be unique");
-  //       }
-  //       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
-  //       dialog.defaultButton.classList.toggle("disabled", warnings.length);
-  //     };
-
-  //     const controller = new ObservableController({
-  //       statusDefName: "In Progress",
-  //       statusDefColor: 0,
-  //       statusDefValue: 0,
-  //       statusDefIsDefault: false,
-  //       placeholderKeyColor: "suggestedStatusDefColor",
-  //     });
-
-  //     controller.addKeyListener("statusDefName", (event) => {
-  //       validateInput();
-  //     });
-  //     controller.addKeyListener("statusDefColor", (event) => {
-  //       validateInput();
-  //     });
-  //     controller.addKeyListener("statusDefValue", (event) => {
-  //       validateInput();
-  //     });
-  //     controller.addKeyListener("statusDefIsDefault", (event) => {
-  //       validateInput();
-  //     });
-
-  //     const disable =
-  //       controller.model.statusDefName ||
-  //       controller.model.statusDefColor ||
-  //       controller.model.statusDefValue
-  //         ? false
-  //         : true;
-  //     const { contentElement, warningElement } =
-  //       this._statusDefPropertiesContentElement(controller);
-
-  //     const dialog = await dialogSetup("New status definition", null, [
-  //       { title: "Cancel", isCancelButton: true },
-  //       { title: "Add new status definition", isDefaultButton: true, disabled: disable },
-  //     ]);
-
-  //     dialog.setContent(contentElement);
-
-  //     setTimeout(
-  //       () => contentElement.querySelector("#statusDef-name-text-input")?.focus(),
-  //       0
-  //     );
-
-  //     validateInput();
-
-  //     if (!(await dialog.run())) {
-  //       // User cancelled
-  //       return {};
-  //     }
-
-  //     const newStatus = {
-  //       label: controller.model.statusDefName,
-  //       color: hexToRgbaList(controller.model.statusDefColor),
-  //       value: controller.model.statusDefValue,
-  //       isDefault: controller.model.statusDefIsDefault,
-  //     };
-  //     console.log("newStatus", newStatus);
-
-  //     const undoLabel = `add status definition '${newStatus.name}'`;
-  //     console.log("undoLabel: ", undoLabel);
-  //     const root = {
-  //       customData: this.fontController.customData["fontra.sourceStatusFieldDefinitions"],
-  //     };
-  //     const changes = recordChanges(root, (root) => {
-  //       root.customData["fontra.sourceStatusFieldDefinitions"].push(newStatus);
-  //     });
-  //     if (changes.hasChange) {
-  //       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-  //       this.setupUI();
-  //     }
-  //   }
-
-  //   _statusDefPropertiesContentElement(controller) {
-  //     const warningElement = html.div({
-  //       id: "warning-text-status-def",
-  //       style: `grid-column: 1 / -1; min-height: 1.5em;`,
-  //     });
-  //     const contentElement = html.div(
-  //       {
-  //         style: `overflow: hidden;
-  //           white-space: nowrap;
-  //           display: grid;
-  //           gap: 0.5em;
-  //           grid-template-columns: auto auto;
-  //           align-items: center;
-  //           height: 100%;
-  //           min-height: 0;
-  //         `,
-  //       },
-  //       [
-  //         ...labeledTextInput("Name:", controller, "statusDefName", {
-  //           id: "statusDef-name-text-input",
-  //         }),
-  //         ...labeledTextInput("Color:", controller, "statusDefColor", {
-  //           type: "color",
-  //           placeholderKeyColor: "suggestedStatusDefColor",
-  //         }),
-  //         ...labeledTextInput("Value:", controller, "statusDefValue", {}),
-  //         //html.div(),
-  //         //labeledCheckbox("default", controller, "statusDefIsDefault", {}),
-  //         html.br(),
-  //         warningElement,
-  //       ]
-  //     );
-  //     return { contentElement, warningElement };
-  //   }
 
   async newStatusDef(statusDef = undefined) {
     const statusFieldDefinitions =
