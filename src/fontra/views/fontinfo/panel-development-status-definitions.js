@@ -3,7 +3,13 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import { labeledTextInput } from "../core/ui-utils.js";
-import { enumerate, hexToRgbaList, rgbaToCSS, rgbaToHex } from "../core/utils.js";
+import {
+  enumerate,
+  hexToRgbaList,
+  range,
+  rgbaToCSS,
+  rgbaToHex,
+} from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { Form } from "/web-components/ui-form.js";
@@ -54,9 +60,26 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
 
   async setupUI() {
     const statusDefinitions = getStatusFieldDefinitions(this.fontController);
+
+    const statusDefsContainer = html.div({
+      style: "display: grid; gap: 0.5em;",
+    });
+    console.log("statusDefinitions", statusDefinitions);
+    for (const index of range(statusDefinitions.length)) {
+      statusDefsContainer.appendChild(
+        new StatusDefBox(
+          this.fontController,
+          statusDefinitions,
+          index,
+          this.postChange.bind(this),
+          this.setupUI.bind(this)
+        )
+      );
+    }
+
     this.panelElement.innerHTML = "";
     this.panelElement.style = `
-    gap: 0.5em;
+    gap: 1em;
     `;
     this.panelElement.appendChild(
       html.input({
@@ -66,112 +89,12 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
         onclick: (event) => this.newStatusDef(),
       })
     );
-    for (const statusDef of statusDefinitions) {
-      this.infoForm = new Form();
-      this.infoForm.className = "fontra-ui-font-info-axes-panel";
-      this.infoForm.labelWidth = "max-content";
-
-      this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
-        const statusValue = fieldItem.key;
-        const statusDef = this.fontController.customData[
-          "fontra.sourceStatusFieldDefinitions"
-        ].find((statusDef) => statusDef.value === statusValue);
-
-        console.log("edit-text value", value);
-        const updatedStatusDef = {
-          ...statusDef,
-          label: value,
-        };
-        this.replaceStatusDef(
-          statusDef.value,
-          updatedStatusDef,
-          "change status definition label"
-        );
-      };
-
-      const formContents = [];
-
-      formContents.push({
-        type: "header",
-        label: `Status Definition ${statusDef.value}`,
-        auxiliaryElement: html.createDomElement("icon-button", {
-          "style": `width: 1.3em;`,
-          "src": "/tabler-icons/trash.svg",
-          "onclick": (event) => this.deleteStatusDef(statusDef.value),
-          "data-tooltip": "Delete status definition",
-          "data-tooltipposition": "left",
-        }),
-      });
-
-      formContents.push({
-        type: "universal-row",
-        field1: {
-          type: "edit-text",
-          key: statusDef.value,
-          value: statusDef.label,
-          width: "6em",
-        },
-        field2: {
-          type: "auxiliaryElement",
-          key: "StatusLabel",
-          auxiliaryElement: html.input({
-            type: "color",
-            style: `margin: 0; padding: 0; outline: none;`,
-            value: rgbaToHex(statusDef.color),
-            onchange: (event) => {
-              const updatedStatusDef = {
-                ...statusDef,
-                color: hexToRgbaList(event.target.value),
-              };
-              this.replaceStatusDef(
-                statusDef.value,
-                updatedStatusDef,
-                "change status definition color"
-              );
-            },
-          }),
-        },
-        field3: {
-          type: "auxiliaryElement",
-          key: "StatusIsDefault",
-          auxiliaryElement: html.input({
-            "type": "checkbox",
-            "id": "statusDefIsDefault",
-            "style": `width: auto; margin: 0; padding: 0; outline: none;`,
-            "checked": statusDef.isDefault,
-            "onclick": (event) => {
-              const undoLabel = `change status definition isDefault`;
-              if (event.target.checked) {
-                // if checked, set all other status definitions to false
-                for (const statusDefTemp of this.fontController.customData[
-                  "fontra.sourceStatusFieldDefinitions"
-                ]) {
-                  delete statusDefTemp["isDefault"];
-                  this.replaceStatusDef(statusDefTemp.value, statusDefTemp, undoLabel);
-                }
-                // set this status definition to true
-                const updatedStatusDef = {
-                  ...statusDef,
-                  isDefault: true,
-                };
-                this.replaceStatusDef(statusDef.value, updatedStatusDef, undoLabel);
-              } else {
-                delete statusDef["isDefault"];
-                this.replaceStatusDef(statusDef.value, statusDef, undoLabel);
-              }
-            },
-            "data-tooltip": "Is Default",
-            "data-tooltipposition": "left",
-          }),
-        },
-      });
-
-      this.infoForm.setFieldDescriptions(formContents);
-      this.panelElement.appendChild(this.infoForm);
-    }
+    this.panelElement.appendChild(statusDefsContainer);
+    this.panelElement.focus();
   }
 
   async newStatusDef(statusDef = undefined) {
+    console.log("newStatusDef", statusDef);
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
     if (!statusFieldDefinitions) {
@@ -233,40 +156,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       this.setupUI();
     }
   }
-
-  async replaceStatusDef(statusDefValue, updatedStatusDef, undoLabel) {
-    const index = this.fontController.customData[
-      "fontra.sourceStatusFieldDefinitions"
-    ].findIndex((statusDef) => statusDef.value === statusDefValue);
-    const root = { customData: this.fontController.customData };
-    const changes = recordChanges(root, (root) => {
-      root.customData["fontra.sourceStatusFieldDefinitions"].splice(
-        index,
-        1,
-        updatedStatusDef
-      );
-    });
-
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupUI();
-    }
-  }
-
-  async deleteStatusDef(statusDefValue) {
-    const index = this.fontController.customData[
-      "fontra.sourceStatusFieldDefinitions"
-    ].findIndex((statusDef) => statusDef.value === statusDefValue);
-    const undoLabel = `delete status definition ${statusDefValue}`;
-    const root = { customData: this.fontController.customData };
-    const changes = recordChanges(root, (root) => {
-      root.customData["fontra.sourceStatusFieldDefinitions"].splice(index, 1);
-    });
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupUI();
-    }
-  }
 }
 
 function getStatusFieldDefinitions(fontController) {
@@ -277,3 +166,200 @@ function getStatusFieldDefinitions(fontController) {
   }
   return [];
 }
+
+addStyleSheet(`
+:root {
+  --fontra-ui-font-info-status-definitions-panel-max-list-height: 12em;
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box {
+  background-color: var(--ui-element-background-color);
+  border-radius: 0.5em;
+  padding: 1em;
+  cursor: pointer;
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: max-content max-content max-content auto;
+  grid-row-gap: 0.1em;
+  grid-column-gap: 1em;
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box-values,
+.fontra-ui-font-info-status-definitions-panel-axis-box-names {
+  display: grid;
+  grid-template-columns: minmax(4.5em, max-content) max-content;
+  gap: 0.5em;
+  align-items: start;
+  align-content: start;
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box-mapping-list {
+  width: 8em;
+  max-height: var(--fontra-ui-font-info-status-definitions-panel-max-list-height);
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box-label-list {
+  max-width: max-content;
+  max-height: var(--fontra-ui-font-info-status-definitions-panel-max-list-height);
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box-delete {
+  justify-self: end;
+  align-self: start;
+}
+
+select {
+  font-family: "fontra-ui-regular";
+}
+
+.fontra-ui-font-info-status-definitions-panel-axis-box-header {
+  font-weight: bold;
+}
+`);
+
+class StatusDefBox extends HTMLElement {
+  constructor(fontController, statusDefs, statusIndex, postChange, setupUI) {
+    super();
+    this.classList.add("fontra-ui-font-info-status-definitions-panel-axis-box");
+    this.draggable = true;
+    this.fontController = fontController;
+    this.statusDefs = statusDefs;
+    this.statusIndex = statusIndex;
+    this.postChange = postChange;
+    this.setupUI = setupUI;
+    this._updateContents();
+  }
+
+  get statusDef() {
+    return this.statusDefs[this.statusIndex];
+  }
+
+  editStatusDef(editFunc, undoLabel) {
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      editFunc(
+        root.customData["fontra.sourceStatusFieldDefinitions"][this.statusIndex]
+      );
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+    }
+  }
+
+  replaceStatusDef(newStatusDef, undoLabel, statusIndex = this.statusIndex) {
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      root.customData["fontra.sourceStatusFieldDefinitions"][statusIndex] =
+        newStatusDef;
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
+  }
+
+  deleteStatusDef(statusIndex) {
+    const statusDef =
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"][
+        statusIndex
+      ];
+    const undoLabel = `delete status def '${statusDef.name}'`;
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      root.customData["fontra.sourceStatusFieldDefinitions"].splice(statusIndex, 1);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
+  }
+
+  _updateContents() {
+    this.innerHTML = "";
+    const statusDef = this.statusDef;
+    this.appendChild(
+      html.input({
+        type: "color",
+        style: `width: 8em; height: 1.6em; margin: 0; padding: 0; outline: none; border: none; border-color: transparent`,
+        value: rgbaToHex(statusDef.color),
+        onchange: (event) => {
+          const updatedStatusDef = {
+            ...statusDef,
+            color: hexToRgbaList(event.target.value),
+          };
+          this.replaceStatusDef(updatedStatusDef, "change status definition color");
+        },
+      })
+    );
+
+    this.appendChild(
+      html.input({
+        type: "text",
+        style: `height: 1.6em; margin: 0; padding: 3px; outline: none;`,
+        value: statusDef.label,
+        onchange: (event) => {
+          const updatedStatusDef = {
+            ...statusDef,
+            label: event.target.value,
+          };
+          this.replaceStatusDef(updatedStatusDef, "change status definition label");
+        },
+      })
+    );
+
+    this.appendChild(
+      html.div({ style: "height: 1.6em;" }, [
+        html.input({
+          "type": "checkbox",
+          "style": `margin: 0; padding: 0; outline: none;`,
+          "checked": statusDef.isDefault,
+          "id": "statusDefIsDefault",
+          "data-tooltip": "Is Default",
+          "data-tooltipposition": "left",
+          "onchange": (event) => {
+            const undoLabel = `change status definition isDefault`;
+            if (event.target.checked) {
+              // if checked, set all other status definitions to false
+              for (const [index, statusDefTemp] of enumerate(
+                this.fontController.customData["fontra.sourceStatusFieldDefinitions"]
+              )) {
+                delete statusDefTemp["isDefault"];
+                this.replaceStatusDef(statusDefTemp, undoLabel, index);
+              }
+              // set this status definition to true
+              const updatedStatusDef = {
+                ...statusDef,
+                isDefault: true,
+              };
+              this.replaceStatusDef(updatedStatusDef, undoLabel);
+            } else {
+              delete statusDef["isDefault"];
+              this.replaceStatusDef(statusDef, undoLabel);
+            }
+          },
+        }),
+        html.label(
+          {
+            for: "statusDefIsDefault",
+            style: "padding: 3px",
+          },
+          [`Is Default`]
+        ),
+      ])
+    );
+
+    this.appendChild(
+      html.createDomElement("icon-button", {
+        //type: "button",
+        "style": `width: 1.3em; height: 1.6em; align: right;`,
+        "src": "/tabler-icons/trash.svg",
+        //value: "Delete",
+        "onclick": (event) => this.deleteStatusDef(this.statusIndex),
+        "data-tooltip": "Delete status definition",
+        "data-tooltipposition": "left",
+      })
+    );
+  }
+}
+
+customElements.define("status-def-box", StatusDefBox);
