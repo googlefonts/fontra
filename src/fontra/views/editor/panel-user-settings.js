@@ -47,13 +47,13 @@ export default class UserSettingsPanel extends Panel {
       return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
     });
     items.push({
-      displayName: translate("panel.settings.glyph"),
+      displayName: translate("sidebar.user-settings.glyph"),
       controller: this.editorController.visualizationLayersSettings,
       descriptions: layerItems,
     });
 
     items.push({
-      displayName: translate("panel.settings.clipboard"),
+      displayName: translate("sidebar.user-settings.clipboard"),
       controller: this.editorController.clipboardFormatController,
       descriptions: [
         {
@@ -69,22 +69,22 @@ export default class UserSettingsPanel extends Panel {
     });
 
     items.push({
-      displayName: "Language",
+      displayName: translate("sidebar.user-settings.language"),
       controller: languageController,
       descriptions: [
         {
           key: "language",
           ui: "radio",
           options: [
-            { key: "en", displayName: "English" },
-            { key: "zh-CN", displayName: "Simplified Chinese" },
+            { key: "en", displayName: translate("language.en") },
+            { key: "zh-CN", displayName: translate("language.zh-cn") },
           ],
         },
       ],
     });
 
     items.push({
-      displayName: translate("panel.settings.experimental"),
+      displayName: translate("sidebar.user-settings.experimental"),
       controller: this.editorController.experimentalFeaturesController,
       descriptions: [
         {
@@ -106,7 +106,7 @@ export default class UserSettingsPanel extends Panel {
     });
 
     items.push({
-      displayName: translate("panel.settings.theme"),
+      displayName: translate("sidebar.user-settings.theme"),
       controller: themeController,
       descriptions: [
         {
@@ -115,10 +115,13 @@ export default class UserSettingsPanel extends Panel {
           options: [
             {
               key: "automatic",
-              displayName: translate("panel.settings.theme.auto"),
+              displayName: translate("sidebar.user-settings.theme.auto"),
             },
-            { key: "light", displayName: translate("panel.settings.theme.light") },
-            { key: "dark", displayName: translate("panel.settings.theme.dark") },
+            {
+              key: "light",
+              displayName: translate("sidebar.user-settings.theme.light"),
+            },
+            { key: "dark", displayName: translate("sidebar.user-settings.theme.dark") },
           ],
         },
       ],
@@ -126,7 +129,7 @@ export default class UserSettingsPanel extends Panel {
 
     const serverInfo = await fetchJSON("/serverinfo");
     items.push({
-      displayName: translate("panel.settings.server"),
+      displayName: translate("sidebar.user-settings.server"),
       controller: null,
       descriptions: Object.entries(serverInfo).flatMap((entry) => {
         return [

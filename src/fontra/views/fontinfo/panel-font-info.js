@@ -1,26 +1,26 @@
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { translate } from "../core/localization.js";
 import { BaseInfoPanel } from "./panel-base.js";
+import { translate } from "/core/localization.js";
 import { Form } from "/web-components/ui-form.js";
 
 const fontInfoFields = [
-  // [property name, UI label, type]
-  ["familyName", "Family Name", "edit-text"],
-  ["copyright", "Copyright", "edit-text"],
-  ["trademark", "Trademark", "edit-text"],
-  ["description", "Description", "edit-text"],
-  ["sampleText", "SampleText", "edit-text"],
-  ["designer", "Designer", "edit-text"],
-  ["designerURL", "Designer URL", "edit-text"],
-  ["manufacturer", "Manufacturer", "edit-text"],
-  ["manufacturerURL", "Manufacturer URL", "edit-text"],
-  ["licenseDescription", "License Description", "edit-text"],
-  ["licenseInfoURL", "License Info URL", "edit-text"],
-  ["vendorID", "Vendor ID", "edit-text"],
-  ["versionMajor", "Version Major", "edit-number"],
-  ["versionMinor", "Version Minor", "edit-number"],
+  // [property name, localization key, type]
+  ["familyName", "font-info.familyname", "edit-text"],
+  ["copyright", "font-info.copyright", "edit-text"],
+  ["trademark", "font-info.trademark", "edit-text"],
+  ["description", "font-info.description", "edit-text"],
+  ["sampleText", "font-info.sampletext", "edit-text"],
+  ["designer", "font-info.designer", "edit-text"],
+  ["designerURL", "font-info.designer.url", "edit-text"],
+  ["manufacturer", "font-info.manufacturer", "edit-text"],
+  ["manufacturerURL", "font-infomanufacturer.url", "edit-text"],
+  ["licenseDescription", "font-info.licensedescription", "edit-text"],
+  ["licenseInfoURL", "font-info.licenseinfo.url", "edit-text"],
+  ["vendorID", "font-info.vendorid", "edit-text"],
+  ["versionMajor", "font-info.version.major", "edit-number"],
+  ["versionMinor", "font-info.version.minor", "edit-number"],
 ];
 
 addStyleSheet(`
@@ -32,7 +32,7 @@ addStyleSheet(`
 `);
 
 export class FontInfoPanel extends BaseInfoPanel {
-  static title = "Font info";
+  static title = "font-info.title";
   static id = "font-info-panel";
   static fontAttributes = ["fontInfo", "unitsPerEm"];
 
@@ -67,11 +67,11 @@ export class FontInfoPanel extends BaseInfoPanel {
     const formContents = [];
 
     formContents.push(
-      ...fontInfoFields.map(([key, label, type]) => {
+      ...fontInfoFields.map(([key, loclKey, type]) => {
         return {
           type: type,
           key: JSON.stringify(["fontInfo", key]),
-          label: label,
+          label: translate(loclKey),
           value: info[key],
           minValue: type === "edit-number" ? 0 : undefined,
           integer: type === "edit-number" ? true : undefined,

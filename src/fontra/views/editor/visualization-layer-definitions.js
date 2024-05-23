@@ -30,7 +30,7 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.upm.grid",
-  name: translate("panel.settings.glyph.upmgrid"),
+  name: translate("sidebar.user-settings.glyph.upmgrid"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -156,7 +156,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.baseline",
-  name: translate("panel.settings.glyph.baseline"),
+  name: translate("sidebar.user-settings.glyph.baseline"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -190,7 +190,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: translate("fontra.glyph.locking.non-editing"),
-  name: translate("panel.settings.glyph.lockicon"),
+  name: translate("sidebar.user-settings.glyph.lockicon"),
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
@@ -241,7 +241,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
-  name: translate("panel.settings.glyph.anchornames"),
+  name: translate("sidebar.user-settings.glyph.anchornames"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -284,7 +284,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
-  name: translate("panel.settings.glyph.sidebearings"),
+  name: translate("sidebar.user-settings.glyph.sidebearings"),
   selectionMode: "notediting",
   userSwitchable: true,
   defaultOn: false,
@@ -329,7 +329,7 @@ function _drawMiniSideBearings(
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
-  name: translate("panel.settings.glyph.dragcrosshair"),
+  name: translate("sidebar.user-settings.glyph.dragcrosshair"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -356,7 +356,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
-  name: translate("panel.settings.glyph.dragghostpath"),
+  name: translate("sidebar.user-settings.glyph.dragghostpath"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -651,7 +651,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.contour.index",
-  name: translate("panel.settings.glyph.contour"),
+  name: translate("sidebar.user-settings.glyph.contour"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -698,7 +698,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.index",
-  name: translate("panel.settings.glyph.component"),
+  name: translate("sidebar.user-settings.glyph.component"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -907,7 +907,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: translate("panel.settings.glyph.coordinates"),
+  name: translate("sidebar.user-settings.glyph.coordinates"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1025,7 +1025,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.status.color",
-  name: translate("panel.settings.glyph.statuscolor"),
+  name: translate("sidebar.user-settings.glyph.statuscolor"),
   selectionMode: "all",
   userSwitchable: true,
   defaultOn: false,

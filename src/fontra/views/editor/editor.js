@@ -1085,14 +1085,14 @@ export class EditorController {
     this.glyphEditContextMenuItems = [];
 
     this.glyphEditContextMenuItems.push({
-      title: "Add Component",
+      title: translate("action.add-component"),
       enabled: () => this.canAddComponent(),
       callback: () => this.doAddComponent(),
       shortCut: undefined,
     });
 
     this.glyphEditContextMenuItems.push({
-      title: "Add Anchor",
+      title: translate("action.add-anchor"),
       enabled: () => this.canAddAnchor(),
       callback: () => this.doAddAnchor(),
       shortCut: undefined,

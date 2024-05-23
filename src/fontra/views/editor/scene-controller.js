@@ -25,6 +25,7 @@ import {
 import { packContour } from "../core/var-path.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
+import { translate, translatePlural } from "/core/localization.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 
 export class SceneController {
@@ -548,24 +549,26 @@ export class SceneController {
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
-        title: "Break Contour",
+        title: translate("action.break-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
         callback: () => this.breakContour(),
       },
       {
-        title: "Reverse Contour Direction",
+        title: translate("action.reverse-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
         callback: () => this.reverseSelectedContoursDirection(),
       },
       {
-        title: "Set Start Point",
+        title: translate("action.set-contour-start"),
         enabled: () => this.contextMenuState.pointSelection?.length,
         callback: () => this.setStartPoint(),
       },
       {
         title: () =>
-          "Decompose Component" +
-          (this.contextMenuState.componentSelection?.length === 1 ? "" : "s"),
+          translatePlural(
+            "action.decompose-component",
+            this.contextMenuState.componentSelection?.length
+          ),
         enabled: () => !!this.contextMenuState?.componentSelection?.length,
         callback: () => this.decomposeSelectedComponents(),
         shortCut: { keysOrCodes: "d", metaKey: true, shiftKey: true },

@@ -33,7 +33,7 @@ const DEFAULT_FONT_SIZE = 100;
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
-  name: translate("panel.settings.glyph.referencefont"),
+  name: translate("sidebar.user-settings.glyph.referencefont"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -664,8 +664,8 @@ export default class ReferenceFontPanel extends Panel {
             id: "reference-font",
           },
           [
-            div({ class: "title" }, [translate("panel.referencefont")]),
-            div({}, [translate("panel.referencefont.info")]),
+            div({ class: "title" }, [translate("sidebar.referencefont")]),
+            div({}, [translate("sidebar.referencefont.info")]),
             this.filesUIList,
             div(
               {
@@ -679,7 +679,7 @@ export default class ReferenceFontPanel extends Panel {
               [
                 label(
                   { for: "char-override" },
-                  translate("panel.referencefont.customcharacter")
+                  translate("sidebar.referencefont.customcharacter")
                 ),
                 input({
                   type: "text",
@@ -689,7 +689,7 @@ export default class ReferenceFontPanel extends Panel {
                 }),
                 label(
                   { for: "language-code" },
-                  translate("panel.referencefont.language")
+                  translate("sidebar.referencefont.language")
                 ),
                 this.languageCodeInput,
               ]

@@ -48,7 +48,7 @@ export class GlyphsSearch extends UnlitElement {
 
     this.searchField = html.input({
       type: "text",
-      placeholder: translate("panel.glyphs.search"),
+      placeholder: translate("sidebar.glyphs.search"),
       autocomplete: "off",
       oninput: (event) => this._searchFieldChanged(event),
     });
