@@ -7,7 +7,7 @@ import { Form } from "/web-components/ui-form.js";
 
 const fontInfoFields = [
   // [property name, UI label, type]
-  ["familyName", translate("fontinfo.familyname"), "edit-text"],
+  ["familyName", "Family Name", "edit-text"],
   ["copyright", "Copyright", "edit-text"],
   ["trademark", "Trademark", "edit-text"],
   ["description", "Description", "edit-text"],
