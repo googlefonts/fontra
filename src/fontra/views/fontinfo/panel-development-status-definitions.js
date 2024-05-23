@@ -58,7 +58,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
       statusDefsContainer.appendChild(
         new StatusDefBox(
           this.fontController,
-          statusDefinitions,
           index,
           this.postChange.bind(this),
           this.setupUI.bind(this)
@@ -86,8 +85,8 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
     if (!statusFieldDefinitions) {
-      // if not present, create default status definitions
-      // TODO: This does not work, if there is no "fontra.sourceStatusFieldDefinitions" set, yet.
+      // TODO: This does not work, yet.
+      // If there is no "fontra.sourceStatusFieldDefinitions" in customData.
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"] = [];
     }
     const nextStatusValue = !statusFieldDefinitions
@@ -187,11 +186,10 @@ addStyleSheet(`
 `);
 
 class StatusDefBox extends HTMLElement {
-  constructor(fontController, statusDefs, statusIndex, postChange, setupUI) {
+  constructor(fontController, statusIndex, postChange, setupUI) {
     super();
     this.classList.add("fontra-ui-font-info-status-definitions-panel-status-def-box");
     this.fontController = fontController;
-    this.statusDefs = statusDefs;
     this.statusIndex = statusIndex;
     this.postChange = postChange;
     this.setupUI = setupUI;
@@ -199,7 +197,9 @@ class StatusDefBox extends HTMLElement {
   }
 
   get statusDef() {
-    return this.statusDefs[this.statusIndex];
+    return this.fontController.customData["fontra.sourceStatusFieldDefinitions"][
+      this.statusIndex
+    ];
   }
 
   replaceStatusDef(newStatusDef, undoLabel, statusIndex = this.statusIndex) {
@@ -215,11 +215,7 @@ class StatusDefBox extends HTMLElement {
   }
 
   deleteStatusDef(statusIndex) {
-    const statusDef =
-      this.fontController.customData["fontra.sourceStatusFieldDefinitions"][
-        statusIndex
-      ];
-    const undoLabel = `delete status def '${statusDef.name}'`;
+    const undoLabel = `delete status def '${this.statusDef.name}'`;
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"].splice(statusIndex, 1);
