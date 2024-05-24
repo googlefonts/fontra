@@ -414,7 +414,7 @@ describe("rgbaToHex", () => {
       (testData) => {
         expect(() => {
           rgbaToHex(testData);
-        }).to.throw("rgbaToHex: has to have 3 or 4 items in array");
+        }).to.throw("rgba argument has to have 3 or 4 items in array");
       }
     );
   });
