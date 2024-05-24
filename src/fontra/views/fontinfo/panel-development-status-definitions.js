@@ -233,11 +233,12 @@ class StatusDefinitionBox extends HTMLElement {
     }
 
     // If checked: Set all status definitions to false, first.
-    for (const [index, statusDefTemp] of enumerate(
+    for (const [index, oldStatusDef] of enumerate(
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"]
     )) {
-      delete statusDefTemp["isDefault"];
-      this.replaceStatusDef(statusDefTemp, undoLabel, index);
+      const newStatusDef = { ...oldStatusDef };
+      delete newStatusDef["isDefault"];
+      this.replaceStatusDef(newStatusDef, undoLabel, index);
     }
     // Then: set this status definition to true
     const updatedStatusDef = {
