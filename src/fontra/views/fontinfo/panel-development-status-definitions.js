@@ -256,7 +256,7 @@ class StatusDefinitionBox extends HTMLElement {
         "type": "color",
         "class":
           "fontra-ui-font-info-status-definitions-panel-status-def-box-color-input",
-        "value": rgbaToHex(statusDef.color),
+        "value": rgbaToHex(statusDef.color.slice(0, 3).concat([1])),
         "onchange": (event) => {
           const updatedStatusDef = {
             ...statusDef,
