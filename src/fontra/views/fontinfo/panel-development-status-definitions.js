@@ -158,7 +158,6 @@ addStyleSheet(`
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
-  cursor: pointer;
   display: grid;
   grid-template-rows: auto auto;
   grid-template-columns: max-content max-content max-content auto;
