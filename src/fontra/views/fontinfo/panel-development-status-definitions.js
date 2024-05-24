@@ -56,7 +56,7 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     });
     for (const index of range(statusDefinitions.length)) {
       statusDefsContainer.appendChild(
-        new StatusDefBox(
+        new StatusDefinitionBox(
           this.fontController,
           index,
           this.postChange.bind(this),
@@ -183,7 +183,7 @@ addStyleSheet(`
 }
 `);
 
-class StatusDefBox extends HTMLElement {
+class StatusDefinitionBox extends HTMLElement {
   constructor(fontController, statusIndex, postChange, setupUI) {
     super();
     this.classList.add("fontra-ui-font-info-status-definitions-panel-status-def-box");
@@ -321,4 +321,4 @@ class StatusDefBox extends HTMLElement {
   }
 }
 
-customElements.define("status-def-box", StatusDefBox);
+customElements.define("status-def-box", StatusDefinitionBox);
