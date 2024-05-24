@@ -375,22 +375,17 @@ export function hexToRgba(hexColor) {
 }
 
 export function rgbaToHex(rgba) {
-  if (rgba.length < 3) {
-    throw new Error("rgbaToHex: not enough items in array");
+  if (![3, 4].includes(rgba.length)) {
+    throw new Error("rgbaToHex: has to have 3 or 4 items in array");
   }
-  const channels = rgba.slice(0, 3).map((channel) =>
+  if (rgba[3] == 1) {
+    rgba.pop();
+  }
+  const channels = rgba.slice(0, 4).map((channel) =>
     Math.round(channel * 255)
       .toString(16)
       .padStart(2, "0")
   );
-  const alpha = rgba[3];
-  if (alpha !== undefined && 0 <= alpha && alpha < 1) {
-    channels.push(
-      Math.round(alpha * 255)
-        .toString(16)
-        .padStart(2, "0")
-    );
-  }
   return `#${channels.join("")}`;
 }
 

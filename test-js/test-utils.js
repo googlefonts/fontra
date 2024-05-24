@@ -405,9 +405,18 @@ describe("rgbaToHex", () => {
     expect(rgbaToHex([1, 0, 0, 0.502])).deep.equals("#ff000080");
   });
   it("throw error because not enough components", () => {
-    expect(() => {
-      rgbaToHex([1, 0]);
-    }).to.throw("rgbaToHex: not enough items in array");
+    parametrize(
+      "round-trip tests",
+      [
+        [1, 0],
+        [1, 0, 1, 2, 5],
+      ],
+      (testData) => {
+        expect(() => {
+          rgbaToHex(testData);
+        }).to.throw("rgbaToHex: has to have 3 or 4 items in array");
+      }
+    );
   });
 });
 
