@@ -384,11 +384,11 @@ describe("hexToRgba", () => {
   });
   it("should convert a hex color string with opacity to rgba array of decimals", () => {
     const array = hexToRgba("#FF000080");
-    expect(array).deep.equals([1, 0, 0, 0.5]); // red with 80% opacity
+    expect(array).deep.equals([1, 0, 0, 0.502]); // red with 80% opacity
   });
   it("should convert short hex color string with opacity to rgba array of decimals", () => {
     const array = hexToRgba("#F008");
-    expect(array).deep.equals([1, 0, 0, 0.53]); // red with 80% opacity
+    expect(array).deep.equals([1, 0, 0, 0.5333]); // red with 80% opacity
   });
   it("bad hex string -> Default value", () => {
     const array = hexToRgba("#X008");
@@ -401,8 +401,35 @@ describe("rgbaToHex", () => {
     expect(rgbaToHex([1, 0, 0, 1])).deep.equals("#ff0000");
   });
   it("should convert rgba array of decimals to a hex color string with opacity ", () => {
-    expect(rgbaToHex([1, 0, 0, 0.5])).deep.equals("#ff000080");
+    expect(rgbaToHex([1, 0, 0, 0.5333])).deep.equals("#ff000088");
+    expect(rgbaToHex([1, 0, 0, 0.502])).deep.equals("#ff000080");
   });
+});
+
+describe("hexToRgba to rgbaToHex", () => {
+  parametrize(
+    "round-trip tests",
+    [
+      "#ff0000",
+      "#ff000088",
+      "#ff000080", // red + opacity
+      "#008000",
+      "#00800088",
+      "#00800080", // green + opacity
+      "#0000ff",
+      "#0000ff88",
+      "#0000ff80", // blue + opacity
+      "#000000",
+      "#00000088",
+      "#00000080", // black + opacity
+      "#ffffff",
+      "#ffffff88",
+      "#ffffff80", // white + opacity
+    ],
+    (testData) => {
+      expect(rgbaToHex(hexToRgba(testData))).deep.equals(testData);
+    }
+  );
 });
 
 describe("clamp", () => {
