@@ -239,6 +239,9 @@ class StatusDefinitionBox extends HTMLElement {
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"].splice(statusIndex, 1);
+      if (root.customData["fontra.sourceStatusFieldDefinitions"].length === 0) {
+        delete root.customData["fontra.sourceStatusFieldDefinitions"];
+      }
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -279,9 +282,18 @@ class StatusDefinitionBox extends HTMLElement {
         class: "fontra-ui-font-info-status-definitions-panel-status-def-box-value",
         value: statusDef.value,
         onchange: (event) => {
+          const statusDefValue = Number(event.target.value);
+          if (!Number.isInteger(statusDefValue) || statusDefValue < 0) {
+            message(
+              `Can’t edit status definition value`,
+              `Value must be a positive number.`
+            );
+            this.setupUI();
+            return;
+          }
           const updatedStatusDef = {
             ...statusDef,
-            value: event.target.value,
+            value: statusDefValue,
           };
           this.replaceStatusDef(updatedStatusDef, "change status definition value");
         },
