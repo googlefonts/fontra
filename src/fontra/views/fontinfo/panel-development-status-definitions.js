@@ -3,6 +3,7 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { enumerate, hexToRgba, range, rgbaToHex } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
+import { message } from "/web-components/modal-dialog.js";
 
 const defaultStatusFieldDefinitions = {
   "fontra.sourceStatusFieldDefinitions": [
@@ -160,14 +161,18 @@ addStyleSheet(`
   padding: 1em;
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: max-content max-content max-content auto;
+  grid-template-columns: max-content max-content max-content max-content auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
 }
 
+.fontra-ui-font-info-status-definitions-panel-status-def-box-value {
+  width: 2em;
+  text-align: center;
+}
+
 .fontra-ui-font-info-status-definitions-panel-status-def-box-delete {
   justify-self: end;
-  /*align-self: start;*/
 }
 
 .fontra-ui-font-info-status-definitions-panel-status-def-box-color-input {
@@ -199,7 +204,25 @@ class StatusDefinitionBox extends HTMLElement {
     ];
   }
 
+  doChecks(newStatusDef) {
+    const statusDefinitions =
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
+    if (statusDefinitions.some((statusDef) => statusDef.value == newStatusDef.value)) {
+      message(
+        `Can’t edit status definition value`,
+        `“${newStatusDef.value}” exists already, please use a different value.`
+      );
+      return false;
+    }
+    return true;
+  }
+
   replaceStatusDef(newStatusDef, undoLabel, statusIndex = this.statusIndex) {
+    if (!this.doChecks(newStatusDef)) {
+      this.setupUI();
+      return;
+    }
+
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"][statusIndex] =
@@ -250,6 +273,21 @@ class StatusDefinitionBox extends HTMLElement {
   _updateContents() {
     this.innerHTML = "";
     const statusDef = this.statusDef;
+    this.append(
+      html.input({
+        type: "text",
+        class: "fontra-ui-font-info-status-definitions-panel-status-def-box-value",
+        value: statusDef.value,
+        onchange: (event) => {
+          const updatedStatusDef = {
+            ...statusDef,
+            value: event.target.value,
+          };
+          this.replaceStatusDef(updatedStatusDef, "change status definition value");
+        },
+      })
+    );
+
     this.append(
       html.input({
         "type": "color",
