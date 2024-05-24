@@ -391,8 +391,11 @@ describe("hexToRgba", () => {
     expect(array).deep.equals([1, 0, 0, 0.5333]); // red with 80% opacity
   });
   it("bad hex string -> Default value", () => {
-    const array = hexToRgba("#X008");
-    expect(array).deep.equals([1, 0, 0, 1]);
+    expect(() => {
+      hexToRgba("#X008");
+    }).to.throw(
+      "Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA"
+    );
   });
 });
 

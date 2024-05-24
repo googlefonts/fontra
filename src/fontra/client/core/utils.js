@@ -365,8 +365,9 @@ export function hexToRgba(hexColor) {
       r.push(round(parseInt(c[i] + c[i], 16) / 255, 4));
     }
   } else {
-    r = [1, 0, 0, 1];
-    new Error("Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA");
+    throw new Error(
+      "Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA"
+    );
   }
   if (r.length === 3) {
     r.push(1);
