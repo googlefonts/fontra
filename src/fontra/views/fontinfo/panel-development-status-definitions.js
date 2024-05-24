@@ -171,7 +171,7 @@ addStyleSheet(`
   /*align-self: start;*/
 }
 
-.fontra-ui-font-info-status-definitions-panel-status-def-box-color {
+.fontra-ui-font-info-status-definitions-panel-status-def-box-color-input {
   width: 8em;
   /*height: 1.6em; without height: best compromise for all browsers*/
   margin: 0;
@@ -253,7 +253,8 @@ class StatusDefBox extends HTMLElement {
     this.append(
       html.input({
         "type": "color",
-        "class": "fontra-ui-font-info-status-definitions-panel-status-def-box-color",
+        "class":
+          "fontra-ui-font-info-status-definitions-panel-status-def-box-color-input",
         "value": rgbaToHex(statusDef.color),
         "onchange": (event) => {
           const updatedStatusDef = {
