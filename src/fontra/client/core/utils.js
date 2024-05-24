@@ -375,17 +375,17 @@ export function hexToRgba(hexColor) {
 }
 
 export function rgbaToHex(rgba) {
-  if (![3, 4].includes(rgba.length)) {
+  if (rgba.length != 3 && rgba.length != 4) {
     throw new Error("rgbaToHex: has to have 3 or 4 items in array");
   }
-  if (rgba[3] == 1) {
-    rgba.pop();
-  }
-  const channels = rgba.slice(0, 4).map((channel) =>
+  const channels = rgba.map((channel) =>
     Math.round(channel * 255)
       .toString(16)
       .padStart(2, "0")
   );
+  if (channels[3] === "ff") {
+    channels.pop();
+  }
   return `#${channels.join("")}`;
 }
 
