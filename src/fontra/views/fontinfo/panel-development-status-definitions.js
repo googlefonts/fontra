@@ -84,11 +84,6 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
   async newStatusDef(statusDef = undefined) {
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
-    if (!statusFieldDefinitions) {
-      // TODO: This does not work, yet.
-      // If there is no "fontra.sourceStatusFieldDefinitions" in customData.
-      this.fontController.customData["fontra.sourceStatusFieldDefinitions"] = [];
-    }
     const nextStatusValue = !statusFieldDefinitions
       ? 0
       : statusFieldDefinitions
@@ -137,6 +132,9 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     const undoLabel = `add status definition ${statusDef.value} '${statusDef.label}'`;
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
+      if (!statusFieldDefinitions) {
+        root.customData["fontra.sourceStatusFieldDefinitions"] = [];
+      }
       root.customData["fontra.sourceStatusFieldDefinitions"].push(statusDef);
     });
     if (changes.hasChange) {
