@@ -375,6 +375,9 @@ export function hexToRgba(hexColor) {
 }
 
 export function rgbaToHex(rgba) {
+  if (rgba.length < 3) {
+    throw new Error("rgbaToHex: not enough items in array");
+  }
   const channels = rgba.slice(0, 3).map((channel) =>
     Math.round(channel * 255)
       .toString(16)

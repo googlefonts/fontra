@@ -400,9 +400,14 @@ describe("rgbaToHex", () => {
   it("should convert rgba array of decimals to a hex color string", () => {
     expect(rgbaToHex([1, 0, 0, 1])).deep.equals("#ff0000");
   });
-  it("should convert rgba array of decimals to a hex color string with opacity ", () => {
+  it("should convert rgba array of decimals to a hex color string with opacity", () => {
     expect(rgbaToHex([1, 0, 0, 0.5333])).deep.equals("#ff000088");
     expect(rgbaToHex([1, 0, 0, 0.502])).deep.equals("#ff000080");
+  });
+  it("throw error because not enough components", () => {
+    expect(() => {
+      rgbaToHex([1, 0]);
+    }).to.throw("rgbaToHex: not enough items in array");
   });
 });
 
