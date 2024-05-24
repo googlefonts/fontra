@@ -376,7 +376,7 @@ export function hexToRgba(hexColor) {
 
 export function rgbaToHex(rgba) {
   if (rgba.length != 3 && rgba.length != 4) {
-    throw new Error("rgbaToHex: has to have 3 or 4 items in array");
+    throw new Error("rgba argument has to have 3 or 4 items in array");
   }
   const channels = rgba.map((channel) =>
     Math.round(channel * 255)
