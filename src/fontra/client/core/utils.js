@@ -358,11 +358,11 @@ export function hexToRgba(hexColor) {
   let r = [];
   if (/^#[A-Fa-f0-9]{8}$/.test(hexColor) || /^#[A-Fa-f0-9]{6}$/.test(hexColor)) {
     for (const i of range(0, c.length, 2)) {
-      r.push(round(parseInt(c[i] + c[i + 1], 16) / 255, 2));
+      r.push(round(parseInt(c[i] + c[i + 1], 16) / 255, 4));
     }
   } else if (/^#[A-Fa-f0-9]{4}$/.test(hexColor) || /^#[A-Fa-f0-9]{3}$/.test(hexColor)) {
     for (const i of range(c.length)) {
-      r.push(round(parseInt(c[i] + c[i], 16) / 255, 2));
+      r.push(round(parseInt(c[i] + c[i], 16) / 255, 4));
     }
   } else {
     r = [1, 0, 0, 1];
