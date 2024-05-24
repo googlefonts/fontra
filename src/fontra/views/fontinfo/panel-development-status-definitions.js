@@ -75,14 +75,14 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
         type: "button",
         style: `justify-self: start;`,
         value: "New status definition",
-        onclick: (event) => this.newStatusDef(),
+        onclick: (event) => this.newStatusDefinition(),
       })
     );
     this.panelElement.appendChild(statusDefsContainer);
     this.panelElement.focus();
   }
 
-  async newStatusDef(statusDef = undefined) {
+  async newStatusDefinition() {
     const statusFieldDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
     const nextStatusValue = !statusFieldDefinitions
@@ -92,37 +92,13 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
           .sort()
           .pop() + 1;
 
-    // fix duplicates
-    if (
-      statusDef &&
-      statusFieldDefinitions.some((statusDef) => statusDef.value === statusDef.value)
-    ) {
-      // Status definition with value already exists,
-      // changed value to next available value.
-      statusDef = {
-        ...statusDef,
-        value: nextStatusValue,
-      };
-    }
-
-    // fix isDefault
-    if (statusDef && statusFieldDefinitions.some((statusDef) => statusDef.isDefault)) {
-      // Status definition with isDefault already exists,
-      // changed value to false.
-      delete statusDef["isDefault"];
-    }
+    const defaultStatuses =
+      defaultStatusFieldDefinitions["fontra.sourceStatusFieldDefinitions"];
+    let statusDef = defaultStatuses.find(
+      (statusDef) => statusDef.value == nextStatusValue
+    );
 
     if (!statusDef) {
-      const defaultStatuses =
-        defaultStatusFieldDefinitions["fontra.sourceStatusFieldDefinitions"];
-      statusDef = defaultStatuses.find(
-        (statusDef) => statusDef.value == nextStatusValue
-      );
-    }
-
-    if (!statusDef) {
-      // No status definition provided or found.
-      // Use default.
       statusDef = {
         color: [1, 0, 0, 1],
         label: `Status definition ${nextStatusValue}`,
@@ -134,9 +110,10 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       if (!statusFieldDefinitions) {
-        root.customData["fontra.sourceStatusFieldDefinitions"] = [];
+        root.customData["fontra.sourceStatusFieldDefinitions"] = [statusDef];
+      } else {
+        root.customData["fontra.sourceStatusFieldDefinitions"].push(statusDef);
       }
-      root.customData["fontra.sourceStatusFieldDefinitions"].push(statusDef);
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -204,25 +181,26 @@ class StatusDefinitionBox extends HTMLElement {
     ];
   }
 
-  doChecks(newStatusDef) {
+  checkStatusDefValue(statusDefValue) {
+    let errorMessage = "";
     const statusDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
-    if (statusDefinitions.some((statusDef) => statusDef.value == newStatusDef.value)) {
-      message(
-        `Can’t edit status definition value`,
-        `“${newStatusDef.value}” exists already, please use a different value.`
-      );
+    if (statusDefinitions.some((statusDef) => statusDef.value == statusDefValue)) {
+      errorMessage = `“${statusDefValue}” exists already, please use a different value.`;
+    }
+
+    if (!Number.isInteger(statusDefValue) || statusDefValue < 0) {
+      errorMessage = "Value must be a positive number.";
+    }
+
+    if (errorMessage) {
+      message(`Can’t edit status definition value`, errorMessage);
       return false;
     }
     return true;
   }
 
   replaceStatusDef(newStatusDef, undoLabel, statusIndex = this.statusIndex) {
-    if (!this.doChecks(newStatusDef)) {
-      this.setupUI();
-      return;
-    }
-
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"][statusIndex] =
@@ -283,11 +261,7 @@ class StatusDefinitionBox extends HTMLElement {
         value: statusDef.value,
         onchange: (event) => {
           const statusDefValue = Number(event.target.value);
-          if (!Number.isInteger(statusDefValue) || statusDefValue < 0) {
-            message(
-              `Can’t edit status definition value`,
-              `Value must be a positive number.`
-            );
+          if (!this.checkStatusDefValue(statusDefValue)) {
             this.setupUI();
             return;
           }
