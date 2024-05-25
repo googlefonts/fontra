@@ -993,7 +993,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const glyphAxisNames = glyph.axes.map((axis) => axis.name);
     const fontAxes = mapAxesFromUserSpaceToSourceSpace(
       // Don't include font axes that also exist as glyph axes
-      this.fontAxes.filter((axis) => !glyphAxisNames.includes(axis.name))
+      this.fontController.fontAxes.filter((axis) => !glyphAxisNames.includes(axis.name))
     );
     return [
       ...fontAxes,
