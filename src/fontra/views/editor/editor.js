@@ -560,14 +560,18 @@ export class EditorController {
       positionedGlyph.character?.codePointAt(0)
     );
     const charMsg = positionedGlyph.character
-      ? ` for character “${positionedGlyph.character}” (${uniString})`
+      ? translate(
+          "dialog.create-new-glyph.body.2",
+          positionedGlyph.character,
+          uniString
+        )
       : "";
     const result = await dialog(
-      `Create a new glyph “${positionedGlyph.glyphName}”?`,
-      `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
+      translate("dialog.create-new-glyph.title", positionedGlyph.glyphName),
+      translate("dialog.create-new-glyph.body", positionedGlyph.glyphName, charMsg),
       [
-        { title: "Cancel", resultValue: "no", isCancelButton: true },
-        { title: "Create", resultValue: "ok", isDefaultButton: true },
+        { title: translate("dialog.cancel"), resultValue: "no", isCancelButton: true },
+        { title: translate("dialog.create"), resultValue: "ok", isDefaultButton: true },
       ]
     );
     if (result === "ok") {

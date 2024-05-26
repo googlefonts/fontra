@@ -21,7 +21,7 @@ import { dialogSetup } from "/web-components/modal-dialog.js";
 
 const presetAxes = [
   {
-    label: "Weight",
+    label: "weight",
     name: "weight",
     tag: "wght",
     minValue: 100,
@@ -29,7 +29,7 @@ const presetAxes = [
     maxValue: 900,
   },
   {
-    label: "Width",
+    label: "width",
     name: "width",
     tag: "wdth",
     minValue: 50,
@@ -37,7 +37,7 @@ const presetAxes = [
     maxValue: 200,
   },
   {
-    label: "Optical Size",
+    label: "optical-size",
     name: "optical",
     tag: "opsz",
     minValue: 8,
@@ -45,7 +45,7 @@ const presetAxes = [
     maxValue: 144,
   },
   {
-    label: "Italic",
+    label: "italic",
     name: "italic",
     tag: "ital",
     minValue: 0,
@@ -53,7 +53,7 @@ const presetAxes = [
     maxValue: 1,
   },
   {
-    label: "Slant",
+    label: "slant",
     name: "slant",
     tag: "slnt",
     minValue: -20,
@@ -111,12 +111,12 @@ export class AxesPanel extends BaseInfoPanel {
   }
 
   async newAxis() {
-    const dialog = await dialogSetup("New Axis", "", [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Add new axis", resultValue: "ok", isDefaultButton: true },
+    const dialog = await dialogSetup(translate("axes.create"), "", [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: translate("axes.add"), resultValue: "ok", isDefaultButton: true },
     ]);
 
-    const radioGroup = [html.div({}, "Axis presets:")];
+    const radioGroup = [html.div({}, translate("axes.preset"))];
     const selected = "wght";
 
     const controller = new ObservableController({ ...presetAxesByTag[selected] });
@@ -143,7 +143,9 @@ export class AxesPanel extends BaseInfoPanel {
           },
         }),
         html.label({ for: identifier }, [
-          `${presetAxis.label} (${presetAxis.name}, ${presetAxis.tag})`,
+          `${translate("axes.preset." + presetAxis.label)} (${presetAxis.name}, ${
+            presetAxis.tag
+          })`,
         ]),
         html.br()
       );
@@ -162,9 +164,9 @@ export class AxesPanel extends BaseInfoPanel {
         `,
       },
       [
-        ...labeledTextInput("Name", controller, "name"),
-        ...labeledTextInput("OT Tag", controller, "tag"),
-        ...labeledTextInput("UI Name", controller, "label"),
+        ...labeledTextInput(translate("axes.names.name"), controller, "name"),
+        ...labeledTextInput(translate("axes.names.ot-tag"), controller, "tag"),
+        ...labeledTextInput(translate("axes.names.ui-name"), controller, "label"),
       ]
     );
 

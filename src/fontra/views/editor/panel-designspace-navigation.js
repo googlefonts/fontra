@@ -1,6 +1,7 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 import { controllerKey, ObservableController } from "/core/observable-object.js";
 import { labeledTextInput } from "/core/ui-utils.js";
 import {
@@ -70,7 +71,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     accordion.items = [
       {
         id: "font-axes-accordion-item",
-        label: "Font axes",
+        label: translate("sidebar.designspace-navigation.font-axes"),
         open: true,
         content: html.createDomElement(
           "designspace-location",
@@ -80,7 +81,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         auxiliaryHeaderElement: groupAccordionHeaderButtons([
           makeAccordionHeaderButton({
             icon: "tool",
-            tooltip: "Edit font axes",
+            tooltip: translate("sidebar.designspace-navigation.font-axes.edit"),
             onclick: (event) => {
               const url = new URL(window.location);
               url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
@@ -91,14 +92,14 @@ export default class DesignspaceNavigationPanel extends Panel {
           makeAccordionHeaderButton({
             icon: "refresh",
             id: "reset-font-axes-button",
-            tooltip: "Reset font axes",
+            tooltip: translate("sidebar.designspace-navigation.font-axes.reset"),
             onclick: (event) => this.resetFontAxesToDefault(),
           }),
         ]),
       },
       {
         id: "glyph-axes-accordion-item",
-        label: "Glyph axes",
+        label: translate("sidebar.designspace-navigation.glyph-axes"),
         open: true,
         content: html.createDomElement(
           "designspace-location",
@@ -108,20 +109,20 @@ export default class DesignspaceNavigationPanel extends Panel {
         auxiliaryHeaderElement: groupAccordionHeaderButtons([
           makeAccordionHeaderButton({
             icon: "tool",
-            tooltip: "Edit glyph axes",
+            tooltip: translate("sidebar.designspace-navigation.glyph-axes.edit"),
             onclick: (event) => this.editGlyphAxes(),
           }),
           makeAccordionHeaderButton({
             icon: "refresh",
             id: "reset-glyph-axes-button",
-            tooltip: "Reset glyph axes",
+            tooltip: translate("sidebar.designspace-navigation.glyph-axes.reset"),
             onclick: (event) => this.resetGlyphAxesToDefault(),
           }),
         ]),
       },
       {
         id: "glyph-sources-accordion-item",
-        label: "Glyph sources",
+        label: translate("sidebar.designspace-navigation.glyph-sources"),
         open: true,
         content: html.div(
           {
@@ -267,13 +268,13 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const columnDescriptions = [
       {
-        title: "on",
+        title: translate("sidebar.designspace-navigation.glyph-sources.on"),
         key: "active",
         cellFactory: makeIconCellFactory(
           ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
           true
         ),
-        width: "1.2em",
+        width: "2.5em",
       },
       {
         title: " ",
@@ -281,7 +282,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         cellFactory: interpolationErrorCell,
         width: "1.2em",
       },
-      { key: "name", title: "Source name", width: "12em" },
+      {
+        key: "name",
+        title: translate("sidebar.designspace-navigation.glyph-sources.name"),
+        width: "12em",
+      },
       {
         title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
           this.onVisibilityHeaderClick(event)
@@ -330,7 +335,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         (statusDef) => statusDef.isDefault
       )?.value;
       columnDescriptions.push({
-        title: "status",
+        title: translate("sidebar.designspace-navigation.glyph-sources.status"),
         key: "status",
         cellFactory: statusListCell,
         width: "3em",
