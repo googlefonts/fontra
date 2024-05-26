@@ -52,7 +52,7 @@ export class PowerRulerTool extends BaseTool {
     this.active = editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER];
 
     editor.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       throttleCalls(() => setTimeout(() => this.locationChanged(), 0), 20)
     );
 

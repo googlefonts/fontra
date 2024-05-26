@@ -3,6 +3,7 @@
   <advance width="400"/>
   <unicode hex="0058"/>
   <unicode hex="0078"/>
+  <guideline x="203" y="345" angle="294.0" name="Guideline X Diagonale" identifier="S9rHC6DsUe"/>
   <outline>
     <contour>
       <point x="337" y="0" type="line"/>

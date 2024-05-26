@@ -117,6 +117,9 @@ export class MenuPanel extends SimpleElement {
     this.menuItems = menuItems;
 
     for (const [index, item] of enumerate(menuItems)) {
+      if (!("enabled" in item)) {
+        item.enabled = () => true;
+      }
       const hasSubMenu = typeof item.getItems === "function";
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {

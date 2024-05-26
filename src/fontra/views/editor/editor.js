@@ -23,7 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
-import { labeledTextInput } from "../core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -141,8 +141,12 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
-        "location",
+        "fontLocationUser",
         "glyphLocation",
+        "fontAxesUseSourceCoordinates",
+        "fontAxesShowEffectiveLocation",
+        "fontAxesShowHidden",
+        "fontAxesSkipMapping",
         "selectedGlyph",
         "selection",
         "text",
@@ -193,6 +197,15 @@ export class EditorController {
     this.sceneController.addEventListener("doubleClickedAnchors", async (event) => {
       this.doubleClickedAnchorsCallback(event);
     });
+
+    this.sceneController.addEventListener("doubleClickedGuidelines", async (event) => {
+      this.doubleClickedGuidelinesCallback(event);
+    });
+
+    // TODO: Font Guidelines
+    // this.sceneController.addEventListener("doubleClickedFontGuidelines", async (event) => {
+    //   this.doubleClickedFontGuidelinesCallback(event);
+    // });
 
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
       this.showDialogGlyphEditCannotEditReadOnly();
@@ -413,7 +426,7 @@ export class EditorController {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
               callback: () => {
-                this.getSidebarPanel("designspace-navigation").editLocalAxes();
+                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
               },
             },
           ];
@@ -628,8 +641,11 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromUserLocation(
-          { ...this.sceneSettings.location, ...this.sceneSettings.glyphLocation },
+        const nearestSourceIndex = glyphController.findNearestSourceFromSourceLocation(
+          {
+            ...this.sceneSettings.fontLocationSourceMapped,
+            ...this.sceneSettings.glyphLocation,
+          },
           true
         );
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
@@ -948,7 +964,7 @@ export class EditorController {
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
-    const localLocations = {};
+    const glyphLocations = {};
     const glyphInfos = [];
 
     const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
@@ -974,11 +990,11 @@ export class EditorController {
       const glyphName = instance.components[componentIndex].name;
       const location = instance.components[componentIndex].location;
       if (location) {
-        localLocations[glyphName] = location;
+        glyphLocations[glyphName] = location;
       }
       glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
-    this.sceneController.updateLocalLocations(localLocations);
+    this.sceneController.updateGlyphLocations(glyphLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     glyphLines[selectedGlyphInfo.lineIndex].splice(
@@ -996,6 +1012,11 @@ export class EditorController {
 
   async doubleClickedAnchorsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    if (!glyphController.canEdit) {
+      this.sceneController._dispatchEvent("glyphEditLocationNotAtSource");
+      return;
+    }
+
     const instance = glyphController.instance;
 
     const anchorIndex = this.sceneController.doubleClickedAnchorIndices[0];
@@ -1016,6 +1037,39 @@ export class EditorController {
       }
       this.sceneController.selection = new Set([`anchor/${anchorIndex}`]);
       return "Edit Anchor";
+    });
+  }
+
+  async doubleClickedGuidelinesCallback(event) {
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    if (!glyphController.canEdit) {
+      this.sceneController._dispatchEvent("glyphEditLocationNotAtSource");
+      return;
+    }
+
+    const instance = glyphController.instance;
+
+    const guidelineIndex = this.sceneController.doubleClickedGuidelineIndices[0];
+    let guideline = instance.guidelines[guidelineIndex];
+    const { guideline: newGuideline } = await this.doAddEditGuidelineDialog(guideline);
+    if (!newGuideline) {
+      return;
+    }
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const oldGuideline = layerGlyph.guidelines[guidelineIndex];
+        layerGlyph.guidelines[guidelineIndex] = {
+          name: newGuideline.name ? newGuideline.name : oldGuideline.name,
+          x: !isNaN(newGuideline.x) ? newGuideline.x : oldGuideline.x,
+          y: !isNaN(newGuideline.y) ? newGuideline.y : oldGuideline.y,
+          angle: !isNaN(newGuideline.angle) ? newGuideline.angle : oldGuideline.angle,
+          locked: [true, false].includes(newGuideline.locked)
+            ? newGuideline.locked
+            : oldGuideline.locked,
+        };
+      }
+      this.sceneController.selection = new Set([`guideline/${guidelineIndex}`]);
+      return "Edit Guideline";
     });
   }
 
@@ -1100,6 +1154,22 @@ export class EditorController {
       enabled: () => this.canAddAnchor(),
       callback: () => this.doAddAnchor(),
       shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      // TODO: Font Guidelines with altKey, something like this:
+      //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
+      //altKey: true,
+      title: "Add Guideline",
+      enabled: () => this.canAddGuideline(),
+      callback: () => this.doAddGuideline(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
+      enabled: () => this.canLockGuideline(),
+      callback: (event) => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -1495,10 +1565,12 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      guideline: guidelineIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
     let anchors;
+    let guidelines;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1523,11 +1595,20 @@ export class EditorController {
         }
       }
     }
+    if (guidelineIndices) {
+      guidelines = guidelineIndices.map((i) => editInstance.guidelines[i]);
+      if (doCut) {
+        for (const guidelineIndex of reversed(guidelineIndices)) {
+          editInstance.guidelines.splice(guidelineIndex, 1);
+        }
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
       path: path,
       components: components,
       anchors: anchors,
+      guidelines: guidelines,
     });
     return {
       instance: instance,
@@ -1607,7 +1688,9 @@ export class EditorController {
       }
       // Force sync between location and selectedSourceIndex, as the glyph's
       // source list may have changed
-      this.sceneSettings.location = { ...this.sceneSettings.location };
+      this.sceneSettings.fontLocationSourceMapped = {
+        ...this.sceneSettings.fontLocationSourceMapped,
+      };
       this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
@@ -1730,6 +1813,13 @@ export class EditorController {
           selection.add(`anchor/${anchorIndex}`);
         }
 
+        for (const guidelineIndex of range(
+          firstLayerGlyph.guidelines.length,
+          firstLayerGlyph.guidelines.length + defaultPasteGlyph.guidelines.length
+        )) {
+          selection.add(`guideline/${guidelineIndex}`);
+        }
+
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] ||
@@ -1740,6 +1830,7 @@ export class EditorController {
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
           layerGlyph.anchors.push(...pasteGlyph.anchors);
+          layerGlyph.guidelines.push(...pasteGlyph.guidelines);
         }
         this.sceneController.selection = selection;
         return "Paste";
@@ -1798,7 +1889,15 @@ export class EditorController {
       point: pointSelection,
       component: componentSelection,
       anchor: anchorSelection,
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
+    // TODO: Font Guidelines
+    // if (fontGuidelineSelection) {
+    //   for (const guidelineIndex of reversed(fontGuidelineSelection)) {
+    //     XXX
+    //   }
+    // }
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
@@ -1816,6 +1915,16 @@ export class EditorController {
           if (anchorSelection) {
             for (const anchorIndex of reversed(anchorSelection)) {
               layerGlyph.anchors.splice(anchorIndex, 1);
+            }
+          }
+          if (guidelineSelection) {
+            for (const guidelineIndex of reversed(guidelineSelection)) {
+              const guideline = layerGlyph.guidelines[guidelineIndex];
+              if (guideline.locked) {
+                // don't delete locked guidelines
+                continue;
+              }
+              layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
           }
         }
@@ -2054,6 +2163,256 @@ export class EditorController {
     return { contentElement, warningElement };
   }
 
+  selectionHasLockedGuidelines() {
+    const {
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
+    } = parseSelection(this.sceneController.selection);
+
+    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
+    if (guidelineSelection?.some((index) => instance.guidelines[index]?.locked)) {
+      return true;
+    }
+
+    // TODO: Font Guidelines
+    // check if any of the selected guidelines are locked
+
+    return false;
+  }
+
+  getLockGuidelineLabel(hasLockedGuidelines) {
+    const {
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
+    } = parseSelection(this.sceneController.selection);
+    const numGuidelines = guidelineSelection?.length || 0;
+    // + (fontGuidelineSelection?.length || 0);
+
+    const s = numGuidelines > 1 ? "s" : "";
+    return `${hasLockedGuidelines ? "Unlock" : "Lock"} Guideline${s}`;
+  }
+
+  canLockGuideline() {
+    if (this.fontController.readOnly || this.sceneModel.isSelectedGlyphLocked()) {
+      return false;
+    }
+    const {
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
+    } = parseSelection(this.sceneController.selection);
+    const numGuidelines = guidelineSelection?.length || 0;
+    // + (fontGuidelineSelection?.length || 0);
+
+    return numGuidelines;
+  }
+
+  async doLockGuideline(locking = false) {
+    const {
+      guideline: guidelineSelection,
+      //fontGuideline: fontGuidelineSelection,
+    } = parseSelection(this.sceneController.selection);
+    const identifier = locking ? "Unlock" : "Lock";
+
+    // Lock glyph guidelines
+    if (guidelineSelection) {
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          for (const guidelineIndex of guidelineSelection) {
+            const guideline = layerGlyph.guidelines[guidelineIndex];
+            if (!guideline) {
+              continue;
+            }
+            guideline.locked = locking;
+          }
+        }
+        return `${identifier} Guideline(s)`;
+      });
+    }
+    // TODO: Font Guidelines locking
+    // Lock font guidelines
+    // if (fontGuidelineSelection) {
+    //   XXX
+    // }
+  }
+
+  // TODO: We may want to make a more general code for adding and editing
+  // so we can handle both anchors and guidelines with the same code
+  // Guidelines
+  canAddGuideline() {
+    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+  }
+
+  async doAddGuideline(global = false) {
+    const point = this.sceneController.selectedGlyphPoint(this.contextMenuPosition);
+    const { guideline: tempGuideline } = await this.doAddEditGuidelineDialog(
+      undefined,
+      point,
+      global
+    );
+    if (!tempGuideline) {
+      return;
+    }
+
+    const newGuideline = {
+      x: !isNaN(tempGuideline.x) ? tempGuideline.x : Math.round(point.x),
+      y: !isNaN(tempGuideline.y) ? tempGuideline.y : Math.round(point.y),
+      angle: !isNaN(tempGuideline.angle) ? tempGuideline.angle : 0,
+      locked: tempGuideline.locked !== undefined ? tempGuideline.locked : false,
+    };
+    if (tempGuideline.name) {
+      newGuideline.name = tempGuideline.name;
+    }
+
+    if (!global) {
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          layerGlyph.guidelines.push({ ...newGuideline });
+        }
+        const newGuidelineIndex = instance.guidelines.length - 1;
+        this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
+        return "Add Guideline";
+      });
+    }
+    // TODO: Font Guidelines
+  }
+
+  async doAddEditGuidelineDialog(
+    guideline = undefined,
+    point = undefined,
+    global = false
+  ) {
+    const titlePrefix = guideline ? "Edit" : "Add";
+    if (!guideline && !point) {
+      // Need at least one of the two
+      return {};
+    }
+
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+
+    const validateInput = () => {
+      const warnings = [];
+      const editedGuidelineName =
+        nameController.model.guidelineName ||
+        nameController.model.suggestedGuidelineName;
+      for (const n of ["X", "Y", "Angle"]) {
+        const value = nameController.model[`guideline${n}`];
+        if (isNaN(value)) {
+          if (value !== undefined) {
+            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+          }
+        }
+      }
+      if (
+        editedGuidelineName !== guideline?.name &&
+        instance.guidelines.some((guideline) => guideline.name === editedGuidelineName)
+      ) {
+        warnings.push("⚠️ The guideline name should be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
+
+    const nameController = new ObservableController({
+      guidelineName: guideline ? guideline.name : undefined,
+      guidelineX: guideline ? guideline.x : Math.round(point.x),
+      guidelineY: guideline ? guideline.y : Math.round(point.y),
+      guidelineAngle: guideline ? guideline.angle : 0,
+      guidelineLocked: guideline ? guideline.locked : false,
+    });
+
+    nameController.addKeyListener("guidelineName", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineX", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineY", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineAngle", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("guidelineLocked", (event) => {
+      validateInput();
+    });
+
+    const disable =
+      nameController.model.guidelineName ||
+      nameController.model.guidelineX ||
+      nameController.model.guidelineY ||
+      nameController.model.guidelineAngle
+        ? false
+        : true;
+    const { contentElement, warningElement } =
+      this._guidelinePropertiesContentElement(nameController);
+    const dialog = await dialogSetup(
+      `${titlePrefix} ${global ? "Font " : ""}Guideline`,
+      null,
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: titlePrefix, isDefaultButton: true, disabled: disable },
+      ]
+    );
+
+    dialog.setContent(contentElement);
+
+    setTimeout(
+      () => contentElement.querySelector("#guideline-name-text-input")?.focus(),
+      0
+    );
+
+    validateInput();
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const newGuideline = {
+      name: nameController.model.guidelineName,
+      x: Number(nameController.model.guidelineX),
+      y: Number(nameController.model.guidelineY),
+      angle: Number(nameController.model.guidelineAngle),
+      locked: nameController.model.guidelineLocked,
+    };
+
+    return { guideline: newGuideline };
+  }
+
+  _guidelinePropertiesContentElement(controller) {
+    const warningElement = html.div({
+      id: "warning-text-guideline-name",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: auto auto;
+          align-items: center;
+          height: 100%;
+          min-height: 0;
+        `,
+      },
+      [
+        ...labeledTextInput("Name:", controller, "guidelineName", {
+          id: "guideline-name-text-input",
+        }),
+        ...labeledTextInput("x:", controller, "guidelineX", {}),
+        ...labeledTextInput("y:", controller, "guidelineY", {}),
+        ...labeledTextInput("angle:", controller, "guidelineAngle", {}),
+        html.div(),
+        labeledCheckbox("locked", controller, "guidelineLocked", {}),
+        html.br(),
+        warningElement,
+      ]
+    );
+    return { contentElement, warningElement };
+  }
+
   canSelectAllNone(selectNone) {
     return this.sceneSettings.selectedGlyph?.isEditing;
   }
@@ -2074,27 +2433,76 @@ export class EditorController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      guideline: guidelineIndices,
+      //fontGuideline: fontGuidelineIndices,
     } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    // TODO: guidelinesIndices = guidelinesIndices || [];
+    guidelineIndices = guidelineIndices || [];
+    //fontGuidelineIndices = fontGuidelineIndices || [];
 
     let selectObjects = false;
     let selectAnchors = false;
-    // TODO: let selectGuidelines;
+    let selectGuidelines = false;
 
-    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
-      selectObjects = true;
-      selectAnchors = false;
+    const instance = positionedGlyph.glyph.instance;
+    const hasObjects =
+      instance.components.length > 0 || instance.path.pointTypes.length > 0;
+    const hasAnchors = instance.anchors.length > 0;
+    const hasGuidelines = instance.guidelines.length > 0;
+
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      !anchorIndices.length &&
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
+    ) {
+      if (hasObjects) {
+        selectObjects = true;
+      } else if (hasAnchors) {
+        selectAnchors = true;
+      } else if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
-    if ((pointIndices.length || componentIndices.length) && !anchorIndices.length) {
-      selectObjects = true;
-      selectAnchors = true;
+
+    if (
+      (pointIndices.length || componentIndices.length) &&
+      !anchorIndices.length &&
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
+    ) {
+      if (hasAnchors) {
+        selectObjects = true;
+        selectAnchors = true;
+      } else if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
-    if ((pointIndices.length || componentIndices.length) && anchorIndices.length) {
-      selectObjects = false;
-      selectAnchors = true;
+
+    if (
+      (pointIndices.length || componentIndices.length) &&
+      anchorIndices.length &&
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
+    ) {
+      if (hasAnchors) {
+        selectAnchors = true;
+      }
+    }
+
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      anchorIndices.length &&
+      !guidelineIndices.length
+      //&& !fontGuidelineIndices.length
+    ) {
+      if (hasGuidelines) {
+        selectGuidelines = true;
+      }
     }
 
     let newSelection = new Set();
@@ -2117,6 +2525,15 @@ export class EditorController {
       }
     }
 
+    if (selectGuidelines) {
+      for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
+        const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
+        if (!guideline.locked) {
+          newSelection.add(`guideline/${guidelineIndex}`);
+        }
+      }
+      // TODO: Font Guidelines selection
+    }
     this.sceneController.selection = newSelection;
   }
 
@@ -2130,8 +2547,8 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromUserLocation({
-        ...this.sceneSettings.location,
+      newSourceIndex = varGlyphController.findNearestSourceFromSourceLocation({
+        ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
     } else {
@@ -2297,7 +2714,9 @@ export class EditorController {
 
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
-    this.sceneSettings.location = { ...this.sceneSettings.location };
+    this.sceneSettings.fontLocationSourceMapped = {
+      ...this.sceneSettings.fontLocationSourceMapped,
+    };
     this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
@@ -2306,9 +2725,7 @@ export class EditorController {
   async reloadData(reloadPattern) {
     if (!reloadPattern) {
       // A reloadPattern of undefined or null means: reload all the things
-      await this.fontController.reloadEverything();
-      await this.sceneModel.updateScene();
-      this.canvasController.requestUpdate();
+      await this.reloadEverything();
       return;
     }
 
@@ -2320,9 +2737,17 @@ export class EditorController {
         }
       } else {
         // TODO
-        console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
+        // console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
+        await this.reloadEverything();
+        return;
       }
     }
+  }
+
+  async reloadEverything() {
+    await this.fontController.reloadEverything();
+    await this.sceneModel.updateScene();
+    this.canvasController.requestUpdate();
   }
 
   async reloadGlyphs(glyphNames) {
@@ -2380,10 +2805,22 @@ export class EditorController {
     }
     this._previousURLText = viewInfo["text"];
 
-    this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
+    this.sceneModel.setGlyphLocations(viewInfo["glyphLocations"]);
 
+    if (viewInfo["fontAxesUseSourceCoordinates"]) {
+      this.sceneSettings.fontAxesUseSourceCoordinates = true;
+    }
+    if (viewInfo["fontAxesShowEffectiveLocation"]) {
+      this.sceneSettings.fontAxesShowEffectiveLocation = true;
+    }
+    if (viewInfo["fontAxesShowHidden"]) {
+      this.sceneSettings.fontAxesShowHidden = true;
+    }
+    if (viewInfo["fontAxesSkipMapping"]) {
+      this.sceneSettings.fontAxesSkipMapping = true;
+    }
     if (viewInfo["location"]) {
-      this.sceneSettings.location = viewInfo["location"];
+      this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
@@ -2413,10 +2850,22 @@ export class EditorController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
-    viewInfo["location"] = this.sceneSettings.location;
-    const localLocations = this.sceneController.getLocalLocations(true);
-    if (Object.keys(localLocations).length) {
-      viewInfo["localLocations"] = localLocations;
+    viewInfo["location"] = this.sceneSettings.fontLocationUser;
+    if (this.sceneSettings.fontAxesUseSourceCoordinates) {
+      viewInfo["fontAxesUseSourceCoordinates"] = true;
+    }
+    if (this.sceneSettings.fontAxesShowEffectiveLocation) {
+      viewInfo["fontAxesShowEffectiveLocation"] = true;
+    }
+    if (this.sceneSettings.fontAxesShowHidden) {
+      viewInfo["fontAxesShowHidden"] = true;
+    }
+    if (this.sceneSettings.fontAxesSkipMapping) {
+      viewInfo["fontAxesSkipMapping"] = true;
+    }
+    const glyphLocations = this.sceneController.getGlyphLocations(true);
+    if (Object.keys(glyphLocations).length) {
+      viewInfo["glyphLocations"] = glyphLocations;
     }
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {

@@ -50,7 +50,7 @@ export default class SelectionInfoPanel extends Panel {
     this.sceneController = this.editorController.sceneController;
 
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "selection", "location", "glyphLocation"],
+      ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
       (event) => this.throttledUpdate()
     );
 
@@ -356,7 +356,7 @@ export default class SelectionInfoPanel extends Panel {
 
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
-        const globalAxisNames = this.fontController.globalAxes.map((axis) => axis.name);
+        const fontAxisNames = this.fontController.fontAxes.map((axis) => axis.name);
         const locationItems = [];
 
         // We also add global axes, if in location and not in baseGlyph.axes
@@ -368,7 +368,7 @@ export default class SelectionInfoPanel extends Panel {
           baseGlyph.combinedAxes
             .filter(
               (axis) =>
-                !globalAxisNames.includes(axis.name) || axis.name in component.location
+                !fontAxisNames.includes(axis.name) || axis.name in component.location
             )
             .map((axis) => [axis.name, axis])
         );

@@ -21,7 +21,7 @@ export class SceneModel {
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
     this.hoveredGlyph = undefined;
-    this._localLocations = {}; // glyph name -> local location
+    this._glyphLocations = {}; // glyph name -> glyph location
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
@@ -37,9 +37,9 @@ export class SceneModel {
     );
 
     this.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       (event) => {
-        this._syncLocalLocations();
+        this._syncGlyphLocations();
         this.updateScene();
       }
     );
@@ -131,54 +131,54 @@ export class SceneModel {
     );
   }
 
-  getLocalLocations(filterShownGlyphs = false) {
-    let localLocations;
+  getGlyphLocations(filterShownGlyphs = false) {
+    let glyphLocations;
     if (filterShownGlyphs) {
-      localLocations = {};
+      glyphLocations = {};
       for (const glyphLine of this.glyphLines) {
         for (const glyphInfo of glyphLine) {
           if (
-            !localLocations[glyphInfo.glyphName] &&
-            this._localLocations[glyphInfo.glyphName]
+            !glyphLocations[glyphInfo.glyphName] &&
+            this._glyphLocations[glyphInfo.glyphName]
           ) {
-            const localLocation = this._localLocations[glyphInfo.glyphName];
-            if (Object.keys(localLocation).length) {
-              localLocations[glyphInfo.glyphName] =
-                this._localLocations[glyphInfo.glyphName];
+            const glyphLocation = this._glyphLocations[glyphInfo.glyphName];
+            if (Object.keys(glyphLocation).length) {
+              glyphLocations[glyphInfo.glyphName] =
+                this._glyphLocations[glyphInfo.glyphName];
             }
           }
         }
       }
     } else {
-      localLocations = this._localLocations;
+      glyphLocations = this._glyphLocations;
     }
-    return localLocations;
+    return glyphLocations;
   }
 
-  _syncLocalLocations() {
+  _syncGlyphLocations() {
     const glyphLocation = this.sceneSettings.glyphLocation;
 
     const glyphName = this.sceneSettings.selectedGlyphName;
     if (glyphName !== undefined) {
       if (Object.keys(glyphLocation).length) {
-        this._localLocations[glyphName] = glyphLocation;
+        this._glyphLocations[glyphName] = glyphLocation;
       } else {
-        delete this._localLocations[glyphName];
+        delete this._glyphLocations[glyphName];
       }
     }
   }
 
   _syncLocationFromGlyphName() {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    this.sceneSettings.glyphLocation = { ...this._localLocations[glyphName] };
+    this.sceneSettings.glyphLocation = { ...this._glyphLocations[glyphName] };
   }
 
-  setLocalLocations(localLocations) {
-    this._localLocations = localLocations || {};
+  setGlyphLocations(glyphLocations) {
+    this._glyphLocations = glyphLocations || {};
   }
 
-  updateLocalLocations(localLocations) {
-    this._localLocations = { ...this._localLocations, ...localLocations };
+  updateGlyphLocations(glyphLocations) {
+    this._glyphLocations = { ...this._glyphLocations, ...glyphLocations };
   }
 
   getTextHorizontalExtents() {
@@ -442,8 +442,8 @@ export class SceneModel {
 
   async getGlyphInstance(glyphName, layerName) {
     const location = {
-      ...this.sceneSettings.location,
-      ...this._localLocations[glyphName],
+      ...this.sceneSettings.fontLocationSourceMapped,
+      ...this._glyphLocations[glyphName],
     };
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
   }
@@ -462,6 +462,17 @@ export class SceneModel {
     if (anchorSelection.size) {
       return { selection: anchorSelection };
     }
+
+    const guidelineSelection = this.guidelineSelectionAtPoint(point, size);
+    if (guidelineSelection.size) {
+      return { selection: guidelineSelection };
+    }
+
+    // TODO: Font Guidelines
+    // const fontGuidelineSelection = this.fontGuidelineSelectionAtPoint(point, size);
+    // if (fontGuidelineSelection.size) {
+    //   return { selection: fontGuidelineSelection };
+    // }
 
     const { selection: segmentSelection, pathHit: pathHit } =
       this.segmentSelectionAtPoint(point, size);
@@ -601,6 +612,29 @@ export class SceneModel {
     }
     return new Set([]);
   }
+
+  guidelineSelectionAtPoint(point, size) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    const guidelines = positionedGlyph.glyph.guidelines;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
+    for (const [i, guideline] of enumerate(guidelines)) {
+      const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
+      if (guidelineMatch) {
+        return new Set([`guideline/${i}`]);
+      }
+    }
+    return new Set([]);
+  }
+
+  // TODO: Font Guidelines
+  //fontGuidelineSelectionAtPoint(point, size) {
+  // }
 
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();

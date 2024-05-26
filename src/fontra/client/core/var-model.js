@@ -297,7 +297,7 @@ export function normalizeValue(v, lower, dflt, upper) {
       `Invalid axis values, must be minimum, default, maximum: ${lower}, ${dflt}, ${upper}`
     );
   }
-  v = Math.max(Math.min(v, upper), lower);
+  v = clamp(v, lower, upper);
   if (v === dflt) {
     v = 0.0;
   } else if (v < dflt) {
@@ -306,6 +306,16 @@ export function normalizeValue(v, lower, dflt, upper) {
     v = (v - dflt) / (upper - dflt);
   }
   return v;
+}
+
+export function unnormalizeValue(v, lower, dflt, upper) {
+  // The opposite of normalizeValue
+  if (v < 0) {
+    v = dflt + v * (dflt - lower);
+  } else {
+    v = dflt + v * (upper - dflt);
+  }
+  return clamp(v, lower, upper);
 }
 
 export function normalizeLocation(location, axisList) {
@@ -317,6 +327,24 @@ export function normalizeLocation(location, axisList) {
       v = axis.defaultValue;
     }
     out[axis.name] = normalizeValue(
+      v,
+      axis.minValue,
+      clamp(axis.defaultValue, axis.minValue, axis.maxValue),
+      clamp(axis.maxValue, axis.minValue, axis.maxValue)
+    );
+  }
+  return out;
+}
+
+export function unnormalizeLocation(location, axisList) {
+  // The opposite of normalizeLocation
+  const out = {};
+  for (const axis of axisList) {
+    let v = location[axis.name];
+    if (v === undefined) {
+      v = axis.defaultValue;
+    }
+    out[axis.name] = unnormalizeValue(
       v,
       axis.minValue,
       clamp(axis.defaultValue, axis.minValue, axis.maxValue),
@@ -506,4 +534,43 @@ export function makeSparseLocation(location, axisList) {
       )
       .map((axis) => [axis.name, location[axis.name]])
   );
+}
+
+export function makeSparseNormalizedLocation(location) {
+  // location must be normalized
+  const sparseLocation = {};
+  for (const [name, value] of Object.entries(location)) {
+    if (value) {
+      sparseLocation[name] = value;
+    }
+  }
+  return sparseLocation;
+}
+
+export function mapAxesFromUserSpaceToSourceSpace(axes) {
+  return axes.map((axis) => {
+    const newAxis = { ...axis };
+    if (axis.mapping) {
+      const mappingDict = Object.fromEntries(axis.mapping);
+      const properties = axis.values
+        ? ["defaultValue"]
+        : ["minValue", "defaultValue", "maxValue"];
+      for (const prop of properties) {
+        newAxis[prop] = piecewiseLinearMap(axis[prop], mappingDict);
+      }
+      if (axis.values) {
+        axis.values.map((value) => piecewiseLinearMap(value, mappingDict));
+      }
+    }
+    return newAxis;
+  });
+}
+
+export function isLocationAtDefault(location, axes) {
+  for (const axis of axes) {
+    if (axis.name in location && location[axis.name] !== axis.defaultValue) {
+      return false;
+    }
+  }
+  return true;
 }

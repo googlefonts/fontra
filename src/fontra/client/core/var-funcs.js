@@ -10,6 +10,11 @@ export function addItemwise(a, b) {
     return a;
   } else if (typeof a === "number") {
     return a + b;
+  } else if (typeof a === "boolean") {
+    if (a !== b) {
+      throw new VariationError(`unexpected different booleans: ${a} != ${b}`);
+    }
+    return a;
   } else if (a === undefined && b === undefined) {
     return undefined;
   } else if (a === null && b === null) {
@@ -30,6 +35,11 @@ export function subItemwise(a, b) {
     return a;
   } else if (typeof a === "number") {
     return a - b;
+  } else if (typeof a === "boolean") {
+    if (a !== b) {
+      throw new VariationError(`unexpected different booleans: ${a} != ${b}`);
+    }
+    return a;
   } else if (a === undefined && b === undefined) {
     return undefined;
   } else if (a === null && b === null) {
@@ -41,7 +51,7 @@ export function subItemwise(a, b) {
 }
 
 export function mulScalar(o, scalar) {
-  if (scalar === 1 || typeof o === "string") {
+  if (scalar === 1 || typeof o === "string" || typeof o === "boolean") {
     return o;
   } else if (typeof o === "number") {
     return o * scalar;

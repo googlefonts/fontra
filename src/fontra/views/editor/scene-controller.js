@@ -63,7 +63,13 @@ export class SceneController {
       align: "center",
       editLayerName: null,
       glyphLines: [],
-      location: {},
+      fontLocationUser: {},
+      fontLocationSource: {},
+      fontLocationSourceMapped: {},
+      fontAxesUseSourceCoordinates: false,
+      fontAxesShowEffectiveLocation: false,
+      fontAxesShowHidden: false,
+      fontAxesSkipMapping: false,
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
@@ -121,21 +127,94 @@ export class SceneController {
       true
     );
 
+    // Set up the dependencies between fontLocationUser, fontLocationSource and
+    // fontLocationSourceMapped
+    const locationDependencies = [
+      [
+        "fontLocationUser",
+        "fontLocationSource",
+        "mapUserLocationToSourceLocation",
+        false,
+      ],
+      [
+        "fontLocationSource",
+        "fontLocationUser",
+        "mapSourceLocationToUserLocation",
+        false,
+      ],
+      [
+        "fontLocationSource",
+        "fontLocationSourceMapped",
+        "mapSourceLocationToMappedSourceLocation",
+        true,
+      ],
+      [
+        "fontLocationSourceMapped",
+        "fontLocationSource",
+        "mapMappedSourceLocationToSourceLocation",
+        true,
+      ],
+    ];
+
+    for (const [
+      sourceKey,
+      destinationKey,
+      mapMethodName,
+      maySkip,
+    ] of locationDependencies) {
+      const mapMethod = this.fontController[mapMethodName].bind(this.fontController);
+
+      this.sceneSettingsController.addKeyListener(
+        sourceKey,
+        (event) => {
+          if (event.senderInfo?.senderStack?.includes(destinationKey)) {
+            return;
+          }
+
+          const mapFunc =
+            maySkip && this.sceneSettings.fontAxesSkipMapping
+              ? (loc) => loc
+              : mapMethod;
+
+          this.sceneSettingsController.setItem(
+            destinationKey,
+            mapFunc(event.newValue),
+            {
+              senderStack: (event.senderInfo?.senderStack || []).concat([
+                sourceKey,
+                destinationKey,
+              ]),
+            }
+          );
+        },
+        true
+      );
+    }
+
+    // Trigger recalculating the mapped location
+    this.sceneSettingsController.addKeyListener("fontAxesSkipMapping", (event) => {
+      this.sceneSettings.fontLocationSource = {
+        ...this.sceneSettings.fontLocationSource,
+      };
+    });
+
     // Set up the mutual dependencies between location and selectedSourceIndex
+    const locationSelectedSourceToken = Symbol("location-selectedSourceIndex");
+
     this.sceneSettingsController.addKeyListener(
-      ["location", "glyphLocation"],
+      ["fontLocationSourceMapped", "glyphLocation"],
       async (event) => {
-        if (event.senderInfo?.senderID === this) {
+        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
           return;
         }
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.location,
+          ...this.sceneSettings.fontLocationSourceMapped,
           ...this.sceneSettings.glyphLocation,
         });
         this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-          senderID: this,
+          senderID: locationSelectedSourceToken,
         });
       }
     );
@@ -143,7 +222,7 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
       async (event) => {
-        if (event.senderInfo?.senderID === this) {
+        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
           return;
         }
         const sourceIndex = event.newValue;
@@ -153,21 +232,35 @@ export class SceneController {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
 
-        const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
-
+        const location =
+          varGlyphController.getSourceLocationFromSourceIndex(sourceIndex);
         const { fontLocation, glyphLocation } = splitLocation(
           location,
           varGlyphController.axes
         );
 
-        this.sceneSettingsController.setItem("location", fontLocation, {
-          senderID: this,
+        this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
+          senderID: locationSelectedSourceToken,
         });
-        this.sceneSettingsController.setItem("glyphLocation", glyphLocation, {
-          senderID: this,
-        });
+        this.sceneSettingsController.setItem(
+          "glyphLocation",
+          varGlyphController.foldNLIAxes(glyphLocation),
+          {
+            senderID: locationSelectedSourceToken,
+          }
+        );
       },
       true
+    );
+
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        // the MultipleAxisMapping may have changed, force to re-sync the location
+        this.sceneSettings.fontLocationSource = {
+          ...this.sceneSettings.fontLocationSource,
+        };
+      }
     );
 
     // Set up convenience property "selectedGlyphName"
@@ -703,12 +796,12 @@ export class SceneController {
     return layerNames;
   }
 
-  getLocalLocations(filterShownGlyphs = false) {
-    return this.sceneModel.getLocalLocations(filterShownGlyphs);
+  getGlyphLocations(filterShownGlyphs = false) {
+    return this.sceneModel.getGlyphLocations(filterShownGlyphs);
   }
 
-  updateLocalLocations(localLocations) {
-    this.sceneModel.updateLocalLocations(localLocations);
+  updateGlyphLocations(glyphLocations) {
+    this.sceneModel.updateGlyphLocations(glyphLocations);
   }
 
   getSceneBounds() {
@@ -903,7 +996,8 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        location: this.sceneSettings.location,
+        fontLocation: this.sceneSettings.fontLocationSourceMapped,
+        glyphLocation: this.sceneSettings.glyphLocation,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -947,12 +1041,13 @@ export class SceneController {
     const undoInfo = await this.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
-      if (undoInfo.location) {
+      if (undoInfo.fontLocation) {
         this.scrollAdjustBehavior = "pin-glyph-center";
         // Pass a copy of the location to ensure the listeners are called even
         // if the location didn't change: its dependents may vary depending on
         // the glyph data (eg. a source being there or not)
-        this.sceneSettings.location = { ...undoInfo.location };
+        this.sceneSettings.fontLocationSourceMapped = { ...undoInfo.fontLocation };
+        this.sceneSettings.glyphLocation = { ...undoInfo.glyphLocation };
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();
@@ -1050,7 +1145,7 @@ export class SceneController {
         !(source.layerName in layerLocations)
       ) {
         layerLocations[source.layerName] =
-          varGlyph.mapSourceLocationToGlobal(sourceIndex);
+          varGlyph.getSourceLocationFromSourceIndex(sourceIndex);
       }
     }
 

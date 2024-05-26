@@ -6,6 +6,8 @@ const colors = {
   "thumb-color": ["#333", "#ddd"],
   "thumb-color-at-default": ["#ccc", "#777"],
   "track-color": ["#ccc", "#222"],
+  "disabled-color": ["#ddd", "#2e2e2e"],
+  "disabled-text-color": ["#999", "#aaa"],
 };
 
 export class RangeSlider extends html.UnlitElement {
@@ -16,6 +18,7 @@ export class RangeSlider extends html.UnlitElement {
       --thumb-height: 14px;
       --thumb-width: 14px;
       --track-height: 5px;
+      --disabled-factor: 0.7;
     }
 
     .wrapper {
@@ -24,6 +27,11 @@ export class RangeSlider extends html.UnlitElement {
       gap: 0.5em;
       font-family: fontra-ui-regular, sans-serif;
       font-feature-settings: "tnum" 1;
+    }
+
+    .wrapper.disabled {
+      height: var(--thumb-height);
+      margin-top: -3px;
     }
 
     .range-container {
@@ -50,6 +58,11 @@ export class RangeSlider extends html.UnlitElement {
       width: 100%;
       background: transparent;
       height: 1rem;
+      vertical-align: middle;
+    }
+
+    .slider:disabled {
+      height: calc(1rem * var(--disabled-factor));
     }
 
     /* Special styling for WebKit/Blink */
@@ -64,6 +77,17 @@ export class RangeSlider extends html.UnlitElement {
       margin-top: -4.5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     }
 
+    .slider:disabled::-webkit-slider-thumb {
+      height: calc(var(--thumb-height) * var(--disabled-factor));
+      background: var(--disabled-color);
+      cursor: unset;
+      margin-top: calc(-4.5px * var(--disabled-factor));
+    }
+
+    .slider.is-at-default:disabled::-webkit-slider-thumb {
+      background: var(--disabled-color);
+    }
+
     .slider.is-at-default::-webkit-slider-thumb {
       background: var(--thumb-color-at-default);
     }
@@ -72,6 +96,11 @@ export class RangeSlider extends html.UnlitElement {
       border-radius: 5px;
       height: var(--track-height);
       background: var(--track-color);
+    }
+
+    .slider:disabled::-webkit-slider-runnable-track {
+      height: calc(var(--track-height) * var(--disabled-factor));
+      background: var(--disabled-color);
     }
 
     /* Firefox */
@@ -83,14 +112,30 @@ export class RangeSlider extends html.UnlitElement {
       cursor: pointer;
     }
 
+    .slider:disabled::-moz-range-thumb {
+      height: calc(var(--thumb-height) * var(--disabled-factor));
+      background: var(--disabled-color);
+      cursor: unset;
+    }
+
     .slider.is-at-default::-moz-range-thumb {
       background: var(--thumb-color-at-default);
+    }
+
+    .slider.is-at-default:disabled::-moz-range-thumb {
+      background: var(--disabled-color);
     }
 
     .slider::-moz-range-track {
       border-radius: 5px;
       height: var(--track-height);
       background: var(--track-color);
+    }
+
+    .slider:disabled::-moz-range-track {
+      border-radius: calc(5px * var(--disabled-factor));
+      height: calc(var(--track-height) * var(--disabled-factor));
+      background: var(--disabled-color);
     }
 
     .range-container > input + div {
@@ -137,12 +182,21 @@ export class RangeSlider extends html.UnlitElement {
       background-color: var(--text-input-background-color);
       color: var(--ui-element-foreground-color);
 
-      padding: 3px;
+      padding: 2px 3px;
 
       text-align: center;
       font-family: fontra-ui-regular;
       font-feature-settings: "tnum" 1;
       font-size: 0.9em;
+      vertical-align: middle;
+    }
+
+    .numeric-input > .slider-input > .slider-numeric-input:disabled {
+      background-color: unset;
+      color: var(--disabled-text-color);
+      padding: 0 3px;
+      font-size: 0.8em;
+      border-radius: unset;
     }
 
     .tickmarks {
@@ -153,9 +207,17 @@ export class RangeSlider extends html.UnlitElement {
       padding-bottom: 0;
     }
 
+    .tickmarks.disabled {
+      height: calc(6px * var(--disabled-factor));
+      padding: 7px calc(var(--thumb-width) * var(--disabled-factor) / 2 - 0.5px);
+    }
+
     .tickmark {
       width: 1px;
       background: var(--track-color);
+    }
+    .tickmark.disabled {
+      background: var(--disabled-color);
     }
   `;
 
@@ -181,6 +243,7 @@ export class RangeSlider extends html.UnlitElement {
     this.sawChangeEvent = false;
     this.onChangeCallback = () => {};
     this.values = [];
+    this.disabled = false;
   }
 
   get valueFormatted() {
@@ -329,12 +392,13 @@ export class RangeSlider extends html.UnlitElement {
     const isAtDefault = this.value == this.defaultValue;
     return html.div(
       {
-        class: "wrapper",
+        class: this.disabled ? "wrapper disabled" : "wrapper",
       },
       [
         html.div({ class: "numeric-input" }, [
           html.section({ class: "slider-input" }, [
             (this.numberInput = html.input({
+              disabled: this.disabled,
               type: "number",
               class: "slider-numeric-input",
               value,
@@ -372,6 +436,7 @@ export class RangeSlider extends html.UnlitElement {
           },
           [
             (this.rangeInput = html.input({
+              disabled: this.disabled,
               type: "range",
               class: isAtDefault ? "slider is-at-default" : "slider",
               min: minValue,
@@ -428,9 +493,11 @@ export class RangeSlider extends html.UnlitElement {
             this.isDiscrete() &&
               html.div(
                 {
-                  class: "tickmarks",
+                  class: this.disabled ? "tickmarks disabled" : "tickmarks",
                 },
-                this.values.map(() => html.span({ class: "tickmark" }))
+                this.values.map(() =>
+                  html.span({ class: this.disabled ? "tickmark disabled" : "tickmark" })
+                )
               ),
           ].filter((e) => e)
         ),

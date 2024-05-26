@@ -14,6 +14,7 @@ from fontra.core.classes import (
     FontAxis,
     GlyphAxis,
     GlyphSource,
+    Guideline,
     Layer,
     MultipleAxisMapping,
     OpenTypeFeatures,
@@ -191,6 +192,49 @@ async def test_addLocalAxis(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+# NOTE: font guidelines are tested via test_getSources, no need to repeat here
+
+
+async def test_getGuidelines(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+
+    layerName = "MutatorSansLightCondensed/foreground"
+    layer = glyph.layers[layerName]
+
+    assert 1 == len(layer.glyph.guidelines)
+    assert Guideline(name="E Bar", x=0, y=334, angle=0) == layer.glyph.guidelines[0]
+    # TODO: Guideline test customData, eg. identifier, color, etc.
+    # assert (
+    #     Guideline(
+    #         name="E Bar", x=0, y=334, angle=0, customData={"identifier": "wb94MzpUaN"}
+    #     )
+    #     == layer.glyph.guidelines[0]
+    # )
+
+
+async def test_addGuidelines(writableTestFont):
+    glyphName = "E"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "test"
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+    glyph.layers[layerName].glyph.guidelines.append(
+        Guideline(name="Left", x=60, angle=90)
+    )
+    # add guideline without a name
+    glyph.layers[layerName].glyph.guidelines.append(Guideline(y=500))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert (
+        glyph.layers[layerName].glyph.guidelines
+        == savedGlyph.layers[layerName].glyph.guidelines
+    )
 
 
 async def test_getAnchors(writableTestFont):
@@ -420,6 +464,11 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
+        ],
     },
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},
@@ -464,6 +513,11 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
+        ],
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 1000.0},
@@ -475,6 +529,11 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
+        ],
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 569.078},
@@ -486,6 +545,11 @@ getSourcesTestData = [
             "italicAngle": {"value": 0},
             "xHeight": {"value": 500},
         },
+        "guidelines": [
+            {"name": "Guideline Cap Height", "y": 700},
+            {"name": "Guideline Left", "x": 60, "angle": 90},
+            {"name": "Guideline Baseline Overshoot", "y": -10},
+        ],
     },
     {
         "location": {"italic": 1.0, "weight": 150.0, "width": 0.0},
