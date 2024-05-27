@@ -1362,7 +1362,7 @@ function statusListCell(item, colDesc) {
     props["style"] = cellColorStyle(color);
     return html.div(props);
   } else {
-    return html.div(props, [value]);
+    return html.div(props, [value === undefined ? "" : value]);
   }
 }
 
