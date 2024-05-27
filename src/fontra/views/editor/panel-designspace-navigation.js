@@ -335,9 +335,18 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.fontController.addChangeListener(
-      { axes: null, customData: null },
+      { axes: null },
       (change, isExternalChange) => {
         this._updateAxes();
+        this._updateSources();
+      }
+    );
+
+    this.fontController.addChangeListener(
+      { customData: null },
+      (change, isExternalChange) => {
+        // the statusFieldDefinitions may have changed, better update the col defs, too
+        this.sourcesList.columnDescriptions = this._setupSourceListColumnDescriptions();
         this._updateSources();
       }
     );
