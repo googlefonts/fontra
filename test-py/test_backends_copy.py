@@ -4,7 +4,7 @@ import subprocess
 import pytest
 from test_backends_designspace import fileNamesFromDir
 
-from fontra.backends import getFileSystemBackend, newFileSystemBackend
+from fontra.backends import UnknownFileType, getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
 
 mutatorDSPath = (
@@ -51,3 +51,10 @@ def test_fontra_copy(tmpdir):
         "MutatorCopy_LightWide.ufo",
         "MutatorCopy_Regular.ufo",
     ] == fileNamesFromDir(tmpdir)
+
+
+def test_newFileSystemBackend_unknown_filetype():
+    with pytest.raises(
+        UnknownFileType, match="Can't find backend for files with extension"
+    ):
+        _ = newFileSystemBackend("test.someunknownextension")
