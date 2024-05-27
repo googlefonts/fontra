@@ -1,6 +1,5 @@
 import contextlib
 import pathlib
-from dataclasses import asdict
 
 import pytest
 
@@ -11,6 +10,7 @@ from fontra.core.classes import (
     FontAxis,
     VariableGlyph,
     structure,
+    unstructure,
 )
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -816,64 +816,45 @@ getGlyphTestData = [
         },
     ),
     (
-        "ttf-glyf1",
+        "ttf-VARC",
         {
             "name": "varcotest1",
-            "axes": [],
             "sources": [
                 {
                     "name": "<default>",
                     "layerName": "<default>",
-                    "location": {"wdth": 0, "wght": 0, "V000": 0, "V001": 0},
-                    "inactive": False,
-                    "customData": {},
-                }
+                    "location": {"V000": 0, "V001": 0, "wdth": 0, "wght": 0},
+                },
+                {
+                    "name": "wght=1",
+                    "layerName": "wght=1",
+                    "location": {"V000": 0, "V001": 0, "wdth": 0, "wght": 1},
+                },
             ],
             "layers": {
                 "<default>": {
                     "glyph": {
-                        "path": {
-                            "coordinates": [],
-                            "pointTypes": [],
-                            "contourInfo": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
                                 "transformation": {
-                                    "translateX": 0,
-                                    "translateY": 0,
                                     "rotation": -10.01953125,
-                                    "scaleX": 1,
-                                    "scaleY": 1,
-                                    "skewX": 0,
                                     "skewY": 19.9951171875,
-                                    "tCenterX": 250.0,
-                                    "tCenterY": 300.0,
+                                    "tCenterX": 250,
+                                    "tCenterY": 300,
                                 },
-                                "location": {
-                                    "wdth": 0,
-                                    "wght": 0.5,
-                                    "V000": 0,
-                                    "V001": 0,
-                                },
+                                "location": {"wght": 0.5},
                             },
                             {
                                 "name": "varcotest2",
                                 "transformation": {
-                                    "translateX": 527.0,
-                                    "translateY": 410.0,
-                                    "rotation": 0,
+                                    "translateX": 527,
+                                    "translateY": 410,
                                     "scaleX": 0.5,
                                     "scaleY": 0.5,
-                                    "skewX": -19.9951171875,
-                                    "skewY": 0,
-                                    "tCenterX": 0,
-                                    "tCenterY": 0,
+                                    "skewX": 19.9951171875,
                                 },
                                 "location": {
-                                    "wdth": 0,
-                                    "wght": 0,
                                     "V000": 0.70001220703125,
                                     "V001": 0.29998779296875,
                                 },
@@ -881,32 +862,69 @@ getGlyphTestData = [
                             {
                                 "name": "varcotest2",
                                 "transformation": {
-                                    "translateX": 627.0,
-                                    "translateY": -175.0,
+                                    "translateX": 627,
+                                    "translateY": -175,
                                     "rotation": 10.01953125,
                                     "scaleX": 0.75,
                                     "scaleY": 0.75,
-                                    "skewX": 0,
                                     "skewY": 19.9951171875,
-                                    "tCenterX": 0,
-                                    "tCenterY": 0,
                                 },
                                 "location": {
-                                    "wdth": 0,
-                                    "wght": 0,
                                     "V000": 0.20001220703125,
                                     "V001": 0.79998779296875,
                                 },
                             },
                         ],
                         "xAdvance": 900,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
-                    },
-                    "customData": {},
-                }
+                    }
+                },
+                "wght=1": {
+                    "glyph": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transformation": {
+                                    "rotation": -10.01953125,
+                                    "skewY": 19.9951171875,
+                                    "tCenterX": 250,
+                                    "tCenterY": 300,
+                                },
+                                "location": {"wght": 0},
+                            },
+                            {
+                                "name": "varcotest2",
+                                "transformation": {
+                                    "translateX": 527,
+                                    "translateY": 410,
+                                    "scaleX": 0.5,
+                                    "scaleY": 0.5,
+                                    "skewX": 19.9951171875,
+                                },
+                                "location": {
+                                    "V000": 0.70001220703125,
+                                    "V001": 0.29998779296875,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "transformation": {
+                                    "translateX": 627,
+                                    "translateY": -175,
+                                    "rotation": 10.01953125,
+                                    "scaleX": 0.75,
+                                    "scaleY": 0.75,
+                                    "skewY": 19.9951171875,
+                                },
+                                "location": {
+                                    "V000": 0.20001220703125,
+                                    "V001": 0.79998779296875,
+                                },
+                            },
+                        ],
+                        "xAdvance": 900,
+                    }
+                },
             },
-            "customData": {},
         },
     ),
 ]
@@ -917,7 +935,7 @@ testFontPaths = {
     "ufo": dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo",
     "ttf": dataDir / "mutatorsans" / "MutatorSans.ttf",
     "otf": dataDir / "mutatorsans" / "MutatorSans.otf",
-    "ttf-glyf1": dataDir / "mutatorsans" / "MutatorSans-glyf1.ttf",
+    "ttf-VARC": dataDir / "mutatorsans" / "MutatorSans-VARC.ttf",
 }
 
 
@@ -973,7 +991,7 @@ async def test_getGlyph(testFontName, expectedGlyph):
     async with contextlib.aclosing(font):
         glyph = await font.getGlyph(expectedGlyph.name)
         assert glyph == expectedGlyph
-        assert asdict(glyph) == asdict(expectedGlyph)
+        assert unstructure(glyph) == unstructure(expectedGlyph)
 
 
 getAxesTestData = [
