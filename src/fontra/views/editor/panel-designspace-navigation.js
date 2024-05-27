@@ -1362,6 +1362,7 @@ function statusListCell(item, colDesc) {
     props["style"] = cellColorStyle(color);
     return html.div(props);
   } else {
+    props["style"] = "width: 100%;";
     return html.div(props, [value === undefined ? "" : value]);
   }
 }
