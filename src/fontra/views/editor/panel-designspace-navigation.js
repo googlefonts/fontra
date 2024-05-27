@@ -419,7 +419,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.fontController.addChangeListener(
-      { axes: null },
+      { axes: null, customData: null },
       (change, isExternalChange) => {
         this._updateAxes();
         this._updateSources();
