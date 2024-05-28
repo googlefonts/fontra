@@ -23,6 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
+import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
@@ -2443,8 +2444,9 @@ export class EditorController {
       }
     }
 
+    const allOnCurvePointsSelected = isSuperset(new Set(pointIndices), onCurvePoints);
     if (
-      (pointIndices.length < onCurvePoints.length ||
+      (!allOnCurvePointsSelected ||
         componentIndices.length < instance.components.length) &&
       !anchorIndices.length &&
       !guidelineIndices.length
@@ -2460,7 +2462,7 @@ export class EditorController {
     }
 
     if (
-      pointIndices.length == onCurvePoints.length &&
+      allOnCurvePointsSelected &&
       componentIndices.length == instance.components.length &&
       !anchorIndices.length &&
       !guidelineIndices.length
