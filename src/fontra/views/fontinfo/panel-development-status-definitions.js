@@ -232,12 +232,14 @@ class StatusDefinitionBox extends HTMLElement {
     const statusDefinitions =
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
 
-    let newStatusDefinitions = [...statusDefinitions];
-    for (const [index, newStatusDef] of enumerate(newStatusDefinitions)) {
+    let newStatusDefinitions = [];
+    for (const [index, oldStatusDef] of enumerate(statusDefinitions)) {
+      const newStatusDef = { ...oldStatusDef };
       delete newStatusDef["isDefault"];
       if (index === this.statusIndex && event.target.checked) {
         newStatusDef["isDefault"] = true;
       }
+      newStatusDefinitions.push(newStatusDef);
     }
 
     const root = { customData: this.fontController.customData };
