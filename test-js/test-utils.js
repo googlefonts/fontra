@@ -11,6 +11,7 @@ import {
   fileNameExtension,
   getCharFromCodePoint,
   guessCharFromGlyphName,
+  hexToRgba,
   hyphenatedToCamelCase,
   hyphenatedToLabel,
   loadURLFragment,
@@ -25,6 +26,7 @@ import {
   reversed,
   reversedEnumerate,
   rgbaToCSS,
+  rgbaToHex,
   round,
   scheduleCalls,
   splitGlyphNameExtension,
@@ -369,6 +371,82 @@ describe("rgbaToCSS", () => {
   it("should always create rgb if the opacity is 1", () => {
     expect(rgbaToCSS([0, 0, 0, 1])).to.be.equal("rgb(0,0,0)");
   });
+});
+
+describe("hexToRgba", () => {
+  it("should convert a hex color string to rgba array of decimals", () => {
+    let array = hexToRgba("#FF0000");
+    expect(array).deep.equals([1, 0, 0, 1]); // red
+  });
+  it("should convert short hex color string to rgba array of decimals", () => {
+    const array = hexToRgba("#F00");
+    expect(array).deep.equals([1, 0, 0, 1]); // red
+  });
+  it("should convert a hex color string with opacity to rgba array of decimals", () => {
+    const array = hexToRgba("#FF000080");
+    expect(array).deep.equals([1, 0, 0, 0.502]); // red with 80% opacity
+  });
+  it("should convert short hex color string with opacity to rgba array of decimals", () => {
+    const array = hexToRgba("#F008");
+    expect(array).deep.equals([1, 0, 0, 0.5333]); // red with 80% opacity
+  });
+  it("bad hex string -> Default value", () => {
+    expect(() => {
+      hexToRgba("#X008");
+    }).to.throw(
+      "Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA"
+    );
+  });
+});
+
+describe("rgbaToHex", () => {
+  it("should convert rgba array of decimals to a hex color string", () => {
+    expect(rgbaToHex([1, 0, 0, 1])).deep.equals("#ff0000");
+  });
+  it("should convert rgba array of decimals to a hex color string with opacity", () => {
+    expect(rgbaToHex([1, 0, 0, 0.5333])).deep.equals("#ff000088");
+    expect(rgbaToHex([1, 0, 0, 0.502])).deep.equals("#ff000080");
+  });
+  it("throw error because not enough components", () => {
+    parametrize(
+      "round-trip tests",
+      [
+        [1, 0],
+        [1, 0, 1, 2, 5],
+      ],
+      (testData) => {
+        expect(() => {
+          rgbaToHex(testData);
+        }).to.throw("rgba argument has to have 3 or 4 items in array");
+      }
+    );
+  });
+});
+
+describe("hexToRgba to rgbaToHex", () => {
+  parametrize(
+    "round-trip tests",
+    [
+      "#ff0000",
+      "#ff000088",
+      "#ff000080", // red + opacity
+      "#008000",
+      "#00800088",
+      "#00800080", // green + opacity
+      "#0000ff",
+      "#0000ff88",
+      "#0000ff80", // blue + opacity
+      "#000000",
+      "#00000088",
+      "#00000080", // black + opacity
+      "#ffffff",
+      "#ffffff88",
+      "#ffffff80", // white + opacity
+    ],
+    (testData) => {
+      expect(rgbaToHex(hexToRgba(testData))).deep.equals(testData);
+    }
+  );
 });
 
 describe("clamp", () => {

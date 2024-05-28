@@ -284,6 +284,78 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateSources();
     });
 
+    const columnDescriptions = this._setupSourceListColumnDescriptions();
+
+    this.sourcesList = this.contentElement.querySelector("#sources-list");
+    this.sourcesList.appendStyle(`
+      .clickable-icon-header {
+        transition: 150ms;
+      }
+      .clickable-icon-header:hover {
+        transform: scale(1.1);
+      }
+      .clickable-icon-header:active {
+        transform: scale(1.2);
+      }
+    `);
+    this.sourcesList.showHeader = true;
+    this.sourcesList.columnDescriptions = columnDescriptions;
+
+    this.addRemoveSourceButtons = this.contentElement.querySelector(
+      "#sources-list-add-remove-buttons"
+    );
+
+    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
+    this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
+
+    this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
+      this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+      const selectedItem = this.sourcesList.getSelectedItem();
+      const sourceIndex = selectedItem?.sourceIndex;
+      this.sceneSettings.selectedSourceIndex = sourceIndex;
+      if (sourceIndex != undefined) {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        if (varGlyphController) {
+          this.sceneSettings.editLayerName =
+            varGlyphController.sources[sourceIndex]?.layerName;
+        } else {
+          this.sceneSettings.editLayerName = null;
+        }
+      } else {
+        this.sceneSettings.editLayerName = null;
+      }
+      this._updateEditingStatus();
+    });
+
+    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
+      const sourceIndex =
+        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
+      this.editSourceProperties(sourceIndex);
+    });
+
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        this._updateAxes();
+        this._updateSources();
+      }
+    );
+
+    this.fontController.addChangeListener(
+      { customData: null },
+      (change, isExternalChange) => {
+        // the statusFieldDefinitions may have changed, better update the col defs, too
+        this.sourcesList.columnDescriptions = this._setupSourceListColumnDescriptions();
+        this._updateSources();
+      }
+    );
+
+    this._updateAxes();
+    this._updateSources();
+  }
+
+  _setupSourceListColumnDescriptions() {
     const columnDescriptions = [
       {
         title: "on",
@@ -369,65 +441,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       cellFactory: interpolationContributionCell,
       width: "1.2em",
     });
-
-    this.sourcesList = this.contentElement.querySelector("#sources-list");
-    this.sourcesList.appendStyle(`
-      .clickable-icon-header {
-        transition: 150ms;
-      }
-      .clickable-icon-header:hover {
-        transform: scale(1.1);
-      }
-      .clickable-icon-header:active {
-        transform: scale(1.2);
-      }
-    `);
-    this.sourcesList.showHeader = true;
-    this.sourcesList.columnDescriptions = columnDescriptions;
-
-    this.addRemoveSourceButtons = this.contentElement.querySelector(
-      "#sources-list-add-remove-buttons"
-    );
-
-    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
-    this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
-
-    this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
-      this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-      const selectedItem = this.sourcesList.getSelectedItem();
-      const sourceIndex = selectedItem?.sourceIndex;
-      this.sceneSettings.selectedSourceIndex = sourceIndex;
-      if (sourceIndex != undefined) {
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        if (varGlyphController) {
-          this.sceneSettings.editLayerName =
-            varGlyphController.sources[sourceIndex]?.layerName;
-        } else {
-          this.sceneSettings.editLayerName = null;
-        }
-      } else {
-        this.sceneSettings.editLayerName = null;
-      }
-      this._updateEditingStatus();
-    });
-
-    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      const sourceIndex =
-        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
-      this.editSourceProperties(sourceIndex);
-    });
-
-    this.fontController.addChangeListener(
-      { axes: null },
-      (change, isExternalChange) => {
-        this._updateAxes();
-        this._updateSources();
-      }
-    );
-
-    this._updateAxes();
-    this._updateSources();
+    return columnDescriptions;
   }
 
   _setFontLocationValues() {
@@ -1348,7 +1362,8 @@ function statusListCell(item, colDesc) {
     props["style"] = cellColorStyle(color);
     return html.div(props);
   } else {
-    return html.div(props, [value]);
+    props["style"] = "width: 100%;";
+    return html.div(props, [value === undefined ? "" : value]);
   }
 }
 
