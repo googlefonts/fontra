@@ -213,7 +213,7 @@ class StatusDefinitionBox extends HTMLElement {
   }
 
   deleteStatusDef(statusIndex) {
-    const undoLabel = `delete status def '${this.statusDef.name}'`;
+    const undoLabel = `delete status definition '${this.statusDef.name}'`;
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"].splice(statusIndex, 1);
@@ -325,7 +325,7 @@ class StatusDefinitionBox extends HTMLElement {
           html.label(
             {
               for: checkBoxIdentifier,
-              style: "margin: auto;/*padding: 3px*/",
+              style: "margin: auto;",
             },
             ["Is Default"]
           ),
