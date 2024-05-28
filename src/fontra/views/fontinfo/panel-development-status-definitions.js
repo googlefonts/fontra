@@ -252,6 +252,33 @@ class StatusDefinitionBox extends HTMLElement {
     }
   }
 
+  changeStatusDefValue(value) {
+    const undoLabel = `change status definition value`;
+    let statusDefinitions =
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
+
+    let newStatusDefinitions = [];
+    for (const [index, oldStatusDef] of enumerate(statusDefinitions)) {
+      const newStatusDef = { ...oldStatusDef };
+      if (index === this.statusIndex) {
+        newStatusDef.value = value;
+      }
+      newStatusDefinitions.push(newStatusDef);
+    }
+
+    // sort by value
+    newStatusDefinitions.sort((a, b) => a.value - b.value);
+
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      root.customData["fontra.sourceStatusFieldDefinitions"] = newStatusDefinitions;
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
+  }
+
   _updateContents() {
     this.innerHTML = "";
     const statusDef = this.statusDef;
@@ -266,11 +293,7 @@ class StatusDefinitionBox extends HTMLElement {
             this.setupUI();
             return;
           }
-          const updatedStatusDef = {
-            ...statusDef,
-            value: statusDefValue,
-          };
-          this.replaceStatusDef(updatedStatusDef, "change status definition value");
+          this.changeStatusDefValue(statusDefValue);
         },
       })
     );
