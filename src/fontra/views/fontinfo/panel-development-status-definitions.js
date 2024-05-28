@@ -144,7 +144,7 @@ addStyleSheet(`
 }
 
 .fontra-ui-font-info-status-definitions-panel-status-def-box-value {
-  width: 2em;
+  width: 2.5em;
   text-align: center;
 }
 
