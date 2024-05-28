@@ -336,7 +336,7 @@ class StatusDefinitionBox extends HTMLElement {
         {
           "style": "margin: auto;",
           "data-tooltip":
-            "If set: This color will be used if a source status is not set.",
+            "If checked, this status will be used as a fallback when a source status is not set",
           "data-tooltipposition": "top",
         },
         [
