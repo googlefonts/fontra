@@ -2436,8 +2436,8 @@ export class EditorController {
     const hasGuidelines = instance.guidelines.length > 0;
 
     if (
-      !pointIndices.length &&
-      !componentIndices.length &&
+      (pointIndices.length < instance.path.pointTypes.length ||
+        componentIndices.length < instance.components.length) &&
       !anchorIndices.length &&
       !guidelineIndices.length
       //&& !fontGuidelineIndices.length
@@ -2452,7 +2452,8 @@ export class EditorController {
     }
 
     if (
-      (pointIndices.length || componentIndices.length) &&
+      pointIndices.length == instance.path.pointTypes.length &&
+      componentIndices.length == instance.components.length &&
       !anchorIndices.length &&
       !guidelineIndices.length
       //&& !fontGuidelineIndices.length
