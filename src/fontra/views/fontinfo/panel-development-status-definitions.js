@@ -227,28 +227,27 @@ class StatusDefinitionBox extends HTMLElement {
     }
   }
 
-  changeStatusDefIsDefault(statusDef, event) {
+  changeStatusDefIsDefault(event) {
     const undoLabel = `change status definition isDefault`;
-    if (!event.target.checked) {
-      delete statusDef["isDefault"];
-      this.replaceStatusDef(statusDef, undoLabel);
-      return;
+    const statusDefinitions =
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"];
+
+    let newStatusDefinitions = [...statusDefinitions];
+    for (const [index, newStatusDef] of enumerate(newStatusDefinitions)) {
+      delete newStatusDef["isDefault"];
+      if (index === this.statusIndex && event.target.checked) {
+        newStatusDef["isDefault"] = true;
+      }
     }
 
-    // If checked: Set all status definitions to false, first.
-    for (const [index, oldStatusDef] of enumerate(
-      this.fontController.customData["fontra.sourceStatusFieldDefinitions"]
-    )) {
-      const newStatusDef = { ...oldStatusDef };
-      delete newStatusDef["isDefault"];
-      this.replaceStatusDef(newStatusDef, undoLabel, index);
+    const root = { customData: this.fontController.customData };
+    const changes = recordChanges(root, (root) => {
+      root.customData["fontra.sourceStatusFieldDefinitions"] = newStatusDefinitions;
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
     }
-    // Then: set this status definition to true
-    const updatedStatusDef = {
-      ...statusDef,
-      isDefault: true,
-    };
-    this.replaceStatusDef(updatedStatusDef, undoLabel);
   }
 
   _updateContents() {
@@ -320,7 +319,7 @@ class StatusDefinitionBox extends HTMLElement {
             type: "checkbox",
             checked: statusDef.isDefault,
             id: checkBoxIdentifier,
-            onchange: (event) => this.changeStatusDefIsDefault(statusDef, event),
+            onchange: (event) => this.changeStatusDefIsDefault(event),
           }),
           html.label(
             {
