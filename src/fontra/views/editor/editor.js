@@ -2435,8 +2435,16 @@ export class EditorController {
     const hasAnchors = instance.anchors.length > 0;
     const hasGuidelines = instance.guidelines.length > 0;
 
+    const glyphPath = positionedGlyph.glyph.path;
+    let onCurvePoints = [];
+    for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
+      if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
+        onCurvePoints.push(pointIndex);
+      }
+    }
+
     if (
-      (pointIndices.length < instance.path.pointTypes.length ||
+      (pointIndices.length < onCurvePoints.length ||
         componentIndices.length < instance.components.length) &&
       !anchorIndices.length &&
       !guidelineIndices.length
@@ -2452,7 +2460,7 @@ export class EditorController {
     }
 
     if (
-      pointIndices.length == instance.path.pointTypes.length &&
+      pointIndices.length == onCurvePoints.length &&
       componentIndices.length == instance.components.length &&
       !anchorIndices.length &&
       !guidelineIndices.length
@@ -2490,13 +2498,10 @@ export class EditorController {
     }
 
     let newSelection = new Set();
-    const glyphPath = positionedGlyph.glyph.path;
 
     if (selectObjects) {
-      for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
-        if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
-          newSelection.add(`point/${pointIndex}`);
-        }
+      for (const pointIndex of onCurvePoints) {
+        newSelection.add(`point/${pointIndex}`);
       }
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
