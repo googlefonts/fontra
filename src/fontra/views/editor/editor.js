@@ -23,6 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
+import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
@@ -2435,9 +2436,18 @@ export class EditorController {
     const hasAnchors = instance.anchors.length > 0;
     const hasGuidelines = instance.guidelines.length > 0;
 
+    const glyphPath = positionedGlyph.glyph.path;
+    let onCurvePoints = [];
+    for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
+      if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
+        onCurvePoints.push(pointIndex);
+      }
+    }
+
+    const allOnCurvePointsSelected = isSuperset(new Set(pointIndices), onCurvePoints);
     if (
-      !pointIndices.length &&
-      !componentIndices.length &&
+      (!allOnCurvePointsSelected ||
+        componentIndices.length < instance.components.length) &&
       !anchorIndices.length &&
       !guidelineIndices.length
       //&& !fontGuidelineIndices.length
@@ -2452,7 +2462,8 @@ export class EditorController {
     }
 
     if (
-      (pointIndices.length || componentIndices.length) &&
+      allOnCurvePointsSelected &&
+      componentIndices.length == instance.components.length &&
       !anchorIndices.length &&
       !guidelineIndices.length
       //&& !fontGuidelineIndices.length
@@ -2489,13 +2500,10 @@ export class EditorController {
     }
 
     let newSelection = new Set();
-    const glyphPath = positionedGlyph.glyph.path;
 
     if (selectObjects) {
-      for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
-        if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
-          newSelection.add(`point/${pointIndex}`);
-        }
+      for (const pointIndex of onCurvePoints) {
+        newSelection.add(`point/${pointIndex}`);
       }
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
