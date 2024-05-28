@@ -266,6 +266,15 @@ async def test_addAnchor(writableTestFont):
     )
 
 
+async def test_getStatusCode(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+
+    statusCodes = [
+        source.customData.get("fontra.development.status") for source in glyph.sources
+    ]
+    assert statusCodes == [4, None, None, None, None]
+
+
 async def test_read_glyph_locked(testFont):
     glyphName = "space"
     glyph = await testFont.getGlyph(glyphName)
@@ -469,6 +478,7 @@ getSourcesTestData = [
             {"name": "Guideline Left", "x": 60, "angle": 90},
             {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
+        "customData": {"fontra.development.status": 4},
     },
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},
