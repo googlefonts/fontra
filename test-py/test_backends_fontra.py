@@ -36,6 +36,11 @@ def newFontraFont(tmpdir):
     return newFileSystemBackend(tmpdir / "newfont.fontra")
 
 
+@pytest.fixture
+def newDesignspaceFont(tmpdir):
+    return newFileSystemBackend(tmpdir / "newfont.designspace")
+
+
 async def test_copy_to_fontra(testDSFont, newFontraFont):
     async with aclosing(newFontraFont):
         await copyFont(testDSFont, newFontraFont)
@@ -140,6 +145,18 @@ async def test_statusFieldDefinitions(writableFontraFont):
 
 async def test_glyphSourceStatusCode(testFontraFont):
     glyph = await testFontraFont.getGlyph("E")
+
+    statusCodes = [
+        source.customData.get("fontra.development.status") for source in glyph.sources
+    ]
+    assert statusCodes == [4, None, None, None, None]
+
+
+async def test_copyToDesignspace(testFontraFont, newDesignspaceFont):
+    async with aclosing(newDesignspaceFont):
+        await copyFont(testFontraFont, newDesignspaceFont)
+
+    glyph = await newDesignspaceFont.getGlyph("E")
 
     statusCodes = [
         source.customData.get("fontra.development.status") for source in glyph.sources

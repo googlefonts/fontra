@@ -266,8 +266,10 @@ async def test_addAnchor(writableTestFont):
     )
 
 
-async def test_getStatusCode(writableTestFont):
+async def test_addStatusCode(writableTestFont):
     glyph = await writableTestFont.getGlyph("E")
+    source = glyph.sources[0]
+    source.customData["fontra.development.status"] = 4
 
     statusCodes = [
         source.customData.get("fontra.development.status") for source in glyph.sources
