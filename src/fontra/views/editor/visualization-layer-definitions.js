@@ -1292,6 +1292,10 @@ registerVisualizationLayerDefinition({
       }
     }
 
+    if (!statusFieldDefinitions[status]) {
+      return;
+    }
+
     const color = [...statusFieldDefinitions[status].color];
     if (positionedGlyph.isEditing) {
       // in editing mode reduce opacity

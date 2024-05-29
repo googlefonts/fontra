@@ -86,7 +86,7 @@ class ClassDef {
   }
 
   getSubType(property) {
-    if (this.subType) {
+    if (this.subType || !this.rawClassDef) {
       return this.subType;
     }
     let subType = this.subTypeMapping[property];
