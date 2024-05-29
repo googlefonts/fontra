@@ -287,13 +287,13 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const columnDescriptions = [
       {
-        title: translate("sidebar.designspace-navigation.glyph-sources.on"),
+        title: makeRegularIconHeader("/tabler-icons/circle-dot.svg"),
         key: "active",
         cellFactory: makeIconCellFactory(
           ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
           true
         ),
-        width: "2.5em",
+        width: "1.2em",
       },
       {
         title: " ",
@@ -1367,6 +1367,20 @@ function makeClickableIconHeader(iconPath, onClick) {
       class: "clickable-icon-header",
       style: "height: 1.2em; width: 1.2em;",
       onclick: onClick,
+    },
+    [
+      html.createDomElement("inline-svg", {
+        src: iconPath,
+      }),
+    ]
+  );
+}
+
+function makeRegularIconHeader(iconPath) {
+  return html.div(
+    {
+      class: "icon",
+      style: "height: 1.2em; width: 1.2em;",
     },
     [
       html.createDomElement("inline-svg", {
