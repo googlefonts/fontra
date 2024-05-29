@@ -174,9 +174,17 @@ registerVisualizationLayerDefinition({
 const verticalMetricsDefaults = {
   descender: -0.25,
   xHeight: 0.5,
-  capHeight: 0.75,
+  capHeight: 0.7,
   ascender: 0.75,
   italicAngle: 0,
+};
+
+const postscriptBlueValues = {
+  descender: -0.016,
+  baseline: -0.016,
+  xHeight: 0.016,
+  capHeight: 0.016,
+  ascender: 0.016,
 };
 
 registerVisualizationLayerDefinition({
@@ -184,12 +192,12 @@ registerVisualizationLayerDefinition({
   name: "Metrics",
   selectionMode: "editing",
   userSwitchable: true,
-  defaultOn: true,
-  zIndex: 200,
+  defaultOn: false,
+  zIndex: 100,
   screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004" },
-  colorsDarkMode: { strokeColor: "#FFF6" },
-  draw: async (context, positionedGlyph, parameters, model, controller) => {
+  colors: { strokeColor: "#0004", boxColor: "#FFF8", zoneColor: "#0001" },
+  colorsDarkMode: { strokeColor: "#FFF6", boxColor: "#0001", zoneColor: "#FFF1" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
@@ -198,24 +206,51 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    const sources = await model.fontController.getSources();
+    const sources = model.fontController.getSources();
     const source = sources[sourceIndex];
 
     let verticalMetrics = {};
+    let alignmentZones = {};
     if (source === undefined) {
       // default values
-      const unitsPerEm = await model.fontController.unitsPerEm;
+      const unitsPerEm = model.fontController.unitsPerEm;
+      alignmentZones = {
+        baseline: round(postscriptBlueValues["baseline"] * unitsPerEm),
+      };
       for (const [key, value] of Object.entries(verticalMetricsDefaults)) {
         verticalMetrics[key] = round(value * unitsPerEm);
+        if (!isNaN(postscriptBlueValues[key])) {
+          alignmentZones[key] = round(postscriptBlueValues[key] * unitsPerEm);
+        }
       }
     } else {
       verticalMetrics = source.verticalMetrics;
+      alignmentZones = source.postscriptBlueValues;
     }
-    console.log("verticalMetrics: ", verticalMetrics);
+
+    // draw box
+    context.fillStyle = parameters.boxColor;
+    context.fillRect(
+      0,
+      verticalMetrics.descender,
+      positionedGlyph.glyph.xAdvance,
+      verticalMetrics.ascender - verticalMetrics.descender
+    );
+
+    // draw alignment zones
+    context.fillStyle = parameters.zoneColor;
+    for (const [key, value] of Object.entries(alignmentZones)) {
+      context.fillRect(
+        0,
+        key === "baseline" ? 0 : verticalMetrics[key],
+        positionedGlyph.glyph.xAdvance,
+        value
+      );
+    }
+
+    // vertical metrics
     for (const [key, value] of Object.entries(verticalMetrics)) {
-      console.log("draw vertical metrics: ", key);
       strokeLine(context, 0, value, positionedGlyph.glyph.xAdvance, value);
-      //strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
     }
   },
 });
