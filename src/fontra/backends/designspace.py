@@ -347,10 +347,9 @@ class DesignspaceBackend:
                 for layerName, layer in layers.items()
             }
 
-        if sourceNameMapping:
-            for source in sources:
-                source.name = sourceNameMapping.get(source.name, source.name)
-                source.customData = localSourcesCustomData.get(source.layerName, {})
+        for source in sources:
+            source.name = sourceNameMapping.get(source.name, source.name)
+            source.customData = localSourcesCustomData.get(source.layerName, {})
 
         return VariableGlyph(
             name=glyphName,
