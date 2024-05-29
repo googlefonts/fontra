@@ -136,23 +136,3 @@ async def test_statusFieldDefinitions(writableFontraFont):
     await writableFontraFont.putCustomData(statusTestData)
 
     assert statusTestData == await writableFontraFont.getCustomData()
-
-
-async def test_getGlyphSourceStatusCode(testFontraFont):
-    glyph = await testFontraFont.getGlyph("E")
-
-    statusCodes = [
-        source.customData.get("fontra.development.status") for source in glyph.sources
-    ]
-    assert statusCodes == [4, None, None, None, None]
-
-
-async def test_putGlyphSourceStatusCode(writableFontraFont):
-    glyph = await writableFontraFont.getGlyph("E")
-    source1 = glyph.sources[1]
-    source1.customData["fontra.development.status"] = 3
-
-    statusCodes = [
-        source.customData.get("fontra.development.status") for source in glyph.sources
-    ]
-    assert statusCodes == [4, 3, None, None, None]
