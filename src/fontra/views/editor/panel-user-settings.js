@@ -68,16 +68,18 @@ export default class UserSettingsPanel extends Panel {
       ],
     });
 
+    // TODO: refine as pop-up menu instead of radio buttons
+    // TODO: add English language name in parentheses under other languages
     items.push({
-      displayName: translate("sidebar.user-settings.language"),
+      displayName: "Display Language",
       controller: languageController,
       descriptions: [
         {
           key: "language",
           ui: "radio",
           options: [
-            { key: "en", displayName: translate("language.en") },
-            { key: "zh-CN", displayName: translate("language.zh-cn") },
+            { key: "en", displayName: "English" },
+            { key: "zh-CN", displayName: "Simplified Chinese" },
           ],
         },
       ],
