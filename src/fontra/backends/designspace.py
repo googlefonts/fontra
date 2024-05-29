@@ -294,7 +294,7 @@ class DesignspaceBackend:
         # global per glyph custom data, eg. glyph locking
         customData = {}
         # per glyph source custom data, eg. status color code
-        localSourcesCustomData = {}
+        sourcesCustomData = {}
 
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
@@ -314,7 +314,7 @@ class DesignspaceBackend:
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
             )
-            localSourcesCustomData[layerName] = ufoGlyph.lib.get(
+            sourcesCustomData[layerName] = ufoGlyph.lib.get(
                 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY, {}
             )
 
@@ -350,7 +350,7 @@ class DesignspaceBackend:
 
         for source in sources:
             source.name = sourceNameMapping.get(source.name, source.name)
-            source.customData = localSourcesCustomData.get(source.layerName, {})
+            source.customData = sourcesCustomData.get(source.layerName, {})
 
         return VariableGlyph(
             name=glyphName,
@@ -425,7 +425,7 @@ class DesignspaceBackend:
         sourceNameMapping = {}
         layerNameMapping = {}
         localSources = []
-        localSourcesCustomData = {}
+        sourcesCustomData = {}
         for source in glyph.sources:
             sourceInfo = self._prepareUFOSourceLayer(
                 glyphName, source, localDefaultLocation, revLayerNameMapping
@@ -437,7 +437,7 @@ class DesignspaceBackend:
             if sourceInfo.localSourceDict is not None:
                 localSources.append(sourceInfo.localSourceDict)
 
-            localSourcesCustomData[sourceInfo.layerName] = source.customData
+            sourcesCustomData[sourceInfo.layerName] = source.customData
 
         # Prepare local design space
         localDS = {}
@@ -486,7 +486,7 @@ class DesignspaceBackend:
             storeInLib(
                 layerGlyph,
                 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY,
-                localSourcesCustomData.get(ufoLayer.fontraLayerName),
+                sourcesCustomData.get(ufoLayer.fontraLayerName),
             )
 
             drawPointsFunc = populateUFOLayerGlyph(
