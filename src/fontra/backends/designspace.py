@@ -483,12 +483,11 @@ class DesignspaceBackend:
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
 
-            if localSourcesCustomData.get(ufoLayer.fontraLayerName):
-                storeInLib(
-                    layerGlyph,
-                    GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY,
-                    localSourcesCustomData[ufoLayer.fontraLayerName],
-                )
+            storeInLib(
+                layerGlyph,
+                GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY,
+                localSourcesCustomData.get(ufoLayer.fontraLayerName),
+            )
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph, layer.glyph, hasVariableComponents
