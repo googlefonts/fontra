@@ -60,8 +60,7 @@ VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
-CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
-GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.customData"
+GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 
 
@@ -310,13 +309,13 @@ class DesignspaceBackend:
                     )
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-                customData = ufoGlyph.lib.get(CUSTOM_DATA_LIB_KEY, {})
+                customData = ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
 
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
             )
             localSourcesCustomData[layerName] = ufoGlyph.lib.get(
-                CUSTOM_DATA_LIB_KEY, {}
+                GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY, {}
             )
 
             layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
