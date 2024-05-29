@@ -61,6 +61,8 @@ GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
+GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.customData"
+GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 
 
 defaultUFOInfoAttrs = {
@@ -474,22 +476,21 @@ class DesignspaceBackend:
             glyphSet = ufoLayer.glyphSet
             writeGlyphSetContents = glyphName not in glyphSet
 
-            customData = None
             if glyphSet == self.defaultUFOLayer.glyphSet:
                 layerGlyph = defaultLayerGlyph
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
-                customData = (
-                    glyph.customData | localSourcesCustomData[ufoLayer.fontraLayerName]
-                )
+                storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, glyph.customData)
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
-                if localSourcesCustomData.get(ufoLayer.fontraLayerName) is not None:
-                    customData = localSourcesCustomData[ufoLayer.fontraLayerName]
 
-            if customData:
-                storeInLib(layerGlyph, CUSTOM_DATA_LIB_KEY, customData)
+            if localSourcesCustomData.get(ufoLayer.fontraLayerName):
+                storeInLib(
+                    layerGlyph,
+                    GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY,
+                    localSourcesCustomData[ufoLayer.fontraLayerName],
+                )
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph, layer.glyph, hasVariableComponents
