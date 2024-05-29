@@ -1,4 +1,4 @@
-// avar-2-style Multiple Axis Mapping
+// avar-2-style Cross-Axis Mapping
 
 import { zip } from "./utils.js";
 import {
@@ -9,7 +9,7 @@ import {
   unnormalizeLocation,
 } from "./var-model.js";
 
-export class MultipleAxisMapping {
+export class CrossAxisMapping {
   constructor(fontAxes, mappings) {
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
     this.mappings = mappings;
@@ -45,7 +45,7 @@ export class MultipleAxisMapping {
     try {
       this.model = new VariationModel(inputLocations, axisNames);
     } catch (exc) {
-      console.log(`Can't create VariationModel for MultipleAxisMapping: ${exc}`);
+      console.log(`Can't create VariationModel for CrossAxisMapping: ${exc}`);
       return;
     }
 

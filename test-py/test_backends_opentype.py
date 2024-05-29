@@ -3,7 +3,7 @@ import pathlib
 import pytest
 
 from fontra.backends import getFileSystemBackend
-from fontra.core.classes import Axes, FontAxis, MultipleAxisMapping
+from fontra.core.classes import Axes, CrossAxisMapping, FontAxis
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -57,7 +57,7 @@ expectedAxes = Axes(
         ),
     ],
     mappings=[
-        MultipleAxisMapping(
+        CrossAxisMapping(
             description=None,
             groupDescription=None,
             inputLocation={
@@ -68,7 +68,7 @@ expectedAxes = Axes(
                 "VERT": 0.33001708984375,
             },
         ),
-        MultipleAxisMapping(
+        CrossAxisMapping(
             description=None,
             groupDescription=None,
             inputLocation={
@@ -79,7 +79,7 @@ expectedAxes = Axes(
                 "VERT": 0.6700032552083334,
             },
         ),
-        MultipleAxisMapping(
+        CrossAxisMapping(
             description=None,
             groupDescription=None,
             inputLocation={

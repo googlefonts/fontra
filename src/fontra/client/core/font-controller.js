@@ -7,9 +7,9 @@ import {
   matchChangePattern,
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
+import { CrossAxisMapping } from "./cross-axis-mapping.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
-import { MultipleAxisMapping } from "./multiple-axis-mapping.js";
 import { TaskPool } from "./task-pool.js";
 import { chain, getCharFromCodePoint, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -626,7 +626,7 @@ export class FontController {
   }
 
   async _purgeCachesRelatedToAxesChanges() {
-    delete this._multipleAxisMapping;
+    delete this._crossAxisMapping;
     this._glyphInstancePromiseCache.clear();
     for (const varGlyphPromise of this._glyphsPromiseCache.values()) {
       const varGlyph = await varGlyphPromise;
@@ -635,7 +635,7 @@ export class FontController {
   }
 
   async reloadEverything() {
-    delete this._multipleAxisMapping;
+    delete this._crossAxisMapping;
     this._glyphsPromiseCache.clear();
     this._glyphInstancePromiseCache.clear();
     this._glyphInstancePromiseCacheKeys = {};
@@ -718,22 +718,19 @@ export class FontController {
     return mapBackward(sourceLocation, this.fontAxes);
   }
 
-  get multipleAxisMapping() {
-    if (!this._multipleAxisMapping) {
-      this._multipleAxisMapping = new MultipleAxisMapping(
-        this.axes.axes,
-        this.axes.mappings
-      );
+  get crossAxisMapping() {
+    if (!this._crossAxisMapping) {
+      this._crossAxisMapping = new CrossAxisMapping(this.axes.axes, this.axes.mappings);
     }
-    return this._multipleAxisMapping;
+    return this._crossAxisMapping;
   }
 
   mapSourceLocationToMappedSourceLocation(sourceLocation) {
-    return { ...this.multipleAxisMapping.mapLocation(sourceLocation) };
+    return { ...this.crossAxisMapping.mapLocation(sourceLocation) };
   }
 
   mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
-    return { ...this.multipleAxisMapping.unmapLocation(mappedSourceLocation) };
+    return { ...this.crossAxisMapping.unmapLocation(mappedSourceLocation) };
   }
 }
 

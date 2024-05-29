@@ -12,13 +12,13 @@ from fontra.core.protocols import ReadableFontBackend
 
 from ..core.classes import (
     Axes,
+    CrossAxisMapping,
     DiscreteFontAxis,
     FontAxis,
     FontInfo,
     FontSource,
     GlyphSource,
     Layer,
-    MultipleAxisMapping,
     OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
@@ -233,7 +233,7 @@ def unpackAxes(font: TTFont) -> Axes:
                 )
 
             mappings.append(
-                MultipleAxisMapping(
+                CrossAxisMapping(
                     inputLocation=inputLocation, outputLocation=outputLocation
                 )
             )

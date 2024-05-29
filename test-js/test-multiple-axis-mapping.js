@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { MultipleAxisMapping } from "../src/fontra/client/core/multiple-axis-mapping.js";
+import { CrossAxisMapping } from "../src/fontra/client/core/cross-axis-mapping.js";
 import { parametrize } from "./test-support.js";
 
-describe("MultipleAxisMapping Tests", () => {
+describe("CrossAxisMapping Tests", () => {
   const axes = [
     {
       name: "Diagonal",
@@ -79,27 +79,27 @@ describe("MultipleAxisMapping Tests", () => {
     },
   ];
 
-  parametrize("MultipleAxisMapping.mapLocation", testData, (testItem) => {
-    const mam = new MultipleAxisMapping(axes, mappings);
+  parametrize("CrossAxisMapping.mapLocation", testData, (testItem) => {
+    const mam = new CrossAxisMapping(axes, mappings);
     expect(mam.mapLocation(testItem.inputLocation)).to.deep.equal(
       testItem.outputLocation
     );
   });
 
   it("Test empty mappings", () => {
-    const mam = new MultipleAxisMapping(axes, []);
+    const mam = new CrossAxisMapping(axes, []);
     const loc = { a: 12, b: 31 };
     expect(mam.mapLocation(loc)).to.deep.equal(loc);
   });
 
   it("Test undefined mappings", () => {
-    const mam = new MultipleAxisMapping(axes, undefined);
+    const mam = new CrossAxisMapping(axes, undefined);
     const loc = { a: 12, b: 31 };
     expect(mam.mapLocation(loc)).to.deep.equal(loc);
   });
 
   it("Test invalid mappings", () => {
-    const mam = new MultipleAxisMapping(axes, [
+    const mam = new CrossAxisMapping(axes, [
       {
         inputLocation: {},
         outputLocation: {},
