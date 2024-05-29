@@ -1,0 +1,49 @@
+{
+"name": "B",
+"axes": [
+{
+"name": "length",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 100
+}
+],
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "length=100",
+"layerName": "length=100",
+"location": {
+"length": 100
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"components": [
+{
+"name": "C"
+}
+],
+"xAdvance": 500
+}
+},
+"length=100": {
+"glyph": {
+"components": [
+{
+"name": "C",
+"transformation": {
+"translateY": 200
+}
+}
+],
+"xAdvance": 500
+}
+}
+}
+}

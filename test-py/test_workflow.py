@@ -986,6 +986,19 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "axis-value-inheritance",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-axis-value-inheritance.fontra"
+            - filter: decompose-composites
+            - output: fontra-write
+              destination: "output-axis-value-inheritance.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
