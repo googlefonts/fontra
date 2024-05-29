@@ -790,7 +790,7 @@ async function* iterFlattenedComponentPaths(
   seenGlyphNames.add(compo.name);
   parentGlyphNames = [...parentGlyphNames, compo.name];
 
-  const compoLocation = mergeLocations(parentLocation, compo.location) || {};
+  const compoLocation = mergeLocations(parentLocation, compo.location);
   const glyph = await getGlyphFunc(compo.name);
   let inst, instErrors;
   if (!glyph) {
@@ -913,7 +913,7 @@ function mapLocationFoldNLI(location, axes) {
 
 function mergeLocations(loc1, loc2) {
   if (!loc1) {
-    return loc2;
+    return loc2 || {};
   }
   return { ...loc1, ...loc2 };
 }
