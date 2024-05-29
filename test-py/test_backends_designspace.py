@@ -266,6 +266,32 @@ async def test_addAnchor(writableTestFont):
     )
 
 
+async def test_getGlyphSourceStatusCode(testFont):
+    glyph = await testFont.getGlyph("E")
+
+    statusCodes = [
+        source.customData.get("fontra.development.status") for source in glyph.sources
+    ]
+    assert statusCodes == [4, 3, None, None, None]
+
+
+async def test_putGlyphSourceStatusCode(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+    source2 = glyph.sources[2]
+    source2.customData["fontra.development.status"] = 2
+
+    await writableTestFont.putGlyph("E", glyph, [ord("E")])
+
+    roundTrippedGlyph = await writableTestFont.getGlyph("E")
+
+    statusCodes = [
+        source.customData.get("fontra.development.status")
+        for source in roundTrippedGlyph.sources
+    ]
+
+    assert statusCodes == [4, 3, 2, None, None]
+
+
 async def test_read_glyph_locked(testFont):
     glyphName = "space"
     glyph = await testFont.getGlyph(glyphName)
