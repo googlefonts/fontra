@@ -3,6 +3,7 @@ import * as html from "../core/html-utils.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
+import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
 import { translate } from "/core/localization.js";
@@ -44,7 +45,12 @@ export class FontInfoController {
 
     const subscribePattern = {};
 
-    for (const panelClass of [FontInfoPanel, AxesPanel, SourcesPanel]) {
+    for (const panelClass of [
+      FontInfoPanel,
+      AxesPanel,
+      SourcesPanel,
+      DevelopmentStatusDefinitionsPanel,
+    ]) {
       panelClass.fontAttributes.forEach((fontAttr) => {
         subscribePattern[fontAttr] = null;
       });

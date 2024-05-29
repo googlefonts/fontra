@@ -353,6 +353,43 @@ export function rgbaToCSS(rgba) {
   return `rgb(${channels.join(",")})`;
 }
 
+export function hexToRgba(hexColor) {
+  let c = hexColor.substring(1).split("");
+  let r = [];
+  if (/^#[A-Fa-f0-9]{8}$/.test(hexColor) || /^#[A-Fa-f0-9]{6}$/.test(hexColor)) {
+    for (const i of range(0, c.length, 2)) {
+      r.push(round(parseInt(c[i] + c[i + 1], 16) / 255, 4));
+    }
+  } else if (/^#[A-Fa-f0-9]{4}$/.test(hexColor) || /^#[A-Fa-f0-9]{3}$/.test(hexColor)) {
+    for (const i of range(c.length)) {
+      r.push(round(parseInt(c[i] + c[i], 16) / 255, 4));
+    }
+  } else {
+    throw new Error(
+      "Bad hex color format. Should be #RRGGBB or #RRGGBBAA or #RGB or #RGBA"
+    );
+  }
+  if (r.length === 3) {
+    r.push(1);
+  }
+  return r;
+}
+
+export function rgbaToHex(rgba) {
+  if (rgba.length != 3 && rgba.length != 4) {
+    throw new Error("rgba argument has to have 3 or 4 items in array");
+  }
+  const channels = rgba.map((channel) =>
+    Math.round(channel * 255)
+      .toString(16)
+      .padStart(2, "0")
+  );
+  if (channels[3] === "ff") {
+    channels.pop();
+  }
+  return `#${channels.join("")}`;
+}
+
 export function clamp(number, min, max) {
   return Math.max(Math.min(number, max), min);
 }

@@ -161,6 +161,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Edit variation axes ✅
 - Visualize and edit variation axis mapping (avar) ✅
 - Visualize and edit cross-axis variation axis mapping (avar-2)
+- Visualize and edit status field definitions ✅
 
 ### Multiple windows
 

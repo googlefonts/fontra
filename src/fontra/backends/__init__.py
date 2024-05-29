@@ -8,6 +8,10 @@ from ..core.protocols import ReadableFontBackend, WritableFontBackend
 logger = logging.getLogger(__name__)
 
 
+class UnknownFileType(Exception):
+    pass
+
+
 def getFileSystemBackend(path: PathLike) -> ReadableFontBackend:
     return _getFileSystemBackend(path, False)
 
@@ -27,7 +31,12 @@ def _getFileSystemBackend(path: PathLike, create: bool) -> WritableFontBackend:
     logger.info(f"{logVerb} project {path.name}...")
     fileType = path.suffix.lstrip(".").lower()
     backendEntryPoints = entry_points(group="fontra.filesystem.backends")
-    entryPoint = backendEntryPoints[fileType]
+    try:
+        entryPoint = backendEntryPoints[fileType]
+    except KeyError:
+        raise UnknownFileType(
+            f"Can't find backend for files with extension '.{fileType}'"
+        )
     backendClass = entryPoint.load()
 
     if create:

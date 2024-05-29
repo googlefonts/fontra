@@ -161,7 +161,8 @@ async def mainAsync() -> None:
         glyphNames.extend(args.glyph_names_file.read().split())
 
     sourcePath = pathlib.Path(args.source)
-    assert sourcePath.exists()
+    if not sourcePath.exists():
+        raise FileNotFoundError(sourcePath)
     destPath = pathlib.Path(args.destination)
     if args:
         if destPath.is_dir():

@@ -113,3 +113,26 @@ async def test_features(writableFontraFont):
 
     reopenedFont = getFileSystemBackend(writableFontraFont.path)
     assert await reopenedFont.getFeatures() == OpenTypeFeatures()
+
+
+async def test_statusFieldDefinitions(writableFontraFont):
+    customData = await writableFontraFont.getCustomData()
+    assert {} == customData
+
+    statusTestData = {
+        "fontra.sourceStatusFieldDefinitions": [
+            {
+                "color": [1, 0, 0, 1],
+                "isDefault": True,
+                "label": "In progress",
+                "value": 0,
+            },
+            {"color": [1, 0.5, 0, 1], "label": "Checking-1", "value": 1},
+            {"color": [1, 1, 0, 1], "label": "Checking-2", "value": 2},
+            {"color": [0, 0.5, 1, 1], "label": "Checking-3", "value": 3},
+            {"color": [0, 1, 0.5, 1], "label": "Validated", "value": 4},
+        ]
+    }
+    await writableFontraFont.putCustomData(statusTestData)
+
+    assert statusTestData == await writableFontraFont.getCustomData()
