@@ -1,7 +1,7 @@
 {
   "bracketSpacing": true,
   "organizeImportsSkipDestructiveCodeActions": true,
-  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-sort-json"],
+  "plugins": ["prettier-plugin-organize-imports"],
   "printWidth": 88,
   "semi": true,
   "quoteProps": "consistent",
@@ -11,9 +11,9 @@
   "useTabs": false,
   "overrides": [
     {
-      "files": ["src/fontra/client/core/classes.json", ".prettierrc"],
+      "files": ["src/fontra/client/lang/*.json"],
       "options": {
-        "plugins": ["prettier-plugin-organize-imports"]
+        "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-sort-json"]
       }
     }
   ]
