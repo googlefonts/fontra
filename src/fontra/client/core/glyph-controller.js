@@ -36,6 +36,12 @@ export class VariableGlyphController {
   constructor(glyph, fontAxes) {
     this.glyph = glyph;
     this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
+    const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
+    this._fontAxisNames = new Set(
+      fontAxes
+        .map((axis) => axis.name)
+        .filter((axisName) => !glyphAxisNames.has(axisName))
+    );
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -352,7 +358,8 @@ export class VariableGlyphController {
         );
         await instanceController.setupComponents(
           getGlyphFunc,
-          this.sources[sourceIndex].location
+          filterLocation(this.sources[sourceIndex].location, this._fontAxisNames),
+          this._fontAxisNames
         );
       } else {
         instanceController = null;
@@ -410,7 +417,11 @@ export class VariableGlyphController {
       errors
     );
 
-    await instanceController.setupComponents(getGlyphFunc, sourceLocation);
+    await instanceController.setupComponents(
+      getGlyphFunc,
+      filterLocation(sourceLocation, this._fontAxisNames),
+      this._fontAxisNames
+    );
     return instanceController;
   }
 
@@ -467,14 +478,17 @@ export class StaticGlyphController {
     this.components = [];
   }
 
-  async setupComponents(getGlyphFunc, parentLocation) {
+  async setupComponents(getGlyphFunc, parentLocation, fontAxisNames) {
     this.components = [];
     const componentErrors = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      const errors = await compoController.setupPath(getGlyphFunc, parentLocation, [
-        this.name,
-      ]);
+      const errors = await compoController.setupPath(
+        getGlyphFunc,
+        parentLocation,
+        [this.name],
+        fontAxisNames
+      );
       if (errors) {
         componentErrors.push(...errors);
       }
@@ -684,12 +698,13 @@ class ComponentController {
     this.compo = compo;
   }
 
-  async setupPath(getGlyphFunc, parentLocation, parentGlyphNames) {
+  async setupPath(getGlyphFunc, parentLocation, parentGlyphNames, fontAxisNames) {
     const { path, errors } = await flattenComponent(
       this.compo,
       getGlyphFunc,
       parentLocation,
-      parentGlyphNames
+      parentGlyphNames,
+      fontAxisNames
     );
     this.path = path;
     return errors;
@@ -753,14 +768,21 @@ class ComponentController {
   }
 }
 
-async function flattenComponent(compo, getGlyphFunc, parentLocation, parentGlyphNames) {
+async function flattenComponent(
+  compo,
+  getGlyphFunc,
+  parentLocation,
+  parentGlyphNames,
+  fontAxisNames
+) {
   let componentErrors = [];
   const paths = [];
   for await (const { path, errors } of iterFlattenedComponentPaths(
     compo,
     getGlyphFunc,
     parentLocation,
-    parentGlyphNames
+    parentGlyphNames,
+    fontAxisNames
   )) {
     paths.push(path);
     if (errors) {
@@ -778,6 +800,7 @@ async function* iterFlattenedComponentPaths(
   getGlyphFunc,
   parentLocation,
   parentGlyphNames,
+  fontAxisNames,
   transformation = null,
   seenGlyphNames = null
 ) {
@@ -790,7 +813,7 @@ async function* iterFlattenedComponentPaths(
   seenGlyphNames.add(compo.name);
   parentGlyphNames = [...parentGlyphNames, compo.name];
 
-  const compoLocation = mergeLocations(parentLocation, compo.location) || {};
+  const compoLocation = mergeLocations(parentLocation, compo.location);
   const glyph = await getGlyphFunc(compo.name);
   let inst, instErrors;
   if (!glyph) {
@@ -818,8 +841,9 @@ async function* iterFlattenedComponentPaths(
     yield* iterFlattenedComponentPaths(
       subCompo,
       getGlyphFunc,
-      compoLocation,
+      filterLocation(compoLocation, fontAxisNames),
       parentGlyphNames,
+      fontAxisNames,
       t,
       seenGlyphNames
     );
@@ -913,9 +937,15 @@ function mapLocationFoldNLI(location, axes) {
 
 function mergeLocations(loc1, loc2) {
   if (!loc1) {
-    return loc2;
+    return loc2 || {};
   }
   return { ...loc1, ...loc2 };
+}
+
+function filterLocation(loc, axisNames) {
+  return Object.fromEntries(
+    Object.entries(loc).filter((entry) => axisNames.has(entry[0]))
+  );
 }
 
 function subsetLocation(location, axes) {

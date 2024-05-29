@@ -38,7 +38,7 @@ class FontInstancer:
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
-        self.globalAxes: list[FontAxis | DiscreteFontAxis] | None = None
+        self.fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
 
     async def getGlyphInstancer(
         self,
@@ -48,8 +48,8 @@ class FontInstancer:
     ) -> GlyphInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
-            if self.globalAxes is None:
-                self.globalAxes = (await self.backend.getAxes()).axes
+            if self.fontAxes is None:
+                self.fontAxes = (await self.backend.getAxes()).axes
             glyph = await self.backend.getGlyph(glyphName)
             assert glyph is not None, glyphName
             if fixComponentLocationCompatibility:
@@ -58,6 +58,11 @@ class FontInstancer:
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        assert self.fontAxes is not None
+        return {axis.name for axis in self.fontAxes}
 
     async def _ensureComponentLocationCompatibility(
         self, glyph: VariableGlyph
@@ -177,7 +182,7 @@ class GlyphInstancer:
         decomposeVarComponents=True,
     ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
-            location = mapLocationFromUserToSource(location, self.globalAxes)
+            location = mapLocationFromUserToSource(location, self.fontAxes)
 
         instance = self.instantiate(location)
         await instance.drawPoints(
@@ -187,11 +192,17 @@ class GlyphInstancer:
         )
         return instance
 
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        return self.fontInstancer.fontAxisNames - {
+            axis.name for axis in self.glyph.axes
+        }
+
     def instantiate(
         self, location, *, coordSystem=LocationCoordinateSystem.SOURCE
     ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
-            location = mapLocationFromUserToSource(location, self.globalAxes)
+            location = mapLocationFromUserToSource(location, self.fontAxes)
 
         result = self.model.interpolateFromDeltas(
             normalizeLocation(location, self.combinedAxisTuples), self.deltas
@@ -199,19 +210,25 @@ class GlyphInstancer:
         assert isinstance(result, MathGlyph)
         assert isinstance(result.glyph, StaticGlyph)
 
+        # Only font axis values can be inherited, so filter out glyph axes
+        fontAxisNames = self.fontAxisNames
+        parentLocation = {
+            name: value for name, value in location.items() if name in fontAxisNames
+        }
+
         return GlyphInstance(
-            result.glyph, self.componentTypes, location, self.fontInstancer
+            result.glyph, self.componentTypes, parentLocation, self.fontInstancer
         )
 
     @cached_property
-    def globalAxes(self) -> list[FontAxis | DiscreteFontAxis]:
-        assert self.fontInstancer.globalAxes is not None
-        return self.fontInstancer.globalAxes
+    def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
+        assert self.fontInstancer.fontAxes is not None
+        return self.fontInstancer.fontAxes
 
     @cached_property
     def defaultFontSourceLocation(self) -> dict[str, float]:
-        location = {axis.name: axis.defaultValue for axis in self.globalAxes}
-        return mapLocationFromUserToSource(location, self.globalAxes)
+        location = {axis.name: axis.defaultValue for axis in self.fontAxes}
+        return mapLocationFromUserToSource(location, self.fontAxes)
 
     @cached_property
     def defaultSourceLocation(self) -> dict[str, float]:
@@ -245,9 +262,9 @@ class GlyphInstancer:
     @cached_property
     def combinedAxes(self) -> list[GlyphAxis]:
         combinedAxes = list(self.glyph.axes)
-        localAxisNames = {axis.name for axis in self.glyph.axes}
-        for axis in self.globalAxes:
-            if axis.name in localAxisNames:
+        glyphAxisNames = {axis.name for axis in self.glyph.axes}
+        for axis in self.fontAxes:
+            if axis.name in glyphAxisNames:
                 continue
             mapFunc = makeAxisMapFunc(axis)
             if not isinstance(axis, FontAxis):
@@ -550,12 +567,12 @@ def _locationMul(location, scalar):
     return {k: v * scalar for k, v in location.items()}
 
 
-def mapLocationFromUserToSource(location, globalAxes):
+def mapLocationFromUserToSource(location, fontAxes):
     return location | {
         axis.name: mapValueFromUserToSource(
             location.get(axis.name, axis.defaultValue), axis
         )
-        for axis in globalAxes
+        for axis in fontAxes
     }
 
 
