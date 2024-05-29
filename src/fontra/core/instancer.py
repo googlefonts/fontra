@@ -59,6 +59,11 @@ class FontInstancer:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
 
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        assert self.fontAxes is not None
+        return {axis.name for axis in self.fontAxes}
+
     async def _ensureComponentLocationCompatibility(
         self, glyph: VariableGlyph
     ) -> VariableGlyph:
@@ -199,8 +204,14 @@ class GlyphInstancer:
         assert isinstance(result, MathGlyph)
         assert isinstance(result.glyph, StaticGlyph)
 
+        # Only font axis values can be inherited, so filter out glyph axes
+        fontAxisNames = self.fontInstancer.fontAxisNames
+        parentLocation = {
+            name: value for name, value in location.items() if name in fontAxisNames
+        }
+
         return GlyphInstance(
-            result.glyph, self.componentTypes, location, self.fontInstancer
+            result.glyph, self.componentTypes, parentLocation, self.fontInstancer
         )
 
     @cached_property
