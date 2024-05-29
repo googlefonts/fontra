@@ -397,7 +397,6 @@ class DesignspaceBackend:
                     name=sourceName,
                     location=source["location"],
                     layerName=ufoLayer.fontraLayerName,
-                    customData={},
                 )
             )
         return axes, sources
