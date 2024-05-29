@@ -192,6 +192,12 @@ class GlyphInstancer:
         )
         return instance
 
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        return self.fontInstancer.fontAxisNames - {
+            axis.name for axis in self.glyph.axes
+        }
+
     def instantiate(
         self, location, *, coordSystem=LocationCoordinateSystem.SOURCE
     ) -> GlyphInstance:
@@ -205,7 +211,7 @@ class GlyphInstancer:
         assert isinstance(result.glyph, StaticGlyph)
 
         # Only font axis values can be inherited, so filter out glyph axes
-        fontAxisNames = self.fontInstancer.fontAxisNames
+        fontAxisNames = self.fontAxisNames
         parentLocation = {
             name: value for name, value in location.items() if name in fontAxisNames
         }

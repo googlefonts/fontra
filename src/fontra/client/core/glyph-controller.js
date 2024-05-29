@@ -36,7 +36,12 @@ export class VariableGlyphController {
   constructor(glyph, fontAxes) {
     this.glyph = glyph;
     this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
-    this._fontAxisNames = new Set(fontAxes.map((axis) => axis.name));
+    const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
+    this._fontAxisNames = new Set(
+      fontAxes
+        .map((axis) => axis.name)
+        .filter((axisName) => !glyphAxisNames.has(axisName))
+    );
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
