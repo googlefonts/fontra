@@ -35,6 +35,11 @@
     <dict>
       <key>public.markColor</key>
       <string>1,0,0,1</string>
+      <key>xyz.fontra.customData</key>
+      <dict>
+        <key>fontra.development.status</key>
+        <integer>4</integer>
+      </dict>
     </dict>
   </lib>
 </glyph>

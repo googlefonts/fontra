@@ -40,6 +40,11 @@
       <integer>1</integer>
       <key>com.typemytype.robofont.Image.Sharpness</key>
       <real>0.4</real>
+      <key>xyz.fontra.customData</key>
+      <dict>
+        <key>fontra.development.status</key>
+        <integer>3</integer>
+      </dict>
     </dict>
   </lib>
 </glyph>
