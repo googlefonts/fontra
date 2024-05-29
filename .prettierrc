@@ -8,5 +8,13 @@
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "es5",
-  "useTabs": false
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": ["src/fontra/client/core/classes.json", ".prettierrc"],
+      "options": {
+        "plugins": ["prettier-plugin-organize-imports"]
+      }
+    }
+  ]
 }
