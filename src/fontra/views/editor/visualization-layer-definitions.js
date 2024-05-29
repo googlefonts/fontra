@@ -171,6 +171,55 @@ registerVisualizationLayerDefinition({
   },
 });
 
+const verticalMetricsDefaults = {
+  descender: -0.25,
+  xHeight: 0.5,
+  capHeight: 0.75,
+  ascender: 0.75,
+  italicAngle: 0,
+};
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.metrics",
+  name: "Metrics",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 200,
+  screenParameters: { strokeWidth: 1 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: async (context, positionedGlyph, parameters, model, controller) => {
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+
+    const sourceIndex = positionedGlyph.glyph.sourceIndex;
+    if (sourceIndex === undefined) {
+      return;
+    }
+
+    const sources = await model.fontController.getSources();
+    const source = sources[sourceIndex];
+
+    let verticalMetrics = {};
+    if (source === undefined) {
+      // default values
+      const unitsPerEm = await model.fontController.unitsPerEm;
+      for (const [key, value] of Object.entries(verticalMetricsDefaults)) {
+        verticalMetrics[key] = round(value * unitsPerEm);
+      }
+    } else {
+      verticalMetrics = source.verticalMetrics;
+    }
+    console.log("verticalMetrics: ", verticalMetrics);
+    for (const [key, value] of Object.entries(verticalMetrics)) {
+      console.log("draw vertical metrics: ", key);
+      strokeLine(context, 0, value, positionedGlyph.glyph.xAdvance, value);
+      //strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
+    }
+  },
+});
+
 // the following icon SVG path code is from https://tabler.io/icons/icon/lock
 const lockIconPath2D = new Path2D(
   `M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z
