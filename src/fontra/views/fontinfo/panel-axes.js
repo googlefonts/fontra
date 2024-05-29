@@ -21,41 +21,46 @@ import { dialogSetup } from "/web-components/modal-dialog.js";
 
 const presetAxes = [
   {
-    label: "weight",
+    label: "Weight",
     name: "weight",
     tag: "wght",
+    loclKey: "axes.preset.weight",
     minValue: 100,
     defaultValue: 400,
     maxValue: 900,
   },
   {
-    label: "width",
+    label: "Width",
     name: "width",
     tag: "wdth",
+    loclKey: "axes.preset.width",
     minValue: 50,
     defaultValue: 100,
     maxValue: 200,
   },
   {
-    label: "optical-size",
+    label: "Optical Size",
     name: "optical",
     tag: "opsz",
+    loclKey: "axes.preset.optical-size",
     minValue: 8,
     defaultValue: 14,
     maxValue: 144,
   },
   {
-    label: "italic",
+    label: "Italic",
     name: "italic",
     tag: "ital",
+    loclKey: "axes.preset.italic",
     minValue: 0,
     defaultValue: 0,
     maxValue: 1,
   },
   {
-    label: "slant",
+    label: "Slant",
     name: "slant",
     tag: "slnt",
+    loclKey: "axes.preset.slant",
     minValue: -20,
     defaultValue: 0,
     maxValue: 20,
@@ -120,7 +125,7 @@ export class AxesPanel extends BaseInfoPanel {
     const selected = "wght";
 
     const controller = new ObservableController({ ...presetAxesByTag[selected] });
-    controller.addKeyListener(["name", "tag", "label"], (event) => {
+    controller.addKeyListener(["name", "tag", "label", "loclKey"], (event) => {
       if (event.senderInfo !== "radiogroup") {
         radioGroup.forEach((el) => (el.checked = false));
       }
@@ -143,9 +148,7 @@ export class AxesPanel extends BaseInfoPanel {
           },
         }),
         html.label({ for: identifier }, [
-          `${translate("axes.preset." + presetAxis.label)} (${presetAxis.name}, ${
-            presetAxis.tag
-          })`,
+          `${translate(presetAxis.loclKey)} (${presetAxis.name}, ${presetAxis.tag})`,
         ]),
         html.br()
       );
