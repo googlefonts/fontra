@@ -290,7 +290,10 @@ class DesignspaceBackend:
         layers = {}
         sourceNameMapping = {}
         layerNameMapping = {}
+        # global per glyph custom data, eg. glyph locking
         customData = {}
+        # per glyph source custom data, eg. status color code
+        localSourcesCustomData = {}
 
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
@@ -306,6 +309,14 @@ class DesignspaceBackend:
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
                 customData = ufoGlyph.lib.get(CUSTOM_DATA_LIB_KEY, {})
+
+            layerName = layerNameMapping.get(
+                ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
+            )
+            localSourcesCustomData[layerName] = ufoGlyph.lib.get(
+                CUSTOM_DATA_LIB_KEY, {}
+            )
+
             layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
 
         # When a glyph has axes with names that also exist as global axes, we need
@@ -339,6 +350,7 @@ class DesignspaceBackend:
         if sourceNameMapping:
             for source in sources:
                 source.name = sourceNameMapping.get(source.name, source.name)
+                source.customData = localSourcesCustomData.get(source.layerName, {})
 
         return VariableGlyph(
             name=glyphName,
@@ -385,6 +397,7 @@ class DesignspaceBackend:
                     name=sourceName,
                     location=source["location"],
                     layerName=ufoLayer.fontraLayerName,
+                    customData={},
                 )
             )
         return axes, sources
@@ -413,6 +426,7 @@ class DesignspaceBackend:
         sourceNameMapping = {}
         layerNameMapping = {}
         localSources = []
+        localSourcesCustomData = {}
         for source in glyph.sources:
             sourceInfo = self._prepareUFOSourceLayer(
                 glyphName, source, localDefaultLocation, revLayerNameMapping
@@ -423,6 +437,8 @@ class DesignspaceBackend:
                 layerNameMapping[sourceInfo.layerName] = source.layerName
             if sourceInfo.localSourceDict is not None:
                 localSources.append(sourceInfo.localSourceDict)
+
+            localSourcesCustomData[sourceInfo.layerName] = source.customData
 
         # Prepare local design space
         localDS = {}
@@ -459,14 +475,22 @@ class DesignspaceBackend:
             glyphSet = ufoLayer.glyphSet
             writeGlyphSetContents = glyphName not in glyphSet
 
+            customData = None
             if glyphSet == self.defaultUFOLayer.glyphSet:
                 layerGlyph = defaultLayerGlyph
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
-                storeInLib(layerGlyph, CUSTOM_DATA_LIB_KEY, glyph.customData)
+                customData = (
+                    glyph.customData | localSourcesCustomData[ufoLayer.fontraLayerName]
+                )
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
+                if localSourcesCustomData.get(ufoLayer.fontraLayerName) is not None:
+                    customData = localSourcesCustomData[ufoLayer.fontraLayerName]
+
+            if customData:
+                storeInLib(layerGlyph, CUSTOM_DATA_LIB_KEY, customData)
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph, layer.glyph, hasVariableComponents
