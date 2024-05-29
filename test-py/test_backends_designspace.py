@@ -11,12 +11,12 @@ from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
     Anchor,
     Axes,
+    CrossAxisMapping,
     FontAxis,
     GlyphAxis,
     GlyphSource,
     Guideline,
     Layer,
-    MultipleAxisMapping,
     OpenTypeFeatures,
     StaticGlyph,
     unstructure,
@@ -628,23 +628,23 @@ expectedAxesWithMappings = Axes(
         ),
     ],
     mappings=[
-        MultipleAxisMapping(
+        CrossAxisMapping(
             description="Default mapping",
             groupDescription="Mappings group one",
             inputLocation={"Diagonal": 0.0},
             outputLocation={"Horizontal": 0.0, "Vertical": 0.0},
         ),
-        MultipleAxisMapping(
+        CrossAxisMapping(
             groupDescription="Mappings group one",
             inputLocation={"Diagonal": 25.0},
             outputLocation={"Horizontal": 0.0, "Vertical": 33.0},
         ),
-        MultipleAxisMapping(
+        CrossAxisMapping(
             groupDescription="Mappings group one",
             inputLocation={"Diagonal": 75.0},
             outputLocation={"Horizontal": 100.0, "Vertical": 67.0},
         ),
-        MultipleAxisMapping(
+        CrossAxisMapping(
             groupDescription="Mappings group one",
             inputLocation={"Diagonal": 100.0},
             outputLocation={"Horizontal": 100.0, "Vertical": 100.0},

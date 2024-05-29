@@ -478,7 +478,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         checked: !this.sceneSettings.fontAxesUseSourceCoordinates,
       },
       {
-        title: "Apply multiple axis mapping",
+        title: "Apply cross-axis mapping",
         callback: () => {
           this.sceneSettings.fontAxesSkipMapping =
             !this.sceneSettings.fontAxesSkipMapping;

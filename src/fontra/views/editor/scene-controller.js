@@ -255,7 +255,7 @@ export class SceneController {
     this.fontController.addChangeListener(
       { axes: null },
       (change, isExternalChange) => {
-        // the MultipleAxisMapping may have changed, force to re-sync the location
+        // the CrossAxisMapping may have changed, force to re-sync the location
         this.sceneSettings.fontLocationSource = {
           ...this.sceneSettings.fontLocationSource,
         };

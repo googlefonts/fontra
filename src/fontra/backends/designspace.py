@@ -32,6 +32,7 @@ from ..core.classes import (
     Axes,
     AxisValueLabel,
     Component,
+    CrossAxisMapping,
     DiscreteFontAxis,
     FontAxis,
     FontInfo,
@@ -41,7 +42,6 @@ from ..core.classes import (
     GlyphSource,
     Guideline,
     Layer,
-    MultipleAxisMapping,
     OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
@@ -182,7 +182,7 @@ class DesignspaceBackend:
         self.axes = axes
 
         self.axisMappings = [
-            MultipleAxisMapping(
+            CrossAxisMapping(
                 description=mapping.description,
                 groupDescription=mapping.groupDescription,
                 inputLocation=dict(mapping.inputLocation),

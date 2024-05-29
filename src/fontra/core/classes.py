@@ -33,13 +33,13 @@ class FontInfo:
 @dataclass(kw_only=True)
 class Axes:
     axes: list[Union[FontAxis, DiscreteFontAxis]] = field(default_factory=list)
-    mappings: list[MultipleAxisMapping] = field(default_factory=list)
+    mappings: list[CrossAxisMapping] = field(default_factory=list)
     elidedFallBackname: Optional[str] = None
     customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
-class MultipleAxisMapping:
+class CrossAxisMapping:
     description: Optional[str] = None
     groupDescription: Optional[str] = None
     inputLocation: Location

@@ -299,7 +299,7 @@
     },
     "mappings": {
       "type": "list",
-      "subtype": "MultipleAxisMapping"
+      "subtype": "CrossAxisMapping"
     },
     "elidedFallBackname": {
       "type": "str",
@@ -404,7 +404,7 @@
       "subtype": "Any"
     }
   },
-  "MultipleAxisMapping": {
+  "CrossAxisMapping": {
     "description": {
       "type": "str",
       "optional": true
