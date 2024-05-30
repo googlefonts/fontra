@@ -125,7 +125,7 @@ export class AxesPanel extends BaseInfoPanel {
     const selected = "wght";
 
     const controller = new ObservableController({ ...presetAxesByTag[selected] });
-    controller.addKeyListener(["name", "tag", "label", "loclKey"], (event) => {
+    controller.addKeyListener(["name", "tag", "label"], (event) => {
       if (event.senderInfo !== "radiogroup") {
         radioGroup.forEach((el) => (el.checked = false));
       }
@@ -148,7 +148,9 @@ export class AxesPanel extends BaseInfoPanel {
           },
         }),
         html.label({ for: identifier }, [
-          `${translate(presetAxis.loclKey)} (${presetAxis.name}, ${presetAxis.tag})`,
+          `${translate(presetAxis.loclKey)} (${presetAxis.label}, ${presetAxis.name}, ${
+            presetAxis.tag
+          })`,
         ]),
         html.br()
       );
