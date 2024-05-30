@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="BEND" name="Bend" minimum="0" maximum="100" default="0"/>
+    <axis tag="BND2" name="Bend-2" minimum="0" maximum="100" default="0" hidden="1"/>
+    <mappings>
+      <mapping>
+        <input>
+          <dimension name="Bend" xvalue="100"/>
+        </input>
+        <output>
+          <dimension name="Bend" xvalue="0"/>
+          <dimension name="Bend-2" xvalue="100"/>
+        </output>
+      </mapping>
+    </mappings>
+  </axes>
+  <sources>
+    <source filename="DemoAvar2-NLI_Regular.ufo" stylename="Regular">
+      <location>
+        <dimension name="Bend" xvalue="0"/>
+        <dimension name="Bend-2" xvalue="0"/>
+      </location>
+    </source>
+    <source filename="DemoAvar2-NLI_Bend-middle-1.ufo" stylename="Bend-middle-1">
+      <location>
+        <dimension name="Bend" xvalue="100"/>
+        <dimension name="Bend-2" xvalue="0"/>
+      </location>
+    </source>
+    <source filename="DemoAvar2-NLI_Bend-middle-2.ufo" stylename="Bend-middle-2">
+      <location>
+        <dimension name="Bend" xvalue="0"/>
+        <dimension name="Bend-2" xvalue="100"/>
+      </location>
+    </source>
+    <source filename="DemoAvar2-NLI_Bend-end.ufo" stylename="Bend-end">
+      <location>
+        <dimension name="Bend" xvalue="100"/>
+        <dimension name="Bend-2" xvalue="100"/>
+      </location>
+    </source>
+  </sources>
+</designspace>
