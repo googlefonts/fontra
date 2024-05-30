@@ -1,6 +1,7 @@
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
@@ -105,7 +106,7 @@ export default class SelectionInfoPanel extends Panel {
       }),
       html.label(
         { for: "behavior-checkbox" },
-        "Multi-source value changes are absolute"
+        translate("sidebar.selection-info.multi-source")
       ),
     ]);
   }
@@ -166,7 +167,7 @@ export default class SelectionInfoPanel extends Panel {
     if (glyphName) {
       formContents.push({
         type: "header",
-        label: "Glyph info",
+        label: translate("sidebar.selection-info.title"),
         auxiliaryElement: html.createDomElement("icon-button", {
           "id": "glyphLocking",
           "style": `width: 1.3em;`,
@@ -186,7 +187,7 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         key: "glyphName",
         type: "text",
-        label: "Glyph name",
+        label: translate("sidebar.selection-info.glyph-name"),
         value: glyphName,
       });
       formContents.push({
@@ -207,7 +208,7 @@ export default class SelectionInfoPanel extends Panel {
         formContents.push({
           type: "edit-number",
           key: '["xAdvance"]',
-          label: "Advance width",
+          label: translate("sidebar.selection-info.advance-width"),
           value: instance.xAdvance,
           numDigits: 1,
           minValue: 0,
@@ -215,7 +216,7 @@ export default class SelectionInfoPanel extends Panel {
         formContents.push({
           type: "edit-number-x-y",
           key: '["sidebearings"]',
-          label: "Sidebearings",
+          label: translate("sidebar.selection-info.sidebearings"),
           fieldX: {
             key: '["leftMargin"]',
             value: glyphController.leftMargin,
@@ -272,16 +273,19 @@ export default class SelectionInfoPanel extends Panel {
       const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
       formContents.push({ type: "divider" });
-      formContents.push({ type: "header", label: `Component #${index}` });
+      formContents.push({
+        type: "header",
+        label: translate("sidebar.selection-info.component", index),
+      });
       formContents.push({
         type: "edit-text",
         key: componentKey("name"),
-        label: "Base glyph",
+        label: translate("sidebar.selection-info.component.base-glyph"),
         value: component.name,
       });
       formContents.push({
         type: "header",
-        label: "Transformation",
+        label: translate("sidebar.selection-info.component.transformation"),
         auxiliaryElement: html.createDomElement("icon-button", {
           "style": `width: 1.3em;`,
           "src": "/tabler-icons/refresh.svg",
@@ -293,7 +297,7 @@ export default class SelectionInfoPanel extends Panel {
 
       formContents.push({
         type: "edit-number-x-y",
-        label: "translate",
+        label: translate("sidebar.selection-info.component.translate"),
         fieldX: {
           key: componentKey("transformation", "translateX"),
           value: component.transformation.translateX,
@@ -307,13 +311,13 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         type: "edit-angle",
         key: componentKey("transformation", "rotation"),
-        label: "rotation",
+        label: translate("sidebar.selection-info.component.rotation"),
         value: component.transformation.rotation,
       });
 
       formContents.push({
         type: "edit-number-x-y",
-        label: "scale",
+        label: translate("sidebar.selection-info.component.scale"),
         fieldX: {
           key: componentKey("transformation", "scaleX"),
           value: component.transformation.scaleX,
@@ -326,7 +330,7 @@ export default class SelectionInfoPanel extends Panel {
 
       formContents.push({
         type: "edit-number-x-y",
-        label: "skew",
+        label: translate("sidebar.selection-info.component.skew"),
         fieldX: {
           key: componentKey("transformation", "skewX"),
           value: component.transformation.skewX,
@@ -339,7 +343,7 @@ export default class SelectionInfoPanel extends Panel {
 
       formContents.push({
         type: "edit-number-x-y",
-        label: "center",
+        label: translate("sidebar.selection-info.component.center"),
         fieldX: {
           key: componentKey("transformation", "tCenterX"),
           value: component.transformation.tCenterX,
@@ -423,7 +427,9 @@ export default class SelectionInfoPanel extends Panel {
     }
 
     if (!formContents.length) {
-      this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
+      this.infoForm.setFieldDescriptions([
+        { type: "text", value: translate("selection.none") },
+      ]);
     } else {
       this.infoForm.setFieldDescriptions(formContents);
       if (glyphController) {
@@ -525,7 +531,7 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         key: "dimensions",
         type: "text",
-        label: "Dimensions",
+        label: translate("sidebar.selection-info.dimensions"),
         value: dimensionsString,
       });
     }

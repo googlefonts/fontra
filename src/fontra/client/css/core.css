@@ -81,7 +81,10 @@
 
 html,
 body {
-  font-family: fontra-ui-regular, sans-serif;
+  font-family:
+    fontra-ui-regular,
+    -apple-system,
+    sans-serif;
   font-feature-settings: "tnum" 1;
   font-size: 0.9em;
   padding: 0;

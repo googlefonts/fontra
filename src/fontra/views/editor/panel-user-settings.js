@@ -1,6 +1,7 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import { languageController, translate } from "/core/localization.js";
 import { themeController } from "/core/theme-settings.js";
 import { fetchJSON } from "/core/utils.js";
 
@@ -46,13 +47,13 @@ export default class UserSettingsPanel extends Panel {
       return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
     });
     items.push({
-      displayName: "Glyph editor appearance",
+      displayName: translate("sidebar.user-settings.glyph"),
       controller: this.editorController.visualizationLayersSettings,
       descriptions: layerItems,
     });
 
     items.push({
-      displayName: "Clipboard export format",
+      displayName: translate("sidebar.user-settings.clipboard"),
       controller: this.editorController.clipboardFormatController,
       descriptions: [
         {
@@ -67,8 +68,25 @@ export default class UserSettingsPanel extends Panel {
       ],
     });
 
+    // TODO: refine as pop-up menu instead of radio buttons
+    // TODO: add English language name in parentheses under other languages
     items.push({
-      displayName: "Experimental features",
+      displayName: "Display Language",
+      controller: languageController,
+      descriptions: [
+        {
+          key: "language",
+          ui: "radio",
+          options: [
+            { key: "en", displayName: "English" },
+            { key: "zh-CN", displayName: "Simplified Chinese" },
+          ],
+        },
+      ],
+    });
+
+    items.push({
+      displayName: translate("sidebar.user-settings.experimental"),
       controller: this.editorController.experimentalFeaturesController,
       descriptions: [
         {
@@ -90,16 +108,22 @@ export default class UserSettingsPanel extends Panel {
     });
 
     items.push({
-      displayName: "Theme settings",
+      displayName: translate("sidebar.user-settings.theme"),
       controller: themeController,
       descriptions: [
         {
           key: "theme",
           ui: "radio",
           options: [
-            { key: "automatic", displayName: "Automatic (use OS setting)" },
-            { key: "light", displayName: "Light" },
-            { key: "dark", displayName: "Dark" },
+            {
+              key: "automatic",
+              displayName: translate("sidebar.user-settings.theme.auto"),
+            },
+            {
+              key: "light",
+              displayName: translate("sidebar.user-settings.theme.light"),
+            },
+            { key: "dark", displayName: translate("sidebar.user-settings.theme.dark") },
           ],
         },
       ],
@@ -107,7 +131,7 @@ export default class UserSettingsPanel extends Panel {
 
     const serverInfo = await fetchJSON("/serverinfo");
     items.push({
-      displayName: "Server info",
+      displayName: translate("sidebar.user-settings.server"),
       controller: null,
       descriptions: Object.entries(serverInfo).flatMap((entry) => {
         return [

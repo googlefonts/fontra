@@ -4,6 +4,7 @@ import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
+import { translate } from "/core/localization.js";
 import { range, round, throttleCalls } from "/core/utils.js";
 import * as vector from "/core/vector.js";
 
@@ -13,7 +14,7 @@ const POWER_RULER_IDENTIFIER = "fontra.power.ruler";
 
 registerVisualizationLayerDefinition({
   identifier: POWER_RULER_IDENTIFIER,
-  name: "Power Ruler",
+  name: translate("sidebar.user-settings.glyph.powerruler"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,

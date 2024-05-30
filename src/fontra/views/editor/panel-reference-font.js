@@ -24,6 +24,7 @@ import "/third-party/lib-font/unbrotli.js";
 import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
+import { translate } from "/core/localization.js";
 
 let referenceFontModel;
 
@@ -32,7 +33,7 @@ const DEFAULT_FONT_SIZE = 100;
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
-  name: "Reference font",
+  name: translate("sidebar.user-settings.glyph.referencefont"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -665,10 +666,8 @@ export default class ReferenceFontPanel extends Panel {
             id: "reference-font",
           },
           [
-            div({ class: "title" }, ["Reference font"]),
-            div({}, [
-              "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below:",
-            ]),
+            div({ class: "title" }, [translate("sidebar.referencefont")]),
+            div({}, [translate("sidebar.referencefont.info")]),
             this.filesUIList,
             div(
               {
@@ -680,14 +679,20 @@ export default class ReferenceFontPanel extends Panel {
                 `,
               },
               [
-                label({ for: "char-override" }, "Custom character:"),
+                label(
+                  { for: "char-override" },
+                  translate("sidebar.referencefont.customcharacter")
+                ),
                 input({
                   type: "text",
                   id: "char-override",
                   value: this.model.charOverride,
                   oninput: (event) => (this.model.charOverride = event.target.value),
                 }),
-                label({ for: "language-code" }, "Language:"),
+                label(
+                  { for: "language-code" },
+                  translate("sidebar.referencefont.language")
+                ),
                 this.languageCodeInput,
               ]
             ),

@@ -163,9 +163,9 @@ export class Form extends SimpleElement {
       }
 
       let label = fieldItem.label || fieldItem.key || "";
-      if (label.length && fieldItem.type !== "header") {
+      /* if (label.length && fieldItem.type !== "header") {
         label += ":";
-      }
+      } */ // Conflicts with colons within localization values
       labelElement.append(label);
       this.contentElement.appendChild(labelElement);
       if (fieldItem.type === "header") {

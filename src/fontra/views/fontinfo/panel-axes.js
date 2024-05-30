@@ -15,6 +15,7 @@ import { piecewiseLinearMap } from "../core/var-model.js";
 import { IconButton } from "../web-components/icon-button.js"; // for <icon-button>
 import { UIList } from "../web-components/ui-list.js";
 import { BaseInfoPanel } from "./panel-base.js";
+import { translate } from "/core/localization.js";
 import "/web-components/add-remove-buttons.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 
@@ -23,6 +24,7 @@ const presetAxes = [
     label: "Weight",
     name: "weight",
     tag: "wght",
+    loclKey: "axes.preset.weight",
     minValue: 100,
     defaultValue: 400,
     maxValue: 900,
@@ -31,6 +33,7 @@ const presetAxes = [
     label: "Width",
     name: "width",
     tag: "wdth",
+    loclKey: "axes.preset.width",
     minValue: 50,
     defaultValue: 100,
     maxValue: 200,
@@ -39,6 +42,7 @@ const presetAxes = [
     label: "Optical Size",
     name: "optical",
     tag: "opsz",
+    loclKey: "axes.preset.optical-size",
     minValue: 8,
     defaultValue: 14,
     maxValue: 144,
@@ -47,6 +51,7 @@ const presetAxes = [
     label: "Italic",
     name: "italic",
     tag: "ital",
+    loclKey: "axes.preset.italic",
     minValue: 0,
     defaultValue: 0,
     maxValue: 1,
@@ -55,6 +60,7 @@ const presetAxes = [
     label: "Slant",
     name: "slant",
     tag: "slnt",
+    loclKey: "axes.preset.slant",
     minValue: -20,
     defaultValue: 0,
     maxValue: 20,
@@ -66,7 +72,7 @@ const presetAxesByTag = Object.fromEntries(
 );
 
 export class AxesPanel extends BaseInfoPanel {
-  static title = "Axes";
+  static title = "axes.title";
   static id = "axes-panel";
   static fontAttributes = ["axes", "sources"];
 
@@ -101,7 +107,7 @@ export class AxesPanel extends BaseInfoPanel {
       html.input({
         type: "button",
         style: `justify-self: start;`,
-        value: "New axis...",
+        value: translate("axes.new"),
         onclick: (event) => this.newAxis(),
       })
     );
@@ -110,12 +116,12 @@ export class AxesPanel extends BaseInfoPanel {
   }
 
   async newAxis() {
-    const dialog = await dialogSetup("New Axis", "", [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Add new axis", resultValue: "ok", isDefaultButton: true },
+    const dialog = await dialogSetup(translate("axes.create"), "", [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: translate("axes.add"), resultValue: "ok", isDefaultButton: true },
     ]);
 
-    const radioGroup = [html.div({}, "Axis presets:")];
+    const radioGroup = [html.div({}, translate("axes.preset"))];
     const selected = "wght";
 
     const controller = new ObservableController({ ...presetAxesByTag[selected] });
@@ -142,7 +148,9 @@ export class AxesPanel extends BaseInfoPanel {
           },
         }),
         html.label({ for: identifier }, [
-          `${presetAxis.label} (${presetAxis.name}, ${presetAxis.tag})`,
+          `${translate(presetAxis.loclKey)} (${presetAxis.label}, ${presetAxis.name}, ${
+            presetAxis.tag
+          })`,
         ]),
         html.br()
       );
@@ -161,9 +169,9 @@ export class AxesPanel extends BaseInfoPanel {
         `,
       },
       [
-        ...labeledTextInput("Name", controller, "name"),
-        ...labeledTextInput("OT Tag", controller, "tag"),
-        ...labeledTextInput("UI Name", controller, "label"),
+        ...labeledTextInput(translate("axes.names.name"), controller, "name"),
+        ...labeledTextInput(translate("axes.names.ot-tag"), controller, "tag"),
+        ...labeledTextInput(translate("axes.names.ui-name"), controller, "label"),
       ]
     );
 
@@ -249,7 +257,7 @@ addStyleSheet(`
 }
 
 .fontra-ui-font-info-axes-panel-axis-box-mapping-list {
-  width: 8em;
+  width: 9em;
   max-height: var(--fontra-ui-font-info-axes-panel-max-list-height);
 }
 
@@ -349,40 +357,48 @@ class AxisBox extends HTMLElement {
         },
       },
       [
-        html.option({ value: "continuous", selected: !isDiscreteAxis }, ["Continuous"]),
-        html.option({ value: "discrete", selected: isDiscreteAxis }, ["Discrete"]),
+        html.option({ value: "continuous", selected: !isDiscreteAxis }, [
+          translate("axes.range.axis-type.continuous"),
+        ]),
+        html.option({ value: "discrete", selected: isDiscreteAxis }, [
+          translate("axes.range.axis-type.discrete"),
+        ]),
       ]
     );
     const axisItems = !isDiscreteAxis
       ? [
-          ["Minimum", "minValue"],
-          ["Default", "defaultValue"],
-          ["Maximum", "maxValue"],
+          [translate("axes.range.minumum"), "minValue"],
+          [translate("axes.range.default"), "defaultValue"],
+          [translate("axes.range.maxium"), "maxValue"],
         ]
       : [
-          ["Values", "valuesString"],
-          ["Default", "defaultValue"],
+          [translate("axes.range.values"), "valuesString"],
+          [translate("axes.range.default"), "defaultValue"],
         ];
 
     this.innerHTML = "";
 
     this.append(
-      html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, ["Names"]),
-      html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, ["Range"]),
       html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, [
-        "Mapping graph",
+        translate("axes.names"),
       ]),
       html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, [
-        "Mapping list",
+        translate("axes.range"),
       ]),
       html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, [
-        "Axis Values",
+        translate("axes.mapping-graph"),
+      ]),
+      html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, [
+        translate("axes.mapping-list"),
+      ]),
+      html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-header" }, [
+        translate("axes.axis-values"),
       ]),
       html.createDomElement("icon-button", {
         "class": "fontra-ui-font-info-axes-panel-axis-box-delete",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteAxis(this.axisIndex),
-        "data-tooltip": "Delete axis",
+        "data-tooltip": translate("axes.delete-axis"),
         "data-tooltipposition": "left",
       }),
 
@@ -390,9 +406,9 @@ class AxisBox extends HTMLElement {
       html.div(
         { class: "fontra-ui-font-info-axes-panel-axis-box-names" },
         [
-          ["Name", "name"],
-          ["OT Tag", "tag"],
-          ["UI Name", "label"],
+          [translate("axes.names.name"), "name"],
+          [translate("axes.names.ot-tag"), "tag"],
+          [translate("axes.names.ui-name"), "label"],
         ]
           .map(([labelName, keyName]) =>
             labeledTextInput(labelName, this.axisController, keyName, {
@@ -407,7 +423,7 @@ class AxisBox extends HTMLElement {
             for: "fontra-ui-font-info-axes-panel-axis-box-axis-type",
             style: "text-align: right",
           },
-          ["Axis type"]
+          [translate("axes.range.axis-type")]
         ),
         axisTypeSelect,
         ...axisItems
@@ -656,7 +672,7 @@ function buildMappingGraph(axisController) {
           ...nodeCoordinates,
           svg.g(
             { transform: svg.translate(0, labelOffset) },
-            graphLabels(xMin, "user", xMax)
+            graphLabels(xMin, translate("axes.mapping.user"), xMax)
           ),
           svg.g(
             {
@@ -665,7 +681,7 @@ function buildMappingGraph(axisController) {
                 .rotate(90)
                 .translate(0, labelOffset),
             },
-            graphLabels(yMin, "source", yMax)
+            graphLabels(yMin, translate("axes.mapping.source"), yMax)
           ),
         ]),
       ]),
@@ -699,8 +715,8 @@ function buildMappingList(axisController) {
   mappingList.columnDescriptions = [
     {
       key: "user",
-      title: "User",
-      width: "3em",
+      title: translate("axes.mapping.user"),
+      width: "3.5em",
       align: "right",
       editable: true,
       formatter: NumberFormatter,
@@ -708,8 +724,8 @@ function buildMappingList(axisController) {
     },
     {
       key: "source",
-      title: "Source",
-      width: "3em",
+      title: translate("axes.mapping.source"),
+      width: "3.5em",
       align: "right",
       editable: true,
       formatter: NumberFormatter,
@@ -785,14 +801,14 @@ function buildValueLabelList(axisController) {
   labelList.columnDescriptions = [
     {
       key: "name",
-      title: "Name",
+      title: translate("axes.mapping.values.name"),
       width: "5em",
       editable: true,
       continuous: false,
     },
     {
       key: "value",
-      title: "Value",
+      title: translate("axes.mapping.values.value"),
       width: "3em",
       align: "right",
       editable: true,
@@ -801,8 +817,8 @@ function buildValueLabelList(axisController) {
     },
     {
       key: "minValue",
-      title: "Min",
-      width: "3em",
+      title: translate("axes.mapping.values.min"),
+      width: "3.5em",
       align: "right",
       editable: true,
       formatter: OptionalNumberFormatter,
@@ -810,8 +826,8 @@ function buildValueLabelList(axisController) {
     },
     {
       key: "maxValue",
-      title: "Max",
-      width: "3em",
+      title: translate("axes.mapping.values.max"),
+      width: "3.5em",
       align: "right",
       editable: true,
       formatter: OptionalNumberFormatter,
@@ -819,8 +835,8 @@ function buildValueLabelList(axisController) {
     },
     {
       key: "linkedValue",
-      title: "Linked",
-      width: "3em",
+      title: translate("axes.mapping.values.linked"),
+      width: "3.5em",
       align: "right",
       editable: true,
       formatter: OptionalNumberFormatter,
@@ -833,7 +849,7 @@ function buildValueLabelList(axisController) {
     },
     {
       key: "elidable",
-      title: "Elidable",
+      title: translate("axes.mapping.values.elidable"),
       width: "3.5em",
       cellFactory: checkboxListCell,
     },

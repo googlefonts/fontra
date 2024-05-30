@@ -1,5 +1,6 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
+import { translate } from "/core/localization.js";
 import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
@@ -29,7 +30,7 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.upm.grid",
-  name: "Units-per-em grid",
+  name: translate("sidebar.user-settings.glyph.upmgrid"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -155,7 +156,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.baseline",
-  name: "Baseline",
+  name: translate("sidebar.user-settings.glyph.baseline"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -188,8 +189,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.glyph.locking.non-editing",
-  name: "Glyph lock icon for non-editing glyphs",
+  identifier: translate("fontra.glyph.locking.non-editing"),
+  name: translate("sidebar.user-settings.glyph.lockicon"),
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
@@ -292,7 +293,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
-  name: "Anchor names",
+  name: translate("sidebar.user-settings.glyph.anchornames"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -568,7 +569,7 @@ function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
-  name: "Sidebearings for non-editing glyphs",
+  name: translate("sidebar.user-settings.glyph.sidebearings"),
   selectionMode: "notediting",
   userSwitchable: true,
   defaultOn: false,
@@ -613,7 +614,7 @@ function _drawMiniSideBearings(
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
-  name: "Drag crosshair",
+  name: translate("sidebar.user-settings.glyph.dragcrosshair"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -640,7 +641,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
-  name: "Drag “ghost” path",
+  name: translate("sidebar.user-settings.glyph.dragghostpath"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -935,7 +936,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.contour.index",
-  name: "Contour indices",
+  name: translate("sidebar.user-settings.glyph.contour"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -982,7 +983,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.index",
-  name: "Component names and indices",
+  name: translate("sidebar.user-settings.glyph.component"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1138,7 +1139,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: "Coordinates",
+  name: translate("sidebar.user-settings.glyph.coordinates"),
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1258,7 +1259,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.status.color",
-  name: "Development status color",
+  name: translate("sidebar.user-settings.glyph.statuscolor"),
   selectionMode: "all",
   userSwitchable: true,
   defaultOn: false,

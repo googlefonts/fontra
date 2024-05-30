@@ -2,6 +2,7 @@ import { ChangeCollector, applyChange, consolidateChanges } from "../core/change
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 import {
   filterPathByPointIndices,
   getSelectionByContour,
@@ -107,7 +108,10 @@ export default class TransformationPanel extends Panel {
 
     const formContents = [];
 
-    formContents.push({ type: "header", label: `Transformations` });
+    formContents.push({
+      type: "header",
+      label: translate("sidebar.selection-transformation.title"),
+    });
 
     let radioButtonOrigin = html.createDomElement("div", {
       class: "origin-radio-buttons ui-form-center",
@@ -128,7 +132,9 @@ export default class TransformationPanel extends Panel {
               ? "checked"
               : "",
           "onclick": (event) => this._changeOrigin(keyX, keyY),
-          "data-tooltip": `Origin ${keyY} ${keyX}`,
+          "data-tooltip": translate(
+            `sidebar.selection-transformation.origin.${keyY}.${keyX}`
+          ),
           "data-tooltipposition": "bottom",
         });
         radioButtonOrigin.appendChild(radioButton);
@@ -144,7 +150,7 @@ export default class TransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      label: "Origin",
+      label: translate("sidebar.selection-transformation.origin"),
       fieldX: {
         key: "originXButton",
         value: this.transformParameters.originXButton,
@@ -168,7 +174,7 @@ export default class TransformationPanel extends Panel {
           "move"
         ),
       "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Move",
+      "data-tooltip": translate("sidebar.selection-transformation.move"),
       "data-tooltipposition": "top",
     });
 
@@ -198,7 +204,7 @@ export default class TransformationPanel extends Panel {
           "scale"
         ),
       "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Scale",
+      "data-tooltip": translate("sidebar.selection-transformation.scale"),
       "data-tooltipposition": "top",
     });
 
@@ -225,7 +231,7 @@ export default class TransformationPanel extends Panel {
           "rotate"
         ),
       "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Rotate",
+      "data-tooltip": translate("sidebar.selection-transformation.rotate"),
       "data-tooltipposition": "top",
     });
 
@@ -247,7 +253,7 @@ export default class TransformationPanel extends Panel {
           "skew"
         ),
       "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Skew",
+      "data-tooltip": translate("sidebar.selection-transformation.skew"),
       "data-tooltipposition": "top",
     });
 
@@ -274,7 +280,7 @@ export default class TransformationPanel extends Panel {
       field1: {
         type: "text",
         key: "LabelFlip",
-        value: "Flip:",
+        value: translate("sidebar.selection-transformation.flip"),
       },
       field2: {
         type: "auxiliaryElement",
@@ -282,7 +288,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-vertical.svg",
-          "data-tooltip": "Flip vertically",
+          "data-tooltip": translate("sidebar.selection-transformation.flip.vertically"),
           "data-tooltipposition": "top",
           "onclick": (event) =>
             this.transformSelection(new Transform().scale(-1, 1), "flip vertically"),
@@ -294,7 +300,9 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-horizontal.svg",
-          "data-tooltip": "Flip horizontally",
+          "data-tooltip": translate(
+            "sidebar.selection-transformation.flip.horizontally"
+          ),
           "data-tooltipposition": "top-right",
           "onclick": (event) =>
             this.transformSelection(new Transform().scale(1, -1), "flip horizontally"),
@@ -303,7 +311,10 @@ export default class TransformationPanel extends Panel {
     });
 
     formContents.push({ type: "spacer" });
-    formContents.push({ type: "header", label: `Align Objects` });
+    formContents.push({
+      type: "header",
+      label: translate("sidebar.selection-transformation.align"),
+    });
 
     formContents.push({
       type: "universal-row",
@@ -314,7 +325,7 @@ export default class TransformationPanel extends Panel {
           "src": "/tabler-icons/vertical-align-left.svg",
           "onclick": (event) => this.moveObjects(alignLeft),
           "class": "ui-form-icon ui-form-icon-button",
-          "data-tooltip": "Align left",
+          "data-tooltip": translate("sidebar.selection-transformation.align.left"),
           "data-tooltipposition": "bottom-left",
         }),
       },
@@ -324,7 +335,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
           "onclick": (event) => this.moveObjects(alignCenter),
-          "data-tooltip": "Align center",
+          "data-tooltip": translate("sidebar.selection-transformation.align.center"),
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
@@ -335,7 +346,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
           "onclick": (event) => this.moveObjects(alignRight),
-          "data-tooltip": "Align right",
+          "data-tooltip": translate("sidebar.selection-transformation.align.right"),
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
         }),
@@ -351,7 +362,7 @@ export default class TransformationPanel extends Panel {
           "src": "/tabler-icons/horizontal-align-top.svg",
           "onclick": (event) => this.moveObjects(alignTop),
           "class": "ui-form-icon ui-form-icon-button",
-          "data-tooltip": "Align top",
+          "data-tooltip": translate("sidebar.selection-transformation.align.top"),
           "data-tooltipposition": "bottom-left",
         }),
       },
@@ -361,7 +372,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
           "onclick": (event) => this.moveObjects(alignMiddle),
-          "data-tooltip": "Align middle",
+          "data-tooltip": translate("sidebar.selection-transformation.align.middle"),
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
@@ -372,7 +383,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
           "onclick": (event) => this.moveObjects(alignBottom),
-          "data-tooltip": "Align bottom",
+          "data-tooltip": translate("sidebar.selection-transformation.align.bottom"),
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
         }),
@@ -380,7 +391,10 @@ export default class TransformationPanel extends Panel {
     });
 
     formContents.push({ type: "spacer" });
-    formContents.push({ type: "header", label: `Distribute Objects` });
+    formContents.push({
+      type: "header",
+      label: translate("sidebar.selection-transformation.distribute"),
+    });
 
     formContents.push({
       type: "universal-row",
@@ -390,7 +404,9 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-vertical.svg",
           "onclick": (event) => this.moveObjects(distributeHorizontally),
-          "data-tooltip": "Distribute horizontally",
+          "data-tooltip": translate(
+            "sidebar.selection-transformation.distribute.horizontally"
+          ),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
@@ -401,7 +417,9 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
           "onclick": (event) => this.moveObjects(distributeVertically),
-          "data-tooltip": "Distribute vertically",
+          "data-tooltip": translate(
+            "sidebar.selection-transformation.distribute.vertically"
+          ),
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),

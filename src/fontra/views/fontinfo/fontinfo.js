@@ -6,6 +6,7 @@ import { AxesPanel } from "./panel-axes.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
+import { translate } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
 export class FontInfoController {
@@ -74,7 +75,7 @@ export class FontInfoController {
             window.history.replaceState({}, "", url);
           },
         },
-        [panelClass.title]
+        [translate(panelClass.title)]
       );
       if (panelClass.id === this.selectedPanel) {
         headerElement.classList.add("selected");
