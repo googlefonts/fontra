@@ -5,13 +5,6 @@ import {
   mapAxesFromUserSpaceToSourceSpace,
 } from "./var-model.js";
 
-// class FontSource:
-//     name: str
-//     location: Location = field(default_factory=dict)
-//     verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
-//     guidelines: list[Guideline] = field(default_factory=list)
-//     customData: CustomData = field(default_factory=dict)
-
 export class FontSourcesController {
   constructor(fontAxes, fontSources) {
     this.fontAxes = fontAxes;
@@ -33,8 +26,11 @@ export class FontSourcesController {
       ])
     );
   }
-  clearCaches() {
-    //
+
+  update() {
+    delete this._model;
+    delete this._deltas;
+    this._setup();
   }
 
   get model() {
