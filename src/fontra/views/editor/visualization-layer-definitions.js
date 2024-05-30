@@ -195,8 +195,8 @@ registerVisualizationLayerDefinition({
   defaultOn: false,
   zIndex: 100,
   screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004", boxColor: "#FFF8", zoneColor: "#0001" },
-  colorsDarkMode: { strokeColor: "#FFF6", boxColor: "#0001", zoneColor: "#FFF1" },
+  colors: { strokeColor: "#0004", zoneColor: "#0001" },
+  colorsDarkMode: { strokeColor: "#FFF6", zoneColor: "#FFF1" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
@@ -229,13 +229,14 @@ registerVisualizationLayerDefinition({
     }
 
     // draw box
-    context.fillStyle = parameters.boxColor;
-    context.fillRect(
+    context.beginPath();
+    context.rect(
       0,
       verticalMetrics.descender,
       positionedGlyph.glyph.xAdvance,
       verticalMetrics.ascender - verticalMetrics.descender
     );
+    context.stroke();
 
     // draw alignment zones
     context.fillStyle = parameters.zoneColor;
