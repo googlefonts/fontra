@@ -54,7 +54,7 @@ export class FontController {
     if (initListener) {
       this.addChangeListener(
         { axes: null, sources: null },
-        (change, isExternalChange) => this._purgeCachesRelatedToAxesChanges()
+        (change, isExternalChange) => this._purgeCachesRelatedToAxesAndSourcesChanges()
       );
     }
     this._resolveInitialized();
@@ -632,7 +632,7 @@ export class FontController {
     delete this._glyphInstancePromiseCacheKeys[glyphName];
   }
 
-  async _purgeCachesRelatedToAxesChanges() {
+  async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
 
