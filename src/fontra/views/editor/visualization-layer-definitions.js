@@ -171,22 +171,6 @@ registerVisualizationLayerDefinition({
   },
 });
 
-const verticalMetricsDefaults = {
-  descender: -0.25,
-  xHeight: 0.5,
-  capHeight: 0.7,
-  ascender: 0.75,
-  italicAngle: 0,
-};
-
-const postscriptBlueValues = {
-  descender: -0.016,
-  baseline: -0.016,
-  xHeight: 0.016,
-  capHeight: 0.016,
-  ascender: 0.016,
-};
-
 registerVisualizationLayerDefinition({
   identifier: "fontra.metrics",
   name: "Metrics",
@@ -201,32 +185,13 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
-    const sourceIndex = positionedGlyph.glyph.sourceIndex;
-    if (sourceIndex === undefined) {
+    const source = model.fontSourceInstance;
+    console.log("source: ", source);
+    if (source === undefined) {
       return;
     }
-
-    const sources = model.fontController.getSources();
-    const source = sources[sourceIndex];
-
-    let verticalMetrics = {};
-    let alignmentZones = {};
-    if (source === undefined) {
-      // default values
-      const unitsPerEm = model.fontController.unitsPerEm;
-      alignmentZones = {
-        baseline: round(postscriptBlueValues["baseline"] * unitsPerEm),
-      };
-      for (const [key, value] of Object.entries(verticalMetricsDefaults)) {
-        verticalMetrics[key] = round(value * unitsPerEm);
-        if (!isNaN(postscriptBlueValues[key])) {
-          alignmentZones[key] = round(postscriptBlueValues[key] * unitsPerEm);
-        }
-      }
-    } else {
-      verticalMetrics = source.verticalMetrics;
-      alignmentZones = source.postscriptBlueValues;
-    }
+    const verticalMetrics = source.verticalMetrics;
+    let alignmentZones = {}; // TODO: source.alignmentZones;
 
     // draw box
     context.beginPath();
