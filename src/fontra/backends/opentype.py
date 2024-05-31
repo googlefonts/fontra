@@ -37,6 +37,8 @@ class OTFBackend:
         self.axes = unpackAxes(self.font)
         gvar = self.font.get("gvar")
         self.gvarVariations = gvar.variations if gvar is not None else None
+        varc = self.font.get("VARC")
+        self.varcTable = varc.table if varc is not None else None
         self.charStrings = (
             list(self.font["CFF2"].cff.values())[0].CharStrings
             if "CFF2" in self.font
@@ -73,6 +75,7 @@ class OTFBackend:
                 layerName=defaultLayerName,
             )
         ]
+
         for sparseLoc in self._getGlyphVariationLocations(glyphName):
             fullLoc = defaultLocation | sparseLoc
             locStr = locationToString(sparseLoc)
@@ -92,12 +95,35 @@ class OTFBackend:
     def _getGlyphVariationLocations(self, glyphName: str) -> list[dict[str, float]]:
         # TODO/FIXME: This misses variations that only exist in HVAR/VVAR
         locations = set()
-        if self.gvarVariations is not None:
-            locations = {
+
+        if self.gvarVariations is not None and glyphName in self.gvarVariations:
+            locations |= {
                 tuplifyLocation({k: v[1] for k, v in variation.axes.items()})
-                for variation in self.gvarVariations.get(glyphName, [])
+                for variation in self.gvarVariations[glyphName]
             }
-        elif (
+
+        if self.varcTable is not None:
+            fvarAxes = self.font["fvar"].axes
+            varStore = self.varcTable.MultiVarStore
+            try:
+                index = self.varcTable.Coverage.glyphs.index(glyphName)
+            except ValueError:
+                pass
+            else:
+                composite = self.varcTable.VarCompositeGlyphs.VarCompositeGlyph[index]
+                for component in composite.components:
+                    if component.axisValuesVarIndex != NO_VARIATION_INDEX:
+                        for loc in getLocationsFromMultiVarstore(
+                            component.axisValuesVarIndex >> 16, varStore, fvarAxes
+                        ):
+                            locations.add(tuplifyLocation(loc))
+                    if component.transformVarIndex != NO_VARIATION_INDEX:
+                        for loc in getLocationsFromMultiVarstore(
+                            component.transformVarIndex >> 16, varStore, fvarAxes
+                        ):
+                            locations.add(tuplifyLocation(loc))
+
+        if (
             self.charStrings is not None
             and glyphName in self.charStrings
             and getattr(self.charStrings, "varStore", None) is not None
@@ -114,6 +140,7 @@ class OTFBackend:
                 for varDataIndex in vsIndices
                 for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
             }
+
         return [dict(loc) for loc in sorted(locations)]
 
     async def getFontInfo(self) -> FontInfo:
@@ -149,6 +176,19 @@ def getLocationsFromVarstore(
             fvarAxes[i].axisTag: reg.PeakCoord
             for i, reg in enumerate(regions[regionIndex].VarRegionAxis)
             if reg.PeakCoord != 0
+        }
+        yield location
+
+
+def getLocationsFromMultiVarstore(
+    varDataIndex: int, varStore, fvarAxes
+) -> Generator[dict[str, float], None, None]:
+    regions = varStore.SparseVarRegionList.Region
+    for regionIndex in varStore.MultiVarData[varDataIndex].VarRegionIndex:
+        location = {
+            fvarAxes[reg.AxisIndex].axisTag: reg.PeakCoord
+            for reg in regions[regionIndex].SparseVarRegionAxis
+            # if reg.PeakCoord != 0
         }
         yield location
 
