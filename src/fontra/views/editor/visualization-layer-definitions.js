@@ -189,8 +189,8 @@ registerVisualizationLayerDefinition({
       return;
     }
     const verticalMetrics = model.fontSourceInstance.verticalMetrics;
-    const italicsAngle = model.fontSourceInstance.italicsAngle
-      ? model.fontSourceInstance.italicsAngle * -1
+    const italicAngle = model.fontSourceInstance.italicAngle
+      ? model.fontSourceInstance.italicAngle * -1
       : 0;
     const glyphWidth = positionedGlyph.glyph.xAdvance
       ? positionedGlyph.glyph.xAdvance
@@ -220,13 +220,13 @@ registerVisualizationLayerDefinition({
 
     // draw zones (with filled path)
     let path2DZones = new Path2D();
-    path2DZones.addPath(pathZones, new DOMMatrix().skewX(italicsAngle));
+    path2DZones.addPath(pathZones, new DOMMatrix().skewX(italicAngle));
     context.fillStyle = parameters.zoneColor;
     context.fill(path2DZones);
 
     // draw glyph box + vertical metrics (with stroke path)
     let path2DBox = new Path2D();
-    path2DBox.addPath(pathBox, new DOMMatrix().skewX(italicsAngle));
+    path2DBox.addPath(pathBox, new DOMMatrix().skewX(italicAngle));
     context.stroke(path2DBox);
   },
 });
