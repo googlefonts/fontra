@@ -483,6 +483,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 150.0, "width": 0.0},
         "name": "LightCondensed",
+        "italicAngle": 0,
         "verticalMetrics": {
             "ascender": {"value": 700, "zone": 16},
             "capHeight": {"value": 700, "zone": 16},
