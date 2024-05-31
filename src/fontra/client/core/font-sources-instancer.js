@@ -48,6 +48,9 @@ export class FontSourcesInstancer {
   }
 
   instantiate(sourceLocation) {
+    if (!this.fontSources.length) {
+      return {};
+    }
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 

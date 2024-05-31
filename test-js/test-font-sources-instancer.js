@@ -88,4 +88,10 @@ describe("FontSourcesInstancer Tests", () => {
     const sourceInstance = fsi.instantiate(testItem.location);
     expect(sourceInstance).to.deep.equal(testItem.expectedSource);
   });
+
+  it("Empty sources list", () => {
+    const fsi = new FontSourcesInstancer([], []);
+    const sourceInstance = fsi.instantiate({});
+    expect(sourceInstance).to.deep.equal({});
+  });
 });
