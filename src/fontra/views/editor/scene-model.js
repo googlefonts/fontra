@@ -270,6 +270,10 @@ export class SceneModel {
 
     this.updateBackgroundGlyphs();
 
+    this.fontSourceInstance = this.fontController.fontSourcesInstancer.instantiate(
+      this.sceneSettings.fontLocationSourceMapped
+    );
+
     // const startTime = performance.now();
     const result = await this.buildScene(cancelSignal);
     // const elapsed = performance.now() - startTime;
