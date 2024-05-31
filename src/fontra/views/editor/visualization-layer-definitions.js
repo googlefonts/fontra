@@ -173,7 +173,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.verticalMetrics",
-  name: "Vertical Metrics",
+  name: "Vertical font metrics",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -189,31 +189,45 @@ registerVisualizationLayerDefinition({
       return;
     }
     const verticalMetrics = model.fontSourceInstance.verticalMetrics;
+    const italicsAngle = model.fontSourceInstance.italicsAngle
+      ? model.fontSourceInstance.italicsAngle * -1
+      : 0;
+    const glyphWidth = positionedGlyph.glyph.xAdvance
+      ? positionedGlyph.glyph.xAdvance
+      : 0;
 
-    // draw box
-    // TODO: draw rectangle with italic angle
-    context.beginPath();
-    context.rect(
+    // glyph box
+    let pathBox = new Path2D();
+    pathBox.rect(
       0,
       verticalMetrics.descender.value,
       positionedGlyph.glyph.xAdvance,
       verticalMetrics.ascender.value - verticalMetrics.descender.value
     );
-    context.stroke();
 
-    // vertical metrics and alignment zones
-    // TODO: draw metrics with italic angle
+    // collect paths: vertical metrics and alignment zones
+    let pathZones = new Path2D();
     for (const [key, metric] of Object.entries(verticalMetrics)) {
-      context.fillStyle = parameters.zoneColor;
-      context.fillRect(0, metric.value, positionedGlyph.glyph.xAdvance, metric.zone);
-      strokeLine(
-        context,
-        0,
-        metric.value,
-        positionedGlyph.glyph.xAdvance,
-        metric.value
-      );
+      let pathZone = new Path2D();
+      pathZone.rect(0, metric.value, glyphWidth, metric.zone);
+      pathZones.addPath(pathZone);
+
+      let pathMetric = new Path2D();
+      pathMetric.moveTo(0, metric.value);
+      pathMetric.lineTo(glyphWidth, metric.value);
+      pathBox.addPath(pathMetric);
     }
+
+    // draw zones (with filled path)
+    let path2DZones = new Path2D();
+    path2DZones.addPath(pathZones, new DOMMatrix().skewX(italicsAngle));
+    context.fillStyle = parameters.zoneColor;
+    context.fill(path2DZones);
+
+    // draw glyph box + vertical metrics (with stroke path)
+    let path2DBox = new Path2D();
+    path2DBox.addPath(pathBox, new DOMMatrix().skewX(italicsAngle));
+    context.stroke(path2DBox);
   },
 });
 
