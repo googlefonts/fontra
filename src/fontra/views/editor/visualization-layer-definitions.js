@@ -172,11 +172,11 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.metrics",
-  name: "Metrics",
+  identifier: "fontra.verticalMetrics",
+  name: "Vertical Metrics",
   selectionMode: "editing",
   userSwitchable: true,
-  defaultOn: false,
+  defaultOn: true,
   zIndex: 100,
   screenParameters: { strokeWidth: 1 },
   colors: { strokeColor: "#0004", zoneColor: "#0001" },
@@ -185,38 +185,34 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
-    const source = model.fontSourceInstance;
-    console.log("source: ", source);
-    if (source === undefined) {
+    if (model.fontSourceInstance === undefined) {
       return;
     }
-    const verticalMetrics = source.verticalMetrics;
-    let alignmentZones = {}; // TODO: source.alignmentZones;
+    const verticalMetrics = model.fontSourceInstance.verticalMetrics;
 
     // draw box
+    // TODO: draw rectangle with italic angle
     context.beginPath();
     context.rect(
       0,
-      verticalMetrics.descender,
+      verticalMetrics.descender.value,
       positionedGlyph.glyph.xAdvance,
-      verticalMetrics.ascender - verticalMetrics.descender
+      verticalMetrics.ascender.value - verticalMetrics.descender.value
     );
     context.stroke();
 
-    // draw alignment zones
-    context.fillStyle = parameters.zoneColor;
-    for (const [key, value] of Object.entries(alignmentZones)) {
-      context.fillRect(
+    // vertical metrics and alignment zones
+    // TODO: draw metrics with italic angle
+    for (const [key, metric] of Object.entries(verticalMetrics)) {
+      context.fillStyle = parameters.zoneColor;
+      context.fillRect(0, metric.value, positionedGlyph.glyph.xAdvance, metric.zone);
+      strokeLine(
+        context,
         0,
-        key === "baseline" ? 0 : verticalMetrics[key],
+        metric.value,
         positionedGlyph.glyph.xAdvance,
-        value
+        metric.value
       );
-    }
-
-    // vertical metrics
-    for (const [key, value] of Object.entries(verticalMetrics)) {
-      strokeLine(context, 0, value, positionedGlyph.glyph.xAdvance, value);
     }
   },
 });
