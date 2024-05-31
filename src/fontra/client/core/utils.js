@@ -524,9 +524,12 @@ export function dumpURLFragment(obj) {
 
 export function areGuidelinesCompatible(parents) {
   const referenceGuidelines = parents[0].guidelines;
+  if (!referenceGuidelines) {
+    return false;
+  }
 
   for (const parent of parents.slice(1)) {
-    if (parent.guidelines.length !== referenceGuidelines.length) {
+    if (parent.guidelines?.length !== referenceGuidelines.length) {
       return false;
     }
     for (const guidelineIndex in referenceGuidelines) {
