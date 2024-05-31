@@ -1,6 +1,6 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
 import { LRUCache } from "./lru-cache.js";
-import { isObjectEmpty } from "./utils.js";
+import { areGuidelinesCompatible, isObjectEmpty } from "./utils.js";
 import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
 
 export class FontSourcesInstancer {
@@ -42,10 +42,18 @@ export class FontSourcesInstancer {
   }
 
   get deltas() {
-    const sourceValues = Object.values(this.fontSources).map((source) => {
-      return { ...source, location: null, name: null };
+    const sourceValues = Object.values(this.fontSources);
+    const guidelinesAreCompatible = areGuidelinesCompatible(sourceValues);
+
+    const fixedSourceValues = sourceValues.map((source) => {
+      return {
+        ...source,
+        location: null,
+        name: null,
+        guidelines: guidelinesAreCompatible ? source.guidelines : [],
+      };
     });
-    return this.model.getDeltas(sourceValues);
+    return this.model.getDeltas(fixedSourceValues);
   }
 
   instantiate(sourceLocation) {

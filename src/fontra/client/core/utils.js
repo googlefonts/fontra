@@ -521,3 +521,25 @@ export function loadURLFragment(fragment) {
 export function dumpURLFragment(obj) {
   return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
 }
+
+export function areGuidelinesCompatible(parents) {
+  const referenceGuidelines = parents[0].guidelines;
+  if (!referenceGuidelines) {
+    return false;
+  }
+
+  for (const parent of parents.slice(1)) {
+    if (parent.guidelines?.length !== referenceGuidelines.length) {
+      return false;
+    }
+    for (const guidelineIndex in referenceGuidelines) {
+      if (
+        parent.guidelines[guidelineIndex].name !==
+        referenceGuidelines[guidelineIndex].name
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
