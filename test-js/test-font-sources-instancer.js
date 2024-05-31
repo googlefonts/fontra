@@ -73,9 +73,9 @@ describe("FontSourcesInstancer Tests", () => {
   ];
 
   parametrize("FontSourcesInstancer.instantiate", testData, (testItem) => {
-    const fsc = new FontSourcesInstancer(testAxes, testSources);
+    const fsi = new FontSourcesInstancer(testAxes, testSources);
 
-    const sourceInstance = fsc.instantiate(testItem.location);
+    const sourceInstance = fsi.instantiate(testItem.location);
     expect(sourceInstance).to.deep.equal(testItem.expectedSource);
   });
 });
