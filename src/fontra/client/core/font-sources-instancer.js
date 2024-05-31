@@ -67,6 +67,9 @@ export class FontSourcesInstancer {
         sourceLocation,
         deltas
       );
+      if (errors?.length) {
+        console.log("error while interpolating font sources", errors);
+      }
       sourceInstance = instance;
       this._instanceCache.put(locationString, sourceInstance);
     }
