@@ -2248,6 +2248,7 @@ export class EditorController {
   }
 
   async doAddGuideline(global = false) {
+    this.visualizationLayersSettings.model["fontra.guidelines"] = true;
     const point = this.sceneController.selectedGlyphPoint(this.contextMenuPosition);
     const { guideline: tempGuideline } = await this.doAddEditGuidelineDialog(
       undefined,

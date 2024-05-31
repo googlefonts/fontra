@@ -339,7 +339,7 @@ registerVisualizationLayerDefinition({
   name: "Guidelines",
   selectionMode: "editing",
   userSwitchable: true,
-  defaultOn: false,
+  defaultOn: true,
   zIndex: 500,
   screenParameters: {
     fontSize: 10,
