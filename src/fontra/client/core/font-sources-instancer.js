@@ -25,12 +25,6 @@ export class FontSourcesInstancer {
     this._instanceCache = new LRUCache(50);
   }
 
-  update() {
-    delete this._model;
-    delete this._deltas;
-    this._setup();
-  }
-
   get model() {
     if (!this._model) {
       const locations = Object.values(this.fontSources).map(
