@@ -8,6 +8,7 @@ import {
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { CrossAxisMapping } from "./cross-axis-mapping.js";
+import { FontSourcesInstancer } from "./font-sources-instancer.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
@@ -43,6 +44,7 @@ export class FontController {
     this._rootObject = {};
     this._rootObject.glyphMap = getGlyphMapProxy(glyphMap, this.characterMap);
     this._rootObject.axes = ensureDenseAxes(await this.font.getAxes());
+    this._rootObject.sources = await this.font.getSources();
     this._rootObject.unitsPerEm = await this.font.getUnitsPerEm();
     this._rootObject.customData = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
@@ -50,8 +52,9 @@ export class FontController {
     this.readOnly = await this.font.isReadOnly();
 
     if (initListener) {
-      this.addChangeListener({ axes: null }, (change, isExternalChange) =>
-        this._purgeCachesRelatedToAxesChanges()
+      this.addChangeListener(
+        { axes: null, sources: null },
+        (change, isExternalChange) => this._purgeCachesRelatedToAxesChanges()
       );
     }
     this._resolveInitialized();
@@ -81,6 +84,10 @@ export class FontController {
     return this._rootObject.axes.axes;
   }
 
+  get sources() {
+    return this._rootObject.sources;
+  }
+
   get unitsPerEm() {
     return this._rootObject.unitsPerEm;
   }
@@ -93,7 +100,6 @@ export class FontController {
     if (!this._rootObject[key]) {
       const methods = {
         fontInfo: "getFontInfo",
-        sources: "getSources",
       };
       const methodName = methods[key];
       if (!methodName) {
@@ -104,12 +110,13 @@ export class FontController {
     return this._rootObject[key];
   }
 
-  async getFontInfo() {
-    return await this.getData("fontInfo");
+  async getSources() {
+    // backwards compat, this.sources is the same
+    return this._rootObject.sources;
   }
 
-  async getSources() {
-    return await this.getData("sources");
+  async getFontInfo() {
+    return await this.getData("fontInfo");
   }
 
   getCachedGlyphNames() {
@@ -627,7 +634,10 @@ export class FontController {
 
   async _purgeCachesRelatedToAxesChanges() {
     delete this._crossAxisMapping;
+    delete this._fontSourcesInstancer;
+
     this._glyphInstancePromiseCache.clear();
+
     for (const varGlyphPromise of this._glyphsPromiseCache.values()) {
       const varGlyph = await varGlyphPromise;
       varGlyph.clearCaches();
@@ -723,6 +733,16 @@ export class FontController {
       this._crossAxisMapping = new CrossAxisMapping(this.axes.axes, this.axes.mappings);
     }
     return this._crossAxisMapping;
+  }
+
+  get fontSourcesInstancer() {
+    if (!this._fontSourcesInstancer) {
+      this._fontSourcesInstancer = new FontSourcesInstancer(
+        this.axes.axes,
+        this.sources
+      );
+    }
+    return this._fontSourcesInstancer;
   }
 
   mapSourceLocationToMappedSourceLocation(sourceLocation) {
