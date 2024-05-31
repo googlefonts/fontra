@@ -521,3 +521,25 @@ export function loadURLFragment(fragment) {
 export function dumpURLFragment(obj) {
   return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
 }
+
+export function areGuidelinesCompatible(glyphs) {
+  const referenceGuidelines = glyphs[0].guidelines;
+
+  for (const glyphIndex in glyphs.slice(1)) {
+    const glyph = glyphs[glyphIndex];
+    // check number
+    if (glyph.guidelines.length !== referenceGuidelines.length) {
+      return false;
+    }
+    // check name
+    for (const guidelineIndex in referenceGuidelines) {
+      if (
+        glyph.guidelines[guidelineIndex].name !==
+        referenceGuidelines[guidelineIndex].name
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}

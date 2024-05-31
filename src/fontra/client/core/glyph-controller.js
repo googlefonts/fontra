@@ -21,7 +21,7 @@ import {
   decomposedToTransform,
   prependTransformToDecomposed,
 } from "./transform.js";
-import { enumerate, parseSelection, range } from "./utils.js";
+import { areGuidelinesCompatible, enumerate, parseSelection, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
@@ -1063,28 +1063,6 @@ async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
       true // noCopy
     )
   );
-}
-
-function areGuidelinesCompatible(glyphs) {
-  const referenceGuidelines = glyphs[0].guidelines;
-
-  for (const glyphIndex in glyphs.slice(1)) {
-    const glyph = glyphs[glyphIndex];
-    // check number
-    if (glyph.guidelines.length !== referenceGuidelines.length) {
-      return false;
-    }
-    // check name
-    for (const guidelineIndex in referenceGuidelines) {
-      if (
-        glyph.guidelines[guidelineIndex].name !==
-        referenceGuidelines[guidelineIndex].name
-      ) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 function stripGuidelinesAndComponentLocations(glyph) {
