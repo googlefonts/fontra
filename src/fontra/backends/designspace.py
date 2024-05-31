@@ -1041,7 +1041,7 @@ def getPostscriptBlueValues(fontInfo):
     return sorted(values)
 
 
-def getZone(value, blueValues):
+def unpackZone(value, blueValues):
     if value is None:
         return None
     for i, blueValue in enumerate(blueValues):
@@ -1061,7 +1061,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     verticalMetrics = {}
     for name, defaultFactor in verticalMetricsDefaults.items():
         value = getattr(fontInfo, name, None)
-        zone = getZone(value, blueValues)
+        zone = unpackZone(value, blueValues)
         if value is None:
             value = round(defaultFactor["value"] * unitsPerEm)
         if zone is None:
