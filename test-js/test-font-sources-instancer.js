@@ -10,18 +10,22 @@ describe("FontSourcesInstancer Tests", () => {
 
   const testSources = {
     source1: {
+      name: "Light",
       location: { Weight: 400, Width: 50 },
       verticalMetrics: { ascender: { value: 800 } },
     },
     source2: {
+      name: "Bold",
       location: { Weight: 900, Width: 50 },
       verticalMetrics: { ascender: { value: 900 } },
     },
     source3: {
+      name: "Light Wide",
       location: { Weight: 400, Width: 100 },
       verticalMetrics: { ascender: { value: 850 } },
     },
     source4: {
+      name: "Bold Wide",
       location: { Weight: 900, Width: 100 },
       verticalMetrics: { ascender: { value: 950 } },
     },
@@ -31,6 +35,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: {},
       expectedSource: {
+        name: "Light",
         location: { Weight: 400, Width: 50 },
         verticalMetrics: { ascender: { value: 800 } },
       },
@@ -38,6 +43,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: { Weight: 400, Width: 50 },
       expectedSource: {
+        name: "Light",
         location: { Weight: 400, Width: 50 },
         verticalMetrics: { ascender: { value: 800 } },
       },
@@ -45,6 +51,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: { Weight: 900, Width: 50 },
       expectedSource: {
+        name: "Bold",
         location: { Weight: 900, Width: 50 },
         verticalMetrics: { ascender: { value: 900 } },
       },
@@ -52,6 +59,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: { Weight: 650 },
       expectedSource: {
+        name: null,
         location: null,
         verticalMetrics: { ascender: { value: 850 } },
       },
@@ -59,6 +67,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: { Width: 75 },
       expectedSource: {
+        name: null,
         location: null,
         verticalMetrics: { ascender: { value: 825 } },
       },
@@ -66,6 +75,7 @@ describe("FontSourcesInstancer Tests", () => {
     {
       location: { Weight: 650, Width: 75 },
       expectedSource: {
+        name: null,
         location: null,
         verticalMetrics: { ascender: { value: 875 } },
       },
