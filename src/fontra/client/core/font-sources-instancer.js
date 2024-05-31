@@ -52,7 +52,7 @@ export class FontSourcesInstancer {
 
   get deltas() {
     const sourceValues = Object.values(this.fontSources).map((source) => {
-      return { ...source, location: null };
+      return { ...source, location: null, name: null };
     });
     return this.model.getDeltas(sourceValues);
   }
