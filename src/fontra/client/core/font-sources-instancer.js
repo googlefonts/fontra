@@ -48,7 +48,7 @@ export class FontSourcesInstancer {
   }
 
   instantiate(sourceLocation) {
-    if (!this.fontSources.length) {
+    if (isObjectEmpty(this.fontSources)) {
       return undefined;
     }
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
@@ -72,4 +72,11 @@ export class FontSourcesInstancer {
 
     return sourceInstance;
   }
+}
+
+function isObjectEmpty(o) {
+  for (const prop in o) {
+    return false;
+  }
+  return true;
 }
