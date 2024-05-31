@@ -21,7 +21,13 @@ import {
   decomposedToTransform,
   prependTransformToDecomposed,
 } from "./transform.js";
-import { areGuidelinesCompatible, enumerate, parseSelection, range } from "./utils.js";
+import {
+  areGuidelinesCompatible,
+  enumerate,
+  normalizeGuidelines,
+  parseSelection,
+  range,
+} from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
@@ -1035,7 +1041,6 @@ async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
   }
 
   const guidelinesAreCompatible = areGuidelinesCompatible(glyphs);
-  const identityGuideline = { x: 0, y: 0, angle: 0 };
 
   return glyphs.map((glyph) =>
     StaticGlyph.fromObject(
@@ -1051,13 +1056,7 @@ async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
           };
         }),
         guidelines: guidelinesAreCompatible
-          ? glyph.guidelines.map((guideline) => {
-              return {
-                ...identityGuideline,
-                ...guideline,
-                locked: false,
-              };
-            })
+          ? normalizeGuidelines(glyph.guidelines)
           : [],
       },
       true // noCopy
