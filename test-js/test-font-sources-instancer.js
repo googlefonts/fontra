@@ -51,7 +51,7 @@ describe("FontSourcesInstancer Tests", () => {
         name: "Light",
         location: { Weight: 400, Width: 50 },
         verticalMetrics: { ascender: { value: 800 } },
-        guidelines: [],
+        guidelines: [{ name: "guide", x: 100, y: 200, angle: 0 }],
       },
     },
     {
