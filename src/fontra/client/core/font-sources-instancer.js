@@ -1,10 +1,6 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
 import { LRUCache } from "./lru-cache.js";
-import {
-  // makeSparseNormalizedLocation,
-  locationToString,
-  mapAxesFromUserSpaceToSourceSpace,
-} from "./var-model.js";
+import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
 
 export class FontSourcesInstancer {
   constructor(fontAxes, fontSources) {
