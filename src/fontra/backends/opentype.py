@@ -113,15 +113,19 @@ class OTFBackend:
                 composite = self.varcTable.VarCompositeGlyphs.VarCompositeGlyph[index]
                 for component in composite.components:
                     if component.axisValuesVarIndex != NO_VARIATION_INDEX:
-                        for loc in getLocationsFromMultiVarstore(
-                            component.axisValuesVarIndex >> 16, varStore, fvarAxes
-                        ):
-                            locations.add(tuplifyLocation(loc))
+                        locations.update(
+                            tuplifyLocation(loc)
+                            for loc in getLocationsFromMultiVarstore(
+                                component.axisValuesVarIndex >> 16, varStore, fvarAxes
+                            )
+                        )
                     if component.transformVarIndex != NO_VARIATION_INDEX:
-                        for loc in getLocationsFromMultiVarstore(
-                            component.transformVarIndex >> 16, varStore, fvarAxes
-                        ):
-                            locations.add(tuplifyLocation(loc))
+                        locations.update(
+                            tuplifyLocation(loc)
+                            for loc in getLocationsFromMultiVarstore(
+                                component.transformVarIndex >> 16, varStore, fvarAxes
+                            )
+                        )
 
         if (
             self.charStrings is not None
