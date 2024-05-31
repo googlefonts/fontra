@@ -74,11 +74,11 @@ defaultUFOInfoAttrs = {
 
 
 verticalMetricsDefaults = {
-    "descender": -0.25,
-    "xHeight": 0.5,
-    "capHeight": 0.75,
-    "ascender": 0.75,
-    "italicAngle": 0,
+    "ascender": {"value": 0.75, "zone": 0.016},
+    "capHeight": {"value": 0.75, "zone": 0.016},
+    "xHeight": {"value": 0.5, "zone": 0.016},
+    "baseline": {"value": 0, "zone": -0.016},
+    "descender": {"value": -0.25, "zone": -0.016},
 }
 
 
@@ -1034,20 +1034,45 @@ def packAxisLabels(valueLabels):
     ]
 
 
+def getPostscriptBlueValues(fontInfo):
+    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
+    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
+    values = blueValues + otherBluesValue
+    return sorted(values)
+
+
+def unpackZone(value, blueValues):
+    if value is None:
+        return None
+    for i, blueValue in enumerate(blueValues):
+        if i % 2 == 0:
+            nextBlueValue = blueValues[i + 1]
+            if value in (blueValue, nextBlueValue):
+                if value == blueValue:
+                    return nextBlueValue - blueValue
+                return blueValue - nextBlueValue
+    return 0
+
+
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     fontInfo = UFOFontInfo()
     dsSource.layer.reader.readInfo(fontInfo)
+    blueValues = getPostscriptBlueValues(fontInfo)
     verticalMetrics = {}
     for name, defaultFactor in verticalMetricsDefaults.items():
         value = getattr(fontInfo, name, None)
+        zone = unpackZone(value, blueValues)
         if value is None:
-            value = round(defaultFactor * unitsPerEm)
-        verticalMetrics[name] = FontMetric(value=value)
+            value = round(defaultFactor["value"] * unitsPerEm)
+        if zone is None:
+            zone = round(defaultFactor["zone"] * unitsPerEm)
+        verticalMetrics[name] = FontMetric(value=value, zone=zone)
 
     return FontSource(
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
+        italicAngle=getattr(fontInfo, "italicAngle", 0.0),
         guidelines=unpackGuidelines(fontInfo.guidelines),
     )
 
