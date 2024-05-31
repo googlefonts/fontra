@@ -1,5 +1,6 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
 import { LRUCache } from "./lru-cache.js";
+import { isObjectEmpty } from "./utils.js";
 import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
 
 export class FontSourcesInstancer {
@@ -72,11 +73,4 @@ export class FontSourcesInstancer {
 
     return sourceInstance;
   }
-}
-
-function isObjectEmpty(o) {
-  for (const prop in o) {
-    return false;
-  }
-  return true;
 }
