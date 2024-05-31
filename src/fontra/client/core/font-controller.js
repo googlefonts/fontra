@@ -110,13 +110,13 @@ export class FontController {
     return this._rootObject[key];
   }
 
+  async getFontInfo() {
+    return await this.getData("fontInfo");
+  }
+
   async getSources() {
     // backwards compat, this.sources is the same
     return this._rootObject.sources;
-  }
-
-  async getFontInfo() {
-    return await this.getData("fontInfo");
   }
 
   getCachedGlyphNames() {
