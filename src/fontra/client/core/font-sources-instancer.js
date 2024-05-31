@@ -49,7 +49,7 @@ export class FontSourcesInstancer {
 
   instantiate(sourceLocation) {
     if (!this.fontSources.length) {
-      return {};
+      return undefined;
     }
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);

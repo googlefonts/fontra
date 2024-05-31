@@ -92,6 +92,6 @@ describe("FontSourcesInstancer Tests", () => {
   it("Empty sources list", () => {
     const fsi = new FontSourcesInstancer([], []);
     const sourceInstance = fsi.instantiate({});
-    expect(sourceInstance).to.deep.equal({});
+    expect(sourceInstance).to.deep.equal(undefined);
   });
 });
