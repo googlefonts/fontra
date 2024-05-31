@@ -1,4 +1,5 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
+import { LRUCache } from "./lru-cache.js";
 import {
   // makeSparseNormalizedLocation,
   locationToString,
@@ -25,6 +26,7 @@ export class FontSourcesInstancer {
         source,
       ])
     );
+    this._instanceCache = new LRUCache(50);
   }
 
   update() {
@@ -63,11 +65,18 @@ export class FontSourcesInstancer {
       return this.sourcesByLocationString[locationString];
     }
 
-    const deltas = this.deltas;
-    const { instance, errors } = this.model.interpolateFromDeltas(
-      sourceLocation,
-      deltas
-    );
-    return instance;
+    let sourceInstance = this._instanceCache.get(locationString);
+
+    if (!sourceInstance) {
+      const deltas = this.deltas;
+      const { instance, errors } = this.model.interpolateFromDeltas(
+        sourceLocation,
+        deltas
+      );
+      sourceInstance = instance;
+      this._instanceCache.put(locationString, sourceInstance);
+    }
+
+    return sourceInstance;
   }
 }
