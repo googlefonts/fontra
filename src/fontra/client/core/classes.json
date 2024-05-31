@@ -451,7 +451,7 @@
       "type": "float"
     },
     "zone": {
-      "type": "int"
+      "type": "float"
     },
     "customData": {
       "type": "dict",
