@@ -185,7 +185,7 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
-    if (model.fontSourceInstance === undefined) {
+    if (!model.fontSourceInstance) {
       return;
     }
     const verticalMetrics = model.fontSourceInstance.verticalMetrics;
