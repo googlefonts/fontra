@@ -30,15 +30,17 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async setupUI() {
     const sources = await getSources(this.fontController);
+    const fontAxes = this.fontController.axes.axes;
 
     const container = html.div({
       style: "display: grid; gap: 0.5em;",
     });
 
     for (const [identifier, source] of Object.entries(sources)) {
+      console.log("source", identifier, source);
       container.appendChild(
         new SourceBox(
-          this.fontController,
+          fontAxes,
           sources,
           identifier,
           this.postChange.bind(this),
@@ -64,21 +66,19 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   async newSource() {
-    const location = {};
     const newSource = await this._sourcePropertiesRunDialog(
       "Add font source",
       "Add",
-      this.fontController,
-      location
+      this.fontController
     );
     if (!newSource) {
       return;
     }
 
     const undoLabel = `add source '${newSource.name}'`;
-    const root = { fontController: this.fontController };
+    const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
-      root.fontController.putSource(newSource);
+      root.sources[newSource.name] = newSource;
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -86,8 +86,9 @@ export class SourcesPanel extends BaseInfoPanel {
     }
   }
 
-  async _sourcePropertiesRunDialog(title, okButtonTitle, fontController, location) {
+  async _sourcePropertiesRunDialog(title, okButtonTitle, fontController) {
     const sources = await getSources(this.fontController);
+    const defaultVerticalMetrics = getDefaultVerticalMetrics(this.fontController);
     const validateInput = () => {
       const warnings = [];
       const editedSourceName =
@@ -113,8 +114,8 @@ export class SourcesPanel extends BaseInfoPanel {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
-    const locationAxes = fontController.axes.axes; //this._sourcePropertiesLocationAxes(glyph);
-    const locationController = new ObservableController({ ...location });
+    const locationAxes = fontController.axes.axes;
+
     const suggestedSourceName = "New source name";
 
     const nameController = new ObservableController({
@@ -140,26 +141,23 @@ export class SourcesPanel extends BaseInfoPanel {
     //   );
     // }
 
+    const locationController = new ObservableController({});
     locationController.addListener((event) => {
-      const suggestedSourceName = suggestedSourceNameFromLocation(
-        makeSparseLocation(locationController.model, locationAxes)
-      );
-      if (nameController.model.sourceName == nameController.model.suggestedSourceName) {
-        nameController.model.sourceName = suggestedSourceName;
-      }
-      if (nameController.model.layerName == nameController.model.suggestedSourceName) {
-        nameController.model.layerName = suggestedSourceName;
-      }
-      nameController.model.suggestedSourceName = suggestedSourceName;
-      nameController.model.suggestedLayerName =
-        nameController.model.sourceName || suggestedSourceName;
       validateInput();
     });
+
+    const verticalMetricsController = new ObservableController(defaultVerticalMetrics);
+    locationController.addListener((event) => {
+      validateInput();
+    });
+
+    console.log("verticalMetricsController", verticalMetricsController);
 
     const { contentElement, warningElement } = this._sourcePropertiesContentElement(
       locationAxes,
       nameController,
-      locationController
+      locationController,
+      verticalMetricsController
     );
 
     const disable = nameController.model.sourceName ? false : true;
@@ -179,7 +177,7 @@ export class SourcesPanel extends BaseInfoPanel {
 
     if (!(await dialog.run())) {
       // User cancelled
-      return {};
+      return;
     }
 
     const newLocation = makeSparseLocation(locationController.model, locationAxes);
@@ -190,13 +188,18 @@ export class SourcesPanel extends BaseInfoPanel {
         nameController.model.sourceItalicAngle ||
         nameController.model.suggestedSourceItalicAngle,
       location: newLocation,
-      verticalMetrics: {},
+      verticalMetrics: defaultVerticalMetrics,
     };
-
+    console.log("newSource", newSource);
     return newSource;
   }
 
-  _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
+  _sourcePropertiesContentElement(
+    locationAxes,
+    nameController,
+    locationController,
+    verticalMetricsController
+  ) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
@@ -204,12 +207,49 @@ export class SourcesPanel extends BaseInfoPanel {
         height: 100%;
       `,
     });
+    locationElement.axes = locationAxes;
+    locationElement.controller = locationController;
+
+    const containerContent = [
+      ...labeledTextInput("Source name:", nameController, "sourceName", {
+        placeholderKey: "suggestedSourceName",
+      }),
+      ...labeledTextInput("Italic Angle:", nameController, "sourceItalicAngle", {
+        placeholderKey: "suggestedSourceItalicAngele",
+      }),
+      html.br(),
+      locationElement,
+    ];
+
+    // NOTE: I don't think this is necessary, just add a default vertical metrics
+    // and if the user wants to change it, they can do it in the source box.
+    // KEEP FOR REFERENCE
+    // for (const key in verticalMetricsController.model) {
+    //   containerContent.push(...labeledTextInputMultiValues(
+    //       translate(key),
+    //       verticalMetricsController,
+    //       key,
+    //       {
+    //         style: `
+    //           // grid-column: 1 / -1;
+    //           // min-height: 0px;
+    //           // overflow: auto;
+    //           // height: 100%;
+    //           width: 30%;`,
+    //         continuous: false,
+    //         valueKeys: ["value", "zone"],
+    //         //formatter: NumberFormatter,
+    //       }
+    //     )
+    //   );
+    // }
+
     const warningElement = html.div({
       id: "warning-text",
       style: `grid-column: 1 / -1; min-height: 1.5em;`,
     });
-    locationElement.axes = locationAxes;
-    locationElement.controller = locationController;
+    containerContent.push(warningElement);
+
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -222,19 +262,9 @@ export class SourcesPanel extends BaseInfoPanel {
           min-height: 0;
         `,
       },
-      [
-        ...labeledTextInput("Source name:", nameController, "sourceName", {
-          placeholderKey: "suggestedSourceName",
-        }),
-        ...labeledTextInput("Italic Angle:", nameController, "sourceItalicAngle", {
-          placeholderKey: "suggestedSourceItalicAngele",
-        }),
-        html.br(),
-        locationElement,
-        // TODO: verticalMetricsElement,
-        warningElement,
-      ]
+      containerContent
     );
+
     return { contentElement, warningElement };
   }
 }
@@ -298,10 +328,10 @@ select {
 `);
 
 class SourceBox extends HTMLElement {
-  constructor(fontController, sources, sourceIdentifier, postChange, setupUI) {
+  constructor(fontAxes, sources, sourceIdentifier, postChange, setupUI) {
     super();
     this.classList.add("fontra-ui-font-info-sources-panel-source-box");
-    this.fontController = fontController;
+    this.fontAxes = fontAxes;
     this.sources = sources;
     this.sourceIdentifier = sourceIdentifier;
     this.postChange = postChange;
@@ -348,11 +378,12 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  deleteSource(sourceIdentifier) {
+  deleteSource() {
     const undoLabel = `delete source '${this.source.name}'`;
+    console.log("delete source", undoLabel, this.sourceIdentifier);
     const root = { sources: this.sources };
     const changes = recordChanges(root, (root) => {
-      delete root.sources[sourceIdentifier];
+      delete root.sources[this.sourceIdentifier];
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -386,7 +417,7 @@ class SourceBox extends HTMLElement {
       html.createDomElement("icon-button", {
         "class": "fontra-ui-font-info-delete",
         "src": "/tabler-icons/trash.svg",
-        "onclick": (event) => this.deleteSource(this.sourceIdentifier),
+        "onclick": (event) => this.deleteSource(),
         "data-tooltip": translate("sources.delete-source"),
         "data-tooltipposition": "left",
       })
@@ -394,10 +425,7 @@ class SourceBox extends HTMLElement {
 
     for (const key in models) {
       if (key == "location") {
-        const htmlElement = buildElementLocations(
-          this.controllers[key],
-          this.fontController.axes.axes
-        );
+        const htmlElement = buildElementLocations(this.controllers[key], this.fontAxes);
         this.append(htmlElement);
         continue;
       }
@@ -475,4 +503,29 @@ async function getSources(fontController) {
     return sources;
   }
   return {};
+}
+
+const verticalMetricsDefaults = {
+  ascender: { value: 0.75, zone: 0.016 },
+  capHeight: { value: 0.75, zone: 0.016 },
+  xHeight: { value: 0.5, zone: 0.016 },
+  baseline: { value: 0, zone: -0.016 },
+  descender: { value: -0.25, zone: -0.016 },
+};
+
+function getDefaultVerticalMetrics(fontController) {
+  const source = Object.values(fontController.sources)[0];
+  let defaultSourceVerticalMetrics = {};
+  if (source) {
+    defaultSourceVerticalMetrics = source.verticalMetrics;
+  }
+  const unitsPerEm = fontController.unitsPerEm;
+  const defaultVerticalMetrics = {};
+  for (const [name, defaultFactor] of Object.entries(verticalMetricsDefaults)) {
+    const value = Math.round(defaultFactor.value * unitsPerEm);
+    const zone = Math.round(defaultFactor.zone * unitsPerEm);
+    defaultVerticalMetrics[name] = { value: value, zone: zone };
+  }
+
+  return { ...defaultVerticalMetrics, ...defaultSourceVerticalMetrics };
 }

@@ -177,15 +177,25 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
   const items = [];
   const inputID = options?.id || `input-${uniqueID()}-${key}`;
   const formatter = options?.formatter || DefaultFormatter;
+  const inputWrapper = html.div(); //{style: "display: flex; flex-direction: row;"}
 
-  items.push(html.label({ for: inputID, style: "text-align: right;" }, [label]));
+  const labelElement = html.label({ for: inputID, style: "text-align: right;" }, [
+    label,
+  ]);
+  items.push(labelElement);
+  inputWrapper.appendChild(labelElement);
 
+  const inputElements = html.div();
   for (const valueKey of options.valueKeys) {
     const inputElement = html.htmlToElement(`<input>`);
     inputElement.type = options?.type || "text";
-    inputElement.id = inputID;
+    //inputElement.id = inputID;
     if (options?.class) {
       inputElement.className = options.class;
+    }
+
+    if (options?.style) {
+      inputElement.style = options.style;
     }
 
     inputElement.value = formatter.toString(controller.model[key][valueKey]);
@@ -193,7 +203,7 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
       const { value, error } = formatter.fromString(inputElement.value);
       if (!error) {
         var obj = {};
-        obj[valueKey] = parseFloat(value);
+        obj[valueKey] = value;
         controller.model[key] = { ...controller.model[key], ...obj };
       }
     };
@@ -211,9 +221,13 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
     }
 
     items.push(inputElement);
+    //inputElements.appendChild(inputElement)
   }
 
+  inputWrapper.appendChild(inputElements);
+
   return items;
+  return inputWrapper;
 }
 
 let _uniqueID = 1;
