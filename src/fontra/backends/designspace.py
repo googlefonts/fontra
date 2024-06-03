@@ -566,7 +566,9 @@ class DesignspaceBackend:
             localSourceDict = {"name": source.name}
             if ufoLayerName != defaultUFOLayerName:
                 localSourceDict["layername"] = ufoLayerName
-            localSourceDict["location"] = sourceLocation
+            localSourceDict["location"] = makeSparseLocation(
+                sourceLocation, {**self.defaultLocation, **localDefaultLocation}
+            )
         else:
             normalizedSourceName = dsSource.name
             normalizedLayerName = dsSource.layer.fontraLayerName
@@ -1506,3 +1508,11 @@ def makeDSSourceIdentifier(
         ) + f"::fontra{sourceIndex:03}-{secrets.token_hex(4)}"
 
     return sourceName
+
+
+def makeSparseLocation(location, defaultLocation):
+    return {
+        name: value
+        for name, value in location.items()
+        if defaultLocation.get(name) != value
+    }
