@@ -208,9 +208,11 @@ registerVisualizationLayerDefinition({
     // collect paths: vertical metrics and alignment zones
     let pathZones = new Path2D();
     for (const [key, metric] of Object.entries(verticalMetrics)) {
-      let pathZone = new Path2D();
-      pathZone.rect(0, metric.value, glyphWidth, metric.zone);
-      pathZones.addPath(pathZone);
+      if (metric.zone != 0) {
+        let pathZone = new Path2D();
+        pathZone.rect(0, metric.value, glyphWidth, metric.zone);
+        pathZones.addPath(pathZone);
+      }
 
       let pathMetric = new Path2D();
       pathMetric.moveTo(0, metric.value);
