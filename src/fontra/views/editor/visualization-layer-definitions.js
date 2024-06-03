@@ -171,6 +171,63 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.verticalMetrics",
+  name: "Vertical font metrics",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 100,
+  screenParameters: { strokeWidth: 1 },
+  colors: { strokeColor: "#0004", zoneColor: "#0001" },
+  colorsDarkMode: { strokeColor: "#FFF6", zoneColor: "#FFF1" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+
+    if (!model.fontSourceInstance) {
+      return;
+    }
+    const verticalMetrics = model.fontSourceInstance.verticalMetrics;
+    const glyphWidth = positionedGlyph.glyph.xAdvance
+      ? positionedGlyph.glyph.xAdvance
+      : 0;
+
+    // glyph box
+    const pathBox = new Path2D();
+    if (verticalMetrics.ascender && verticalMetrics.descender) {
+      pathBox.rect(
+        0,
+        verticalMetrics.descender.value,
+        positionedGlyph.glyph.xAdvance,
+        verticalMetrics.ascender.value - verticalMetrics.descender.value
+      );
+    }
+
+    // collect paths: vertical metrics and alignment zones
+    const pathZones = new Path2D();
+    for (const [key, metric] of Object.entries(verticalMetrics)) {
+      if (metric.zone) {
+        const pathZone = new Path2D();
+        pathZone.rect(0, metric.value, glyphWidth, metric.zone);
+        pathZones.addPath(pathZone);
+      }
+
+      const pathMetric = new Path2D();
+      pathMetric.moveTo(0, metric.value);
+      pathMetric.lineTo(glyphWidth, metric.value);
+      pathBox.addPath(pathMetric);
+    }
+
+    // draw zones (with filled path)
+    context.fillStyle = parameters.zoneColor;
+    context.fill(pathZones);
+
+    // draw glyph box + vertical metrics (with stroke path)
+    context.stroke(pathBox);
+  },
+});
+
 // the following icon SVG path code is from https://tabler.io/icons/icon/lock
 const lockIconPath2D = new Path2D(
   `M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z

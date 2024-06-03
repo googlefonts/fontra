@@ -430,6 +430,9 @@
       "type": "dict",
       "subtype": "float"
     },
+    "italicAngle": {
+      "type": "float"
+    },
     "verticalMetrics": {
       "type": "dict",
       "subtype": "FontMetric"
@@ -445,6 +448,9 @@
   },
   "FontMetric": {
     "value": {
+      "type": "float"
+    },
+    "zone": {
       "type": "float"
     },
     "customData": {

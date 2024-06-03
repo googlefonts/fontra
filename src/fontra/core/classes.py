@@ -85,6 +85,7 @@ class FontSource:
     name: str
     location: Location = field(default_factory=dict)
     verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
+    italicAngle: float = 0
     guidelines: list[Guideline] = field(default_factory=list)
     customData: CustomData = field(default_factory=dict)
 
@@ -92,6 +93,7 @@ class FontSource:
 @dataclass(kw_only=True)
 class FontMetric:
     value: float
+    zone: float = 0
     customData: CustomData = field(default_factory=dict)
 
 
