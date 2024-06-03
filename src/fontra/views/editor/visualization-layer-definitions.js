@@ -198,12 +198,14 @@ registerVisualizationLayerDefinition({
 
     // glyph box
     let pathBox = new Path2D();
-    pathBox.rect(
-      0,
-      verticalMetrics.descender.value,
-      positionedGlyph.glyph.xAdvance,
-      verticalMetrics.ascender.value - verticalMetrics.descender.value
-    );
+    if (verticalMetrics.ascender && verticalMetrics.descender) {
+      pathBox.rect(
+        0,
+        verticalMetrics.descender.value,
+        positionedGlyph.glyph.xAdvance,
+        verticalMetrics.ascender.value - verticalMetrics.descender.value
+      );
+    }
 
     // collect paths: vertical metrics and alignment zones
     let pathZones = new Path2D();
