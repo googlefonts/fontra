@@ -286,7 +286,6 @@ addStyleSheet(`
   grid-column-gap: 1em;
 }
 
-.fontra-ui-font-info-sources-panel-source-box-values,
 .fontra-ui-font-info-names {
   display: grid;
   grid-template-columns: minmax(4.5em, max-content) max-content;
@@ -301,16 +300,6 @@ addStyleSheet(`
   gap: 0.5em;
   align-items: start;
   align-content: start;
-}
-
-.fontra-ui-font-info-sources-panel-source-box-mapping-list {
-  width: 9em;
-  max-height: var(--fontra-ui-font-info-sources-panel-max-list-height);
-}
-
-.fontra-ui-font-info-sources-panel-source-box-label-list {
-  max-width: max-content;
-  max-height: var(--fontra-ui-font-info-sources-panel-max-list-height);
 }
 
 .fontra-ui-font-info-delete {
