@@ -523,12 +523,19 @@ class DesignspaceBackend:
     def _prepareUFOSourceLayer(
         self, glyphName, source, localDefaultLocation, revLayerNameMapping
     ):
+        baseLocation = {}
+        if source.locationBase:
+            dsSource = self.dsSources.findItem(identifier=source.locationBase)
+            if dsSource is not None:
+                baseLocation = dsSource.location
+
+        sourceLocation = baseLocation | source.location
         sparseLocalLocation = {
-            name: source.location[name]
+            name: sourceLocation[name]
             for name, value in localDefaultLocation.items()
-            if source.location.get(name, value) != value
+            if sourceLocation.get(name, value) != value
         }
-        sourceLocation = {**self.defaultLocation, **source.location}
+        sourceLocation = {**self.defaultLocation, **sourceLocation}
         globalLocation = self._getGlobalPortionOfLocation(
             sourceLocation, localDefaultLocation
         )
@@ -559,7 +566,7 @@ class DesignspaceBackend:
             localSourceDict = {"name": source.name}
             if ufoLayerName != defaultUFOLayerName:
                 localSourceDict["layername"] = ufoLayerName
-            localSourceDict["location"] = source.location
+            localSourceDict["location"] = sourceLocation
         else:
             normalizedSourceName = dsSource.name
             normalizedLayerName = dsSource.layer.fontraLayerName
