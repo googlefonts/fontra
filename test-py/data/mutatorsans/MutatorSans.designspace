@@ -29,7 +29,7 @@
     </rule>
   </rules>
   <sources>
-    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="foreground">
+    <source name="light-condensed" filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="foreground">
       <lib copy="1"/>
       <groups copy="1"/>
       <features copy="1"/>
@@ -39,43 +39,43 @@
         <dimension name="weight" xvalue="150"/>
       </location>
     </source>
-    <source filename="MutatorSansBoldCondensed.ufo" familyname="MutatorMathTest" stylename="BoldCondensed">
+    <source name="bold-condensed" filename="MutatorSansBoldCondensed.ufo" familyname="MutatorMathTest" stylename="BoldCondensed">
       <location>
         <dimension name="width" xvalue="0"/>
         <dimension name="weight" xvalue="850"/>
       </location>
     </source>
-    <source filename="MutatorSansLightWide.ufo" familyname="MutatorMathTest" stylename="LightWide">
+    <source name="light-wide" filename="MutatorSansLightWide.ufo" familyname="MutatorMathTest" stylename="LightWide">
       <location>
         <dimension name="width" xvalue="1000"/>
         <dimension name="weight" xvalue="150"/>
       </location>
     </source>
-    <source filename="MutatorSansBoldWide.ufo" familyname="MutatorMathTest" stylename="BoldWide">
+    <source name="bold-wide" filename="MutatorSansBoldWide.ufo" familyname="MutatorMathTest" stylename="BoldWide">
       <location>
         <dimension name="width" xvalue="1000"/>
         <dimension name="weight" xvalue="850"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.crossbar">
+    <source name="support.crossbar" filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.crossbar">
       <location>
         <dimension name="width" xvalue="0"/>
         <dimension name="weight" xvalue="595"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.wide">
+    <source name="support.S.wide" filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.wide">
       <location>
         <dimension name="width" xvalue="1000"/>
         <dimension name="weight" xvalue="595"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.middle">
+    <source name="support.S.middle" filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.middle">
       <location>
         <dimension name="width" xvalue="569.078"/>
         <dimension name="weight" xvalue="595"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensedItalic.ufo" stylename="LightCondensedItalic" layer="public.default">
+    <source name="light-condensed-italic" filename="MutatorSansLightCondensedItalic.ufo" stylename="LightCondensedItalic">
       <location>
         <dimension name="width" xvalue="0"/>
         <dimension name="weight" xvalue="150"/>
