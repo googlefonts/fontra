@@ -211,7 +211,7 @@ registerVisualizationLayerDefinition({
     let pathZones = new Path2D();
     for (const [key, metric] of Object.entries(verticalMetrics)) {
       if (metric.zone) {
-        let pathZone = new Path2D();
+        const pathZone = new Path2D();
         pathZone.rect(0, metric.value, glyphWidth, metric.zone);
         pathZones.addPath(pathZone);
       }
