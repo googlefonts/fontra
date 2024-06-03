@@ -399,7 +399,7 @@ class DesignspaceBackend:
             sources.append(
                 GlyphSource(
                     name=sourceName,
-                    locationBase=dsSource.uuid,
+                    locationBase=dsSource.identifier,
                     location=location,
                     layerName=ufoLayer.fontraLayerName,
                 )
@@ -1142,7 +1142,7 @@ class DSSource:
             localDefaultOverride = {}
         return GlyphSource(
             name=self.name,
-            locationBase=self.uuid,
+            locationBase=self.identifier,
             location={**localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
