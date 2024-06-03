@@ -30,7 +30,6 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async setupUI() {
     const sources = await getSources(this.fontController);
-    console.log("sources: ", sources);
 
     const container = html.div({
       style: "display: grid; gap: 0.5em;",
@@ -75,7 +74,6 @@ export class SourcesPanel extends BaseInfoPanel {
     if (!newSource) {
       return;
     }
-    console.log("newSource: ", newSource);
 
     const undoLabel = `add source '${newSource.name}'`;
     const root = { fontController: this.fontController };
@@ -130,14 +128,12 @@ export class SourcesPanel extends BaseInfoPanel {
       validateInput();
     });
 
-    console.log("locationAxes: ", locationAxes);
-
     const sourceLocations = new Set(
       Object.keys(sources).map((key) =>
         locationToString(makeSparseLocation(sources[key].location, locationAxes))
       )
     );
-    console.log("sourceLocations: ", sourceLocations);
+
     // if (sourceName.length) {
     //   sourceLocations.delete(
     //     locationToString(makeSparseLocation(location, locationAxes))
@@ -305,13 +301,12 @@ class SourceBox extends HTMLElement {
   constructor(fontController, sources, sourceIdentifier, postChange, setupUI) {
     super();
     this.classList.add("fontra-ui-font-info-sources-panel-source-box");
-    this.draggable = true;
     this.fontController = fontController;
     this.sources = sources;
     this.sourceIdentifier = sourceIdentifier;
     this.postChange = postChange;
     this.setupUI = setupUI;
-    this.controller = {};
+    this.controllers = {};
     this._updateContents();
   }
 
@@ -319,7 +314,7 @@ class SourceBox extends HTMLElement {
     return this.sources[this.sourceIdentifier];
   }
 
-  get model() {
+  get models() {
     const source = this.source;
     return {
       General: {
@@ -366,12 +361,11 @@ class SourceBox extends HTMLElement {
   }
 
   _updateContents() {
-    const model = this.model;
+    const models = this.models;
 
-    for (const key in model) {
-      this.controller[key] = new ObservableController(model[key]);
-      this.controller[key].addListener((event) => {
-        console.log("event: ", event);
+    for (const key in models) {
+      this.controllers[key] = new ObservableController(models[key]);
+      this.controllers[key].addListener((event) => {
         this.editSource((source) => {
           if (key == "General") {
             source[event.key] = event.newValue;
@@ -384,7 +378,7 @@ class SourceBox extends HTMLElement {
 
     this.innerHTML = "";
 
-    for (const key in model) {
+    for (const key in models) {
       this.append(html.div({ class: "fontra-ui-font-info-header" }, [translate(key)]));
     }
 
@@ -398,23 +392,21 @@ class SourceBox extends HTMLElement {
       })
     );
 
-    for (const key in model) {
+    for (const key in models) {
       if (key == "location") {
         const htmlElement = buildElementLocations(
-          this.controller[key],
+          this.controllers[key],
           this.fontController.axes.axes
         );
         this.append(htmlElement);
-        console.log("htmlElement: ", htmlElement);
         continue;
       }
       if (key == "verticalMetrics") {
-        const htmlElement = buildElementVerticalMetrics(this.controller[key]);
+        const htmlElement = buildElementVerticalMetrics(this.controllers[key]);
         this.append(htmlElement);
-        console.log("htmlElement: ", htmlElement);
         continue;
       }
-      this.append(buildElement(this.controller[key]));
+      this.append(buildElement(this.controllers[key]));
     }
   }
 }
@@ -445,7 +437,6 @@ function buildElement(controller, options = {}) {
 }
 
 function buildElementVerticalMetrics(controller, options = {}) {
-  console.log("controller.model: ", controller.model);
   let itemsArray = Object.keys(controller.model).map(function (key) {
     return [key, controller.model[key]];
   });
@@ -470,7 +461,9 @@ function buildElementVerticalMetrics(controller, options = {}) {
 }
 
 function buildElementLocations(controller, fontAxes) {
-  const locationElement = html.createDomElement("designspace-location", {});
+  const locationElement = html.createDomElement("designspace-location", {
+    class: `fontra-ui-font-info-names`,
+  });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
   return locationElement;
