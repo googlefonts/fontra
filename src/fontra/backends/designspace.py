@@ -4,8 +4,8 @@ import asyncio
 import logging
 import os
 import pathlib
+import secrets
 import shutil
-import uuid
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -130,7 +130,8 @@ class DesignspaceBackend:
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
-        self.dsDoc = dsDoc
+        self.dsDoc = ensureDSSourceNamesAreUnique(dsDoc)
+
         # Keep track of the dsDoc's modification time so we can distinguish between
         # external changes and internal changes
         self.dsDocModTime = (
@@ -235,8 +236,6 @@ class DesignspaceBackend:
 
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
-            if not hasattr(source, "fontraUUID"):
-                source.fontraUUID = str(uuid.uuid4())
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
@@ -252,7 +251,7 @@ class DesignspaceBackend:
 
             self.dsSources.append(
                 DSSource(
-                    uuid=source.fontraUUID,
+                    identifier=source.name,
                     name=sourceName,
                     layer=sourceLayer,
                     location={**self.defaultLocation, **source.location},
@@ -624,16 +623,16 @@ class DesignspaceBackend:
         defaultLayerName = reader.getDefaultLayerName()
 
         dsDocSource = self.dsDoc.addSourceDescriptor(
+            name=makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None),
             styleName=source.name,
             location=globalLocation,
             path=ufoPath,
             layerName=ufoLayerName if ufoLayerName != defaultLayerName else None,
         )
-        dsDocSource.fontraUUID = str(uuid.uuid4())
         self._writeDesignSpaceDocument()
 
         dsSource = DSSource(
-            uuid=dsDocSource.fontraUUID,
+            identifier=dsDocSource.name,
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
@@ -746,7 +745,7 @@ class DesignspaceBackend:
     async def getSources(self) -> dict[str, FontSource]:
         unitsPerEm = await self.getUnitsPerEm()
         return {
-            dsSource.uuid: unpackDSSource(dsSource, unitsPerEm)
+            dsSource.identifier: unpackDSSource(dsSource, unitsPerEm)
             for dsSource in self.dsSources
         }
 
@@ -1128,7 +1127,7 @@ class UFOManager:
 
 @dataclass(kw_only=True, frozen=True)
 class DSSource:
-    uuid: str
+    identifier: str
     name: str
     layer: UFOLayer
     location: dict[str, float]
@@ -1179,6 +1178,9 @@ class ItemList:
 
     def __iter__(self):
         return iter(self.items)
+
+    def __len__(self):
+        return len(self.items)
 
     def append(self, item):
         self.items.append(item)
@@ -1446,3 +1448,50 @@ def resolveFeatureIncludes(featureText, includeDir, glyphNames):
         featureText = ff.asFea()
 
     return featureText
+
+
+def ensureDSSourceNamesAreUnique(dsDoc):
+    sourceNames = {
+        source.name
+        for source in dsDoc.sources
+        if source.name and not source.name.startswith("temp_master.")
+    }
+
+    if len(sourceNames) == len(dsDoc.sources):
+        return dsDoc
+
+    dsDoc = deepcopy(dsDoc)
+
+    usedSourceNames = set()
+    for i, source in enumerate(dsDoc.sources):
+        if source.name and source.name.startswith("temp_master."):
+            source.name = None
+
+        source.name = makeDSSourceIdentifier(
+            dsDoc,
+            i,
+            source.name,
+            usedSourceNames,
+        )
+        usedSourceNames.add(source.name)
+
+    return dsDoc
+
+
+def makeDSSourceIdentifier(
+    dsDoc, sourceIndex, originalSourceName, usedSourceNames=None
+):
+    usedSourceNames = (
+        {source.name for source in dsDoc.sources if source.name}
+        if usedSourceNames is None
+        else usedSourceNames
+    )
+
+    sourceName = None
+
+    while not sourceName or sourceName in usedSourceNames:
+        sourceName = (
+            originalSourceName or ""
+        ) + f"::fontra{sourceIndex:03}-{secrets.token_hex(4)}"
+
+    return sourceName
