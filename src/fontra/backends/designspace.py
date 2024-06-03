@@ -235,8 +235,8 @@ class DesignspaceBackend:
 
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
-            if not hasattr(source, "fontraUUID"):
-                source.fontraUUID = str(uuid.uuid4())
+            if not hasattr(source, "fontraSourceID"):
+                source.fontraSourceID = str(uuid.uuid4())
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
@@ -252,7 +252,7 @@ class DesignspaceBackend:
 
             self.dsSources.append(
                 DSSource(
-                    uuid=source.fontraUUID,
+                    uuid=source.fontraSourceID,
                     name=sourceName,
                     layer=sourceLayer,
                     location={**self.defaultLocation, **source.location},
@@ -392,10 +392,16 @@ class DesignspaceBackend:
 
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             assert ufoLayer is not None
+            location = {
+                k: v
+                for k, v in source["location"].items()
+                if dsSource.location.get(k) != v
+            }
             sources.append(
                 GlyphSource(
                     name=sourceName,
-                    location=source["location"],
+                    locationBase=dsSource.uuid,
+                    location=location,
                     layerName=ufoLayer.fontraLayerName,
                 )
             )
@@ -623,11 +629,11 @@ class DesignspaceBackend:
             path=ufoPath,
             layerName=ufoLayerName if ufoLayerName != defaultLayerName else None,
         )
-        dsDocSource.fontraUUID = str(uuid.uuid4())
+        dsDocSource.fontraSourceID = str(uuid.uuid4())
         self._writeDesignSpaceDocument()
 
         dsSource = DSSource(
-            uuid=dsDocSource.fontraUUID,
+            uuid=dsDocSource.fontraSourceID,
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
@@ -1137,7 +1143,8 @@ class DSSource:
             localDefaultOverride = {}
         return GlyphSource(
             name=self.name,
-            location={**self.location, **localDefaultOverride},
+            locationBase=self.uuid,
+            location={**localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
 
