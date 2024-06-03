@@ -189,15 +189,12 @@ registerVisualizationLayerDefinition({
       return;
     }
     const verticalMetrics = model.fontSourceInstance.verticalMetrics;
-    // const italicAngle = model.fontSourceInstance.italicAngle
-    //   ? model.fontSourceInstance.italicAngle * -1
-    //   : 0;
     const glyphWidth = positionedGlyph.glyph.xAdvance
       ? positionedGlyph.glyph.xAdvance
       : 0;
 
     // glyph box
-    let pathBox = new Path2D();
+    const pathBox = new Path2D();
     if (verticalMetrics.ascender && verticalMetrics.descender) {
       pathBox.rect(
         0,
@@ -208,7 +205,7 @@ registerVisualizationLayerDefinition({
     }
 
     // collect paths: vertical metrics and alignment zones
-    let pathZones = new Path2D();
+    const pathZones = new Path2D();
     for (const [key, metric] of Object.entries(verticalMetrics)) {
       if (metric.zone) {
         const pathZone = new Path2D();
@@ -216,22 +213,18 @@ registerVisualizationLayerDefinition({
         pathZones.addPath(pathZone);
       }
 
-      let pathMetric = new Path2D();
+      const pathMetric = new Path2D();
       pathMetric.moveTo(0, metric.value);
       pathMetric.lineTo(glyphWidth, metric.value);
       pathBox.addPath(pathMetric);
     }
 
     // draw zones (with filled path)
-    let path2DZones = new Path2D();
-    path2DZones.addPath(pathZones); //, new DOMMatrix().skewX(italicAngle));
     context.fillStyle = parameters.zoneColor;
-    context.fill(path2DZones);
+    context.fill(pathZones);
 
     // draw glyph box + vertical metrics (with stroke path)
-    let path2DBox = new Path2D();
-    path2DBox.addPath(pathBox); //, new DOMMatrix().skewX(italicAngle));
-    context.stroke(path2DBox);
+    context.stroke(pathBox);
   },
 });
 
