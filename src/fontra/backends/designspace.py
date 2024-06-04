@@ -1092,13 +1092,19 @@ class UFOBackend(DesignspaceBackend):
         dsDoc = createDSDocFromUFOPath(path, "default")
         return cls(dsDoc)
 
+    async def getCustomData(self) -> dict[str, Any]:
+        return self.defaultReader.readLib()
+
+    async def putCustomData(self, lib):
+        self.defaultReader.writeLib(lib)
+
     async def putAxes(self, axes):
         if axes.axes:
             raise ValueError("The single-UFO backend does not support variation axes")
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
         if len(sources) > 1:
-            raise ValueError("The single-UFO backend does not support multiple sources")
+            logger.warning("The single-UFO backend does not support multiple sources")
 
 
 def createDSDocFromUFOPath(ufoPath, styleName):

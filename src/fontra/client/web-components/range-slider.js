@@ -482,7 +482,7 @@ export class RangeSlider extends html.UnlitElement {
               oninput: (event) => {
                 const value = this.getValueFromEventTarget(event);
                 this.value = value;
-                const callbackEvent = { value };
+                const callbackEvent = { value, isDragging: true };
                 if (this.sawMouseDown) {
                   callbackEvent.dragBegin = true;
                 }
