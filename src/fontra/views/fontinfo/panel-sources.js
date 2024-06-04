@@ -315,40 +315,13 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  editSourceVerticalMetrics(editFunc, undoLabel) {
-    const root = {
-      verticalMetrics: this.sources[this.sourceIdentifier].verticalMetrics,
-    };
-    const changes = recordChanges(root, (root) => {
-      editFunc(root.verticalMetrics);
-    });
-    console.log("changes", changes);
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    }
-  }
-
-  editSourceLocation(editFunc, undoLabel) {
-    const root = { location: this.sources[this.sourceIdentifier].location };
-    const changes = recordChanges(root, (root) => {
-      editFunc(root.location);
-    });
-    console.log("changes", changes);
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    }
-  }
-
   replaceSource(newSource, undoLabel) {
-    console.log("undoLabel", undoLabel);
-    console.log("newSource", newSource);
     const root = { sources: this.sources };
     const changes = recordChanges(root, (root) => {
       root.sources[this.sourceIdentifier] = newSource;
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupUI();
     }
   }
 
@@ -385,24 +358,13 @@ class SourceBox extends HTMLElement {
     for (const key in models) {
       this.controllers[key] = new ObservableController(models[key]);
       this.controllers[key].addListener((event) => {
-        // this.editSource((source) => {
-        //   if (key == "general") {
-        //     source[event.key] = event.newValue;
-        //   } else {
-        //     source[key][event.key] = event.newValue;
-        //   }
-        // }, `edit source ${key} ${event.key}`);
-
-        console.log("key event", key, event);
-        if (key == "general") {
-          this.editSource((source) => {
+        this.editSource((source) => {
+          if (key == "general") {
             source[event.key] = event.newValue;
-          }, `edit source ${key} ${event.key}`);
-        } else {
-          const newSource = { ...this.source };
-          newSource[key][event.key] = event.newValue;
-          this.replaceSource(newSource, `edit source ${key} ${event.key}`);
-        }
+          } else {
+            source[key][event.key] = event.newValue;
+          }
+        }, `edit source ${key} ${event.key}`);
       });
     }
 
