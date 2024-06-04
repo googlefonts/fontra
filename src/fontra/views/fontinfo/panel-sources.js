@@ -455,6 +455,7 @@ function buildElementVerticalMetrics(controller, options = {}) {
 
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
+    continuous: false,
     class: `fontra-ui-font-info-column`,
   });
   locationElement.axes = fontAxes;
