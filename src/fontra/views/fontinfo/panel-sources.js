@@ -24,7 +24,6 @@ import {
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
-import { Accordion } from "/web-components/ui-accordion.js";
 
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
@@ -78,9 +77,11 @@ export class SourcesPanel extends BaseInfoPanel {
     }
 
     const undoLabel = `add source '${newSource.name}'`;
+    const sourceIdentifier = newSource.name;
+    // NOTE: Not sure if newSource.name is the best sourceIdentifier
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
-      root.sources[newSource.name] = newSource;
+      root.sources[sourceIdentifier] = newSource;
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -90,17 +91,18 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async _sourcePropertiesRunDialog(title, okButtonTitle, fontController) {
     const sources = await getSources(this.fontController);
-    const defaultVerticalMetrics = getDefaultVerticalMetrics(this.fontController);
     const validateInput = () => {
       const warnings = [];
-      const editedSourceName =
-        nameController.model.sourceName || nameController.model.suggestedSourceName;
+      const editedSourceName = nameController.model.sourceName;
       if (!editedSourceName.length) {
         warnings.push("⚠️ The source name must not be empty");
-      } else if (
+      }
+      if (
         Object.keys(sources)
-          .map(function (source) {
-            if (source.name === editedSourceName) return true;
+          .map(function (sourceIdentifier) {
+            if (sources[sourceIdentifier].name === editedSourceName) {
+              return true;
+            }
           })
           .includes(true)
       ) {
@@ -118,12 +120,10 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const locationAxes = fontController.axes.axes;
 
-    const suggestedSourceName = "New source name";
-
     const nameController = new ObservableController({
-      sourceName: suggestedSourceName,
+      sourceName: "New source name",
       sourceItalicAngle: 0,
-      suggestedSourceName: suggestedSourceName,
+      suggestedSourceName: "New source name",
       suggestedSourceItalicAngle: 0,
     });
 
@@ -132,16 +132,12 @@ export class SourcesPanel extends BaseInfoPanel {
     });
 
     const sourceLocations = new Set(
-      Object.keys(sources).map((key) =>
-        locationToString(makeSparseLocation(sources[key].location, locationAxes))
-      )
+      Object.keys(sources).map((sourceIdentifier) => {
+        return locationToString(
+          makeSparseLocation(sources[sourceIdentifier].location, locationAxes)
+        );
+      })
     );
-
-    // if (sourceName.length) {
-    //   sourceLocations.delete(
-    //     locationToString(makeSparseLocation(location, locationAxes))
-    //   );
-    // }
 
     const locationController = new ObservableController({});
     locationController.addListener((event) => {
@@ -174,15 +170,19 @@ export class SourcesPanel extends BaseInfoPanel {
       return;
     }
 
-    const newLocation = makeSparseLocation(locationController.model, locationAxes);
-
+    let newLocation = makeSparseLocation(locationController.model, locationAxes);
+    if (Object.keys(newLocation).length === 0) {
+      for (const axis of locationAxes) {
+        newLocation[axis.name] = axis.defaultValue;
+      }
+    }
     const newSource = {
       name: nameController.model.sourceName || nameController.model.suggestedSourceName,
       italicAngle:
         nameController.model.sourceItalicAngle ||
         nameController.model.suggestedSourceItalicAngle,
       location: newLocation,
-      verticalMetrics: defaultVerticalMetrics,
+      verticalMetrics: getDefaultVerticalMetrics(this.fontController, newLocation),
     };
     return newSource;
   }
@@ -301,13 +301,15 @@ class SourceBox extends HTMLElement {
   get models() {
     const source = this.source;
     return {
-      General: {
+      general: {
         name: source.name,
         italicAngle: source.italicAngle ? source.italicAngle : 0,
         //isSparce: source.isSparce ? source.isSparce : false,
       },
       location: source.location,
       verticalMetrics: source.verticalMetrics,
+      // TODO: hhea, OS/2 verticalMetrics, etc
+      // customData: { ...source.customData },
     };
     // NOTE: Font guidlines could be read/write here,
     // but makes more sense directly in the glyph editing window.
@@ -383,7 +385,7 @@ class SourceBox extends HTMLElement {
     this.append(
       html.createDomElement("icon-button", {
         class: "fontra-ui-font-info-icon",
-        style: "transform: rotate(180deg)",
+        style: "translate: 120ms; transform: rotate(180deg)",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         onclick: (event) => this.toggleShowHide(),
@@ -404,7 +406,7 @@ class SourceBox extends HTMLElement {
       })
     );
 
-    this.append(html.div()); // empty cell for collapsing arrow
+    this.append(html.div()); // empty cell for grid with arrow
 
     for (const key in models) {
       if (key == "location") {
@@ -506,7 +508,9 @@ const verticalMetricsDefaults = {
   descender: { value: -0.25, zone: -0.016 },
 };
 
-function getDefaultVerticalMetrics(fontController) {
+function getDefaultVerticalMetrics(fontController, newLocation) {
+  // TODO:
+  // Improvement -> get the interpolated vertical metrics from newLocation
   const source = Object.values(fontController.sources)[0];
   if (source) {
     return source.verticalMetrics;
