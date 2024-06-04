@@ -1183,6 +1183,11 @@ class UFOLayer:
     def glyphSet(self):
         return self.manager.getGlyphSet(self.path, self.name)
 
+    @cached_property
+    def isDefaultLayer(self):
+        assert self.name
+        return self.name == self.reader.getDefaultLayerName()
+
 
 class ItemList:
     def __init__(self):
