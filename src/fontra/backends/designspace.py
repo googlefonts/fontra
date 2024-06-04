@@ -1100,6 +1100,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     return FontSource(
         name=dsSource.name,
         location=dsSource.location,
+        italicAngle=getattr(fontInfo, "italicAngle", 0.0),
         verticalMetrics=verticalMetrics,
         guidelines=guidelines,
         isSparse=dsSource.isSparse,
