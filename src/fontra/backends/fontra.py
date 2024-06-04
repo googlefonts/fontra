@@ -139,7 +139,7 @@ class FontraBackend:
         self._scheduler.schedule(self._writeFontData)
 
     async def getSources(self) -> dict[str, FontSource]:
-        return {}
+        return deepcopy(self.fontData.sources)
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
         self.fontData.sources = deepcopy(sources)
