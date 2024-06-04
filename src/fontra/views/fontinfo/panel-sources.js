@@ -349,6 +349,10 @@ class SourceBox extends HTMLElement {
   }
 
   toggleShowHide() {
+    const el = this.querySelector("#open-close-icon");
+    el.style.transform =
+      el.style.transform === "rotate(180deg)" ? "rotate(0deg)" : "rotate(180deg)";
+
     this.style.maxHeight = this.style.maxHeight === "100%" ? "70px" : "100%";
     for (const child of this.children) {
       if (!child.style.maxHeight) {
@@ -379,6 +383,8 @@ class SourceBox extends HTMLElement {
     this.append(
       html.createDomElement("icon-button", {
         class: "fontra-ui-font-info-icon",
+        style: "transform: rotate(180deg)",
+        id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         onclick: (event) => this.toggleShowHide(),
       })
