@@ -6,6 +6,7 @@ import {
   NumberFormatter,
   OptionalNumberFormatter,
   checkboxListCell,
+  labeledCheckbox,
   labeledTextInput,
   labeledTextInputMultiValues,
   setupSortableList,
@@ -146,18 +147,10 @@ export class SourcesPanel extends BaseInfoPanel {
       validateInput();
     });
 
-    const verticalMetricsController = new ObservableController(defaultVerticalMetrics);
-    locationController.addListener((event) => {
-      validateInput();
-    });
-
-    console.log("verticalMetricsController", verticalMetricsController);
-
     const { contentElement, warningElement } = this._sourcePropertiesContentElement(
       locationAxes,
       nameController,
-      locationController,
-      verticalMetricsController
+      locationController
     );
 
     const disable = nameController.model.sourceName ? false : true;
@@ -194,12 +187,7 @@ export class SourcesPanel extends BaseInfoPanel {
     return newSource;
   }
 
-  _sourcePropertiesContentElement(
-    locationAxes,
-    nameController,
-    locationController,
-    verticalMetricsController
-  ) {
+  _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
@@ -220,29 +208,6 @@ export class SourcesPanel extends BaseInfoPanel {
       html.br(),
       locationElement,
     ];
-
-    // NOTE: I don't think this is necessary, just add a default vertical metrics
-    // and if the user wants to change it, they can do it in the source box.
-    // KEEP FOR REFERENCE
-    // for (const key in verticalMetricsController.model) {
-    //   containerContent.push(...labeledTextInputMultiValues(
-    //       translate(key),
-    //       verticalMetricsController,
-    //       key,
-    //       {
-    //         style: `
-    //           // grid-column: 1 / -1;
-    //           // min-height: 0px;
-    //           // overflow: auto;
-    //           // height: 100%;
-    //           width: 30%;`,
-    //         continuous: false,
-    //         valueKeys: ["value", "zone"],
-    //         //formatter: NumberFormatter,
-    //       }
-    //     )
-    //   );
-    // }
 
     const warningElement = html.div({
       id: "warning-text",
@@ -284,22 +249,21 @@ addStyleSheet(`
   grid-template-columns: max-content max-content auto auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
+  max-height: 70px;
 }
 
-.fontra-ui-font-info-names {
+.fontra-ui-font-info-column {
   display: grid;
   grid-template-columns: minmax(4.5em, max-content) max-content;
   gap: 0.5em;
   align-items: start;
   align-content: start;
+  max-height: 50px;
+  overflow: scroll;
 }
 
 .fontra-ui-font-info-vertical-metrics {
-  display: grid;
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
-  gap: 0.5em;
-  align-items: start;
-  align-content: start;
 }
 
 .fontra-ui-font-info-delete {
@@ -339,6 +303,7 @@ class SourceBox extends HTMLElement {
       General: {
         name: source.name,
         italicAngle: source.italicAngle ? source.italicAngle : 0,
+        //isSparce: source.isSparce ? source.isSparce : false,
       },
       location: source.location,
       verticalMetrics: source.verticalMetrics,
@@ -440,17 +405,25 @@ function buildElement(controller, options = {}) {
 
   let items = [];
   for (const [key, value] of itemsArray) {
-    items.push([translate(key), key]);
+    items.push([translate(key), key, value]);
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-names" },
+    { class: "fontra-ui-font-info-column" },
     items
-      .map(([labelName, keyName]) =>
-        labeledTextInput(labelName, controller, keyName, {
+      .map(([labelName, keyName, value]) => {
+        return labeledTextInput(labelName, controller, keyName, {
           continuous: false,
-        })
-      )
+        });
+        // TODO for isSparce
+        // if (typeof value === "boolean") {
+        //   return labeledCheckbox(labelName, controller, keyName, {});
+        // } else {
+        //   return labeledTextInput(labelName, controller, keyName, {
+        //     continuous: false,
+        //   })
+        // }
+      })
       .flat()
   );
 }
@@ -467,7 +440,7 @@ function buildElementVerticalMetrics(controller, options = {}) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-vertical-metrics" },
+    { class: "fontra-ui-font-info-column fontra-ui-font-info-vertical-metrics" },
     items
       .map(([labelName, keyName]) =>
         labeledTextInputMultiValues(labelName, controller, keyName, {
@@ -482,7 +455,7 @@ function buildElementVerticalMetrics(controller, options = {}) {
 
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
-    class: `fontra-ui-font-info-names`,
+    class: `fontra-ui-font-info-column`,
   });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
