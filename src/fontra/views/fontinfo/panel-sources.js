@@ -296,8 +296,8 @@ class SourceBox extends HTMLElement {
         italicAngle: source.italicAngle ? source.italicAngle : 0,
         //isSparce: source.isSparce ? source.isSparce : false,
       },
-      location: source.location,
-      verticalMetrics: source.verticalMetrics,
+      location: { ...source.location },
+      verticalMetrics: { ...source.verticalMetrics },
       // TODO: hhea, OS/2 verticalMetrics, etc
       // customData: { ...source.customData },
     };
