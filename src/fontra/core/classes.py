@@ -83,6 +83,7 @@ class Font:
 @dataclass(kw_only=True)
 class FontSource:
     name: str
+    isSparse: bool = False
     location: Location = field(default_factory=dict)
     verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
     italicAngle: float = 0
