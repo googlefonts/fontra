@@ -11,6 +11,7 @@ import {
   labeledTextInputMultiValues,
   setupSortableList,
 } from "../core/ui-utils.js";
+import { enumerate, range, zip } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
 import {
@@ -23,6 +24,7 @@ import {
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
+import { Accordion } from "/web-components/ui-accordion.js";
 
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
@@ -38,7 +40,6 @@ export class SourcesPanel extends BaseInfoPanel {
     });
 
     for (const [identifier, source] of Object.entries(sources)) {
-      console.log("source", identifier, source);
       container.appendChild(
         new SourceBox(
           fontAxes,
@@ -183,7 +184,6 @@ export class SourcesPanel extends BaseInfoPanel {
       location: newLocation,
       verticalMetrics: defaultVerticalMetrics,
     };
-    console.log("newSource", newSource);
     return newSource;
   }
 
@@ -246,7 +246,7 @@ addStyleSheet(`
   cursor: pointer;
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: max-content max-content auto auto;
+  grid-template-columns: max-content max-content max-content auto auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
   max-height: 70px;
@@ -266,7 +266,7 @@ addStyleSheet(`
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
 }
 
-.fontra-ui-font-info-delete {
+.fontra-ui-font-info-icon {
   justify-self: end;
   align-self: start;
 }
@@ -278,6 +278,7 @@ select {
 .fontra-ui-font-info-header {
   font-weight: bold;
 }
+
 `);
 
 class SourceBox extends HTMLElement {
@@ -347,6 +348,17 @@ class SourceBox extends HTMLElement {
     }
   }
 
+  toggleShowHide() {
+    this.style.maxHeight = this.style.maxHeight === "100%" ? "70px" : "100%";
+    for (const child of this.children) {
+      if (!child.style.maxHeight) {
+        child.style.maxHeight = "100%";
+      } else {
+        delete child.style;
+      }
+    }
+  }
+
   _updateContents() {
     const models = this.models;
 
@@ -364,6 +376,13 @@ class SourceBox extends HTMLElement {
     }
 
     this.innerHTML = "";
+    this.append(
+      html.createDomElement("icon-button", {
+        class: "fontra-ui-font-info-icon",
+        src: "/tabler-icons/chevron-up.svg",
+        onclick: (event) => this.toggleShowHide(),
+      })
+    );
 
     for (const key in models) {
       this.append(html.div({ class: "fontra-ui-font-info-header" }, [translate(key)]));
@@ -371,13 +390,15 @@ class SourceBox extends HTMLElement {
 
     this.append(
       html.createDomElement("icon-button", {
-        "class": "fontra-ui-font-info-delete",
+        "class": "fontra-ui-font-info-icon",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteSource(),
         "data-tooltip": translate("sources.delete-source"),
         "data-tooltipposition": "left",
       })
     );
+
+    this.append(html.div()); // empty cell for collapsing arrow
 
     for (const key in models) {
       if (key == "location") {
