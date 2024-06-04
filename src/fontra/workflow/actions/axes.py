@@ -392,7 +392,7 @@ class BaseMoveDefaultLocation(BaseFilter):
     def _getDefaultUserLocation(self):
         raise NotImplementedError()
 
-    async def _filterNewLocations(self, newLocations):
+    async def _filterNewLocations(self, newLocations, location):
         raise NotImplementedError()
 
 
