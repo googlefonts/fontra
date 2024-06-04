@@ -1,10 +1,6 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
 import { LRUCache } from "./lru-cache.js";
-import {
-  areGuidelinesCompatible,
-  isObjectEmpty,
-  normalizeGuidelines,
-} from "./utils.js";
+import { areGuidelinesCompatible, normalizeGuidelines } from "./utils.js";
 import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
 
 export class FontSourcesInstancer {
@@ -15,6 +11,9 @@ export class FontSourcesInstancer {
   }
 
   _setup() {
+    this.fontSourcesList = Object.values(this.fontSources).filter(
+      (source) => !source.isSparse
+    );
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     this.defaultLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
@@ -22,7 +21,7 @@ export class FontSourcesInstancer {
     this.discreteAxes = this.fontAxesSourceSpace.filter((axis) => axis.values);
     this.continuousAxes = this.fontAxesSourceSpace.filter((axis) => !axis.values);
     this.sourcesByLocationString = Object.fromEntries(
-      Object.values(this.fontSources).map((source) => [
+      this.fontSourcesList.map((source) => [
         locationToString({ ...this.defaultLocation, ...source.location }),
         source,
       ])
@@ -32,7 +31,7 @@ export class FontSourcesInstancer {
 
   get model() {
     if (!this._model) {
-      const locations = Object.values(this.fontSources).map(
+      const locations = this.fontSourcesList.map(
         (source) => source.location,
         this.fontAxesSourceSpace
       );
@@ -46,10 +45,9 @@ export class FontSourcesInstancer {
   }
 
   get deltas() {
-    const sourceValues = Object.values(this.fontSources);
-    const guidelinesAreCompatible = areGuidelinesCompatible(sourceValues);
+    const guidelinesAreCompatible = areGuidelinesCompatible(this.fontSourcesList);
 
-    const fixedSourceValues = sourceValues.map((source) => {
+    const fixedSourceValues = this.fontSourcesList.map((source) => {
       return {
         ...source,
         location: null,
@@ -63,7 +61,7 @@ export class FontSourcesInstancer {
   }
 
   instantiate(sourceLocation) {
-    if (isObjectEmpty(this.fontSources)) {
+    if (!this.fontSourcesList.length) {
       return undefined;
     }
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
