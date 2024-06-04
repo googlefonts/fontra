@@ -3,24 +3,14 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
-  NumberFormatter,
   OptionalNumberFormatter,
-  checkboxListCell,
   labeledCheckbox,
   labeledTextInput,
   labeledTextInputMultiValues,
-  setupSortableList,
 } from "../core/ui-utils.js";
-import { enumerate, range, zip } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
-import {
-  isLocationAtDefault,
-  locationToString,
-  makeSparseLocation,
-  mapAxesFromUserSpaceToSourceSpace,
-  piecewiseLinearMap,
-} from "/core/var-model.js";
+import { locationToString, makeSparseLocation } from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
@@ -322,9 +312,6 @@ class SourceBox extends HTMLElement {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      // if (undoLabel.includes("verticalMetrics")) {
-      //   this.setupUI();
-      // }
     }
   }
 

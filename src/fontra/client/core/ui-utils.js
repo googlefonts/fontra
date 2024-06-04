@@ -177,19 +177,12 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
   const items = [];
   const inputID = options?.id || `input-${uniqueID()}-${key}`;
   const formatter = options?.formatter || DefaultFormatter;
-  const inputWrapper = html.div(); //{style: "display: flex; flex-direction: row;"}
 
-  const labelElement = html.label({ for: inputID, style: "text-align: right;" }, [
-    label,
-  ]);
-  items.push(labelElement);
-  inputWrapper.appendChild(labelElement);
+  items.push(html.label({ for: inputID, style: "text-align: right;" }, [label]));
 
-  const inputElements = html.div();
   for (const valueKey of options.valueKeys) {
     const inputElement = html.htmlToElement(`<input>`);
     inputElement.type = options?.type || "text";
-    //inputElement.id = inputID;
     if (options?.class) {
       inputElement.className = options.class;
     }
@@ -208,26 +201,10 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
       }
     };
 
-    // controller.addKeyListener(key, (event) => {
-    //   inputElement.value = formatter.toString(event.newValue);
-    // });
-
-    // if (options?.placeholderKey) {
-    //   inputElement.placeholder = controller.model[options.placeholderKey][valueKey];
-    //   controller.addKeyListener(
-    //     options.placeholderKey,
-    //     (event) => (inputElement.placeholder = event.newValue)
-    //   );
-    // }
-
     items.push(inputElement);
-    //inputElements.appendChild(inputElement)
   }
 
-  inputWrapper.appendChild(inputElements);
-
   return items;
-  return inputWrapper;
 }
 
 let _uniqueID = 1;
