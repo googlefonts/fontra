@@ -60,6 +60,11 @@ export class DesignspaceLocation extends UnlitElement {
     }
   `;
 
+  constructor() {
+    super();
+    this.continuous = true;
+  }
+
   static properties = {
     axes: { type: Array },
     phantomAxes: { type: Array },
@@ -203,8 +208,11 @@ export class DesignspaceLocation extends UnlitElement {
     const parms = {
       defaultValue: axis.defaultValue,
       value: modelValue !== undefined ? modelValue : axis.defaultValue,
-      onChangeCallback: (event) =>
-        this._dispatchLocationChangedEvent(axis.name, event.value),
+      onChangeCallback: (event) => {
+        if (this.continuous || !event.isDragging) {
+          this._dispatchLocationChangedEvent(axis.name, event.value);
+        }
+      },
       disabled: sliderDisabled,
     };
     if (axis.values) {
