@@ -268,6 +268,11 @@ select {
 .fontra-ui-font-info-header {
   font-weight: bold;
 }
+.open-close-icon {
+  height: 1.5em;
+  width: 1.5em;
+  transition: 120ms;
+}
 
 `);
 
@@ -371,7 +376,7 @@ class SourceBox extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html.createDomElement("icon-button", {
-        class: "fontra-ui-font-info-icon",
+        class: "fontra-ui-font-info-icon open-close-icon",
         style: "translate: 120ms; transform: rotate(180deg)",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
