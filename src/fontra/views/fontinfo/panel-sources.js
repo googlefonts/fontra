@@ -322,9 +322,9 @@ class SourceBox extends HTMLElement {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      if (undoLabel.includes("verticalMetrics")) {
-        this.setupUI();
-      }
+      // if (undoLabel.includes("verticalMetrics")) {
+      //   this.setupUI();
+      // }
     }
   }
 
@@ -372,7 +372,7 @@ class SourceBox extends HTMLElement {
       this.controllers[key] = new ObservableController(models[key]);
       this.controllers[key].addListener((event) => {
         this.editSource((source) => {
-          if (key == "General") {
+          if (key == "general") {
             source[event.key] = event.newValue;
           } else {
             source[key][event.key] = event.newValue;

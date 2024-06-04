@@ -208,17 +208,17 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
       }
     };
 
-    controller.addKeyListener(key, (event) => {
-      inputElement.value = formatter.toString(event.newValue);
-    });
+    // controller.addKeyListener(key, (event) => {
+    //   inputElement.value = formatter.toString(event.newValue);
+    // });
 
-    if (options?.placeholderKey) {
-      inputElement.placeholder = controller.model[options.placeholderKey][valueKey];
-      controller.addKeyListener(
-        options.placeholderKey,
-        (event) => (inputElement.placeholder = event.newValue)
-      );
-    }
+    // if (options?.placeholderKey) {
+    //   inputElement.placeholder = controller.model[options.placeholderKey][valueKey];
+    //   controller.addKeyListener(
+    //     options.placeholderKey,
+    //     (event) => (inputElement.placeholder = event.newValue)
+    //   );
+    // }
 
     items.push(inputElement);
     //inputElements.appendChild(inputElement)
