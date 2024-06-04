@@ -354,6 +354,9 @@ class SourceBox extends HTMLElement {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      if (undoLabel.includes("verticalMetrics")) {
+        this.setupUI();
+      }
     }
   }
 
@@ -471,6 +474,7 @@ function buildElementVerticalMetrics(controller, options = {}) {
         labeledTextInputMultiValues(labelName, controller, keyName, {
           continuous: false,
           valueKeys: ["value", "zone"],
+          formatter: OptionalNumberFormatter,
         })
       )
       .flat()
