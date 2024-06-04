@@ -1049,20 +1049,27 @@ def packAxisLabels(valueLabels):
 
 
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    fontInfo = UFOFontInfo()
-    dsSource.layer.reader.readInfo(fontInfo)
-    verticalMetrics = {}
-    for name, defaultFactor in verticalMetricsDefaults.items():
-        value = getattr(fontInfo, name, None)
-        if value is None:
-            value = round(defaultFactor * unitsPerEm)
-        verticalMetrics[name] = FontMetric(value=value)
+    isSparse = not dsSource.layer.isDefaultLayer
+    if isSparse:
+        verticalMetrics = {}
+        guidelines = []
+    else:
+        fontInfo = UFOFontInfo()
+        dsSource.layer.reader.readInfo(fontInfo)
+        verticalMetrics = {}
+        for name, defaultFactor in verticalMetricsDefaults.items():
+            value = getattr(fontInfo, name, None)
+            if value is None:
+                value = round(defaultFactor * unitsPerEm)
+            verticalMetrics[name] = FontMetric(value=value)
+        guidelines = unpackGuidelines(fontInfo.guidelines)
 
     return FontSource(
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
-        guidelines=unpackGuidelines(fontInfo.guidelines),
+        guidelines=guidelines,
+        isSparse=isSparse,
     )
 
 
