@@ -372,7 +372,6 @@ class SourceBox extends HTMLElement {
 
   deleteSource() {
     const undoLabel = `delete source '${this.source.name}'`;
-    console.log("delete source", undoLabel, this.sourceIdentifier);
     const root = { sources: this.sources };
     const changes = recordChanges(root, (root) => {
       delete root.sources[this.sourceIdentifier];
@@ -508,10 +507,10 @@ const verticalMetricsDefaults = {
 
 function getDefaultVerticalMetrics(fontController) {
   const source = Object.values(fontController.sources)[0];
-  let defaultSourceVerticalMetrics = {};
   if (source) {
-    defaultSourceVerticalMetrics = source.verticalMetrics;
+    return source.verticalMetrics;
   }
+
   const unitsPerEm = fontController.unitsPerEm;
   const defaultVerticalMetrics = {};
   for (const [name, defaultFactor] of Object.entries(verticalMetricsDefaults)) {
@@ -520,5 +519,5 @@ function getDefaultVerticalMetrics(fontController) {
     defaultVerticalMetrics[name] = { value: value, zone: zone };
   }
 
-  return { ...defaultVerticalMetrics, ...defaultSourceVerticalMetrics };
+  return defaultVerticalMetrics;
 }
