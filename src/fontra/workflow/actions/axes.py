@@ -292,14 +292,10 @@ def getDefaultSourceLocation(axes):
     }
 
 
-@registerFilterAction("move-default-location")
-@dataclass(kw_only=True)
-class MoveDefaultLocation(BaseFilter):
-    newDefaultUserLocation: dict[str, float]
-
+class BaseMoveDefaultLocation(BaseFilter):
     @async_cached_property
     async def newDefaultSourceLocation(self):
-        newDefaultUserLocation = self.newDefaultUserLocation
+        newDefaultUserLocation = self._getDefaultUserLocation()
         axes = await self.inputAxes
 
         relevantAxes = [
@@ -319,18 +315,9 @@ class MoveDefaultLocation(BaseFilter):
 
     async def getAxes(self) -> Axes:
         axes = await self.inputAxes
-        newDefaultUserLocation = self.newDefaultUserLocation
         return replace(
             axes,
-            axes=[
-                replace(
-                    axis,
-                    defaultValue=newDefaultUserLocation.get(
-                        axis.name, axis.defaultValue
-                    ),
-                )
-                for axis in axes.axes
-            ],
+            axes=self._filterAxisList(axes.axes),
         )
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
@@ -343,7 +330,7 @@ class MoveDefaultLocation(BaseFilter):
         ]
 
         axisNames = {axis.name for axis in instancer.combinedAxes}
-        movingAxisNames = set(self.newDefaultUserLocation)
+        movingAxisNames = set(self._getDefaultUserLocation())
         interactingAxes = set()
 
         for location in locations:
@@ -394,7 +381,62 @@ class MoveDefaultLocation(BaseFilter):
                 if loc not in newLocations:
                     newLocations.append(loc)
 
-        return updateSourcesAndLayers(instancer, newLocations)
+        return updateSourcesAndLayers(
+            instancer, await self._filterNewLocations(newLocations)
+        )
+
+    def _filterAxisList(self, axes):
+        raise NotImplementedError()
+
+    def _getDefaultUserLocation(self):
+        raise NotImplementedError()
+
+    async def _filterNewLocations(self, newLocations):
+        raise NotImplementedError()
+
+
+@registerFilterAction("move-default-location")
+@dataclass(kw_only=True)
+class MoveDefaultLocation(BaseMoveDefaultLocation):
+    newDefaultUserLocation: dict[str, float]
+
+    def _getDefaultUserLocation(self):
+        return self.newDefaultUserLocation
+
+    def _filterAxisList(self, axes):
+        newDefaultUserLocation = self._getDefaultUserLocation()
+        return [
+            replace(
+                axis,
+                defaultValue=newDefaultUserLocation.get(axis.name, axis.defaultValue),
+            )
+            for axis in axes
+        ]
+
+    async def _filterNewLocations(self, newLocations):
+        return newLocations
+
+
+@registerFilterAction("instantiate")
+@dataclass(kw_only=True)
+class Instantiate(BaseMoveDefaultLocation):
+    location: dict[str, float]
+
+    def _getDefaultUserLocation(self):
+        return self.location
+
+    def _filterAxisList(self, axes):
+        location = self._getDefaultUserLocation()
+        return [axis for axis in axes if axis.name not in location]
+
+    async def _filterNewLocations(self, newLocations):
+        location = await self.newDefaultSourceLocation
+        filteredLocations = [
+            loc
+            for loc in newLocations
+            if all(loc.get(name, value) == value for name, value in location.items())
+        ]
+        return filteredLocations
 
 
 @registerFilterAction("trim-axes")

@@ -999,6 +999,47 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "instantiate-full",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
+            - filter: subset-axes
+              axisNames: ["weight", "width"]  # prevent crash on discrete italic
+            - filter: instantiate
+              location:
+                weight: 300
+                width: 400
+            - filter: round-coordinates
+            - output: fontra-write
+              destination: "output-instantiate-full.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "instantiate-partial",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
+            - filter: subset-axes
+              axisNames: ["weight", "width"]  # prevent crash on discrete italic
+            - filter: instantiate
+              location:
+                width: 400
+            - filter: round-coordinates
+            - output: fontra-write
+              destination: "output-instantiate-partial.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
