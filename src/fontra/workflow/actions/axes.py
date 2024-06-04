@@ -382,7 +382,8 @@ class BaseMoveDefaultLocation(BaseFilter):
                     newLocations.append(loc)
 
         return updateSourcesAndLayers(
-            instancer, await self._filterNewLocations(newLocations)
+            instancer,
+            self._filterNewLocations(newLocations, await self.newDefaultSourceLocation),
         )
 
     def _filterAxisList(self, axes):
@@ -413,7 +414,7 @@ class MoveDefaultLocation(BaseMoveDefaultLocation):
             for axis in axes
         ]
 
-    async def _filterNewLocations(self, newLocations):
+    def _filterNewLocations(self, newLocations, location):
         return newLocations
 
 
@@ -429,8 +430,7 @@ class Instantiate(BaseMoveDefaultLocation):
         location = self._getDefaultUserLocation()
         return [axis for axis in axes if axis.name not in location]
 
-    async def _filterNewLocations(self, newLocations):
-        location = await self.newDefaultSourceLocation
+    def _filterNewLocations(self, newLocations, location):
         filteredLocations = [
             loc
             for loc in newLocations
