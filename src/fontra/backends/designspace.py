@@ -1083,9 +1083,8 @@ def packAxisLabels(valueLabels):
 
 
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    verticalMetrics: dict[str, FontMetric]
     if dsSource.isSparse:
-        verticalMetrics = {}
+        verticalMetrics: dict[str, FontMetric] = {}
         guidelines = []
     else:
         fontInfo = UFOFontInfo()
