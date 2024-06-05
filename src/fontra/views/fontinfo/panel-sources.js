@@ -414,15 +414,10 @@ class SourceBox extends HTMLElement {
 
 customElements.define("source-box", SourceBox);
 
-function buildElement(controller, options = {}) {
-  let itemsArray = Object.keys(controller.model).map(function (key) {
-    return [key, controller.model[key]];
-  });
-  itemsArray.sort((a, b) => b[1].value - a[1].value);
-
+function buildElement(controller) {
   let items = [];
-  for (const [key, value] of itemsArray) {
-    items.push([translate(key), key, value]);
+  for (const key in controller.model) {
+    items.push([translate(key), key, controller.model[key]]);
   }
 
   return html.div(
