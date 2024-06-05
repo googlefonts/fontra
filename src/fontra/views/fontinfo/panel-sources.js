@@ -13,7 +13,7 @@ import { translate } from "/core/localization.js";
 import { locationToString, makeSparseLocation } from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
+import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
@@ -267,18 +267,15 @@ addStyleSheet(`
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
 }
 
+.fontra-ui-font-info-header {
+  font-weight: bold;
+}
+
 .fontra-ui-font-info-icon {
   justify-self: end;
   align-self: start;
 }
 
-select {
-  font-family: "fontra-ui-regular";
-}
-
-.fontra-ui-font-info-header {
-  font-weight: bold;
-}
 .open-close-icon {
   height: 1.5em;
   width: 1.5em;
@@ -320,6 +317,54 @@ class SourceBox extends HTMLElement {
     };
     // NOTE: Font guidlines could be read/write here,
     // but makes more sense directly in the glyph editing window.
+  }
+
+  checkSourceLocation(axisName, value) {
+    const newLocation = { ...this.source.location, [axisName]: value };
+    return this.checkSourceEntry("location", undefined, newLocation);
+  }
+
+  checkSourceEntry(key, valueKey = undefined, value) {
+    let errorMessage = "";
+    for (const sourceIdentifier in this.sources) {
+      if (sourceIdentifier == this.sourceIdentifier) {
+        // skip the current source
+        continue;
+      }
+      const source = this.sources[sourceIdentifier];
+
+      let existsAlready = false;
+      let sourceValue;
+
+      if (valueKey == undefined) {
+        if (key == "location") {
+          sourceValue = locationToString(source[key]);
+          value = locationToString(value);
+        } else {
+          sourceValue = source[key];
+        }
+      } else {
+        sourceValue = source[key][valueKey];
+      }
+
+      if (sourceValue == value) {
+        existsAlready = true;
+      }
+
+      if (existsAlready) {
+        errorMessage = `“${key}${
+          valueKey ? " " + valueKey : ""
+        } ${value}” exists already, please use a different value.`;
+        break;
+      }
+    }
+
+    if (errorMessage) {
+      message(`Can’t edit font source`, errorMessage);
+      this.setupUI();
+      return false;
+    }
+    return true;
   }
 
   editSource(editFunc, undoLabel) {
@@ -365,6 +410,18 @@ class SourceBox extends HTMLElement {
     for (const key in models) {
       this.controllers[key] = new ObservableController(models[key]);
       this.controllers[key].addListener((event) => {
+        if (key == "location") {
+          if (!this.checkSourceLocation(event.key, event.newValue)) {
+            return;
+          }
+        }
+
+        if (event.key == "name") {
+          if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
+            return;
+          }
+        }
+
         this.editSource((source) => {
           if (key == "general") {
             source[event.key] = event.newValue;
