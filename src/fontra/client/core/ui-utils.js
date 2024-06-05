@@ -172,42 +172,6 @@ export function labeledTextInput(label, controller, key, options) {
   return items;
 }
 
-export function labeledTextInputMultiValues(label, controller, key, options) {
-  options = { continuous: true, ...options };
-  const items = [];
-  const inputID = options?.id || `input-${uniqueID()}-${key}`;
-  const formatter = options?.formatter || DefaultFormatter;
-
-  items.push(html.label({ for: inputID, style: "text-align: right;" }, [label]));
-
-  for (const valueKey of options.valueKeys) {
-    const inputElement = html.htmlToElement(`<input>`);
-    inputElement.type = options?.type || "text";
-    inputElement.id = `input-${uniqueID()}-${key}-${valueKey}`;
-    if (options?.class) {
-      inputElement.className = options.class;
-    }
-
-    if (options?.style) {
-      inputElement.style = options.style;
-    }
-
-    inputElement.value = formatter.toString(round(controller.model[key][valueKey], 2));
-    inputElement[options.continuous ? "oninput" : "onchange"] = () => {
-      const { value, error } = formatter.fromString(inputElement.value);
-      if (!error) {
-        var obj = {};
-        obj[valueKey] = value;
-        controller.model[key] = { ...controller.model[key], ...obj };
-      }
-    };
-
-    items.push(inputElement);
-  }
-
-  return items;
-}
-
 let _uniqueID = 1;
 function uniqueID() {
   return _uniqueID++;

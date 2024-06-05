@@ -4,9 +4,10 @@ import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   OptionalNumberFormatter,
+  labelForElement,
   labeledCheckbox,
   labeledTextInput,
-  labeledTextInputMultiValues,
+  textInput,
 } from "../core/ui-utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
@@ -179,6 +180,7 @@ export class SourcesPanel extends BaseInfoPanel {
       this.fontController,
       newLocation
     );
+    // TODO: round the interpolated vertical metrics to 2 decimal places
     const newSource = {
       name: nameController.model.sourceName.trim(),
       italicAngle: nameController.model.sourceItalicAngle,
@@ -323,12 +325,21 @@ class SourceBox extends HTMLElement {
         //isSparce: source.isSparce ? source.isSparce : false,
       },
       location: { ...source.location },
-      verticalMetrics: { ...source.verticalMetrics },
+      verticalMetrics: this.prepareVerticalMetricsForController(source.verticalMetrics),
       // TODO: hhea, OS/2 verticalMetrics, etc
       // customData: { ...source.customData },
     };
     // NOTE: Font guidlines could be read/write here,
     // but makes more sense directly in the glyph editing window.
+  }
+
+  prepareVerticalMetricsForController(verticalMetrics) {
+    let newVerticalMetrics = {};
+    for (const key in verticalMetrics) {
+      newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
+      newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone;
+    }
+    return newVerticalMetrics;
   }
 
   checkSourceLocation(axisName, value) {
@@ -441,7 +452,15 @@ class SourceBox extends HTMLElement {
               source[event.key] = event.newValue;
             }
           } else {
-            source[key][event.key] = event.newValue;
+            if (key == "verticalMetrics") {
+              if (event.key.startsWith("value-")) {
+                source[key][event.key.slice(6)].value = event.newValue;
+              } else {
+                source[key][event.key.slice(5)].zone = event.newValue;
+              }
+            } else {
+              source[key][event.key] = event.newValue;
+            }
           }
         }, `edit source ${key} ${event.key}`);
       });
@@ -519,27 +538,21 @@ function buildElement(controller) {
 function buildElementVerticalMetrics(controller) {
   let items = [];
   for (const key of Object.keys(verticalMetricsDefaults)) {
-    if (key in controller.model) {
+    if (`value-${key}` in controller.model) {
       items.push([translate(key), key]);
     }
   }
-  // Add custom vertical metrics
-  for (const key in controller.model) {
-    if (!(key in verticalMetricsDefaults)) {
-      items.push([translate(key), key]);
-    }
-  }
+  // TODO: Custom vertical metrics
 
   return html.div(
     { class: "fontra-ui-font-info-column fontra-ui-font-info-vertical-metrics" },
     items
-      .map(([labelName, keyName]) =>
-        labeledTextInputMultiValues(labelName, controller, keyName, {
-          continuous: false,
-          valueKeys: ["value", "zone"],
-          formatter: OptionalNumberFormatter,
-        })
-      )
+      .map(([labelName, keyName]) => {
+        const opts = { continuous: false };
+        const valueInput = textInput(controller, `value-${keyName}`, opts);
+        const zoneInput = textInput(controller, `zone-${keyName}`, opts);
+        return [labelForElement(labelName, valueInput), valueInput, zoneInput];
+      })
       .flat()
   );
 }
