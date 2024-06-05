@@ -29,7 +29,11 @@ export class SourcesPanel extends BaseInfoPanel {
     });
 
     // TODO: maybe sort sources by axes and location values
-    for (const [identifier, source] of Object.entries(sources)) {
+    let sourcesIdentifers = [...Object.keys(sources)];
+    console.log(sourcesIdentifers);
+    sourcesIdentifers.sort(this.sourceCompareFunc(fontAxes, sources));
+    console.log(sourcesIdentifers);
+    for (const identifier of sourcesIdentifers) {
       container.appendChild(
         new SourceBox(
           fontAxes,
@@ -55,6 +59,34 @@ export class SourcesPanel extends BaseInfoPanel {
     );
     this.panelElement.appendChild(container);
     this.panelElement.focus();
+  }
+
+  // sourceCompareFunc(fontAxes, sources) {
+  //   return function(identifierA, identifierB) {
+  //     for (const axisName of fontAxes) {
+  //       const valueA = sources[identifierA].location[axisName];
+  //       const valueB = sources[identifierB].location[axisName];
+  //       if (valueA === valueB) {
+  //         continue;
+  //       }
+  //       return (valueA < valueB) ? -1 : 0;
+  //     }
+  //     return 0;
+  //   }
+  // }
+
+  sourceCompareFunc(fontAxes, sources) {
+    return function (sourceA, sourceB) {
+      for (const axisName of fontAxes) {
+        const valueA = sourceA.location[axisName];
+        const valueB = sourceB.location[axisName];
+        if (valueA === valueB) {
+          continue;
+        }
+        return valueA < valueB ? -1 : 0;
+      }
+      return 0;
+    };
   }
 
   async newSource() {
@@ -117,7 +149,7 @@ export class SourcesPanel extends BaseInfoPanel {
     };
 
     const nameController = new ObservableController({
-      sourceName: "New source name",
+      sourceName: this.getSourceName(sources),
       sourceItalicAngle: 0,
     });
 
@@ -191,6 +223,19 @@ export class SourcesPanel extends BaseInfoPanel {
     };
   }
 
+  getSourceName(sources) {
+    const sourceNames = Object.keys(sources).map(function (sourceIdentifier) {
+      return sources[sourceIdentifier].name;
+    });
+    let sourceName = "Untitled source";
+    let i = 1;
+    while (sourceNames.includes(sourceName)) {
+      sourceName = `Untitled source ${i}`;
+      i++;
+    }
+    return sourceName;
+  }
+
   _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
@@ -246,7 +291,7 @@ addStyleSheet(`
   cursor: pointer;
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: max-content max-content max-content auto auto;
+  grid-template-columns: max-content max-content max-content max-content auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
   max-height: 70px;
@@ -504,14 +549,17 @@ function buildElement(controller) {
 }
 
 function buildElementVerticalMetrics(controller) {
-  let itemsArray = Object.keys(controller.model).map(function (key) {
-    return [key, controller.model[key]];
-  });
-  itemsArray.sort((a, b) => b[1].value - a[1].value);
-
   let items = [];
-  for (const [key, value] of itemsArray) {
-    items.push([translate(key), key]);
+  for (const key of Object.keys(verticalMetricsDefaults)) {
+    if (key in controller.model) {
+      items.push([translate(key), key]);
+    }
+  }
+  // Add custom vertical metrics
+  for (const key in controller.model) {
+    if (!(key in verticalMetricsDefaults)) {
+      items.push([translate(key), key]);
+    }
   }
 
   return html.div(
