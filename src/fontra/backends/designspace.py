@@ -112,12 +112,11 @@ class DesignspaceBackend:
         ufoDir = path.parent
 
         # Create default UFO
-        makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
         familyName = path.stem
         styleName = "Regular"
-        ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
-        ufoFileName = ufoFileName + ".ufo"
-        ufoPath = ufoDir / ufoFileName
+        suggestedUFOFileName = f"{familyName}_{styleName}"
+
+        ufoPath = makeUniqueUFOPath(ufoDir, suggestedUFOFileName)
         dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
         dsDoc.write(path)
         return cls(dsDoc)
@@ -580,6 +579,22 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
+    # def _createDSSourceFromFontSource(self, fontSource: FontSource):
+    #     manager = self.ufoManager
+
+    #     if not fontSource.isSparse:
+    #         # Create a whole new UFO
+    #         ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+    #         dsFileName = pathlib.Path(self.dsDoc.path).stem
+    #         suggestedUFOFileName = f"{dsFileName}_{fontSource.name}"
+    #         ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
+    #         assert 0, ufoPath
+    #     else:
+    #         poleDSSource = self._findDSSourceForSparseSource(fontSource.location)
+    #         ufoPath = poleDSSource.layer.path
+    #         ufoLayer = self._newUFOLayer(None, poleDSSource.layer.path, fontSource.name)
+    #         ufoLayerName = ufoLayer.name
+
     def _createDSSource(self, glyphName, source, globalLocation):
         manager = self.ufoManager
         atPole, notAtPole = splitLocationByPolePosition(
@@ -587,13 +602,12 @@ class DesignspaceBackend:
         )
         if not notAtPole:
             # Create a whole new UFO
-            ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-            makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
             dsFileName = pathlib.Path(self.dsDoc.path).stem
-            ufoFileName = makeUniqueFileName(f"{dsFileName}_{source.name}")
-            ufoFileName = ufoFileName + ".ufo"
-            ufoPath = os.fspath(ufoDir / ufoFileName)
-            assert not os.path.exists(ufoPath)
+            suggestedUFOFileName = f"{dsFileName}_{source.name}"
+            ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+
+            ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
+
             reader = manager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
             for _, infoAttr in fontInfoNameMapping:
@@ -615,13 +629,7 @@ class DesignspaceBackend:
             self._updatePathsToWatch()
         else:
             # Create a new layer in the appropriate existing UFO
-            atPole = {**self.defaultLocation, **atPole}
-            poleDSSource = self.dsSources.findItem(
-                locationTuple=tuplifyLocation(atPole)
-            )
-            if poleDSSource is None:
-                poleDSSource = self.defaultDSSource
-            assert poleDSSource is not None
+            poleDSSource = self._findDSSourceForSparseSource(globalLocation)
             ufoPath = poleDSSource.layer.path
             ufoLayer = self._newUFOLayer(
                 glyphName, poleDSSource.layer.path, source.layerName
@@ -649,6 +657,17 @@ class DesignspaceBackend:
         self.dsSources.append(dsSource)
 
         return dsSource
+
+    def _findDSSourceForSparseSource(self, location):
+        atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
+        atPole = {**self.defaultLocation, **atPole}
+        poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
+        if poleDSSource is None:
+            poleDSSource = self.defaultDSSource
+
+        assert poleDSSource is not None
+
+        return poleDSSource
 
     def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
         reader = self.ufoManager.getReader(ufoPath)
@@ -759,9 +778,22 @@ class DesignspaceBackend:
         }
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
+        return  # NotImplementedError
         # TODO: this may require rewriting UFOs and UFO layers
         # Also: what to do if a source gets deleted?
-        pass
+        for sourceIdentifier, fontSource in sources.items():
+            dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
+            if dsSource is not None:
+                if dsSource.isSparse != fontSource.isSparse:
+                    raise ValueError("Modifying isSparse is currently not supported")
+                # update guidelines, vertical metrics
+                assert 0
+            else:
+                ...
+                # create dsSource
+                self._createDSSourceFromFontSource(fontSource)
+                assert 0, "hey"
+        self._writeDesignSpaceDocument()
 
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
@@ -1049,8 +1081,7 @@ def packAxisLabels(valueLabels):
 
 
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    isSparse = not dsSource.layer.isDefaultLayer
-    if isSparse:
+    if dsSource.isSparse:
         verticalMetrics = {}
         guidelines = []
     else:
@@ -1069,7 +1100,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
         guidelines=guidelines,
-        isSparse=isSparse,
+        isSparse=dsSource.isSparse,
     )
 
 
@@ -1172,6 +1203,10 @@ class DSSource:
             location={**localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
+
+    @cached_property
+    def isSparse(self):
+        return not self.layer.isDefaultLayer
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -1368,6 +1403,15 @@ def uniqueNameMaker(existingNames=()):
         return uniqueName
 
     return makeUniqueName
+
+
+def makeUniqueUFOPath(ufoDir, suggestedUFOFileName):
+    makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
+    ufoFileName = makeUniqueFileName(suggestedUFOFileName)
+    ufoFileName = ufoFileName + ".ufo"
+    ufoPath = ufoDir / ufoFileName
+    assert not ufoPath.exists()
+    return ufoPath
 
 
 def cleanupTransform(t):
