@@ -113,22 +113,29 @@ export function labeledCheckbox(label, controller, key, options) {
   return inputWrapper;
 }
 
-export function labeledTextInput(label, controller, key, options) {
+export function labelForElement(label, element) {
+  return html.label({ for: element.id, style: "text-align: right;" }, [label]);
+}
+
+export function choicesForInput(choices, inputElement) {
+  const choicesID = `${inputElement}-choices`;
+  inputElement.setAttribute("list", choicesID);
+  return html.createDomElement(
+    "datalist",
+    { id: choicesID },
+    choices.map((item) => html.createDomElement("option", { value: item }))
+  );
+}
+
+export function textInput(controller, key, options) {
   options = { continuous: true, ...options };
-  const items = [];
   const inputID = options?.id || `input-${uniqueID()}-${key}`;
   const formatter = options?.formatter || DefaultFormatter;
-
-  items.push(html.label({ for: inputID, style: "text-align: right;" }, [label]));
 
   const choices = options?.choices;
   const choicesID = `${inputID}-choices`;
 
-  const inputElement = html.htmlToElement(
-    `<input ${choices ? `list="${choicesID}"` : ""}>`
-  );
-  inputElement.type = options?.type || "text";
-  inputElement.id = inputID;
+  const inputElement = html.input({ type: options?.type || "text", id: inputID });
   if (options?.class) {
     inputElement.className = options.class;
   }
@@ -152,16 +159,15 @@ export function labeledTextInput(label, controller, key, options) {
     );
   }
 
-  items.push(inputElement);
+  return inputElement;
+}
 
-  if (choices) {
-    items.push(
-      html.createDomElement(
-        "datalist",
-        { id: choicesID },
-        choices.map((item) => html.createDomElement("option", { value: item }))
-      )
-    );
+export function labeledTextInput(label, controller, key, options) {
+  const inputElement = textInput(controller, key, options);
+  const items = [labelForElement(label, inputElement), inputElement];
+
+  if (options?.choices) {
+    items.push(choicesForInput(options.choices, inputElement));
   }
   return items;
 }
