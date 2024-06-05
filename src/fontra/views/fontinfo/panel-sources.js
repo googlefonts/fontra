@@ -21,7 +21,7 @@ export class SourcesPanel extends BaseInfoPanel {
   static fontAttributes = ["sources", "sources"];
 
   async setupUI() {
-    const sources = await getSources(this.fontController);
+    const sources = await this.fontController.getSources();
     const fontAxes = this.fontController.axes.axes;
 
     const container = html.div({
@@ -80,7 +80,7 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   async _sourcePropertiesRunDialog(title, okButtonTitle, fontController) {
-    const sources = await getSources(this.fontController);
+    const sources = await this.fontController.getSources();
     const validateInput = () => {
       const warnings = [];
       const editedSourceName = nameController.model.sourceName;
@@ -473,14 +473,6 @@ function buildElementLocations(controller, fontAxes) {
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
   return locationElement;
-}
-
-async function getSources(fontController) {
-  const sources = await fontController.getSources();
-  if (Object.keys(sources).length > 0) {
-    return sources;
-  }
-  return {};
 }
 
 function getInterpolatedSourceData(fontController, newLocation) {
