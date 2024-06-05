@@ -18,7 +18,7 @@ import { dialogSetup, message } from "/web-components/modal-dialog.js";
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
   static id = "sources-panel";
-  static fontAttributes = ["sources", "sources"];
+  static fontAttributes = ["axes", "sources"];
 
   async setupUI() {
     const sources = await this.fontController.getSources();
@@ -352,9 +352,8 @@ class SourceBox extends HTMLElement {
       }
 
       if (existsAlready) {
-        errorMessage = `“${key}${
-          valueKey ? " " + valueKey : ""
-        } ${value}” exists already, please use a different value.`;
+        errorMessage = `${key}${valueKey ? " " + valueKey : ""}: “${value}”
+          exists already, please use a different value.`;
         break;
       }
     }
@@ -424,7 +423,11 @@ class SourceBox extends HTMLElement {
 
         this.editSource((source) => {
           if (key == "general") {
-            source[event.key] = event.newValue;
+            if (typeof event.key == "string") {
+              source[event.key] = event.newValue.trim();
+            } else {
+              source[event.key] = event.newValue;
+            }
           } else {
             source[key][event.key] = event.newValue;
           }
