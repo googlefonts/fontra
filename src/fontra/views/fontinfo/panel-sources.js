@@ -161,20 +161,26 @@ export class SourcesPanel extends BaseInfoPanel {
     }
 
     let newLocation = makeSparseLocation(locationController.model, locationAxes);
-    if (Object.keys(newLocation).length === 0) {
-      for (const axis of locationAxes) {
+    for (const axis of locationAxes) {
+      if (!(axis.name in newLocation)) {
         newLocation[axis.name] = axis.defaultValue;
       }
     }
+
+    const interpolatedSource = getInterpolatedSourceData(fontController, newLocation);
     const newSource = {
       name: nameController.model.sourceName || nameController.model.suggestedSourceName,
       italicAngle:
         nameController.model.sourceItalicAngle ||
         nameController.model.suggestedSourceItalicAngle,
       location: newLocation,
-      verticalMetrics: getDefaultVerticalMetrics(this.fontController, newLocation),
     };
-    return newSource;
+
+    return {
+      verticalMetrics: getDefaultVerticalMetrics(this.fontController.unitsPerEm),
+      ...interpolatedSource,
+      ...newSource,
+    };
   }
 
   _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
@@ -286,14 +292,15 @@ class SourceBox extends HTMLElement {
     this.postChange = postChange;
     this.setupUI = setupUI;
     this.controllers = {};
+    this.models = this._getModels();
     this._updateContents();
   }
 
   get source() {
-    return this.sources[this.sourceIdentifier];
+    return { ...this.sources[this.sourceIdentifier] };
   }
 
-  get models() {
+  _getModels() {
     const source = this.source;
     return {
       general: {
@@ -317,16 +324,7 @@ class SourceBox extends HTMLElement {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    }
-  }
-
-  replaceSource(newSource, undoLabel) {
-    const root = { sources: this.sources };
-    const changes = recordChanges(root, (root) => {
-      root.sources[this.sourceIdentifier] = newSource;
-    });
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI(); // TODO: remove this once the bug has been fixed.
     }
   }
 
@@ -492,23 +490,25 @@ async function getSources(fontController) {
   return {};
 }
 
+function getInterpolatedSourceData(fontController, newLocation) {
+  const fontSourceInstance =
+    fontController.fontSourcesInstancer.instantiate(newLocation);
+  if (!fontSourceInstance) {
+    // This happens if there is no source specified, yet.
+    return {};
+  }
+  return fontSourceInstance;
+}
+
 const verticalMetricsDefaults = {
-  ascender: { value: 0.75, zone: 0.016 },
+  ascender: { value: 0.8, zone: 0.016 },
   capHeight: { value: 0.75, zone: 0.016 },
   xHeight: { value: 0.5, zone: 0.016 },
   baseline: { value: 0, zone: -0.016 },
   descender: { value: -0.25, zone: -0.016 },
 };
 
-function getDefaultVerticalMetrics(fontController, newLocation) {
-  // TODO:
-  // Improvement -> get the interpolated vertical metrics from newLocation
-  const source = Object.values(fontController.sources)[0];
-  if (source) {
-    return source.verticalMetrics;
-  }
-
-  const unitsPerEm = fontController.unitsPerEm;
+function getDefaultVerticalMetrics(unitsPerEm) {
   const defaultVerticalMetrics = {};
   for (const [name, defaultFactor] of Object.entries(verticalMetricsDefaults)) {
     const value = Math.round(defaultFactor.value * unitsPerEm);

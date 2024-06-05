@@ -1,5 +1,5 @@
 import * as html from "./html-utils.js";
-import { zip } from "./utils.js";
+import { round, zip } from "./utils.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";
@@ -183,6 +183,7 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
   for (const valueKey of options.valueKeys) {
     const inputElement = html.htmlToElement(`<input>`);
     inputElement.type = options?.type || "text";
+    inputElement.id = `input-${uniqueID()}-${key}-${valueKey}`;
     if (options?.class) {
       inputElement.className = options.class;
     }
@@ -191,7 +192,7 @@ export function labeledTextInputMultiValues(label, controller, key, options) {
       inputElement.style = options.style;
     }
 
-    inputElement.value = formatter.toString(controller.model[key][valueKey]);
+    inputElement.value = formatter.toString(round(controller.model[key][valueKey], 2));
     inputElement[options.continuous ? "oninput" : "onchange"] = () => {
       const { value, error } = formatter.fromString(inputElement.value);
       if (!error) {
