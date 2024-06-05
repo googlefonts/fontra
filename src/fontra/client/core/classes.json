@@ -426,16 +426,19 @@
     "name": {
       "type": "str"
     },
+    "isSparse": {
+      "type": "bool"
+    },
     "location": {
       "type": "dict",
       "subtype": "float"
     },
-    "italicAngle": {
-      "type": "float"
-    },
     "verticalMetrics": {
       "type": "dict",
       "subtype": "FontMetric"
+    },
+    "italicAngle": {
+      "type": "float"
     },
     "guidelines": {
       "type": "list",

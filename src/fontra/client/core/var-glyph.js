@@ -35,6 +35,7 @@ export class GlyphSource {
   static fromObject(obj) {
     const source = new GlyphSource();
     source.name = obj.name;
+    source.locationBase = obj.locationBase;
     source.location = { ...obj.location } || {};
     source.layerName = obj.layerName;
     source.inactive = !!obj.inactive;

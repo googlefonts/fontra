@@ -225,7 +225,7 @@ export class FontController {
   }
 
   makeVariableGlyphController(glyph) {
-    return new VariableGlyphController(glyph, this.fontAxes);
+    return new VariableGlyphController(glyph, this.fontAxes, this.sources);
   }
 
   updateGlyphDependencies(glyph) {

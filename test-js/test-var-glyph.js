@@ -14,6 +14,7 @@ function makeTestGlyphObject() {
         layerName: "default",
         location: {},
         customData: {},
+        locationBase: undefined,
         inactive: false,
       },
     ],

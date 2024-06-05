@@ -39,7 +39,7 @@ import {
 import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
-  constructor(glyph, fontAxes) {
+  constructor(glyph, fontAxes, fontSources) {
     this.glyph = glyph;
     this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
     const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
@@ -48,6 +48,7 @@ export class VariableGlyphController {
         .map((axis) => axis.name)
         .filter((axisName) => !glyphAxisNames.has(axisName))
     );
+    this._fontSources = fontSources;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -89,6 +90,10 @@ export class VariableGlyphController {
     return this._discreteAxes;
   }
 
+  getSourceLocation(source) {
+    return { ...this._fontSources[source.locationBase]?.location, ...source.location };
+  }
+
   _setupAxisMapping() {
     this._discreteAxes = [];
     this._continuousAxes = Array.from(this.axes);
@@ -120,15 +125,17 @@ export class VariableGlyphController {
       if (source.inactive) {
         continue;
       }
+      const location = this.getSourceLocation(source);
       const seen = new Set();
       let found = true;
       for (const axis of this.axes.concat(this._fontAxesSourceSpace)) {
         if (seen.has(axis.name)) {
+          // Skip font axis if we have a glyph axis by that name
           continue;
         }
         seen.add(axis.name);
         let varValue = sourceLocation[axis.name];
-        let sourceValue = source.location[axis.name];
+        let sourceValue = location[axis.name];
         if (varValue === undefined) {
           varValue = axis.defaultValue;
         }
@@ -192,7 +199,7 @@ export class VariableGlyphController {
     if (this._model === undefined) {
       const locations = this.sources
         .filter((source) => !source.inactive)
-        .map((source) => source.location);
+        .map((source) => this.getSourceLocation(source));
       this._model = new DiscreteVariationModel(
         locations,
         this.discreteAxes,
@@ -318,7 +325,10 @@ export class VariableGlyphController {
   _splitSourcesByDiscreteLocation() {
     const splitSources = {};
     for (const [sourceIndex, source] of enumerate(this.sources)) {
-      const splitLoc = splitDiscreteLocation(source.location, this.discreteAxes);
+      const splitLoc = splitDiscreteLocation(
+        this.getSourceLocation(source),
+        this.discreteAxes
+      );
       const key = JSON.stringify(splitLoc.discreteLocation);
       if (!(key in splitSources)) {
         const defaultSourceIndex = this.model.getDefaultSourceIndexForDiscreteLocation(
@@ -364,7 +374,10 @@ export class VariableGlyphController {
         );
         await instanceController.setupComponents(
           getGlyphFunc,
-          filterLocation(this.sources[sourceIndex].location, this._fontAxisNames),
+          filterLocation(
+            this.getSourceLocation(this.sources[sourceIndex]),
+            this._fontAxisNames
+          ),
           this._fontAxisNames
         );
       } else {
@@ -435,7 +448,7 @@ export class VariableGlyphController {
     const fontDefaultLocation = makeDefaultLocation(this._fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
-    const sourceLocation = this.sources[sourceIndex].location;
+    const sourceLocation = this.getSourceLocation(this.sources[sourceIndex]);
     return { ...defaultLocation, ...sourceLocation };
   }
 
@@ -457,7 +470,7 @@ export class VariableGlyphController {
         continue;
       }
       sourceIndexMapping.push(index);
-      activeLocations.push({ ...defaultLocation, ...source.location });
+      activeLocations.push({ ...defaultLocation, ...this.getSourceLocation(source) });
     }
 
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
