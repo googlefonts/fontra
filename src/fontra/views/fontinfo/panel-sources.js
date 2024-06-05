@@ -175,7 +175,6 @@ export class SourcesPanel extends BaseInfoPanel {
         nameController.model.suggestedSourceItalicAngle,
       location: newLocation,
     };
-
     return {
       verticalMetrics: getDefaultVerticalMetrics(this.fontController.unitsPerEm),
       ...interpolatedSource,
@@ -297,7 +296,7 @@ class SourceBox extends HTMLElement {
   }
 
   get source() {
-    return { ...this.sources[this.sourceIdentifier] };
+    return this.sources[this.sourceIdentifier];
   }
 
   _getModels() {
@@ -324,7 +323,6 @@ class SourceBox extends HTMLElement {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupUI(); // TODO: remove this once the bug has been fixed.
     }
   }
 
@@ -497,7 +495,8 @@ function getInterpolatedSourceData(fontController, newLocation) {
     // This happens if there is no source specified, yet.
     return {};
   }
-  return fontSourceInstance;
+  // TODO: ensure that instancer returns a copy of the source
+  return JSON.parse(JSON.stringify(fontSourceInstance));
 }
 
 const verticalMetricsDefaults = {
