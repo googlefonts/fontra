@@ -29,11 +29,7 @@ export class SourcesPanel extends BaseInfoPanel {
     });
 
     // TODO: maybe sort sources by axes and location values
-    let sourcesIdentifers = [...Object.keys(sources)];
-    console.log(sourcesIdentifers);
-    sourcesIdentifers.sort(this.sourceCompareFunc(fontAxes, sources));
-    console.log(sourcesIdentifers);
-    for (const identifier of sourcesIdentifers) {
+    for (const identifier of Object.keys(sources)) {
       container.appendChild(
         new SourceBox(
           fontAxes,
@@ -59,34 +55,6 @@ export class SourcesPanel extends BaseInfoPanel {
     );
     this.panelElement.appendChild(container);
     this.panelElement.focus();
-  }
-
-  // sourceCompareFunc(fontAxes, sources) {
-  //   return function(identifierA, identifierB) {
-  //     for (const axisName of fontAxes) {
-  //       const valueA = sources[identifierA].location[axisName];
-  //       const valueB = sources[identifierB].location[axisName];
-  //       if (valueA === valueB) {
-  //         continue;
-  //       }
-  //       return (valueA < valueB) ? -1 : 0;
-  //     }
-  //     return 0;
-  //   }
-  // }
-
-  sourceCompareFunc(fontAxes, sources) {
-    return function (sourceA, sourceB) {
-      for (const axisName of fontAxes) {
-        const valueA = sourceA.location[axisName];
-        const valueB = sourceB.location[axisName];
-        if (valueA === valueB) {
-          continue;
-        }
-        return valueA < valueB ? -1 : 0;
-      }
-      return 0;
-    };
   }
 
   async newSource() {
