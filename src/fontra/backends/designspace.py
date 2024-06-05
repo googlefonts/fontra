@@ -390,16 +390,18 @@ class DesignspaceBackend:
 
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             assert ufoLayer is not None
-            location = {
-                k: v
-                for k, v in source["location"].items()
-                if dsSource.location.get(k) != v
-            }
+            # For locationBase
+            # location = {
+            #     k: v
+            #     for k, v in source["location"].items()
+            #     if dsSource.location.get(k) != v
+            # }
             sources.append(
                 GlyphSource(
                     name=sourceName,
-                    locationBase=dsSource.identifier,
-                    location=location,
+                    # locationBase=dsSource.identifier,
+                    # location=location,
+                    location=source["location"],
                     layerName=ufoLayer.fontraLayerName,
                 )
             )
@@ -528,7 +530,7 @@ class DesignspaceBackend:
             if dsSource is not None:
                 baseLocation = dsSource.location
 
-        sourceLocation = baseLocation | source.location
+        sourceLocation = baseLocation | localDefaultLocation | source.location
         sparseLocalLocation = {
             name: sourceLocation[name]
             for name, value in localDefaultLocation.items()
@@ -1199,8 +1201,9 @@ class DSSource:
             localDefaultOverride = {}
         return GlyphSource(
             name=self.name,
-            locationBase=self.identifier,
-            location={**localDefaultOverride},
+            # locationBase=self.identifier,
+            # location={**localDefaultOverride},
+            location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
 

@@ -50,8 +50,6 @@
             <dict>
               <key>flip</key>
               <integer>100</integer>
-              <key>flop</key>
-              <integer>0</integer>
             </dict>
             <key>name</key>
             <string>varco_flip</string>
@@ -61,8 +59,6 @@
             <string>varco_flop</string>
             <key>location</key>
             <dict>
-              <key>flip</key>
-              <integer>0</integer>
               <key>flop</key>
               <integer>100</integer>
             </dict>

@@ -546,50 +546,17 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 0.0},
         "name": "support.crossbar",
-        "verticalMetrics": {
-            "ascender": {"value": 700},
-            "capHeight": {"value": 700},
-            "descender": {"value": -200},
-            "italicAngle": {"value": 0},
-            "xHeight": {"value": 500},
-        },
-        "guidelines": [
-            {"name": "Guideline Cap Height", "y": 700},
-            {"name": "Guideline Left", "x": 60, "angle": 90},
-            {"name": "Guideline Baseline Overshoot", "y": -10},
-        ],
+        "isSparse": True,
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 1000.0},
         "name": "support.S.wide",
-        "verticalMetrics": {
-            "ascender": {"value": 700},
-            "capHeight": {"value": 700},
-            "descender": {"value": -200},
-            "italicAngle": {"value": 0},
-            "xHeight": {"value": 500},
-        },
-        "guidelines": [
-            {"name": "Guideline Cap Height", "y": 700},
-            {"name": "Guideline Left", "x": 60, "angle": 90},
-            {"name": "Guideline Baseline Overshoot", "y": -10},
-        ],
+        "isSparse": True,
     },
     {
         "location": {"italic": 0.0, "weight": 595.0, "width": 569.078},
         "name": "support.S.middle",
-        "verticalMetrics": {
-            "ascender": {"value": 700},
-            "capHeight": {"value": 700},
-            "descender": {"value": -200},
-            "italicAngle": {"value": 0},
-            "xHeight": {"value": 500},
-        },
-        "guidelines": [
-            {"name": "Guideline Cap Height", "y": 700},
-            {"name": "Guideline Left", "x": 60, "angle": 90},
-            {"name": "Guideline Baseline Overshoot", "y": -10},
-        ],
+        "isSparse": True,
     },
     {
         "location": {"italic": 1.0, "weight": 150.0, "width": 0.0},
