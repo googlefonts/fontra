@@ -28,6 +28,7 @@ export class SourcesPanel extends BaseInfoPanel {
       style: "display: grid; gap: 0.5em;",
     });
 
+    // TODO: maybe sort sources by axes and location values
     for (const [identifier, source] of Object.entries(sources)) {
       container.appendChild(
         new SourceBox(
@@ -57,18 +58,14 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   async newSource() {
-    const newSource = await this._sourcePropertiesRunDialog(
-      "Add font source",
-      "Add",
-      this.fontController
-    );
+    const newSource = await this._sourcePropertiesRunDialog();
     if (!newSource) {
       return;
     }
 
     const undoLabel = `add source '${newSource.name}'`;
     const sourceIdentifier = newSource.name;
-    // NOTE: Not sure if newSource.name is the best sourceIdentifier
+    // TODO: Maybe use proper sourceIdentifier, not source name
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
       root.sources[sourceIdentifier] = newSource;
@@ -79,8 +76,9 @@ export class SourcesPanel extends BaseInfoPanel {
     }
   }
 
-  async _sourcePropertiesRunDialog(title, okButtonTitle, fontController) {
+  async _sourcePropertiesRunDialog() {
     const sources = await this.fontController.getSources();
+    const locationAxes = this.fontController.axes.axes;
     const validateInput = () => {
       const warnings = [];
       const editedSourceName = nameController.model.sourceName;
@@ -118,8 +116,6 @@ export class SourcesPanel extends BaseInfoPanel {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
-    const locationAxes = fontController.axes.axes;
-
     const nameController = new ObservableController({
       sourceName: "New source name",
       sourceItalicAngle: 0,
@@ -154,9 +150,9 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const disable = nameController.model.sourceName ? false : true;
 
-    const dialog = await dialogSetup(title, null, [
+    const dialog = await dialogSetup("Add font source", null, [
       { title: "Cancel", isCancelButton: true },
-      { title: okButtonTitle, isDefaultButton: true, disabled: disable },
+      { title: "Add", isDefaultButton: true, disabled: disable },
     ]);
     dialog.setContent(contentElement);
 
@@ -179,7 +175,10 @@ export class SourcesPanel extends BaseInfoPanel {
       }
     }
 
-    const interpolatedSource = getInterpolatedSourceData(fontController, newLocation);
+    const interpolatedSource = getInterpolatedSourceData(
+      this.fontController,
+      newLocation
+    );
     const newSource = {
       name: nameController.model.sourceName.trim(),
       italicAngle: nameController.model.sourceItalicAngle,
@@ -464,13 +463,11 @@ class SourceBox extends HTMLElement {
 
     for (const key in models) {
       if (key == "location") {
-        const htmlElement = buildElementLocations(this.controllers[key], this.fontAxes);
-        this.append(htmlElement);
+        this.append(buildElementLocations(this.controllers[key], this.fontAxes));
         continue;
       }
       if (key == "verticalMetrics") {
-        const htmlElement = buildElementVerticalMetrics(this.controllers[key]);
-        this.append(htmlElement);
+        this.append(buildElementVerticalMetrics(this.controllers[key]));
         continue;
       }
       this.append(buildElement(this.controllers[key]));
@@ -506,7 +503,7 @@ function buildElement(controller) {
   );
 }
 
-function buildElementVerticalMetrics(controller, options = {}) {
+function buildElementVerticalMetrics(controller) {
   let itemsArray = Object.keys(controller.model).map(function (key) {
     return [key, controller.model[key]];
   });
@@ -548,6 +545,12 @@ function getInterpolatedSourceData(fontController, newLocation) {
     // This happens if there is no source specified, yet.
     return {};
   }
+  // TODO: figure out how to handle this case,
+  // because it should not happen, but it does.
+  // if (!fontSourceInstance.name) {
+  //   throw new Error(`assert -- interpolated font source name is NULL.`);
+  // }
+
   // TODO: ensure that instancer returns a copy of the source
   return JSON.parse(JSON.stringify(fontSourceInstance));
 }
