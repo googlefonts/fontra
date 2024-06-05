@@ -78,7 +78,7 @@ verticalMetricsDefaults = {
     "xHeight": 0.5,
     "capHeight": 0.75,
     "ascender": 0.75,
-    "italicAngle": 0,
+    # TODO: add {value: XXX, zone: XXX} support
 }
 
 
@@ -1083,11 +1083,12 @@ def packAxisLabels(valueLabels):
 
 
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    fontInfo = UFOFontInfo()
     if dsSource.isSparse:
         verticalMetrics: dict[str, FontMetric] = {}
         guidelines = []
+        italicAngle = 0
     else:
+        fontInfo = UFOFontInfo()
         dsSource.layer.reader.readInfo(fontInfo)
         verticalMetrics = {}
         for name, defaultFactor in verticalMetricsDefaults.items():
@@ -1096,11 +1097,12 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
                 value = round(defaultFactor * unitsPerEm)
             verticalMetrics[name] = FontMetric(value=value)
         guidelines = unpackGuidelines(fontInfo.guidelines)
+        italicAngle = getattr(fontInfo, "italicAngle", 0)
 
     return FontSource(
         name=dsSource.name,
         location=dsSource.location,
-        italicAngle=getattr(fontInfo, "italicAngle", 0.0),
+        italicAngle=italicAngle,
         verticalMetrics=verticalMetrics,
         guidelines=guidelines,
         isSparse=dsSource.isSparse,
