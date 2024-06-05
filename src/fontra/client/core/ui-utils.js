@@ -118,7 +118,7 @@ export function labelForElement(label, element) {
 }
 
 export function choicesForInput(choices, inputElement) {
-  const choicesID = `${inputElement}-choices`;
+  const choicesID = `${inputElement.id}-choices`;
   inputElement.setAttribute("list", choicesID);
   return html.createDomElement(
     "datalist",
