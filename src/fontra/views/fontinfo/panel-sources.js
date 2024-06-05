@@ -84,19 +84,29 @@ export class SourcesPanel extends BaseInfoPanel {
     const validateInput = () => {
       const warnings = [];
       const editedSourceName = nameController.model.sourceName;
-      if (!editedSourceName.length) {
+      if (!editedSourceName.length || !editedSourceName.trim()) {
         warnings.push("⚠️ The source name must not be empty");
       }
       if (
         Object.keys(sources)
           .map(function (sourceIdentifier) {
-            if (sources[sourceIdentifier].name === editedSourceName) {
+            if (sources[sourceIdentifier].name === editedSourceName.trim()) {
               return true;
             }
           })
           .includes(true)
       ) {
         warnings.push("⚠️ The source name should be unique");
+      }
+      const editedItalicAngle = nameController.model.sourceItalicAngle;
+      if (isNaN(editedItalicAngle)) {
+        warnings.push("⚠️ The italic angle must be a number");
+      }
+      if (editedItalicAngle < -90 || editedItalicAngle > 90) {
+        warnings.push("⚠️ The italic angle must be between -90 and +90");
+      }
+      if (editedItalicAngle === "") {
+        warnings.push("⚠️ The italic angle must not be empty");
       }
       const locStr = locationToString(
         makeSparseLocation(locationController.model, locationAxes)
@@ -113,11 +123,13 @@ export class SourcesPanel extends BaseInfoPanel {
     const nameController = new ObservableController({
       sourceName: "New source name",
       sourceItalicAngle: 0,
-      suggestedSourceName: "New source name",
-      suggestedSourceItalicAngle: 0,
     });
 
     nameController.addKeyListener("sourceName", (event) => {
+      validateInput();
+    });
+
+    nameController.addKeyListener("sourceItalicAngle", (event) => {
       validateInput();
     });
 
@@ -169,10 +181,8 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const interpolatedSource = getInterpolatedSourceData(fontController, newLocation);
     const newSource = {
-      name: nameController.model.sourceName || nameController.model.suggestedSourceName,
-      italicAngle:
-        nameController.model.sourceItalicAngle ||
-        nameController.model.suggestedSourceItalicAngle,
+      name: nameController.model.sourceName.trim(),
+      italicAngle: nameController.model.sourceItalicAngle,
       location: newLocation,
     };
     return {
@@ -194,12 +204,8 @@ export class SourcesPanel extends BaseInfoPanel {
     locationElement.controller = locationController;
 
     const containerContent = [
-      ...labeledTextInput("Source name:", nameController, "sourceName", {
-        placeholderKey: "suggestedSourceName",
-      }),
-      ...labeledTextInput("Italic Angle:", nameController, "sourceItalicAngle", {
-        placeholderKey: "suggestedSourceItalicAngele",
-      }),
+      ...labeledTextInput("Source name:", nameController, "sourceName", {}),
+      ...labeledTextInput("Italic Angle:", nameController, "sourceItalicAngle", {}),
       html.br(),
       locationElement,
     ];
