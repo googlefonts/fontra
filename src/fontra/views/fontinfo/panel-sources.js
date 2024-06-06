@@ -11,7 +11,11 @@ import {
 } from "../core/ui-utils.js";
 import { round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { locationToString, makeSparseLocation } from "/core/var-model.js";
+import {
+  locationToString,
+  makeSparseLocation,
+  mapAxesFromUserSpaceToSourceSpace,
+} from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
@@ -23,16 +27,18 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async setupUI() {
     const sources = await this.fontController.getSources();
-    const fontAxes = this.fontController.axes.axes;
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
+      this.fontController.axes.axes
+    );
 
     const container = html.div({
       style: "display: grid; gap: 0.5em;",
     });
 
-    for (const identifier of sortedSourceIdentifiers(sources, fontAxes)) {
+    for (const identifier of sortedSourceIdentifiers(sources, fontAxesSourceSpace)) {
       container.appendChild(
         new SourceBox(
-          fontAxes,
+          fontAxesSourceSpace,
           sources,
           identifier,
           this.postChange.bind(this),
@@ -295,10 +301,10 @@ fontra-ui-font-info-sources-panel-source-box.min-height,
 `);
 
 class SourceBox extends HTMLElement {
-  constructor(fontAxes, sources, sourceIdentifier, postChange, setupUI) {
+  constructor(fontAxesSourceSpace, sources, sourceIdentifier, postChange, setupUI) {
     super();
     this.classList.add("fontra-ui-font-info-sources-panel-source-box");
-    this.fontAxes = fontAxes;
+    this.fontAxesSourceSpace = fontAxesSourceSpace;
     this.sources = sources;
     this.sourceIdentifier = sourceIdentifier;
     this.postChange = postChange;
@@ -482,7 +488,9 @@ class SourceBox extends HTMLElement {
     this.append(html.div()); // empty cell for grid with arrow
 
     this.append(buildElement(this.controllers.general));
-    this.append(buildElementLocations(this.controllers.location, this.fontAxes));
+    this.append(
+      buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
+    );
     this.append(buildElementVerticalMetrics(this.controllers.verticalMetrics));
   }
 }
