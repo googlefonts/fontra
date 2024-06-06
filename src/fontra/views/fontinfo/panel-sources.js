@@ -420,42 +420,45 @@ class SourceBox extends HTMLElement {
   _updateContents() {
     const models = this.models;
 
+    // create controllers
     for (const key in models) {
       this.controllers[key] = new ObservableController(models[key]);
-      this.controllers[key].addListener((event) => {
-        if (key == "location") {
-          if (!this.checkSourceLocation(event.key, event.newValue)) {
-            return;
-          }
-        }
-
-        if (event.key == "name") {
-          if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
-            return;
-          }
-        }
-
-        this.editSource((source) => {
-          if (key == "general") {
-            if (typeof event.key == "string") {
-              source[event.key] = event.newValue.trim();
-            } else {
-              source[event.key] = event.newValue;
-            }
-          } else {
-            if (key == "verticalMetrics") {
-              if (event.key.startsWith("value-")) {
-                source[key][event.key.slice(6)].value = event.newValue;
-              } else {
-                source[key][event.key.slice(5)].zone = event.newValue;
-              }
-            } else {
-              source[key][event.key] = event.newValue;
-            }
-          }
-        }, `edit source ${key} ${event.key}`);
-      });
     }
+
+    // create listeners
+    this.controllers.general.addListener((event) => {
+      if (event.key == "name") {
+        if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
+          return;
+        }
+      }
+      this.editSource((source) => {
+        if (typeof event.key == "string") {
+          source[event.key] = event.newValue.trim();
+        } else {
+          source[event.key] = event.newValue;
+        }
+      }, `edit source general ${event.key}`);
+    });
+
+    this.controllers.location.addListener((event) => {
+      if (!this.checkSourceLocation(event.key, event.newValue)) {
+        return;
+      }
+      this.editSource((source) => {
+        source.location[event.key] = event.newValue;
+      }, `edit source location ${event.key}`);
+    });
+
+    this.controllers.verticalMetrics.addListener((event) => {
+      this.editSource((source) => {
+        if (event.key.startsWith("value-")) {
+          source.verticalMetrics[event.key.slice(6)].value = event.newValue;
+        } else {
+          source.verticalMetrics[event.key.slice(5)].zone = event.newValue;
+        }
+      }, `edit source vertical metrics ${event.key}`);
+    });
 
     this.innerHTML = "";
     this.append(
@@ -539,7 +542,7 @@ function buildElementVerticalMetrics(controller) {
     { class: "fontra-ui-font-info-column fontra-ui-font-info-vertical-metrics" },
     items
       .map(([labelName, keyName]) => {
-        const opts = { continuous: false };
+        const opts = { continuous: false, formatter: OptionalNumberFormatter };
         const valueInput = textInput(controller, `value-${keyName}`, opts);
         const zoneInput = textInput(controller, `zone-${keyName}`, opts);
         return [labelForElement(labelName, valueInput), valueInput, zoneInput];
