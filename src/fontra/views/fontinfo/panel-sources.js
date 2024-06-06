@@ -471,7 +471,7 @@ class SourceBox extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html.createDomElement("icon-button", {
-        class: "fontra-ui-font-info-icon open-close-icon",
+        class: "fontra-ui-font-info-sources-panel-icon open-close-icon",
         style: "translate: 120ms; transform: rotate(180deg)",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
@@ -480,12 +480,16 @@ class SourceBox extends HTMLElement {
     );
 
     for (const key in models) {
-      this.append(html.div({ class: "fontra-ui-font-info-header" }, [translate(key)]));
+      this.append(
+        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+          translate(key),
+        ])
+      );
     }
 
     this.append(
       html.createDomElement("icon-button", {
-        "class": "fontra-ui-font-info-icon",
+        "class": "fontra-ui-font-info-sources-panel-icon",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteSource(),
         "data-tooltip": translate("sources.delete-source"),
@@ -537,7 +541,7 @@ function buildElementVerticalMetrics(controller) {
   return html.div(
     {
       class:
-        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-vertical-metrics",
+        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-vertical-metrics",
     },
     items
       .map(([labelName, keyName]) => {
