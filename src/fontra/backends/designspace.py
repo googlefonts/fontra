@@ -74,11 +74,12 @@ defaultUFOInfoAttrs = {
 
 
 verticalMetricsDefaults = {
-    "descender": -0.25,
-    "xHeight": 0.5,
-    "capHeight": 0.75,
-    "ascender": 0.75,
-    # TODO: add {value: XXX, zone: XXX} support
+    "ascender": {"value": 0.75, "zone": 0.016},
+    "capHeight": {"value": 0.75, "zone": 0.016},
+    "xHeight": {"value": 0.5, "zone": 0.016},
+    "descender": {"value": -0.25, "zone": -0.016},
+    # TODO: baseline does not exist in UFO -> find a solution
+    "baseline": {"value": 0, "zone": -0.016},
 }
 
 
@@ -1090,12 +1091,16 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     else:
         fontInfo = UFOFontInfo()
         dsSource.layer.reader.readInfo(fontInfo)
+        blueValues = getPostscriptBlueValues(fontInfo)
         verticalMetrics = {}
         for name, defaultFactor in verticalMetricsDefaults.items():
-            value = getattr(fontInfo, name, None)
+            value = 0 if name == "baseline" else getattr(fontInfo, name, None)
             if value is None:
-                value = round(defaultFactor * unitsPerEm)
-            verticalMetrics[name] = FontMetric(value=value)
+                value = round(defaultFactor["value"] * unitsPerEm)
+                zone = round(defaultFactor["zone"] * unitsPerEm)
+            else:
+                zone = getZone(value, blueValues)
+            verticalMetrics[name] = FontMetric(value=value, zone=zone)
         guidelines = unpackGuidelines(fontInfo.guidelines)
         italicAngle = getattr(fontInfo, "italicAngle", 0)
 
@@ -1107,6 +1112,28 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         guidelines=guidelines,
         isSparse=dsSource.isSparse,
     )
+
+
+def getPostscriptBlueValues(fontInfo):
+    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
+    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
+    values = blueValues + otherBluesValue
+    return sorted(values)
+
+
+def getZone(value, blueValues):
+    if len(blueValues) % 2:
+        # ensure the list has an even number of items
+        blueValues = blueValues[:-1]
+
+    for i in range(0, len(blueValues), 2):
+        blueValue = blueValues[i]
+        nextBlueValue = blueValues[i + 1]
+        if value == blueValue:
+            return nextBlueValue - blueValue
+        elif value == nextBlueValue:
+            return blueValue - nextBlueValue
+    return 0
 
 
 class UFOBackend(DesignspaceBackend):
