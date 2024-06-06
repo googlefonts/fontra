@@ -205,12 +205,12 @@ registerVisualizationLayerDefinition({
     }
 
     // collect paths: vertical metrics and alignment zones
-    const pathZones = new Path2D();
+    const pathZones = [];
     for (const [key, metric] of Object.entries(verticalMetrics)) {
       if (metric.zone) {
         const pathZone = new Path2D();
         pathZone.rect(0, metric.value, glyphWidth, metric.zone);
-        pathZones.addPath(pathZone);
+        pathZones.push(pathZone);
       }
 
       const pathMetric = new Path2D();
@@ -221,7 +221,7 @@ registerVisualizationLayerDefinition({
 
     // draw zones (with filled path)
     context.fillStyle = parameters.zoneColor;
-    context.fill(pathZones);
+    pathZones.forEach((zonePath) => context.fill(zonePath));
 
     // draw glyph box + vertical metrics (with stroke path)
     context.stroke(pathBox);
