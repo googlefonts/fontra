@@ -132,9 +132,6 @@ export function textInput(controller, key, options) {
   const inputID = options?.id || `input-${uniqueID()}-${key}`;
   const formatter = options?.formatter || DefaultFormatter;
 
-  const choices = options?.choices;
-  const choicesID = `${inputID}-choices`;
-
   const inputElement = html.input({ type: options?.type || "text", id: inputID });
   if (options?.class) {
     inputElement.className = options.class;

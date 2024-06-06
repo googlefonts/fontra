@@ -16,6 +16,7 @@ import {
   hyphenatedToLabel,
   loadURLFragment,
   makeUPlusStringFromCodePoint,
+  mapObjectValues,
   memoize,
   modulo,
   objectsEqual,
@@ -624,5 +625,16 @@ describe("product", () => {
   ];
   parametrize("product test", testData, (testCase) => {
     expect([...product(...testCase.args)]).to.deep.equal(testCase.product);
+  });
+});
+
+describe("mapObjectValues", () => {
+  const testData = [
+    { obj: {}, func: (v) => v, result: {} },
+    { obj: { a: 1 }, func: (v) => v + 1, result: { a: 2 } },
+    { obj: { a: 1, b: 2, c: 3 }, func: (v) => v * v, result: { a: 1, b: 4, c: 9 } },
+  ];
+  parametrize("mapObjectValues test", testData, (testCase) => {
+    expect(mapObjectValues(testCase.obj, testCase.func)).to.deep.equal(testCase.result);
   });
 });
