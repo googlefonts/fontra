@@ -1083,28 +1083,6 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def getPostscriptBlueValues(fontInfo):
-    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
-    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
-    values = blueValues + otherBluesValue
-    return sorted(values)
-
-
-def getZone(value, blueValues):
-    if len(blueValues) % 2:
-        # ensure the list has an even number of items
-        blueValues = blueValues[:-1]
-
-    for i in range(0, len(blueValues), 2):
-        blueValue = blueValues[i]
-        nextBlueValue = blueValues[i + 1]
-        if value == blueValue:
-            return nextBlueValue - blueValue
-        elif value == nextBlueValue:
-            return blueValue - nextBlueValue
-    return 0
-
-
 def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     if dsSource.isSparse:
         verticalMetrics: dict[str, FontMetric] = {}
@@ -1134,6 +1112,28 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         guidelines=guidelines,
         isSparse=dsSource.isSparse,
     )
+
+
+def getPostscriptBlueValues(fontInfo):
+    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
+    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
+    values = blueValues + otherBluesValue
+    return sorted(values)
+
+
+def getZone(value, blueValues):
+    if len(blueValues) % 2:
+        # ensure the list has an even number of items
+        blueValues = blueValues[:-1]
+
+    for i in range(0, len(blueValues), 2):
+        blueValue = blueValues[i]
+        nextBlueValue = blueValues[i + 1]
+        if value == blueValue:
+            return nextBlueValue - blueValue
+        elif value == nextBlueValue:
+            return blueValue - nextBlueValue
+    return 0
 
 
 class UFOBackend(DesignspaceBackend):
