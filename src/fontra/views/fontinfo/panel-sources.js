@@ -275,7 +275,7 @@ addStyleSheet(`
   max-height: 70px;
 }
 
-.fontra-ui-font-info-column {
+.fontra-ui-font-info-sources-panel-column {
   display: grid;
   grid-template-columns: minmax(4.5em, max-content) max-content;
   gap: 0.5em;
@@ -285,15 +285,15 @@ addStyleSheet(`
   overflow: scroll;
 }
 
-.fontra-ui-font-info-vertical-metrics {
+.fontra-ui-font-info-sources-panel-vertical-metrics {
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
 }
 
-.fontra-ui-font-info-header {
+.fontra-ui-font-info-sources-panel-header {
   font-weight: bold;
 }
 
-.fontra-ui-font-info-icon {
+.fontra-ui-font-info-sources-panel-icon {
   justify-self: end;
   align-self: start;
 }
@@ -510,7 +510,7 @@ function buildElement(controller) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-column" },
+    { class: "fontra-ui-font-info-sources-panel-column" },
     items
       .map(([labelName, keyName, value]) => {
         if (typeof value === "boolean") {
@@ -535,7 +535,10 @@ function buildElementVerticalMetrics(controller) {
   // TODO: Custom vertical metrics
 
   return html.div(
-    { class: "fontra-ui-font-info-column fontra-ui-font-info-vertical-metrics" },
+    {
+      class:
+        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-vertical-metrics",
+    },
     items
       .map(([labelName, keyName]) => {
         const opts = { continuous: false, formatter: OptionalNumberFormatter };
@@ -550,7 +553,7 @@ function buildElementVerticalMetrics(controller) {
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
     continuous: false,
-    class: `fontra-ui-font-info-column`,
+    class: `fontra-ui-font-info-sources-panel-column`,
   });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
