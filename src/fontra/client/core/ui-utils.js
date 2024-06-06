@@ -1,5 +1,5 @@
 import * as html from "./html-utils.js";
-import { round, zip } from "./utils.js";
+import { zip } from "./utils.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";
@@ -131,9 +131,6 @@ export function textInput(controller, key, options) {
   options = { continuous: true, ...options };
   const inputID = options?.id || `input-${uniqueID()}-${key}`;
   const formatter = options?.formatter || DefaultFormatter;
-
-  const choices = options?.choices;
-  const choicesID = `${inputID}-choices`;
 
   const inputElement = html.input({ type: options?.type || "text", id: inputID });
   if (options?.class) {
