@@ -551,3 +551,9 @@ export function normalizeGuidelines(guidelines) {
     return { ...identityGuideline, ...guideline, locked: false };
   });
 }
+
+export function mapObjectValues(obj, func) {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [key, func(value)])
+  );
+}
