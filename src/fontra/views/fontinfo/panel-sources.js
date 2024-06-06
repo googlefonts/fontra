@@ -11,7 +11,6 @@ import {
 } from "../core/ui-utils.js";
 import { round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { translate } from "/core/localization.js";
 import { locationToString, makeSparseLocation } from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
@@ -482,7 +481,7 @@ class SourceBox extends HTMLElement {
     for (const key in models) {
       this.append(
         html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          translate(key),
+          getLabelFromKey(key),
         ])
       );
     }
@@ -492,7 +491,7 @@ class SourceBox extends HTMLElement {
         "class": "fontra-ui-font-info-sources-panel-icon",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteSource(),
-        "data-tooltip": translate("sources.delete-source"),
+        "data-tooltip": "Delete source",
         "data-tooltipposition": "left",
       })
     );
@@ -510,7 +509,7 @@ customElements.define("source-box", SourceBox);
 function buildElement(controller) {
   let items = [];
   for (const key in controller.model) {
-    items.push([translate(key), key, controller.model[key]]);
+    items.push([getLabelFromKey(key), key, controller.model[key]]);
   }
 
   return html.div(
@@ -533,7 +532,7 @@ function buildElementVerticalMetrics(controller) {
   let items = [];
   for (const key of Object.keys(verticalMetricsDefaults)) {
     if (`value-${key}` in controller.model) {
-      items.push([translate(key), key]);
+      items.push([getLabelFromKey(key), key]);
     }
   }
   // TODO: Custom vertical metrics
@@ -618,4 +617,25 @@ function getVerticalMetricsRounded(verticalMetrics) {
     };
   }
   return newVerticalMetrics;
+}
+
+function getLabelFromKey(key) {
+  // TODO: this may use translate in future
+  const keyLabelMap = {
+    name: "Name",
+    italicAngle: "Italic Angle",
+    isSparse: "Is Sparse",
+    ascender: "Ascender",
+    capHeight: "Cap Height",
+    xHeight: "x-Height",
+    baseline: "Baseline",
+    descender: "Descender",
+    general: "General",
+    location: "Location",
+    verticalMetrics: "Vertical metrics",
+  };
+  if (key in keyLabelMap) {
+    return keyLabelMap[key];
+  }
+  return key;
 }
