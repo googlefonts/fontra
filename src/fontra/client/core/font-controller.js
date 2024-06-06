@@ -12,7 +12,12 @@ import { FontSourcesInstancer } from "./font-sources-instancer.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
-import { chain, getCharFromCodePoint, throttleCalls } from "./utils.js";
+import {
+  chain,
+  getCharFromCodePoint,
+  mapObjectValues,
+  throttleCalls,
+} from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString, mapBackward, mapForward } from "./var-model.js";
 
@@ -44,7 +49,7 @@ export class FontController {
     this._rootObject = {};
     this._rootObject.glyphMap = getGlyphMapProxy(glyphMap, this.characterMap);
     this._rootObject.axes = ensureDenseAxes(await this.font.getAxes());
-    this._rootObject.sources = await this.font.getSources();
+    this._rootObject.sources = ensureDenseSources(await this.font.getSources());
     this._rootObject.unitsPerEm = await this.font.getUnitsPerEm();
     this._rootObject.customData = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
@@ -913,4 +918,15 @@ function objectPropertyTracker(obj) {
 
 function ensureDenseAxes(axes) {
   return { ...axes, axes: axes.axes || [], mappings: axes.mappings || [] };
+}
+
+function ensureDenseSources(sources) {
+  return mapObjectValues(sources, (source) => {
+    return {
+      ...source,
+      verticalMetrics: mapObjectValues(source.verticalMetrics || {}, (metric) => {
+        return { value: metric.value, zone: metric.zone || 0 };
+      }),
+    };
+  });
 }
