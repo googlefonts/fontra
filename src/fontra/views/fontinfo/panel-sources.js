@@ -343,7 +343,7 @@ class SourceBox extends HTMLElement {
       // TODO: hhea, OS/2 verticalMetrics, etc
       // customData: { ...source.customData },
     };
-    // NOTE: Font guidlines could be read/write here,
+    // NOTE: Font guidelines could be read/write here,
     // but makes more sense directly in the glyph editing window.
   }
 
