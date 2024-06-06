@@ -325,21 +325,12 @@ class SourceBox extends HTMLElement {
         //isSparce: source.isSparce ? source.isSparce : false,
       },
       location: { ...source.location },
-      verticalMetrics: this.prepareVerticalMetricsForController(source.verticalMetrics),
+      verticalMetrics: prepareVerticalMetricsForController(source.verticalMetrics),
       // TODO: hhea, OS/2 verticalMetrics, etc
       // customData: { ...source.customData },
     };
     // NOTE: Font guidlines could be read/write here,
     // but makes more sense directly in the glyph editing window.
-  }
-
-  prepareVerticalMetricsForController(verticalMetrics) {
-    let newVerticalMetrics = {};
-    for (const key in verticalMetrics) {
-      newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
-      newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone;
-    }
-    return newVerticalMetrics;
   }
 
   checkSourceLocation(axisName, value) {
@@ -601,4 +592,13 @@ function getDefaultVerticalMetrics(unitsPerEm) {
   }
 
   return defaultVerticalMetrics;
+}
+
+function prepareVerticalMetricsForController(verticalMetrics) {
+  const newVerticalMetrics = {};
+  for (const key in verticalMetrics) {
+    newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
+    newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone;
+  }
+  return newVerticalMetrics;
 }
