@@ -41,13 +41,7 @@ import { VarPackedPath, joinPaths } from "./var-path.js";
 export class VariableGlyphController {
   constructor(glyph, fontAxes, fontSources) {
     this.glyph = glyph;
-    this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
-    const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
-    this._fontAxisNames = new Set(
-      fontAxes
-        .map((axis) => axis.name)
-        .filter((axisName) => !glyphAxisNames.has(axisName))
-    );
+    this._fontAxes = fontAxes;
     this._fontSources = fontSources;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
@@ -90,6 +84,25 @@ export class VariableGlyphController {
     return this._discreteAxes;
   }
 
+  get fontAxisNames() {
+    if (this._fontAxisNames === undefined) {
+      const glyphAxisNames = new Set(this.glyph.axes.map((axis) => axis.name));
+      this._fontAxisNames = new Set(
+        this._fontAxes
+          .map((axis) => axis.name)
+          .filter((axisName) => !glyphAxisNames.has(axisName))
+      );
+    }
+    return this._fontAxisNames;
+  }
+
+  get fontAxesSourceSpace() {
+    if (this._fontAxesSourceSpace === undefined) {
+      this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this._fontAxes);
+    }
+    return this._fontAxesSourceSpace;
+  }
+
   getSourceLocation(source) {
     return { ...this._fontSources[source.locationBase]?.location, ...source.location };
   }
@@ -99,7 +112,7 @@ export class VariableGlyphController {
     this._continuousAxes = Array.from(this.axes);
     const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
 
-    for (let fontAxis of this._fontAxesSourceSpace) {
+    for (let fontAxis of this.fontAxesSourceSpace) {
       if (fontAxis.values) {
         this._discreteAxes.push(fontAxis);
       } else if (!glyphAxisNames.has(fontAxis.name)) {
@@ -128,7 +141,7 @@ export class VariableGlyphController {
       const location = this.getSourceLocation(source);
       const seen = new Set();
       let found = true;
-      for (const axis of this.axes.concat(this._fontAxesSourceSpace)) {
+      for (const axis of this.axes.concat(this.fontAxesSourceSpace)) {
         if (seen.has(axis.name)) {
           // Skip font axis if we have a glyph axis by that name
           continue;
@@ -191,6 +204,8 @@ export class VariableGlyphController {
     delete this._combinedAxes;
     delete this._discreteAxes;
     delete this._continuousAxes;
+    delete this._fontAxisNames;
+    delete this._fontAxesSourceSpace;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
   }
@@ -376,9 +391,9 @@ export class VariableGlyphController {
           getGlyphFunc,
           filterLocation(
             this.getSourceLocation(this.sources[sourceIndex]),
-            this._fontAxisNames
+            this.fontAxisNames
           ),
-          this._fontAxisNames
+          this.fontAxisNames
         );
       } else {
         instanceController = null;
@@ -438,14 +453,14 @@ export class VariableGlyphController {
 
     await instanceController.setupComponents(
       getGlyphFunc,
-      filterLocation(sourceLocation, this._fontAxisNames),
-      this._fontAxisNames
+      filterLocation(sourceLocation, this.fontAxisNames),
+      this.fontAxisNames
     );
     return instanceController;
   }
 
   getSourceLocationFromSourceIndex(sourceIndex) {
-    const fontDefaultLocation = makeDefaultLocation(this._fontAxesSourceSpace);
+    const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
     const sourceLocation = this.getSourceLocation(this.sources[sourceIndex]);
