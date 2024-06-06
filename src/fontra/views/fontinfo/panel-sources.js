@@ -9,6 +9,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
+import { round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
 import { locationToString, makeSparseLocation } from "/core/var-model.js";
@@ -180,12 +181,19 @@ export class SourcesPanel extends BaseInfoPanel {
       this.fontController,
       newLocation
     );
-    // TODO: round the interpolated vertical metrics to 2 decimal places
+
     const newSource = {
       name: nameController.model.sourceName.trim(),
       italicAngle: nameController.model.sourceItalicAngle,
       location: newLocation,
     };
+
+    if (interpolatedSource.verticalMetrics) {
+      newSource.verticalMetrics = getVerticalMetricsRounded(
+        interpolatedSource.verticalMetrics
+      );
+    }
+
     return {
       verticalMetrics: getDefaultVerticalMetrics(this.fontController.unitsPerEm),
       ...interpolatedSource,
@@ -594,6 +602,17 @@ function prepareVerticalMetricsForController(verticalMetrics) {
   for (const key in verticalMetrics) {
     newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
     newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone;
+  }
+  return newVerticalMetrics;
+}
+
+function getVerticalMetricsRounded(verticalMetrics) {
+  const newVerticalMetrics = {};
+  for (const key in verticalMetrics) {
+    newVerticalMetrics[key] = {
+      value: round(verticalMetrics[key].value, 2),
+      zone: round(verticalMetrics[key].zone, 2),
+    };
   }
   return newVerticalMetrics;
 }
