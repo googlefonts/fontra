@@ -271,7 +271,6 @@ addStyleSheet(`
   grid-template-columns: max-content max-content max-content max-content auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
-  max-height: 70px;
 }
 
 .fontra-ui-font-info-sources-panel-column {
@@ -280,8 +279,12 @@ addStyleSheet(`
   gap: 0.5em;
   align-items: start;
   align-content: start;
-  max-height: 50px;
   overflow: scroll;
+}
+
+fontra-ui-font-info-sources-panel-source-box.min-height,
+.fontra-ui-font-info-sources-panel-column.min-height {
+  height: 45px;
 }
 
 .fontra-ui-font-info-sources-panel-vertical-metrics {
@@ -297,10 +300,14 @@ addStyleSheet(`
   align-self: start;
 }
 
-.open-close-icon {
+.fontra-ui-font-info-sources-panel-icon.open-close-icon {
   height: 1.5em;
   width: 1.5em;
   transition: 120ms;
+}
+
+.fontra-ui-font-info-sources-panel-icon.open-close-icon.item-closed {
+  transform: rotate(180deg);
 }
 
 `);
@@ -410,17 +417,11 @@ class SourceBox extends HTMLElement {
   }
 
   toggleShowHide() {
-    const el = this.querySelector("#open-close-icon");
-    el.style.transform =
-      el.style.transform === "rotate(180deg)" ? "rotate(0deg)" : "rotate(180deg)";
+    const element = this.querySelector("#open-close-icon");
+    element.classList.toggle("item-closed");
 
-    this.style.maxHeight = this.style.maxHeight === "100%" ? "70px" : "100%";
     for (const child of this.children) {
-      if (!child.style.maxHeight) {
-        child.style.maxHeight = "100%";
-      } else {
-        delete child.style;
-      }
+      child.classList.toggle("min-height");
     }
   }
 
@@ -470,10 +471,10 @@ class SourceBox extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html.createDomElement("icon-button", {
-        class: "fontra-ui-font-info-sources-panel-icon open-close-icon",
-        style: "translate: 120ms; transform: rotate(180deg)",
+        class: "fontra-ui-font-info-sources-panel-icon open-close-icon item-closed",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
+        open: false,
         onclick: (event) => this.toggleShowHide(),
       })
     );
@@ -513,7 +514,7 @@ function buildElement(controller) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-sources-panel-column" },
+    { class: "fontra-ui-font-info-sources-panel-column min-height" },
     items
       .map(([labelName, keyName, value]) => {
         if (typeof value === "boolean") {
@@ -540,7 +541,7 @@ function buildElementVerticalMetrics(controller) {
   return html.div(
     {
       class:
-        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-vertical-metrics",
+        "fontra-ui-font-info-sources-panel-column min-height fontra-ui-font-info-sources-panel-vertical-metrics",
     },
     items
       .map(([labelName, keyName]) => {
@@ -556,7 +557,7 @@ function buildElementVerticalMetrics(controller) {
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
     continuous: false,
-    class: `fontra-ui-font-info-sources-panel-column`,
+    class: `fontra-ui-font-info-sources-panel-column min-height`,
   });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
