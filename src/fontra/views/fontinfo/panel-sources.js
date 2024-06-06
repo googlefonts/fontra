@@ -487,17 +487,9 @@ class SourceBox extends HTMLElement {
 
     this.append(html.div()); // empty cell for grid with arrow
 
-    for (const key in models) {
-      if (key == "location") {
-        this.append(buildElementLocations(this.controllers[key], this.fontAxes));
-        continue;
-      }
-      if (key == "verticalMetrics") {
-        this.append(buildElementVerticalMetrics(this.controllers[key]));
-        continue;
-      }
-      this.append(buildElement(this.controllers[key]));
-    }
+    this.append(buildElement(this.controllers.general));
+    this.append(buildElementLocations(this.controllers.location, this.fontAxes));
+    this.append(buildElementVerticalMetrics(this.controllers.verticalMetrics));
   }
 }
 
