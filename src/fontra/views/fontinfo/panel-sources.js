@@ -88,7 +88,7 @@ export class SourcesPanel extends BaseInfoPanel {
       }
       if (
         Object.keys(sources)
-          .map(function (sourceIdentifier) {
+          .map((sourceIdentifier) => {
             if (sources[sourceIdentifier].name === editedSourceName.trim()) {
               return true;
             }
@@ -201,7 +201,7 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   getSourceName(sources) {
-    const sourceNames = Object.keys(sources).map(function (sourceIdentifier) {
+    const sourceNames = Object.keys(sources).map((sourceIdentifier) => {
       return sources[sourceIdentifier].name;
     });
     let sourceName = "Untitled source";
