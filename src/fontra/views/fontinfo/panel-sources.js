@@ -39,7 +39,7 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async setupUI() {
     const sources = await this.fontController.getSources();
-    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
+    this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
     );
 
@@ -47,10 +47,13 @@ export class SourcesPanel extends BaseInfoPanel {
       style: "display: grid; gap: 0.5em;",
     });
 
-    for (const identifier of sortedSourceIdentifiers(sources, fontAxesSourceSpace)) {
+    for (const identifier of sortedSourceIdentifiers(
+      sources,
+      this.fontAxesSourceSpace
+    )) {
       container.appendChild(
         new SourceBox(
-          fontAxesSourceSpace,
+          this.fontAxesSourceSpace,
           sources,
           identifier,
           this.postChange.bind(this),
@@ -96,7 +99,7 @@ export class SourcesPanel extends BaseInfoPanel {
 
   async _sourcePropertiesRunDialog() {
     const sources = await this.fontController.getSources();
-    const locationAxes = this.fontController.axes.axes;
+    const locationAxes = this.fontAxesSourceSpace;
     const validateInput = () => {
       const warnings = [];
       const editedSourceName = nameController.model.sourceName;
