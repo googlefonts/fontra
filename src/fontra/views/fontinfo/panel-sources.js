@@ -522,7 +522,7 @@ function buildElement(controller) {
         return labeledTextInput(labelName, controller, keyName, {
           continuous: false,
         });
-        // TODO for isSparce
+        // TODO for isSparse
         // if (typeof value === "boolean") {
         //   return labeledCheckbox(labelName, controller, keyName, {});
         // } else {
