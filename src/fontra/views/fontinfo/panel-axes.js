@@ -349,9 +349,11 @@ class AxisBox extends HTMLElement {
     this.mappingList = buildMappingList(this.axisController);
     this.valueLabelList = buildValueLabelList(this.axisController);
 
+    const selectID = `fontra-ui-font-info-axes-panel-axis-box-axis-type-${this.axisIndex}`;
+
     const axisTypeSelect = html.select(
       {
-        id: "fontra-ui-font-info-axes-panel-axis-box-axis-type",
+        id: selectID,
         onchange: (event) => {
           this.convertAxis(event.target.value);
         },
@@ -420,7 +422,7 @@ class AxisBox extends HTMLElement {
       html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-values" }, [
         html.label(
           {
-            for: "fontra-ui-font-info-axes-panel-axis-box-axis-type",
+            for: selectID,
             style: "text-align: right",
           },
           [translate("axes.range.axis-type")]
