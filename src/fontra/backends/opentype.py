@@ -256,7 +256,7 @@ def unpackAxes(font: TTFont) -> Axes:
         varIdxMap = avar.table.VarIdxMap
 
         locations = set()
-        for i, varIdx in enumerate(varIdxMap.mapping):
+        for varIdx in varIdxMap.mapping:
             if varIdx == NO_VARIATION_INDEX:
                 continue
 
