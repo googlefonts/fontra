@@ -494,7 +494,6 @@ function sortedSourceIdentifiers(sources, fontAxes) {
     for (const axis of fontAxes) {
       const valueA = sources[identifierA].location[axis.name];
       const valueB = sources[identifierB].location[axis.name];
-      console.log(axis.name, valueA, valueB);
       if (valueA === valueB) {
         continue;
       }
