@@ -1091,12 +1091,16 @@ def getPostscriptBlueValues(fontInfo):
 
 
 def getZone(value, blueValues):
+    if len(blueValues) % 2:
+        # ensure the list has an even number of items
+        blueValues = blueValues[:-1]
+
     for i in range(0, len(blueValues), 2):
         blueValue = blueValues[i]
         nextBlueValue = blueValues[i + 1]
-        if value in (blueValue, nextBlueValue):
-            if value == blueValue:
-                return nextBlueValue - blueValue
+        if value == blueValue:
+            return nextBlueValue - blueValue
+        elif value == nextBlueValue:
             return blueValue - nextBlueValue
     return 0
 
