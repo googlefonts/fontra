@@ -351,7 +351,7 @@ class AxisBox extends HTMLElement {
 
     const axisTypeSelect = html.select(
       {
-        id: "fontra-ui-font-info-axes-panel-axis-box-axis-type",
+        id: `fontra-ui-font-info-axes-panel-axis-box-axis-type-${this.axisIndex}`,
         onchange: (event) => {
           this.convertAxis(event.target.value);
         },
@@ -420,7 +420,7 @@ class AxisBox extends HTMLElement {
       html.div({ class: "fontra-ui-font-info-axes-panel-axis-box-values" }, [
         html.label(
           {
-            for: "fontra-ui-font-info-axes-panel-axis-box-axis-type",
+            for: axisTypeSelect.id,
             style: "text-align: right",
           },
           [translate("axes.range.axis-type")]
