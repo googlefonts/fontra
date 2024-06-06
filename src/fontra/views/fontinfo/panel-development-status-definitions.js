@@ -47,7 +47,7 @@ addStyleSheet(`
 export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
   static title = "Status definitions";
   static id = "development-status-definitions-panel";
-  static fontAttributes = ["statusDefinitions"];
+  static fontAttributes = ["customData"];
 
   async setupUI() {
     const statusDefinitions = getStatusFieldDefinitions(this.fontController);
