@@ -553,6 +553,7 @@ export function normalizeGuidelines(guidelines) {
 }
 
 export function mapObjectValues(obj, func) {
+  // Return a copy of the object, with each value passed through `func`
   return Object.fromEntries(
     Object.entries(obj).map(([key, value]) => [key, func(value)])
   );
