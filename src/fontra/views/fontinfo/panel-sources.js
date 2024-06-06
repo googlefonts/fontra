@@ -29,8 +29,7 @@ export class SourcesPanel extends BaseInfoPanel {
       style: "display: grid; gap: 0.5em;",
     });
 
-    // TODO: maybe sort sources by axes and location values
-    for (const identifier of Object.keys(sources)) {
+    for (const identifier of sortedSourceIdentifiers(sources, fontAxes)) {
       container.appendChild(
         new SourceBox(
           fontAxes,
@@ -489,6 +488,22 @@ class SourceBox extends HTMLElement {
 }
 
 customElements.define("source-box", SourceBox);
+
+function sortedSourceIdentifiers(sources, fontAxes) {
+  const sortFunc = (identifierA, identifierB) => {
+    for (const axis of fontAxes) {
+      const valueA = sources[identifierA].location[axis.name];
+      const valueB = sources[identifierB].location[axis.name];
+      console.log(axis.name, valueA, valueB);
+      if (valueA === valueB) {
+        continue;
+      }
+      return valueA < valueB ? -1 : 0;
+    }
+    return 0;
+  };
+  return Object.keys(sources).sort(sortFunc);
+}
 
 function buildElement(controller) {
   let items = [];
