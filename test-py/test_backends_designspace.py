@@ -502,6 +502,7 @@ getSourcesTestData = [
             "capHeight": {"value": 700, "zone": 16},
             "descender": {"value": -200, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
+            "baseline": {"value": 0, "zone": -16},
         },
         "guidelines": [
             {"name": "Guideline Cap Height", "y": 700},
@@ -517,6 +518,7 @@ getSourcesTestData = [
             "capHeight": {"value": 800, "zone": 16},
             "descender": {"value": -200, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
+            "baseline": {"value": 0, "zone": -16},
         },
     },
     {
@@ -527,6 +529,7 @@ getSourcesTestData = [
             "capHeight": {"value": 700, "zone": 16},
             "descender": {"value": -200, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
+            "baseline": {"value": 0, "zone": -16},
         },
     },
     {
@@ -537,6 +540,7 @@ getSourcesTestData = [
             "capHeight": {"value": 800, "zone": 16},
             "descender": {"value": -200, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
+            "baseline": {"value": 0, "zone": -16},
         },
     },
     {
@@ -562,6 +566,7 @@ getSourcesTestData = [
             "capHeight": {"value": 750, "zone": 16},
             "descender": {"value": -250, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
+            "baseline": {"value": 0, "zone": -16},
         },
     },
 ]

@@ -79,7 +79,7 @@ verticalMetricsDefaults = {
     "xHeight": {"value": 0.5, "zone": 0.016},
     "descender": {"value": -0.25, "zone": -0.016},
     # TODO: baseline does not exist in UFO -> find a solution
-    # "baseline": {"value": 0, "zone": -0.016},
+    "baseline": {"value": 0, "zone": -0.016},
 }
 
 
@@ -1091,8 +1091,6 @@ def getPostscriptBlueValues(fontInfo):
 
 
 def getZone(value, blueValues):
-    if value is None:
-        return None
     for i in range(0, len(blueValues), 2):
         blueValue = blueValues[i]
         nextBlueValue = blueValues[i + 1]
@@ -1115,11 +1113,11 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         verticalMetrics = {}
         for name, defaultFactor in verticalMetricsDefaults.items():
             value = getattr(fontInfo, name, None)
-            zone = getZone(value, blueValues)
             if value is None:
                 value = round(defaultFactor["value"] * unitsPerEm)
-            if zone is None:
                 zone = round(defaultFactor["zone"] * unitsPerEm)
+            else:
+                zone = getZone(value, blueValues)
             verticalMetrics[name] = FontMetric(value=value, zone=zone)
         guidelines = unpackGuidelines(fontInfo.guidelines)
         italicAngle = getattr(fontInfo, "italicAngle", 0)
