@@ -1093,13 +1093,13 @@ def getPostscriptBlueValues(fontInfo):
 def getZone(value, blueValues):
     if value is None:
         return None
-    for i, blueValue in enumerate(blueValues):
-        if i % 2 == 0:
-            nextBlueValue = blueValues[i + 1]
-            if value in (blueValue, nextBlueValue):
-                if value == blueValue:
-                    return nextBlueValue - blueValue
-                return blueValue - nextBlueValue
+    for i in range(0, len(blueValues), 2):
+        blueValue = blueValues[i]
+        nextBlueValue = blueValues[i + 1]
+        if value in (blueValue, nextBlueValue):
+            if value == blueValue:
+                return nextBlueValue - blueValue
+            return blueValue - nextBlueValue
     return 0
 
 
