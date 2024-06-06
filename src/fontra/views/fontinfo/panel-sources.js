@@ -336,7 +336,7 @@ class SourceBox extends HTMLElement {
       general: {
         name: source.name,
         italicAngle: source.italicAngle ? source.italicAngle : 0,
-        isSparse: source.isSparse ? source.isSparse : false,
+        //isSparse: source.isSparse ? source.isSparse : false,
       },
       location: { ...source.location },
       verticalMetrics: prepareVerticalMetricsForController(source.verticalMetrics),
@@ -596,7 +596,6 @@ function getDefaultVerticalMetrics(unitsPerEm) {
     const zone = Math.round(defaultFactor.zone * unitsPerEm);
     defaultVerticalMetrics[name] = { value: value, zone: zone };
   }
-
   return defaultVerticalMetrics;
 }
 
