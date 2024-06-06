@@ -1094,7 +1094,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
         blueValues = getPostscriptBlueValues(fontInfo)
         verticalMetrics = {}
         for name, defaultFactor in verticalMetricsDefaults.items():
-            value = getattr(fontInfo, name, None)
+            value = 0 if name == "baseline" else getattr(fontInfo, name, None)
             if value is None:
                 value = round(defaultFactor["value"] * unitsPerEm)
                 zone = round(defaultFactor["zone"] * unitsPerEm)

@@ -566,7 +566,7 @@ getSourcesTestData = [
             "capHeight": {"value": 750, "zone": 16},
             "descender": {"value": -250, "zone": -16},
             "xHeight": {"value": 500, "zone": 16},
-            "baseline": {"value": 0, "zone": -16},
+            "baseline": {"value": 0, "zone": -20},
         },
     },
 ]
