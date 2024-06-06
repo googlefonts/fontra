@@ -651,8 +651,5 @@ function getLabelFromKey(key) {
     location: "Location",
     verticalMetrics: "Vertical metrics",
   };
-  if (key in keyLabelMap) {
-    return keyLabelMap[key];
-  }
-  return key;
+  return keyLabelMap[key] || key;
 }
