@@ -330,7 +330,7 @@ class SourceBox extends HTMLElement {
       general: {
         name: source.name,
         italicAngle: source.italicAngle ? source.italicAngle : 0,
-        //isSparce: source.isSparce ? source.isSparce : false,
+        isSparse: source.isSparse ? source.isSparse : false,
       },
       location: { ...source.location },
       verticalMetrics: prepareVerticalMetricsForController(source.verticalMetrics),
@@ -441,7 +441,7 @@ class SourceBox extends HTMLElement {
         }
       }
       this.editSource((source) => {
-        if (typeof event.key == "string") {
+        if (typeof event.newValue == "string") {
           source[event.key] = event.newValue.trim();
         } else {
           source[event.key] = event.newValue;
@@ -513,17 +513,13 @@ function buildElement(controller) {
     { class: "fontra-ui-font-info-column" },
     items
       .map(([labelName, keyName, value]) => {
-        return labeledTextInput(labelName, controller, keyName, {
-          continuous: false,
-        });
-        // TODO for isSparse
-        // if (typeof value === "boolean") {
-        //   return labeledCheckbox(labelName, controller, keyName, {});
-        // } else {
-        //   return labeledTextInput(labelName, controller, keyName, {
-        //     continuous: false,
-        //   })
-        // }
+        if (typeof value === "boolean") {
+          return [html.div(), labeledCheckbox(labelName, controller, keyName, {})];
+        } else {
+          return labeledTextInput(labelName, controller, keyName, {
+            continuous: false,
+          });
+        }
       })
       .flat()
   );
