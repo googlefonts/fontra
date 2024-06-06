@@ -604,7 +604,7 @@ function prepareVerticalMetricsForController(verticalMetrics) {
   const newVerticalMetrics = {};
   for (const key in verticalMetrics) {
     newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
-    newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone;
+    newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone | 0;
   }
   return newVerticalMetrics;
 }
@@ -614,7 +614,7 @@ function getVerticalMetricsRounded(verticalMetrics) {
   for (const key in verticalMetrics) {
     newVerticalMetrics[key] = {
       value: round(verticalMetrics[key].value, 2),
-      zone: round(verticalMetrics[key].zone, 2),
+      zone: round(verticalMetrics[key].zone, 2) | 0,
     };
   }
   return newVerticalMetrics;
