@@ -25,6 +25,18 @@ export class SourcesPanel extends BaseInfoPanel {
   static id = "sources-panel";
   static fontAttributes = ["axes", "sources"];
 
+  initializePanel() {
+    super.initializePanel();
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        this.setupUI();
+        this.undoStack.clear();
+      },
+      false
+    );
+  }
+
   async setupUI() {
     const sources = await this.fontController.getSources();
     const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
