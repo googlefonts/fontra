@@ -97,16 +97,6 @@ export class SourcesPanel extends BaseInfoPanel {
       ) {
         warnings.push("⚠️ The source name should be unique");
       }
-      const editedItalicAngle = nameController.model.sourceItalicAngle;
-      if (isNaN(editedItalicAngle)) {
-        warnings.push("⚠️ The italic angle must be a number");
-      }
-      if (editedItalicAngle < -90 || editedItalicAngle > 90) {
-        warnings.push("⚠️ The italic angle must be between -90 and +90");
-      }
-      if (editedItalicAngle === "") {
-        warnings.push("⚠️ The italic angle must not be empty");
-      }
       const locStr = locationToString(
         makeSparseLocation(locationController.model, locationAxes)
       );
@@ -119,14 +109,9 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const nameController = new ObservableController({
       sourceName: this.getSourceName(sources),
-      sourceItalicAngle: 0,
     });
 
     nameController.addKeyListener("sourceName", (event) => {
-      validateInput();
-    });
-
-    nameController.addKeyListener("sourceItalicAngle", (event) => {
       validateInput();
     });
 
@@ -183,7 +168,6 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const newSource = {
       name: nameController.model.sourceName.trim(),
-      italicAngle: nameController.model.sourceItalicAngle,
       location: newLocation,
     };
 
@@ -226,7 +210,6 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const containerContent = [
       ...labeledTextInput("Source name:", nameController, "sourceName", {}),
-      ...labeledTextInput("Italic Angle:", nameController, "sourceItalicAngle", {}),
       html.br(),
       locationElement,
     ];
