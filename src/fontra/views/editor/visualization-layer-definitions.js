@@ -616,7 +616,7 @@ registerVisualizationLayerDefinition({
 
 function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
   withSavedState(context, () => {
-    context.x, y;
+    context.translate(x, y);
     context.scale(iconSize / 24, (-1 * iconSize) / 24);
     context.lineWidth = lineWidth;
     context.strokeStyle = strokeColor;
