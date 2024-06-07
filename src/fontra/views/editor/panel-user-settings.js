@@ -44,7 +44,11 @@ export default class UserSettingsPanel extends Panel {
       (layer) => layer.userSwitchable
     );
     const layerItems = layers.map((layer) => {
-      return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
+      return {
+        key: layer.identifier,
+        displayName: translate(layer.name),
+        ui: "checkbox",
+      };
     });
     items.push({
       displayName: translate("sidebar.user-settings.glyph"),

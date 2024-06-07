@@ -14,7 +14,7 @@ const POWER_RULER_IDENTIFIER = "fontra.power.ruler";
 
 registerVisualizationLayerDefinition({
   identifier: POWER_RULER_IDENTIFIER,
-  name: translate("sidebar.user-settings.glyph.powerruler"),
+  name: "sidebar.user-settings.glyph.powerruler",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,

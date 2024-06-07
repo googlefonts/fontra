@@ -77,7 +77,11 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
-import { localizePage, translate } from "/core/localization.js";
+import {
+  ensureLanguageHasLoaded,
+  localizePage,
+  translate,
+} from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -93,11 +97,14 @@ export class EditorController {
     const protocol = window.location.protocol === "http:" ? "ws" : "wss";
     const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
 
+    await ensureLanguageHasLoaded;
+
     const remoteFontEngine = await getRemoteProxy(wsURL);
     const editorController = new EditorController(remoteFontEngine);
     remoteFontEngine.receiver = editorController;
     remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
     remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
+
     localizePage();
     await editorController.start();
     return editorController;

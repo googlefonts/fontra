@@ -33,7 +33,7 @@ const DEFAULT_FONT_SIZE = 100;
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
-  name: translate("sidebar.user-settings.glyph.referencefont"),
+  name: "sidebar.user-settings.glyph.referencefont",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
