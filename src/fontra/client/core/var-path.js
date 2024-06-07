@@ -446,6 +446,21 @@ export class VarPackedPath {
     }
   }
 
+  pointIndexNearPointFromPointIndices(point, margin, pointIndices) {
+    //
+    // Given `point` and a `margin` and an array of `pointIndices`, return
+    // the index of the first point contained in `pointIndices` that is within
+    // `margin` of `point`. Return undefined if no such point was found.
+    //
+    const rect = centeredRect(point.x, point.y, margin);
+    for (const pointIndex of pointIndices) {
+      const point = this.getPoint(pointIndex);
+      if (point && pointInRect(point.x, point.y, rect)) {
+        return pointIndex;
+      }
+    }
+  }
+
   *iterPoints() {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
