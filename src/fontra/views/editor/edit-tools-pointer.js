@@ -24,7 +24,8 @@ export class PointerTool extends BaseTool {
     const { selection, pathHit } = this.sceneModel.selectionAtPoint(
       point,
       size,
-      union(sceneController.selection, sceneController.hoverSelection),
+      sceneController.selection,
+      sceneController.hoverSelection,
       event.altKey
     );
     sceneController.hoverSelection = selection;
@@ -56,7 +57,8 @@ export class PointerTool extends BaseTool {
     const { selection, pathHit } = this.sceneModel.selectionAtPoint(
       point,
       size,
-      union(sceneController.selection, sceneController.hoverSelection),
+      sceneController.selection,
+      sceneController.hoverSelection,
       initialEvent.altKey
     );
     let initialClickedPointIndex;

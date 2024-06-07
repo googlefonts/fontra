@@ -9,8 +9,14 @@ import {
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
-import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
-import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
+import { difference, isEqualSet, union, updateSet } from "../core/set-ops.js";
+import {
+  consolidateCalls,
+  enumerate,
+  parseSelection,
+  range,
+  reversed,
+} from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 
@@ -452,22 +458,68 @@ export class SceneModel {
     return await this.fontController.getGlyphInstance(glyphName, location, layerName);
   }
 
-  selectionAtPoint(point, size, currentSelection, preferTCenter) {
+  selectionAtPoint(
+    point,
+    size,
+    currentSelection,
+    currentHoverSelection,
+    preferTCenter
+  ) {
+    // First we'll see if the clicked point falls within the current selection
+    const selFromCurrentSelection = this._selectionAtPoint(
+      point,
+      size,
+      currentSelection,
+      currentHoverSelection,
+      preferTCenter
+    );
+
+    if (selFromCurrentSelection.selection?.size || selFromCurrentSelection.pathHit) {
+      return selFromCurrentSelection;
+    }
+
+    // If not, search all items
+    return this._selectionAtPoint(point, size, undefined, undefined, preferTCenter);
+  }
+
+  _selectionAtPoint(
+    point,
+    size,
+    currentSelection,
+    currentHoverSelection,
+    preferTCenter
+  ) {
     if (!this.selectedGlyph?.isEditing) {
       return { selection: new Set() };
     }
 
-    const pointSelection = this.pointSelectionAtPoint(point, size);
+    const parsedCurrentSelection = currentSelection
+      ? parseSelection(currentSelection)
+      : undefined;
+
+    const pointSelection = this.pointSelectionAtPoint(
+      point,
+      size,
+      parsedCurrentSelection
+    );
     if (pointSelection.size) {
       return { selection: pointSelection };
     }
 
-    const anchorSelection = this.anchorSelectionAtPoint(point, size);
+    const anchorSelection = this.anchorSelectionAtPoint(
+      point,
+      size,
+      parsedCurrentSelection
+    );
     if (anchorSelection.size) {
       return { selection: anchorSelection };
     }
 
-    const guidelineSelection = this.guidelineSelectionAtPoint(point, size);
+    const guidelineSelection = this.guidelineSelectionAtPoint(
+      point,
+      size,
+      parsedCurrentSelection
+    );
     if (guidelineSelection.size) {
       return { selection: guidelineSelection };
     }
@@ -487,13 +539,13 @@ export class SceneModel {
     const componentSelection = this.componentSelectionAtPoint(
       point,
       size,
-      currentSelection,
+      currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
       preferTCenter
     );
     return { selection: componentSelection };
   }
 
-  pointSelectionAtPoint(point, size) {
+  pointSelectionAtPoint(point, size, parsedCurrentSelection) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -503,10 +555,21 @@ export class SceneModel {
       x: point.x - positionedGlyph.x,
       y: point.y - positionedGlyph.y,
     };
-    const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
+
+    let pointIndex;
+    if (parsedCurrentSelection) {
+      pointIndex = positionedGlyph.glyph.path.pointIndexNearPointFromPointIndices(
+        glyphPoint,
+        size,
+        parsedCurrentSelection.point || []
+      );
+    } else {
+      pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
+    }
     if (pointIndex !== undefined) {
       return new Set([`point/${pointIndex}`]);
     }
+
     return new Set();
   }
 
@@ -598,7 +661,7 @@ export class SceneModel {
     return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
-  anchorSelectionAtPoint(point, size) {
+  anchorSelectionAtPoint(point, size, parsedCurrentSelection) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -608,7 +671,11 @@ export class SceneModel {
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
     const selRect = centeredRect(x, y, size);
-    for (const [i, anchor] of enumerate(anchors)) {
+    const indices = parsedCurrentSelection
+      ? parsedCurrentSelection.anchor || []
+      : [...range(anchors.length)];
+    for (const i of reversed(indices)) {
+      const anchor = anchors[i];
       const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
       if (anchorMatch) {
         return new Set([`anchor/${i}`]);
@@ -617,7 +684,7 @@ export class SceneModel {
     return new Set([]);
   }
 
-  guidelineSelectionAtPoint(point, size) {
+  guidelineSelectionAtPoint(point, size, parsedCurrentSelection) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -627,9 +694,12 @@ export class SceneModel {
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
     const selRect = centeredRect(x, y, size);
-    for (const [i, guideline] of enumerate(guidelines)) {
-      const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
-      if (guidelineMatch) {
+    const indices = parsedCurrentSelection
+      ? parsedCurrentSelection.guideline || []
+      : [...range(guidelines.length)];
+    for (const i of reversed(indices)) {
+      const guideline = guidelines[i];
+      if (guideline && pointInRect(guideline.x, guideline.y, selRect)) {
         return new Set([`guideline/${i}`]);
       }
     }
