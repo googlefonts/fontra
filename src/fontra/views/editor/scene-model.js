@@ -10,7 +10,13 @@ import {
   unionRect,
 } from "../core/rectangle.js";
 import { difference, isEqualSet, union, updateSet } from "../core/set-ops.js";
-import { consolidateCalls, enumerate, parseSelection, range } from "../core/utils.js";
+import {
+  consolidateCalls,
+  enumerate,
+  parseSelection,
+  range,
+  reversed,
+} from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 
@@ -667,8 +673,8 @@ export class SceneModel {
     const selRect = centeredRect(x, y, size);
     const indices = parsedCurrentSelection
       ? parsedCurrentSelection.anchor || []
-      : range(anchors.length);
-    for (const i of indices) {
+      : [...range(anchors.length)];
+    for (const i of reversed(indices)) {
       const anchor = anchors[i];
       const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
       if (anchorMatch) {
@@ -690,8 +696,8 @@ export class SceneModel {
     const selRect = centeredRect(x, y, size);
     const indices = parsedCurrentSelection
       ? parsedCurrentSelection.guideline || []
-      : range(guidelines.length);
-    for (const i of indices) {
+      : [...range(guidelines.length)];
+    for (const i of reversed(indices)) {
       const guideline = guidelines[i];
       if (guideline && pointInRect(guideline.x, guideline.y, selRect)) {
         return new Set([`guideline/${i}`]);
