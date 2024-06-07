@@ -5,7 +5,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "chai": "^5.1.1",
     "chai-almost": "^1.0.1",
