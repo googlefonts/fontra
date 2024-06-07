@@ -24,7 +24,7 @@ export class CJKDesignFrame {
 
     registerVisualizationLayerDefinition({
       identifier: "fontra.cjk.design.frame",
-      name: translate("sidebar.user-settings.glyph.cjkframe"),
+      name: "sidebar.user-settings.glyph.cjkframe",
       selectionMode: "editing",
       userSwitchable: true,
       defaultOn: false,
