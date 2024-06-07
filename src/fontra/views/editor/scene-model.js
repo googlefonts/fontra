@@ -550,23 +550,18 @@ export class SceneModel {
       y: point.y - positionedGlyph.y,
     };
 
+    let pointIndex;
     if (parsedCurrentSelection) {
-      const pointIndex = positionedGlyph.glyph.path.pointIndexNearPointFromPointIndices(
+      pointIndex = positionedGlyph.glyph.path.pointIndexNearPointFromPointIndices(
         glyphPoint,
         size,
         parsedCurrentSelection.point || []
       );
-      if (pointIndex !== undefined) {
-        return new Set([`point/${parsedCurrentSelection.point[0]}`]);
-      }
     } else {
-      const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(
-        glyphPoint,
-        size
-      );
-      if (pointIndex !== undefined) {
-        return new Set([`point/${pointIndex}`]);
-      }
+      pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
+    }
+    if (pointIndex !== undefined) {
+      return new Set([`point/${pointIndex}`]);
     }
 
     return new Set();
