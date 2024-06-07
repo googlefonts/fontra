@@ -2,7 +2,7 @@ import { Bezier } from "../third-party/bezier-js.js";
 import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
-import { arrayExtend, enumerate, range } from "./utils.js";
+import { arrayExtend, enumerate, range, reversed } from "./utils.js";
 import VarArray from "./var-array.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
@@ -448,12 +448,13 @@ export class VarPackedPath {
 
   pointIndexNearPointFromPointIndices(point, margin, pointIndices) {
     //
-    // Given `point` and a `margin` and an array of `pointIndices`, return
-    // the index of the first point contained in `pointIndices` that is within
-    // `margin` of `point`. Return undefined if no such point was found.
+    // Given `point` and a `margin` and an array of `pointIndices`, return the
+    // index of the first point that is within `margin` of `point`, searching
+    // from the *end* of the `pointIndices` list. Return undefined if no such
+    // point was found.
     //
     const rect = centeredRect(point.x, point.y, margin);
-    for (const pointIndex of pointIndices) {
+    for (const pointIndex of reversed(pointIndices)) {
       const point = this.getPoint(pointIndex);
       if (point && pointInRect(point.x, point.y, rect)) {
         return pointIndex;
