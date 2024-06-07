@@ -439,7 +439,7 @@ function _drawGuideline(context, parameters, guideline) {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
     //translate to guideline origin
-    context.guideline.x, guideline.y;
+    context.translate(guideline.x, guideline.y);
 
     //draw lock icon or the "node"
     if (guideline.locked) {
