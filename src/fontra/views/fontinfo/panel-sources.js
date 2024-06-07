@@ -85,8 +85,12 @@ export class SourcesPanel extends BaseInfoPanel {
     }
 
     const undoLabel = `add source '${newSource.name}'`;
-    const sourceIdentifier = newSource.name;
-    // TODO: Maybe use proper sourceIdentifier, not source name
+
+    let sourceIdentifier;
+    do {
+      sourceIdentifier = crypto.randomUUID().slice(0, 8);
+    } while (sourceIdentifier in this.fontController.sources);
+
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
       root.sources[sourceIdentifier] = newSource;
