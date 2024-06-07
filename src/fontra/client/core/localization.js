@@ -9,6 +9,10 @@ languageController.synchronizeWithLocalStorage("fontra-language-");
 
 let resolveLanguageHasLoaded;
 
+/**
+ * `ensureLanguageHasLoaded` is a promise that will be resolved once
+ * the language file has been loaded.
+ */
 export const ensureLanguageHasLoaded = new Promise((resolve) => {
   resolveLanguageHasLoaded = resolve;
 });
