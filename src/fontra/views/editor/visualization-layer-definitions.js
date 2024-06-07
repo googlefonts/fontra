@@ -30,7 +30,7 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.upm.grid",
-  name: translate("sidebar.user-settings.glyph.upmgrid"),
+  name: "sidebar.user-settings.glyph.upmgrid",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -156,7 +156,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.baseline",
-  name: translate("sidebar.user-settings.glyph.baseline"),
+  name: "sidebar.user-settings.glyph.baseline",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -246,8 +246,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: translate("fontra.glyph.locking.non-editing"),
-  name: translate("sidebar.user-settings.glyph.lockicon"),
+  identifier: "fontra.glyph.locking.non-editing",
+  name: "sidebar.user-settings.glyph.lockicon",
   selectionMode: "notediting",
   userSwitchable: true,
   zIndex: 700,
@@ -350,7 +350,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
-  name: translate("sidebar.user-settings.glyph.anchornames"),
+  name: "sidebar.user-settings.glyph.anchornames",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -439,7 +439,7 @@ function _drawGuideline(context, parameters, guideline) {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
     //translate to guideline origin
-    context.translate(guideline.x, guideline.y);
+    context.guideline.x, guideline.y;
 
     //draw lock icon or the "node"
     if (guideline.locked) {
@@ -616,7 +616,7 @@ registerVisualizationLayerDefinition({
 
 function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
   withSavedState(context, () => {
-    context.translate(x, y);
+    context.x, y;
     context.scale(iconSize / 24, (-1 * iconSize) / 24);
     context.lineWidth = lineWidth;
     context.strokeStyle = strokeColor;
@@ -626,7 +626,7 @@ function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
-  name: translate("sidebar.user-settings.glyph.sidebearings"),
+  name: "sidebar.user-settings.glyph.sidebearings",
   selectionMode: "notediting",
   userSwitchable: true,
   defaultOn: false,
@@ -671,7 +671,7 @@ function _drawMiniSideBearings(
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
-  name: translate("sidebar.user-settings.glyph.dragcrosshair"),
+  name: "sidebar.user-settings.glyph.dragcrosshair",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -698,7 +698,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
-  name: translate("sidebar.user-settings.glyph.dragghostpath"),
+  name: "sidebar.user-settings.glyph.dragghostpath",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -993,7 +993,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.contour.index",
-  name: translate("sidebar.user-settings.glyph.contour"),
+  name: "sidebar.user-settings.glyph.contour",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1040,7 +1040,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.index",
-  name: translate("sidebar.user-settings.glyph.component"),
+  name: "sidebar.user-settings.glyph.component",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1196,7 +1196,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: translate("sidebar.user-settings.glyph.coordinates"),
+  name: "sidebar.user-settings.glyph.coordinates",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
@@ -1316,7 +1316,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.status.color",
-  name: translate("sidebar.user-settings.glyph.statuscolor"),
+  name: "sidebar.user-settings.glyph.statuscolor",
   selectionMode: "all",
   userSwitchable: true,
   defaultOn: false,
