@@ -7,9 +7,16 @@ let localizationData = {};
 export const languageController = new ObservableController({ language: "en" });
 languageController.synchronizeWithLocalStorage("fontra-language-");
 
+let resolveLanguageHasLoaded;
+
+export const ensureLanguageHasLoaded = new Promise((resolve) => {
+  resolveLanguageHasLoaded = resolve;
+});
+
 function languageChanged(locale) {
   fetchJSON(`/lang/${locale}.json`).then((data) => {
     localizationData = data;
+    resolveLanguageHasLoaded();
   });
 }
 
