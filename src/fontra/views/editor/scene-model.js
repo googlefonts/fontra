@@ -10,7 +10,7 @@ import {
   unionRect,
 } from "../core/rectangle.js";
 import { difference, isEqualSet, union, updateSet } from "../core/set-ops.js";
-import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
+import { consolidateCalls, enumerate, parseSelection, range } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 
@@ -459,6 +459,30 @@ export class SceneModel {
     currentHoverSelection,
     preferTCenter
   ) {
+    // First we'll see if the clicked point falls within the current selection
+    const selFromCurrentSelection = this._selectionAtPoint(
+      point,
+      size,
+      currentSelection,
+      currentHoverSelection,
+      preferTCenter
+    );
+
+    if (selFromCurrentSelection.selection?.size || selFromCurrentSelection.pathHit) {
+      return selFromCurrentSelection;
+    }
+
+    // If not, search all items
+    return this._selectionAtPoint(point, size, undefined, undefined, preferTCenter);
+  }
+
+  _selectionAtPoint(
+    point,
+    size,
+    currentSelection,
+    currentHoverSelection,
+    preferTCenter
+  ) {
     if (!this.selectedGlyph?.isEditing) {
       return { selection: new Set() };
     }
@@ -526,21 +550,25 @@ export class SceneModel {
       y: point.y - positionedGlyph.y,
     };
 
-    if (parsedCurrentSelection?.point?.length) {
+    if (parsedCurrentSelection) {
       const pointIndex = positionedGlyph.glyph.path.pointIndexNearPointFromPointIndices(
         glyphPoint,
         size,
-        parsedCurrentSelection.point
+        parsedCurrentSelection.point || []
       );
       if (pointIndex !== undefined) {
         return new Set([`point/${parsedCurrentSelection.point[0]}`]);
       }
+    } else {
+      const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(
+        glyphPoint,
+        size
+      );
+      if (pointIndex !== undefined) {
+        return new Set([`point/${pointIndex}`]);
+      }
     }
 
-    const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
-    if (pointIndex !== undefined) {
-      return new Set([`point/${pointIndex}`]);
-    }
     return new Set();
   }
 
@@ -632,7 +660,7 @@ export class SceneModel {
     return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
-  anchorSelectionAtPoint(point, size) {
+  anchorSelectionAtPoint(point, size, parsedCurrentSelection) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -642,7 +670,11 @@ export class SceneModel {
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
     const selRect = centeredRect(x, y, size);
-    for (const [i, anchor] of enumerate(anchors)) {
+    const indices = parsedCurrentSelection
+      ? parsedCurrentSelection.anchor || []
+      : range(anchors.length);
+    for (const i of indices) {
+      const anchor = anchors[i];
       const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
       if (anchorMatch) {
         return new Set([`anchor/${i}`]);
@@ -651,7 +683,7 @@ export class SceneModel {
     return new Set([]);
   }
 
-  guidelineSelectionAtPoint(point, size) {
+  guidelineSelectionAtPoint(point, size, parsedCurrentSelection) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -661,9 +693,12 @@ export class SceneModel {
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
     const selRect = centeredRect(x, y, size);
-    for (const [i, guideline] of enumerate(guidelines)) {
-      const guidelineMatch = pointInRect(guideline.x, guideline.y, selRect);
-      if (guidelineMatch) {
+    const indices = parsedCurrentSelection
+      ? parsedCurrentSelection.guideline || []
+      : range(guidelines.length);
+    for (const i of indices) {
+      const guideline = guidelines[i];
+      if (guideline && pointInRect(guideline.x, guideline.y, selRect)) {
         return new Set([`guideline/${i}`]);
       }
     }
