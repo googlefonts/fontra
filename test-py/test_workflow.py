@@ -1040,6 +1040,22 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "amend-glyph-custom-data",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-shapes
+            - filter: amend-glyph-custom-data
+              customData:
+                "public.truetype.overlap": true
+            - output: fontra-write
+              destination: "output-amend-glyph-custom-data.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(

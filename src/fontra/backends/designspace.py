@@ -63,6 +63,12 @@ LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 
+# Lib keys that will be synced between the UFO default source's lib and the
+# Fontra glyph.customData field
+fontraCustomDataUFOLibSharedKeys = [
+    "public.truetype.overlap",  # from ufo2ft
+]
+
 
 defaultUFOInfoAttrs = {
     "unitsPerEm": 1000,
@@ -308,7 +314,8 @@ class DesignspaceBackend:
                     )
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-                customData = ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
+                customData = dict(ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {}))
+                customData.update(ufoGlyphLibToCustomDataItems(ufoGlyph.lib))
 
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
@@ -486,7 +493,9 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
-                storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, glyph.customData)
+                customData, libItems = splitGlyphCustomData(glyph.customData)
+                storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, customData)
+                layerGlyph.lib.update(libItems)
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
 
@@ -1611,3 +1620,16 @@ def makeSparseLocation(location, defaultLocation):
         for name, value in location.items()
         if defaultLocation.get(name) != value
     }
+
+
+def ufoGlyphLibToCustomDataItems(lib):
+    return {key: lib[key] for key in fontraCustomDataUFOLibSharedKeys if key in lib}
+
+
+def splitGlyphCustomData(customData):
+    customData = dict(customData)
+    libItems = {}
+    for key in fontraCustomDataUFOLibSharedKeys:
+        if key in customData:
+            libItems[key] = customData.pop(key, {})
+    return customData, libItems
