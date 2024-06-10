@@ -780,7 +780,7 @@ class DesignspaceBackend:
     async def getSources(self) -> dict[str, FontSource]:
         unitsPerEm = await self.getUnitsPerEm()
         return {
-            dsSource.identifier: unpackDSSource(dsSource, unitsPerEm)
+            dsSource.identifier: dsSource.asFontraFontSource(unitsPerEm)
             for dsSource in self.dsSources
         }
 
@@ -1087,37 +1087,6 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    if dsSource.isSparse:
-        verticalMetrics: dict[str, FontMetric] = {}
-        guidelines = []
-        italicAngle = 0
-    else:
-        fontInfo = UFOFontInfo()
-        dsSource.layer.reader.readInfo(fontInfo)
-        blueValues = getPostscriptBlueValues(fontInfo)
-        verticalMetrics = {}
-        for name, defaultFactor in verticalMetricsDefaults.items():
-            value = 0 if name == "baseline" else getattr(fontInfo, name, None)
-            if value is None:
-                value = round(defaultFactor["value"] * unitsPerEm)
-                zone = round(defaultFactor["zone"] * unitsPerEm)
-            else:
-                zone = getZone(value, blueValues)
-            verticalMetrics[name] = FontMetric(value=value, zone=zone)
-        guidelines = unpackGuidelines(fontInfo.guidelines)
-        italicAngle = getattr(fontInfo, "italicAngle", 0)
-
-    return FontSource(
-        name=dsSource.name,
-        location=dsSource.location,
-        italicAngle=italicAngle,
-        verticalMetrics=verticalMetrics,
-        guidelines=guidelines,
-        isSparse=dsSource.isSparse,
-    )
-
-
 def getPostscriptBlueValues(fontInfo):
     blueValues = getattr(fontInfo, "postscriptBlueValues", [])
     otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
@@ -1229,6 +1198,36 @@ class DSSource:
     @cached_property
     def locationTuple(self):
         return tuplifyLocation(self.location)
+
+    def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
+        if self.isSparse:
+            verticalMetrics: dict[str, FontMetric] = {}
+            guidelines = []
+            italicAngle = 0
+        else:
+            fontInfo = UFOFontInfo()
+            self.layer.reader.readInfo(fontInfo)
+            blueValues = getPostscriptBlueValues(fontInfo)
+            verticalMetrics = {}
+            for name, defaultFactor in verticalMetricsDefaults.items():
+                value = 0 if name == "baseline" else getattr(fontInfo, name, None)
+                if value is None:
+                    value = round(defaultFactor["value"] * unitsPerEm)
+                    zone = round(defaultFactor["zone"] * unitsPerEm)
+                else:
+                    zone = getZone(value, blueValues)
+                verticalMetrics[name] = FontMetric(value=value, zone=zone)
+            guidelines = unpackGuidelines(fontInfo.guidelines)
+            italicAngle = getattr(fontInfo, "italicAngle", 0)
+
+        return FontSource(
+            name=self.name,
+            location=self.location,
+            italicAngle=italicAngle,
+            verticalMetrics=verticalMetrics,
+            guidelines=guidelines,
+            isSparse=self.isSparse,
+        )
 
     def asFontraGlyphSource(self, localDefaultOverride=None):
         if localDefaultOverride is None:
