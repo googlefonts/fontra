@@ -335,7 +335,7 @@ class DesignspaceBackend:
             glyphSet = dsSource.layer.glyphSet
             if glyphName not in glyphSet:
                 continue
-            sources.append(dsSource.newFontraGlyphSource(localDefaultOverride))
+            sources.append(dsSource.asFontraGlyphSource(localDefaultOverride))
 
         sources.extend(localSources)
 
@@ -1230,7 +1230,7 @@ class DSSource:
     def locationTuple(self):
         return tuplifyLocation(self.location)
 
-    def newFontraGlyphSource(self, localDefaultOverride=None):
+    def asFontraGlyphSource(self, localDefaultOverride=None):
         if localDefaultOverride is None:
             localDefaultOverride = {}
         return GlyphSource(
