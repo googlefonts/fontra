@@ -101,9 +101,6 @@ getGlyphTestData = [
                     },
                 },
             },
-            "customData": {
-                "public.truetype.overlap": True,
-            },
         },
     ),
     (
@@ -376,9 +373,6 @@ getGlyphTestData = [
                         "xAdvance": 1290,
                     },
                 },
-            },
-            "customData": {
-                "public.truetype.overlap": True,
             },
         },
     ),

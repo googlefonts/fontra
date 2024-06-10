@@ -300,13 +300,3 @@ def roundCoordinates(
         ]
 
     return replace(glyph, **newFields)
-
-
-@registerFilterAction("amend-glyph-custom-data")
-@dataclass(kw_only=True)
-class AmendGlyphCustomData(BaseFilter):
-    customData: dict[str, Any]
-
-    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        newCustomData = {**glyph.customData, **self.customData}
-        return replace(glyph, customData=newCustomData)
