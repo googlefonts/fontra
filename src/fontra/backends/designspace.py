@@ -127,6 +127,8 @@ class DesignspaceBackend:
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
         self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._glyphDependencies: GlyphDependencies | None = None
+        # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
+        self.setOverlapSimpleFlag = False
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -495,6 +497,8 @@ class DesignspaceBackend:
                 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY,
                 sourcesCustomData.get(ufoLayer.fontraLayerName),
             )
+            if self.setOverlapSimpleFlag:
+                layerGlyph.lib["public.truetype.overlap"] = True
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph, layer.glyph, hasVariableComponents
