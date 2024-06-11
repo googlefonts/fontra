@@ -8,7 +8,7 @@ import secrets
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
@@ -20,6 +20,7 @@ from fontTools.designspaceLib import (
     AxisLabelDescriptor,
     DesignSpaceDocument,
     DiscreteAxisDescriptor,
+    SourceDescriptor,
 )
 from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.pointPen import AbstractPointPen
@@ -527,7 +528,11 @@ class DesignspaceBackend:
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
     def _prepareUFOSourceLayer(
-        self, glyphName, source, localDefaultLocation, revLayerNameMapping
+        self,
+        glyphName: str,
+        source: GlyphSource,
+        localDefaultLocation: dict[str, float],
+        revLayerNameMapping: dict[str, float],
     ):
         baseLocation = {}
         if source.locationBase:
@@ -550,7 +555,16 @@ class DesignspaceBackend:
             locationTuple=tuplifyLocation(globalLocation)
         )
         if dsSource is None:
-            dsSource = self._createDSSource(glyphName, source, globalLocation)
+            dsSource = self._createDSSource(
+                None,
+                glyphName,
+                source.name,
+                source.layerName,
+                globalLocation,
+            )
+            self.dsSources.append(dsSource)
+            self.dsDoc.sources.append(dsSource.asDSSourceDescriptor())
+            self._writeDesignSpaceDocument()
 
         if sparseLocalLocation:
             ufoLayer = self.ufoLayers.findItem(
@@ -586,23 +600,14 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
-    # def _createDSSourceFromFontSource(self, fontSource: FontSource):
-    #     manager = self.ufoManager
-
-    #     if not fontSource.isSparse:
-    #         # Create a whole new UFO
-    #         ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-    #         dsFileName = pathlib.Path(self.dsDoc.path).stem
-    #         suggestedUFOFileName = f"{dsFileName}_{fontSource.name}"
-    #         ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
-    #         assert 0, ufoPath
-    #     else:
-    #         poleDSSource = self._findDSSourceForSparseSource(fontSource.location)
-    #         ufoPath = poleDSSource.layer.path
-    #         ufoLayer = self._newUFOLayer(None, poleDSSource.layer.path, fontSource.name)
-    #         ufoLayerName = ufoLayer.name
-
-    def _createDSSource(self, glyphName, source, globalLocation):
+    def _createDSSource(
+        self,
+        sourceIdentifier: str | None,
+        glyphName: str | None,
+        sourceName: str,
+        layerName: str,
+        globalLocation: dict,
+    ) -> DSSource:
         manager = self.ufoManager
         atPole, notAtPole = splitLocationByPolePosition(
             globalLocation, self.axisPolePositions
@@ -610,7 +615,7 @@ class DesignspaceBackend:
         if not notAtPole:
             # Create a whole new UFO
             dsFileName = pathlib.Path(self.dsDoc.path).stem
-            suggestedUFOFileName = f"{dsFileName}_{source.name}"
+            suggestedUFOFileName = f"{dsFileName}_{sourceName}"
             ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
 
             ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
@@ -638,32 +643,22 @@ class DesignspaceBackend:
             # Create a new layer in the appropriate existing UFO
             poleDSSource = self._findDSSourceForSparseSource(globalLocation)
             ufoPath = poleDSSource.layer.path
-            ufoLayer = self._newUFOLayer(
-                glyphName, poleDSSource.layer.path, source.layerName
-            )
+            ufoLayer = self._newUFOLayer(glyphName, poleDSSource.layer.path, layerName)
             ufoLayerName = ufoLayer.name
 
         reader = manager.getReader(ufoPath)
-        defaultLayerName = reader.getDefaultLayerName()
 
-        dsDocSource = self.dsDoc.addSourceDescriptor(
-            name=makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None),
-            styleName=source.name,
-            location=globalLocation,
-            path=ufoPath,
-            layerName=ufoLayerName if ufoLayerName != defaultLayerName else None,
-        )
-        self._writeDesignSpaceDocument()
+        if sourceIdentifier is None:
+            sourceIdentifier = makeDSSourceIdentifier(
+                self.dsDoc, len(self.dsSources), None
+            )
 
-        dsSource = DSSource(
-            identifier=dsDocSource.name,
-            name=source.name,
+        return DSSource(
+            identifier=sourceIdentifier,
+            name=sourceName,
             layer=ufoLayer,
             location=globalLocation,
         )
-        self.dsSources.append(dsSource)
-
-        return dsSource
 
     def _findDSSourceForSparseSource(self, location):
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
@@ -676,7 +671,9 @@ class DesignspaceBackend:
 
         return poleDSSource
 
-    def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
+    def _newUFOLayer(
+        self, glyphName: str | None, ufoPath: str, suggestedLayerName: str
+    ) -> UFOLayer:
         reader = self.ufoManager.getReader(ufoPath)
         existingLayerNames = set(reader.getLayerNames())
         ufoLayerName = suggestedLayerName
@@ -785,21 +782,38 @@ class DesignspaceBackend:
         }
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
-        return  # NotImplementedError
-        # TODO: this may require rewriting UFOs and UFO layers
-        # Also: what to do if a source gets deleted?
+        newDSSources = ItemList()
         for sourceIdentifier, fontSource in sources.items():
+            denseSourceLocation = makeDenseLocation(
+                fontSource.location, self.defaultLocation
+            )
             dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
+
+            if dsSource is None:
+                # Fall back to search by location
+                dsSource = self.dsSources.findItem(
+                    locationTuple=tuplifyLocation(denseSourceLocation)
+                )
+
             if dsSource is not None:
                 if dsSource.isSparse != fontSource.isSparse:
                     raise ValueError("Modifying isSparse is currently not supported")
-                # update guidelines, vertical metrics
-                assert 0
+                # TODO: update guidelines, vertical metrics
+                dsSource = replace(dsSource, location=denseSourceLocation)
             else:
-                ...
-                # create dsSource
-                self._createDSSourceFromFontSource(fontSource)
-                assert 0, "hey"
+                dsSource = self._createDSSource(
+                    sourceIdentifier,
+                    None,
+                    fontSource.name,
+                    fontSource.name,
+                    denseSourceLocation,
+                )
+
+            newDSSources.append(dsSource)
+
+        self.dsSources = newDSSources
+        self.dsDoc.sources = [s.asDSSourceDescriptor() for s in newDSSources]
+
         self._writeDesignSpaceDocument()
 
     async def getUnitsPerEm(self) -> int:
@@ -1242,6 +1256,17 @@ class DSSource:
             # location={**localDefaultOverride},
             location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,
+        )
+
+    def asDSSourceDescriptor(self) -> SourceDescriptor:
+        defaultLayerName = self.layer.reader.getDefaultLayerName()
+        ufoLayerName = self.layer.name if self.layer.name != defaultLayerName else None
+        return SourceDescriptor(
+            name=self.identifier,
+            styleName=self.name,
+            location=self.location,
+            path=self.layer.path,
+            layerName=ufoLayerName,
         )
 
     @cached_property
