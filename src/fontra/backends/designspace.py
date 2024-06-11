@@ -1614,7 +1614,7 @@ def makeDSSourceIdentifier(
 
 def makeSparseLocation(location, defaultLocation):
     return {
-        name: value
-        for name, value in location.items()
-        if defaultLocation.get(name) != value
+        name: location[name]
+        for name, value in defaultLocation.items()
+        if location.get(name, value) != value
     }
