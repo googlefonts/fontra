@@ -1618,3 +1618,7 @@ def makeSparseLocation(location, defaultLocation):
         for name, value in defaultLocation.items()
         if location.get(name, value) != value
     }
+
+
+def makeDenseLocation(location, defaultLocation):
+    return {name: location.get(name, value) for name, value in defaultLocation.items()}
