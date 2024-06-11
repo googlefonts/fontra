@@ -646,8 +646,6 @@ class DesignspaceBackend:
             ufoLayer = self._newUFOLayer(glyphName, poleDSSource.layer.path, layerName)
             ufoLayerName = ufoLayer.name
 
-        reader = manager.getReader(ufoPath)
-
         if sourceIdentifier is None:
             sourceIdentifier = makeDSSourceIdentifier(
                 self.dsDoc, len(self.dsSources), None
