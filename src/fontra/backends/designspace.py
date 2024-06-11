@@ -256,7 +256,7 @@ class DesignspaceBackend:
                     identifier=source.name,
                     name=sourceName,
                     layer=sourceLayer,
-                    location={**self.defaultLocation, **source.location},
+                    location=makeDenseLocation(source.location, self.defaultLocation),
                     isDefault=source == self.dsDoc.default,
                 )
             )
