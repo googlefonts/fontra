@@ -614,9 +614,19 @@ class DesignspaceBackend:
         )
 
     def _createDSSourceForFontSource(
-        self, sourceIdentifier: str, sourceName: str, location: dict[str, float]
+        self,
+        sourceIdentifier: str,
+        sourceName: str,
+        location: dict[str, float],
+        isSparse: bool,
     ):
-        ufoLayer = self._createUFOLayer(None, sourceName, sourceName, location)
+        if not isSparse:
+            # Create a whole new UFO
+            ufoLayer = self._createNewUFO(sourceName)
+        else:
+            # Create a new layer in the appropriate existing UFO
+            poleDSSource = self._findDSSourceForSparseSource(location)
+            ufoLayer = self._newUFOLayer(None, poleDSSource.layer.path, sourceName)
 
         return DSSource(
             identifier=sourceIdentifier,
@@ -630,63 +640,52 @@ class DesignspaceBackend:
         glyphName: str | None,
         sourceName: str,
         layerName: str,
-        globalLocation: dict,
+        location: dict,
     ) -> DSSource:
         sourceIdentifier = makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None)
 
-        ufoLayer = self._createUFOLayer(
-            glyphName, sourceName, layerName, globalLocation
-        )
+        _, notAtPole = splitLocationByPolePosition(location, self.axisPolePositions)
+
+        if notAtPole:
+            # Assume sparse source, add new layer to existing UFO
+            poleDSSource = self._findDSSourceForSparseSource(location)
+            ufoLayer = self._newUFOLayer(glyphName, poleDSSource.layer.path, layerName)
+        else:
+            # New UFO
+            ufoLayer = self._createNewUFO(sourceName)
 
         return DSSource(
             identifier=sourceIdentifier,
             name=sourceName,
             layer=ufoLayer,
-            location=globalLocation,
+            location=location,
         )
 
-    def _createUFOLayer(
-        self,
-        glyphName: str | None,
-        sourceName: str,
-        layerName: str,
-        globalLocation: dict,
-    ) -> UFOLayer:
-        atPole, notAtPole = splitLocationByPolePosition(
-            globalLocation, self.axisPolePositions
+    def _createNewUFO(self, sourceName: str) -> UFOLayer:
+        dsFileName = pathlib.Path(self.dsDoc.path).stem
+        suggestedUFOFileName = f"{dsFileName}_{sourceName}"
+
+        ufoPath = os.fspath(makeUniqueUFOPath(self.ufoDir, suggestedUFOFileName))
+
+        reader = self.ufoManager.getReader(ufoPath)  # this creates the UFO
+        info = UFOFontInfo()
+        for _, infoAttr in fontInfoNameMapping:
+            value = getattr(self.defaultFontInfo, infoAttr, None)
+            if value is not None:
+                setattr(info, infoAttr, value)
+        reader.writeInfo(info)
+        _ = reader.getGlyphSet()  # this creates the default layer
+        reader.writeLayerContents()
+        ufoLayerName = reader.getDefaultLayerName()
+        assert os.path.isdir(ufoPath)
+
+        ufoLayer = UFOLayer(
+            manager=self.ufoManager,
+            path=ufoPath,
+            name=ufoLayerName,
         )
-        if not notAtPole:
-            # Create a whole new UFO
-            dsFileName = pathlib.Path(self.dsDoc.path).stem
-            suggestedUFOFileName = f"{dsFileName}_{sourceName}"
-
-            ufoPath = os.fspath(makeUniqueUFOPath(self.ufoDir, suggestedUFOFileName))
-
-            reader = self.ufoManager.getReader(ufoPath)  # this creates the UFO
-            info = UFOFontInfo()
-            for _, infoAttr in fontInfoNameMapping:
-                value = getattr(self.defaultFontInfo, infoAttr, None)
-                if value is not None:
-                    setattr(info, infoAttr, value)
-            reader.writeInfo(info)
-            _ = reader.getGlyphSet()  # this creates the default layer
-            reader.writeLayerContents()
-            ufoLayerName = reader.getDefaultLayerName()
-            assert os.path.isdir(ufoPath)
-
-            ufoLayer = UFOLayer(
-                manager=self.ufoManager,
-                path=ufoPath,
-                name=ufoLayerName,
-            )
-            self.ufoLayers.append(ufoLayer)
-            self._updatePathsToWatch()
-        else:
-            # Create a new layer in the appropriate existing UFO
-            poleDSSource = self._findDSSourceForSparseSource(globalLocation)
-            ufoPath = poleDSSource.layer.path
-            ufoLayer = self._newUFOLayer(glyphName, poleDSSource.layer.path, layerName)
-
+        self.ufoLayers.append(ufoLayer)
+        self._updatePathsToWatch()
         return ufoLayer
 
     def _findDSSourceForSparseSource(self, location):
@@ -838,6 +837,7 @@ class DesignspaceBackend:
                     sourceIdentifier,
                     fontSource.name,
                     denseSourceLocation,
+                    fontSource.isSparse,
                 )
 
             newDSSources.append(dsSource)
