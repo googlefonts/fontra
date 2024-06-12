@@ -148,7 +148,7 @@ class DesignspaceBackend:
         _ = self.glyphDependencies  # trigger background task
 
     @async_property
-    async def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+    async def glyphDependencies(self) -> GlyphDependencies:
         if self._glyphDependencies is not None:
             return self._glyphDependencies
 
