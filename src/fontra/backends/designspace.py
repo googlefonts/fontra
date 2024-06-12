@@ -144,7 +144,11 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
         self.buildGlyphFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        self.glyphMap = (
+            {}
+            if self.defaultDSSource is None
+            else getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        )
         self.savedGlyphModificationTimes: dict[str, set] = {}
 
     def startOptionalBackgroundTasks(self) -> None:
@@ -217,10 +221,19 @@ class DesignspaceBackend:
     def defaultReader(self):
         return self.defaultUFOLayer.reader
 
+    @property
+    def ufoDir(self) -> pathlib.Path:
+        return pathlib.Path(
+            self.dsDoc.path
+            if self.defaultDSSource is None
+            else self.defaultUFOLayer.path
+        ).parent
+
     @cached_property
     def defaultFontInfo(self):
         fontInfo = UFOFontInfo()
-        self.defaultReader.readInfo(fontInfo)
+        if self.defaultDSSource is not None:
+            self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
     def loadUFOLayers(self):
@@ -616,9 +629,8 @@ class DesignspaceBackend:
             # Create a whole new UFO
             dsFileName = pathlib.Path(self.dsDoc.path).stem
             suggestedUFOFileName = f"{dsFileName}_{sourceName}"
-            ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
 
-            ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
+            ufoPath = os.fspath(makeUniqueUFOPath(self.ufoDir, suggestedUFOFileName))
 
             reader = manager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
@@ -834,8 +846,9 @@ class DesignspaceBackend:
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
-        ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-        featureText = resolveFeatureIncludes(featureText, ufoDir, set(self.glyphMap))
+        featureText = resolveFeatureIncludes(
+            featureText, self.ufoDir, set(self.glyphMap)
+        )
         return OpenTypeFeatures(language="fea", text=featureText)
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:
