@@ -881,9 +881,9 @@ class DesignspaceBackend:
         self._writeDesignSpaceDocument()
 
     def _writeDesignSpaceDocument(self):
-        self.dsDoc.write(self.dsDoc.path)
         for source in self.dsDoc.sources:
             source.location = {**self.defaultLocation, **source.location}
+        self.dsDoc.write(self.dsDoc.path)
         self.dsDocModTime = os.stat(self.dsDoc.path).st_mtime
 
     async def watchExternalChanges(
