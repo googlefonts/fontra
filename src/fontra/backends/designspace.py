@@ -842,8 +842,8 @@ class DesignspaceBackend:
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
         self.dsDoc.sources = [
-            s.asDSSourceDescriptor()
-            for s in sorted(
+            source.asDSSourceDescriptor()
+            for source in sorted(
                 newDSSources,
                 key=lambda source: [
                     source.location[axisName] for axisName in axisOrder
