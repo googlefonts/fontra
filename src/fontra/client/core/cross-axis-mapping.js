@@ -55,7 +55,12 @@ export class CrossAxisMapping {
       const sourceValues = [];
 
       for (const [vo, vi] of zip(outputLocations, inputLocations)) {
-        sourceValues.push((vo[axisName] || 0) - (vi[axisName] || 0));
+        const v = vo[axisName];
+        if (v === undefined) {
+          sourceValues.push(0);
+          continue;
+        }
+        sourceValues.push(v - (vi[axisName] || 0));
       }
 
       this.deltas[axisName] = this.model.getDeltas(sourceValues);
@@ -81,6 +86,7 @@ export class CrossAxisMapping {
 
     for (const [axisName, axisValue] of Object.entries(location)) {
       if (!(axisName in this.deltas)) {
+        mappedLocation[axisName] = axisValue;
         continue;
       }
       const value = this.model.interpolateFromDeltas(location, this.deltas[axisName]);
