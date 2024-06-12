@@ -9,7 +9,7 @@
           <dimension name="Bend" xvalue="100"/>
         </input>
         <output>
-          <dimension name="Bend" xvalue="0"/>
+          <dimension name="Bend" xvalue="100"/>
           <dimension name="Bend-2" xvalue="100"/>
         </output>
       </mapping>
