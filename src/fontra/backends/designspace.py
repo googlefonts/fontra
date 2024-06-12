@@ -28,6 +28,7 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
+from ..core.async_property import async_property
 from ..core.classes import (
     Anchor,
     Axes,
@@ -117,7 +118,7 @@ class DesignspaceBackend:
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
-        self._glyphDependenciesTask: Awaitable[GlyphDependencies] | None = None
+        self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._glyphDependencies: GlyphDependencies | None = None
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
@@ -146,18 +147,21 @@ class DesignspaceBackend:
     def startOptionalBackgroundTasks(self) -> None:
         _ = self.glyphDependencies  # trigger background task
 
-    @property
-    def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+    @async_property
+    async def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+        if self._glyphDependencies is not None:
+            return self._glyphDependencies
+
+        if self.defaultDSSource is None:
+            self._glyphDependencies = GlyphDependencies()
+            return self._glyphDependencies
+
         if self._glyphDependenciesTask is None:
-            if self.defaultDSSource is None:
-                self._glyphDependenciesTask = asyncio.Future()
-                self._glyphDependenciesTask.set_result(GlyphDependencies())
-            else:
-                self._glyphDependenciesTask = asyncio.create_task(
-                    extractGlyphDependenciesFromUFO(
-                        self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
-                    )
+            self._glyphDependenciesTask = asyncio.create_task(
+                extractGlyphDependenciesFromUFO(
+                    self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
                 )
+            )
 
             def setResult(task):
                 if not task.cancelled() and task.exception() is None:
@@ -165,7 +169,7 @@ class DesignspaceBackend:
 
             self._glyphDependenciesTask.add_done_callback(setResult)
 
-        return self._glyphDependenciesTask
+        return await self._glyphDependenciesTask
 
     async def findGlyphsThatUseGlyph(self, glyphName):
         return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
