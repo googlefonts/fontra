@@ -663,6 +663,17 @@ class DesignspaceBackend:
             location=location,
         )
 
+    def _findDSSourceForSparseSource(self, location):
+        atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
+        atPole = {**self.defaultLocation, **atPole}
+        poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
+        if poleDSSource is None:
+            poleDSSource = self.defaultDSSource
+
+        assert poleDSSource is not None
+
+        return poleDSSource
+
     def _createUFO(self, sourceName: str) -> UFOLayer:
         dsFileName = pathlib.Path(self.dsDoc.path).stem
         suggestedUFOFileName = f"{dsFileName}_{sourceName}"
@@ -689,17 +700,6 @@ class DesignspaceBackend:
         self.ufoLayers.append(ufoLayer)
         self._updatePathsToWatch()
         return ufoLayer
-
-    def _findDSSourceForSparseSource(self, location):
-        atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
-        atPole = {**self.defaultLocation, **atPole}
-        poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
-        if poleDSSource is None:
-            poleDSSource = self.defaultDSSource
-
-        assert poleDSSource is not None
-
-        return poleDSSource
 
     def _createUFOLayer(
         self, glyphName: str | None, ufoPath: str, suggestedLayerName: str
