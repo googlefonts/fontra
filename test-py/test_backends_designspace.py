@@ -743,7 +743,8 @@ async def test_getFeatures(testFont):
     assert "# Included feature text" in features.text
 
 
-async def test_glyphDependencies(testFont):
+async def test_glyphDependencies(testFont) -> None:
+    assert isinstance(testFont, DesignspaceBackend)
     deps = await testFont.glyphDependencies
     assert set(deps.usedBy) == {
         "A",
@@ -770,6 +771,16 @@ async def test_glyphDependencies(testFont):
         "semicolon",
         "varcotest1",
     }
+
+
+async def test_glyphDependencies_new_font(tmpdir) -> None:
+    tmpdir = pathlib.Path(tmpdir)
+    destPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(destPath)
+    assert isinstance(font, DesignspaceBackend)
+    deps = await font.glyphDependencies
+    assert deps.usedBy == {}
+    assert deps.madeOf == {}
 
 
 def fileNamesFromDir(path):
