@@ -999,14 +999,6 @@ getAxesTestData = [
         "designspace",
         [
             FontAxis(
-                defaultValue=0.0,
-                maxValue=1000.0,
-                minValue=0.0,
-                label="width",
-                name="width",
-                tag="wdth",
-            ),
-            FontAxis(
                 defaultValue=100.0,
                 maxValue=900.0,
                 mapping=[[100.0, 150.0], [900.0, 850.0]],
@@ -1014,6 +1006,14 @@ getAxesTestData = [
                 label="weight",
                 name="weight",
                 tag="wght",
+            ),
+            FontAxis(
+                defaultValue=0.0,
+                maxValue=1000.0,
+                minValue=0.0,
+                label="width",
+                name="width",
+                tag="wdth",
             ),
             DiscreteFontAxis(
                 name="italic",

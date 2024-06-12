@@ -165,10 +165,11 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
 
 async def test_addNewDenseSource(writableTestFont):
     glyphName = "A"
-    assert writableTestFont.dsDoc.axes[0].name == "width"
+    axisIndex = 1
+    assert writableTestFont.dsDoc.axes[axisIndex].name == "width"
 
     # Move the width axis maximum
-    writableTestFont.dsDoc.axes[0].maximum = 1500
+    writableTestFont.dsDoc.axes[axisIndex].maximum = 1500
     writableTestFont.__init__(writableTestFont.dsDoc)  # hacky reload from ds doc
 
     glyphMap = await writableTestFont.getGlyphMap()
