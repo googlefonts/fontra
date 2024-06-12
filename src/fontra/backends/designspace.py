@@ -756,7 +756,7 @@ class DesignspaceBackend:
             value = getattr(fontInfo, fontraName, None)
             if value is not None:
                 infoDict[ufoName] = value
-        self._updateUFOFontInfo(infoDict)
+        self._updateGlobalFontInfo(infoDict)
 
     async def getAxes(self) -> Axes:
         return Axes(axes=self.axes, mappings=self.axisMappings)
@@ -822,7 +822,6 @@ class DesignspaceBackend:
             if dsSource is not None:
                 if dsSource.isSparse != fontSource.isSparse:
                     raise ValueError("Modifying isSparse is currently not supported")
-                # TODO: update guidelines, vertical metrics
                 dsSource = replace(
                     dsSource,
                     identifier=sourceIdentifier,
@@ -849,6 +848,8 @@ class DesignspaceBackend:
                     isDefault=denseSourceLocation == self.defaultLocation,
                 )
 
+            updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
+
             newDSSources.append(dsSource)
 
         self.dsSources = newDSSources
@@ -872,9 +873,9 @@ class DesignspaceBackend:
     async def putUnitsPerEm(self, value: int) -> None:
         if hasattr(self, "defaultFontInfo"):
             del self.defaultFontInfo
-        self._updateUFOFontInfo({"unitsPerEm": value})
+        self._updateGlobalFontInfo({"unitsPerEm": value})
 
-    def _updateUFOFontInfo(self, infoDict: dict) -> None:
+    def _updateGlobalFontInfo(self, infoDict: dict) -> None:
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         for ufoPath in ufoPaths:
             reader = self.ufoManager.getReader(ufoPath)
@@ -1713,3 +1714,17 @@ def getDefaultSourceName(
             sourceName = glyphSource.name
             break
     return sourceName
+
+
+def updateFontInfoFromFontSource(reader, fontSource):
+    fontInfo = UFOFontInfo()
+    reader.readInfo(fontInfo)
+
+    for name, metric in fontSource.verticalMetrics.items():
+        if name in verticalMetricsDefaults:
+            setattr(fontInfo, name, metric.value)
+        else:
+            # TODO: store in lib
+            pass
+
+    reader.writeInfo(fontInfo)

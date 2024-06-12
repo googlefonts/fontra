@@ -590,6 +590,19 @@ async def test_getSources(testFont):
     assert sourcesList == getSourcesTestData
 
 
+async def test_putSources(writableTestFont):
+    sources = await writableTestFont.getSources()
+    testSource = sources["light-condensed"]
+    assert testSource.verticalMetrics["ascender"].value == 700
+    testSource.verticalMetrics["ascender"].value = 800
+    await writableTestFont.putSources(sources)
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    sources = await reopenedBackend.getSources()
+    testSource = sources["light-condensed"]
+    assert testSource.verticalMetrics["ascender"].value == 800
+
+
 expectedAxesWithMappings = Axes(
     axes=[
         FontAxis(
