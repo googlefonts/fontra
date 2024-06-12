@@ -610,6 +610,50 @@ async def test_putSources(writableTestFont):
     # assert sources == reopenedSources  # fails on zone
 
 
+async def test_putSources_delete_revive(writableTestFont):
+    originalSources = await writableTestFont.getSources()
+    originalGlyph = await writableTestFont.getGlyph("E")
+    assert [source.name for source in originalGlyph.sources] == [
+        "LightCondensed",
+        "BoldCondensed",
+        "LightWide",
+        "BoldWide",
+        "support.crossbar",
+    ]
+    assert {layerName for layerName in originalGlyph.layers} == {
+        "MutatorSansLightCondensed/foreground",
+        "MutatorSansLightCondensed/support.crossbar",
+        "MutatorSansBoldCondensed/foreground",
+        "MutatorSansLightWide/foreground",
+        "MutatorSansBoldWide/foreground",
+    }
+
+    changedSources = deepcopy(originalSources)
+    del changedSources["bold-wide"]
+
+    await writableTestFont.putSources(changedSources)
+
+    changedGlyph = await writableTestFont.getGlyph("E")
+    assert changedGlyph != originalGlyph
+    assert [source.name for source in changedGlyph.sources] == [
+        "LightCondensed",
+        "BoldCondensed",
+        "LightWide",
+        "support.crossbar",
+    ]
+    assert {layerName for layerName in changedGlyph.layers} == {
+        "MutatorSansLightCondensed/foreground",
+        "MutatorSansLightCondensed/support.crossbar",
+        "MutatorSansBoldCondensed/foreground",
+        "MutatorSansLightWide/foreground",
+    }
+
+    await writableTestFont.putSources(originalSources)
+
+    revivedGlyph = await writableTestFont.getGlyph("E")
+    assert revivedGlyph == originalGlyph
+
+
 expectedAxesWithMappings = Axes(
     axes=[
         FontAxis(

@@ -141,6 +141,7 @@ class DesignspaceBackend:
             else getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         )
         self.savedGlyphModificationTimes: dict[str, set] = {}
+        self.zombieDSSources = {}
 
     def startOptionalBackgroundTasks(self) -> None:
         _ = self.glyphDependencies  # trigger background task
@@ -814,6 +815,10 @@ class DesignspaceBackend:
             dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
 
             if dsSource is None:
+                # Revive previously deleted DSSource
+                dsSource = self.zombieDSSources.pop(sourceIdentifier, None)
+
+            if dsSource is None:
                 # Fall back to search by location
                 dsSource = self.dsSources.findItem(
                     locationTuple=tuplifyLocation(denseSourceLocation)
@@ -853,7 +858,17 @@ class DesignspaceBackend:
 
             newDSSources.append(dsSource)
 
+        self.zombieDSSources.update(
+            {s.identifier: s for s in self.dsSources if s.identifier not in sources}
+        )
+
         self.dsSources = newDSSources
+
+        # Prune layers
+        newLayers = ItemList()
+        for dsSource in newDSSources:
+            newLayers.append(dsSource.layer)
+        self.ufoLayers = newLayers
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
         self.dsDoc.sources = [
