@@ -51,31 +51,31 @@ describe("CrossAxisMapping Tests", () => {
     },
     {
       inputLocation: { Diagonal: 12.5 },
-      outputLocation: { Diagonal: 12.5, Horizontal: 0, Vertical: 16.5 },
+      outputLocation: { Diagonal: 0, Horizontal: 0, Vertical: 16.5 },
     },
     {
       inputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 10 },
-      outputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 26.5 },
+      outputLocation: { Diagonal: 0, Horizontal: 10, Vertical: 26.5 },
     },
     {
       inputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 100 },
-      outputLocation: { Diagonal: 12.5, Horizontal: 10, Vertical: 100 },
+      outputLocation: { Diagonal: 0, Horizontal: 10, Vertical: 100 },
     },
     {
       inputLocation: { Diagonal: 25 },
-      outputLocation: { Diagonal: 25, Horizontal: 0, Vertical: 33 },
+      outputLocation: { Diagonal: 0, Horizontal: 0, Vertical: 33 },
     },
     {
       inputLocation: { Diagonal: 50 },
-      outputLocation: { Diagonal: 50, Horizontal: 50, Vertical: 50 },
+      outputLocation: { Diagonal: 0, Horizontal: 50, Vertical: 50 },
     },
     {
       inputLocation: { Diagonal: 75 },
-      outputLocation: { Diagonal: 75, Horizontal: 100, Vertical: 67 },
+      outputLocation: { Diagonal: 0, Horizontal: 100, Vertical: 67 },
     },
     {
       inputLocation: { Diagonal: 100 },
-      outputLocation: { Diagonal: 100, Horizontal: 100, Vertical: 100 },
+      outputLocation: { Diagonal: 0, Horizontal: 100, Vertical: 100 },
     },
   ];
 
