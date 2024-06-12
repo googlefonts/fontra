@@ -653,7 +653,7 @@ getGlyphTestData = [
         {
             "name": "period",
             "layers": {
-                "<default>": {
+                "default": {
                     "glyph": {
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
@@ -696,9 +696,9 @@ getGlyphTestData = [
             },
             "sources": [
                 {
-                    "layerName": "<default>",
+                    "layerName": "default",
                     "location": {"wdth": 0, "wght": 0},
-                    "name": "<default>",
+                    "name": "default",
                 },
                 {
                     "layerName": "wdth=1",
@@ -723,7 +723,7 @@ getGlyphTestData = [
         {
             "name": "period",
             "layers": {
-                "<default>": {
+                "default": {
                     "glyph": {
                         "path": {
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
@@ -794,8 +794,8 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {"wdth": 0, "wght": 0},
-                    "name": "<default>",
-                    "layerName": "<default>",
+                    "name": "default",
+                    "layerName": "default",
                 },
                 {
                     "location": {"wdth": 1.0, "wght": 0},
@@ -821,8 +821,8 @@ getGlyphTestData = [
             "name": "varcotest1",
             "sources": [
                 {
-                    "name": "<default>",
-                    "layerName": "<default>",
+                    "name": "default",
+                    "layerName": "default",
                     "location": {"V000": 0, "V001": 0, "wdth": 0, "wght": 0},
                 },
                 {
@@ -832,7 +832,7 @@ getGlyphTestData = [
                 },
             ],
             "layers": {
-                "<default>": {
+                "default": {
                     "glyph": {
                         "components": [
                             {

@@ -392,7 +392,7 @@ class DesignspaceBackend:
             ufoLayerName = source.get("layername", defaultLayerName)
             sourceName = source.get(
                 "name",
-                ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
+                ufoLayerName if ufoLayerName != defaultLayerName else "default",
             )
 
             sourceLocation = {**self.defaultLocation, **source["location"]}
