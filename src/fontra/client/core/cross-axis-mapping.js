@@ -86,6 +86,7 @@ export class CrossAxisMapping {
 
     for (const [axisName, axisValue] of Object.entries(location)) {
       if (!(axisName in this.deltas)) {
+        mappedLocation[axisName] = axisValue;
         continue;
       }
       const value = this.model.interpolateFromDeltas(location, this.deltas[axisName]);
