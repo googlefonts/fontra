@@ -848,7 +848,8 @@ class DesignspaceBackend:
                     isDefault=denseSourceLocation == self.defaultLocation,
                 )
 
-            updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
+            if not dsSource.isSparse:
+                updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
 
             newDSSources.append(dsSource)
 
@@ -1437,13 +1438,17 @@ def unpackGuidelines(guidelines):
             x=g.get("x", 0),
             y=g.get("y", 0),
             angle=g.get("angle", 0),
-            locked=g.get("locked", False),
+            locked=False,  # g.get("locked", False),
             # TODO: Guidelines, how do we handle customData like:
             # color=g.get("color"),
             # identifier=g.get("identifier"),
         )
         for g in guidelines
     ]
+
+
+def packGuidelines(guidelines):
+    return [{"name": g.name, "x": g.x, "y": g.y, "angle": g.angle} for g in guidelines]
 
 
 def readGlyphOrCreate(
@@ -1726,5 +1731,7 @@ def updateFontInfoFromFontSource(reader, fontSource):
         else:
             # TODO: store in lib
             pass
+
+    fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
     reader.writeInfo(fontInfo)
