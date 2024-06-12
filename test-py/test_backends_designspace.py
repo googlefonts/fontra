@@ -370,30 +370,37 @@ async def test_putAxes(writableTestFont):
 
 
 @pytest.mark.parametrize(
-    "sourceFont, fileName, initialExpectedFileNames, expectedFileNames",
+    "sourceFont, fileName, initialExpectedFileNames, expectedFileNames, referenceUFO",
     [
         (
             getTestFont(),
             "Test.designspace",
-            ["Test.designspace", "Test_Regular.ufo"],
+            ["Test.designspace"],
             [
                 "Test.designspace",
                 "Test_BoldCondensed.ufo",
                 "Test_BoldWide.ufo",
+                "Test_LightCondensed.ufo",
                 "Test_LightWide.ufo",
-                "Test_Regular.ufo",
             ],
+            "Test_LightCondensed.ufo",
         ),
         (
             getFontSingleUFO(),
             "Test_Regular.ufo",
             ["Test_Regular.ufo"],
             ["Test_Regular.ufo"],
+            "Test_Regular.ufo",
         ),
     ],
 )
 async def test_newFileSystemBackend(
-    tmpdir, sourceFont, fileName, initialExpectedFileNames, expectedFileNames
+    tmpdir,
+    sourceFont,
+    fileName,
+    initialExpectedFileNames,
+    expectedFileNames,
+    referenceUFO,
 ):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / fileName
@@ -407,8 +414,12 @@ async def test_newFileSystemBackend(
     glyph = await sourceFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])
 
+    assert expectedFileNames == fileNamesFromDir(tmpdir)
+
+    assert (tmpdir / referenceUFO).exists(), fileNamesFromDir(tmpdir)
+
     assert ["A_.glif", "contents.plist"] == fileNamesFromDir(
-        tmpdir / "Test_Regular.ufo" / "glyphs"
+        tmpdir / referenceUFO / "glyphs"
     )
 
     assert [
@@ -417,9 +428,7 @@ async def test_newFileSystemBackend(
         "glyphs.M_utatorS_ansL_ightC_ondensed_support",
         "layercontents.plist",
         "metainfo.plist",
-    ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
-
-    assert expectedFileNames == fileNamesFromDir(tmpdir)
+    ] == fileNamesFromDir(tmpdir / referenceUFO)
 
     newGlyph = await font.getGlyph("A")
     assert glyph == newGlyph
@@ -440,6 +449,7 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     await font.putAxes(axes)
     glyphMap = await testFont.getGlyphMap()
     glyph = await testFont.getGlyph("A")
+
     await font.putGlyph("A", glyph, glyphMap["A"])
     await font.putGlyph("A.alt", glyph, [])
 
@@ -449,7 +459,7 @@ async def test_writeCorrectLayers(tmpdir, testFont):
         "glyphs.M_utatorS_ansL_ightC_ondensed_support",
         "layercontents.plist",
         "metainfo.plist",
-    ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
+    ] == fileNamesFromDir(tmpdir / "Test_LightCondensed.ufo")
 
 
 async def test_deleteGlyph(writableTestFont):

@@ -27,9 +27,9 @@ async def test_copyFont(tmpdir, glyphNames):
         "MutatorCopy.designspace",
         "MutatorCopy_BoldCondensed.ufo",
         "MutatorCopy_BoldWide.ufo",
+        "MutatorCopy_LightCondensed.ufo",
         "MutatorCopy_LightCondensedItalic.ufo",
         "MutatorCopy_LightWide.ufo",
-        "MutatorCopy_Regular.ufo",
     ] == fileNamesFromDir(tmpdir)
 
     reopenedFont = getFileSystemBackend(destPath)
@@ -47,9 +47,9 @@ def test_fontra_copy(tmpdir):
         "MutatorCopy.designspace",
         "MutatorCopy_BoldCondensed.ufo",
         "MutatorCopy_BoldWide.ufo",
+        "MutatorCopy_LightCondensed.ufo",
         "MutatorCopy_LightCondensedItalic.ufo",
         "MutatorCopy_LightWide.ufo",
-        "MutatorCopy_Regular.ufo",
     ] == fileNamesFromDir(tmpdir)
 
 

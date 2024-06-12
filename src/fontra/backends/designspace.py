@@ -110,17 +110,7 @@ class DesignspaceBackend:
 
     @classmethod
     def createFromPath(cls, path: PathLike) -> WritableFontBackend:
-        path = pathlib.Path(path)
-        ufoDir = path.parent
-
-        # Create default UFO
-        familyName = path.stem
-        styleName = "Regular"
-        suggestedUFOFileName = f"{familyName}_{styleName}"
-
-        ufoPath = makeUniqueUFOPath(ufoDir, suggestedUFOFileName)
-        dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
-        # dsDoc = DesignSpaceDocument()
+        dsDoc = DesignSpaceDocument()
         dsDoc.write(path)
         return cls(dsDoc)
 
@@ -435,6 +425,12 @@ class DesignspaceBackend:
         if self._glyphDependencies is not None:
             self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
 
+        if self.defaultDSSource is None:
+            # This is the first glyph ever to be written, and font sources were not set up
+            # explicitly, so we need to create the default UFO
+            sourceName = getDefaultSourceName(glyph, self.defaultLocation, "Regular")
+            self._createDefaultSourceAndUFO(sourceName)
+
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, codePoints
         )
@@ -541,6 +537,23 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
+    def _createDefaultSourceAndUFO(self, sourceName):
+        assert not self.dsSources
+        assert not self.dsDoc.sources
+        ufoLayer = self._createUFO(sourceName)
+
+        assert os.path.isdir(ufoLayer.path)
+
+        dsSource = DSSource(
+            identifier=makeDSSourceIdentifier(self.dsDoc, 0, None),
+            name=sourceName,
+            layer=ufoLayer,
+            location=self.defaultLocation,
+            isDefault=True,
+        )
+        self.dsSources.append(dsSource)
+        self.dsDoc.sources.append(dsSource.asDSSourceDescriptor())
+
     def _prepareUFOSourceLayer(
         self,
         glyphName: str,
@@ -646,11 +659,10 @@ class DesignspaceBackend:
             dsSources = self.dsSources
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
         atPole = {**self.defaultLocation, **atPole}
-        poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
+        poleDSSource = dsSources.findItem(locationTuple=tuplifyLocation(atPole))
         if poleDSSource is None:
-            poleDSSource = self.defaultDSSource
-
-        assert poleDSSource is not None
+            poleDSSource = dsSources.findItem(isDefault=True)
+            assert poleDSSource is not None
 
         return poleDSSource
 
@@ -834,6 +846,7 @@ class DesignspaceBackend:
                     name=fontSource.name,
                     layer=ufoLayer,
                     location=denseSourceLocation,
+                    isDefault=denseSourceLocation == self.defaultLocation,
                 )
 
             newDSSources.append(dsSource)
@@ -1685,3 +1698,18 @@ def makeSparseLocation(location, defaultLocation):
 
 def makeDenseLocation(location, defaultLocation):
     return {name: location.get(name, value) for name, value in defaultLocation.items()}
+
+
+def getDefaultSourceName(
+    glyph: VariableGlyph, defaultLocation: dict[str, float], sourceName: str
+) -> str:
+    sourceName
+    for glyphSource in glyph.sources:
+        if (
+            not glyphSource.inactive
+            and makeDenseLocation(glyphSource.location, defaultLocation)
+            == defaultLocation
+        ):
+            sourceName = glyphSource.name
+            break
+    return sourceName
