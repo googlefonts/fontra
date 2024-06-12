@@ -1225,11 +1225,11 @@ class UFOFontInfo:
 
 class UFOManager:
     @cache
-    def getReader(self, path):
+    def getReader(self, path: str) -> UFOReaderWriter:
         return UFOReaderWriter(path)
 
     @cache
-    def getGlyphSet(self, path, layerName):
+    def getGlyphSet(self, path: str, layerName: str) -> GlyphSet:
         return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
 
 
