@@ -793,7 +793,9 @@ class DesignspaceBackend:
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
         newDSSources = ItemList()
-        for sourceIdentifier, fontSource in sources.items():
+        for sourceIdentifier, fontSource in sorted(
+            sources.items(), key=lambda item: item[1].isSparse
+        ):
             denseSourceLocation = makeDenseLocation(
                 fontSource.location, self.defaultLocation
             )
@@ -837,7 +839,17 @@ class DesignspaceBackend:
             newDSSources.append(dsSource)
 
         self.dsSources = newDSSources
-        self.dsDoc.sources = [s.asDSSourceDescriptor() for s in newDSSources]
+
+        axisOrder = [axis.name for axis in self.dsDoc.axes]
+        self.dsDoc.sources = [
+            s.asDSSourceDescriptor()
+            for s in sorted(
+                newDSSources,
+                key=lambda source: [
+                    source.location[axisName] for axisName in axisOrder
+                ],
+            )
+        ]
 
         self._writeDesignSpaceDocument()
 
