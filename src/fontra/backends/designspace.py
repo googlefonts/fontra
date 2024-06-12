@@ -120,6 +120,7 @@ class DesignspaceBackend:
 
         ufoPath = makeUniqueUFOPath(ufoDir, suggestedUFOFileName)
         dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
+        # dsDoc = DesignSpaceDocument()
         dsDoc.write(path)
         return cls(dsDoc)
 
@@ -568,8 +569,7 @@ class DesignspaceBackend:
             locationTuple=tuplifyLocation(globalLocation)
         )
         if dsSource is None:
-            dsSource = self._createDSSource(
-                None,
+            dsSource = self._createDSSourceForGlyph(
                 glyphName,
                 source.name,
                 source.layerName,
@@ -613,15 +613,45 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
-    def _createDSSource(
+    def _createDSSourceForFontSource(
+        self, sourceIdentifier: str, sourceName: str, location: dict[str, float]
+    ):
+        ufoLayer = self._createUFOLayer(None, sourceName, sourceName, location)
+
+        return DSSource(
+            identifier=sourceIdentifier,
+            name=sourceName,
+            layer=ufoLayer,
+            location=location,
+        )
+
+    def _createDSSourceForGlyph(
         self,
-        sourceIdentifier: str | None,
         glyphName: str | None,
         sourceName: str,
         layerName: str,
         globalLocation: dict,
     ) -> DSSource:
-        manager = self.ufoManager
+        sourceIdentifier = makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None)
+
+        ufoLayer = self._createUFOLayer(
+            glyphName, sourceName, layerName, globalLocation
+        )
+
+        return DSSource(
+            identifier=sourceIdentifier,
+            name=sourceName,
+            layer=ufoLayer,
+            location=globalLocation,
+        )
+
+    def _createUFOLayer(
+        self,
+        glyphName: str | None,
+        sourceName: str,
+        layerName: str,
+        globalLocation: dict,
+    ) -> UFOLayer:
         atPole, notAtPole = splitLocationByPolePosition(
             globalLocation, self.axisPolePositions
         )
@@ -632,7 +662,7 @@ class DesignspaceBackend:
 
             ufoPath = os.fspath(makeUniqueUFOPath(self.ufoDir, suggestedUFOFileName))
 
-            reader = manager.getReader(ufoPath)  # this creates the UFO
+            reader = self.ufoManager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
             for _, infoAttr in fontInfoNameMapping:
                 value = getattr(self.defaultFontInfo, infoAttr, None)
@@ -645,7 +675,7 @@ class DesignspaceBackend:
             assert os.path.isdir(ufoPath)
 
             ufoLayer = UFOLayer(
-                manager=manager,
+                manager=self.ufoManager,
                 path=ufoPath,
                 name=ufoLayerName,
             )
@@ -656,19 +686,8 @@ class DesignspaceBackend:
             poleDSSource = self._findDSSourceForSparseSource(globalLocation)
             ufoPath = poleDSSource.layer.path
             ufoLayer = self._newUFOLayer(glyphName, poleDSSource.layer.path, layerName)
-            ufoLayerName = ufoLayer.name
 
-        if sourceIdentifier is None:
-            sourceIdentifier = makeDSSourceIdentifier(
-                self.dsDoc, len(self.dsSources), None
-            )
-
-        return DSSource(
-            identifier=sourceIdentifier,
-            name=sourceName,
-            layer=ufoLayer,
-            location=globalLocation,
-        )
+        return ufoLayer
 
     def _findDSSourceForSparseSource(self, location):
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
@@ -815,10 +834,8 @@ class DesignspaceBackend:
                     location=denseSourceLocation,
                 )
             else:
-                dsSource = self._createDSSource(
+                dsSource = self._createDSSourceForFontSource(
                     sourceIdentifier,
-                    None,
-                    fontSource.name,
                     fontSource.name,
                     denseSourceLocation,
                 )
