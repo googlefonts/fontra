@@ -743,6 +743,35 @@ async def test_getFeatures(testFont):
     assert "# Included feature text" in features.text
 
 
+async def test_glyphDependencies(testFont):
+    deps = await testFont.glyphDependencies
+    assert set(deps.usedBy) == {
+        "A",
+        "acute",
+        "dieresis",
+        "O",
+        "period",
+        "dot",
+        "comma",
+        "varcotest2",
+        "varcotest1",
+    }
+    assert set(deps.madeOf) == {
+        "Aacute",
+        "Adieresis",
+        "Q",
+        "colon",
+        "dieresis",
+        "nestedcomponents",
+        "quotedblbase",
+        "quotedblleft",
+        "quotedblright",
+        "quotesinglbase",
+        "semicolon",
+        "varcotest1",
+    }
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
