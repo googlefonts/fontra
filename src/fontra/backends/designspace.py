@@ -237,7 +237,7 @@ class DesignspaceBackend:
             self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
-    def loadUFOLayers(self):
+    def loadUFOLayers(self) -> None:
         manager = self.ufoManager
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
@@ -767,7 +767,7 @@ class DesignspaceBackend:
     async def getAxes(self) -> Axes:
         return Axes(axes=self.axes, mappings=self.axisMappings)
 
-    async def putAxes(self, axes):
+    async def putAxes(self, axes: Axes) -> None:
         self.dsDoc.axes = []
         self.dsDoc.axisMappings = []
 
@@ -1313,23 +1313,23 @@ class UFOLayer:
     name: str
 
     @cached_property
-    def fileName(self):
+    def fileName(self) -> str:
         return os.path.splitext(os.path.basename(self.path))[0]
 
     @cached_property
-    def fontraLayerName(self):
+    def fontraLayerName(self) -> str:
         return f"{self.fileName}/{self.name}"
 
     @cached_property
-    def reader(self):
+    def reader(self) -> UFOReaderWriter:
         return self.manager.getReader(self.path)
 
     @cached_property
-    def glyphSet(self):
+    def glyphSet(self) -> GlyphSet:
         return self.manager.getGlyphSet(self.path, self.name)
 
     @cached_property
-    def isDefaultLayer(self):
+    def isDefaultLayer(self) -> bool:
         assert self.name
         return self.name == self.reader.getDefaultLayerName()
 
