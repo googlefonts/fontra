@@ -149,11 +149,15 @@ class DesignspaceBackend:
     @property
     def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
         if self._glyphDependenciesTask is None:
-            self._glyphDependenciesTask = asyncio.create_task(
-                extractGlyphDependenciesFromUFO(
-                    self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
+            if self.defaultDSSource is None:
+                self._glyphDependenciesTask = asyncio.Future()
+                self._glyphDependenciesTask.set_result(GlyphDependencies())
+            else:
+                self._glyphDependenciesTask = asyncio.create_task(
+                    extractGlyphDependenciesFromUFO(
+                        self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
+                    )
                 )
-            )
 
             def setResult(task):
                 if not task.cancelled() and task.exception() is None:
