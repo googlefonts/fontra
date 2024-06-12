@@ -141,7 +141,7 @@ class DesignspaceBackend:
             else getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         )
         self.savedGlyphModificationTimes: dict[str, set] = {}
-        self.zombieDSSources = {}
+        self.zombieDSSources: dict[str, DSSource] = {}
 
     def startOptionalBackgroundTasks(self) -> None:
         _ = self.glyphDependencies  # trigger background task
