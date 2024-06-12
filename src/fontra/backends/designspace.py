@@ -613,28 +613,6 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
-    def _createDSSourceForFontSource(
-        self,
-        sourceIdentifier: str,
-        sourceName: str,
-        location: dict[str, float],
-        isSparse: bool,
-    ):
-        if not isSparse:
-            # Create a whole new UFO
-            ufoLayer = self._createUFO(sourceName)
-        else:
-            # Create a new layer in the appropriate existing UFO
-            poleDSSource = self._findDSSourceForSparseSource(location)
-            ufoLayer = self._createUFOLayer(None, poleDSSource.layer.path, sourceName)
-
-        return DSSource(
-            identifier=sourceIdentifier,
-            name=sourceName,
-            layer=ufoLayer,
-            location=location,
-        )
-
     def _createDSSourceForGlyph(
         self,
         glyphName: str | None,
@@ -663,7 +641,9 @@ class DesignspaceBackend:
             location=location,
         )
 
-    def _findDSSourceForSparseSource(self, location):
+    def _findDSSourceForSparseSource(self, location, dsSources=None):
+        if dsSources is None:
+            dsSources = self.dsSources
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
         atPole = {**self.defaultLocation, **atPole}
         poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
@@ -835,11 +815,23 @@ class DesignspaceBackend:
                     location=denseSourceLocation,
                 )
             else:
-                dsSource = self._createDSSourceForFontSource(
-                    sourceIdentifier,
-                    fontSource.name,
-                    denseSourceLocation,
-                    fontSource.isSparse,
+                if not fontSource.isSparse:
+                    # Create a whole new UFO
+                    ufoLayer = self._createUFO(fontSource.name)
+                else:
+                    # Create a new layer in the appropriate existing UFO
+                    poleDSSource = self._findDSSourceForSparseSource(
+                        denseSourceLocation, newDSSources
+                    )
+                    ufoLayer = self._createUFOLayer(
+                        None, poleDSSource.layer.path, fontSource.name
+                    )
+
+                dsSource = DSSource(
+                    identifier=sourceIdentifier,
+                    name=fontSource.name,
+                    layer=ufoLayer,
+                    location=denseSourceLocation,
                 )
 
             newDSSources.append(dsSource)
