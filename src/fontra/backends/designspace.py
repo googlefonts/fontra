@@ -809,7 +809,11 @@ class DesignspaceBackend:
                 if dsSource.isSparse != fontSource.isSparse:
                     raise ValueError("Modifying isSparse is currently not supported")
                 # TODO: update guidelines, vertical metrics
-                dsSource = replace(dsSource, location=denseSourceLocation)
+                dsSource = replace(
+                    dsSource,
+                    identifier=sourceIdentifier,
+                    location=denseSourceLocation,
+                )
             else:
                 dsSource = self._createDSSource(
                     sourceIdentifier,
