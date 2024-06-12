@@ -1261,16 +1261,12 @@ class DSSource:
     layer: UFOLayer
     location: dict[str, float]
     isDefault: bool = False
-    hidden: bool = False  # Does not exist as Fontra FontSource
 
     @cached_property
     def locationTuple(self):
         return tuplifyLocation(self.location)
 
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
-        if self.hidden:
-            raise TypeError("hidden DS source can't be converted to FontSource")
-
         if self.isSparse:
             verticalMetrics: dict[str, FontMetric] = {}
             guidelines = []
