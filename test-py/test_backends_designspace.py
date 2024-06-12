@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 from contextlib import aclosing
+from copy import deepcopy
 from dataclasses import asdict
 
 import pytest
@@ -591,7 +592,7 @@ async def test_getSources(testFont):
 
 
 async def test_putSources(writableTestFont):
-    sources = await writableTestFont.getSources()
+    sources = deepcopy(await writableTestFont.getSources())
     testSource = sources["light-condensed"]
 
     assert testSource.verticalMetrics["ascender"].value == 700
@@ -602,10 +603,11 @@ async def test_putSources(writableTestFont):
     await writableTestFont.putSources(sources)
 
     reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
-    sources = await reopenedBackend.getSources()
-    testSource = sources["light-condensed"]
+    reopenedSources = await reopenedBackend.getSources()
+    testSource = reopenedSources["light-condensed"]
     assert testSource.verticalMetrics["ascender"].value == 800
     assert testSource.guidelines[0].y == 750
+    # assert sources == reopenedSources  # fails on zone
 
 
 expectedAxesWithMappings = Axes(
