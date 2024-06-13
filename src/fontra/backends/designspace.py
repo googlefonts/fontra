@@ -879,15 +879,10 @@ class DesignspaceBackend:
         self.ufoLayers = newLayers
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
-        self.dsDoc.sources = [
-            source.asDSSourceDescriptor()
-            for source in sorted(
-                newDSSources,
-                key=lambda source: [
-                    source.location[axisName] for axisName in axisOrder
-                ],
-            )
+        newSourceDescriptors = [
+            source.asDSSourceDescriptor() for source in newDSSources
         ]
+        self.dsDoc.sources = sortByLocation(newSourceDescriptors, axisOrder)
 
         self._writeDesignSpaceDocument()
 
@@ -1759,3 +1754,10 @@ def updateFontInfoFromFontSource(reader, fontSource):
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
     reader.writeInfo(fontInfo)
+
+
+def sortByLocation(sources, axisOrder):
+    return sorted(
+        sources,
+        key=lambda source: [source.location[axisName] for axisName in axisOrder],
+    )
