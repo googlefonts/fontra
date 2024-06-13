@@ -596,7 +596,9 @@ async def test_putSources(writableTestFont):
     testSource = sources["light-condensed"]
 
     assert testSource.verticalMetrics["ascender"].value == 700
+    assert testSource.verticalMetrics["ascender"].zone == 16
     testSource.verticalMetrics["ascender"].value = 800
+    testSource.verticalMetrics["ascender"].zone = 10
     assert testSource.guidelines[0].y == 700
     testSource.guidelines[0].y = 750
 
@@ -606,6 +608,7 @@ async def test_putSources(writableTestFont):
     reopenedSources = await reopenedBackend.getSources()
     testSource = reopenedSources["light-condensed"]
     assert testSource.verticalMetrics["ascender"].value == 800
+    assert testSource.verticalMetrics["ascender"].zone == 10
     assert testSource.guidelines[0].y == 750
     assert sources == reopenedSources
 
