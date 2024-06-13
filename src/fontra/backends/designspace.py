@@ -64,6 +64,7 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
+VERTICAL_METRICS_ZONES_KEY = "xyz.fonts.verticalMetrics.zones"
 
 
 defaultUFOInfoAttrs = {
@@ -1193,26 +1194,26 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def getPostscriptBlueValues(fontInfo):
-    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
-    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
-    values = blueValues + otherBluesValue
-    return sorted(values)
+# def getPostscriptBlueValues(fontInfo):
+#     blueValues = getattr(fontInfo, "postscriptBlueValues", [])
+#     otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
+#     values = blueValues + otherBluesValue
+#     return sorted(values)
 
 
-def getZone(value, blueValues):
-    if len(blueValues) % 2:
-        # ensure the list has an even number of items
-        blueValues = blueValues[:-1]
+# def getZone(value, blueValues):
+#     if len(blueValues) % 2:
+#         # ensure the list has an even number of items
+#         blueValues = blueValues[:-1]
 
-    for i in range(0, len(blueValues), 2):
-        blueValue = blueValues[i]
-        nextBlueValue = blueValues[i + 1]
-        if value == blueValue:
-            return nextBlueValue - blueValue
-        elif value == nextBlueValue:
-            return blueValue - nextBlueValue
-    return 0
+#     for i in range(0, len(blueValues), 2):
+#         blueValue = blueValues[i]
+#         nextBlueValue = blueValues[i + 1]
+#         if value == blueValue:
+#             return nextBlueValue - blueValue
+#         elif value == nextBlueValue:
+#             return blueValue - nextBlueValue
+#     return 0
 
 
 class UFOBackend(DesignspaceBackend):
@@ -1313,15 +1314,16 @@ class DSSource:
         else:
             fontInfo = UFOFontInfo()
             self.layer.reader.readInfo(fontInfo)
-            blueValues = getPostscriptBlueValues(fontInfo)
+            lib = self.layer.reader.readLib()
+            zones = lib.get(VERTICAL_METRICS_ZONES_KEY, {})
             verticalMetrics = {}
             for name, defaultFactor in verticalMetricsDefaults.items():
                 value = 0 if name == "baseline" else getattr(fontInfo, name, None)
                 if value is None:
                     value = round(defaultFactor["value"] * unitsPerEm)
+                zone = zones.get(name)
+                if zone is None:
                     zone = round(defaultFactor["zone"] * unitsPerEm)
-                else:
-                    zone = getZone(value, blueValues)
                 verticalMetrics[name] = FontMetric(value=value, zone=zone)
             guidelines = unpackGuidelines(fontInfo.guidelines)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
