@@ -29,11 +29,7 @@
     </rule>
   </rules>
   <sources>
-    <source filename="MutatorSansLightCondensed.ufo" name="light-condensed" familyname="MutatorMathTest" stylename="LightCondensed" layer="foreground">
-      <lib copy="1"/>
-      <groups copy="1"/>
-      <features copy="1"/>
-      <info copy="1"/>
+    <source filename="MutatorSansLightCondensed.ufo" name="light-condensed" familyname="MutatorMathTest" stylename="LightCondensed">
       <location>
         <dimension name="weight" xvalue="150"/>
         <dimension name="width" xvalue="0"/>
@@ -61,28 +57,28 @@
         <dimension name="italic" xvalue="0"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" name="support.crossbar" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.crossbar">
+    <source filename="MutatorSansLightCondensed.ufo" name="support.crossbar" familyname="MutatorMathTest" stylename="support.crossbar" layer="support.crossbar">
       <location>
         <dimension name="weight" xvalue="595"/>
         <dimension name="width" xvalue="0"/>
         <dimension name="italic" xvalue="0"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" name="support.S.wide" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.wide">
+    <source filename="MutatorSansLightCondensed.ufo" name="support.S.wide" familyname="MutatorMathTest" stylename="support.S.wide" layer="support.S.wide">
       <location>
         <dimension name="weight" xvalue="595"/>
         <dimension name="width" xvalue="1000"/>
         <dimension name="italic" xvalue="0"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensed.ufo" name="support.S.middle" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.middle">
+    <source filename="MutatorSansLightCondensed.ufo" name="support.S.middle" familyname="MutatorMathTest" stylename="support.S.middle" layer="support.S.middle">
       <location>
         <dimension name="weight" xvalue="595"/>
         <dimension name="width" xvalue="569.078"/>
         <dimension name="italic" xvalue="0"/>
       </location>
     </source>
-    <source filename="MutatorSansLightCondensedItalic.ufo" name="light-condensed-italic" stylename="LightCondensedItalic">
+    <source filename="MutatorSansLightCondensedItalic.ufo" name="light-condensed-italic" familyname="MutatorMathTest" stylename="LightCondensedItalic">
       <location>
         <dimension name="weight" xvalue="150"/>
         <dimension name="width" xvalue="0"/>
