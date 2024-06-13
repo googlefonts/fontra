@@ -149,7 +149,7 @@ class DesignspaceBackend:
         _ = self.glyphDependencies  # trigger background task
 
     @property
-    def familyName(self):
+    def familyName(self) -> str:
         return self._familyName if self._familyName is not None else "Untitled"
 
     @async_property
