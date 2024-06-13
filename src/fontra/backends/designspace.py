@@ -560,6 +560,9 @@ class DesignspaceBackend:
 
         assert os.path.isdir(ufoLayer.path)
 
+        if self._familyName is None:
+            self._familyName = pathlib.Path(self.dsDoc.path).stem
+
         dsSource = DSSource(
             identifier=makeDSSourceIdentifier(self.dsDoc, 0, None),
             name=sourceName,
