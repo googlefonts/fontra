@@ -970,8 +970,11 @@ class DesignspaceBackend:
         if reloadPattern is None:
             self._reloadDesignSpaceFromFile()
         if reloadPattern or reloadPattern is None:
-            for callback in self.fileWatcherCallbacks:
-                await callback(reloadPattern)
+            await self._notifyWatcherCallbacks(reloadPattern)
+
+    async def _notifyWatcherCallbacks(self, reloadPattern):
+        for callback in self.fileWatcherCallbacks:
+            await callback(reloadPattern)
 
     async def processExternalChanges(
         self, changes: set[tuple[Change, str]]
