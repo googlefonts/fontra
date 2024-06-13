@@ -122,7 +122,7 @@ class DesignspaceBackend:
         self._glyphDependencies: GlyphDependencies | None = None
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
-        self._familyName = None
+        self._familyName: str | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
