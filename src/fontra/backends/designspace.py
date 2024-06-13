@@ -1774,7 +1774,7 @@ def updateFontInfoFromFontSource(reader, fontSource):
 
     zones = {}
     for name, metric in fontSource.verticalMetrics.items():
-        if name in verticalMetricsDefaults:
+        if name in verticalMetricsDefaults and name != "baseline":
             setattr(fontInfo, name, metric.value)
             if metric.zone:
                 zones[name] = metric.zone
