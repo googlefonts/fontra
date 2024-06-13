@@ -775,6 +775,10 @@ class DesignspaceBackend:
             value = getattr(fontInfo, fontraName, None)
             if value is not None:
                 infoDict[ufoName] = value
+
+        if fontInfo.familyName:
+            self._familyName = fontInfo.familyName
+
         self._updateGlobalFontInfo(infoDict)
 
     async def getAxes(self) -> Axes:
