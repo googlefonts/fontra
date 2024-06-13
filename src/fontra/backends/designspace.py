@@ -122,6 +122,7 @@ class DesignspaceBackend:
         self._glyphDependencies: GlyphDependencies | None = None
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
+        self._familyName = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -146,6 +147,10 @@ class DesignspaceBackend:
 
     def startOptionalBackgroundTasks(self) -> None:
         _ = self.glyphDependencies  # trigger background task
+
+    @property
+    def familyName(self):
+        return self._familyName if self._familyName is not None else "Untitled"
 
     @async_property
     async def glyphDependencies(self) -> GlyphDependencies:
@@ -252,6 +257,8 @@ class DesignspaceBackend:
 
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
+            if self._familyName is None and source.familyName:
+                self._familyName = source.familyName
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
@@ -561,7 +568,7 @@ class DesignspaceBackend:
             isDefault=True,
         )
         self.dsSources.append(dsSource)
-        self.dsDoc.sources.append(dsSource.asDSSourceDescriptor())
+        self.dsDoc.sources.append(dsSource.asDSSourceDescriptor(self.familyName))
 
     def _prepareUFOSourceLayer(
         self,
@@ -598,7 +605,7 @@ class DesignspaceBackend:
                 globalLocation,
             )
             self.dsSources.append(dsSource)
-            self.dsDoc.sources.append(dsSource.asDSSourceDescriptor())
+            self.dsDoc.sources.append(dsSource.asDSSourceDescriptor(self.familyName))
             self._writeDesignSpaceDocument()
 
         if sparseLocalLocation:
@@ -880,7 +887,7 @@ class DesignspaceBackend:
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
         newSourceDescriptors = [
-            source.asDSSourceDescriptor() for source in newDSSources
+            source.asDSSourceDescriptor(self.familyName) for source in newDSSources
         ]
         self.dsDoc.sources = sortedSourceDescriptors(
             newSourceDescriptors, self.dsDoc.sources, axisOrder
@@ -1332,12 +1339,13 @@ class DSSource:
             layerName=self.layer.fontraLayerName,
         )
 
-    def asDSSourceDescriptor(self) -> SourceDescriptor:
+    def asDSSourceDescriptor(self, familyName) -> SourceDescriptor:
         defaultLayerName = self.layer.reader.getDefaultLayerName()
         ufoLayerName = self.layer.name if self.layer.name != defaultLayerName else None
         return SourceDescriptor(
             name=self.identifier,
             styleName=self.name,
+            familyName=familyName,
             location=self.location,
             path=self.layer.path,
             layerName=ufoLayerName,
@@ -1469,7 +1477,16 @@ def unpackGuidelines(guidelines):
 
 
 def packGuidelines(guidelines):
-    return [{"name": g.name, "x": g.x, "y": g.y, "angle": g.angle} for g in guidelines]
+    packedGuidelines = []
+    for g in guidelines:
+        pg = {}
+        if g.name is not None:
+            pg["name"] = g.name
+        pg["x"] = g.x
+        pg["y"] = g.y
+        pg["angle"] = g.angle
+        packedGuidelines.append(pg)
+    return packedGuidelines
 
 
 def readGlyphOrCreate(
