@@ -600,7 +600,7 @@ export class EditorController {
       ]
     );
     if (result === "ok") {
-      const layerName = "<default>";
+      const layerName = "default";
       await this.newGlyph(
         positionedGlyph.glyphName,
         positionedGlyph.character?.codePointAt(0),
@@ -1671,7 +1671,7 @@ export class EditorController {
       const layers = {};
       const sources = [];
       if (pasteLayerGlyphs.length === 1) {
-        const layerName = "<default>";
+        const layerName = "default";
         layers[layerName] = { glyph: pasteLayerGlyphs[0].glyph };
         sources.push({ name: layerName, layerName });
       } else {

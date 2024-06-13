@@ -63,7 +63,7 @@ class OTFBackend:
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         if glyphName not in self.glyphSet:
             return None
-        defaultLayerName = "<default>"
+        defaultLayerName = "default"
         glyph = VariableGlyph(name=glyphName)
         staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}

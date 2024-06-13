@@ -8,7 +8,7 @@ import secrets
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
@@ -20,6 +20,7 @@ from fontTools.designspaceLib import (
     AxisLabelDescriptor,
     DesignSpaceDocument,
     DiscreteAxisDescriptor,
+    SourceDescriptor,
 )
 from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.pointPen import AbstractPointPen
@@ -27,6 +28,7 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
+from ..core.async_property import async_property
 from ..core.classes import (
     Anchor,
     Axes,
@@ -62,6 +64,7 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
+VERTICAL_METRICS_ZONES_KEY = "xyz.fonts.verticalMetrics.zones"
 
 
 defaultUFOInfoAttrs = {
@@ -109,16 +112,7 @@ class DesignspaceBackend:
 
     @classmethod
     def createFromPath(cls, path: PathLike) -> WritableFontBackend:
-        path = pathlib.Path(path)
-        ufoDir = path.parent
-
-        # Create default UFO
-        familyName = path.stem
-        styleName = "Regular"
-        suggestedUFOFileName = f"{familyName}_{styleName}"
-
-        ufoPath = makeUniqueUFOPath(ufoDir, suggestedUFOFileName)
-        dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
+        dsDoc = DesignSpaceDocument()
         dsDoc.write(path)
         return cls(dsDoc)
 
@@ -129,6 +123,7 @@ class DesignspaceBackend:
         self._glyphDependencies: GlyphDependencies | None = None
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
+        self._familyName: str | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -143,14 +138,30 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
         self.buildGlyphFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        self.glyphMap = (
+            {}
+            if self.defaultDSSource is None
+            else getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        )
         self.savedGlyphModificationTimes: dict[str, set] = {}
+        self.zombieDSSources: dict[str, DSSource] = {}
 
     def startOptionalBackgroundTasks(self) -> None:
         _ = self.glyphDependencies  # trigger background task
 
     @property
-    def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+    def familyName(self) -> str:
+        return self._familyName if self._familyName is not None else "Untitled"
+
+    @async_property
+    async def glyphDependencies(self) -> GlyphDependencies:
+        if self._glyphDependencies is not None:
+            return self._glyphDependencies
+
+        if self.defaultDSSource is None:
+            self._glyphDependencies = GlyphDependencies()
+            return self._glyphDependencies
+
         if self._glyphDependenciesTask is None:
             self._glyphDependenciesTask = asyncio.create_task(
                 extractGlyphDependenciesFromUFO(
@@ -164,7 +175,7 @@ class DesignspaceBackend:
 
             self._glyphDependenciesTask.add_done_callback(setResult)
 
-        return self._glyphDependenciesTask
+        return await self._glyphDependenciesTask
 
     async def findGlyphsThatUseGlyph(self, glyphName):
         return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
@@ -216,13 +227,22 @@ class DesignspaceBackend:
     def defaultReader(self):
         return self.defaultUFOLayer.reader
 
+    @property
+    def ufoDir(self) -> pathlib.Path:
+        return pathlib.Path(
+            self.dsDoc.path
+            if self.defaultDSSource is None
+            else self.defaultUFOLayer.path
+        ).parent
+
     @cached_property
     def defaultFontInfo(self):
         fontInfo = UFOFontInfo()
-        self.defaultReader.readInfo(fontInfo)
+        if self.defaultDSSource is not None:
+            self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
-    def loadUFOLayers(self):
+    def loadUFOLayers(self) -> None:
         manager = self.ufoManager
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
@@ -238,6 +258,8 @@ class DesignspaceBackend:
 
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
+            if self._familyName is None and source.familyName:
+                self._familyName = source.familyName
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
@@ -256,7 +278,7 @@ class DesignspaceBackend:
                     identifier=source.name,
                     name=sourceName,
                     layer=sourceLayer,
-                    location={**self.defaultLocation, **source.location},
+                    location=makeDenseLocation(source.location, self.defaultLocation),
                     isDefault=source == self.dsDoc.default,
                 )
             )
@@ -335,7 +357,7 @@ class DesignspaceBackend:
             glyphSet = dsSource.layer.glyphSet
             if glyphName not in glyphSet:
                 continue
-            sources.append(dsSource.newFontraSource(localDefaultOverride))
+            sources.append(dsSource.asFontraGlyphSource(localDefaultOverride))
 
         sources.extend(localSources)
 
@@ -378,7 +400,7 @@ class DesignspaceBackend:
             ufoLayerName = source.get("layername", defaultLayerName)
             sourceName = source.get(
                 "name",
-                ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
+                ufoLayerName if ufoLayerName != defaultLayerName else "default",
             )
 
             sourceLocation = {**self.defaultLocation, **source["location"]}
@@ -419,6 +441,12 @@ class DesignspaceBackend:
 
         if self._glyphDependencies is not None:
             self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
+
+        if self.defaultDSSource is None:
+            # This is the first glyph ever to be written, and font sources were not set up
+            # explicitly, so we need to create the default UFO
+            sourceName = getDefaultSourceName(glyph, self.defaultLocation, "Regular")
+            self._createDefaultSourceAndUFO(sourceName)
 
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, codePoints
@@ -467,7 +495,7 @@ class DesignspaceBackend:
             if ufoLayer is None:
                 # This layer is not used by any source and we haven't seen it
                 # before. Let's create a new layer in the default UFO.
-                ufoLayer = self._newUFOLayer(
+                ufoLayer = self._createUFOLayer(
                     glyphName, self.defaultUFOLayer.path, layerName
                 )
                 if ufoLayer.fontraLayerName != layerName:
@@ -526,8 +554,32 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
+    def _createDefaultSourceAndUFO(self, sourceName):
+        assert not self.dsSources
+        assert not self.dsDoc.sources
+        ufoLayer = self._createUFO(sourceName)
+
+        assert os.path.isdir(ufoLayer.path)
+
+        if self._familyName is None:
+            self._familyName = pathlib.Path(self.dsDoc.path).stem
+
+        dsSource = DSSource(
+            identifier=makeDSSourceIdentifier(self.dsDoc, 0, None),
+            name=sourceName,
+            layer=ufoLayer,
+            location=self.defaultLocation,
+            isDefault=True,
+        )
+        self.dsSources.append(dsSource)
+        self.dsDoc.sources.append(dsSource.asDSSourceDescriptor(self.familyName))
+
     def _prepareUFOSourceLayer(
-        self, glyphName, source, localDefaultLocation, revLayerNameMapping
+        self,
+        glyphName: str,
+        source: GlyphSource,
+        localDefaultLocation: dict[str, float],
+        revLayerNameMapping: dict[str, float],
     ):
         baseLocation = {}
         if source.locationBase:
@@ -550,7 +602,15 @@ class DesignspaceBackend:
             locationTuple=tuplifyLocation(globalLocation)
         )
         if dsSource is None:
-            dsSource = self._createDSSource(glyphName, source, globalLocation)
+            dsSource = self._createDSSourceForGlyph(
+                glyphName,
+                source.name,
+                source.layerName,
+                globalLocation,
+            )
+            self.dsSources.append(dsSource)
+            self.dsDoc.sources.append(dsSource.asDSSourceDescriptor(self.familyName))
+            self._writeDesignSpaceDocument()
 
         if sparseLocalLocation:
             ufoLayer = self.ufoLayers.findItem(
@@ -561,7 +621,7 @@ class DesignspaceBackend:
 
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
-                ufoLayer = self._newUFOLayer(glyphName, ufoPath, source.layerName)
+                ufoLayer = self._createUFOLayer(glyphName, ufoPath, source.layerName)
                 ufoLayerName = ufoLayer.name
             else:
                 ufoLayerName = ufoLayer.name
@@ -586,97 +646,76 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
-    # def _createDSSourceFromFontSource(self, fontSource: FontSource):
-    #     manager = self.ufoManager
+    def _createDSSourceForGlyph(
+        self,
+        glyphName: str | None,
+        sourceName: str,
+        layerName: str,
+        location: dict,
+    ) -> DSSource:
+        sourceIdentifier = makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None)
 
-    #     if not fontSource.isSparse:
-    #         # Create a whole new UFO
-    #         ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-    #         dsFileName = pathlib.Path(self.dsDoc.path).stem
-    #         suggestedUFOFileName = f"{dsFileName}_{fontSource.name}"
-    #         ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
-    #         assert 0, ufoPath
-    #     else:
-    #         poleDSSource = self._findDSSourceForSparseSource(fontSource.location)
-    #         ufoPath = poleDSSource.layer.path
-    #         ufoLayer = self._newUFOLayer(None, poleDSSource.layer.path, fontSource.name)
-    #         ufoLayerName = ufoLayer.name
+        _, notAtPole = splitLocationByPolePosition(location, self.axisPolePositions)
 
-    def _createDSSource(self, glyphName, source, globalLocation):
-        manager = self.ufoManager
-        atPole, notAtPole = splitLocationByPolePosition(
-            globalLocation, self.axisPolePositions
-        )
-        if not notAtPole:
-            # Create a whole new UFO
-            dsFileName = pathlib.Path(self.dsDoc.path).stem
-            suggestedUFOFileName = f"{dsFileName}_{source.name}"
-            ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-
-            ufoPath = os.fspath(makeUniqueUFOPath(ufoDir, suggestedUFOFileName))
-
-            reader = manager.getReader(ufoPath)  # this creates the UFO
-            info = UFOFontInfo()
-            for _, infoAttr in fontInfoNameMapping:
-                value = getattr(self.defaultFontInfo, infoAttr, None)
-                if value is not None:
-                    setattr(info, infoAttr, value)
-            reader.writeInfo(info)
-            _ = reader.getGlyphSet()  # this creates the default layer
-            reader.writeLayerContents()
-            ufoLayerName = reader.getDefaultLayerName()
-            assert os.path.isdir(ufoPath)
-
-            ufoLayer = UFOLayer(
-                manager=manager,
-                path=ufoPath,
-                name=ufoLayerName,
+        if notAtPole:
+            # Assume sparse source, add new layer to existing UFO
+            poleDSSource = self._findDSSourceForSparseSource(location)
+            ufoLayer = self._createUFOLayer(
+                glyphName, poleDSSource.layer.path, layerName
             )
-            self.ufoLayers.append(ufoLayer)
-            self._updatePathsToWatch()
         else:
-            # Create a new layer in the appropriate existing UFO
-            poleDSSource = self._findDSSourceForSparseSource(globalLocation)
-            ufoPath = poleDSSource.layer.path
-            ufoLayer = self._newUFOLayer(
-                glyphName, poleDSSource.layer.path, source.layerName
-            )
-            ufoLayerName = ufoLayer.name
+            # New UFO
+            ufoLayer = self._createUFO(sourceName)
 
-        reader = manager.getReader(ufoPath)
-        defaultLayerName = reader.getDefaultLayerName()
-
-        dsDocSource = self.dsDoc.addSourceDescriptor(
-            name=makeDSSourceIdentifier(self.dsDoc, len(self.dsSources), None),
-            styleName=source.name,
-            location=globalLocation,
-            path=ufoPath,
-            layerName=ufoLayerName if ufoLayerName != defaultLayerName else None,
-        )
-        self._writeDesignSpaceDocument()
-
-        dsSource = DSSource(
-            identifier=dsDocSource.name,
-            name=source.name,
+        return DSSource(
+            identifier=sourceIdentifier,
+            name=sourceName,
             layer=ufoLayer,
-            location=globalLocation,
+            location=location,
         )
-        self.dsSources.append(dsSource)
 
-        return dsSource
-
-    def _findDSSourceForSparseSource(self, location):
+    def _findDSSourceForSparseSource(self, location, dsSources=None):
+        if dsSources is None:
+            dsSources = self.dsSources
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
         atPole = {**self.defaultLocation, **atPole}
-        poleDSSource = self.dsSources.findItem(locationTuple=tuplifyLocation(atPole))
+        poleDSSource = dsSources.findItem(locationTuple=tuplifyLocation(atPole))
         if poleDSSource is None:
-            poleDSSource = self.defaultDSSource
-
-        assert poleDSSource is not None
+            poleDSSource = dsSources.findItem(isDefault=True)
+            assert poleDSSource is not None
 
         return poleDSSource
 
-    def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
+    def _createUFO(self, sourceName: str) -> UFOLayer:
+        dsFileName = pathlib.Path(self.dsDoc.path).stem
+        suggestedUFOFileName = f"{dsFileName}_{sourceName}"
+
+        ufoPath = os.fspath(makeUniqueUFOPath(self.ufoDir, suggestedUFOFileName))
+
+        reader = self.ufoManager.getReader(ufoPath)  # this creates the UFO
+        info = UFOFontInfo()
+        for _, infoAttr in fontInfoNameMapping:
+            value = getattr(self.defaultFontInfo, infoAttr, None)
+            if value is not None:
+                setattr(info, infoAttr, value)
+        reader.writeInfo(info)
+        _ = reader.getGlyphSet()  # this creates the default layer
+        reader.writeLayerContents()
+        ufoLayerName = reader.getDefaultLayerName()
+        assert os.path.isdir(ufoPath)
+
+        ufoLayer = UFOLayer(
+            manager=self.ufoManager,
+            path=ufoPath,
+            name=ufoLayerName,
+        )
+        self.ufoLayers.append(ufoLayer)
+        self._updatePathsToWatch()
+        return ufoLayer
+
+    def _createUFOLayer(
+        self, glyphName: str | None, ufoPath: str, suggestedLayerName: str
+    ) -> UFOLayer:
         reader = self.ufoManager.getReader(ufoPath)
         existingLayerNames = set(reader.getLayerNames())
         ufoLayerName = suggestedLayerName
@@ -737,12 +776,16 @@ class DesignspaceBackend:
             value = getattr(fontInfo, fontraName, None)
             if value is not None:
                 infoDict[ufoName] = value
-        self._updateUFOFontInfo(infoDict)
+
+        if fontInfo.familyName:
+            self._familyName = fontInfo.familyName
+
+        self._updateGlobalFontInfo(infoDict)
 
     async def getAxes(self) -> Axes:
         return Axes(axes=self.axes, mappings=self.axisMappings)
 
-    async def putAxes(self, axes):
+    async def putAxes(self, axes: Axes) -> None:
         self.dsDoc.axes = []
         self.dsDoc.axisMappings = []
 
@@ -780,27 +823,87 @@ class DesignspaceBackend:
     async def getSources(self) -> dict[str, FontSource]:
         unitsPerEm = await self.getUnitsPerEm()
         return {
-            dsSource.identifier: unpackDSSource(dsSource, unitsPerEm)
+            dsSource.identifier: dsSource.asFontraFontSource(unitsPerEm)
             for dsSource in self.dsSources
         }
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
-        return  # NotImplementedError
-        # TODO: this may require rewriting UFOs and UFO layers
-        # Also: what to do if a source gets deleted?
-        for sourceIdentifier, fontSource in sources.items():
+        newDSSources = ItemList()
+        for sourceIdentifier, fontSource in sorted(
+            sources.items(), key=lambda item: item[1].isSparse
+        ):
+            denseSourceLocation = makeDenseLocation(
+                fontSource.location, self.defaultLocation
+            )
             dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
+
+            if dsSource is None:
+                # Revive previously deleted DSSource
+                dsSource = self.zombieDSSources.pop(sourceIdentifier, None)
+
+            if dsSource is None:
+                # Fall back to search by location
+                dsSource = self.dsSources.findItem(
+                    locationTuple=tuplifyLocation(denseSourceLocation)
+                )
+
             if dsSource is not None:
                 if dsSource.isSparse != fontSource.isSparse:
                     raise ValueError("Modifying isSparse is currently not supported")
-                # update guidelines, vertical metrics
-                assert 0
+                dsSource = replace(
+                    dsSource,
+                    identifier=sourceIdentifier,
+                    location=denseSourceLocation,
+                )
             else:
-                ...
-                # create dsSource
-                self._createDSSourceFromFontSource(fontSource)
-                assert 0, "hey"
+                if not fontSource.isSparse:
+                    # Create a whole new UFO
+                    ufoLayer = self._createUFO(fontSource.name)
+                else:
+                    # Create a new layer in the appropriate existing UFO
+                    poleDSSource = self._findDSSourceForSparseSource(
+                        denseSourceLocation, newDSSources
+                    )
+                    ufoLayer = self._createUFOLayer(
+                        None, poleDSSource.layer.path, fontSource.name
+                    )
+
+                dsSource = DSSource(
+                    identifier=sourceIdentifier,
+                    name=fontSource.name,
+                    layer=ufoLayer,
+                    location=denseSourceLocation,
+                    isDefault=denseSourceLocation == self.defaultLocation,
+                )
+
+            if not dsSource.isSparse:
+                updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
+
+            newDSSources.append(dsSource)
+
+        self.zombieDSSources.update(
+            {s.identifier: s for s in self.dsSources if s.identifier not in sources}
+        )
+
+        self.dsSources = newDSSources
+
+        # Prune layers
+        newLayers = ItemList()
+        for dsSource in newDSSources:
+            newLayers.append(dsSource.layer)
+        self.ufoLayers = newLayers
+
+        axisOrder = [axis.name for axis in self.dsDoc.axes]
+        newSourceDescriptors = [
+            source.asDSSourceDescriptor(self.familyName) for source in newDSSources
+        ]
+        self.dsDoc.sources = sortedSourceDescriptors(
+            newSourceDescriptors, self.dsDoc.sources, axisOrder
+        )
+
         self._writeDesignSpaceDocument()
+
+        await self._notifyWatcherCallbacks({"glyphs": None})
 
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
@@ -808,9 +911,9 @@ class DesignspaceBackend:
     async def putUnitsPerEm(self, value: int) -> None:
         if hasattr(self, "defaultFontInfo"):
             del self.defaultFontInfo
-        self._updateUFOFontInfo({"unitsPerEm": value})
+        self._updateGlobalFontInfo({"unitsPerEm": value})
 
-    def _updateUFOFontInfo(self, infoDict: dict) -> None:
+    def _updateGlobalFontInfo(self, infoDict: dict) -> None:
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         for ufoPath in ufoPaths:
             reader = self.ufoManager.getReader(ufoPath)
@@ -822,8 +925,9 @@ class DesignspaceBackend:
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
-        ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-        featureText = resolveFeatureIncludes(featureText, ufoDir, set(self.glyphMap))
+        featureText = resolveFeatureIncludes(
+            featureText, self.ufoDir, set(self.glyphMap)
+        )
         return OpenTypeFeatures(language="fea", text=featureText)
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:
@@ -852,9 +956,9 @@ class DesignspaceBackend:
         self._writeDesignSpaceDocument()
 
     def _writeDesignSpaceDocument(self):
-        self.dsDoc.write(self.dsDoc.path)
         for source in self.dsDoc.sources:
             source.location = {**self.defaultLocation, **source.location}
+        self.dsDoc.write(self.dsDoc.path)
         self.dsDocModTime = os.stat(self.dsDoc.path).st_mtime
 
     async def watchExternalChanges(
@@ -880,8 +984,11 @@ class DesignspaceBackend:
         if reloadPattern is None:
             self._reloadDesignSpaceFromFile()
         if reloadPattern or reloadPattern is None:
-            for callback in self.fileWatcherCallbacks:
-                await callback(reloadPattern)
+            await self._notifyWatcherCallbacks(reloadPattern)
+
+    async def _notifyWatcherCallbacks(self, reloadPattern):
+        for callback in self.fileWatcherCallbacks:
+            await callback(reloadPattern)
 
     async def processExternalChanges(
         self, changes: set[tuple[Change, str]]
@@ -1087,57 +1194,26 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
-    if dsSource.isSparse:
-        verticalMetrics: dict[str, FontMetric] = {}
-        guidelines = []
-        italicAngle = 0
-    else:
-        fontInfo = UFOFontInfo()
-        dsSource.layer.reader.readInfo(fontInfo)
-        blueValues = getPostscriptBlueValues(fontInfo)
-        verticalMetrics = {}
-        for name, defaultFactor in verticalMetricsDefaults.items():
-            value = 0 if name == "baseline" else getattr(fontInfo, name, None)
-            if value is None:
-                value = round(defaultFactor["value"] * unitsPerEm)
-                zone = round(defaultFactor["zone"] * unitsPerEm)
-            else:
-                zone = getZone(value, blueValues)
-            verticalMetrics[name] = FontMetric(value=value, zone=zone)
-        guidelines = unpackGuidelines(fontInfo.guidelines)
-        italicAngle = getattr(fontInfo, "italicAngle", 0)
-
-    return FontSource(
-        name=dsSource.name,
-        location=dsSource.location,
-        italicAngle=italicAngle,
-        verticalMetrics=verticalMetrics,
-        guidelines=guidelines,
-        isSparse=dsSource.isSparse,
-    )
+# def getPostscriptBlueValues(fontInfo):
+#     blueValues = getattr(fontInfo, "postscriptBlueValues", [])
+#     otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
+#     values = blueValues + otherBluesValue
+#     return sorted(values)
 
 
-def getPostscriptBlueValues(fontInfo):
-    blueValues = getattr(fontInfo, "postscriptBlueValues", [])
-    otherBluesValue = getattr(fontInfo, "postscriptOtherBlues", [])
-    values = blueValues + otherBluesValue
-    return sorted(values)
+# def getZone(value, blueValues):
+#     if len(blueValues) % 2:
+#         # ensure the list has an even number of items
+#         blueValues = blueValues[:-1]
 
-
-def getZone(value, blueValues):
-    if len(blueValues) % 2:
-        # ensure the list has an even number of items
-        blueValues = blueValues[:-1]
-
-    for i in range(0, len(blueValues), 2):
-        blueValue = blueValues[i]
-        nextBlueValue = blueValues[i + 1]
-        if value == blueValue:
-            return nextBlueValue - blueValue
-        elif value == nextBlueValue:
-            return blueValue - nextBlueValue
-    return 0
+#     for i in range(0, len(blueValues), 2):
+#         blueValue = blueValues[i]
+#         nextBlueValue = blueValues[i + 1]
+#         if value == blueValue:
+#             return nextBlueValue - blueValue
+#         elif value == nextBlueValue:
+#             return blueValue - nextBlueValue
+#     return 0
 
 
 class UFOBackend(DesignspaceBackend):
@@ -1210,11 +1286,11 @@ class UFOFontInfo:
 
 class UFOManager:
     @cache
-    def getReader(self, path):
+    def getReader(self, path: str) -> UFOReaderWriter:
         return UFOReaderWriter(path)
 
     @cache
-    def getGlyphSet(self, path, layerName):
+    def getGlyphSet(self, path: str, layerName: str) -> GlyphSet:
         return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
 
 
@@ -1230,7 +1306,38 @@ class DSSource:
     def locationTuple(self):
         return tuplifyLocation(self.location)
 
-    def newFontraSource(self, localDefaultOverride=None):
+    def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
+        if self.isSparse:
+            verticalMetrics: dict[str, FontMetric] = {}
+            guidelines = []
+            italicAngle = 0
+        else:
+            fontInfo = UFOFontInfo()
+            self.layer.reader.readInfo(fontInfo)
+            lib = self.layer.reader.readLib()
+            zones = lib.get(VERTICAL_METRICS_ZONES_KEY, {})
+            verticalMetrics = {}
+            for name, defaultFactor in verticalMetricsDefaults.items():
+                value = 0 if name == "baseline" else getattr(fontInfo, name, None)
+                if value is None:
+                    value = round(defaultFactor["value"] * unitsPerEm)
+                zone = zones.get(name)
+                if zone is None:
+                    zone = round(defaultFactor["zone"] * unitsPerEm)
+                verticalMetrics[name] = FontMetric(value=value, zone=zone)
+            guidelines = unpackGuidelines(fontInfo.guidelines)
+            italicAngle = getattr(fontInfo, "italicAngle", 0)
+
+        return FontSource(
+            name=self.name,
+            location=self.location,
+            italicAngle=italicAngle,
+            verticalMetrics=verticalMetrics,
+            guidelines=guidelines,
+            isSparse=self.isSparse,
+        )
+
+    def asFontraGlyphSource(self, localDefaultOverride=None):
         if localDefaultOverride is None:
             localDefaultOverride = {}
         return GlyphSource(
@@ -1239,6 +1346,18 @@ class DSSource:
             # location={**localDefaultOverride},
             location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,
+        )
+
+    def asDSSourceDescriptor(self, familyName) -> SourceDescriptor:
+        defaultLayerName = self.layer.reader.getDefaultLayerName()
+        ufoLayerName = self.layer.name if self.layer.name != defaultLayerName else None
+        return SourceDescriptor(
+            name=self.identifier,
+            styleName=self.name,
+            familyName=familyName,
+            location=self.location,
+            path=self.layer.path,
+            layerName=ufoLayerName,
         )
 
     @cached_property
@@ -1253,23 +1372,23 @@ class UFOLayer:
     name: str
 
     @cached_property
-    def fileName(self):
+    def fileName(self) -> str:
         return os.path.splitext(os.path.basename(self.path))[0]
 
     @cached_property
-    def fontraLayerName(self):
+    def fontraLayerName(self) -> str:
         return f"{self.fileName}/{self.name}"
 
     @cached_property
-    def reader(self):
+    def reader(self) -> UFOReaderWriter:
         return self.manager.getReader(self.path)
 
     @cached_property
-    def glyphSet(self):
+    def glyphSet(self) -> GlyphSet:
         return self.manager.getGlyphSet(self.path, self.name)
 
     @cached_property
-    def isDefaultLayer(self):
+    def isDefaultLayer(self) -> bool:
         assert self.name
         return self.name == self.reader.getDefaultLayerName()
 
@@ -1357,13 +1476,26 @@ def unpackGuidelines(guidelines):
             x=g.get("x", 0),
             y=g.get("y", 0),
             angle=g.get("angle", 0),
-            locked=g.get("locked", False),
+            locked=False,  # g.get("locked", False),
             # TODO: Guidelines, how do we handle customData like:
             # color=g.get("color"),
             # identifier=g.get("identifier"),
         )
         for g in guidelines
     ]
+
+
+def packGuidelines(guidelines):
+    packedGuidelines = []
+    for g in guidelines:
+        pg = {}
+        if g.name is not None:
+            pg["name"] = g.name
+        pg["x"] = g.x
+        pg["y"] = g.y
+        pg["angle"] = g.angle
+        packedGuidelines.append(pg)
+    return packedGuidelines
 
 
 def readGlyphOrCreate(
@@ -1611,7 +1743,84 @@ def makeDSSourceIdentifier(
 
 def makeSparseLocation(location, defaultLocation):
     return {
-        name: value
-        for name, value in location.items()
-        if defaultLocation.get(name) != value
+        name: location[name]
+        for name, value in defaultLocation.items()
+        if location.get(name, value) != value
     }
+
+
+def makeDenseLocation(location, defaultLocation):
+    return {name: location.get(name, value) for name, value in defaultLocation.items()}
+
+
+def getDefaultSourceName(
+    glyph: VariableGlyph, defaultLocation: dict[str, float], sourceName: str
+) -> str:
+    sourceName
+    for glyphSource in glyph.sources:
+        if (
+            not glyphSource.inactive
+            and makeDenseLocation(glyphSource.location, defaultLocation)
+            == defaultLocation
+        ):
+            sourceName = glyphSource.name
+            break
+    return sourceName
+
+
+def updateFontInfoFromFontSource(reader, fontSource):
+    fontInfo = UFOFontInfo()
+    reader.readInfo(fontInfo)
+
+    zones = {}
+    for name, metric in fontSource.verticalMetrics.items():
+        if name in verticalMetricsDefaults:
+            if name != "baseline":
+                setattr(fontInfo, name, metric.value)
+            if metric.zone:
+                zones[name] = metric.zone
+        else:
+            # TODO: store in lib
+            pass
+
+    fontInfo.guidelines = packGuidelines(fontSource.guidelines)
+
+    reader.writeInfo(fontInfo)
+
+    lib = reader.readLib()
+    if zones:
+        lib[VERTICAL_METRICS_ZONES_KEY] = zones
+    else:
+        lib.pop(VERTICAL_METRICS_ZONES_KEY, None)
+    reader.writeLib(lib)
+
+
+def sortedSourceDescriptors(newSourceDescriptors, oldSourceDescriptors, axisOrder):
+    """Sort `newSourceDescriptors` as much as possible like `oldSourceDescriptors`,
+    sort non-matching by location.
+    """
+    newSourceDescriptors = sorted(
+        newSourceDescriptors,
+        key=lambda source: [source.location[axisName] for axisName in axisOrder],
+    )
+
+    sourceOrderBuckets = {None: []}
+    sourceOrderBuckets.update(
+        {oldSource.name: [] for oldSource in oldSourceDescriptors}
+    )
+
+    currentBucket = sourceOrderBuckets[None]
+    for source in newSourceDescriptors:
+        nextBucket = sourceOrderBuckets.get(source.name)
+        if nextBucket is not None:
+            currentBucket = nextBucket
+        currentBucket.append(source)
+
+    sortedSourceDescriptors = []
+    for bucket in sourceOrderBuckets.values():
+        sortedSourceDescriptors.extend(bucket)
+    assert len(sortedSourceDescriptors) == len(newSourceDescriptors)
+    assert {s.name for s in sortedSourceDescriptors} == {
+        s.name for s in newSourceDescriptors
+    }
+    return sortedSourceDescriptors

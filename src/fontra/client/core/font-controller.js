@@ -267,7 +267,7 @@ export class FontController {
         `assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`
       );
     }
-    const sourceName = "<default>"; // TODO: get from backend (via namedLocations?)
+    const sourceName = "default"; // TODO: get from backend via font sources
 
     const glyph = VariableGlyph.fromObject(varGlyph);
     glyph.name = glyphName;
