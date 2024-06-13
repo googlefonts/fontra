@@ -444,6 +444,8 @@ class FontHandler:
             # Drop local data to ensure it gets reloaded from the backend
             for rootKey, value in reloadPattern.items():
                 if rootKey == "glyphs":
+                    if value is None:
+                        value = sorted(self.glyphMap)
                     for glyphName in value:
                         self.localData.pop(("glyphs", glyphName), None)
                 else:

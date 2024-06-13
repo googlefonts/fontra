@@ -891,6 +891,8 @@ class DesignspaceBackend:
 
         self._writeDesignSpaceDocument()
 
+        await self._notifyWatcherCallbacks({"glyphs": None})
+
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
 
