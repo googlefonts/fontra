@@ -1772,9 +1772,12 @@ def updateFontInfoFromFontSource(reader, fontSource):
     fontInfo = UFOFontInfo()
     reader.readInfo(fontInfo)
 
+    zones = {}
     for name, metric in fontSource.verticalMetrics.items():
         if name in verticalMetricsDefaults:
             setattr(fontInfo, name, metric.value)
+            if metric.zone:
+                zones[name] = metric.zone
         else:
             # TODO: store in lib
             pass
@@ -1782,6 +1785,13 @@ def updateFontInfoFromFontSource(reader, fontSource):
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
     reader.writeInfo(fontInfo)
+
+    lib = reader.readLib()
+    if zones:
+        lib[VERTICAL_METRICS_ZONES_KEY] = zones
+    else:
+        lib.pop(VERTICAL_METRICS_ZONES_KEY, None)
+    reader.writeLib(lib)
 
 
 def sortedSourceDescriptors(newSourceDescriptors, oldSourceDescriptors, axisOrder):

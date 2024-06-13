@@ -607,7 +607,7 @@ async def test_putSources(writableTestFont):
     testSource = reopenedSources["light-condensed"]
     assert testSource.verticalMetrics["ascender"].value == 800
     assert testSource.guidelines[0].y == 750
-    # assert sources == reopenedSources  # fails on zone
+    assert sources == reopenedSources
 
 
 async def test_putSources_delete_revive(writableTestFont):
