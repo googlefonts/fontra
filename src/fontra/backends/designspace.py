@@ -882,7 +882,9 @@ class DesignspaceBackend:
         newSourceDescriptors = [
             source.asDSSourceDescriptor() for source in newDSSources
         ]
-        self.dsDoc.sources = sortByLocation(newSourceDescriptors, axisOrder)
+        self.dsDoc.sources = sortedSourceDescriptors(
+            newSourceDescriptors, self.dsDoc.sources, axisOrder
+        )
 
         self._writeDesignSpaceDocument()
 
@@ -1756,8 +1758,32 @@ def updateFontInfoFromFontSource(reader, fontSource):
     reader.writeInfo(fontInfo)
 
 
-def sortByLocation(sources, axisOrder):
-    return sorted(
-        sources,
+def sortedSourceDescriptors(newSourceDescriptors, oldSourceDescriptors, axisOrder):
+    """Sort `newSourceDescriptors` as much as possible like `oldSourceDescriptors`,
+    sort non-matching by location.
+    """
+    newSourceDescriptors = sorted(
+        newSourceDescriptors,
         key=lambda source: [source.location[axisName] for axisName in axisOrder],
     )
+
+    sourceOrderBuckets = {None: []}
+    sourceOrderBuckets.update(
+        {oldSource.name: [] for oldSource in oldSourceDescriptors}
+    )
+
+    currentBucket = sourceOrderBuckets[None]
+    for source in newSourceDescriptors:
+        nextBucket = sourceOrderBuckets.get(source.name)
+        if nextBucket is not None:
+            currentBucket = nextBucket
+        currentBucket.append(source)
+
+    sortedSourceDescriptors = []
+    for bucket in sourceOrderBuckets.values():
+        sortedSourceDescriptors.extend(bucket)
+    assert len(sortedSourceDescriptors) == len(newSourceDescriptors)
+    assert {s.name for s in sortedSourceDescriptors} == {
+        s.name for s in newSourceDescriptors
+    }
+    return sortedSourceDescriptors
