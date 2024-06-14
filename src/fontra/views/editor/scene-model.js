@@ -465,34 +465,36 @@ export class SceneModel {
     currentHoverSelection,
     preferTCenter
   ) {
-    // First we'll see if the clicked point falls within the current selection
-    const selFromCurrentSelection = this._selectionAtPoint(
-      point,
-      size,
-      currentSelection,
-      currentHoverSelection,
-      preferTCenter
-    );
-
-    if (selFromCurrentSelection.selection?.size || selFromCurrentSelection.pathHit) {
-      return selFromCurrentSelection;
-    }
-
-    // If not, search all items
-    return this._selectionAtPoint(point, size, undefined, undefined, preferTCenter);
-  }
-
-  _selectionAtPoint(
-    point,
-    size,
-    currentSelection,
-    currentHoverSelection,
-    preferTCenter
-  ) {
     if (!this.selectedGlyph?.isEditing) {
       return { selection: new Set() };
     }
 
+    let selection;
+
+    // First we'll see if the clicked point falls within the current selection
+    selection = this._selectionAtPoint(point, size, currentSelection);
+
+    if (selection.selection?.size || selection.pathHit) {
+      return selection;
+    }
+
+    // If not, search all items
+    selection = this._selectionAtPoint(point, size, undefined);
+    if (selection.selection?.size || selection.pathHit) {
+      return selection;
+    }
+
+    // Lastly, look for components
+    const componentSelection = this.componentSelectionAtPoint(
+      point,
+      size,
+      currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
+      preferTCenter
+    );
+    return { selection: componentSelection };
+  }
+
+  _selectionAtPoint(point, size, currentSelection) {
     const parsedCurrentSelection = currentSelection
       ? parseSelection(currentSelection)
       : undefined;
@@ -536,13 +538,7 @@ export class SceneModel {
       return { selection: segmentSelection, pathHit: pathHit };
     }
 
-    const componentSelection = this.componentSelectionAtPoint(
-      point,
-      size,
-      currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
-      preferTCenter
-    );
-    return { selection: componentSelection };
+    return {};
   }
 
   pointSelectionAtPoint(point, size, parsedCurrentSelection) {
