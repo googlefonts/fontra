@@ -14,6 +14,7 @@ export class IconButton extends UnlitElement {
       height: 100%;
       transition: 150ms;
       cursor: pointer;
+      will-change: transform;
     }
 
     button:hover {
