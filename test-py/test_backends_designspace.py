@@ -801,14 +801,14 @@ async def test_glyphDependencies_new_font(tmpdir) -> None:
     assert deps.madeOf == {}
 
 
-async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFont):
+async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFontSingleUFO):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(destPath)
     info = FontInfo(familyName="Testing")
     await font.putFontInfo(info)
-    # glyph = await testFont.getGlyph("A")
-    # await font.putGlyph("A", glyph, [])
+    glyph = await testFontSingleUFO.getGlyph("A")
+    await font.putGlyph("A", glyph, [])
 
     reopenedBackend = getFileSystemBackend(destPath)
     reopenedInfo = await reopenedBackend.getFontInfo()
