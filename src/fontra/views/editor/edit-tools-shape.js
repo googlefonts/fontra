@@ -139,9 +139,18 @@ export class ShapeToolRect extends BaseTool {
       height *= 2;
     }
 
-    return VarPackedPath.fromUnpackedContours(
+    const varPackedPath = VarPackedPath.fromUnpackedContours(
       this.getUnpackedContours(x, y, width, height)
     );
+
+    // fix contour direction if needed
+    if ((width > 0 && height > 0) || (width < 0 && height < 0)) {
+      // to make sure the winding direction is always the same,
+      // does not matter in which direction the rectangle is drawn
+      this.reversePath(varPackedPath);
+    }
+
+    return varPackedPath;
   }
 
   getUnpackedContours(x, y, width, height) {
