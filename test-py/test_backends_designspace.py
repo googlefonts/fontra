@@ -776,6 +776,20 @@ async def test_glyphDependencies(testFont) -> None:
     }
 
 
+async def test_write_designspace_after_first_implicit_source(
+    tmpdir, testFontSingleUFO
+) -> None:
+    tmpdir = pathlib.Path(tmpdir)
+    destPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(destPath)
+
+    glyph = await testFontSingleUFO.getGlyph("A")
+    await font.putGlyph("A", glyph, [])
+
+    dsDoc = DesignSpaceDocument.fromfile(destPath)
+    assert dsDoc.sources
+
+
 async def test_glyphDependencies_new_font(tmpdir) -> None:
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "Test.designspace"
