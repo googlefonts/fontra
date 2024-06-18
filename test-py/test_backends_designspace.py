@@ -14,6 +14,7 @@ from fontra.core.classes import (
     Axes,
     CrossAxisMapping,
     FontAxis,
+    FontInfo,
     GlyphAxis,
     GlyphSource,
     Guideline,
@@ -809,3 +810,17 @@ def unpackSources(sources):
         {k: getattr(s, k) for k in ["location", "styleName", "filename", "layerName"]}
         for s in sources
     ]
+
+
+async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFont):
+    tmpdir = pathlib.Path(tmpdir)
+    destPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(destPath)
+    info = FontInfo(familyName="Testing")
+    await font.putFontInfo(info)
+    # glyph = await testFont.getGlyph("A")
+    # await font.putGlyph("A", glyph, [])
+
+    reopenedBackend = getFileSystemBackend(destPath)
+    reopenedInfo = await reopenedBackend.getFontInfo()
+    assert reopenedInfo.familyName == "Testing"
