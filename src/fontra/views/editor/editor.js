@@ -2119,10 +2119,11 @@ export class EditorController {
 
     dialog.setContent(contentElement);
 
-    setTimeout(
-      () => contentElement.querySelector("#anchor-name-text-input")?.select(),
-      0
-    );
+    setTimeout(() => {
+      const inputName = contentElement.querySelector("#anchor-name-text-input");
+      inputName.focus();
+      inputName.select();
+    }, 0);
 
     validateInput();
 
