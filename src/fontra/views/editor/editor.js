@@ -1071,7 +1071,7 @@ export class EditorController {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         const oldGuideline = layerGlyph.guidelines[guidelineIndex];
         layerGlyph.guidelines[guidelineIndex] = {
-          name: newGuideline.name ? newGuideline.name : oldGuideline.name,
+          name: newGuideline.name,
           x: !isNaN(newGuideline.x) ? newGuideline.x : oldGuideline.x,
           y: !isNaN(newGuideline.y) ? newGuideline.y : oldGuideline.y,
           angle: !isNaN(newGuideline.angle) ? newGuideline.angle : oldGuideline.angle,
@@ -2317,8 +2317,11 @@ export class EditorController {
         }
       }
       if (
+        editedGuidelineName &&
         editedGuidelineName !== guideline?.name &&
-        instance.guidelines.some((guideline) => guideline.name === editedGuidelineName)
+        instance.guidelines.some(
+          (guideline) => guideline.name === editedGuidelineName.trim()
+        )
       ) {
         warnings.push("⚠️ The guideline name should be unique");
       }
@@ -2383,7 +2386,9 @@ export class EditorController {
     }
 
     const newGuideline = {
-      name: nameController.model.guidelineName,
+      name: nameController.model.guidelineName
+        ? nameController.model.guidelineName.trim()
+        : undefined,
       x: Number(nameController.model.guidelineX),
       y: Number(nameController.model.guidelineY),
       angle: Number(nameController.model.guidelineAngle),
