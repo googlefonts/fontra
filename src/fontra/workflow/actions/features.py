@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import pathlib
 from dataclasses import dataclass, field
 from functools import partial
 from types import SimpleNamespace
@@ -21,7 +22,7 @@ class GeneratePaltFeature(BaseFilter):
     languageSystems: list[tuple[str, str]] = field(default_factory=list)
 
     async def processFeatures(self, features):
-        glyphMap = await self.getGlyphMap()
+        glyphMap = await self.inputGlyphMap
 
         axes = await self.getAxes()
 
@@ -117,3 +118,16 @@ class GeneratePaltFeature(BaseFilter):
                 horizontalAdjustments[glyphName] = adjustments
 
         return horizontalAdjustments
+
+
+@registerFilterAction("add-features")
+@dataclass(kw_only=True)
+class AddFeatures(BaseFilter):
+    featureFile: str
+
+    async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
+        glyphMap = await self.inputGlyphMap
+        featureFile = pathlib.Path(self.featureFile)
+        featureText = featureFile.read_text(encoding="utf-8")
+        featureText, _ = mergeFeatures(features.text, glyphMap, featureText, glyphMap)
+        return OpenTypeFeatures(text=featureText)

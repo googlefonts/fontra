@@ -1040,6 +1040,20 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "add-features",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-merge-features-A.fontra"
+            - filter: add-features
+              featureFile: test-py/data/workflow/add-features.fea
+            - output: fontra-write
+              destination: "output-add-features.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
