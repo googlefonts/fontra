@@ -801,17 +801,6 @@ async def test_glyphDependencies_new_font(tmpdir) -> None:
     assert deps.madeOf == {}
 
 
-def fileNamesFromDir(path):
-    return sorted(p.name for p in path.iterdir())
-
-
-def unpackSources(sources):
-    return [
-        {k: getattr(s, k) for k in ["location", "styleName", "filename", "layerName"]}
-        for s in sources
-    ]
-
-
 async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFont):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "Test.designspace"
@@ -824,3 +813,14 @@ async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFont):
     reopenedBackend = getFileSystemBackend(destPath)
     reopenedInfo = await reopenedBackend.getFontInfo()
     assert reopenedInfo.familyName == "Testing"
+
+
+def fileNamesFromDir(path):
+    return sorted(p.name for p in path.iterdir())
+
+
+def unpackSources(sources):
+    return [
+        {k: getattr(s, k) for k in ["location", "styleName", "filename", "layerName"]}
+        for s in sources
+    ]
