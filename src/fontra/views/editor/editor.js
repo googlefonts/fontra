@@ -2161,6 +2161,7 @@ export class EditorController {
         ...labeledTextInput("Name:", controller, "anchorName", {
           placeholderKey: "suggestedAnchorName",
           id: "anchor-name-text-input",
+          selectOnFocus: true,
         }),
         ...labeledTextInput("x:", controller, "anchorX", {
           placeholderKey: "suggestedAnchorX",
