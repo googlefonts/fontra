@@ -64,7 +64,7 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
-VERTICAL_METRICS_ZONES_KEY = "xyz.fonts.verticalMetrics.zones"
+VERTICAL_METRICS_ZONES_KEY = "xyz.fontra.verticalMetrics.zones"
 
 
 defaultUFOInfoAttrs = {
