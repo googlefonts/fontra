@@ -14,6 +14,7 @@ from fontra.core.classes import (
     Axes,
     CrossAxisMapping,
     FontAxis,
+    FontInfo,
     GlyphAxis,
     GlyphSource,
     Guideline,
@@ -776,7 +777,17 @@ async def test_glyphDependencies(testFont) -> None:
     }
 
 
-async def test_write_designspace_after_first_implicit_source(
+async def test_glyphDependencies_new_font(tmpdir) -> None:
+    tmpdir = pathlib.Path(tmpdir)
+    destPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(destPath)
+    assert isinstance(font, DesignspaceBackend)
+    deps = await font.glyphDependencies
+    assert deps.usedBy == {}
+    assert deps.madeOf == {}
+
+
+async def test_write_designspace_after_first_implicit_source_issue_1468(
     tmpdir, testFontSingleUFO
 ) -> None:
     tmpdir = pathlib.Path(tmpdir)
@@ -790,14 +801,18 @@ async def test_write_designspace_after_first_implicit_source(
     assert dsDoc.sources
 
 
-async def test_glyphDependencies_new_font(tmpdir) -> None:
+async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFontSingleUFO):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(destPath)
-    assert isinstance(font, DesignspaceBackend)
-    deps = await font.glyphDependencies
-    assert deps.usedBy == {}
-    assert deps.madeOf == {}
+    info = FontInfo(familyName="Testing")
+    await font.putFontInfo(info)
+    glyph = await testFontSingleUFO.getGlyph("A")
+    await font.putGlyph("A", glyph, [])
+
+    reopenedBackend = getFileSystemBackend(destPath)
+    reopenedInfo = await reopenedBackend.getFontInfo()
+    assert reopenedInfo.familyName == "Testing"
 
 
 def fileNamesFromDir(path):

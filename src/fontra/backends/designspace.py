@@ -124,6 +124,7 @@ class DesignspaceBackend:
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
+        self._defaultFontInfo: UFOFontInfo | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -235,12 +236,14 @@ class DesignspaceBackend:
             else self.defaultUFOLayer.path
         ).parent
 
-    @cached_property
+    @property
     def defaultFontInfo(self):
-        fontInfo = UFOFontInfo()
-        if self.defaultDSSource is not None:
-            self.defaultReader.readInfo(fontInfo)
-        return fontInfo
+        if self._defaultFontInfo is None:
+            fontInfo = UFOFontInfo()
+            if self.defaultDSSource is not None:
+                self.defaultReader.readInfo(fontInfo)
+            self._defaultFontInfo = fontInfo
+        return self._defaultFontInfo
 
     def loadUFOLayers(self) -> None:
         manager = self.ufoManager
@@ -769,6 +772,7 @@ class DesignspaceBackend:
             value = getattr(ufoInfo, ufoName, None)
             if value is not None:
                 info[fontraName] = value
+
         return FontInfo(**info)
 
     async def putFontInfo(self, fontInfo: FontInfo):
@@ -910,18 +914,16 @@ class DesignspaceBackend:
         return self.defaultFontInfo.unitsPerEm
 
     async def putUnitsPerEm(self, value: int) -> None:
-        if hasattr(self, "defaultFontInfo"):
-            del self.defaultFontInfo
         self._updateGlobalFontInfo({"unitsPerEm": value})
 
     def _updateGlobalFontInfo(self, infoDict: dict) -> None:
+        _updateFontInfoFromDict(self.defaultFontInfo, infoDict)
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         for ufoPath in ufoPaths:
             reader = self.ufoManager.getReader(ufoPath)
             info = UFOFontInfo()
             reader.readInfo(info)
-            for name, value in infoDict.items():
-                setattr(info, name, value)
+            _updateFontInfoFromDict(info, infoDict)
             reader.writeInfo(info)
 
     async def getFeatures(self) -> OpenTypeFeatures:
@@ -1256,9 +1258,7 @@ def createDSDocFromUFOPath(ufoPath, styleName):
     assert not os.path.exists(ufoPath)
     writer = UFOReaderWriter(ufoPath)  # this creates the UFO
     info = UFOFontInfo()
-    for infoAttr, value in defaultUFOInfoAttrs.items():
-        if value is not None:
-            setattr(info, infoAttr, value)
+    _updateFontInfoFromDict(info, defaultUFOInfoAttrs)
     writer.writeInfo(info)
     _ = writer.getGlyphSet()  # this creates the default layer
     writer.writeLayerContents()
@@ -1269,6 +1269,12 @@ def createDSDocFromUFOPath(ufoPath, styleName):
         name="default", styleName=styleName, path=ufoPath, location={}
     )
     return dsDoc
+
+
+def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
+    for infoAttr, value in infoDict.items():
+        if value is not None:
+            setattr(fontInfo, infoAttr, value)
 
 
 class UFOGlyph:
