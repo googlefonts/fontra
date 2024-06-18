@@ -22,7 +22,7 @@ class GeneratePaltFeature(BaseFilter):
     languageSystems: list[tuple[str, str]] = field(default_factory=list)
 
     async def processFeatures(self, features):
-        glyphMap = await self.getGlyphMap()
+        glyphMap = await self.inputGlyphMap
 
         axes = await self.getAxes()
 
