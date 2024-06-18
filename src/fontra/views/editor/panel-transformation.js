@@ -1,6 +1,10 @@
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
+import {
+  fillRoundNode,
+  registerVisualizationLayerDefinition,
+} from "./visualization-layer-definitions.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import {
@@ -892,3 +896,67 @@ const distributeHorizontally = new DistributeObjectsDescriptor("horizontally", "
 const distributeVertically = new DistributeObjectsDescriptor("vertically", "y");
 
 customElements.define("panel-transformation", TransformationPanel);
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.bounds.selection",
+  name: "Bounds of Selection",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 400,
+  screenParameters: {
+    strokeWidth: 1,
+    lineDash: [4, 4],
+    cornerSize: 8,
+    smoothSize: 8,
+    handleSize: 6.5,
+    margin: 10,
+  },
+
+  colors: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const selectionBounds = glyph.getSelectionBounds(model.selection);
+    if (!selectionBounds) {
+      return;
+    }
+    const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
+    const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
+    if (selectionWidth == 0 && selectionHeight == 0) {
+      // return if for example only one point is selected
+      return;
+    }
+
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.hoveredColor;
+    context.setLineDash(parameters.lineDash);
+    context.strokeRect(
+      selectionBounds.xMin,
+      selectionBounds.yMin,
+      selectionWidth,
+      selectionHeight
+    );
+
+    const [x, y, w, h] = [
+      selectionBounds.xMin - parameters.margin,
+      selectionBounds.yMin - parameters.margin,
+      selectionBounds.xMax - selectionBounds.xMin + parameters.margin * 2,
+      selectionBounds.yMax - selectionBounds.yMin + parameters.margin * 2,
+    ];
+
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    context.fillStyle = parameters.hoveredColor;
+    fillRoundNode(context, { x: x, y: y }, smoothSize);
+    fillRoundNode(context, { x: x + w / 2, y: y }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y }, smoothSize);
+    fillRoundNode(context, { x: x, y: y + h / 2 }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y + h / 2 }, smoothSize);
+    fillRoundNode(context, { x: x, y: y + h }, smoothSize);
+    fillRoundNode(context, { x: x + w / 2, y: y + h }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y + h }, smoothSize);
+  },
+});
