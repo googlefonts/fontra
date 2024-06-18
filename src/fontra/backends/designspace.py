@@ -573,6 +573,7 @@ class DesignspaceBackend:
         )
         self.dsSources.append(dsSource)
         self.dsDoc.sources.append(dsSource.asDSSourceDescriptor(self.familyName))
+        self._writeDesignSpaceDocument()
 
     def _prepareUFOSourceLayer(
         self,
