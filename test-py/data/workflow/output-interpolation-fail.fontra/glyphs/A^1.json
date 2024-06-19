@@ -1,0 +1,81 @@
+{
+"name": "A",
+"sources": [
+{
+"name": "weight=400",
+"layerName": "weight=400",
+"location": {
+"weight": 400
+}
+},
+{
+"name": "weight=600",
+"layerName": "weight=600",
+"location": {
+"weight": 600
+}
+}
+],
+"layers": {
+"weight=400": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 56,
+"y": 371
+},
+{
+"x": 56,
+"y": -37
+},
+{
+"x": 457,
+"y": -37
+},
+{
+"x": 457,
+"y": 371
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=600": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 56,
+"y": 371
+},
+{
+"x": 56,
+"y": -37
+},
+{
+"x": 457,
+"y": -37
+},
+{
+"x": 457,
+"y": 371
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+}
+}
+}

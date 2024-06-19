@@ -1054,6 +1054,31 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "interpolation-fail",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-interpolation-fail.fontra"
+            - filter: trim-axes
+              axes:
+                weight:
+                  maxValue: 600
+            - output: fontra-write
+              destination: "output-interpolation-fail.fontra"
+            """,
+            False,
+            [
+                (
+                    40,
+                    "glyph A caused an error: InterpolationError('paths are not compatible')",
+                ),
+                (
+                    40,
+                    "glyph A caused an error: InterpolationError('paths are not compatible')",
+                ),
+            ],
+        ),
     ],
 )
 async def test_workflow_actions(

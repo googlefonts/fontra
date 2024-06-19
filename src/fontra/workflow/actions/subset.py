@@ -186,7 +186,7 @@ class SubsetByDevelopmentStatus(BaseGlyphSubsetter):
                         f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
                     )
                     continue
-                sources = [instancer.defaultSource]
+                sources = [instancer.fallbackSource]
                 selectFunc = any
             else:
                 selectFunc = any if self.sourceSelectBehavior == "any" else all

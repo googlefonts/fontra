@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, partial, singledispatch
@@ -25,6 +26,8 @@ from .classes import (
 )
 from .path import InterpolationError, PackedPath, joinPaths
 from .protocols import ReadableFontBackend
+
+logger = logging.getLogger(__name__)
 
 
 class LocationCoordinateSystem(Enum):
@@ -204,11 +207,27 @@ class GlyphInstancer:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.fontAxes)
 
-        result = self.model.interpolateFromDeltas(
-            normalizeLocation(location, self.combinedAxisTuples), self.deltas
-        )
-        assert isinstance(result, MathGlyph)
-        assert isinstance(result.glyph, StaticGlyph)
+        try:
+            result = self.model.interpolateFromDeltas(
+                normalizeLocation(location, self.combinedAxisTuples), self.deltas
+            )
+        except Exception as e:
+            logger.error(f"glyph {self.glyph.name} caused an error: {e!r}")
+            # Fall back to default source
+            instantiatedGlyph = self.glyph.layers[self.fallbackSource.layerName].glyph
+            componentTypes = [
+                bool(
+                    compo.location
+                    or compo.transformation.tCenterX
+                    or compo.transformation.tCenterY
+                )
+                for compo in instantiatedGlyph.components
+            ]
+        else:
+            assert isinstance(result, MathGlyph)
+            assert isinstance(result.glyph, StaticGlyph)
+            instantiatedGlyph = result.glyph
+            componentTypes = self.componentTypes
 
         # Only font axis values can be inherited, so filter out glyph axes
         fontAxisNames = self.fontAxisNames
@@ -217,7 +236,7 @@ class GlyphInstancer:
         }
 
         return GlyphInstance(
-            result.glyph, self.componentTypes, parentLocation, self.fontInstancer
+            instantiatedGlyph, componentTypes, parentLocation, self.fontInstancer
         )
 
     @cached_property
@@ -240,7 +259,14 @@ class GlyphInstancer:
         for source in self.activeSources:
             if defaultSourceLocation | source.location == defaultSourceLocation:
                 return source
-        raise InterpolationError("default source not found")
+        return None
+
+    @cached_property
+    def fallbackSource(self) -> GlyphSource:
+        source = self.defaultSource
+        if source is None:
+            source = self.activeSources[0]
+        return source
 
     @cached_property
     def componentTypes(self) -> list[bool]:
