@@ -158,7 +158,17 @@ async def getFontSourceLocationsFromBaseGlyphs(
 
     baseGlyphNames -= seenGlyphNames
 
-    baseGlyphs = [await backend.getGlyph(name) for name in baseGlyphNames]
+    baseGlyphs = []
+    for name in baseGlyphNames:
+        try:
+            baseGlyphs.append(await backend.getGlyph(name))
+        except Exception as e:
+            logger.error(
+                f"decompose-composites: glyph {glyph.name} error while "
+                f"retrieving base glyph {name}: {e!r}"
+            )
+
+    baseGlyphs = [baseGlyph for baseGlyph in baseGlyphs if baseGlyph is not None]
 
     locations = set()
     for baseGlyph in baseGlyphs:

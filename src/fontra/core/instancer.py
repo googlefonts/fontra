@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, partial, singledispatch
@@ -26,19 +27,27 @@ from .classes import (
 from .path import InterpolationError, PackedPath, joinPaths
 from .protocols import ReadableFontBackend
 
+logger = logging.getLogger(__name__)
+
 
 class LocationCoordinateSystem(Enum):
     USER = 1
     SOURCE = 2  # "designspace coords"
 
 
+class GlyphNotFoundError(Exception):
+    pass
+
+
 @dataclass
 class FontInstancer:
     backend: ReadableFontBackend
+    failOnInterpolationError: bool = False
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
         self.fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
+        self._glyphErrors: set[str] = set()
 
     async def getGlyphInstancer(
         self,
@@ -51,13 +60,19 @@ class FontInstancer:
             if self.fontAxes is None:
                 self.fontAxes = (await self.backend.getAxes()).axes
             glyph = await self.backend.getGlyph(glyphName)
-            assert glyph is not None, glyphName
+            if glyph is None:
+                raise GlyphNotFoundError(glyphName)
             if fixComponentLocationCompatibility:
                 glyph = await self._ensureComponentLocationCompatibility(glyph)
             glyphInstancer = GlyphInstancer(glyph, self)
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    def glyphError(self, errorMessage):
+        if errorMessage not in self._glyphErrors:
+            logger.error(errorMessage)
+            self._glyphErrors.add(errorMessage)
 
     @cached_property
     def fontAxisNames(self) -> set[str]:
@@ -78,7 +93,12 @@ class FontInstancer:
             for layerGlyph in layerGlyphs.values()
         }
         if len(componentConfigs) != 1:
-            raise InterpolationError("components are not interpolatable")
+            message = f"glyph {glyph.name}: components are not interpolatable"
+            if self.failOnInterpolationError:
+                raise InterpolationError(message)
+            else:
+                self.glyphError(message)
+                return glyph
 
         ok, componentAxisNames = _areComponentLocationsCompatible(layerGlyphs.values())
         if ok:
@@ -204,11 +224,31 @@ class GlyphInstancer:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.fontAxes)
 
-        result = self.model.interpolateFromDeltas(
-            normalizeLocation(location, self.combinedAxisTuples), self.deltas
-        )
-        assert isinstance(result, MathGlyph)
-        assert isinstance(result.glyph, StaticGlyph)
+        try:
+            result = self.model.interpolateFromDeltas(
+                normalizeLocation(location, self.combinedAxisTuples), self.deltas
+            )
+        except Exception as e:
+            if self.fontInstancer.failOnInterpolationError:
+                raise
+            self.fontInstancer.glyphError(
+                f"glyph {self.glyph.name} caused an error: {e!r}"
+            )
+            # Fall back to default source
+            instantiatedGlyph = self.glyph.layers[self.fallbackSource.layerName].glyph
+            componentTypes = [
+                bool(
+                    compo.location
+                    or compo.transformation.tCenterX
+                    or compo.transformation.tCenterY
+                )
+                for compo in instantiatedGlyph.components
+            ]
+        else:
+            assert isinstance(result, MathGlyph)
+            assert isinstance(result.glyph, StaticGlyph)
+            instantiatedGlyph = result.glyph
+            componentTypes = self.componentTypes
 
         # Only font axis values can be inherited, so filter out glyph axes
         fontAxisNames = self.fontAxisNames
@@ -217,7 +257,11 @@ class GlyphInstancer:
         }
 
         return GlyphInstance(
-            result.glyph, self.componentTypes, parentLocation, self.fontInstancer
+            self.glyph.name,
+            instantiatedGlyph,
+            componentTypes,
+            parentLocation,
+            self.fontInstancer,
         )
 
     @cached_property
@@ -235,12 +279,19 @@ class GlyphInstancer:
         return {axis.name: axis.defaultValue for axis in self.combinedAxes}
 
     @cached_property
-    def defaultSource(self) -> GlyphSource:
+    def defaultSource(self) -> GlyphSource | None:
         defaultSourceLocation = self.defaultSourceLocation
         for source in self.activeSources:
             if defaultSourceLocation | source.location == defaultSourceLocation:
                 return source
-        raise InterpolationError("default source not found")
+        return None
+
+    @cached_property
+    def fallbackSource(self) -> GlyphSource:
+        source = self.defaultSource
+        if source is None:
+            source = self.activeSources[0]
+        return source
 
     @cached_property
     def componentTypes(self) -> list[bool]:
@@ -321,6 +372,7 @@ class GlyphInstancer:
 
 @dataclass
 class GlyphInstance:
+    glyphName: str
     glyph: StaticGlyph
     componentTypes: list[bool]
     parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
@@ -376,7 +428,14 @@ class GlyphInstance:
     async def _getComponentPath(
         self, component, parentTransform: Transform | None = None
     ) -> PackedPath:
-        instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        try:
+            instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        except GlyphNotFoundError:
+            self.fontInstancer.glyphError(
+                f"glyph {self.glyphName} references non-existing glyph: {component.name}"
+            )
+            return PackedPath()
+
         instance = instancer.instantiate(self.parentLocation | component.location)
         transform = component.transformation.toTransform()
         if parentTransform is not None:

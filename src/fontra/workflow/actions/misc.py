@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import logging
 import pathlib
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import get_type_hints
 
-from ...core.classes import FontInfo, VariableGlyph, structure, unstructure
+from ...core.classes import FontInfo, GlyphSource, VariableGlyph, structure, unstructure
 from ..merger import cmapFromGlyphMap
 from . import ActionError, registerFilterAction
 from .base import BaseFilter
@@ -92,9 +93,29 @@ def parseCodePointString(codePointString, actionName):
 @registerFilterAction("check-interpolation")
 @dataclass(kw_only=True)
 class CheckInterpolation(BaseFilter):
+    fixWithFallback: bool = False
+
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         # Each of the next two lines may raise an error if the glyph
         # doesn't interpolate
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
-        _ = instancer.deltas
+        try:
+            _ = instancer.deltas
+        except Exception as e:
+            if not self.fixWithFallback:
+                raise
+            logger.error(
+                f"{self.actionName}: glyph {glyphName} can't be interpolated {e!r}"
+            )
+            fallbackSource = instancer.fallbackSource
+            return VariableGlyph(
+                name=glyphName,
+                sources=[GlyphSource(name="default", layerName="default")],
+                layers={
+                    "default": deepcopy(
+                        instancer.glyph.layers[fallbackSource.layerName]
+                    )
+                },
+            )
+
         return instancer.glyph

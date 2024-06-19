@@ -1,0 +1,41 @@
+{
+"name": "A",
+"sources": [
+{
+"name": "default",
+"layerName": "default"
+}
+],
+"layers": {
+"default": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 67,
+"y": 560
+},
+{
+"x": 67,
+"y": 78
+},
+{
+"x": 427,
+"y": 78
+},
+{
+"x": 427,
+"y": 560
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+}
+}
+}
