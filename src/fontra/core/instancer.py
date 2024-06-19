@@ -253,8 +253,12 @@ class GlyphInstancer:
         numComponents = len(self.activeLayerGlyphs[0].components)
         return [
             any(
-                layerGlyph.components[i].location
-                for layerGlyph in self.activeLayerGlyphs
+                compo.location
+                or compo.transformation.tCenterX
+                or compo.transformation.tCenterY
+                for compo in (
+                    layerGlyph.components[i] for layerGlyph in self.activeLayerGlyphs
+                )
             )
             for i in range(numComponents)
         ]
