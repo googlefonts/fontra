@@ -114,6 +114,7 @@ def filterGlyphMap(glyphMap, glyphNames):
 @dataclass(kw_only=True)
 class DropUnreachableGlyphs(BaseGlyphSubsetter):
     keepNotdef: bool = True
+    layoutHandling: str = LayoutHandling.CLOSURE
 
     async def _buildSubsettedGlyphSet(
         self, inputGlyphMap: dict[str, list[int]]
@@ -122,7 +123,7 @@ class DropUnreachableGlyphs(BaseGlyphSubsetter):
             glyphName for glyphName, codePoints in inputGlyphMap.items() if codePoints
         }
 
-        if self.keepNotdef:
+        if self.keepNotdef and ".notdef" in inputGlyphMap:
             reachableGlyphs.add(".notdef")
 
         return reachableGlyphs
