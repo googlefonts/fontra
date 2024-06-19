@@ -54,6 +54,7 @@ import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
 import { ShapeTool } from "./edit-tools-shape.js";
+import { TransformationTool } from "./edit-tools-transformation.js";
 import { SceneController } from "./scene-controller.js";
 import { MIN_SIDEBAR_WIDTH, Sidebar } from "./sidebar.js";
 import {
@@ -668,7 +669,14 @@ export class EditorController {
   initTools() {
     this.tools = {};
     this.topLevelTools = {};
-    const editToolClasses = [PointerTool, PenTool, ShapeTool, PowerRulerTool, HandTool];
+    const editToolClasses = [
+      PointerTool,
+      PenTool,
+      ShapeTool,
+      PowerRulerTool,
+      HandTool,
+      TransformationTool,
+    ];
 
     for (const editToolClass of editToolClasses) {
       this.addEditTool(new editToolClass(this));
