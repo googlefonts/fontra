@@ -38,6 +38,7 @@ class LocationCoordinateSystem(Enum):
 @dataclass
 class FontInstancer:
     backend: ReadableFontBackend
+    failOnInterpolationError: bool = False
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
@@ -212,6 +213,8 @@ class GlyphInstancer:
                 normalizeLocation(location, self.combinedAxisTuples), self.deltas
             )
         except Exception as e:
+            if self.fontInstancer.failOnInterpolationError:
+                raise
             logger.error(f"glyph {self.glyph.name} caused an error: {e!r}")
             # Fall back to default source
             instantiatedGlyph = self.glyph.layers[self.fallbackSource.layerName].glyph

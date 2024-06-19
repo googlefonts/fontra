@@ -159,6 +159,7 @@ async def getFontSourceLocationsFromBaseGlyphs(
     baseGlyphNames -= seenGlyphNames
 
     baseGlyphs = [await backend.getGlyph(name) for name in baseGlyphNames]
+    baseGlyphs = [baseGlyph for baseGlyph in baseGlyphs if baseGlyph is not None]
 
     locations = set()
     for baseGlyph in baseGlyphs:
