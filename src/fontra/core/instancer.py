@@ -47,7 +47,7 @@ class FontInstancer:
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
         self.fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
-        self._glyphErrors = set()
+        self._glyphErrors: set[str] = set()
 
     async def getGlyphInstancer(
         self,
@@ -279,7 +279,7 @@ class GlyphInstancer:
         return {axis.name: axis.defaultValue for axis in self.combinedAxes}
 
     @cached_property
-    def defaultSource(self) -> GlyphSource:
+    def defaultSource(self) -> GlyphSource | None:
         defaultSourceLocation = self.defaultSourceLocation
         for source in self.activeSources:
             if defaultSourceLocation | source.location == defaultSourceLocation:
