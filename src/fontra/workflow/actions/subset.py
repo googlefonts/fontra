@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from ...core.async_property import async_cached_property
 from ...core.classes import OpenTypeFeatures, VariableGlyph
 from ..features import LayoutHandling, subsetFeatures
+from . import ActionError
 from .base import BaseFilter, getActiveSources, registerFilterAction
 
 logger = logging.getLogger(__name__)
@@ -78,7 +79,8 @@ class BaseGlyphSubsetter(BaseFilter):
 
             try:
                 glyph = await self.validatedInput.getGlyph(glyphName)
-                assert glyph is not None, f"Unexpected missing glyph {glyphName}"
+                if glyph is None:
+                    raise ActionError(f"Unexpected missing glyph {glyphName}")
             except Exception as e:
                 if glyphName != ".notdef":
                     logger.error(
