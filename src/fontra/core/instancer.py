@@ -35,6 +35,10 @@ class LocationCoordinateSystem(Enum):
     SOURCE = 2  # "designspace coords"
 
 
+class GlyphNotFoundError(Exception):
+    pass
+
+
 @dataclass
 class FontInstancer:
     backend: ReadableFontBackend
@@ -43,6 +47,7 @@ class FontInstancer:
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
         self.fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
+        self._glyphErrors = set()
 
     async def getGlyphInstancer(
         self,
@@ -55,13 +60,19 @@ class FontInstancer:
             if self.fontAxes is None:
                 self.fontAxes = (await self.backend.getAxes()).axes
             glyph = await self.backend.getGlyph(glyphName)
-            assert glyph is not None, glyphName
+            if glyph is None:
+                raise GlyphNotFoundError(glyphName)
             if fixComponentLocationCompatibility:
                 glyph = await self._ensureComponentLocationCompatibility(glyph)
             glyphInstancer = GlyphInstancer(glyph, self)
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    def glyphError(self, errorMessage):
+        if errorMessage not in self._glyphErrors:
+            logger.error(errorMessage)
+            self._glyphErrors.add(errorMessage)
 
     @cached_property
     def fontAxisNames(self) -> set[str]:
@@ -82,7 +93,12 @@ class FontInstancer:
             for layerGlyph in layerGlyphs.values()
         }
         if len(componentConfigs) != 1:
-            raise InterpolationError("components are not interpolatable")
+            message = f"glyph {glyph.name}: components are not interpolatable"
+            if self.failOnInterpolationError:
+                raise InterpolationError(message)
+            else:
+                self.glyphError(message)
+                return glyph
 
         ok, componentAxisNames = _areComponentLocationsCompatible(layerGlyphs.values())
         if ok:
@@ -215,7 +231,9 @@ class GlyphInstancer:
         except Exception as e:
             if self.fontInstancer.failOnInterpolationError:
                 raise
-            logger.error(f"glyph {self.glyph.name} caused an error: {e!r}")
+            self.fontInstancer.glyphError(
+                f"glyph {self.glyph.name} caused an error: {e!r}"
+            )
             # Fall back to default source
             instantiatedGlyph = self.glyph.layers[self.fallbackSource.layerName].glyph
             componentTypes = [
@@ -239,7 +257,11 @@ class GlyphInstancer:
         }
 
         return GlyphInstance(
-            instantiatedGlyph, componentTypes, parentLocation, self.fontInstancer
+            self.glyph.name,
+            instantiatedGlyph,
+            componentTypes,
+            parentLocation,
+            self.fontInstancer,
         )
 
     @cached_property
@@ -350,6 +372,7 @@ class GlyphInstancer:
 
 @dataclass
 class GlyphInstance:
+    glyphName: str
     glyph: StaticGlyph
     componentTypes: list[bool]
     parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
@@ -405,7 +428,14 @@ class GlyphInstance:
     async def _getComponentPath(
         self, component, parentTransform: Transform | None = None
     ) -> PackedPath:
-        instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        try:
+            instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        except GlyphNotFoundError:
+            self.fontInstancer.glyphError(
+                f"glyph {self.glyphName} references non-existing glyph: {component.name}"
+            )
+            return PackedPath()
+
         instance = instancer.instantiate(self.parentLocation | component.location)
         transform = component.transformation.toTransform()
         if parentTransform is not None:

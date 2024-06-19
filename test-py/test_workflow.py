@@ -1073,10 +1073,6 @@ def test_command(tmpdir, configYAMLSources):
                     40,
                     "glyph A caused an error: InterpolationError('paths are not compatible')",
                 ),
-                (
-                    40,
-                    "glyph A caused an error: InterpolationError('paths are not compatible')",
-                ),
             ],
         ),
     ],
