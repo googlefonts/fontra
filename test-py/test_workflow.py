@@ -737,6 +737,28 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
+            "check-interpolation-no-fail",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-check-interpolation.fontra"
+
+            - filter: check-interpolation
+              fixWithFallback: true
+
+            - output: fontra-write
+              destination: "output-check-interpolation-no-fail.fontra"
+            """,
+            True,
+            [
+                (
+                    40,
+                    "check-interpolation: glyph A can't be interpolated "
+                    "InterpolationError('paths are not compatible')",
+                ),
+            ],
+        ),
+        (
             "merge-codepoint-conflict",
             """
             steps:
