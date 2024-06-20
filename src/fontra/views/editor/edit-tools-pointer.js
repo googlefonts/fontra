@@ -639,6 +639,8 @@ registerVisualizationLayerDefinition({
 });
 
 function getResizeHandles(resizeBounds, margin) {
+  const { width, height } = rectSize(resizeBounds);
+
   const [x, y, w, h] = [
     resizeBounds.xMin - margin,
     resizeBounds.yMin - margin,
@@ -646,7 +648,7 @@ function getResizeHandles(resizeBounds, margin) {
     resizeBounds.yMax - resizeBounds.yMin + margin * 2,
   ];
 
-  return {
+  const handles = {
     "bottom-left": { x: x, y: y },
     "bottom-right": { x: x + w, y: y },
     "top-right": { x: x + w, y: y + h },
@@ -656,6 +658,20 @@ function getResizeHandles(resizeBounds, margin) {
     "top": { x: x + w / 2, y: y + h },
     "left": { x: x, y: y + h / 2 },
   };
+
+  const removeHandles = [];
+  for (const handleName of Object.keys(handles)) {
+    if (width == 0 && handleName != "top" && handleName != "bottom") {
+      removeHandles.push(handleName);
+    }
+    if (height == 0 && handleName != "left" && handleName != "right") {
+      removeHandles.push(handleName);
+    }
+  }
+  for (const handleName of removeHandles) {
+    delete handles[handleName];
+  }
+  return handles;
 }
 
 async function _getStaticGlyphControllers(fontController, sceneController) {
