@@ -79,9 +79,9 @@ export class PointerTool extends BaseTool {
       this.setCursor("nesw-resize");
     } else if (handleName === "bottom-right" || handleName === "top-left") {
       this.setCursor("nwse-resize");
-    } else if (handleName === "bottom" || handleName === "top") {
+    } else if (handleName === "bottom-center" || handleName === "top-center") {
       this.setCursor("ns-resize");
-    } else if (handleName === "left" || handleName === "right") {
+    } else if (handleName === "middle-left" || handleName === "middle-right") {
       this.setCursor("ew-resize");
     } else {
       this.setCursor("pointer");
@@ -434,6 +434,7 @@ export class PointerTool extends BaseTool {
     const originY = initialClickedResizeHandle.includes("top") ? "bottom" : "top";
     const origin = { x: originX, y: originY };
 
+    // TODO: I am not sure if this is the best way to determine the direction
     const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
     const directionY = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
 
@@ -443,7 +444,8 @@ export class PointerTool extends BaseTool {
     );
 
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-      const initialPoint = sceneController.localPoint(initialEvent);
+      //const initialPoint = sceneController.localPoint(initialEvent);
+      const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
 
       const layerInfo = Object.entries(
         sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -463,7 +465,8 @@ export class PointerTool extends BaseTool {
 
       let editChange;
       for await (const event of eventStream) {
-        const currentPoint = sceneController.localPoint(event);
+        //const currentPoint = sceneController.localPoint(event);
+        const currentPoint = sceneController.selectedGlyphPoint(event);
 
         let scaleX =
           (selectionWidth + (currentPoint.x - initialPoint.x) * directionX) /
@@ -472,14 +475,14 @@ export class PointerTool extends BaseTool {
           (selectionHeight + (currentPoint.y - initialPoint.y) * directionY) /
           selectionHeight;
         if (
-          initialClickedResizeHandle === "left" ||
-          initialClickedResizeHandle === "right"
+          initialClickedResizeHandle === "middle-left" ||
+          initialClickedResizeHandle === "middle-right"
         ) {
           scaleY = 1;
         }
         if (
-          initialClickedResizeHandle === "top" ||
-          initialClickedResizeHandle === "bottom"
+          initialClickedResizeHandle === "top-center" ||
+          initialClickedResizeHandle === "bottom-center"
         ) {
           scaleX = 1;
         }
@@ -489,6 +492,8 @@ export class PointerTool extends BaseTool {
           scaleX = scaleY;
         }
         const transformation = new Transform().scale(scaleX, scaleY);
+        console.log("scaleX: ", scaleX);
+        console.log("scaleY: ", scaleY);
 
         if (event.altKey) {
           // scale from center
@@ -510,6 +515,9 @@ export class PointerTool extends BaseTool {
             origin.x,
             origin.y
           );
+
+          console.log("pinPoint: ", pinPoint);
+          console.log("currentPoint: ", currentPoint);
 
           // TODO: implement rotation
           // The following does not work proper, yet.
@@ -553,9 +561,6 @@ export class PointerTool extends BaseTool {
 
           applyChange(layerGlyph, editChange);
           deepEditChanges.push(consolidateChanges(editChange, changePath));
-          // layer.shouldConnect = layer.connectDetector.shouldConnect(
-          //   layer.isPrimaryLayer
-          // );
         }
 
         editChange = consolidateChanges(deepEditChanges);
@@ -651,22 +656,22 @@ function getResizeHandles(resizeBounds, margin) {
 
   const handles = {
     "bottom-left": { x: x, y: y },
+    "bottom-center": { x: x + w / 2, y: y },
     "bottom-right": { x: x + w, y: y },
-    "top-right": { x: x + w, y: y + h },
     "top-left": { x: x, y: y + h },
-    "bottom": { x: x + w / 2, y: y },
-    "right": { x: x + w, y: y + h / 2 },
-    "top": { x: x + w / 2, y: y + h },
-    "left": { x: x, y: y + h / 2 },
+    "top-center": { x: x + w / 2, y: y + h },
+    "top-right": { x: x + w, y: y + h },
+    "middle-left": { x: x, y: y + h / 2 },
+    "middle-right": { x: x + w, y: y + h / 2 },
   };
 
   const removeHandles = [];
   if (width == 0 || height == 0) {
     for (const handleName of Object.keys(handles)) {
-      if (width == 0 && handleName != "top" && handleName != "bottom") {
+      if (width == 0 && handleName != "top-center" && handleName != "bottom-center") {
         removeHandles.push(handleName);
       }
-      if (height == 0 && handleName != "left" && handleName != "right") {
+      if (height == 0 && handleName != "middle-left" && handleName != "middle-right") {
         removeHandles.push(handleName);
       }
     }
