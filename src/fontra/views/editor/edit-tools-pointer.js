@@ -54,10 +54,42 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
-    this.setCursor();
+    const handleMargin = 10 * this.editor.visualizationLayers.scaleFactor;
+    const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
+    const initialResizeHandle = getInitialResizeHandle(
+      sceneController,
+      initialResizeHandlePoint,
+      sceneController.selection,
+      handleMargin
+    );
+    sceneController.hoveredHandle = initialResizeHandle;
+
+    if (sceneController.hoveredHandle) {
+      this.setCursorForHandle(sceneController.hoveredHandle);
+    } else {
+      this.setCursor();
+    }
   }
 
-  setCursor() {
+  setCursorForHandle(handleName) {
+    if (handleName === "bottom-left" || handleName === "top-right") {
+      this.setCursor("nesw-resize");
+    } else if (handleName === "bottom-right" || handleName === "top-left") {
+      this.setCursor("nwse-resize");
+    } else if (handleName === "bottom" || handleName === "top") {
+      this.setCursor("ns-resize");
+    } else if (handleName === "left" || handleName === "right") {
+      this.setCursor("ew-resize");
+    } else {
+      this.setCursor("pointer");
+    }
+  }
+
+  setCursor(cursor = undefined) {
+    if (cursor) {
+      this.canvasController.canvas.style.cursor = cursor;
+      return;
+    }
     if (
       this.sceneController.hoverSelection?.size ||
       this.sceneController.hoverPathHit
@@ -107,15 +139,15 @@ export class PointerTool extends BaseTool {
     const modeFunc = getSelectModeFunction(event);
     const newSelection = modeFunc(sceneController.selection, selection);
     const cleanSel = selection;
-    if (
-      !selection.size ||
-      event.shiftKey ||
-      event.altKey ||
-      !isSuperset(sceneController.selection, cleanSel)
-    ) {
-      this._selectionBeforeSingleClick = sceneController.selection;
-      sceneController.selection = newSelection;
-    }
+    // if (
+    //   !selection.size ||
+    //   event.shiftKey ||
+    //   event.altKey ||
+    //   !isSuperset(sceneController.selection, cleanSel)
+    // ) {
+    //   this._selectionBeforeSingleClick = sceneController.selection;
+    //   sceneController.selection = newSelection;
+    // }
 
     if (isSuperset(sceneController.selection, cleanSel)) {
       initiateDrag = true;
@@ -144,27 +176,28 @@ export class PointerTool extends BaseTool {
 
     sceneController.hoveredGlyph = undefined;
 
-    let initiateSelectBoundsResize = true; // set to true for testing, should be false and figured out if handle is selected/hovered;
-    const initialClickedSelectionBoundsHandle =
-      this.sceneController.selectedGlyphPoint(initialEvent);
-    const glyph = sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
-    const resizeSelectionBounds = getResizeSelectionBounds(glyph, initialSelection);
+    const handleMargin = 10 * this.editor.visualizationLayers.scaleFactor;
+    const initialClickedResizeHandle = sceneController.selectedGlyphPoint(initialEvent);
+    const initialResizeHandle = getInitialResizeHandle(
+      this.sceneController,
+      initialClickedResizeHandle,
+      initialSelection,
+      handleMargin
+    );
+    console.log("initialResizeHandle", initialResizeHandle);
 
-    if (initiateRectSelect) {
+    if (initiateRectSelect && !initialResizeHandle) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    }
-    // else if (initiateDrag) {
-    //   this.sceneController.sceneModel.initialClickedPointIndex =
-    //     initialClickedPointIndex;
-    //   const result = await this.handleDragSelection(eventStream, initialEvent);
-    //   delete this.sceneController.sceneModel.initialClickedPointIndex;
-    //   return result;
-    // }
-    else if (resizeSelectionBounds) {
-      this.sceneController.sceneModel.initialClickedSelectionBoundsHandle =
-        initialClickedSelectionBoundsHandle;
+    } else if (initiateDrag && !initialResizeHandle) {
+      this.sceneController.sceneModel.initialClickedPointIndex =
+        initialClickedPointIndex;
+      const result = await this.handleDragSelection(eventStream, initialEvent);
+      delete this.sceneController.sceneModel.initialClickedPointIndex;
+      return result;
+    } else if (initialResizeHandle) {
+      this.sceneController.sceneModel.initialClickedResizeHandle = initialResizeHandle;
       return await this.handleDragSelectionBoundsResize(
-        resizeSelectionBounds,
+        initialSelection,
         eventStream,
         initialEvent
       );
@@ -382,14 +415,23 @@ export class PointerTool extends BaseTool {
     });
   }
 
-  async handleDragSelectionBoundsResize(selectionBounds, eventStream, initialEvent) {
+  async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
     //this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
+    const glyph = sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
+    const selectionBounds = getResizeBounds(glyph, selection);
 
     const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
     const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
 
-    const origin = { x: selectionBounds.xMin, y: selectionBounds.yMin };
+    const initialClickedResizeHandle =
+      this.sceneController.sceneModel.initialClickedResizeHandle;
+    const originX = initialClickedResizeHandle.includes("left") ? "right" : "left";
+    const originY = initialClickedResizeHandle.includes("top") ? "bottom" : "top";
+    const origin = { x: originX, y: originY };
+
+    const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
+    const directionY = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
 
     const staticGlyphControllers = await _getStaticGlyphControllers(
       this.sceneController.fontController,
@@ -409,13 +451,6 @@ export class PointerTool extends BaseTool {
           sceneController.experimentalFeatures.scalingEditBehavior
         );
         return {
-          // layerName,
-          // layerGlyph,
-          // changePath: ["layers", layerName, "glyph"],
-          // pathPrefix: [],
-          // connectDetector: sceneController.getPathConnectDetector(layerGlyph.path),
-          // shouldConnect: false,
-          // behaviorFactory,
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
@@ -430,10 +465,24 @@ export class PointerTool extends BaseTool {
       for await (const event of eventStream) {
         const currentPoint = sceneController.localPoint(event);
 
-        const width = currentPoint.x - initialPoint.x;
-        const height = currentPoint.y - initialPoint.y;
-        const scaleX = (selectionWidth + width) / selectionWidth;
-        const scaleY = (selectionHeight + height) / selectionHeight;
+        let scaleX =
+          (selectionWidth + (currentPoint.x - initialPoint.x) * directionX) /
+          selectionWidth;
+        let scaleY =
+          (selectionHeight + (currentPoint.y - initialPoint.y) * directionY) /
+          selectionHeight;
+        if (
+          initialClickedResizeHandle === "left" ||
+          initialClickedResizeHandle === "right"
+        ) {
+          scaleY = 1;
+        }
+        if (
+          initialClickedResizeHandle === "top" ||
+          initialClickedResizeHandle === "bottom"
+        ) {
+          scaleX = 1;
+        }
 
         const deepEditChanges = [];
         for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
@@ -531,14 +580,13 @@ registerVisualizationLayerDefinition({
     margin: 10,
   },
 
-  colors: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#0008" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#FFFA" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    const selectionBounds = getResizeSelectionBounds(
-      positionedGlyph.glyph,
-      model.selection
-    );
-    if (!selectionBounds) {
+    //console.log("model: ", model);
+    //console.log("controller: ", controller);
+    const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
+    if (!resizeBounds) {
       return;
     }
 
@@ -546,10 +594,10 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.hoveredColor;
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
-      selectionBounds.xMin,
-      selectionBounds.yMin,
-      selectionBounds.xMax - selectionBounds.xMin,
-      selectionBounds.yMax - selectionBounds.yMin
+      resizeBounds.xMin,
+      resizeBounds.yMin,
+      resizeBounds.xMax - resizeBounds.xMin,
+      resizeBounds.yMax - resizeBounds.yMin
     );
 
     const cornerSize = parameters.cornerSize;
@@ -557,23 +605,32 @@ registerVisualizationLayerDefinition({
     const handleSize = parameters.handleSize;
 
     context.fillStyle = parameters.hoveredColor;
-    console.log("parameters.margin", parameters.margin);
-    const handles = getBoundsResizeHandles(selectionBounds, parameters.margin);
+    const handles = getResizeHandles(resizeBounds, parameters.margin);
     for (const [handleName, handle] of Object.entries(handles)) {
+      fillRoundNode(context, handle, handleSize);
+    }
+    //console.log("model.initialEvent: ", model.initialEvent);
+    //console.log("model.event: ", model.event);
+    //const initialResizeHandle = getInitialResizeHandle(this.sceneController, model.initialEvent, model.selection, parameters.margin);
+
+    //if (model.initialClickedResizeHandle) {
+    if (model.hoveredHandle) {
+      context.fillStyle = parameters.selectedColor;
+      const handle = handles[model.initialClickedResizeHandle];
       fillRoundNode(context, handle, handleSize);
     }
   },
 });
 
-function getBoundsResizeHandles(selectionBounds, margin) {
+function getResizeHandles(resizeBounds, margin) {
   const [x, y, w, h] = [
-    selectionBounds.xMin - margin,
-    selectionBounds.yMin - margin,
-    selectionBounds.xMax - selectionBounds.xMin + margin * 2,
-    selectionBounds.yMax - selectionBounds.yMin + margin * 2,
+    resizeBounds.xMin - margin,
+    resizeBounds.yMin - margin,
+    resizeBounds.xMax - resizeBounds.xMin + margin * 2,
+    resizeBounds.yMax - resizeBounds.yMin + margin * 2,
   ];
 
-  const handles = {
+  return {
     "bottom-left": { x: x, y: y },
     "bottom-right": { x: x + w, y: y },
     "top-right": { x: x + w, y: y + h },
@@ -583,8 +640,6 @@ function getBoundsResizeHandles(selectionBounds, margin) {
     "top": { x: x + w / 2, y: y + h },
     "left": { x: x, y: y + h / 2 },
   };
-
-  return handles;
 }
 
 async function _getStaticGlyphControllers(fontController, sceneController) {
@@ -635,7 +690,7 @@ function _getPinPoint(sceneController, layerGlyphController, originX, originY) {
   return { x: pinPointX, y: pinPointY };
 }
 
-function getResizeSelectionBounds(glyph, selection) {
+function getResizeBounds(glyph, selection) {
   const selectionBounds = glyph.getSelectionBounds(selection);
   if (!selectionBounds) {
     return false;
@@ -643,9 +698,31 @@ function getResizeSelectionBounds(glyph, selection) {
   const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
   const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
   if (selectionWidth == 0 && selectionHeight == 0) {
-    // return if for example only one point is selected
+    // return false if for example only one point is selected
     return false;
   }
 
   return selectionBounds;
+}
+
+function getInitialResizeHandle(
+  sceneController,
+  point,
+  initialSelection,
+  handleMargin
+) {
+  //const initialClickedResizeHandle = sceneController.selectedGlyphPoint(initialEvent);
+  const glyph = sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+  if (!glyph) {
+    return false;
+  }
+
+  const resizeSelectionBounds = getResizeBounds(glyph, initialSelection);
+  const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
+  for (const [handleName, handle] of Object.entries(resizeHandles)) {
+    if (vector.distance(handle, point) < handleMargin) {
+      return handleName;
+    }
+  }
+  return false;
 }
