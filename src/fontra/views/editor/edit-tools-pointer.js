@@ -27,6 +27,8 @@ import {
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
+const handleMarginValue = 10;
+
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
   identifier = "pointer-tool";
@@ -55,7 +57,8 @@ export class PointerTool extends BaseTool {
       this.setCursor();
       return;
     }
-    const handleMargin = 10 * this.editor.visualizationLayers.scaleFactor;
+    const handleMargin =
+      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
     const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
     const initialResizeHandle = getInitialResizeHandle(
       sceneController,
@@ -118,7 +121,6 @@ export class PointerTool extends BaseTool {
         initialClickedPointIndex = pointIndices[0];
       }
     }
-
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
       initialEvent.preventDefault(); // don't let our dbl click propagate to other elements
       eventStream.done();
@@ -176,7 +178,8 @@ export class PointerTool extends BaseTool {
 
     sceneController.hoveredGlyph = undefined;
 
-    const handleMargin = 10 * this.editor.visualizationLayers.scaleFactor;
+    const handleMargin =
+      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
     const initialClickedResizeHandle = sceneController.selectedGlyphPoint(initialEvent);
     const initialResizeHandle = getInitialResizeHandle(
       this.sceneController,
@@ -419,11 +422,9 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
-    //this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     const glyph = sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
     const selectionBounds = getResizeBounds(glyph, selection);
-
     const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
     const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
 
@@ -443,7 +444,6 @@ export class PointerTool extends BaseTool {
 
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.localPoint(initialEvent);
-      //let behaviorName = getBehaviorName(initialEvent);
 
       const layerInfo = Object.entries(
         sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -461,10 +461,7 @@ export class PointerTool extends BaseTool {
         };
       });
 
-      layerInfo[0].isPrimaryLayer = true;
-
       let editChange;
-
       for await (const event of eventStream) {
         const currentPoint = sceneController.localPoint(event);
 
@@ -613,7 +610,7 @@ registerVisualizationLayerDefinition({
     strokeWidth: 1,
     lineDash: [4, 4],
     handleSize: 6.5,
-    margin: 10,
+    margin: handleMarginValue,
   },
 
   colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#0008" },
@@ -733,9 +730,8 @@ function getResizeBounds(glyph, selection) {
   if (!selectionBounds) {
     return false;
   }
-  const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
-  const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
-  if (selectionWidth == 0 && selectionHeight == 0) {
+  const { width, height } = rectSize(selectionBounds);
+  if (width == 0 && height == 0) {
     // return false if for example only one point is selected
     return false;
   }
