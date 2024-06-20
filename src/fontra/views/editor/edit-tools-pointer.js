@@ -54,6 +54,10 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
+    if (!this.editor.visualizationLayersSettings.model["fontra.bounds.selection"]) {
+      this.setCursor();
+      return;
+    }
     const handleMargin = 10 * this.editor.visualizationLayers.scaleFactor;
     const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
     const initialResizeHandle = getInitialResizeHandle(
@@ -192,7 +196,10 @@ export class PointerTool extends BaseTool {
       const result = await this.handleDragSelection(eventStream, initialEvent);
       delete this.sceneController.sceneModel.initialClickedPointIndex;
       return result;
-    } else if (initialResizeHandle) {
+    } else if (
+      initialResizeHandle &&
+      this.editor.visualizationLayersSettings.model["fontra.bounds.selection"]
+    ) {
       sceneController.selection = initialSelection;
       this.sceneController.sceneModel.initialClickedResizeHandle = initialResizeHandle;
       return await this.handleDragSelectionBoundsResize(
@@ -660,12 +667,14 @@ function getResizeHandles(resizeBounds, margin) {
   };
 
   const removeHandles = [];
-  for (const handleName of Object.keys(handles)) {
-    if (width == 0 && handleName != "top" && handleName != "bottom") {
-      removeHandles.push(handleName);
-    }
-    if (height == 0 && handleName != "left" && handleName != "right") {
-      removeHandles.push(handleName);
+  if (width == 0 || height == 0) {
+    for (const handleName of Object.keys(handles)) {
+      if (width == 0 && handleName != "top" && handleName != "bottom") {
+        removeHandles.push(handleName);
+      }
+      if (height == 0 && handleName != "left" && handleName != "right") {
+        removeHandles.push(handleName);
+      }
     }
   }
   for (const handleName of removeHandles) {
