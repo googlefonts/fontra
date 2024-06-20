@@ -100,17 +100,32 @@ export class SceneModel {
     if (!glyphSelection) {
       return undefined;
     }
+
     return this.positionedLines[glyphSelection.lineIndex]?.glyphs[
       glyphSelection.glyphIndex
     ];
   }
 
   getSelectedGlyphInfo() {
-    return getSelectedGlyphInfo(this.selectedGlyph, this.glyphLines);
+    const lines = this.positionedLines.map((line) => {
+      return line.glyphs.map((glyph) => ({
+        character: glyph.character,
+        glyphName: glyph.glyphName,
+        isUndefined: glyph.isUndefined,
+      }));
+    });
+    return getSelectedGlyphInfo(this.selectedGlyph, lines);
   }
 
   getSelectedGlyphName() {
-    return getSelectedGlyphName(this.selectedGlyph, this.glyphLines);
+    const lines = this.positionedLines.map((line) => {
+      return line.glyphs.map((glyph) => ({
+        character: glyph.character,
+        glyphName: glyph.glyphName,
+        isUndefined: glyph.isUndefined,
+      }));
+    });
+    return getSelectedGlyphName(this.selectedGlyph, lines);
   }
 
   isSelectedGlyphLocked() {
@@ -334,10 +349,12 @@ export class SceneModel {
       glyphIndex: selectedGlyphIndex,
       isEditing: selectedGlyphIsEditing,
     } = this.selectedGlyph || {};
+
     const editLayerName = this.sceneSettings.editLayerName;
 
     let y = 0;
     const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
+    const maxLineLength = 12 * fontController.unitsPerEm; // TODO make factor user-configurable
     const positionedLines = [];
     let longestLineLength = 0;
 
@@ -359,7 +376,12 @@ export class SceneModel {
       return;
     }
 
-    for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
+    const stack = [...glyphLines].reverse();
+
+    let lineIndex = -1;
+    while (stack.length > 0) {
+      lineIndex += 1;
+      const glyphLine = stack.pop();
       const positionedLine = { glyphs: [] };
       let x = 0;
       for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
@@ -385,6 +407,11 @@ export class SceneModel {
             glyphInfo.glyphName
           );
         }
+        if (x + glyphInstance.xAdvance > maxLineLength) {
+          stack.push(glyphLine.slice(glyphIndex));
+          break;
+        }
+
         positionedLine.glyphs.push({
           x: x,
           y: y,
@@ -398,7 +425,6 @@ export class SceneModel {
         });
         x += glyphInstance.xAdvance;
       }
-
       longestLineLength = Math.max(longestLineLength, x);
 
       let offset = 0;
