@@ -62,20 +62,20 @@ export class TransformationTool extends BaseTool {
       scaleX = (selectionWidth + width) / selectionWidth;
       scaleY = (selectionHeight + height) / selectionHeight;
 
+      transformSelection(
+        this.sceneController.fontController,
+        this.sceneController,
+        { originX: selectionBounds.xMin, originY: selectionBounds.yMin },
+        new Transform().scale(scaleX, scaleY),
+        "scale"
+      );
+
       this.sceneModel.event = event;
       this.canvasController.requestUpdate();
     }
 
     console.log("scaleX: ", scaleX);
     console.log("scaleY: ", scaleY);
-
-    transformSelection(
-      this.sceneController.fontController,
-      this.sceneController,
-      { originX: selectionBounds.xMin, originY: selectionBounds.yMin },
-      new Transform().scale(scaleX, scaleY),
-      "scale"
-    );
 
     delete this.sceneModel.event;
     this.canvasController.requestUpdate();
@@ -86,107 +86,107 @@ export class TransformationTool extends BaseTool {
   }
 }
 
-registerVisualizationLayerDefinition({
-  identifier: "fontra.bounds.selection",
-  name: "Bounds of Selection",
-  selectionMode: "editing",
-  userSwitchable: true,
-  defaultOn: true,
-  zIndex: 400,
-  screenParameters: {
-    strokeWidth: 1,
-    lineDash: [4, 4],
-    cornerSize: 8,
-    smoothSize: 8,
-    handleSize: 6.5,
-    margin: 10,
-  },
+// registerVisualizationLayerDefinition({
+//   identifier: "fontra.bounds.selection",
+//   name: "Bounds of Selection",
+//   selectionMode: "editing",
+//   userSwitchable: true,
+//   defaultOn: true,
+//   zIndex: 400,
+//   screenParameters: {
+//     strokeWidth: 1,
+//     lineDash: [4, 4],
+//     cornerSize: 8,
+//     smoothSize: 8,
+//     handleSize: 6.5,
+//     margin: 10,
+//   },
 
-  colors: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    //console.log("model: ", model);
-    //console.log("controller: ", controller);
-    const glyph = positionedGlyph.glyph;
-    const selectionBounds = glyph.getSelectionBounds(model.selection);
-    if (!selectionBounds) {
-      return;
-    }
-    const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
-    const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
-    if (selectionWidth == 0 && selectionHeight == 0) {
-      // return if for example only one point is selected
-      return;
-    }
+//   colors: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+//   colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+//   draw: (context, positionedGlyph, parameters, model, controller) => {
+//     //console.log("model: ", model);
+//     //console.log("controller: ", controller);
+//     const glyph = positionedGlyph.glyph;
+//     const selectionBounds = glyph.getSelectionBounds(model.selection);
+//     if (!selectionBounds) {
+//       return;
+//     }
+//     const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
+//     const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
+//     if (selectionWidth == 0 && selectionHeight == 0) {
+//       // return if for example only one point is selected
+//       return;
+//     }
 
-    const mousePoint = model.mousePoint;
-    if (!mousePoint) {
-      return;
-    }
-    const mouseClickMargin = controller.mouseClickMargin;
+//     const mousePoint = model.mousePoint;
+//     if (!mousePoint) {
+//       return;
+//     }
+//     const mouseClickMargin = controller.mouseClickMargin;
 
-    context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.hoveredColor;
-    context.setLineDash(parameters.lineDash);
-    context.strokeRect(
-      selectionBounds.xMin,
-      selectionBounds.yMin,
-      selectionWidth,
-      selectionHeight
-    );
+//     context.lineWidth = parameters.strokeWidth;
+//     context.strokeStyle = parameters.hoveredColor;
+//     context.setLineDash(parameters.lineDash);
+//     context.strokeRect(
+//       selectionBounds.xMin,
+//       selectionBounds.yMin,
+//       selectionWidth,
+//       selectionHeight
+//     );
 
-    const [x, y, w, h] = [
-      selectionBounds.xMin - parameters.margin,
-      selectionBounds.yMin - parameters.margin,
-      selectionBounds.xMax - selectionBounds.xMin + parameters.margin * 2,
-      selectionBounds.yMax - selectionBounds.yMin + parameters.margin * 2,
-    ];
+//     const [x, y, w, h] = [
+//       selectionBounds.xMin - parameters.margin,
+//       selectionBounds.yMin - parameters.margin,
+//       selectionBounds.xMax - selectionBounds.xMin + parameters.margin * 2,
+//       selectionBounds.yMax - selectionBounds.yMin + parameters.margin * 2,
+//     ];
 
-    const cornerSize = parameters.cornerSize;
-    const smoothSize = parameters.smoothSize;
-    const handleSize = parameters.handleSize;
+//     const cornerSize = parameters.cornerSize;
+//     const smoothSize = parameters.smoothSize;
+//     const handleSize = parameters.handleSize;
 
-    context.fillStyle = parameters.hoveredColor;
-    const corners = [
-      { x: x, y: y },
-      { x: x + w, y: y },
-      { x: x + w, y: y + h },
-      { x: x, y: y + h },
-    ];
-    const handles = [
-      { x: x + w / 2, y: y },
-      { x: x + w, y: y + h / 2 },
-      { x: x + w / 2, y: y + h },
-      { x: x, y: y + h / 2 },
-    ];
+//     context.fillStyle = parameters.hoveredColor;
+//     const corners = [
+//       { x: x, y: y },
+//       { x: x + w, y: y },
+//       { x: x + w, y: y + h },
+//       { x: x, y: y + h },
+//     ];
+//     const handles = [
+//       { x: x + w / 2, y: y },
+//       { x: x + w, y: y + h / 2 },
+//       { x: x + w / 2, y: y + h },
+//       { x: x, y: y + h / 2 },
+//     ];
 
-    console.log("mousePoint: ", mousePoint);
-    for (const corner of corners) {
-      fillRoundNode(context, corner, smoothSize);
-      if (
-        corner.x - mouseClickMargin < mousePoint.x &&
-        mousePoint.x < corner.x + mouseClickMargin &&
-        corner.y - mouseClickMargin < mousePoint.y &&
-        mousePoint.y < corner.y + mouseClickMargin
-      ) {
-        console.log("YES it's a corner: ", corner);
-        context.fillStyle = parameters.selectedColor;
-        fillRoundNode(context, corner, smoothSize * 2);
-      }
-    }
-    for (const handle of handles) {
-      fillRoundNode(context, handle, handleSize);
-    }
-    // fillRoundNode(context, { x: x, y: y }, smoothSize);
-    // fillRoundNode(context, { x: x + w / 2, y: y }, smoothSize);
-    // fillRoundNode(context, { x: x + w, y: y }, smoothSize);
-    // fillRoundNode(context, { x: x, y: y + h / 2 }, smoothSize);
-    // fillRoundNode(context, { x: x + w, y: y + h / 2 }, smoothSize);
-    // fillRoundNode(context, { x: x, y: y + h }, smoothSize);
-    // fillRoundNode(context, { x: x + w / 2, y: y + h }, smoothSize);
-    // fillRoundNode(context, { x: x + w, y: y + h }, smoothSize);
-  },
-});
+//     console.log("mousePoint: ", mousePoint);
+//     for (const corner of corners) {
+//       fillRoundNode(context, corner, smoothSize);
+//       if (
+//         corner.x - mouseClickMargin < mousePoint.x &&
+//         mousePoint.x < corner.x + mouseClickMargin &&
+//         corner.y - mouseClickMargin < mousePoint.y &&
+//         mousePoint.y < corner.y + mouseClickMargin
+//       ) {
+//         console.log("YES it's a corner: ", corner);
+//         context.fillStyle = parameters.selectedColor;
+//         fillRoundNode(context, corner, smoothSize * 2);
+//       }
+//     }
+//     for (const handle of handles) {
+//       fillRoundNode(context, handle, handleSize);
+//     }
+//     // fillRoundNode(context, { x: x, y: y }, smoothSize);
+//     // fillRoundNode(context, { x: x + w / 2, y: y }, smoothSize);
+//     // fillRoundNode(context, { x: x + w, y: y }, smoothSize);
+//     // fillRoundNode(context, { x: x, y: y + h / 2 }, smoothSize);
+//     // fillRoundNode(context, { x: x + w, y: y + h / 2 }, smoothSize);
+//     // fillRoundNode(context, { x: x, y: y + h }, smoothSize);
+//     // fillRoundNode(context, { x: x + w / 2, y: y + h }, smoothSize);
+//     // fillRoundNode(context, { x: x + w, y: y + h }, smoothSize);
+//   },
+// });
 
 async function transformSelection(
   fontController,
@@ -265,7 +265,6 @@ async function transformSelection(
       applyChange(layerGlyph, editChange);
       editChanges.push(consolidateChanges(editChange, changePath));
       rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
-      sendIncrementalChange(consolidateChanges(rollbackChanges));
     }
 
     let changes = ChangeCollector.fromChanges(
