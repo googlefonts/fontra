@@ -5,7 +5,6 @@ import {
   centeredRect,
   normalizeRect,
   offsetRect,
-  rectCenter,
   rectSize,
 } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
@@ -17,7 +16,6 @@ import {
   parseSelection,
   range,
 } from "../core/utils.js";
-import { VariableGlyph } from "../core/var-glyph.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -28,7 +26,6 @@ import {
   registerVisualizationLayerDefinition,
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
-import { dialog } from "/web-components/modal-dialog.js";
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
