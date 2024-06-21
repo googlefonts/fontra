@@ -622,8 +622,8 @@ function getSelectModeFunction(event) {
 }
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.bounds.selection",
-  name: "Bounds of Selection",
+  identifier: "fontra.resize.selection",
+  name: "Resize selection",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
