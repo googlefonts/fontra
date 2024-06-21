@@ -22,8 +22,8 @@ import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";
 import {
-  fillRoundNode,
   registerVisualizationLayerDefinition,
+  strokeRoundNode,
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
@@ -66,6 +66,10 @@ export class PointerTool extends BaseTool {
       handleMarginValue * this.editor.visualizationLayers.scaleFactor
     );
 
+    if (this.sceneController.sceneModel.hoverResizeHandle != initialResizeHandle) {
+      this.sceneController.sceneModel.hoverResizeHandle = initialResizeHandle;
+      this.canvasController.requestUpdate();
+    }
     this.setCursorForResizeHandle(initialResizeHandle);
   }
 
@@ -608,21 +612,39 @@ registerVisualizationLayerDefinition({
   zIndex: 400,
   screenParameters: {
     strokeWidth: 1,
-    lineDash: [4, 4],
-    handleSize: 6.5,
+    lineDash: [2, 4],
+    handleSize: 8,
+    hoverStrokeOffset: 4,
     margin: handleMarginValue,
   },
 
-  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#0008" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#FFFA" },
+  colors: { hoveredColor: "#DDD" },
+  colorsDarkMode: { hoveredColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
     if (!resizeBounds) {
       return;
     }
 
-    context.lineWidth = parameters.strokeWidth;
     context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+
+    // draw resize handles
+    const handles = getResizeHandles(resizeBounds, parameters.margin);
+    for (const [handleName, handle] of Object.entries(handles)) {
+      strokeRoundNode(context, handle, parameters.handleSize);
+    }
+
+    // draw resize handles hover
+    if (model.hoverResizeHandle) {
+      strokeRoundNode(
+        context,
+        handles[model.hoverResizeHandle],
+        parameters.handleSize + parameters.hoverStrokeOffset
+      );
+    }
+
+    // because of the dashed line draw resize bounding box last
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
       resizeBounds.xMin,
@@ -630,12 +652,6 @@ registerVisualizationLayerDefinition({
       resizeBounds.xMax - resizeBounds.xMin,
       resizeBounds.yMax - resizeBounds.yMin
     );
-
-    context.fillStyle = parameters.hoveredColor;
-    const handles = getResizeHandles(resizeBounds, parameters.margin);
-    for (const [handleName, handle] of Object.entries(handles)) {
-      fillRoundNode(context, handle, parameters.handleSize);
-    }
   },
 });
 
@@ -676,6 +692,8 @@ function getResizeHandles(resizeBounds, margin) {
   return handles;
 }
 
+// TODO: refactor this to a shared location
+// this is basically a copy of the function in panel-transformation.js
 async function _getStaticGlyphControllers(fontController, sceneController) {
   const varGlyphController =
     await sceneController.sceneModel.getSelectedVariableGlyphController();
@@ -697,6 +715,8 @@ async function _getStaticGlyphControllers(fontController, sceneController) {
   return staticGlyphControllers;
 }
 
+// TODO: refactor this to a shared location
+// this is basically a copy of the function in panel-transformation.js
 function _getPinPoint(sceneController, layerGlyphController, originX, originY) {
   const bounds = layerGlyphController.getSelectionBounds(sceneController.selection);
   const { width, height } = rectSize(bounds);
