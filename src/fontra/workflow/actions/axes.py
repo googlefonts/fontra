@@ -296,32 +296,33 @@ class BaseMoveDefaultLocation(BaseFilter):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
-        defaultLocation = instancer.defaultSourceLocation
+        originalDefaultLocation = instancer.defaultSourceLocation
+        newDefaultSourceLocation = await self.newDefaultSourceLocation
 
         locations = [
-            defaultLocation | source.location for source in instancer.activeSources
+            originalDefaultLocation | source.location
+            for source in instancer.activeSources
         ]
 
-        axisNames = {axis.name for axis in instancer.combinedAxes}
-        movingAxisNames = set(self._getDefaultUserLocation())
-        interactingAxes = set()
+        allAxisNames = {axis.name for axis in instancer.combinedAxes}
+        movingAxisNames = set(newDefaultSourceLocation)
+        interactingAxisNames = set()
 
         for location in locations:
             contributingAxes = set()
             for axisName, value in location.items():
-                if value != defaultLocation[axisName]:
+                if value != originalDefaultLocation[axisName]:
                     contributingAxes.add(axisName)
             if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
                 movingAxisNames
             ):
-                interactingAxes.update(contributingAxes)
+                interactingAxisNames.update(contributingAxes)
 
-        standaloneAxes = axisNames - interactingAxes
+        standaloneAxes = allAxisNames - interactingAxisNames
 
         newLocations = deepcopy(locations)
 
-        newDefaultSourceLocation = await self.newDefaultSourceLocation
-        currentDefaultLocation = dict(defaultLocation)
+        currentDefaultLocation = dict(originalDefaultLocation)
 
         for movingAxisName, movingAxisValue in newDefaultSourceLocation.items():
             newDefaultAxisLoc = {movingAxisName: movingAxisValue}
@@ -331,7 +332,7 @@ class BaseMoveDefaultLocation(BaseFilter):
                 for loc in newLocations
                 if any(
                     loc[axisName] != currentDefaultLocation[axisName]
-                    for axisName in interactingAxes
+                    for axisName in interactingAxisNames
                 )
             ]
 
