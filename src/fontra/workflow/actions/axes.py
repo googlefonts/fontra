@@ -239,6 +239,7 @@ class SubsetAxes(BaseFilter):
                 subsetLocationKeep(locationToKeep | location, locationToKeep)
                 != locationToKeep
             ):
+                # drop this location
                 return None
 
             return subsetLocationDrop(location, locationToKeep)
