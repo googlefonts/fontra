@@ -296,64 +296,22 @@ class BaseMoveDefaultLocation(BaseFilter):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
-        originalDefaultLocation = instancer.defaultSourceLocation
+        originalDefaultSourceLocation = instancer.defaultSourceLocation
         newDefaultSourceLocation = await self.newDefaultSourceLocation
 
         locations = [
-            originalDefaultLocation | source.location
+            originalDefaultSourceLocation | source.location
             for source in instancer.activeSources
         ]
 
         allAxisNames = {axis.name for axis in instancer.combinedAxes}
-        movingAxisNames = set(newDefaultSourceLocation)
-        interactingAxisNames = set()
 
-        for location in locations:
-            contributingAxes = set()
-            for axisName, value in location.items():
-                if value != originalDefaultLocation[axisName]:
-                    contributingAxes.add(axisName)
-            if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
-                movingAxisNames
-            ):
-                interactingAxisNames.update(contributingAxes)
-
-        standaloneAxes = allAxisNames - interactingAxisNames
-
-        newLocations = deepcopy(locations)
-
-        currentDefaultLocation = dict(originalDefaultLocation)
-
-        for movingAxisName, movingAxisValue in newDefaultSourceLocation.items():
-            newDefaultAxisLoc = {movingAxisName: movingAxisValue}
-
-            locationsToAdd = [
-                loc | newDefaultAxisLoc
-                for loc in newLocations
-                if any(
-                    loc[axisName] != currentDefaultLocation[axisName]
-                    for axisName in interactingAxisNames
-                )
-            ]
-
-            for axisName in standaloneAxes:
-                if axisName == movingAxisName:
-                    continue
-
-                for loc in newLocations:
-                    if (
-                        loc[axisName] != currentDefaultLocation[axisName]
-                        and loc[movingAxisName]
-                        == currentDefaultLocation[movingAxisName]
-                    ):
-                        loc[movingAxisName] = movingAxisValue
-
-            currentDefaultLocation = currentDefaultLocation | newDefaultAxisLoc
-
-            locationsToAdd.append(dict(currentDefaultLocation))
-            for loc in locationsToAdd:
-                if loc not in newLocations:
-                    newLocations.append(loc)
+        newLocations = moveDefaultLocations(
+            locations,
+            originalDefaultSourceLocation,
+            newDefaultSourceLocation,
+            allAxisNames,
+        )
 
         return updateSourcesAndLayers(
             instancer,
@@ -368,6 +326,64 @@ class BaseMoveDefaultLocation(BaseFilter):
 
     async def _filterNewLocations(self, newLocations, location):
         raise NotImplementedError()
+
+
+def moveDefaultLocations(
+    originalLocations,
+    originalDefaultSourceLocation,
+    newDefaultSourceLocation,
+    allAxisNames,
+):
+    movingAxisNames = set(newDefaultSourceLocation)
+    interactingAxisNames = set()
+
+    for location in originalLocations:
+        contributingAxes = set()
+        for axisName, value in location.items():
+            if value != originalDefaultSourceLocation[axisName]:
+                contributingAxes.add(axisName)
+        if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
+            movingAxisNames
+        ):
+            interactingAxisNames.update(contributingAxes)
+
+    standaloneAxes = allAxisNames - interactingAxisNames
+
+    newLocations = deepcopy(originalLocations)
+
+    currentDefaultLocation = dict(originalDefaultSourceLocation)
+
+    for movingAxisName, movingAxisValue in newDefaultSourceLocation.items():
+        newDefaultAxisLoc = {movingAxisName: movingAxisValue}
+
+        locationsToAdd = [
+            loc | newDefaultAxisLoc
+            for loc in newLocations
+            if any(
+                loc[axisName] != currentDefaultLocation[axisName]
+                for axisName in interactingAxisNames
+            )
+        ]
+
+        for axisName in standaloneAxes:
+            if axisName == movingAxisName:
+                continue
+
+            for loc in newLocations:
+                if (
+                    loc[axisName] != currentDefaultLocation[axisName]
+                    and loc[movingAxisName] == currentDefaultLocation[movingAxisName]
+                ):
+                    loc[movingAxisName] = movingAxisValue
+
+        currentDefaultLocation = currentDefaultLocation | newDefaultAxisLoc
+
+        locationsToAdd.append(dict(currentDefaultLocation))
+        for loc in locationsToAdd:
+            if loc not in newLocations:
+                newLocations.append(loc)
+
+    return newLocations
 
 
 @registerFilterAction("move-default-location")
