@@ -436,21 +436,20 @@ export class PointerTool extends BaseTool {
     const initialOriginY = initialClickedResizeHandle.split("-")[0];
 
     const origin = { x: initialOriginX, y: initialOriginY };
-    const initalOrigin = { x: initialOriginX, y: initialOriginY };
     // origin must be the opposite side of where we have our mouse
     if (initialOriginX === "left") {
-      initalOrigin.x = origin.x = "right";
+      origin.x = "right";
     }
     if (initialOriginX === "right") {
-      initalOrigin.x = origin.x = "left";
+      origin.x = "left";
     }
     if (initialOriginY === "top") {
-      initalOrigin.y = origin.y = "bottom";
+      origin.y = "bottom";
+    }
+    if (initialOriginY === "bottom") {
+      origin.y = "top";
     }
     // no else because could be middle or center
-    if (initialOriginY === "bottom") {
-      initalOrigin.y = origin.y = "top";
-    }
 
     // must be set to the opposite side of the mouse if left or bottom
     const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
@@ -460,6 +459,20 @@ export class PointerTool extends BaseTool {
       this.sceneController.fontController,
       this.sceneController
     );
+
+    // const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    // const regularPinPoint = _getPinPoint(
+    //   sceneController,
+    //   glyphController,
+    //   origin.x,
+    //   origin.y
+    // );
+    // const altPinPoint = _getPinPoint(
+    //   sceneController,
+    //   glyphController,
+    //   undefined,
+    //   undefined
+    // );
 
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
@@ -477,12 +490,22 @@ export class PointerTool extends BaseTool {
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
           editBehavior: behaviorFactory.getBehavior("default", true),
+          regularPinPoint: _getPinPoint(
+            sceneController,
+            staticGlyphControllers[layerName],
+            origin.x,
+            origin.y
+          ),
+          altPinPoint: _getPinPoint(
+            sceneController,
+            staticGlyphControllers[layerName],
+            undefined,
+            undefined
+          ),
         };
       });
-      // TODO: calculate the regular pinPoint + altKey pinPoint, first
+
       let editChange;
-      let pinPoint;
-      let altKeyPressedOnce;
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
 
@@ -511,33 +534,18 @@ export class PointerTool extends BaseTool {
         }
         let transformation = new Transform().scale(scaleX, scaleY);
 
-        // altKeyPressedOnce variable is used to detect if altKey was pressed once
-        if (event.altKey && !altKeyPressedOnce) {
-          altKeyPressedOnce = true;
-          pinPoint = undefined;
-          origin.x = undefined;
-          origin.y = undefined;
-        }
-
-        if (!event.altKey && altKeyPressedOnce) {
-          altKeyPressedOnce = false;
-          pinPoint = undefined;
-          origin.x = initalOrigin.x;
-          origin.y = initalOrigin.y;
-        }
-
         const deepEditChanges = [];
-        for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
+        for (const {
+          changePath,
+          editBehavior,
+          layerGlyphController,
+          regularPinPoint,
+          altPinPoint,
+        } of layerInfo) {
           const layerGlyph = layerGlyphController.instance;
-          // pinPoint need to be set for each layer individually,
-          // but only once, except if altKey is pressed
-          if (!pinPoint) {
-            pinPoint = _getPinPoint(
-              sceneController,
-              layerGlyphController,
-              origin.x,
-              origin.y
-            );
+          let pinPoint = regularPinPoint;
+          if (event.altKey) {
+            pinPoint = altPinPoint;
           }
 
           const t = new Transform()
