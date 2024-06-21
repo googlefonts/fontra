@@ -483,7 +483,7 @@ export class PointerTool extends BaseTool {
           editBehavior: behaviorFactory.getBehavior("default", true),
         };
       });
-
+      // TODO: calculate the regular pinPoint + altKey pinPoint, first
       let editChange;
       let pinPoint;
       let altKeyPressedOnce;
@@ -640,15 +640,15 @@ registerVisualizationLayerDefinition({
     margin: handleMarginValue,
   },
 
-  colors: { hoveredColor: "#DDD" },
-  colorsDarkMode: { hoveredColor: "#555" },
+  colors: { handleColor: "#BBB", strokeColor: "#DDD" },
+  colorsDarkMode: { handleColor: "#777", strokeColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
     if (!resizeBounds) {
       return;
     }
 
-    context.strokeStyle = parameters.hoveredColor;
+    context.strokeStyle = parameters.handleColor;
     context.lineWidth = parameters.strokeWidth;
 
     // draw resize handles
@@ -667,6 +667,7 @@ registerVisualizationLayerDefinition({
     }
 
     // because of the dashed line draw resize bounding box last
+    context.strokeStyle = parameters.strokeColor;
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
       resizeBounds.xMin,
