@@ -70,14 +70,10 @@ export class PointerTool extends BaseTool {
       this.sceneController.sceneModel.hoverResizeHandle = initialResizeHandle;
       this.canvasController.requestUpdate();
     }
-    this.setCursorForResizeHandle(initialResizeHandle, event.metaKey);
+    this.setCursorForResizeHandle(initialResizeHandle);
   }
 
-  setCursorForResizeHandle(handleName, rotationKey = undefined) {
-    if (handleName && rotationKey) {
-      this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
-      return;
-    }
+  setCursorForResizeHandle(handleName) {
     if (handleName === "bottom-left" || handleName === "top-right") {
       this.setCursor("nesw-resize");
     } else if (handleName === "bottom-right" || handleName === "top-left") {
@@ -542,20 +538,6 @@ export class PointerTool extends BaseTool {
               origin.x,
               origin.y
             );
-          }
-
-          // rotation based on pinPoint
-          if (event.metaKey) {
-            const angleInital = Math.atan2(
-              pinPoint.y - initialPoint.y,
-              pinPoint.x - initialPoint.x
-            );
-            const angle = Math.atan2(
-              pinPoint.y - currentPoint.y,
-              pinPoint.x - currentPoint.x
-            );
-            // Do not do scale, because together with rotation it will be a mess
-            transformation = new Transform().rotate(angle - angleInital);
           }
 
           const t = new Transform()
