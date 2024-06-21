@@ -432,23 +432,24 @@ export class PointerTool extends BaseTool {
 
     // The following may seem wrong to you, but it's correct.
     // Because we say for example bottom-left and not left-bottom. Y-X order.
-    const originX = initialClickedResizeHandle.split("-")[1];
-    const originY = initialClickedResizeHandle.split("-")[0];
+    const initialOriginX = initialClickedResizeHandle.split("-")[1];
+    const initialOriginY = initialClickedResizeHandle.split("-")[0];
 
-    const origin = { x: originX, y: originY };
+    const origin = { x: initialOriginX, y: initialOriginY };
+    const initalOrigin = { x: initialOriginX, y: initialOriginY };
     // origin must be the opposite side of where we have our mouse
-    if (originX === "left") {
-      origin.x = "right";
+    if (initialOriginX === "left") {
+      initalOrigin.x = origin.x = "right";
     }
-    if (originX === "right") {
-      origin.x = "left";
+    if (initialOriginX === "right") {
+      initalOrigin.x = origin.x = "left";
     }
-    if (originY === "top") {
-      origin.y = "bottom";
+    if (initialOriginY === "top") {
+      initalOrigin.y = origin.y = "bottom";
     }
     // no else because could be middle or center
-    if (originY === "bottom") {
-      origin.y = "top";
+    if (initialOriginY === "bottom") {
+      initalOrigin.y = origin.y = "top";
     }
 
     // must be set to the opposite side of the mouse if left or bottom
@@ -521,8 +522,8 @@ export class PointerTool extends BaseTool {
         if (!event.altKey && altKeyPressedOnce) {
           altKeyPressedOnce = false;
           pinPoint = undefined;
-          origin.x = originX;
-          origin.y = originY;
+          origin.x = initalOrigin.x;
+          origin.y = initalOrigin.y;
         }
 
         const deepEditChanges = [];
