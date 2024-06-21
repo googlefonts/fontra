@@ -57,24 +57,19 @@ export class PointerTool extends BaseTool {
       this.setCursor();
       return;
     }
-    const handleMargin =
-      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
+
     const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
     const initialResizeHandle = getInitialResizeHandle(
       sceneController,
       initialResizeHandlePoint,
       sceneController.selection,
-      handleMargin
+      handleMarginValue * this.editor.visualizationLayers.scaleFactor
     );
 
-    if (initialResizeHandle) {
-      this.setCursorForHandle(initialResizeHandle);
-    } else {
-      this.setCursor();
-    }
+    this.setCursorForResizeHandle(initialResizeHandle);
   }
 
-  setCursorForHandle(handleName) {
+  setCursorForResizeHandle(handleName) {
     if (handleName === "bottom-left" || handleName === "top-right") {
       this.setCursor("nesw-resize");
     } else if (handleName === "bottom-right" || handleName === "top-left") {
@@ -84,7 +79,7 @@ export class PointerTool extends BaseTool {
     } else if (handleName === "middle-left" || handleName === "middle-right") {
       this.setCursor("ew-resize");
     } else {
-      this.setCursor("pointer");
+      this.setCursor();
     }
   }
 
