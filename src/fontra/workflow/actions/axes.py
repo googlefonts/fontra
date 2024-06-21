@@ -513,7 +513,7 @@ class TrimAxes(BaseFilter):
 
         defaultLocation = instancer.defaultSourceLocation
 
-        newLocations = [
+        originalLocations = [
             defaultLocation | source.location for source in instancer.activeSources
         ]
 
@@ -529,15 +529,25 @@ class TrimAxes(BaseFilter):
         }
         ranges = localRanges | trimmedRanges
 
-        for loc in newLocations:
-            for axisName, value in loc.items():
-                if axisName not in ranges:
-                    continue
-                minValue, maxValue = ranges[axisName]
-                trimmedValue = max(min(value, maxValue), minValue)
-                loc[axisName] = trimmedValue
+        newLocations = trimLocations(originalLocations, ranges)
 
         return updateSourcesAndLayers(instancer, newLocations)
+
+
+def trimLocations(originalLocations, ranges):
+    return [trimLocation(loc, ranges) for loc in originalLocations]
+
+
+def trimLocation(originalLocation, ranges):
+    newLocation = {**originalLocation}
+
+    for axisName, value in originalLocation.items():
+        if axisName not in ranges:
+            continue
+        minValue, maxValue = ranges[axisName]
+        newLocation[axisName] = max(min(value, maxValue), minValue)
+
+    return newLocation
 
 
 def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
