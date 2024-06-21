@@ -53,7 +53,7 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
-    if (!this.editor.visualizationLayersSettings.model["fontra.bounds.selection"]) {
+    if (!this.editor.visualizationLayersSettings.model["fontra.resize.selection"]) {
       this.setCursor();
       return;
     }
@@ -197,7 +197,7 @@ export class PointerTool extends BaseTool {
       return result;
     } else if (
       initialResizeHandle &&
-      this.editor.visualizationLayersSettings.model["fontra.bounds.selection"]
+      this.editor.visualizationLayersSettings.model["fontra.resize.selection"]
     ) {
       sceneController.selection = initialSelection;
       this.sceneController.sceneModel.initialClickedResizeHandle = initialResizeHandle;
