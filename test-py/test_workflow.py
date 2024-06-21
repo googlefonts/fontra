@@ -632,6 +632,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-unused-sources-and-layers
             - filter: subset-axes
               axisNames: ["weight"]
 
@@ -647,6 +648,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-unused-sources-and-layers
             - filter: subset-axes
               dropAxisNames: ["width", "italic"]
 
@@ -877,6 +879,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-unused-sources-and-layers
             - filter: subset-axes
               axisNames: ["weight"]
             - filter: drop-shapes
@@ -899,6 +902,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-unused-sources-and-layers
             - filter: subset-axes
               axisNames: ["weight"]
             - filter: drop-shapes

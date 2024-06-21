@@ -46,16 +46,8 @@ class RenameAxes(BaseFilter):
         }
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return replace(
-            glyph,
-            sources=[
-                replace(
-                    source,
-                    location=_renameLocationAxes(source.location, self.axisRenameMap),
-                )
-                for source in glyph.sources
-            ],
-        )
+        mapFunc = partial(_renameLocationAxes, axisRenameMap=self.axisRenameMap)
+        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
 
     async def processAxes(self, axes: Axes) -> Axes:
         return replace(axes, axes=[_renameAxis(axis, self.axes) for axis in axes.axes])
@@ -126,8 +118,8 @@ class DropAxisMappings(BaseFilter):
         return mapFuncs
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        mapFuncs = await self.axisValueMapFunctions
-        return _remapSourceLocations(glyph, mapFuncs)
+        mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
+        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
 
     async def getAxes(self) -> Axes:
         axes = await self.inputAxes
@@ -135,25 +127,6 @@ class DropAxisMappings(BaseFilter):
         return replace(
             axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
         )
-
-
-def _remapSourceLocations(glyph, mapFuncs):
-    if mapFuncs:
-        glyph = replace(
-            glyph,
-            sources=[
-                replace(source, location=_remapLocation(source.location, mapFuncs))
-                for source in glyph.sources
-            ],
-        )
-    return glyph
-
-
-def _remapLocation(location, mapFuncs):
-    return {
-        axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
-        for axisName, axisValue in location.items()
-    }
 
 
 def _dropAxisMapping(axis, mapFuncs):
@@ -218,7 +191,8 @@ class AdjustAxes(BaseFilter):
         return await self.adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
+        mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
+        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
 
 
 @registerFilterAction("subset-axes")
@@ -260,17 +234,16 @@ class SubsetAxes(BaseFilter):
         # but those axes are to be dropped, so it *also* says "axes to drop"
         locationToKeep = await self.locationToKeep
 
-        sources = [
-            replace(
-                source, location=subsetLocationDrop(source.location, locationToKeep)
-            )
-            for source in glyph.sources
-            if subsetLocationKeep(locationToKeep | source.location, locationToKeep)
-            == locationToKeep
-        ]
+        def mapFilterFunc(location):
+            if (
+                subsetLocationKeep(locationToKeep | location, locationToKeep)
+                != locationToKeep
+            ):
+                return None
 
-        glyph = replace(glyph, sources=sources)
-        return dropUnusedSourcesAndLayers(glyph)
+            return subsetLocationDrop(location, locationToKeep)
+
+        return mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc)
 
 
 def subsetLocationKeep(location, axisNames):
@@ -581,3 +554,29 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     return dropUnusedSourcesAndLayers(
         replace(glyph, sources=newSources, layers=newLayers)
     )
+
+
+def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
+    newSources = []
+    layersToDelete = set()
+    for source in glyph.sources:
+        newLocation = mapFilterFunc(source.location)
+        if newLocation is None:
+            layersToDelete.add(source.layerName)
+        else:
+            newSources.append(replace(source, location=newLocation))
+    layersToKeep = {source.layerName for source in newSources}
+    layersToDelete -= layersToKeep
+    newLayers = {
+        layerName: layer
+        for layerName, layer in glyph.layers.items()
+        if layerName not in layersToDelete
+    }
+    return replace(glyph, sources=newSources, layers=newLayers)
+
+
+def mapLocation(location, mapFuncs):
+    return {
+        axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
+        for axisName, axisValue in location.items()
+    }
