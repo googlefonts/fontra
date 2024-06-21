@@ -660,20 +660,19 @@ function getResizeHandles(resizeBounds, margin) {
     "middle-right": { x: x + w, y: y + h / 2 },
   };
 
-  const removeHandles = [];
-  if (width == 0 || height == 0) {
-    for (const handleName of Object.keys(handles)) {
-      if (width == 0 && handleName != "top-center" && handleName != "bottom-center") {
-        removeHandles.push(handleName);
-      }
-      if (height == 0 && handleName != "middle-left" && handleName != "middle-right") {
-        removeHandles.push(handleName);
-      }
+  if (width != 0 && height != 0) {
+    return handles;
+  }
+
+  for (const handleName of Object.keys(handles)) {
+    if (width == 0 && handleName != "top-center" && handleName != "bottom-center") {
+      delete handles[handleName];
+    }
+    if (height == 0 && handleName != "middle-left" && handleName != "middle-right") {
+      delete handles[handleName];
     }
   }
-  for (const handleName of removeHandles) {
-    delete handles[handleName];
-  }
+
   return handles;
 }
 
