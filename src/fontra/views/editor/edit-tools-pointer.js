@@ -541,16 +541,16 @@ export class PointerTool extends BaseTool {
 
           // rotation based on pinPoint
           if (event.ctrlKey) {
-            const angleDegInital = Math.atan2(
+            const angleInital = Math.atan2(
               pinPoint.y - initialPoint.y,
               pinPoint.x - initialPoint.x
             );
-            const angleDeg = Math.atan2(
+            const angle = Math.atan2(
               pinPoint.y - currentPoint.y,
               pinPoint.x - currentPoint.x
             );
             // Do not do scale, because together with rotation it will be a mess
-            transformation = new Transform().rotate(angleDeg - angleDegInital);
+            transformation = new Transform().rotate(angle - angleInital);
           }
 
           const t = new Transform()
