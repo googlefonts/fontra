@@ -429,11 +429,29 @@ export class PointerTool extends BaseTool {
 
     const initialClickedResizeHandle =
       this.sceneController.sceneModel.initialClickedResizeHandle;
-    const originX = initialClickedResizeHandle.includes("left") ? "right" : "left";
-    const originY = initialClickedResizeHandle.includes("top") ? "bottom" : "top";
-    const origin = { x: originX, y: originY };
 
-    // TODO: I am not sure if this is the best way to determine the direction
+    // The following may seem wrong to you, but it's correct.
+    // Because we say for example bottom-left and not left-bottom. Y-X order.
+    const originX = initialClickedResizeHandle.split("-")[1];
+    const originY = initialClickedResizeHandle.split("-")[0];
+
+    const origin = { x: originX, y: originY };
+    // origin must be the opposite side of where we have our mouse
+    if (originX === "left") {
+      origin.x = "right";
+    }
+    if (originX === "right") {
+      origin.x = "left";
+    }
+    if (originY === "top") {
+      origin.y = "bottom";
+    }
+    // no else because could be middle or center
+    if (originY === "bottom") {
+      origin.y = "top";
+    }
+
+    // must be set to the opposite side of the mouse if left or bottom
     const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
     const directionY = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
 
@@ -443,7 +461,6 @@ export class PointerTool extends BaseTool {
     );
 
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-      //const initialPoint = sceneController.localPoint(initialEvent);
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
 
       const layerInfo = Object.entries(
@@ -463,8 +480,9 @@ export class PointerTool extends BaseTool {
       });
 
       let editChange;
+      let pinPoint;
+      let altKeyPressedOnce;
       for await (const event of eventStream) {
-        //const currentPoint = sceneController.localPoint(event);
         const currentPoint = sceneController.selectedGlyphPoint(event);
 
         let scaleX =
@@ -486,21 +504,23 @@ export class PointerTool extends BaseTool {
           scaleX = 1;
         }
 
+        // scale proportionally if shift key is pressed
         if (event.shiftKey) {
-          // scale proportionally
           scaleX = scaleY;
         }
-        const transformation = new Transform().scale(scaleX, scaleY);
-        console.log("scaleX: ", scaleX);
-        console.log("scaleY: ", scaleY);
+        let transformation = new Transform().scale(scaleX, scaleY);
 
-        if (event.altKey) {
-          // scale from center
-          // unset will force: fallback to center
+        // altKeyPressedOnce variable is used to detect if altKey was pressed once
+        if (event.altKey && !altKeyPressedOnce) {
+          altKeyPressedOnce = true;
+          pinPoint = undefined;
           origin.x = undefined;
           origin.y = undefined;
-        } else {
-          // need this if we switch back from altKey
+        }
+
+        if (!event.altKey && altKeyPressedOnce) {
+          altKeyPressedOnce = false;
+          pinPoint = undefined;
           origin.x = originX;
           origin.y = originY;
         }
@@ -508,33 +528,30 @@ export class PointerTool extends BaseTool {
         const deepEditChanges = [];
         for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
           const layerGlyph = layerGlyphController.instance;
-          const pinPoint = _getPinPoint(
-            sceneController,
-            layerGlyphController,
-            origin.x,
-            origin.y
-          );
+          // pinPoint need to be set for each layer individually,
+          // but only once, except if altKey is pressed
+          if (!pinPoint) {
+            pinPoint = _getPinPoint(
+              sceneController,
+              layerGlyphController,
+              origin.x,
+              origin.y
+            );
+          }
 
-          console.log("pinPoint: ", pinPoint);
-          console.log("currentPoint: ", currentPoint);
-
-          // TODO: implement rotation
-          // The following does not work proper, yet.
-          // if (event.ctrlKey) {
-          //   const angle = Math.atan2(
-          //     pinPoint.y - currentPoint.y,
-          //     pinPoint.x - currentPoint.x
-          //   );
-
-          //   const initalAngle = Math.atan2(
-          //     pinPoint.y - initialPoint.y,
-          //     pinPoint.x - initialPoint.x
-          //   );
-          //   var angleDeg = angle * 180 / Math.PI;
-          //   var initalAngleDeg = initalAngle * 180 / Math.PI;
-          //   console.log("rotation angleDeg: ", angleDeg - initalAngleDeg);
-          //   transformation.rotate(angleDeg - initalAngleDeg);
-          // }
+          // rotation based on pinPoint
+          if (event.ctrlKey) {
+            const angleDegInital = Math.atan2(
+              pinPoint.y - initialPoint.y,
+              pinPoint.x - initialPoint.x
+            );
+            const angleDeg = Math.atan2(
+              pinPoint.y - currentPoint.y,
+              pinPoint.x - currentPoint.x
+            );
+            // Do not do scale, because together with rotation it will be a mess
+            transformation = new Transform().rotate(angleDeg - angleDegInital);
+          }
 
           const t = new Transform()
             .translate(pinPoint.x, pinPoint.y)
