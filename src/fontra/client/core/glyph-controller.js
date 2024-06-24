@@ -6,7 +6,6 @@ import {
 import {
   DiscreteVariationModel,
   findNearestLocationIndex,
-  splitDiscreteLocation,
 } from "./discrete-variation-model.js";
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
@@ -340,10 +339,7 @@ export class VariableGlyphController {
   _splitSourcesByDiscreteLocation() {
     const splitSources = {};
     for (const [sourceIndex, source] of enumerate(this.sources)) {
-      const splitLoc = splitDiscreteLocation(
-        this.getSourceLocation(source),
-        this.discreteAxes
-      );
+      const splitLoc = this.model.splitDiscreteLocation(this.getSourceLocation(source));
       const key = JSON.stringify(splitLoc.discreteLocation);
       if (!(key in splitSources)) {
         const defaultSourceIndex = this.model.getDefaultSourceIndexForDiscreteLocation(
