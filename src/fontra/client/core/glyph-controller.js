@@ -469,7 +469,6 @@ export class VariableGlyphController {
 
   findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
     sourceLocation = this.expandNLIAxes(sourceLocation);
-    const splitLoc = splitDiscreteLocation(sourceLocation, this.discreteAxes);
 
     // Ensure locations are *not* sparse
 
