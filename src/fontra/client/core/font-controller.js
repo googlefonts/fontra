@@ -924,9 +924,18 @@ function ensureDenseSources(sources) {
   return mapObjectValues(sources, (source) => {
     return {
       ...source,
-      verticalMetrics: mapObjectValues(source.verticalMetrics || {}, (metric) => {
-        return { value: metric.value, zone: metric.zone || 0 };
-      }),
+      metricsHorizontalLayout: mapObjectValues(
+        source.metricsHorizontalLayout || {},
+        (metric) => {
+          return { value: metric.value, zone: metric.zone || 0 };
+        }
+      ),
+      metricsVerticalLayout: mapObjectValues(
+        source.metricsVerticalLayout || {},
+        (metric) => {
+          return { value: metric.value, zone: metric.zone || 0 };
+        }
+      ),
     };
   });
 }

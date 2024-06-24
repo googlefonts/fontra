@@ -85,14 +85,15 @@ class FontSource:
     name: str
     isSparse: bool = False
     location: Location = field(default_factory=dict)
-    verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
+    lineMetricsHorizontalLayout: dict[str, LineMetric] = field(default_factory=dict)
+    lineMetricsVerticalLayout: dict[str, LineMetric] = field(default_factory=dict)
     italicAngle: float = 0
     guidelines: list[Guideline] = field(default_factory=list)
     customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
-class FontMetric:
+class LineMetric:
     value: float
     zone: float = 0
     customData: CustomData = field(default_factory=dict)
@@ -415,11 +416,12 @@ registerHook(
 registerHook(Path)
 registerHook(PackedPath)
 registerHook(AxisValueLabel)
-registerHook(FontMetric, customData=_unstructureDictSortedRecursively)
+registerHook(LineMetric, customData=_unstructureDictSortedRecursively)
 registerHook(
     FontSource,
     location=_unstructureDictSorted,
-    verticalMetrics=_unstructureDictSorted,
+    metricsHorizontalLayout=_unstructureDictSorted,
+    metricsVerticalLayout=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
 registerHook(FontAxis, customData=_unstructureDictSortedRecursively)
