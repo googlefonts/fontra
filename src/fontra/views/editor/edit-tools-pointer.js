@@ -408,36 +408,34 @@ export class PointerTool extends BaseTool {
 
   async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
     const sceneController = this.sceneController;
-
-    const clickedResizeHandle = this.sceneController.sceneModel.clickedResizeHandle;
+    const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
 
     // The following may seem wrong to you, but it's correct.
     // Because we say for example bottom-left and not left-bottom. Y-X order.
-    const initialOriginX = clickedResizeHandle.split("-")[1];
-    const initialOriginY = clickedResizeHandle.split("-")[0];
+    const resizeHandlePositionX = clickedResizeHandle.split("-")[1];
+    const resizeHandlePositionY = clickedResizeHandle.split("-")[0];
 
-    const origin = { x: initialOriginX, y: initialOriginY };
+    const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
     // origin must be the opposite side of where we have our mouse
-    if (initialOriginX === "left") {
+    if (resizeHandlePositionX === "left") {
       origin.x = "right";
     }
-    if (initialOriginX === "right") {
+    if (resizeHandlePositionX === "right") {
       origin.x = "left";
     }
-    if (initialOriginY === "top") {
+    if (resizeHandlePositionY === "top") {
       origin.y = "bottom";
     }
-    if (initialOriginY === "bottom") {
+    if (resizeHandlePositionY === "bottom") {
       origin.y = "top";
     }
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeft = clickedResizeHandle.includes("left") ? -1 : 1;
-    const fixDragBottom = clickedResizeHandle.includes("bottom") ? -1 : 1;
+    const fixDragLeftValue = clickedResizeHandle.includes("left") ? -1 : 1;
+    const fixDragBottomValue = clickedResizeHandle.includes("bottom") ? -1 : 1;
 
-    const staticGlyphControllers =
-      await this.sceneController.getStaticGlyphControllers();
+    const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
 
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
@@ -469,8 +467,8 @@ export class PointerTool extends BaseTool {
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
         const delta = {
-          x: (currentPoint.x - initialPoint.x) * fixDragLeft,
-          y: (currentPoint.y - initialPoint.y) * fixDragBottom,
+          x: (currentPoint.x - initialPoint.x) * fixDragLeftValue,
+          y: (currentPoint.y - initialPoint.y) * fixDragBottomValue,
         };
 
         const deepEditChanges = [];
