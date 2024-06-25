@@ -688,12 +688,12 @@ function getResizeHandles(resizeBounds, margin) {
 function getResizeBounds(glyph, selection) {
   const selectionBounds = glyph.getSelectionBounds(selection);
   if (!selectionBounds) {
-    return false;
+    return undefined;
   }
   const { width, height } = rectSize(selectionBounds);
   if (width == 0 && height == 0) {
-    // return false if for example only one point is selected
-    return false;
+    // return undefined if for example only one point is selected
+    return undefined;
   }
 
   return selectionBounds;
@@ -702,7 +702,7 @@ function getResizeBounds(glyph, selection) {
 function getInitialResizeHandle(sceneController, point, selection, handleMargin) {
   const glyph = sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
   if (!glyph) {
-    return false;
+    return undefined;
   }
 
   const resizeSelectionBounds = getResizeBounds(glyph, selection);
@@ -712,5 +712,5 @@ function getInitialResizeHandle(sceneController, point, selection, handleMargin)
       return handleName;
     }
   }
-  return false;
+  return undefined;
 }
