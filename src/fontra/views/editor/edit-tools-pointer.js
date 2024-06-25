@@ -207,7 +207,7 @@ export class PointerTool extends BaseTool {
         eventStream,
         initialEvent
       );
-      this.sceneController.sceneModel.initialClickedResizeHandle = false;
+      delete this.sceneController.sceneModel.initialClickedResizeHandle;
     }
   }
 
