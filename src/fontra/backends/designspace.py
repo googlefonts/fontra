@@ -38,12 +38,12 @@ from ..core.classes import (
     DiscreteFontAxis,
     FontAxis,
     FontInfo,
-    FontMetric,
     FontSource,
     GlyphAxis,
     GlyphSource,
     Guideline,
     Layer,
+    LineMetric,
     OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
@@ -64,7 +64,7 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
-VERTICAL_METRICS_ZONES_KEY = "xyz.fontra.verticalMetrics.zones"
+LINE_METRICS_HOR_ZONES_KEY = "xyz.fontra.lineMetricsHorizontalLayout.zones"
 
 
 defaultUFOInfoAttrs = {
@@ -76,7 +76,7 @@ defaultUFOInfoAttrs = {
 }
 
 
-verticalMetricsDefaults = {
+lineMetricsHorDefaults = {
     "ascender": {"value": 0.75, "zone": 0.016},
     "capHeight": {"value": 0.75, "zone": 0.016},
     "xHeight": {"value": 0.5, "zone": 0.016},
@@ -1315,23 +1315,23 @@ class DSSource:
 
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
         if self.isSparse:
-            verticalMetrics: dict[str, FontMetric] = {}
+            lineMetricsHorizontalLayout: dict[str, LineMetric] = {}
             guidelines = []
             italicAngle = 0
         else:
             fontInfo = UFOFontInfo()
             self.layer.reader.readInfo(fontInfo)
             lib = self.layer.reader.readLib()
-            zones = lib.get(VERTICAL_METRICS_ZONES_KEY, {})
-            verticalMetrics = {}
-            for name, defaultFactor in verticalMetricsDefaults.items():
+            zones = lib.get(LINE_METRICS_HOR_ZONES_KEY, {})
+            lineMetricsHorizontalLayout = {}
+            for name, defaultFactor in lineMetricsHorDefaults.items():
                 value = 0 if name == "baseline" else getattr(fontInfo, name, None)
                 if value is None:
                     value = round(defaultFactor["value"] * unitsPerEm)
                 zone = zones.get(name)
                 if zone is None:
                     zone = round(defaultFactor["zone"] * unitsPerEm)
-                verticalMetrics[name] = FontMetric(value=value, zone=zone)
+                lineMetricsHorizontalLayout[name] = LineMetric(value=value, zone=zone)
             guidelines = unpackGuidelines(fontInfo.guidelines)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
 
@@ -1339,7 +1339,7 @@ class DSSource:
             name=self.name,
             location=self.location,
             italicAngle=italicAngle,
-            verticalMetrics=verticalMetrics,
+            lineMetricsHorizontalLayout=lineMetricsHorizontalLayout,
             guidelines=guidelines,
             isSparse=self.isSparse,
         )
@@ -1780,8 +1780,8 @@ def updateFontInfoFromFontSource(reader, fontSource):
     reader.readInfo(fontInfo)
 
     zones = {}
-    for name, metric in fontSource.verticalMetrics.items():
-        if name in verticalMetricsDefaults:
+    for name, metric in fontSource.lineMetricsHorizontalLayout.items():
+        if name in lineMetricsHorDefaults:
             if name != "baseline":
                 setattr(fontInfo, name, metric.value)
             if metric.zone:
@@ -1796,9 +1796,9 @@ def updateFontInfoFromFontSource(reader, fontSource):
 
     lib = reader.readLib()
     if zones:
-        lib[VERTICAL_METRICS_ZONES_KEY] = zones
+        lib[LINE_METRICS_HOR_ZONES_KEY] = zones
     else:
-        lib.pop(VERTICAL_METRICS_ZONES_KEY, None)
+        lib.pop(LINE_METRICS_HOR_ZONES_KEY, None)
     reader.writeLib(lib)
 
 

@@ -433,9 +433,13 @@
       "type": "dict",
       "subtype": "float"
     },
-    "verticalMetrics": {
+    "lineMetricsHorizontalLayout": {
       "type": "dict",
-      "subtype": "FontMetric"
+      "subtype": "LineMetric"
+    },
+    "lineMetricsVerticalLayout": {
+      "type": "dict",
+      "subtype": "LineMetric"
     },
     "italicAngle": {
       "type": "float"
@@ -449,7 +453,7 @@
       "subtype": "Any"
     }
   },
-  "FontMetric": {
+  "LineMetric": {
     "value": {
       "type": "float"
     },

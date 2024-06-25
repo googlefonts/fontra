@@ -510,7 +510,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 150.0, "width": 0.0},
         "name": "LightCondensed",
-        "verticalMetrics": {
+        "lineMetricsHorizontalLayout": {
             "ascender": {"value": 700, "zone": 16},
             "capHeight": {"value": 700, "zone": 16},
             "descender": {"value": -200, "zone": -16},
@@ -526,7 +526,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},
         "name": "BoldCondensed",
-        "verticalMetrics": {
+        "lineMetricsHorizontalLayout": {
             "ascender": {"value": 800, "zone": 16},
             "capHeight": {"value": 800, "zone": 16},
             "descender": {"value": -200, "zone": -16},
@@ -537,7 +537,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 150.0, "width": 1000.0},
         "name": "LightWide",
-        "verticalMetrics": {
+        "lineMetricsHorizontalLayout": {
             "ascender": {"value": 700, "zone": 16},
             "capHeight": {"value": 700, "zone": 16},
             "descender": {"value": -200, "zone": -16},
@@ -548,7 +548,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 1000.0},
         "name": "BoldWide",
-        "verticalMetrics": {
+        "lineMetricsHorizontalLayout": {
             "ascender": {"value": 800, "zone": 16},
             "capHeight": {"value": 800, "zone": 16},
             "descender": {"value": -200, "zone": -16},
@@ -574,7 +574,7 @@ getSourcesTestData = [
     {
         "location": {"italic": 1.0, "weight": 150.0, "width": 0.0},
         "name": "LightCondensedItalic",
-        "verticalMetrics": {
+        "lineMetricsHorizontalLayout": {
             "ascender": {"value": 750, "zone": 16},
             "capHeight": {"value": 750, "zone": 16},
             "descender": {"value": -250, "zone": -16},
@@ -596,10 +596,10 @@ async def test_putSources(writableTestFont):
     sources = deepcopy(await writableTestFont.getSources())
     testSource = sources["light-condensed"]
 
-    assert testSource.verticalMetrics["ascender"].value == 700
-    assert testSource.verticalMetrics["ascender"].zone == 16
-    testSource.verticalMetrics["ascender"].value = 800
-    testSource.verticalMetrics["ascender"].zone = 10
+    assert testSource.lineMetricsHorizontalLayout["ascender"].value == 700
+    assert testSource.lineMetricsHorizontalLayout["ascender"].zone == 16
+    testSource.lineMetricsHorizontalLayout["ascender"].value = 800
+    testSource.lineMetricsHorizontalLayout["ascender"].zone = 10
     assert testSource.guidelines[0].y == 700
     testSource.guidelines[0].y = 750
 
@@ -608,8 +608,8 @@ async def test_putSources(writableTestFont):
     reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedSources = await reopenedBackend.getSources()
     testSource = reopenedSources["light-condensed"]
-    assert testSource.verticalMetrics["ascender"].value == 800
-    assert testSource.verticalMetrics["ascender"].zone == 10
+    assert testSource.lineMetricsHorizontalLayout["ascender"].value == 800
+    assert testSource.lineMetricsHorizontalLayout["ascender"].zone == 10
     assert testSource.guidelines[0].y == 750
     assert sources == reopenedSources
 

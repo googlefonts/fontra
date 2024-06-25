@@ -172,8 +172,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.verticalMetrics",
-  name: "Vertical font metrics",
+  identifier: "fontra.lineMetrics",
+  name: "Line metrics",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -188,25 +188,25 @@ registerVisualizationLayerDefinition({
     if (!model.fontSourceInstance) {
       return;
     }
-    const verticalMetrics = model.fontSourceInstance.verticalMetrics;
+    const lineMetrics = model.fontSourceInstance.lineMetricsHorizontalLayout;
     const glyphWidth = positionedGlyph.glyph.xAdvance
       ? positionedGlyph.glyph.xAdvance
       : 0;
 
     // glyph box
     const pathBox = new Path2D();
-    if (verticalMetrics.ascender && verticalMetrics.descender) {
+    if (lineMetrics.ascender && lineMetrics.descender) {
       pathBox.rect(
         0,
-        verticalMetrics.descender.value,
+        lineMetrics.descender.value,
         positionedGlyph.glyph.xAdvance,
-        verticalMetrics.ascender.value - verticalMetrics.descender.value
+        lineMetrics.ascender.value - lineMetrics.descender.value
       );
     }
 
     // collect paths: vertical metrics and alignment zones
     const pathZones = [];
-    for (const [key, metric] of Object.entries(verticalMetrics)) {
+    for (const [key, metric] of Object.entries(lineMetrics)) {
       if (metric.zone) {
         const pathZone = new Path2D();
         pathZone.rect(0, metric.value, glyphWidth, metric.zone);

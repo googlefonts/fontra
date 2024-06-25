@@ -195,14 +195,16 @@ export class SourcesPanel extends BaseInfoPanel {
       location: newLocation,
     };
 
-    if (interpolatedSource.verticalMetrics) {
-      newSource.verticalMetrics = getVerticalMetricsRounded(
-        interpolatedSource.verticalMetrics
+    if (interpolatedSource.lineMetricsHorizontalLayout) {
+      newSource.lineMetricsHorizontalLayout = getLineMetricsHorRounded(
+        interpolatedSource.lineMetricsHorizontalLayout
       );
     }
 
     return {
-      verticalMetrics: getDefaultVerticalMetrics(this.fontController.unitsPerEm),
+      lineMetricsHorizontalLayout: getDefaultLineMetricsHor(
+        this.fontController.unitsPerEm
+      ),
       ...interpolatedSource,
       ...newSource,
     };
@@ -294,7 +296,7 @@ fontra-ui-font-info-sources-panel-source-box.min-height,
   height: 45px;
 }
 
-.fontra-ui-font-info-sources-panel-vertical-metrics {
+.fontra-ui-font-info-sources-panel-line-metrics-hor {
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
 }
 
@@ -346,8 +348,10 @@ class SourceBox extends HTMLElement {
         //isSparse: source.isSparse ? source.isSparse : false,
       },
       location: { ...source.location },
-      verticalMetrics: prepareVerticalMetricsForController(source.verticalMetrics),
-      // TODO: hhea, OS/2 verticalMetrics, etc
+      lineMetricsHorizontalLayout: prepareLineMetricsHorForController(
+        source.lineMetricsHorizontalLayout
+      ),
+      // TODO: hhea, OS/2 line metrics, etc
       // customData: { ...source.customData },
     };
     // NOTE: Font guidelines could be read/write here,
@@ -465,14 +469,14 @@ class SourceBox extends HTMLElement {
       }, `edit source location ${event.key}`);
     });
 
-    this.controllers.verticalMetrics.addListener((event) => {
+    this.controllers.lineMetricsHorizontalLayout.addListener((event) => {
       this.editSource((source) => {
         if (event.key.startsWith("value-")) {
-          source.verticalMetrics[event.key.slice(6)].value = event.newValue;
+          source.lineMetricsHorizontalLayout[event.key.slice(6)].value = event.newValue;
         } else {
-          source.verticalMetrics[event.key.slice(5)].zone = event.newValue;
+          source.lineMetricsHorizontalLayout[event.key.slice(5)].zone = event.newValue;
         }
-      }, `edit source vertical metrics ${event.key}`);
+      }, `edit source line metrics ${event.key}`);
     });
 
     this.innerHTML = "";
@@ -510,7 +514,9 @@ class SourceBox extends HTMLElement {
     this.append(
       buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
     );
-    this.append(buildElementVerticalMetrics(this.controllers.verticalMetrics));
+    this.append(
+      buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
+    );
   }
 }
 
@@ -553,19 +559,19 @@ function buildElement(controller) {
   );
 }
 
-function buildElementVerticalMetrics(controller) {
+function buildElementLineMetricsHor(controller) {
   let items = [];
-  for (const key of Object.keys(verticalMetricsDefaults)) {
+  for (const key of Object.keys(lineMetricsHorizontalLayoutDefaults)) {
     if (`value-${key}` in controller.model) {
       items.push([getLabelFromKey(key), key]);
     }
   }
-  // TODO: Custom vertical metrics
+  // TODO: Custom line metrics
 
   return html.div(
     {
       class:
-        "fontra-ui-font-info-sources-panel-column min-height fontra-ui-font-info-sources-panel-vertical-metrics",
+        "fontra-ui-font-info-sources-panel-column min-height fontra-ui-font-info-sources-panel-line-metrics-hor",
     },
     items
       .map(([labelName, keyName]) => {
@@ -605,7 +611,7 @@ function getInterpolatedSourceData(fontController, newLocation) {
   return JSON.parse(JSON.stringify(fontSourceInstance));
 }
 
-const verticalMetricsDefaults = {
+const lineMetricsHorizontalLayoutDefaults = {
   ascender: { value: 0.8, zone: 0.016 },
   capHeight: { value: 0.75, zone: 0.016 },
   xHeight: { value: 0.5, zone: 0.016 },
@@ -613,34 +619,38 @@ const verticalMetricsDefaults = {
   descender: { value: -0.25, zone: -0.016 },
 };
 
-function getDefaultVerticalMetrics(unitsPerEm) {
-  const defaultVerticalMetrics = {};
-  for (const [name, defaultFactor] of Object.entries(verticalMetricsDefaults)) {
+function getDefaultLineMetricsHor(unitsPerEm) {
+  const lineMetricsHorizontalLayout = {};
+  for (const [name, defaultFactor] of Object.entries(
+    lineMetricsHorizontalLayoutDefaults
+  )) {
     const value = Math.round(defaultFactor.value * unitsPerEm);
     const zone = Math.round(defaultFactor.zone * unitsPerEm);
-    defaultVerticalMetrics[name] = { value: value, zone: zone };
+    lineMetricsHorizontalLayout[name] = { value: value, zone: zone };
   }
-  return defaultVerticalMetrics;
+  return lineMetricsHorizontalLayout;
 }
 
-function prepareVerticalMetricsForController(verticalMetrics) {
-  const newVerticalMetrics = {};
-  for (const key in verticalMetrics) {
-    newVerticalMetrics[`value-${key}`] = verticalMetrics[key].value;
-    newVerticalMetrics[`zone-${key}`] = verticalMetrics[key].zone | 0;
+function prepareLineMetricsHorForController(lineMetricsHorizontalLayout) {
+  const newLineMetricsHorizontalLayout = {};
+  for (const key in lineMetricsHorizontalLayout) {
+    newLineMetricsHorizontalLayout[`value-${key}`] =
+      lineMetricsHorizontalLayout[key].value;
+    newLineMetricsHorizontalLayout[`zone-${key}`] =
+      lineMetricsHorizontalLayout[key].zone | 0;
   }
-  return newVerticalMetrics;
+  return newLineMetricsHorizontalLayout;
 }
 
-function getVerticalMetricsRounded(verticalMetrics) {
-  const newVerticalMetrics = {};
-  for (const key in verticalMetrics) {
-    newVerticalMetrics[key] = {
-      value: round(verticalMetrics[key].value, 2),
-      zone: round(verticalMetrics[key].zone, 2) | 0,
+function getLineMetricsHorRounded(lineMetricsHorizontalLayout) {
+  const newLineMetricsHorizontalLayout = {};
+  for (const key in lineMetricsHorizontalLayout) {
+    newLineMetricsHorizontalLayout[key] = {
+      value: round(lineMetricsHorizontalLayout[key].value, 2),
+      zone: round(lineMetricsHorizontalLayout[key].zone, 2) | 0,
     };
   }
-  return newVerticalMetrics;
+  return newLineMetricsHorizontalLayout;
 }
 
 function getLabelFromKey(key) {
@@ -656,7 +666,7 @@ function getLabelFromKey(key) {
     descender: "Descender",
     general: "General",
     location: "Location",
-    verticalMetrics: "Vertical metrics",
+    lineMetricsHorizontalLayout: "Line metrics",
   };
   return keyLabelMap[key] || key;
 }
