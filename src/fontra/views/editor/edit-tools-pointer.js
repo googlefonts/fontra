@@ -449,8 +449,8 @@ export class PointerTool extends BaseTool {
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
-    const directionY = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
+    const fixDragLeft = initialClickedResizeHandle.includes("left") ? -1 : 1;
+    const fixDragBottom = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
 
     const staticGlyphControllers =
       await this.sceneController.getStaticGlyphControllers();
@@ -485,8 +485,8 @@ export class PointerTool extends BaseTool {
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
         const delta = {
-          x: currentPoint.x - initialPoint.x,
-          y: currentPoint.y - initialPoint.y,
+          x: (currentPoint.x - initialPoint.x) * fixDragLeft,
+          y: (currentPoint.y - initialPoint.y) * fixDragBottom,
         };
 
         const deepEditChanges = [];
@@ -494,10 +494,8 @@ export class PointerTool extends BaseTool {
           const layerGlyph = layer.layerGlyphController.instance;
 
           // NOTE: calculate the scale based on selection width per layer.
-          let scaleX =
-            (layer.selectionWidth + delta.x * directionX) / layer.selectionWidth;
-          let scaleY =
-            (layer.selectionHeight + delta.y * directionY) / layer.selectionHeight;
+          let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
+          let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
           if (initialClickedResizeHandle.includes("middle")) {
             if (event.shiftKey) {
