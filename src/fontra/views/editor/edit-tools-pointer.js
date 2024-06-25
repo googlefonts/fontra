@@ -20,6 +20,7 @@ import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
+import { getPinPoint } from "./panel-transformation.js";
 import { equalGlyphSelection } from "./scene-controller.js";
 import {
   registerVisualizationLayerDefinition,
@@ -458,20 +459,6 @@ export class PointerTool extends BaseTool {
     const staticGlyphControllers =
       await this.sceneController.getStaticGlyphControllers();
 
-    // const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
-    // const regularPinPoint = _getPinPoint(
-    //   sceneController,
-    //   glyphController,
-    //   origin.x,
-    //   origin.y
-    // );
-    // const altPinPoint = _getPinPoint(
-    //   sceneController,
-    //   glyphController,
-    //   undefined,
-    //   undefined
-    // );
-
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
 
@@ -493,18 +480,8 @@ export class PointerTool extends BaseTool {
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
           editBehavior: behaviorFactory.getBehavior("default", true),
-          regularPinPoint: _getPinPoint(
-            sceneController,
-            staticGlyphControllers[layerName],
-            origin.x,
-            origin.y
-          ),
-          altPinPoint: _getPinPoint(
-            sceneController,
-            staticGlyphControllers[layerName],
-            undefined,
-            undefined
-          ),
+          regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
+          altPinPoint: getPinPoint(layerBounds, undefined, undefined),
           selectionWidth: selectionWidth,
           selectionHeight: selectionHeight,
         };
@@ -716,35 +693,6 @@ function getResizeHandles(resizeBounds, margin) {
   }
 
   return handles;
-}
-
-// TODO: refactor this to a shared location
-// this is basically a copy of the function in panel-transformation.js
-function _getPinPoint(sceneController, layerGlyphController, originX, originY) {
-  const bounds = layerGlyphController.getSelectionBounds(sceneController.selection);
-  const { width, height } = rectSize(bounds);
-
-  // default from center
-  let pinPointX = bounds.xMin + width / 2;
-  let pinPointY = bounds.yMin + height / 2;
-
-  if (typeof originX === "number") {
-    pinPointX = originX;
-  } else if (originX === "left") {
-    pinPointX = bounds.xMin;
-  } else if (originX === "right") {
-    pinPointX = bounds.xMax;
-  }
-
-  if (typeof originY === "number") {
-    pinPointY = originY;
-  } else if (originY === "top") {
-    pinPointY = bounds.yMax;
-  } else if (originY === "bottom") {
-    pinPointY = bounds.yMin;
-  }
-
-  return { x: pinPointX, y: pinPointY };
 }
 
 function getResizeBounds(glyph, selection) {

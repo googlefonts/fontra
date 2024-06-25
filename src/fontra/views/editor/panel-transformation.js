@@ -451,35 +451,6 @@ export default class TransformationPanel extends Panel {
     };
   }
 
-  _getPinPoint(layerGlyphController, originX, originY) {
-    const bounds = layerGlyphController.getSelectionBounds(
-      this.sceneController.selection
-    );
-    const { width, height } = rectSize(bounds);
-
-    // default from center
-    let pinPointX = bounds.xMin + width / 2;
-    let pinPointY = bounds.yMin + height / 2;
-
-    if (typeof originX === "number") {
-      pinPointX = originX;
-    } else if (originX === "left") {
-      pinPointX = bounds.xMin;
-    } else if (originX === "right") {
-      pinPointX = bounds.xMax;
-    }
-
-    if (typeof originY === "number") {
-      pinPointY = originY;
-    } else if (originY === "top") {
-      pinPointY = bounds.yMax;
-    } else if (originY === "bottom") {
-      pinPointY = bounds.yMin;
-    }
-
-    return { x: pinPointX, y: pinPointY };
-  }
-
   async transformSelection(transformation, undoLabel) {
     let {
       point: pointIndices,
@@ -518,8 +489,8 @@ export default class TransformationPanel extends Panel {
       const rollbackChanges = [];
       for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
         const layerGlyph = layerGlyphController.instance;
-        const pinPoint = this._getPinPoint(
-          layerGlyphController,
+        const pinPoint = getPinPoint(
+          layerGlyphController.getSelectionBounds(this.sceneController.selection),
           this.transformParameters.originX,
           this.transformParameters.originY
         );
@@ -724,6 +695,32 @@ export default class TransformationPanel extends Panel {
       this.update();
     }
   }
+}
+
+export function getPinPoint(bounds, originX, originY) {
+  const { width, height } = rectSize(bounds);
+
+  // default from center
+  let pinPointX = bounds.xMin + width / 2;
+  let pinPointY = bounds.yMin + height / 2;
+
+  if (typeof originX === "number") {
+    pinPointX = originX;
+  } else if (originX === "left") {
+    pinPointX = bounds.xMin;
+  } else if (originX === "right") {
+    pinPointX = bounds.xMax;
+  }
+
+  if (typeof originY === "number") {
+    pinPointY = originY;
+  } else if (originY === "top") {
+    pinPointY = bounds.yMax;
+  } else if (originY === "bottom") {
+    pinPointY = bounds.yMin;
+  }
+
+  return { x: pinPointX, y: pinPointY };
 }
 
 // Define MovableObject classes
