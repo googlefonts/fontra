@@ -54,5 +54,6 @@ describe("DiscreteVariationModel tests", () => {
     const deltas = model.getDeltas(testSourceData);
     const { instance, errors } = model.interpolateFromDeltas(testData.location, deltas);
     expect(instance).to.deep.equal(testData.expectedResult);
+    expect(errors).to.deep.equal(undefined);
   });
 });
