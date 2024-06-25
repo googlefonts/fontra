@@ -7,15 +7,16 @@ import {
 } from "./var-model.js";
 
 export class DiscreteVariationModel {
-  constructor(locations, discreteAxes, continuousAxes) {
-    this._discreteAxes = discreteAxes;
-    this._continuousAxes = continuousAxes;
+  constructor(locations, fontAxesSourceSpace) {
+    this._discreteAxes = fontAxesSourceSpace.filter((axis) => axis.values);
+    this._continuousAxes = fontAxesSourceSpace.filter((axis) => !axis.values);
+
     this._locations = {};
     this._locationsKeyToDiscreteLocation = {};
     this._locationKeys = [];
     this._locationIndices = {};
     for (const [index, location] of enumerate(locations)) {
-      const splitLoc = splitDiscreteLocation(location, discreteAxes);
+      const splitLoc = this.splitDiscreteLocation(location);
       const key = JSON.stringify(splitLoc.discreteLocation);
       this._locationKeys.push(key);
       if (!this._locationIndices[key]) {
@@ -24,7 +25,7 @@ export class DiscreteVariationModel {
         this._locationIndices[key].push(index);
       }
       const normalizedLocation = makeSparseNormalizedLocation(
-        normalizeLocation(splitLoc.location, continuousAxes)
+        normalizeLocation(splitLoc.location, this._continuousAxes)
       );
       if (!(key in this._locations)) {
         this._locations[key] = [normalizedLocation];
@@ -97,7 +98,7 @@ export class DiscreteVariationModel {
   }
 
   interpolateFromDeltas(location, deltas) {
-    const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
+    const splitLoc = this.splitDiscreteLocation(location);
     const key = JSON.stringify(splitLoc.discreteLocation);
     let { model, usedKey, errors } = this._getModel(key);
     if (!(key in deltas.deltas)) {
@@ -136,7 +137,7 @@ export class DiscreteVariationModel {
   }
 
   getSourceContributions(location) {
-    const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
+    const splitLoc = this.splitDiscreteLocation(location);
     const key = JSON.stringify(splitLoc.discreteLocation);
     const { model, usedKey } = this._getModel(key);
     const contributions = model.getSourceContributions(
@@ -153,6 +154,25 @@ export class DiscreteVariationModel {
     const { model } = this._getModel(key);
     const localIndex = model.getDefaultSourceIndex() || 0;
     return this._locationIndices[key][localIndex];
+  }
+
+  splitDiscreteLocation(location) {
+    const discreteLocation = {};
+    location = { ...location };
+    for (const axis of this._discreteAxes) {
+      let value = location[axis.name];
+      if (value !== undefined) {
+        delete location[axis.name];
+        if (axis.values.indexOf(value) < 0) {
+          // Ensure the value is actually in the values list
+          value = findNearestValue(value, axis.values);
+        }
+      } else {
+        value = axis.defaultValue;
+      }
+      discreteLocation[axis.name] = value;
+    }
+    return { discreteLocation, location };
   }
 }
 
@@ -185,25 +205,6 @@ class BrokenVariationModel {
     contributions[index] = 1;
     return contributions;
   }
-}
-
-export function splitDiscreteLocation(location, discreteAxes) {
-  const discreteLocation = {};
-  location = { ...location };
-  for (const axis of discreteAxes) {
-    let value = location[axis.name];
-    if (value !== undefined) {
-      delete location[axis.name];
-      if (axis.values.indexOf(value) < 0) {
-        // Ensure the value is actually in the values list
-        value = findNearestValue(value, axis.values);
-      }
-    } else {
-      value = axis.defaultValue;
-    }
-    discreteLocation[axis.name] = value;
-  }
-  return { discreteLocation, location };
 }
 
 function findNearestValue(value, values) {

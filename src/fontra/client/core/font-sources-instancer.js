@@ -18,8 +18,6 @@ export class FontSourcesInstancer {
     this.defaultLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );
-    this.discreteAxes = this.fontAxesSourceSpace.filter((axis) => axis.values);
-    this.continuousAxes = this.fontAxesSourceSpace.filter((axis) => !axis.values);
     this.sourcesByLocationString = Object.fromEntries(
       this.fontSourcesList.map((source) => [
         locationToString({ ...this.defaultLocation, ...source.location }),
@@ -35,11 +33,7 @@ export class FontSourcesInstancer {
         (source) => source.location,
         this.fontAxesSourceSpace
       );
-      this._model = new DiscreteVariationModel(
-        locations,
-        this.discreteAxes,
-        this.continuousAxes
-      );
+      this._model = new DiscreteVariationModel(locations, this.fontAxesSourceSpace);
     }
     return this._model;
   }
