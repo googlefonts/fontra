@@ -185,13 +185,13 @@ export class PointerTool extends BaseTool {
       this.editor.visualizationLayersSettings.model["fontra.resize.selection"]
     ) {
       sceneController.selection = initialSelection;
-      this.sceneController.sceneModel.initialClickedResizeHandle = resizeHandle;
+      this.sceneController.sceneModel.clickedResizeHandle = resizeHandle;
       await this.handleDragSelectionBoundsResize(
         initialSelection,
         eventStream,
         initialEvent
       );
-      delete this.sceneController.sceneModel.initialClickedResizeHandle;
+      delete this.sceneController.sceneModel.clickedResizeHandle;
     }
   }
 
@@ -409,13 +409,12 @@ export class PointerTool extends BaseTool {
   async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
     const sceneController = this.sceneController;
 
-    const initialClickedResizeHandle =
-      this.sceneController.sceneModel.initialClickedResizeHandle;
+    const clickedResizeHandle = this.sceneController.sceneModel.clickedResizeHandle;
 
     // The following may seem wrong to you, but it's correct.
     // Because we say for example bottom-left and not left-bottom. Y-X order.
-    const initialOriginX = initialClickedResizeHandle.split("-")[1];
-    const initialOriginY = initialClickedResizeHandle.split("-")[0];
+    const initialOriginX = clickedResizeHandle.split("-")[1];
+    const initialOriginY = clickedResizeHandle.split("-")[0];
 
     const origin = { x: initialOriginX, y: initialOriginY };
     // origin must be the opposite side of where we have our mouse
@@ -434,8 +433,8 @@ export class PointerTool extends BaseTool {
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeft = initialClickedResizeHandle.includes("left") ? -1 : 1;
-    const fixDragBottom = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
+    const fixDragLeft = clickedResizeHandle.includes("left") ? -1 : 1;
+    const fixDragBottom = clickedResizeHandle.includes("bottom") ? -1 : 1;
 
     const staticGlyphControllers =
       await this.sceneController.getStaticGlyphControllers();
@@ -482,14 +481,14 @@ export class PointerTool extends BaseTool {
           let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
           let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-          if (initialClickedResizeHandle.includes("middle")) {
+          if (clickedResizeHandle.includes("middle")) {
             if (event.shiftKey) {
               scaleY = scaleX;
             } else {
               scaleY = 1;
             }
           }
-          if (initialClickedResizeHandle.includes("center")) {
+          if (clickedResizeHandle.includes("center")) {
             if (event.shiftKey) {
               scaleX = scaleY;
             } else {
@@ -635,7 +634,7 @@ registerVisualizationLayerDefinition({
     }
 
     // draw resize handles hover
-    if (!model.initialClickedResizeHandle && handles[model.hoverResizeHandle]) {
+    if (!model.clickedResizeHandle && handles[model.hoverResizeHandle]) {
       strokeRoundNode(
         context,
         handles[model.hoverResizeHandle],
