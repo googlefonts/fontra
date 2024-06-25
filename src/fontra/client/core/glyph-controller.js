@@ -69,20 +69,6 @@ export class VariableGlyphController {
     return this._combinedAxes;
   }
 
-  get continuousAxes() {
-    if (this._continuousAxes === undefined) {
-      this._setupAxisMapping();
-    }
-    return this._continuousAxes;
-  }
-
-  get discreteAxes() {
-    if (this._discreteAxes === undefined) {
-      this._setupAxisMapping();
-    }
-    return this._discreteAxes;
-  }
-
   get fontAxisNames() {
     if (this._fontAxisNames === undefined) {
       const glyphAxisNames = new Set(this.glyph.axes.map((axis) => axis.name));
@@ -107,18 +93,15 @@ export class VariableGlyphController {
   }
 
   _setupAxisMapping() {
-    this._discreteAxes = [];
-    this._continuousAxes = Array.from(this.axes);
+    const combinedAxes = Array.from(this.axes);
     const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
 
     for (let fontAxis of this.fontAxesSourceSpace) {
-      if (fontAxis.values) {
-        this._discreteAxes.push(fontAxis);
-      } else if (!glyphAxisNames.has(fontAxis.name)) {
-        this._continuousAxes.push(fontAxis);
+      if (!glyphAxisNames.has(fontAxis.name)) {
+        combinedAxes.push(fontAxis);
       }
     }
-    this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
+    this._combinedAxes = combinedAxes;
   }
 
   getSourceIndex(sourceLocation) {
@@ -201,8 +184,6 @@ export class VariableGlyphController {
     delete this._deltas;
     delete this._sourceInterpolationStatus;
     delete this._combinedAxes;
-    delete this._discreteAxes;
-    delete this._continuousAxes;
     delete this._fontAxisNames;
     delete this._fontAxesSourceSpace;
     this._locationToSourceIndex = {};
@@ -214,11 +195,7 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => this.getSourceLocation(source));
-      this._model = new DiscreteVariationModel(
-        locations,
-        this.discreteAxes,
-        this.continuousAxes
-      );
+      this._model = new DiscreteVariationModel(locations, this.combinedAxes);
     }
     return this._model;
   }

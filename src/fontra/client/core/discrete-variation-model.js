@@ -7,9 +7,10 @@ import {
 } from "./var-model.js";
 
 export class DiscreteVariationModel {
-  constructor(locations, discreteAxes, continuousAxes) {
-    this._discreteAxes = discreteAxes;
-    this._continuousAxes = continuousAxes;
+  constructor(locations, fontAxesSourceSpace) {
+    this._discreteAxes = fontAxesSourceSpace.filter((axis) => axis.values);
+    this._continuousAxes = fontAxesSourceSpace.filter((axis) => !axis.values);
+
     this._locations = {};
     this._locationsKeyToDiscreteLocation = {};
     this._locationKeys = [];
@@ -24,7 +25,7 @@ export class DiscreteVariationModel {
         this._locationIndices[key].push(index);
       }
       const normalizedLocation = makeSparseNormalizedLocation(
-        normalizeLocation(splitLoc.location, continuousAxes)
+        normalizeLocation(splitLoc.location, this._continuousAxes)
       );
       if (!(key in this._locations)) {
         this._locations[key] = [normalizedLocation];
