@@ -59,11 +59,7 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    const initialResizeHandle = this.getClickedResizeHandle(
-      event,
-      sceneController.selection
-    );
-
+    const initialResizeHandle = this.getResizeHandle(event, sceneController.selection);
     if (this.sceneController.sceneModel.hoverResizeHandle != initialResizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = initialResizeHandle;
       this.canvasController.requestUpdate();
@@ -174,11 +170,7 @@ export class PointerTool extends BaseTool {
     }
 
     sceneController.hoveredGlyph = undefined;
-
-    const initialResizeHandle = this.getClickedResizeHandle(
-      initialEvent,
-      initialSelection
-    );
+    const initialResizeHandle = this.getResizeHandle(initialEvent, initialSelection);
 
     if (initiateRectSelect && !initialResizeHandle) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
@@ -567,7 +559,7 @@ export class PointerTool extends BaseTool {
     });
   }
 
-  getClickedResizeHandle(event, selection) {
+  getResizeHandle(event, selection) {
     if (!selection.size) {
       return undefined;
     }
