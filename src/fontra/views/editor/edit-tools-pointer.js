@@ -484,6 +484,10 @@ export class PointerTool extends BaseTool {
       let editChange;
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
+        const delta = {
+          x: currentPoint.x - initialPoint.x,
+          y: currentPoint.y - initialPoint.y,
+        };
 
         const deepEditChanges = [];
         for (const layer of layerInfo) {
@@ -491,22 +495,23 @@ export class PointerTool extends BaseTool {
 
           // NOTE: calculate the scale based on selection width per layer.
           let scaleX =
-            (layer.selectionWidth + (currentPoint.x - initialPoint.x) * directionX) /
-            layer.selectionWidth;
+            (layer.selectionWidth + delta.x * directionX) / layer.selectionWidth;
           let scaleY =
-            (layer.selectionHeight + (currentPoint.y - initialPoint.y) * directionY) /
-            layer.selectionHeight;
-          if (
-            initialClickedResizeHandle === "middle-left" ||
-            initialClickedResizeHandle === "middle-right"
-          ) {
-            scaleY = 1;
+            (layer.selectionHeight + delta.y * directionY) / layer.selectionHeight;
+
+          if (initialClickedResizeHandle.includes("middle")) {
+            if (event.shiftKey) {
+              scaleY = scaleX;
+            } else {
+              scaleY = 1;
+            }
           }
-          if (
-            initialClickedResizeHandle === "top-center" ||
-            initialClickedResizeHandle === "bottom-center"
-          ) {
-            scaleX = 1;
+          if (initialClickedResizeHandle.includes("center")) {
+            if (event.shiftKey) {
+              scaleX = scaleY;
+            } else {
+              scaleX = 1;
+            }
           }
 
           // scale proportionally if shift key is pressed
