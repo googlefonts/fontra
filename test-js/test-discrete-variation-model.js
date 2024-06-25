@@ -97,4 +97,49 @@ describe("DiscreteVariationModel tests", () => {
       expect(errors).to.deep.equal(testData.expectedErrors);
     }
   );
+
+  const testIncompatibleSourceData = [
+    [0, 0],
+    [100, 0, 1, 1], // bad incompatible source
+    [0, 100, 200],
+    [100, 100, 300],
+  ];
+
+  const testCasesIncompatibleSources = [
+    {
+      location: {},
+      expectedResult: [0, 0],
+      expectedErrors: [
+        {
+          message: "arrays have incompatible lengths: 4 != 2",
+          type: "interpolation-error",
+        },
+      ],
+    },
+    {
+      location: { Weight: 600 },
+      expectedResult: [100, 0, 1, 1],
+      expectedErrors: [
+        {
+          message: "arrays have incompatible lengths: 4 != 2",
+          type: "interpolation-error",
+        },
+      ],
+    },
+  ];
+
+  parametrize(
+    "DiscreteVariationModel incompatible sources",
+    testCasesIncompatibleSources,
+    (testData) => {
+      const model = new DiscreteVariationModel(testLocations, testAxes);
+      const deltas = model.getDeltas(testIncompatibleSourceData);
+      const { instance, errors } = model.interpolateFromDeltas(
+        testData.location,
+        deltas
+      );
+      expect(instance).to.deep.equal(testData.expectedResult);
+      expect(errors).to.deep.equal(testData.expectedErrors);
+    }
+  );
 });
