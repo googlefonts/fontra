@@ -47,6 +47,14 @@ describe("DiscreteVariationModel tests", () => {
       location: { Weight: 550, Italic: 1 },
       expectedResult: [50, 100, 250],
     },
+    {
+      location: { Weight: 550, Italic: 0.4 },
+      expectedResult: [50, 0],
+    },
+    {
+      location: { Weight: 550, Italic: 0.6 },
+      expectedResult: [50, 100, 250],
+    },
   ];
 
   parametrize("DiscreteVariationModel test", testCases, (testData) => {
