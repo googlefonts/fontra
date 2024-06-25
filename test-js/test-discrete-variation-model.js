@@ -58,7 +58,7 @@ describe("DiscreteVariationModel tests", () => {
   });
 
   const badLocations = [...testLocations];
-  badLocations[1] = {};
+  badLocations[3] = {};
 
   const testCasesBadLocations = [
     {
@@ -72,8 +72,8 @@ describe("DiscreteVariationModel tests", () => {
       ],
     },
     {
-      location: { Weight: 700 },
-      expectedResult: [0, 0],
+      location: { Weight: 600 },
+      expectedResult: [100, 0],
       expectedErrors: [
         {
           message: "Italic=0: locations must be unique",
@@ -89,7 +89,10 @@ describe("DiscreteVariationModel tests", () => {
     (testData) => {
       const model = new DiscreteVariationModel(badLocations, testAxes);
       const deltas = model.getDeltas(testSourceData);
-      const { instance, errors } = model.interpolateFromDeltas({}, deltas);
+      const { instance, errors } = model.interpolateFromDeltas(
+        testData.location,
+        deltas
+      );
       expect(instance).to.deep.equal(testData.expectedResult);
       expect(errors).to.deep.equal(testData.expectedErrors);
     }
