@@ -924,14 +924,14 @@ function ensureDenseSources(sources) {
   return mapObjectValues(sources, (source) => {
     return {
       ...source,
-      metricsHorizontalLayout: mapObjectValues(
-        source.metricsHorizontalLayout || {},
+      lineMetricsHorizontalLayout: mapObjectValues(
+        source.lineMetricsHorizontalLayout || {},
         (metric) => {
           return { value: metric.value, zone: metric.zone || 0 };
         }
       ),
-      metricsVerticalLayout: mapObjectValues(
-        source.metricsVerticalLayout || {},
+      lineMetricsVerticalLayout: mapObjectValues(
+        source.lineMetricsVerticalLayout || {},
         (metric) => {
           return { value: metric.value, zone: metric.zone || 0 };
         }
