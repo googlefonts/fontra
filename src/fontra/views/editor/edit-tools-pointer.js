@@ -550,7 +550,11 @@ export class PointerTool extends BaseTool {
 
           // scale proportionally if shift key is pressed
           if (event.shiftKey) {
-            scaleX = scaleY;
+            if (scaleX > scaleY) {
+              scaleY = scaleX;
+            } else {
+              scaleX = scaleY;
+            }
           }
           let transformation = new Transform().scale(scaleX, scaleY);
 
