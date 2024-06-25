@@ -202,13 +202,12 @@ export class PointerTool extends BaseTool {
     ) {
       sceneController.selection = initialSelection;
       this.sceneController.sceneModel.initialClickedResizeHandle = initialResizeHandle;
-      this.sceneController.sceneModel.isDragging = true;
       await this.handleDragSelectionBoundsResize(
         initialSelection,
         eventStream,
         initialEvent
       );
-      this.sceneController.sceneModel.isDragging = false;
+      this.sceneController.sceneModel.initialClickedResizeHandle = false;
     }
   }
 
@@ -629,7 +628,7 @@ registerVisualizationLayerDefinition({
     }
 
     // draw resize handles hover
-    if (!model.isDragging && handles[model.hoverResizeHandle]) {
+    if (!model.initialClickedResizeHandle && handles[model.hoverResizeHandle]) {
       strokeRoundNode(
         context,
         handles[model.hoverResizeHandle],
