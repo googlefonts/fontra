@@ -59,12 +59,17 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
-    const initialResizeHandle = getInitialResizeHandle(
-      sceneController,
-      initialResizeHandlePoint,
-      sceneController.selection,
-      handleMarginValue * this.editor.visualizationLayers.scaleFactor
+    // const initialResizeHandlePoint = sceneController.selectedGlyphPoint(event);
+    // const initialResizeHandle = getInitialResizeHandle(
+    //   sceneController,
+    //   initialResizeHandlePoint,
+    //   sceneController.selection,
+    //   handleMarginValue * this.editor.visualizationLayers.scaleFactor
+    // );
+
+    const initialResizeHandle = this.getClickedResizeHandle(
+      event,
+      sceneController.selection
     );
 
     if (this.sceneController.sceneModel.hoverResizeHandle != initialResizeHandle) {
@@ -178,14 +183,19 @@ export class PointerTool extends BaseTool {
 
     sceneController.hoveredGlyph = undefined;
 
-    const handleMargin =
-      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
-    const initialResizeHandlePoint = sceneController.selectedGlyphPoint(initialEvent);
-    const initialResizeHandle = getInitialResizeHandle(
+    // const handleMargin =
+    //   handleMarginValue * this.editor.visualizationLayers.scaleFactor;
+    // const initialResizeHandlePoint = sceneController.selectedGlyphPoint(initialEvent);
+    // const initialResizeHandle = getInitialResizeHandle(
+    //   this.sceneController,
+    //   initialResizeHandlePoint,
+    //   initialSelection,
+    //   handleMargin
+    // );
+    const initialResizeHandle = this.getClickedResizeHandle(
       this.sceneController,
-      initialResizeHandlePoint,
-      initialSelection,
-      handleMargin
+      initialEvent,
+      selection
     );
 
     if (initiateRectSelect && !initialResizeHandle) {
@@ -574,6 +584,26 @@ export class PointerTool extends BaseTool {
       };
     });
   }
+
+  getClickedResizeHandle(event, selection) {
+    const glyph = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+    if (!glyph) {
+      return undefined;
+    }
+
+    const handleMargin =
+      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
+    const point = this.sceneController.selectedGlyphPoint(event);
+
+    const resizeSelectionBounds = getResizeBounds(glyph, selection);
+    const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
+    for (const [handleName, handle] of Object.entries(resizeHandles)) {
+      if (vector.distance(handle, point) < handleMargin / 2) {
+        return handleName;
+      }
+    }
+    return undefined;
+  }
 }
 
 function getBehaviorName(event) {
@@ -699,18 +729,18 @@ function getResizeBounds(glyph, selection) {
   return selectionBounds;
 }
 
-function getInitialResizeHandle(sceneController, point, selection, handleMargin) {
-  const glyph = sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
-  if (!glyph) {
-    return undefined;
-  }
+// function getInitialResizeHandle(sceneController, point, selection, handleMargin) {
+//   const glyph = sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+//   if (!glyph) {
+//     return undefined;
+//   }
 
-  const resizeSelectionBounds = getResizeBounds(glyph, selection);
-  const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
-  for (const [handleName, handle] of Object.entries(resizeHandles)) {
-    if (vector.distance(handle, point) < handleMargin / 2) {
-      return handleName;
-    }
-  }
-  return undefined;
-}
+//   const resizeSelectionBounds = getResizeBounds(glyph, selection);
+//   const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
+//   for (const [handleName, handle] of Object.entries(resizeHandles)) {
+//     if (vector.distance(handle, point) < handleMargin / 2) {
+//       return handleName;
+//     }
+//   }
+//   return undefined;
+// }
