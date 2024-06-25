@@ -59,12 +59,12 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    const initialResizeHandle = this.getResizeHandle(event, sceneController.selection);
-    if (this.sceneController.sceneModel.hoverResizeHandle != initialResizeHandle) {
-      this.sceneController.sceneModel.hoverResizeHandle = initialResizeHandle;
+    const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
+      this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
     }
-    this.setCursorForResizeHandle(initialResizeHandle);
+    this.setCursorForResizeHandle(resizeHandle);
   }
 
   setCursorForResizeHandle(handleName) {
@@ -170,22 +170,22 @@ export class PointerTool extends BaseTool {
     }
 
     sceneController.hoveredGlyph = undefined;
-    const initialResizeHandle = this.getResizeHandle(initialEvent, initialSelection);
+    const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
 
-    if (initiateRectSelect && !initialResizeHandle) {
+    if (initiateRectSelect && !resizeHandle) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    } else if (initiateDrag && !initialResizeHandle) {
+    } else if (initiateDrag && !resizeHandle) {
       this.sceneController.sceneModel.initialClickedPointIndex =
         initialClickedPointIndex;
       const result = await this.handleDragSelection(eventStream, initialEvent);
       delete this.sceneController.sceneModel.initialClickedPointIndex;
       return result;
     } else if (
-      initialResizeHandle &&
+      resizeHandle &&
       this.editor.visualizationLayersSettings.model["fontra.resize.selection"]
     ) {
       sceneController.selection = initialSelection;
-      this.sceneController.sceneModel.initialClickedResizeHandle = initialResizeHandle;
+      this.sceneController.sceneModel.initialClickedResizeHandle = resizeHandle;
       await this.handleDragSelectionBoundsResize(
         initialSelection,
         eventStream,
