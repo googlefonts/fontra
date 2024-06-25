@@ -423,10 +423,6 @@ export class PointerTool extends BaseTool {
 
   async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
     const sceneController = this.sceneController;
-    //const glyph = sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
-    // const selectionBounds = getResizeBounds(glyph, selection);
-    // const selectionWidth = selectionBounds.xMax - selectionBounds.xMin;
-    // const selectionHeight = selectionBounds.yMax - selectionBounds.yMin;
 
     const initialClickedResizeHandle =
       this.sceneController.sceneModel.initialClickedResizeHandle;
@@ -472,8 +468,6 @@ export class PointerTool extends BaseTool {
         );
         const layerBounds =
           staticGlyphControllers[layerName].getSelectionBounds(selection);
-        const selectionWidth = layerBounds.xMax - layerBounds.xMin;
-        const selectionHeight = layerBounds.yMax - layerBounds.yMin;
 
         return {
           layerName,
@@ -482,8 +476,8 @@ export class PointerTool extends BaseTool {
           editBehavior: behaviorFactory.getBehavior("default", true),
           regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
           altPinPoint: getPinPoint(layerBounds, undefined, undefined),
-          selectionWidth: selectionWidth,
-          selectionHeight: selectionHeight,
+          selectionWidth: layerBounds.xMax - layerBounds.xMin,
+          selectionHeight: layerBounds.yMax - layerBounds.yMin,
         };
       });
 
@@ -492,24 +486,16 @@ export class PointerTool extends BaseTool {
         const currentPoint = sceneController.selectedGlyphPoint(event);
 
         const deepEditChanges = [];
-        for (const {
-          changePath,
-          editBehavior,
-          layerGlyphController,
-          regularPinPoint,
-          altPinPoint,
-          selectionWidth,
-          selectionHeight,
-        } of layerInfo) {
-          const layerGlyph = layerGlyphController.instance;
+        for (const layer of layerInfo) {
+          const layerGlyph = layer.layerGlyphController.instance;
 
           // NOTE: calculate the scale based on selection width per layer.
           let scaleX =
-            (selectionWidth + (currentPoint.x - initialPoint.x) * directionX) /
-            selectionWidth;
+            (layer.selectionWidth + (currentPoint.x - initialPoint.x) * directionX) /
+            layer.selectionWidth;
           let scaleY =
-            (selectionHeight + (currentPoint.y - initialPoint.y) * directionY) /
-            selectionHeight;
+            (layer.selectionHeight + (currentPoint.y - initialPoint.y) * directionY) /
+            layer.selectionHeight;
           if (
             initialClickedResizeHandle === "middle-left" ||
             initialClickedResizeHandle === "middle-right"
@@ -533,9 +519,9 @@ export class PointerTool extends BaseTool {
           }
           let transformation = new Transform().scale(scaleX, scaleY);
 
-          let pinPoint = regularPinPoint;
+          let pinPoint = layer.regularPinPoint;
           if (event.altKey) {
-            pinPoint = altPinPoint;
+            pinPoint = layer.altPinPoint;
           }
 
           const t = new Transform()
@@ -554,14 +540,14 @@ export class PointerTool extends BaseTool {
             return component;
           };
 
-          const editChange = editBehavior.makeChangeForTransformFunc(
+          const editChange = layer.editBehavior.makeChangeForTransformFunc(
             pointTransformFunction,
             null,
             componentTransformFunction
           );
 
           applyChange(layerGlyph, editChange);
-          deepEditChanges.push(consolidateChanges(editChange, changePath));
+          deepEditChanges.push(consolidateChanges(editChange, layer.changePath));
         }
 
         editChange = consolidateChanges(deepEditChanges);
