@@ -1205,6 +1205,24 @@ export class SceneController {
     }
     return new PathConnectDetector(this, path);
   }
+
+  async getStaticGlyphControllers() {
+    const varGlyph = await this.sceneModel.getSelectedVariableGlyphController();
+
+    const layerGlyphs = this.getEditingLayerFromGlyphLayers(varGlyph.layers);
+    const staticGlyphControllers = {};
+    for (const [i, source] of enumerate(varGlyph.sources)) {
+      if (source.layerName in layerGlyphs) {
+        staticGlyphControllers[source.layerName] =
+          await this.fontController.getLayerGlyphController(
+            varGlyph.name,
+            source.layerName,
+            i
+          );
+      }
+    }
+    return staticGlyphControllers;
+  }
 }
 
 class PathConnectDetector {

@@ -480,27 +480,6 @@ export default class TransformationPanel extends Panel {
     return { x: pinPointX, y: pinPointY };
   }
 
-  async _getStaticGlyphControllers() {
-    const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-
-    const editingLayers = this.sceneController.getEditingLayerFromGlyphLayers(
-      varGlyphController.layers
-    );
-    const staticGlyphControllers = {};
-    for (const [i, source] of enumerate(varGlyphController.sources)) {
-      if (source.layerName in editingLayers) {
-        staticGlyphControllers[source.layerName] =
-          await this.fontController.getLayerGlyphController(
-            varGlyphController.name,
-            source.layerName,
-            i
-          );
-      }
-    }
-    return staticGlyphControllers;
-  }
-
   async transformSelection(transformation, undoLabel) {
     let {
       point: pointIndices,
@@ -515,7 +494,8 @@ export default class TransformationPanel extends Panel {
       return;
     }
 
-    const staticGlyphControllers = await this._getStaticGlyphControllers();
+    const staticGlyphControllers =
+      await this.sceneController.getStaticGlyphControllers();
 
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const layerInfo = Object.entries(
@@ -694,7 +674,8 @@ export default class TransformationPanel extends Panel {
       return;
     }
 
-    const staticGlyphControllers = await this._getStaticGlyphControllers();
+    const staticGlyphControllers =
+      await this.sceneController.getStaticGlyphControllers();
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
         glyph.layers

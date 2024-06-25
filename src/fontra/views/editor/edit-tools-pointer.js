@@ -455,10 +455,8 @@ export class PointerTool extends BaseTool {
     const directionX = initialClickedResizeHandle.includes("left") ? -1 : 1;
     const directionY = initialClickedResizeHandle.includes("bottom") ? -1 : 1;
 
-    const staticGlyphControllers = await _getStaticGlyphControllers(
-      this.sceneController.fontController,
-      this.sceneController
-    );
+    const staticGlyphControllers =
+      await this.sceneController.getStaticGlyphControllers();
 
     // const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     // const regularPinPoint = _getPinPoint(
@@ -718,29 +716,6 @@ function getResizeHandles(resizeBounds, margin) {
   }
 
   return handles;
-}
-
-// TODO: refactor this to a shared location
-// this is basically a copy of the function in panel-transformation.js
-async function _getStaticGlyphControllers(fontController, sceneController) {
-  const varGlyphController =
-    await sceneController.sceneModel.getSelectedVariableGlyphController();
-
-  const editingLayers = sceneController.getEditingLayerFromGlyphLayers(
-    varGlyphController.layers
-  );
-  const staticGlyphControllers = {};
-  for (const [i, source] of enumerate(varGlyphController.sources)) {
-    if (source.layerName in editingLayers) {
-      staticGlyphControllers[source.layerName] =
-        await fontController.getLayerGlyphController(
-          varGlyphController.name,
-          source.layerName,
-          i
-        );
-    }
-  }
-  return staticGlyphControllers;
 }
 
 // TODO: refactor this to a shared location
