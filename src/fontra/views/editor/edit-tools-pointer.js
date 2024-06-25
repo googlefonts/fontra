@@ -180,10 +180,10 @@ export class PointerTool extends BaseTool {
 
     const handleMargin =
       handleMarginValue * this.editor.visualizationLayers.scaleFactor;
-    const initialClickedResizeHandle = sceneController.selectedGlyphPoint(initialEvent);
+    const initialResizeHandlePoint = sceneController.selectedGlyphPoint(initialEvent);
     const initialResizeHandle = getInitialResizeHandle(
       this.sceneController,
-      initialClickedResizeHandle,
+      initialResizeHandlePoint,
       initialSelection,
       handleMargin
     );
