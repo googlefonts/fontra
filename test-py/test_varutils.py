@@ -36,6 +36,7 @@ testAxes = [
         mapping=[[20, 0], [30, 1]],
     ),
 ]
+
 expectedAxesSourceSpace = [
     FontAxis(
         name="NoMapping",
