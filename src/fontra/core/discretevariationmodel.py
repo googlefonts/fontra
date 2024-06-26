@@ -17,18 +17,19 @@ CachedModelInfoType = tuple[VariationModel, tuple, list | None]
 LocationTupleType = tuple[tuple[str, float], ...]
 
 
+@dataclass
 class DiscreteVariationModel:
-    def __init__(
-        self,
-        locations: list[dict[str, float]],
-        axes: list[FontAxis | DiscreteFontAxis | GlyphAxis],
-        softFail: bool = True,
-    ):
-        self.softFail = softFail
-        assert not any(axis.mapping for axis in axes if hasattr(axis, "mapping"))
+    locations: list[dict[str, float]]
+    axes: list[FontAxis | DiscreteFontAxis | GlyphAxis]
+    softFail: bool = True
 
-        self._discreteAxes = [axis for axis in axes if hasattr(axis, "values")]
-        self._continuousAxes = [axis for axis in axes if not hasattr(axis, "values")]
+    def __post_init__(self):
+        assert not any(axis.mapping for axis in self.axes if hasattr(axis, "mapping"))
+
+        self._discreteAxes = [axis for axis in self.axes if hasattr(axis, "values")]
+        self._continuousAxes = [
+            axis for axis in self.axes if not hasattr(axis, "values")
+        ]
         self._continuousAxesTriples = {
             axis.name: (axis.minValue, axis.defaultValue, axis.maxValue)
             for axis in self._continuousAxes
@@ -39,7 +40,7 @@ class DiscreteVariationModel:
         self._locationKeys = []
         self._locationIndices: dict[LocationTupleType, list[int]] = {}
 
-        for index, location in enumerate(locations):
+        for index, location in enumerate(self.locations):
             discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
             key = locationToTuple(discreteLocation)
             self._locationKeys.append(key)
