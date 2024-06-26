@@ -60,9 +60,10 @@ export default class GlyphNotesPanel extends Panel {
 
   async update() {
     this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
+    const sceneController = this.sceneController;
 
     const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+      await sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
     console.log("varGlyph: ", varGlyph);
 
@@ -75,17 +76,30 @@ export default class GlyphNotesPanel extends Panel {
       this.glyphNotesElement.disabled = false;
     }
 
+    let undoLabel;
     if (varGlyph.note === undefined) {
       this.glyphNotesElement.value = "";
+      undoLabel = "add glyph note";
     } else {
       this.glyphNotesElement.value = varGlyph.note;
+      undoLabel = "update glyph note";
     }
     this.fixGlyphNotesHeight();
+
+    let timeout = null;
     this.glyphNotesElement.addEventListener(
       "input",
       () => {
-        varGlyph.note = this.glyphNotesElement.value;
+        clearTimeout(timeout);
         this.fixGlyphNotesHeight();
+        const notes = this.glyphNotesElement.value;
+
+        timeout = setTimeout(async function () {
+          await sceneController.editGlyphAndRecordChanges((glyph) => {
+            glyph.note = notes;
+            return undoLabel;
+          });
+        }, 1500);
       },
       false
     );
@@ -96,10 +110,6 @@ export default class GlyphNotesPanel extends Panel {
     this.glyphNotesElement.style.height = "auto";
     this.glyphNotesElement.style.height =
       this.glyphNotesElement.scrollHeight + 14 + "px";
-  }
-
-  focusGlyphNotes() {
-    this.glyphNotesElement.focus();
   }
 
   async toggle(on, focus) {
