@@ -7,9 +7,9 @@ import {
 } from "./var-model.js";
 
 export class DiscreteVariationModel {
-  constructor(locations, fontAxesSourceSpace) {
-    this._discreteAxes = fontAxesSourceSpace.filter((axis) => axis.values);
-    this._continuousAxes = fontAxesSourceSpace.filter((axis) => !axis.values);
+  constructor(locations, axes) {
+    this._discreteAxes = axes.filter((axis) => axis.values);
+    this._continuousAxes = axes.filter((axis) => !axis.values);
 
     this._locations = {};
     this._locationsKeyToDiscreteLocation = {};
