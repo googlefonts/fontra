@@ -1,6 +1,6 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { findNestedActiveElement } from "/core/utils.js";
+import { findNestedActiveElement, throttleCalls } from "/core/utils.js";
 
 export default class GlyphNotesPanel extends Panel {
   identifier = "glyph-notes";
@@ -33,12 +33,14 @@ export default class GlyphNotesPanel extends Panel {
 
   constructor(editorController) {
     super(editorController);
-
-    this.textSettingsController = this.editorController.sceneSettingsController;
+    this.throttledUpdate = throttleCalls((senderID) => this.update(), 100);
+    this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
-    this.textSettings = this.editorController.sceneSettingsController.model;
 
-    this.setupGlyphNotesElement();
+    this.sceneController.sceneSettingsController.addKeyListener(
+      ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
+      (event) => this.throttledUpdate()
+    );
   }
 
   getContentElement() {
@@ -56,48 +58,35 @@ export default class GlyphNotesPanel extends Panel {
     );
   }
 
-  updateAlignElement(align) {
-    for (const el of this.textAlignElement.children) {
-      el.classList.toggle("selected", align === el.dataset.align);
-    }
-  }
-
-  setupGlyphNotesElement() {
+  async update() {
     this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
-    this.glyphNotesElement.value = this.textSettings.text;
 
-    const updateGlyphNotesElementFromModel = (event) => {
-      if (event.senderInfo === this) {
-        return;
-      }
-      this.glyphNotesElement.value = event.newValue;
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const varGlyph = varGlyphController?.glyph;
+    console.log("varGlyph: ", varGlyph);
 
-      // https://github.com/googlefonts/fontra/issues/754
-      // In Safari, setSelectionRange() changes the focus. We don't want that,
-      // so we make sure to restore the focus to whatever it was.
-      const savedActiveElement = findNestedActiveElement();
-      this.glyphNotesElement.setSelectionRange(0, 0);
-      savedActiveElement?.focus();
-    };
+    if (!varGlyph) {
+      this.glyphNotesElement.value = "";
+      this.glyphNotesElement.disabled = true;
+      this.fixGlyphNotesHeight();
+      return;
+    } else {
+      this.glyphNotesElement.disabled = false;
+    }
 
-    this.textSettingsController.addKeyListener(
-      "text",
-      updateGlyphNotesElementFromModel,
-      true
-    );
-
+    if (varGlyph.note === undefined) {
+      this.glyphNotesElement.value = "";
+    } else {
+      this.glyphNotesElement.value = varGlyph.note;
+    }
+    this.fixGlyphNotesHeight();
     this.glyphNotesElement.addEventListener(
       "input",
       () => {
-        this.textSettingsController.setItem("text", this.glyphNotesElement.value, this);
-        this.textSettings.selectedGlyph = null;
+        varGlyph.note = this.glyphNotesElement.value;
+        this.fixGlyphNotesHeight();
       },
-      false
-    );
-
-    this.textSettingsController.addKeyListener(
-      "text",
-      (event) => this.fixGlyphNotesHeight(),
       false
     );
   }
@@ -114,8 +103,8 @@ export default class GlyphNotesPanel extends Panel {
   }
 
   async toggle(on, focus) {
-    if (focus) {
-      this.focusGlyphNotes();
+    if (on) {
+      this.update();
     }
   }
 }
