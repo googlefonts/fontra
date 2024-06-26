@@ -150,4 +150,40 @@ describe("DiscreteVariationModel tests", () => {
       expect(errors).to.deep.equal(testData.expectedErrors);
     }
   );
+
+  const testLocationsNoItalic = [{}, { Weight: 700 }];
+
+  const testSourceDataNoItalic = [
+    [0, 0],
+    [100, 0],
+  ];
+
+  const testCasesNoItalic = [
+    {
+      location: {},
+      expectedResult: [0, 0],
+    },
+    {
+      location: { Weight: 550 },
+      expectedResult: [50, 0],
+    },
+    {
+      location: { Weight: 550, Italic: 1 },
+      expectedResult: [50, 0],
+      expectedErrors: [
+        {
+          message: "there are no sources for Italic=1",
+          type: "model-warning",
+        },
+      ],
+    },
+  ];
+
+  parametrize("DiscreteVariationModel no italic", testCasesNoItalic, (testData) => {
+    const model = new DiscreteVariationModel(testLocationsNoItalic, testAxes);
+    const deltas = model.getDeltas(testSourceDataNoItalic);
+    const { instance, errors } = model.interpolateFromDeltas(testData.location, deltas);
+    expect(instance).to.deep.equal(testData.expectedResult);
+    expect(errors).to.deep.equal(testData.expectedErrors);
+  });
 });
