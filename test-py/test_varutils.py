@@ -7,9 +7,6 @@ from fontra.core.varutils import (
     mapAxesFromUserSpaceToSourceSpace,
 )
 
-#  'name', 'label', 'tag', 'minValue', 'defaultValue', and 'maxValue'
-#  'name', 'label', 'tag', 'values', and 'defaultValue'
-
 testAxes = [
     FontAxis(
         name="NoMapping",
