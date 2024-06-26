@@ -74,13 +74,7 @@ def test_mapAxesFromUserSpaceToSourceSpace():
     [
         ({}, ()),
         ({"Weight": 400}, (("Weight", 400),)),
-        (
-            {"Weight": 400, "A": 4},
-            (
-                ("A", 4),
-                ("Weight", 400),
-            ),
-        ),
+        ({"Weight": 400, "A": 4}, (("A", 4), ("Weight", 400))),
     ],
 )
 def test_locationToTuple(location, expectedLocTuple):
