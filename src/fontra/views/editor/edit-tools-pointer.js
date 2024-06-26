@@ -495,11 +495,7 @@ export class PointerTool extends BaseTool {
           }
           let transformation = new Transform().scale(scaleX, scaleY);
 
-          let pinPoint = layer.regularPinPoint;
-          if (event.altKey) {
-            pinPoint = layer.altPinPoint;
-          }
-
+          const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           const t = new Transform()
             .translate(pinPoint.x, pinPoint.y)
             .transform(transformation)
