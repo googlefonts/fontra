@@ -10,7 +10,7 @@ from fontTools.varLib.models import (
     normalizeLocation,
 )
 
-from .classes import DiscreteFontAxis, FontAxis
+from .classes import DiscreteFontAxis, FontAxis, GlyphAxis
 from .varutils import locationToTuple, makeSparseNormalizedLocation
 
 CachedModelInfoType = tuple[VariationModel, tuple, list | None]
@@ -21,16 +21,12 @@ class DiscreteVariationModel:
     def __init__(
         self,
         locations: list[dict[str, float]],
-        fontAxesSourceSpace: list[FontAxis | DiscreteFontAxis],
+        axes: list[FontAxis | DiscreteFontAxis | GlyphAxis],
     ):
-        assert not any(axis.mapping for axis in fontAxesSourceSpace)
+        assert not any(axis.mapping for axis in axes if hasattr(axis, "mapping"))
 
-        self._discreteAxes = [
-            axis for axis in fontAxesSourceSpace if not isinstance(axis, FontAxis)
-        ]
-        self._continuousAxes = [
-            axis for axis in fontAxesSourceSpace if isinstance(axis, FontAxis)
-        ]
+        self._discreteAxes = [axis for axis in axes if hasattr(axis, "values")]
+        self._continuousAxes = [axis for axis in axes if not hasattr(axis, "values")]
         self._continuousAxesTriples = {
             axis.name: (axis.minValue, axis.defaultValue, axis.maxValue)
             for axis in self._continuousAxes
@@ -104,9 +100,27 @@ class DiscreteVariationModel:
         nearestIndex = findNearestLocationIndex(dict(key), locations)
         return locationKeys[nearestIndex]
 
+    def collectErrorsFromDeltas(self, deltas):
+        collectedErrors = []
+        for key in self._locationsKeyToDiscreteLocation.keys():
+            _, _, errors = self._getDiscreteDeltasAndModel(key, deltas)
+            if errors is not None:
+                collectedErrors.extend(errors)
+        return collectedErrors
+
     def interpolateFromDeltas(self, location, deltas) -> InterpolationResult:
         discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
         key = locationToTuple(discreteLocation)
+
+        discreteDeltas, model, errors = self._getDiscreteDeltasAndModel(key, deltas)
+
+        instance = model.interpolateFromDeltas(
+            normalizeLocation(contiuousLocation, self._continuousAxesTriples),
+            discreteDeltas,
+        )
+        return InterpolationResult(instance=instance, errors=errors)
+
+    def _getDiscreteDeltasAndModel(self, key, deltas):
         model, usedKey, errors = self._getModel(key)
 
         if key not in deltas.deltas:
@@ -123,11 +137,7 @@ class DiscreteVariationModel:
                 cachedModelInfo = (model, usedKey, errors)
                 self._models[key] = cachedModelInfo
 
-        instance = model.interpolateFromDeltas(
-            normalizeLocation(contiuousLocation, self._continuousAxesTriples),
-            deltas.deltas[key],
-        )
-        return InterpolationResult(instance=instance, errors=errors)
+        return deltas.deltas[key], model, errors
 
     def splitDiscreteLocation(self, location):
         discreteLocation = {}
