@@ -186,11 +186,7 @@ export class PointerTool extends BaseTool {
     ) {
       sceneController.selection = initialSelection;
       this.sceneController.sceneModel.clickedResizeHandle = resizeHandle;
-      await this.handleDragSelectionBoundsResize(
-        initialSelection,
-        eventStream,
-        initialEvent
-      );
+      await this.handleBoundsResize(initialSelection, eventStream, initialEvent);
       delete this.sceneController.sceneModel.clickedResizeHandle;
     }
   }
@@ -406,7 +402,7 @@ export class PointerTool extends BaseTool {
     });
   }
 
-  async handleDragSelectionBoundsResize(selection, eventStream, initialEvent) {
+  async handleBoundsResize(selection, eventStream, initialEvent) {
     const sceneController = this.sceneController;
     const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
 
