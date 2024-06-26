@@ -28,6 +28,17 @@ export default class GlyphNotesPanel extends Panel {
       font-size: 1.1rem;
       resize: none;
       overflow-x: auto;
+      text-wrap: wrap;
+    }
+
+    .fontra-ui-panel-glyph-notes-header {
+      overflow-x: unset;
+      font-weight: bold;
+      grid-column: 1 / span 2;
+      text-align: left;
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: space-between;
     }
   `;
 
@@ -49,6 +60,10 @@ export default class GlyphNotesPanel extends Panel {
         class: "sidebar-glyph-notes",
       },
       [
+        html.div(
+          { class: "fontra-ui-panel-glyph-notes-header", id: "glyph-notes-header" },
+          ["Glyph note"]
+        ),
         html.createDomElement("textarea", {
           rows: 1,
           wrap: "off",
@@ -60,40 +75,36 @@ export default class GlyphNotesPanel extends Panel {
 
   async update() {
     this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
+    this.glyphNotesHeaderElement =
+      this.contentElement.querySelector("#glyph-notes-header");
     const sceneController = this.sceneController;
 
     const varGlyphController =
       await sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
-    console.log("varGlyph: ", varGlyph);
 
     if (!varGlyph) {
       this.glyphNotesElement.value = "";
       this.glyphNotesElement.disabled = true;
+      this.glyphNotesHeaderElement.innerHTML = `Glyph note`;
       this.fixGlyphNotesHeight();
       return;
     } else {
       this.glyphNotesElement.disabled = false;
+      this.glyphNotesHeaderElement.innerHTML = `Glyph note (${varGlyph.name})`;
     }
 
-    let undoLabel;
-    if (varGlyph.note === undefined) {
-      this.glyphNotesElement.value = "";
-      undoLabel = "add glyph note";
-    } else {
-      this.glyphNotesElement.value = varGlyph.note;
-      undoLabel = "update glyph note";
-    }
+    this.glyphNotesElement.value = varGlyph.note ? varGlyph.note : "";
     this.fixGlyphNotesHeight();
 
     let timeout = null;
+    const undoLabel = varGlyph.note ? "update glyph note" : "add glyph note";
     this.glyphNotesElement.addEventListener(
-      "input",
+      "keyup",
       () => {
         clearTimeout(timeout);
         this.fixGlyphNotesHeight();
         const notes = this.glyphNotesElement.value;
-
         timeout = setTimeout(async function () {
           await sceneController.editGlyphAndRecordChanges((glyph) => {
             glyph.note = notes;
