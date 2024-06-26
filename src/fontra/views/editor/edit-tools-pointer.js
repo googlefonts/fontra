@@ -403,8 +403,8 @@ export class PointerTool extends BaseTool {
 
     // The following may seem wrong to you, but it's correct.
     // Because we say for example bottom-left and not left-bottom. Y-X order.
-    const resizeHandlePositionX = clickedResizeHandle.split("-")[1];
-    const resizeHandlePositionY = clickedResizeHandle.split("-")[0];
+    const [resizeHandlePositionY, resizeHandlePositionX] =
+      clickedResizeHandle.split("-");
 
     const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
     // origin must be the opposite side of where we have our mouse
