@@ -55,7 +55,6 @@ export class DiscreteVariationModel {
       let model;
       let usedKey = key;
       let errors = [];
-      usedKey = key;
       const locations = this._locations[key];
       if (!locations) {
         const nearestKey = this._findNearestDiscreteLocationKey(key);
