@@ -22,7 +22,9 @@ class DiscreteVariationModel:
         self,
         locations: list[dict[str, float]],
         axes: list[FontAxis | DiscreteFontAxis | GlyphAxis],
+        softFail: bool = True,
     ):
+        self.softFail = softFail
         assert not any(axis.mapping for axis in axes if hasattr(axis, "mapping"))
 
         self._discreteAxes = [axis for axis in axes if hasattr(axis, "values")]
@@ -83,6 +85,8 @@ class DiscreteVariationModel:
                 try:
                     model = VariationModel(locations)
                 except VariationModelError as exc:
+                    if not self.softFail:
+                        raise
                     niceKey = f"{formatDiscreteLocationKey(key)}: " if key else ""
                     errors.append(
                         ErrorDescription(message=f"{niceKey}{exc}", type="model-error")
@@ -100,7 +104,7 @@ class DiscreteVariationModel:
         nearestIndex = findNearestLocationIndex(dict(key), locations)
         return locationKeys[nearestIndex]
 
-    def collectErrorsFromDeltas(self, deltas):
+    def checkCompatibilityFromDeltas(self, deltas):
         collectedErrors = []
         for key in self._locationsKeyToDiscreteLocation.keys():
             _, _, errors = self._getDiscreteDeltasAndModel(key, deltas)
@@ -127,6 +131,8 @@ class DiscreteVariationModel:
             try:
                 deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey])
             except Exception as exc:  # ??? Which exception really
+                if not self.softFail:
+                    raise
                 if errors is None:
                     errors = []
                 errors.append(
