@@ -54,12 +54,12 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
-    if (!this.editor.visualizationLayersSettings.model["fontra.resize.selection"]) {
+    const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    if (!resizeHandle) {
       this.setCursor();
       return;
     }
 
-    const resizeHandle = this.getResizeHandle(event, sceneController.selection);
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
@@ -180,10 +180,7 @@ export class PointerTool extends BaseTool {
       const result = await this.handleDragSelection(eventStream, initialEvent);
       delete this.sceneController.sceneModel.initialClickedPointIndex;
       return result;
-    } else if (
-      resizeHandle &&
-      this.editor.visualizationLayersSettings.model["fontra.resize.selection"]
-    ) {
+    } else if (resizeHandle) {
       sceneController.selection = initialSelection;
       this.sceneController.sceneModel.clickedResizeHandle = resizeHandle;
       await this.handleBoundsResize(initialSelection, eventStream, initialEvent);
@@ -553,6 +550,9 @@ export class PointerTool extends BaseTool {
   }
 
   getResizeHandle(event, selection) {
+    if (!this.editor.visualizationLayersSettings.model["fontra.resize.selection"]) {
+      return undefined;
+    }
     if (!selection.size) {
       return undefined;
     }
