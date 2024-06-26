@@ -21,7 +21,7 @@ LocationTupleType = tuple[tuple[str, float], ...]
 class DiscreteVariationModel:
     locations: list[dict[str, float]]
     axes: list[FontAxis | DiscreteFontAxis | GlyphAxis]
-    softFail: bool = True
+    softFail: bool = True  # When False, exceptions are raised on interpolation errors
 
     def __post_init__(self):
         assert not any(axis.mapping for axis in self.axes if hasattr(axis, "mapping"))
@@ -106,6 +106,8 @@ class DiscreteVariationModel:
         return locationKeys[nearestIndex]
 
     def checkCompatibilityFromDeltas(self, deltas):
+        # If self.softFail is False, this will raise an exception when there's
+        # an incompatibilty instead of returning a list of errors
         collectedErrors = []
         for key in self._locationsKeyToDiscreteLocation.keys():
             _, _, errors = self._getDiscreteDeltasAndModel(key, deltas)
