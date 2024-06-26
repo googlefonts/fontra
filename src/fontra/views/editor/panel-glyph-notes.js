@@ -1,3 +1,5 @@
+import { recordChanges } from "../core/change-recorder.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { findNestedActiveElement, throttleCalls } from "/core/utils.js";
@@ -44,13 +46,12 @@ export default class GlyphNotesPanel extends Panel {
 
   constructor(editorController) {
     super(editorController);
-    this.throttledUpdate = throttleCalls((senderID) => this.update(), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
     this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
-      (event) => this.throttledUpdate()
+      (event) => this.update()
     );
   }
 
@@ -97,15 +98,16 @@ export default class GlyphNotesPanel extends Panel {
     this.glyphNotesElement.value = varGlyph.note ? varGlyph.note : "";
     this.fixGlyphNotesHeight();
 
-    let timeout = null;
     const undoLabel = varGlyph.note ? "update glyph note" : "add glyph note";
+
+    this.timeout = null;
     this.glyphNotesElement.addEventListener(
       "keyup",
       () => {
-        clearTimeout(timeout);
+        clearTimeout(this.timeout);
         this.fixGlyphNotesHeight();
         const notes = this.glyphNotesElement.value;
-        timeout = setTimeout(async function () {
+        this.timeout = setTimeout(async function () {
           await sceneController.editGlyphAndRecordChanges((glyph) => {
             glyph.note = notes;
             return undoLabel;
@@ -114,6 +116,49 @@ export default class GlyphNotesPanel extends Panel {
       },
       false
     );
+
+    // The following code does not work correctly
+    // await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
+    //   let preDragChanges = new ChangeCollector();
+    //   preDragChanges = recordChanges(glyph, (varGlyph) => {
+    //     console.log("varGlyph: ", varGlyph);
+    //     console.log("varGlyph.note: ", varGlyph.note);
+    //     glyph.note = varGlyph.note;
+    //   });
+    //   let dragChanges = new ChangeCollector();
+    //   const initialChanges = recordChanges(glyph, (glyph) => {
+    //     glyph.note = this.glyphNotesElement.value;
+    //   });
+    //   await sendIncrementalChange(initialChanges.change);
+
+    //   let timeout = null;
+    //   console.log("preDragChanges: ", preDragChanges);
+    //   this.glyphNotesElement.addEventListener(
+    //     "keyup",
+    //     () => {
+    //       clearTimeout(timeout);
+    //       this.fixGlyphNotesHeight();
+    //       const notes = this.glyphNotesElement.value;
+    //       timeout = setTimeout(async function () {
+    //         dragChanges = recordChanges(glyph, (glyph) => {
+    //           glyph.note = notes;
+    //         });
+    //         console.log("dragChanges: ", dragChanges);
+    //         await sendIncrementalChange(dragChanges.change, true); // true: "may drop"
+    //       }, 1500);
+    //     },
+    //     false
+    //   );
+
+    //   const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
+    //   console.log("finalChanges: ", finalChanges);
+
+    //   return {
+    //     undoLabel: undoLabel,
+    //     changes: finalChanges,
+    //     broadcast: true,
+    //   };
+    // });
   }
 
   fixGlyphNotesHeight() {
