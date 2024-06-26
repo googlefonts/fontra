@@ -31,7 +31,7 @@ def mapAxisFromUserSpaceToSourceSpace(axis: FontAxis | DiscreteFontAxis):
     return replace(axis, **replacedFields)
 
 
-def locationToTuple(loc):
+def locationToTuple(loc: dict[str, float]) -> tuple[tuple[str, float], ...]:
     return tuple(sorted(loc.items()))
 
 
