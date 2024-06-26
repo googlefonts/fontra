@@ -96,10 +96,9 @@ class DiscreteVariationModel:
         return cachedModelInfo
 
     def _findNearestDiscreteLocationKey(self, key):
-        targetLocation = dict(key)
         locationKeys = list(self._locationsKeyToDiscreteLocation.keys())
         locations = list(self._locationsKeyToDiscreteLocation.values())
-        nearestIndex = findNearestLocationIndex(targetLocation, locations)
+        nearestIndex = findNearestLocationIndex(dict(key), locations)
         return locationKeys[nearestIndex]
 
     def interpolateFromDeltas(self, location, deltas) -> InterpolationResult:
