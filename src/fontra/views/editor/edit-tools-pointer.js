@@ -84,9 +84,7 @@ export class PointerTool extends BaseTool {
   setCursor(cursor = undefined) {
     if (cursor) {
       this.canvasController.canvas.style.cursor = cursor;
-      return;
-    }
-    if (
+    } else if (
       this.sceneController.hoverSelection?.size ||
       this.sceneController.hoverPathHit
     ) {
