@@ -71,17 +71,15 @@ class DiscreteVariationModel:
             errors = []
             locations = self._locations.get(key)
             if locations is None:
-                raise NotImplementedError
-                # const nearestKey = self._findNearestDiscreteLocationKey(key);
-                # const { model: substModel } = self._getModel(nearestKey);
-                # model = substModel;
-                # errors = [
-                #   {
-                #     message: `there are no sources for ${formatDiscreteLocationKey(key)}`,
-                #     xxx type: "model-warning",
-                #   },
-                # ];
-                # usedKey = nearestKey;
+                nearestKey = self._findNearestDiscreteLocationKey(key)
+                model, _, _ = self._getModel(nearestKey)
+                errors = [
+                    ErrorDescription(
+                        message=f"there are no sources for {formatDiscreteLocationKey(key)}",
+                        type="model-warning",
+                    ),
+                ]
+                usedKey = nearestKey
             else:
                 try:
                     model = VariationModel(locations)
@@ -97,13 +95,12 @@ class DiscreteVariationModel:
 
         return cachedModelInfo
 
-    # _findNearestDiscreteLocationKey(key) {
-    #   const targetLocation = JSON.parse(key);
-    #   const locationKeys = Object.keys(self._locationsKeyToDiscreteLocation);
-    #   const locations = Object.values(self._locationsKeyToDiscreteLocation);
-    #   const nearestIndex = findNearestLocationIndex(JSON.parse(key), locations);
-    #   return locationKeys[nearestIndex];
-    # }
+    def _findNearestDiscreteLocationKey(self, key):
+        targetLocation = dict(key)
+        locationKeys = list(self._locationsKeyToDiscreteLocation.keys())
+        locations = list(self._locationsKeyToDiscreteLocation.values())
+        nearestIndex = findNearestLocationIndex(targetLocation, locations)
+        return locationKeys[nearestIndex]
 
     def interpolateFromDeltas(self, location, deltas) -> InterpolationResult:
         discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)

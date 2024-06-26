@@ -135,3 +135,43 @@ def test_discreteVariationModel_incompatible_sources(
     result = model.interpolateFromDeltas(location, deltas)
     assert result.instance == expectedResult
     assert result.errors == expectedErrors
+
+
+testLocationsNoItalic = [{}, {"Weight": 700}]
+
+testSourceDataNoItalic = [
+    [0, 0],
+    [100, 0],
+]
+
+testCasesNoItalic = [
+    (
+        {},
+        [0, 0],
+        None,
+    ),
+    (
+        {"Weight": 550},
+        [50, 0],
+        None,
+    ),
+    (
+        {"Weight": 550, "Italic": 1},
+        [50, 0],
+        [
+            ErrorDescription(
+                message="there are no sources for Italic=1",
+                type="model-warning",
+            ),
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize("location, expectedResult, expectedErrors", testCasesNoItalic)
+def test_discreteVariationModel_no_italics(location, expectedResult, expectedErrors):
+    model = DiscreteVariationModel(testLocationsNoItalic, testAxes)
+    deltas = model.getDeltas([Vector(s) for s in testSourceDataNoItalic])
+    result = model.interpolateFromDeltas(location, deltas)
+    assert result.instance == expectedResult
+    assert result.errors == expectedErrors
