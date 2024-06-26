@@ -89,7 +89,6 @@ export class DiscreteVariationModel {
   }
 
   _findNearestDiscreteLocationKey(key) {
-    const targetLocation = JSON.parse(key);
     const locationKeys = Object.keys(this._locationsKeyToDiscreteLocation);
     const locations = Object.values(this._locationsKeyToDiscreteLocation);
     const nearestIndex = findNearestLocationIndex(JSON.parse(key), locations);
