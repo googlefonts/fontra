@@ -33,10 +33,10 @@ class DiscreteVariationModel:
             for axis in self._continuousAxes
         }
 
-        self._locations = {}
+        self._locations: dict = {}
         self._locationsKeyToDiscreteLocation = {}
         self._locationKeys = []
-        self._locationIndices = {}
+        self._locationIndices: dict = {}
 
         for index, location in enumerate(locations):
             discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
@@ -55,7 +55,7 @@ class DiscreteVariationModel:
             else:
                 self._locations[key].append(normalizedLocation)
 
-        self._models = {}
+        self._models: dict = {}
 
     def getDeltas(self, sourceValues) -> DiscreteDeltas:
         sources = defaultdict(list)

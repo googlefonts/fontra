@@ -15,8 +15,8 @@ def mapAxesFromUserSpaceToSourceSpace(
 
 
 def mapAxisFromUserSpaceToSourceSpace(axis: FontAxis | DiscreteFontAxis):
-    mapping = dict(axis.mapping)
-    replacedFields = {"valueLabels": [], "mapping": []}
+    mapping = {a: b for a, b in axis.mapping}
+    replacedFields: dict = {"valueLabels": [], "mapping": []}
     valueFields = ["defaultValue"]
 
     if isinstance(axis, FontAxis):
