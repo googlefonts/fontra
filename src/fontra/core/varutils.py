@@ -14,7 +14,9 @@ def mapAxesFromUserSpaceToSourceSpace(
     ]
 
 
-def mapAxisFromUserSpaceToSourceSpace(axis: FontAxis | DiscreteFontAxis):
+def mapAxisFromUserSpaceToSourceSpace(
+    axis: FontAxis | DiscreteFontAxis,
+) -> FontAxis | DiscreteFontAxis:
     mapping = {a: b for a, b in axis.mapping}
     replacedFields: dict = {"valueLabels": [], "mapping": []}
     valueFields = ["defaultValue"]
@@ -35,6 +37,6 @@ def locationToTuple(loc: dict[str, float]) -> tuple[tuple[str, float], ...]:
     return tuple(sorted(loc.items()))
 
 
-def makeSparseNormalizedLocation(location):
+def makeSparseNormalizedLocation(location: dict[str, float]) -> dict[str, float]:
     # location must be normalized
     return {name: value for name, value in location.items() if value}
