@@ -13,6 +13,9 @@ from fontTools.varLib.models import (
 from .classes import DiscreteFontAxis, FontAxis
 from .varutils import locationToTuple, makeSparseNormalizedLocation
 
+CachedModelInfoType = tuple[VariationModel, tuple, list | None]
+LocationTupleType = tuple[tuple[str, float], ...]
+
 
 class DiscreteVariationModel:
     def __init__(
@@ -33,10 +36,10 @@ class DiscreteVariationModel:
             for axis in self._continuousAxes
         }
 
-        self._locations: dict = {}
+        self._locations: dict[LocationTupleType, list[dict]] = {}
         self._locationsKeyToDiscreteLocation = {}
         self._locationKeys = []
-        self._locationIndices: dict = {}
+        self._locationIndices: dict[LocationTupleType, list[int]] = {}
 
         for index, location in enumerate(locations):
             discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
@@ -55,7 +58,7 @@ class DiscreteVariationModel:
             else:
                 self._locations[key].append(normalizedLocation)
 
-        self._models: dict = {}
+        self._models: dict[LocationTupleType, CachedModelInfoType] = {}
 
     def getDeltas(self, sourceValues) -> DiscreteDeltas:
         sources = defaultdict(list)
@@ -64,7 +67,7 @@ class DiscreteVariationModel:
 
         return DiscreteDeltas(sources=dict(sources), deltas={})
 
-    def _getModel(self, key):
+    def _getModel(self, key: LocationTupleType) -> CachedModelInfoType:
         cachedModelInfo = self._models.get(key)
         if cachedModelInfo is None:
             usedKey = key
