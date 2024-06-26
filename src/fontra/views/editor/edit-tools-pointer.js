@@ -401,8 +401,8 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
 
-    // The following may seem wrong to you, but it's correct.
-    // Because we say for example bottom-left and not left-bottom. Y-X order.
+    // The following may seem wrong, but it's correct, because we say
+    // for example bottom-left and not left-bottom. Y-X order.
     const [resizeHandlePositionY, resizeHandlePositionX] =
       clickedResizeHandle.split("-");
 
@@ -410,14 +410,12 @@ export class PointerTool extends BaseTool {
     // origin must be the opposite side of where we have our mouse
     if (resizeHandlePositionX === "left") {
       origin.x = "right";
-    }
-    if (resizeHandlePositionX === "right") {
+    } else if (resizeHandlePositionX === "right") {
       origin.x = "left";
     }
     if (resizeHandlePositionY === "top") {
       origin.y = "bottom";
-    }
-    if (resizeHandlePositionY === "bottom") {
+    } else if (resizeHandlePositionY === "bottom") {
       origin.y = "top";
     }
     // no else because could be middle or center
@@ -466,34 +464,18 @@ export class PointerTool extends BaseTool {
         for (const layer of layerInfo) {
           const layerGlyph = layer.layerGlyphController.instance;
 
-          // NOTE: calculate the scale based on selection width per layer.
           let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
           let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
           if (clickedResizeHandle.includes("middle")) {
-            if (event.shiftKey) {
-              scaleY = scaleX;
-            } else {
-              scaleY = 1;
-            }
-          }
-          if (clickedResizeHandle.includes("center")) {
-            if (event.shiftKey) {
-              scaleX = scaleY;
-            } else {
-              scaleX = 1;
-            }
+            scaleY = event.shiftKey ? scaleX : 1;
+          } else if (clickedResizeHandle.includes("center")) {
+            scaleX = event.shiftKey ? scaleY : 1;
+          } else if (event.shiftKey) {
+            scaleX = scaleY = Math.max(scaleX, scaleY);
           }
 
-          // scale proportionally if shift key is pressed
-          if (event.shiftKey) {
-            if (scaleX > scaleY) {
-              scaleY = scaleX;
-            } else {
-              scaleX = scaleY;
-            }
-          }
-          let transformation = new Transform().scale(scaleX, scaleY);
+          const transformation = new Transform().scale(scaleX, scaleY);
 
           const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           const t = new Transform()
