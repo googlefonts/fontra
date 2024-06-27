@@ -347,9 +347,7 @@ async def test_writeGlyphNotes(writableTestFont):
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
     savedGlyph = await writableTestFont.getGlyph(glyphName)
-    assert glyph.customData.get("fontra.glyph.note") == savedGlyph.customData.get(
-        "fontra.glyph.note"
-    )
+    assert savedGlyph.customData.get("fontra.glyph.note") == "A glyph note"
 
 
 async def test_addLocalAxisAndSource(writableTestFont):
