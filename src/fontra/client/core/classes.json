@@ -474,7 +474,11 @@
       "type": "dict",
       "subtype": "list"
     },
-    "sources": {
+    "sourceIdentifiers": {
+      "type": "list",
+      "subtype": "str"
+    },
+    "values": {
       "type": "dict",
       "subtype": "dict"
     }
