@@ -129,7 +129,7 @@ class GeneratePaltVpalFeature(BaseFilter):
                     and layerGlyph.yAdvance is not None
                     and layerGlyph.verticalOrigin is not None
                 ):
-                    placementAdjust = tsbAnchorPos - layerGlyph.verticalOrigin
+                    placementAdjust = layerGlyph.verticalOrigin - tsbAnchorPos
                     advanceAdjust = tsbAnchorPos - bsbAnchorPos - layerGlyph.yAdvance
                     location = mapLocation(source.location)
                     vAdjustments.append((location, placementAdjust, advanceAdjust))
