@@ -10,5 +10,5 @@ feature palt {
 } palt;
 
 feature vpal {
-    pos A <0 -130 0 -100>;
+    pos A <0 130 0 -100>;
 } vpal;

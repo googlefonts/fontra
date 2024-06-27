@@ -9,5 +9,5 @@ feature palt {
 } palt;
 
 feature vpal {
-    pos A <0 (wght=400:-130 wght=900:-100) 0 (wght=400:-100 wght=900:-40)>;
+    pos A <0 (wght=400:130 wght=900:100) 0 (wght=400:-100 wght=900:-40)>;
 } vpal;
