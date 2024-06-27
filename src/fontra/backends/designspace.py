@@ -90,7 +90,7 @@ lineMetricsVerMapping = {
     # Fontra / UFO
     "ascender": "openTypeVheaVertTypoAscender",
     "descender": "openTypeVheaVertTypoDescender",
-    # ("lineGap", "openTypeVheaVertTypoLineGap"),
+    "lineGap": "openTypeVheaVertTypoLineGap",
     # ("slopeRise", "openTypeVheaCaretSlopeRise"),
     # ("slopeRun", "openTypeVheaCaretSlopeRun"),
     # ("caretOffset", "openTypeVheaCaretOffset"),
@@ -1814,7 +1814,7 @@ def updateFontInfoFromFontSource(reader, fontSource):
     for name, metric in fontSource.lineMetricsVerticalLayout.items():
         ufoName = lineMetricsVerMapping.get(name)
         if ufoName is not None:
-            setattr(fontInfo, ufoName, metric.value)
+            setattr(fontInfo, ufoName, round(metric.value))
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
