@@ -23,7 +23,7 @@ class DiscreteVariationModel:
     axes: list[FontAxis | DiscreteFontAxis | GlyphAxis]
     softFail: bool = True  # When False, exceptions are raised on interpolation errors
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert not any(axis.mapping for axis in self.axes if hasattr(axis, "mapping"))
 
         self._discreteAxes = [axis for axis in self.axes if hasattr(axis, "values")]
