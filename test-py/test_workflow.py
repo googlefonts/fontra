@@ -983,31 +983,37 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
-            "generate-palt-feature",
+            "generate-palt-vpal-feature",
             """
             steps:
             - input: fontra-read
-              source: "test-py/data/workflow/input-generate-palt-feature.fontra"
-            - filter: generate-palt-feature
+              source: "test-py/data/workflow/input-generate-palt-vpal-feature.fontra"
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
+            - filter: generate-palt-vpal-feature
             - output: fontra-write
-              destination: "output-generate-palt-feature.fontra"
+              destination: "output-generate-palt-vpal-feature.fontra"
             """,
             False,
             [],
         ),
         (
-            "generate-palt-feature-single-source",
+            "generate-palt-vpal-feature-single-source",
             """
             steps:
             - input: fontra-read
-              source: "test-py/data/workflow/input-generate-palt-feature.fontra"
+              source: "test-py/data/workflow/input-generate-palt-vpal-feature.fontra"
             - filter: subset-axes
               axisNames: []
-            - filter: generate-palt-feature
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
+            - filter: generate-palt-vpal-feature
               languageSystems:
               - ["kana", "dflt"]
             - output: fontra-write
-              destination: "output-generate-palt-feature-single-source.fontra"
+              destination: "output-generate-palt-vpal-feature-single-source.fontra"
             """,
             False,
             [],

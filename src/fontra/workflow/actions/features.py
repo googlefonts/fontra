@@ -16,9 +16,9 @@ from .base import BaseFilter, getActiveSources, registerFilterAction, tuplifyLoc
 logger = logging.getLogger(__name__)
 
 
-@registerFilterAction("generate-palt-feature")
+@registerFilterAction("generate-palt-vpal-feature")
 @dataclass(kw_only=True)
-class GeneratePaltFeature(BaseFilter):
+class GeneratePaltVpalFeature(BaseFilter):
     languageSystems: list[tuple[str, str]] = field(default_factory=list)
 
     async def processFeatures(self, features):
@@ -26,9 +26,11 @@ class GeneratePaltFeature(BaseFilter):
 
         axes = await self.getAxes()
 
-        horizontalAdjustments = await self._collectAdjustments(glyphMap, axes.axes)
+        horAdjustments, verAdjustments = await self._collectAdjustments(
+            glyphMap, axes.axes
+        )
 
-        if not horizontalAdjustments:
+        if not horAdjustments and not verAdjustments:
             return features
 
         axisList = [
@@ -47,21 +49,34 @@ class GeneratePaltFeature(BaseFilter):
         for script, language in self.languageSystems:
             w.addLanguageSystem(script, language)
 
-        fea = w.addFeature("palt")
-        for glyphName, adjustments in horizontalAdjustments.items():
-            if len(adjustments) == 1:
-                _, placementScalar, advanceScalar = adjustments[0]
-            else:
-                placementScalar = VariableScalar()
-                placementScalar.axes = axisList
-                advanceScalar = VariableScalar()
-                advanceScalar.axes = axisList
-                for location, placementAdjust, advanceAdjust in adjustments:
-                    location = {axisTagMapping[k]: v for k, v in location.items()}
-                    locationTuple = tuplifyLocation(location)
-                    placementScalar.add_value(locationTuple, placementAdjust)
-                    advanceScalar.add_value(locationTuple, advanceAdjust)
-            fea.addLine(f"pos {glyphName} <{placementScalar} 0 {advanceScalar} 0>")
+        for isHor, adjustments in [
+            (True, horAdjustments),
+            (False, verAdjustments),
+        ]:
+            if not adjustments:
+                continue
+            fea = w.addFeature("palt" if isHor else "vpal")
+            for glyphName, glyphAdjustments in adjustments.items():
+                if len(glyphAdjustments) == 1:
+                    _, placementScalar, advanceScalar = glyphAdjustments[0]
+                else:
+                    placementScalar = VariableScalar()
+                    placementScalar.axes = axisList
+                    advanceScalar = VariableScalar()
+                    advanceScalar.axes = axisList
+                    for location, placementAdjust, advanceAdjust in glyphAdjustments:
+                        location = {axisTagMapping[k]: v for k, v in location.items()}
+                        locationTuple = tuplifyLocation(location)
+                        placementScalar.add_value(locationTuple, placementAdjust)
+                        advanceScalar.add_value(locationTuple, advanceAdjust)
+                if isHor:
+                    fea.addLine(
+                        f"pos {glyphName} <{placementScalar} 0 {advanceScalar} 0>"
+                    )
+                else:
+                    fea.addLine(
+                        f"pos {glyphName} <0 {placementScalar} 0 {advanceScalar}>"
+                    )
 
         featureText = w.asFea()
 
@@ -69,23 +84,10 @@ class GeneratePaltFeature(BaseFilter):
         return OpenTypeFeatures(text=featureText)
 
     async def _collectAdjustments(self, glyphMap, axes):
-        mapFuncs = {}
-        for axis in axes:
-            if axis.mapping:
-                forwardMap = dict([(a, b) for a, b in axis.mapping])
-                userRange = [axis.minValue, axis.defaultValue, axis.maxValue]
-                sourceRange = [
-                    piecewiseLinearMap(value, forwardMap) for value in userRange
-                ]
-                backwardMap = list(zip(sourceRange, userRange))
-                mapFuncs[axis.name] = partial(
-                    piecewiseLinearMap,
-                    mapping=dict(backwardMap),
-                )
-            else:
-                mapFuncs[axis.name] = lambda v: v
+        mapLocation = _makeLocationMapFunc(axes)
 
-        horizontalAdjustments = {}
+        horAdjustments = {}
+        verAdjustments = {}
         for glyphName in glyphMap:
             try:
                 glyph = await self.getGlyph(glyphName)
@@ -96,28 +98,69 @@ class GeneratePaltFeature(BaseFilter):
                 continue
 
             glyph = await self.getGlyph(glyphName)
-            adjustments = []
+            hAdjustments = []
+            vAdjustments = []
             for source in getActiveSources(glyph.sources):
                 layerGlyph = glyph.layers[source.layerName].glyph
                 lsbAnchorPos = None
                 rsbAnchorPos = None
+                tsbAnchorPos = None
+                bsbAnchorPos = None
+
                 for anchor in layerGlyph.anchors:
                     if anchor.name == "LSB":
                         lsbAnchorPos = anchor.x
                     elif anchor.name == "RSB":
                         rsbAnchorPos = anchor.x
+                    elif anchor.name == "TSB":
+                        tsbAnchorPos = anchor.y
+                    elif anchor.name == "BSB":
+                        bsbAnchorPos = anchor.y
+
                 if lsbAnchorPos is not None and rsbAnchorPos is not None:
                     placementAdjust = -lsbAnchorPos
                     advanceAdjust = rsbAnchorPos - lsbAnchorPos - layerGlyph.xAdvance
-                    location = {
-                        name: mapFuncs[name](value)
-                        for name, value in source.location.items()
-                    }
-                    adjustments.append((location, placementAdjust, advanceAdjust))
-            if adjustments:
-                horizontalAdjustments[glyphName] = adjustments
+                    location = mapLocation(source.location)
+                    hAdjustments.append((location, placementAdjust, advanceAdjust))
 
-        return horizontalAdjustments
+                if (
+                    tsbAnchorPos is not None
+                    and bsbAnchorPos is not None
+                    and layerGlyph.yAdvance is not None
+                    and layerGlyph.verticalOrigin is not None
+                ):
+                    placementAdjust = layerGlyph.verticalOrigin - tsbAnchorPos
+                    advanceAdjust = tsbAnchorPos - bsbAnchorPos - layerGlyph.yAdvance
+                    location = mapLocation(source.location)
+                    vAdjustments.append((location, placementAdjust, advanceAdjust))
+
+            if hAdjustments:
+                horAdjustments[glyphName] = hAdjustments
+
+            if vAdjustments:
+                verAdjustments[glyphName] = vAdjustments
+
+        return horAdjustments, verAdjustments
+
+
+def _makeLocationMapFunc(axes):
+    mapFuncs = {}
+    for axis in axes:
+        if axis.mapping:
+            forwardMap = dict([(a, b) for a, b in axis.mapping])
+            userRange = [axis.minValue, axis.defaultValue, axis.maxValue]
+            sourceRange = [piecewiseLinearMap(value, forwardMap) for value in userRange]
+            backwardMap = list(zip(sourceRange, userRange))
+            mapFuncs[axis.name] = partial(
+                piecewiseLinearMap,
+                mapping=dict(backwardMap),
+            )
+        else:
+            mapFuncs[axis.name] = lambda v: v
+
+    return lambda location: {
+        name: mapFuncs[name](value) for name, value in location.items()
+    }
 
 
 @registerFilterAction("add-features")
