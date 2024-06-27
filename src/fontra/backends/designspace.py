@@ -966,8 +966,41 @@ class DesignspaceBackend:
         }
 
     async def putKerning(self, kerning: dict[str, Kerning]) -> None:
-        # TODO: implement
-        pass
+        for kernType, kerningTable in kerning.items():
+            sourceIdentifiers = kerningTable.sourceIdentifiers
+            dsSources = [
+                self.dsSources.findItem(identifier=sourceIdentifier)
+                for sourceIdentifier in sourceIdentifiers
+            ]
+            if any(dsSource.isSparse for dsSource in dsSources):
+                raise ValueError(
+                    f"can't write kerning to sparse source: {sourceIdentifiers}"
+                )
+
+            unknownSourceIdentifiers = [
+                sourceIdentifier
+                for sourceIdentifier, dsSource in zip(sourceIdentifiers, dsSources)
+                if dsSource is None
+            ]
+
+            if unknownSourceIdentifiers:
+                raise ValueError(
+                    f"kerning uses unknown source identifiers: {unknownSourceIdentifiers}"
+                )
+
+            kerningPerSource = defaultdict(dict)
+            for left, rightDict in kerningTable.values.items():
+                for right, values in rightDict.items():
+                    for sourceIdentifier, value in zip(sourceIdentifiers, values):
+                        if value is not None:
+                            kerningPerSource[sourceIdentifier][left, right] = value
+
+            for dsSource in self.dsSources:
+                if dsSource.isSparse:
+                    continue
+                dsSource.layer.reader.writeGroups(kerningTable.groups)
+                ufoKerning = kerningPerSource.get(dsSource.identifier, {})
+                dsSource.layer.reader.writeKerning(ufoKerning)
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
