@@ -320,7 +320,7 @@ class SetVerticalGlyphMetrics(BaseFilter):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         if not any(
-            layer.glyph.yAdvance is None or layer.glyph.verticalOrigin
+            layer.glyph.yAdvance is None or layer.glyph.verticalOrigin is None
             for layer in glyph.layers.values()
         ):
             return glyph
