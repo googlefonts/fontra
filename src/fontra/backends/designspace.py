@@ -1468,15 +1468,19 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
+    verticalOrigin = glyph.lib.get("public.verticalOrigin")
     staticGlyph = StaticGlyph(
         path=pen.getPath(),
         components=components,
         xAdvance=glyph.width,
+        yAdvance=(
+            glyph.height if glyph.height else None
+        ),  # Default height in UFO is 0 :-(
+        verticalOrigin=verticalOrigin,
         anchors=unpackAnchors(glyph.anchors),
         guidelines=unpackGuidelines(glyph.guidelines),
     )
 
-    # TODO: yAdvance, verticalOrigin
     return staticGlyph, glyph
 
 
@@ -1547,8 +1551,13 @@ def populateUFOLayerGlyph(
     forceVariableComponents: bool = False,
 ) -> Callable[[AbstractPointPen], None]:
     pen = RecordingPointPen()
+
     layerGlyph.width = staticGlyph.xAdvance
-    layerGlyph.height = staticGlyph.yAdvance
+    if staticGlyph.yAdvance is not None:
+        layerGlyph.height = staticGlyph.yAdvance
+    if staticGlyph.verticalOrigin is not None:
+        layerGlyph.lib["public.verticalOrigin"] = staticGlyph.verticalOrigin
+
     staticGlyph.path.drawPoints(pen)
     variableComponents = []
     layerGlyph.anchors = [

@@ -841,6 +841,21 @@ async def test_lineMetricsVerticalLayout(tmpdir):
     )
 
 
+async def test_glyphMetricsVerticalLayout(writableTestFont):
+    glyph = await writableTestFont.getGlyph("A")
+
+    for layer in glyph.layers.values():
+        layer.glyph.verticalOrigin = 880
+        layer.glyph.yAdvance = 1000
+
+    await writableTestFont.putGlyph("A", glyph, [ord("A")])
+
+    reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
+
+    reopenedGlyph = await reopenedFont.getGlyph("A")
+    assert glyph == reopenedGlyph
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
