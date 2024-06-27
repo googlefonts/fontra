@@ -4,6 +4,7 @@ import json
 import logging
 import pathlib
 import shutil
+from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -210,10 +211,10 @@ class FontraBackend:
         fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
-        kerning = fontData.pop("kerning", None)
+        fontData.pop("kerning", None)
 
-        if kerning:
-            writeKerningFile(self.kerningPath, kerning)
+        if self.fontData.kerning:
+            writeKerningFile(self.kerningPath, self.fontData.kerning)
         elif self.kerningPath.exists():
             self.kerningPath.unlink()
 
@@ -274,11 +275,122 @@ def serialize(data: list | dict) -> str:
 
 
 def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
-    raise NotImplementedError
+    with path.open("w", encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=";")
+
+        isFirst = True
+        for kernType, kerningTable in kerning.items():
+            if not isFirst:
+                writer.writerow([])
+            isFirst = False
+
+            writer.writerow(["TYPE"])
+            writer.writerow([kernType])
+            writer.writerow([])
+
+            writer.writerow(["GROUPS"])
+            for groupName, group in sorted(kerningTable.groups.items()):
+                writer.writerow([groupName] + group)
+            writer.writerow([])
+
+            writer.writerow(["VALUES"])
+            sourceIdentifiers = kerningTable.sourceIdentifiers
+            writer.writerow(["", ""] + sourceIdentifiers)
+            for left, rightDict in kerningTable.values.items():
+                for right, values in rightDict.items():
+                    row = ["" if v is None else v for v in values]
+                    writer.writerow([left, right] + row)
+
+
+class KerningParseError(Exception):
+    pass
 
 
 def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
-    raise NotImplementedError
+    kerning = {}
+
+    with path.open("r", encoding="utf-8") as file:
+        reader = csv.reader(file, delimiter=";")
+        rowIter = iter(enumerate(reader, 1))
+
+        kernType = kerningReadType(rowIter)
+        groups = kerningReadGroups(rowIter)
+        sourceIdentifiers, values = kerningReadValues(rowIter)
+
+        kerning[kernType] = Kerning(
+            groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+        )
+
+    return kerning
+
+
+def kerningReadType(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "TYPE":
+        raise KerningParseError(f"expected TYPE keyword (line {lineNumber})")
+
+    lineNumber, row = next(rowIter)
+    if not row or not row[0]:
+        raise KerningParseError(f"expected TYPE value string (line {lineNumber})")
+
+    return row[0]
+
+
+def kerningReadGroups(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "GROUPS":
+        raise KerningParseError(f"expected GROUPS keyword (line {lineNumber})")
+
+    groups = {}
+
+    for lineNumber, row in rowIter:
+        if not row or not row[0]:
+            break
+        groups[row[0]] = row[1:]
+
+    return groups
+
+
+def kerningReadValues(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "VALUES":
+        raise KerningParseError(f"expected VALUES keyword (line {lineNumber})")
+
+    lineNumber, row = next(rowIter)
+    if not row or len(row) < 3 or row[:2] != ["", ""]:
+        raise KerningParseError(f"expected source identifier row (line {lineNumber})")
+
+    sourceIdentifiers = row[2:]
+
+    values = defaultdict(dict)
+
+    for lineNumber, row in rowIter:
+        if not row or not row[0]:
+            break
+        if len(row) < 2:
+            raise KerningParseError(f"expected kern values (line {lineNumber})")
+
+        left = row[0]
+        right = row[1]
+        try:
+            values[left][right] = [kerningParseValue(v) if v else None for v in row[2:]]
+        except ValueError as e:
+            raise KerningParseError(f"parse error: {e!r} (line {lineNumber})")
+
+    return sourceIdentifiers, dict(values)
+
+
+def kerningParseValue(s):
+    f = float(s)
+    i = int(f)
+    return i if i == f else f
+
+
+def nextNonBlankRow(rowIter):
+    for lineNumber, row in rowIter:
+        if row and row[0]:
+            return lineNumber, row
+    return None, None
 
 
 @dataclass(kw_only=True)
