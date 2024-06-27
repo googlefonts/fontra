@@ -111,9 +111,6 @@
       "type": "dict",
       "subtype": "Layer"
     },
-    "note": {
-      "type": "str"
-    },
     "customData": {
       "type": "dict",
       "subtype": "Any"

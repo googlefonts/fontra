@@ -66,6 +66,7 @@ LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 LINE_METRICS_HOR_ZONES_KEY = "xyz.fontra.lineMetricsHorizontalLayout.zones"
+GLYPH_NOTE_LIB_KEY = "fontra.glyph.note"
 
 
 defaultUFOInfoAttrs = {
@@ -330,7 +331,6 @@ class DesignspaceBackend:
         sourceNameMapping = {}
         layerNameMapping = {}
         # global per glyph custom data, eg. glyph locking
-        note = ""
         customData = {}
         # per glyph source custom data, eg. status color code
         sourcesCustomData = {}
@@ -348,8 +348,9 @@ class DesignspaceBackend:
                     )
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-                note = ufoGlyph.note
                 customData = ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
+                if ufoGlyph.note:
+                    customData[GLYPH_NOTE_LIB_KEY] = ufoGlyph.note
 
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
@@ -397,7 +398,6 @@ class DesignspaceBackend:
             axes=axes,
             sources=sources,
             layers=layers,
-            note=note,
             customData=customData,
         )
 
@@ -534,8 +534,10 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
+                if GLYPH_NOTE_LIB_KEY in glyph.customData:
+                    layerGlyph.note = glyph.customData[GLYPH_NOTE_LIB_KEY]
+                    del glyph.customData[GLYPH_NOTE_LIB_KEY]
                 storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, glyph.customData)
-                layerGlyph.note = glyph.note
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
 

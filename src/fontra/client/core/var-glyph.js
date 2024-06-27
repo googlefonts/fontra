@@ -13,7 +13,6 @@ export class VariableGlyph {
     glyph.layers = Object.fromEntries(
       Object.entries(obj.layers).map(([name, layer]) => [name, Layer.fromObject(layer)])
     );
-    glyph.note = obj.note;
     glyph.customData = copyCustomData(obj.customData || {});
     return glyph;
   }

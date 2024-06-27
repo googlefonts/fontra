@@ -171,7 +171,6 @@ class VariableGlyph:
     axes: list[GlyphAxis] = field(default_factory=list)
     sources: list[GlyphSource] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
-    note: str = ""
     customData: CustomData = field(default_factory=dict)
 
     def convertToPackedPaths(self):
