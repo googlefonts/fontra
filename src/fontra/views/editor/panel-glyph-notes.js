@@ -94,6 +94,7 @@ export default class GlyphNotesPanel extends Panel {
   }
 
   async update() {
+    this.glyphNotesElement.focus();
     // This method is called when the panel is opened or when the selected glyph changes.
     // Therefore we need to update the glyph notes text area with the current glyph notes
     const varGlyphController =
