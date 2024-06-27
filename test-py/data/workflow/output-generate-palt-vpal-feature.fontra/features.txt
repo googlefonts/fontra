@@ -7,3 +7,7 @@ feature calt {
 feature palt {
     pos A <(wght=400:-110 wght=900:-50) 0 (wght=400:-220 wght=900:-100) 0>;
 } palt;
+
+feature vpal {
+    pos A <0 (wght=400:-130 wght=900:-100) 0 (wght=400:-100 wght=900:-40)>;
+} vpal;

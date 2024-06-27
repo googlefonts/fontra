@@ -988,6 +988,9 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input-generate-palt-vpal-feature.fontra"
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
             - filter: generate-palt-vpal-feature
             - output: fontra-write
               destination: "output-generate-palt-vpal-feature.fontra"
@@ -1003,6 +1006,9 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input-generate-palt-vpal-feature.fontra"
             - filter: subset-axes
               axisNames: []
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
             - filter: generate-palt-vpal-feature
               languageSystems:
               - ["kana", "dflt"]
