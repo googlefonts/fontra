@@ -6,7 +6,14 @@ from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
-from .classes import Axes, FontInfo, FontSource, OpenTypeFeatures, VariableGlyph
+from .classes import (
+    Axes,
+    FontInfo,
+    FontSource,
+    Kerning,
+    OpenTypeFeatures,
+    VariableGlyph,
+)
 
 
 @runtime_checkable
@@ -27,6 +34,9 @@ class ReadableFontBackend(Protocol):
         pass
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
+        pass
+
+    async def getKerning(self) -> dict[str, Kerning]:
         pass
 
     async def getFeatures(self) -> OpenTypeFeatures:
@@ -59,6 +69,9 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
         pass
 
     async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        pass
+
+    async def putKerning(self, kerning: dict[str, Kerning]) -> None:
         pass
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:

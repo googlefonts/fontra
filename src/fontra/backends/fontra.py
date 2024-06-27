@@ -151,6 +151,14 @@ class FontraBackend:
         self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 
+    async def getKerning(self) -> dict[str, Kerning]:
+        return deepcopy(self.fontData.kerning)
+
+    async def putKerning(self, kerning: dict[str, Kerning]) -> None:
+        assert all(isinstance(table, Kerning) for table in kerning.values())
+        self.fontData.kerning = deepcopy(kerning)
+        self._scheduler.schedule(self._writeFontData)
+
     async def getFeatures(self) -> OpenTypeFeatures:
         return deepcopy(self.fontData.features)
 

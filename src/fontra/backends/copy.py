@@ -81,6 +81,7 @@ async def _copyFont(
         assert e is not None
         raise e
 
+    await destBackend.putKerning(await sourceBackend.getKerning())
     await destBackend.putFeatures(await sourceBackend.getFeatures())
 
 

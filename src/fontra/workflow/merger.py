@@ -8,6 +8,7 @@ from ..core.classes import (
     Axes,
     FontInfo,
     FontSource,
+    Kerning,
     OpenTypeFeatures,
     VariableGlyph,
     unstructure,
@@ -92,6 +93,12 @@ class FontBackendMerger:
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
         return self._glyphMap
+
+    async def getKerning(self) -> dict[str, Kerning]:
+        # TODO: merge kerning
+        # kerningA = await self.inputA.getKerning()
+        kerningB = await self.inputB.getKerning()
+        return kerningB
 
     async def getFeatures(self) -> OpenTypeFeatures:
         await self._prepareGlyphMap()

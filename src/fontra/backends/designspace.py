@@ -42,6 +42,7 @@ from ..core.classes import (
     GlyphAxis,
     GlyphSource,
     Guideline,
+    Kerning,
     Layer,
     LineMetric,
     OpenTypeFeatures,
@@ -936,6 +937,14 @@ class DesignspaceBackend:
             reader.readInfo(info)
             _updateFontInfoFromDict(info, infoDict)
             reader.writeInfo(info)
+
+    async def getKerning(self) -> dict[str, Kerning]:
+        # TODO: implement
+        return {}
+
+    async def putKerning(self, kerning: dict[str, Kerning]) -> None:
+        # TODO: implement
+        pass
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
