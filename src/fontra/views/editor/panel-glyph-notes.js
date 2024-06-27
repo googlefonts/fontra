@@ -46,12 +46,57 @@ export default class GlyphNotesPanel extends Panel {
 
   constructor(editorController) {
     super(editorController);
+    this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
+    this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
+    this.glyphNotesHeaderElement =
+      this.contentElement.querySelector("#glyph-notes-header");
 
     this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
-      (event) => this.update()
+      (event) => this.throttledUpdate()
+    );
+
+    this.undoLable = "add glyph note";
+    this.isFocused = true;
+
+    this.glyphNotesElement.addEventListener("focusout", () => {
+      this.isFocused = false;
+      saveGlyphNotes(
+        this.sceneController,
+        this.glyphNotesElement.value,
+        this.undoLable
+      );
+    });
+
+    this.glyphNotesElement.addEventListener(
+      "focus",
+      () => {
+        this.isFocused = true;
+      },
+      false
+    );
+
+    this.timeout = null;
+    // Save the glyph notes after 3 seconds of inactivity and
+    // only if the text area is focused
+    this.glyphNotesElement.addEventListener(
+      "keyup",
+      () => {
+        clearTimeout(this.timeout);
+        this.fixGlyphNotesHeight();
+        this.timeout = setTimeout(async () => {
+          if (this.isFocused) {
+            await saveGlyphNotes(
+              this.sceneController,
+              this.glyphNotesElement.value,
+              this.undoLable
+            );
+          }
+        }, 3000);
+      },
+      false
     );
   }
 
@@ -75,13 +120,13 @@ export default class GlyphNotesPanel extends Panel {
   }
 
   async update() {
-    this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
-    this.glyphNotesHeaderElement =
-      this.contentElement.querySelector("#glyph-notes-header");
-    const sceneController = this.sceneController;
+    // This method is called when the panel is opened or when the selected glyph changes.
+    // Therefore we need to update the glyph notes text area with the current glyph notes
+    // And set isFocused back to true
+    this.isFocused = true;
 
     const varGlyphController =
-      await sceneController.sceneModel.getSelectedVariableGlyphController();
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
 
     if (!varGlyph) {
@@ -96,27 +141,9 @@ export default class GlyphNotesPanel extends Panel {
     }
 
     const glyphNote = varGlyph.customData["fontra.glyph.note"];
+    this.undoLable = glyphNote ? "update glyph note" : "add glyph note";
     this.glyphNotesElement.value = glyphNote ? glyphNote : "";
     this.fixGlyphNotesHeight();
-
-    const undoLabel = glyphNote ? "update glyph note" : "add glyph note";
-
-    this.timeout = null;
-    this.glyphNotesElement.addEventListener(
-      "keyup",
-      () => {
-        clearTimeout(this.timeout);
-        this.fixGlyphNotesHeight();
-        const notes = this.glyphNotesElement.value;
-        this.timeout = setTimeout(async function () {
-          await sceneController.editGlyphAndRecordChanges((glyph) => {
-            glyph.customData["fontra.glyph.note"] = notes;
-            return undoLabel;
-          });
-        }, 1500);
-      },
-      false
-    );
   }
 
   fixGlyphNotesHeight() {
@@ -131,6 +158,13 @@ export default class GlyphNotesPanel extends Panel {
       this.update();
     }
   }
+}
+
+async function saveGlyphNotes(sceneController, notes, undoLable) {
+  await sceneController.editGlyphAndRecordChanges((glyph) => {
+    glyph.customData["fontra.glyph.note"] = notes;
+    return undoLable;
+  });
 }
 
 customElements.define("panel-glyph-notes", GlyphNotesPanel);
