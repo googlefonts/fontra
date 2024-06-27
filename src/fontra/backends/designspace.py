@@ -973,8 +973,11 @@ class DesignspaceBackend:
                 for sourceIdentifier in sourceIdentifiers
             ]
             if any(dsSource.isSparse for dsSource in dsSources):
+                sparseIdentifiers = [
+                    dsSource.identifier for dsSource in dsSources if dsSource.isSparse
+                ]
                 raise ValueError(
-                    f"can't write kerning to sparse source: {sourceIdentifiers}"
+                    f"can't write kerning to sparse sources: {sparseIdentifiers}"
                 )
 
             unknownSourceIdentifiers = [
