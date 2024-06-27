@@ -939,8 +939,31 @@ class DesignspaceBackend:
             reader.writeInfo(info)
 
     async def getKerning(self) -> dict[str, Kerning]:
-        # TODO: implement
-        return {}
+        groups: dict[str, list[str]] = {}
+        dsSources = [dsSource for dsSource in self.dsSources if not dsSource.isSparse]
+        sourceIdentifiers = [dsSource.identifier for dsSource in dsSources]
+        values = defaultdict(lambda: defaultdict(dict))
+
+        for dsSource in dsSources:
+            groups = mergeKernGroups(groups, dsSource.layer.reader.readGroups())
+            sourceKerning = dsSource.layer.reader.readKerning()
+
+            for (leftKey, rightKey), value in sourceKerning.items():
+                values[leftKey][rightKey][dsSource.identifier] = value
+
+        values = {
+            left: {
+                right: [valueDict.get(key) for key in sourceIdentifiers]
+                for right, valueDict in rightDict.items()
+            }
+            for left, rightDict in values.items()
+        }
+
+        return {
+            "kern": Kerning(
+                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+            )
+        }
 
     async def putKerning(self, kerning: dict[str, Kerning]) -> None:
         # TODO: implement
@@ -1875,3 +1898,26 @@ def sortedSourceDescriptors(newSourceDescriptors, oldSourceDescriptors, axisOrde
         s.name for s in newSourceDescriptors
     }
     return sortedSourceDescriptors
+
+
+def mergeKernGroups(
+    groupsA: dict[str, list[str]], groupsB: dict[str, list[str]]
+) -> dict[str, list[str]]:
+    mergedGroups = {}
+
+    for groupName in sorted(set(groupsA) | set(groupsB)):
+        gA = groupsA.get(groupName)
+        gB = groupsB.get(groupName)
+        if gA is None:
+            assert gB is not None
+            mergedGroups[groupName] = gB
+        elif gB is None:
+            mergedGroups[groupName] = gA
+        else:
+            if gA == gB:
+                mergedGroups[groupName] = gA
+            else:
+                gASet = set(gA)
+                mergedGroups[groupName] = gA + [n for n in gB if n not in gASet]
+
+    return mergedGroups
