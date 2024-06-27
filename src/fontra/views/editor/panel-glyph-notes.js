@@ -1,8 +1,6 @@
-import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { findNestedActiveElement, throttleCalls } from "/core/utils.js";
+import { throttleCalls } from "/core/utils.js";
 
 export default class GlyphNotesPanel extends Panel {
   identifier = "glyph-notes";
@@ -49,47 +47,13 @@ export default class GlyphNotesPanel extends Panel {
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
-    this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
-    this.glyphNotesHeaderElement =
-      this.contentElement.querySelector("#glyph-notes-header");
 
+    this.setupGlyphNotesElement();
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "selection", "fontLocationSourceMapped", "glyphLocation"],
+      // weird, but undo only works if "fontLocationSourceMapped" or "glyphLocation" is included in the list below
+      ["selectedGlyphName", "selection", "glyphLocation"],
       (event) => this.throttledUpdate()
     );
-
-    this.undoLable = "add glyph note";
-    this.isFocused = true;
-
-    this.glyphNotesElement.addEventListener("focusout", () => {
-      this.isFocused = false;
-      saveGlyphNotes(
-        this.sceneController,
-        this.glyphNotesElement.value,
-        this.undoLable
-      );
-    });
-
-    this.glyphNotesElement.addEventListener("focus", () => {
-      this.isFocused = true;
-    });
-
-    this.timeout = null;
-    // Save the glyph notes after 3 seconds of inactivity and
-    // only if the text area is focused
-    this.glyphNotesElement.addEventListener("keyup", () => {
-      clearTimeout(this.timeout);
-      this.fixGlyphNotesHeight();
-      this.timeout = setTimeout(async () => {
-        if (this.isFocused) {
-          await saveGlyphNotes(
-            this.sceneController,
-            this.glyphNotesElement.value,
-            this.undoLable
-          );
-        }
-      }, 3000);
-    });
   }
 
   getContentElement() {
@@ -111,12 +75,27 @@ export default class GlyphNotesPanel extends Panel {
     );
   }
 
+  setupGlyphNotesElement() {
+    this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
+    this.glyphNotesHeaderElement =
+      this.contentElement.querySelector("#glyph-notes-header");
+
+    this.glyphNotesElement.addEventListener("change", async () => {
+      saveGlyphNotes(
+        this.sceneController,
+        this.glyphNotesElement.value,
+        this.undoLabel
+      );
+    });
+
+    this.glyphNotesElement.addEventListener("input", async () => {
+      this.fixGlyphNotesHeight();
+    });
+  }
+
   async update() {
     // This method is called when the panel is opened or when the selected glyph changes.
     // Therefore we need to update the glyph notes text area with the current glyph notes
-    // And set isFocused back to true
-    this.isFocused = true;
-
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
@@ -125,7 +104,7 @@ export default class GlyphNotesPanel extends Panel {
       ? `Glyph note (${varGlyph.name})`
       : `Glyph note`;
     const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
-    this.undoLable = glyphNote ? "update glyph note" : "add glyph note";
+    this.undoLabel = glyphNote ? "update glyph note" : "add glyph note";
     this.glyphNotesElement.value = glyphNote;
     this.glyphNotesElement.disabled = varGlyph ? false : true;
     this.fixGlyphNotesHeight();
@@ -145,15 +124,16 @@ export default class GlyphNotesPanel extends Panel {
   }
 }
 
-async function saveGlyphNotes(sceneController, notes, undoLable) {
+async function saveGlyphNotes(sceneController, notes, undoLabel) {
   const varGlyphController =
     await sceneController.sceneModel.getSelectedVariableGlyphController();
+  // this check is neccecary because it may fail when clicking outside of a glyph
   if (!varGlyphController) {
     return;
   }
   await sceneController.editGlyphAndRecordChanges((glyph) => {
     glyph.customData["fontra.glyph.note"] = notes;
-    return undoLable;
+    return undoLabel;
   });
 }
 
