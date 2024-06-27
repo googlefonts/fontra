@@ -474,7 +474,7 @@
       "type": "dict",
       "subtype": "list"
     },
-    "values": {
+    "sources": {
       "type": "dict",
       "subtype": "dict"
     }
