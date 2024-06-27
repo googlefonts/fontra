@@ -13,6 +13,7 @@ from fontra.core.classes import (
     Font,
     FontInfo,
     FontSource,
+    Kerning,
     OpenTypeFeatures,
     VariableGlyph,
     structure,
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 class FontraBackend:
     glyphInfoFileName = "glyph-info.csv"
     fontDataFileName = "font-data.json"
+    kerningFileName = "kerning.csv"
     featureTextFileName = "features.txt"
     glyphsDirName = "glyphs"
 
@@ -65,6 +67,10 @@ class FontraBackend:
     @property
     def fontDataPath(self):
         return self.path / self.fontDataFileName
+
+    @property
+    def kerningPath(self):
+        return self.path / self.kerningFileName
 
     @property
     def featureTextPath(self):
@@ -189,11 +195,19 @@ class FontraBackend:
             self.fontData.features.text = self.featureTextPath.read_text(
                 encoding="utf-8"
             )
+        if self.kerningPath.exists():
+            self.fontData.kerning = readKerningFile(self.kerningPath)
 
     def _writeFontData(self) -> None:
         fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
+        kerning = fontData.pop("kerning", None)
+
+        if kerning:
+            writeKerningFile(self.kerningPath, kerning)
+        elif self.kerningPath.exists():
+            self.kerningPath.unlink()
 
         featureText = None
         if "features" in fontData:
@@ -249,6 +263,14 @@ def deserializeGlyph(jsonSource: str, glyphName: str | None = None) -> VariableG
 
 def serialize(data: list | dict) -> str:
     return json.dumps(data, indent=0, ensure_ascii=False)
+
+
+def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
+    raise NotImplementedError
+
+
+def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
+    raise NotImplementedError
 
 
 @dataclass(kw_only=True)
