@@ -161,6 +161,12 @@ export default class GlyphNotesPanel extends Panel {
 }
 
 async function saveGlyphNotes(sceneController, notes, undoLable) {
+  const varGlyphController =
+    await sceneController.sceneModel.getSelectedVariableGlyphController();
+  const varGlyph = varGlyphController?.glyph;
+  if (!varGlyph) {
+    return;
+  }
   await sceneController.editGlyphAndRecordChanges((glyph) => {
     glyph.customData["fontra.glyph.note"] = notes;
     return undoLable;
