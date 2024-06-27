@@ -86,6 +86,17 @@ lineMetricsHorDefaults = {
 }
 
 
+lineMetricsVerMapping = {
+    # Fontra / UFO
+    "ascender": "openTypeVheaVertTypoAscender",
+    "descender": "openTypeVheaVertTypoDescender",
+    "lineGap": "openTypeVheaVertTypoLineGap",
+    # ("slopeRise", "openTypeVheaCaretSlopeRise"),
+    # ("slopeRun", "openTypeVheaCaretSlopeRun"),
+    # ("caretOffset", "openTypeVheaCaretOffset"),
+}
+
+
 fontInfoNameMapping = [
     # (Fontra, UFO)
     ("familyName", "familyName"),
@@ -1316,6 +1327,7 @@ class DSSource:
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
         if self.isSparse:
             lineMetricsHorizontalLayout: dict[str, LineMetric] = {}
+            lineMetricsVerticalLayout: dict[str, LineMetric] = {}
             guidelines = []
             italicAngle = 0
         else:
@@ -1323,6 +1335,7 @@ class DSSource:
             self.layer.reader.readInfo(fontInfo)
             lib = self.layer.reader.readLib()
             zones = lib.get(LINE_METRICS_HOR_ZONES_KEY, {})
+
             lineMetricsHorizontalLayout = {}
             for name, defaultFactor in lineMetricsHorDefaults.items():
                 value = 0 if name == "baseline" else getattr(fontInfo, name, None)
@@ -1332,6 +1345,13 @@ class DSSource:
                 if zone is None:
                     zone = round(defaultFactor["zone"] * unitsPerEm)
                 lineMetricsHorizontalLayout[name] = LineMetric(value=value, zone=zone)
+
+            lineMetricsVerticalLayout = {}
+            for fontraName, ufoName in lineMetricsVerMapping.items():
+                value = getattr(fontInfo, ufoName, None)
+                if value is not None:
+                    lineMetricsVerticalLayout[fontraName] = LineMetric(value=value)
+
             guidelines = unpackGuidelines(fontInfo.guidelines)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
 
@@ -1340,6 +1360,7 @@ class DSSource:
             location=self.location,
             italicAngle=italicAngle,
             lineMetricsHorizontalLayout=lineMetricsHorizontalLayout,
+            lineMetricsVerticalLayout=lineMetricsVerticalLayout,
             guidelines=guidelines,
             isSparse=self.isSparse,
         )
@@ -1789,6 +1810,11 @@ def updateFontInfoFromFontSource(reader, fontSource):
         else:
             # TODO: store in lib
             pass
+
+    for name, metric in fontSource.lineMetricsVerticalLayout.items():
+        ufoName = lineMetricsVerMapping.get(name)
+        if ufoName is not None:
+            setattr(fontInfo, ufoName, round(metric.value))
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
