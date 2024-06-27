@@ -1106,9 +1106,7 @@ def test_command(tmpdir, configYAMLSources):
             """
             steps:
             - input: fontra-read
-              source: "test-common/fonts/MutatorSans.fontra"
-            - filter: subset-glyphs
-              glyphNames: ["H"]
+              source: "test-py/data/workflow/input-set-vertical-glyph-metrics.fontra"
             - filter: set-vertical-glyph-metrics
               verticalOrigin: 880
               yAdvance: 1000
