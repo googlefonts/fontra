@@ -95,10 +95,11 @@ export default class GlyphNotesPanel extends Panel {
       this.glyphNotesHeaderElement.innerHTML = `Glyph note (${varGlyph.name})`;
     }
 
-    this.glyphNotesElement.value = varGlyph.note ? varGlyph.note : "";
+    const glyphNote = varGlyph.customData["fontra.glyph.note"];
+    this.glyphNotesElement.value = glyphNote ? glyphNote : "";
     this.fixGlyphNotesHeight();
 
-    const undoLabel = varGlyph.note ? "update glyph note" : "add glyph note";
+    const undoLabel = glyphNote ? "update glyph note" : "add glyph note";
 
     this.timeout = null;
     this.glyphNotesElement.addEventListener(
@@ -109,7 +110,7 @@ export default class GlyphNotesPanel extends Panel {
         const notes = this.glyphNotesElement.value;
         this.timeout = setTimeout(async function () {
           await sceneController.editGlyphAndRecordChanges((glyph) => {
-            glyph.note = notes;
+            glyph.customData["fontra.glyph.note"] = notes;
             return undoLabel;
           });
         }, 1500);

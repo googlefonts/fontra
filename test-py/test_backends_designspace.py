@@ -335,20 +335,21 @@ async def test_readGlyphNotes(testFont):
     glyphName = "space"
     glyph = await testFont.getGlyph(glyphName)
 
-    assert glyph.note == ""
+    assert glyph.customData.get("fontra.glyph.note") == "This is a glyph note"
 
 
 async def test_writeGlyphNotes(writableTestFont):
     glyphName = "space"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
-    glyph.note = "A glyph note"
+    glyph.customData["fontra.glyph.note"] = "A glyph note"
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
     savedGlyph = await writableTestFont.getGlyph(glyphName)
-
-    assert glyph.note == savedGlyph.note
+    assert glyph.customData.get("fontra.glyph.note") == savedGlyph.customData.get(
+        "fontra.glyph.note"
+    )
 
 
 async def test_addLocalAxisAndSource(writableTestFont):

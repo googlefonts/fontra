@@ -8,7 +8,6 @@ function makeTestGlyphObject() {
   return {
     name: "a",
     axes: [],
-    note: "",
     sources: [
       {
         name: "default",
