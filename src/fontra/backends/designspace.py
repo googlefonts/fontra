@@ -988,7 +988,9 @@ class DesignspaceBackend:
                     f"kerning uses unknown source identifiers: {unknownSourceIdentifiers}"
                 )
 
-            kerningPerSource = defaultdict(dict)
+            kerningPerSource: dict[str, dict[tuple[str, str], float]] = defaultdict(
+                dict
+            )
             for left, rightDict in kerningTable.values.items():
                 for right, values in rightDict.items():
                     for sourceIdentifier, value in zip(sourceIdentifiers, values):
