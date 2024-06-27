@@ -295,7 +295,7 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
 
             writer.writerow(["VALUES"])
             sourceIdentifiers = kerningTable.sourceIdentifiers
-            writer.writerow(["", ""] + sourceIdentifiers)
+            writer.writerow(["left", "right"] + sourceIdentifiers)
             for left, rightDict in kerningTable.values.items():
                 for right, values in rightDict.items():
                     row = ["" if v is None else v for v in values]
@@ -357,7 +357,7 @@ def kerningReadValues(rowIter):
         raise KerningParseError(f"expected VALUES keyword (line {lineNumber})")
 
     lineNumber, row = next(rowIter)
-    if not row or len(row) < 3 or row[:2] != ["", ""]:
+    if not row or len(row) < 3 or row[:2] != ["left", "right"]:
         raise KerningParseError(f"expected source identifier row (line {lineNumber})")
 
     sourceIdentifiers = row[2:]
