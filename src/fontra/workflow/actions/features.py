@@ -16,9 +16,9 @@ from .base import BaseFilter, getActiveSources, registerFilterAction, tuplifyLoc
 logger = logging.getLogger(__name__)
 
 
-@registerFilterAction("generate-palt-feature")
+@registerFilterAction("generate-palt-vpal-feature")
 @dataclass(kw_only=True)
-class GeneratePaltFeature(BaseFilter):
+class GeneratePaltVpalFeature(BaseFilter):
     languageSystems: list[tuple[str, str]] = field(default_factory=list)
 
     async def processFeatures(self, features):
