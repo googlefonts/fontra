@@ -70,34 +70,26 @@ export default class GlyphNotesPanel extends Panel {
       );
     });
 
-    this.glyphNotesElement.addEventListener(
-      "focus",
-      () => {
-        this.isFocused = true;
-      },
-      false
-    );
+    this.glyphNotesElement.addEventListener("focus", () => {
+      this.isFocused = true;
+    });
 
     this.timeout = null;
     // Save the glyph notes after 3 seconds of inactivity and
     // only if the text area is focused
-    this.glyphNotesElement.addEventListener(
-      "keyup",
-      () => {
-        clearTimeout(this.timeout);
-        this.fixGlyphNotesHeight();
-        this.timeout = setTimeout(async () => {
-          if (this.isFocused) {
-            await saveGlyphNotes(
-              this.sceneController,
-              this.glyphNotesElement.value,
-              this.undoLable
-            );
-          }
-        }, 3000);
-      },
-      false
-    );
+    this.glyphNotesElement.addEventListener("keyup", () => {
+      clearTimeout(this.timeout);
+      this.fixGlyphNotesHeight();
+      this.timeout = setTimeout(async () => {
+        if (this.isFocused) {
+          await saveGlyphNotes(
+            this.sceneController,
+            this.glyphNotesElement.value,
+            this.undoLable
+          );
+        }
+      }, 3000);
+    });
   }
 
   getContentElement() {
@@ -129,20 +121,13 @@ export default class GlyphNotesPanel extends Panel {
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
 
-    if (!varGlyph) {
-      this.glyphNotesElement.value = "";
-      this.glyphNotesElement.disabled = true;
-      this.glyphNotesHeaderElement.innerHTML = `Glyph note`;
-      this.fixGlyphNotesHeight();
-      return;
-    } else {
-      this.glyphNotesElement.disabled = false;
-      this.glyphNotesHeaderElement.innerHTML = `Glyph note (${varGlyph.name})`;
-    }
-
-    const glyphNote = varGlyph.customData["fontra.glyph.note"];
+    this.glyphNotesHeaderElement.innerHTML = varGlyph
+      ? `Glyph note (${varGlyph.name})`
+      : `Glyph note`;
+    const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
     this.undoLable = glyphNote ? "update glyph note" : "add glyph note";
-    this.glyphNotesElement.value = glyphNote ? glyphNote : "";
+    this.glyphNotesElement.value = glyphNote;
+    this.glyphNotesElement.disabled = varGlyph ? false : true;
     this.fixGlyphNotesHeight();
   }
 
@@ -163,8 +148,7 @@ export default class GlyphNotesPanel extends Panel {
 async function saveGlyphNotes(sceneController, notes, undoLable) {
   const varGlyphController =
     await sceneController.sceneModel.getSelectedVariableGlyphController();
-  const varGlyph = varGlyphController?.glyph;
-  if (!varGlyph) {
+  if (!varGlyphController) {
     return;
   }
   await sceneController.editGlyphAndRecordChanges((glyph) => {
