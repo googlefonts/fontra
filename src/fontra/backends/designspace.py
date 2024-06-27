@@ -968,10 +968,12 @@ class DesignspaceBackend:
     async def putKerning(self, kerning: dict[str, Kerning]) -> None:
         for kernType, kerningTable in kerning.items():
             sourceIdentifiers = kerningTable.sourceIdentifiers
+
             dsSources = [
                 self.dsSources.findItem(identifier=sourceIdentifier)
                 for sourceIdentifier in sourceIdentifiers
             ]
+
             if any(dsSource.isSparse for dsSource in dsSources):
                 sparseIdentifiers = [
                     dsSource.identifier for dsSource in dsSources if dsSource.isSparse
