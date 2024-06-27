@@ -64,7 +64,7 @@ class Kerning:
     groups: dict[str, list[str]]
     sourceIdentifiers: list[str]
     # left glyph/group -> right glyph/group -> source index -> value
-    values: dict[str, dict[str, list[float]]]
+    values: dict[str, dict[str, list[float | None]]]
 
 
 @dataclass(kw_only=True)

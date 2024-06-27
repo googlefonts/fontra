@@ -942,21 +942,21 @@ class DesignspaceBackend:
         groups: dict[str, list[str]] = {}
         dsSources = [dsSource for dsSource in self.dsSources if not dsSource.isSparse]
         sourceIdentifiers = [dsSource.identifier for dsSource in dsSources]
-        values = defaultdict(lambda: defaultdict(dict))
+        valueDicts: dict[str, dict[str, dict]] = defaultdict(lambda: defaultdict(dict))
 
         for dsSource in dsSources:
             groups = mergeKernGroups(groups, dsSource.layer.reader.readGroups())
             sourceKerning = dsSource.layer.reader.readKerning()
 
             for (leftKey, rightKey), value in sourceKerning.items():
-                values[leftKey][rightKey][dsSource.identifier] = value
+                valueDicts[leftKey][rightKey][dsSource.identifier] = value
 
         values = {
             left: {
                 right: [valueDict.get(key) for key in sourceIdentifiers]
                 for right, valueDict in rightDict.items()
             }
-            for left, rightDict in values.items()
+            for left, rightDict in valueDicts.items()
         }
 
         return {
