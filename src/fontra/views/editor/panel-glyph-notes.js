@@ -117,49 +117,6 @@ export default class GlyphNotesPanel extends Panel {
       },
       false
     );
-
-    // The following code does not work correctly
-    // await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-    //   let preDragChanges = new ChangeCollector();
-    //   preDragChanges = recordChanges(glyph, (varGlyph) => {
-    //     console.log("varGlyph: ", varGlyph);
-    //     console.log("varGlyph.note: ", varGlyph.note);
-    //     glyph.note = varGlyph.note;
-    //   });
-    //   let dragChanges = new ChangeCollector();
-    //   const initialChanges = recordChanges(glyph, (glyph) => {
-    //     glyph.note = this.glyphNotesElement.value;
-    //   });
-    //   await sendIncrementalChange(initialChanges.change);
-
-    //   let timeout = null;
-    //   console.log("preDragChanges: ", preDragChanges);
-    //   this.glyphNotesElement.addEventListener(
-    //     "keyup",
-    //     () => {
-    //       clearTimeout(timeout);
-    //       this.fixGlyphNotesHeight();
-    //       const notes = this.glyphNotesElement.value;
-    //       timeout = setTimeout(async function () {
-    //         dragChanges = recordChanges(glyph, (glyph) => {
-    //           glyph.note = notes;
-    //         });
-    //         console.log("dragChanges: ", dragChanges);
-    //         await sendIncrementalChange(dragChanges.change, true); // true: "may drop"
-    //       }, 1500);
-    //     },
-    //     false
-    //   );
-
-    //   const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
-    //   console.log("finalChanges: ", finalChanges);
-
-    //   return {
-    //     undoLabel: undoLabel,
-    //     changes: finalChanges,
-    //     broadcast: true,
-    //   };
-    // });
   }
 
   fixGlyphNotesHeight() {
