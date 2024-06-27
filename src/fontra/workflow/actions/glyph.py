@@ -310,3 +310,38 @@ def roundCoordinates(
         ]
 
     return replace(glyph, **newFields)
+
+
+@registerFilterAction("set-vertical-glyph-metrics")
+@dataclass(kw_only=True)
+class SetVerticalGlyphMetrics(BaseFilter):
+    verticalOrigin: int
+    yAdvance: int
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        if not any(
+            layer.glyph.yAdvance is None or layer.glyph.verticalOrigin
+            for layer in glyph.layers.values()
+        ):
+            return glyph
+
+        newLayers = {
+            layerName: replace(
+                layer,
+                glyph=replace(
+                    layer.glyph,
+                    verticalOrigin=(
+                        self.verticalOrigin
+                        if layer.glyph.verticalOrigin is None
+                        else layer.glyph.verticalOrigin
+                    ),
+                    yAdvance=(
+                        self.yAdvance
+                        if layer.glyph.yAdvance is None
+                        else layer.glyph.yAdvance
+                    ),
+                ),
+            )
+            for layerName, layer in glyph.layers.items()
+        }
+        return replace(glyph, layers=newLayers)

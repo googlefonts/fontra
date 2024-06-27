@@ -1101,6 +1101,23 @@ def test_command(tmpdir, configYAMLSources):
                 ),
             ],
         ),
+        (
+            "set-vertical-glyph-metrics",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["H"]
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
+            - output: fontra-write
+              destination: "output-set-vertical-glyph-metrics.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
