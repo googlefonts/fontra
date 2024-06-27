@@ -60,6 +60,12 @@ class OpenTypeFeatures:
 
 
 @dataclass(kw_only=True)
+class Kerning:
+    groups: dict[str, list[str]]
+    values: dict[str, dict[str, float]]
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
     fontInfo: FontInfo = field(default_factory=FontInfo)
@@ -67,6 +73,7 @@ class Font:
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     axes: Axes = field(default_factory=Axes)
     sources: dict[str, FontSource] = field(default_factory=dict)
+    kerning: dict[str, Kerning] = field(default_factory=dict)
     features: OpenTypeFeatures = field(default_factory=OpenTypeFeatures)
     customData: CustomData = field(default_factory=dict)
 
