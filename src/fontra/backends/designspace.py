@@ -944,6 +944,9 @@ class DesignspaceBackend:
         sourceIdentifiers = [dsSource.identifier for dsSource in dsSources]
         valueDicts: dict[str, dict[str, dict]] = defaultdict(lambda: defaultdict(dict))
 
+        # TODO: fixup RTL kerning
+        # Context: UFO3's kern direction is "writing direction", but I want kerning
+        # in Fontra to be "visial left to right", as that is much easier to manage.
         for dsSource in dsSources:
             groups = mergeKernGroups(groups, dsSource.layer.reader.readGroups())
             sourceKerning = dsSource.layer.reader.readKerning()
