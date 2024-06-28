@@ -18,6 +18,7 @@ from ..core.classes import (
     FontInfo,
     FontSource,
     GlyphSource,
+    Kerning,
     Layer,
     OpenTypeFeatures,
     StaticGlyph,
@@ -158,6 +159,10 @@ class OTFBackend:
 
     async def getUnitsPerEm(self) -> int:
         return self.font["head"].unitsPerEm
+
+    async def getKerning(self) -> dict[str, Kerning]:
+        # TODO: extract kerning from GPOS
+        return {}
 
     async def getFeatures(self) -> OpenTypeFeatures:
         # TODO: do best effort of reading GSUB/GPOS with fontFeatures

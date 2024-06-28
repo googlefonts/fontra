@@ -15,10 +15,12 @@ from fontra.core.classes import (
     CrossAxisMapping,
     FontAxis,
     FontInfo,
+    FontSource,
     GlyphAxis,
     GlyphSource,
     Guideline,
     Layer,
+    LineMetric,
     OpenTypeFeatures,
     StaticGlyph,
     unstructure,
@@ -832,6 +834,60 @@ async def test_putFontInfo_no_sources_issue_1465(tmpdir, testFontSingleUFO):
     reopenedBackend = getFileSystemBackend(destPath)
     reopenedInfo = await reopenedBackend.getFontInfo()
     assert reopenedInfo.familyName == "Testing"
+
+
+async def test_lineMetricsVerticalLayout(tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    fontPath = tmpdir / "test.designspace"
+    font = newFileSystemBackend(fontPath)
+
+    sources = {
+        "testsource": FontSource(
+            name="Regular",
+            lineMetricsVerticalLayout={
+                "ascender": LineMetric(value=500),
+                "descender": LineMetric(value=500),
+            },
+        )
+    }
+    await font.putSources(sources)
+
+    reopenedFont = getFileSystemBackend(fontPath)
+    reopenedSources = await reopenedFont.getSources()
+    assert (
+        reopenedSources["testsource"].lineMetricsVerticalLayout
+        == sources["testsource"].lineMetricsVerticalLayout
+    )
+
+
+async def test_glyphMetricsVerticalLayout(writableTestFont):
+    glyph = await writableTestFont.getGlyph("A")
+
+    for layer in glyph.layers.values():
+        layer.glyph.verticalOrigin = 880
+        layer.glyph.yAdvance = 1000
+
+    await writableTestFont.putGlyph("A", glyph, [ord("A")])
+
+    reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
+
+    reopenedGlyph = await reopenedFont.getGlyph("A")
+    assert glyph == reopenedGlyph
+
+
+async def test_kerning_read_write(writableTestFont):
+    kerning = await writableTestFont.getKerning()
+
+    assert len(kerning["kern"].sourceIdentifiers) == 5
+    kerning["kern"].values["A"]["J"] = [None, -25, -30, -15, None]
+    kerning["kern"].groups["public.kern1.@MMK_L_A"].append("X")
+
+    await writableTestFont.putKerning(kerning)
+
+    reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedKerning = await reopenedFont.getKerning()
+    assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
+    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == ["A", "X"]
 
 
 def fileNamesFromDir(path):

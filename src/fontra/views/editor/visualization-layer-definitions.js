@@ -1547,7 +1547,7 @@ function strokeSquareNode(context, pt, nodeSize) {
   context.strokeRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
 }
 
-function strokeRoundNode(context, pt, nodeSize) {
+export function strokeRoundNode(context, pt, nodeSize) {
   context.beginPath();
   context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
   context.stroke();

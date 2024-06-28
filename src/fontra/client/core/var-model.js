@@ -551,6 +551,8 @@ export function mapAxesFromUserSpaceToSourceSpace(axes) {
   return axes.map((axis) => {
     const newAxis = { ...axis };
     if (axis.mapping) {
+      newAxis.valueLabels = [];
+      newAxis.mapping = [];
       const mappingDict = Object.fromEntries(axis.mapping);
       const properties = axis.values
         ? ["defaultValue"]

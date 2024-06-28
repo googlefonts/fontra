@@ -3,15 +3,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, replace
 from enum import Enum
-from functools import cached_property, partial, singledispatch
+from functools import cached_property, singledispatch
 from typing import Any, Iterable
 
 from fontTools.misc.transform import DecomposedTransform, Transform
-from fontTools.varLib.models import (
-    VariationModel,
-    normalizeLocation,
-    piecewiseLinearMap,
-)
+from fontTools.varLib.models import piecewiseLinearMap
 
 from .classes import (
     Anchor,
@@ -24,8 +20,10 @@ from .classes import (
     StaticGlyph,
     VariableGlyph,
 )
+from .discretevariationmodel import DiscreteDeltas, DiscreteVariationModel
 from .path import InterpolationError, PackedPath, joinPaths
 from .protocols import ReadableFontBackend
+from .varutils import mapAxesFromUserSpaceToSourceSpace
 
 logger = logging.getLogger(__name__)
 
@@ -225,9 +223,7 @@ class GlyphInstancer:
             location = mapLocationFromUserToSource(location, self.fontAxes)
 
         try:
-            result = self.model.interpolateFromDeltas(
-                normalizeLocation(location, self.combinedAxisTuples), self.deltas
-            )
+            result = self.model.interpolateFromDeltas(location, self.deltas)
         except Exception as e:
             if self.fontInstancer.failOnInterpolationError:
                 raise
@@ -245,9 +241,9 @@ class GlyphInstancer:
                 for compo in instantiatedGlyph.components
             ]
         else:
-            assert isinstance(result, MathGlyph)
-            assert isinstance(result.glyph, StaticGlyph)
-            instantiatedGlyph = result.glyph
+            assert isinstance(result.instance, MathGlyph)
+            assert isinstance(result.instance.glyph, StaticGlyph)
+            instantiatedGlyph = result.instance.glyph
             componentTypes = self.componentTypes
 
         # Only font axis values can be inherited, so filter out glyph axes
@@ -315,32 +311,11 @@ class GlyphInstancer:
         ]
 
     @cached_property
-    def combinedAxes(self) -> list[GlyphAxis]:
-        combinedAxes = list(self.glyph.axes)
+    def combinedAxes(self) -> list[FontAxis | DiscreteFontAxis | GlyphAxis]:
         glyphAxisNames = {axis.name for axis in self.glyph.axes}
-        for axis in self.fontAxes:
-            if axis.name in glyphAxisNames:
-                continue
-            mapFunc = makeAxisMapFunc(axis)
-            if not isinstance(axis, FontAxis):
-                # Skip discrete axes
-                continue
-            combinedAxes.append(
-                GlyphAxis(
-                    name=axis.name,
-                    minValue=mapFunc(axis.minValue),
-                    defaultValue=mapFunc(axis.defaultValue),
-                    maxValue=mapFunc(axis.maxValue),
-                )
-            )
-        return combinedAxes
-
-    @cached_property
-    def combinedAxisTuples(self) -> dict[str, tuple[float, float, float]]:
-        return {
-            axis.name: (axis.minValue, axis.defaultValue, axis.maxValue)
-            for axis in self.combinedAxes
-        }
+        fontAxes = [axis for axis in self.fontAxes if axis.name not in glyphAxisNames]
+        fontAxes = mapAxesFromUserSpaceToSourceSpace(fontAxes)
+        return self.glyph.axes + fontAxes
 
     @cached_property
     def combinedAxisNames(self) -> set[str]:
@@ -356,18 +331,17 @@ class GlyphInstancer:
         return [layers[source.layerName].glyph for source in self.activeSources]
 
     @cached_property
-    def model(self) -> VariationModel:
-        locations = [
-            normalizeLocation(source.location, self.combinedAxisTuples)
-            for source in self.activeSources
-        ]
-        # TODO: axis order, see also glyph-controller.js
-        return VariationModel(locations)
+    def model(self) -> DiscreteVariationModel:
+        locations = [source.location for source in self.activeSources]
+        return DiscreteVariationModel(locations, self.combinedAxes, softFail=False)
 
     @cached_property
-    def deltas(self) -> list[MathGlyph]:
+    def deltas(self) -> DiscreteDeltas:
         sourceValues = [MathGlyph(layerGlyph) for layerGlyph in self.activeLayerGlyphs]
         return self.model.getDeltas(sourceValues)
+
+    def checkCompatibility(self):
+        return self.model.checkCompatibilityFromDeltas(self.deltas)
 
 
 @dataclass
@@ -643,9 +617,3 @@ def mapValueFromUserToSource(value, axis):
     if not axis.mapping:
         return value
     return piecewiseLinearMap(value, dict(axis.mapping))
-
-
-def makeAxisMapFunc(axis):
-    if not axis.mapping:
-        return lambda value: value
-    return partial(piecewiseLinearMap, mapping=dict(axis.mapping))

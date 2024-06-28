@@ -7,9 +7,9 @@ import {
 } from "./var-model.js";
 
 export class DiscreteVariationModel {
-  constructor(locations, fontAxesSourceSpace) {
-    this._discreteAxes = fontAxesSourceSpace.filter((axis) => axis.values);
-    this._continuousAxes = fontAxesSourceSpace.filter((axis) => !axis.values);
+  constructor(locations, axes) {
+    this._discreteAxes = axes.filter((axis) => axis.values);
+    this._continuousAxes = axes.filter((axis) => !axis.values);
 
     this._locations = {};
     this._locationsKeyToDiscreteLocation = {};
@@ -55,7 +55,6 @@ export class DiscreteVariationModel {
       let model;
       let usedKey = key;
       let errors = [];
-      usedKey = key;
       const locations = this._locations[key];
       if (!locations) {
         const nearestKey = this._findNearestDiscreteLocationKey(key);
@@ -90,7 +89,6 @@ export class DiscreteVariationModel {
   }
 
   _findNearestDiscreteLocationKey(key) {
-    const targetLocation = JSON.parse(key);
     const locationKeys = Object.keys(this._locationsKeyToDiscreteLocation);
     const locations = Object.values(this._locationsKeyToDiscreteLocation);
     const nearestIndex = findNearestLocationIndex(JSON.parse(key), locations);

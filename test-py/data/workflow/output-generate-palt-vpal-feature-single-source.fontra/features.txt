@@ -8,3 +8,7 @@ feature calt {
 feature palt {
     pos A <-110 0 -220 0>;
 } palt;
+
+feature vpal {
+    pos A <0 130 0 -100>;
+} vpal;

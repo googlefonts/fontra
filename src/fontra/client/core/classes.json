@@ -21,6 +21,10 @@
       "type": "dict",
       "subtype": "FontSource"
     },
+    "kerning": {
+      "type": "dict",
+      "subtype": "Kerning"
+    },
     "features": {
       "type": "OpenTypeFeatures"
     },
@@ -463,6 +467,20 @@
     "customData": {
       "type": "dict",
       "subtype": "Any"
+    }
+  },
+  "Kerning": {
+    "groups": {
+      "type": "dict",
+      "subtype": "list"
+    },
+    "sourceIdentifiers": {
+      "type": "list",
+      "subtype": "str"
+    },
+    "values": {
+      "type": "dict",
+      "subtype": "dict"
     }
   },
   "OpenTypeFeatures": {

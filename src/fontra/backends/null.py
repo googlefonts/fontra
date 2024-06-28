@@ -1,7 +1,14 @@
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.classes import Axes, FontInfo, FontSource, OpenTypeFeatures, VariableGlyph
+from ..core.classes import (
+    Axes,
+    FontInfo,
+    FontSource,
+    Kerning,
+    OpenTypeFeatures,
+    VariableGlyph,
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +34,9 @@ class NullBackend:
         return {}
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
+        return {}
+
+    async def getKerning(self) -> dict[str, Kerning]:
         return {}
 
     async def getFeatures(self) -> OpenTypeFeatures:

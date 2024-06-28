@@ -96,26 +96,26 @@ class CheckInterpolation(BaseFilter):
     fixWithFallback: bool = False
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        # Each of the next two lines may raise an error if the glyph
-        # doesn't interpolate
-        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         try:
-            _ = instancer.deltas
+            instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+            instancer.checkCompatibility()
         except Exception as e:
             if not self.fixWithFallback:
                 raise
+
             logger.error(
                 f"{self.actionName}: glyph {glyphName} can't be interpolated {e!r}"
             )
-            fallbackSource = instancer.fallbackSource
-            return VariableGlyph(
+            glyph = VariableGlyph(
                 name=glyphName,
                 sources=[GlyphSource(name="default", layerName="default")],
                 layers={
                     "default": deepcopy(
-                        instancer.glyph.layers[fallbackSource.layerName]
+                        instancer.glyph.layers[instancer.fallbackSource.layerName]
                     )
                 },
             )
+        else:
+            glyph = instancer.glyph
 
-        return instancer.glyph
+        return glyph
