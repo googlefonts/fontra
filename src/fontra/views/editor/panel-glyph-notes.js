@@ -50,10 +50,13 @@ export default class GlyphNotesPanel extends Panel {
 
     this.setupGlyphNotesElement();
     this.sceneController.sceneSettingsController.addKeyListener(
-      // weird, but undo only works if "fontLocationSourceMapped" or "glyphLocation" is included in the list below
-      ["selectedGlyphName", "selection", "glyphLocation"],
+      ["selectedGlyphName", "selection"],
       (event) => this.throttledUpdate()
     );
+
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
+      this.throttledUpdate(event.senderID);
+    });
   }
 
   getContentElement() {
@@ -120,7 +123,9 @@ export default class GlyphNotesPanel extends Panel {
   async toggle(on, focus) {
     if (on) {
       this.update();
-      this.glyphNotesElement.focus();
+      // Delay focusing until after the panel slide in animation,
+      // or else the sliding animation will look glitchy
+      setTimeout(() => this.glyphNotesElement.focus(), 200);
     }
   }
 }
