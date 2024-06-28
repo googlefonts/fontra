@@ -19,6 +19,7 @@ from ...core.classes import (
     Axes,
     FontInfo,
     FontSource,
+    Kerning,
     OpenTypeFeatures,
     VariableGlyph,
     structure,
@@ -147,6 +148,10 @@ class BaseFilter:
     async def getGlyphMap(self) -> dict[str, list[int]]:
         return await self.processGlyphMap(await self.inputGlyphMap)
 
+    async def getKerning(self) -> dict[str, Kerning]:
+        kerning = await self.validatedInput.getKerning()
+        return await self.processKerning(kerning)
+
     async def getFeatures(self) -> OpenTypeFeatures:
         features = await self.validatedInput.getFeatures()
         return await self.processFeatures(features)
@@ -181,6 +186,9 @@ class BaseFilter:
         self, glyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
         return glyphMap
+
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        return kerning
 
     async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
         return features

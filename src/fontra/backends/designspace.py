@@ -42,6 +42,7 @@ from ..core.classes import (
     GlyphAxis,
     GlyphSource,
     Guideline,
+    Kerning,
     Layer,
     LineMetric,
     OpenTypeFeatures,
@@ -936,6 +937,85 @@ class DesignspaceBackend:
             reader.readInfo(info)
             _updateFontInfoFromDict(info, infoDict)
             reader.writeInfo(info)
+
+    async def getKerning(self) -> dict[str, Kerning]:
+        groups: dict[str, list[str]] = {}
+        dsSources = [dsSource for dsSource in self.dsSources if not dsSource.isSparse]
+        sourceIdentifiers = [dsSource.identifier for dsSource in dsSources]
+        valueDicts: dict[str, dict[str, dict]] = defaultdict(lambda: defaultdict(dict))
+
+        # TODO: fixup RTL kerning
+        # Context: UFO3's kern direction is "writing direction", but I want kerning
+        # in Fontra to be "visial left to right", as that is much easier to manage.
+        for dsSource in dsSources:
+            groups = mergeKernGroups(groups, dsSource.layer.reader.readGroups())
+            sourceKerning = dsSource.layer.reader.readKerning()
+
+            for (leftKey, rightKey), value in sourceKerning.items():
+                valueDicts[leftKey][rightKey][dsSource.identifier] = value
+
+        values = {
+            left: {
+                right: [valueDict.get(key) for key in sourceIdentifiers]
+                for right, valueDict in rightDict.items()
+            }
+            for left, rightDict in valueDicts.items()
+        }
+
+        return {
+            "kern": Kerning(
+                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+            )
+        }
+
+    async def putKerning(self, kerning: dict[str, Kerning]) -> None:
+        for kernType, kerningTable in kerning.items():
+            sourceIdentifiers = kerningTable.sourceIdentifiers
+
+            dsSources = [
+                self.dsSources.findItem(identifier=sourceIdentifier)
+                for sourceIdentifier in sourceIdentifiers
+            ]
+
+            if any(dsSource.isSparse for dsSource in dsSources):
+                sparseIdentifiers = [
+                    dsSource.identifier for dsSource in dsSources if dsSource.isSparse
+                ]
+                raise ValueError(
+                    f"can't write kerning to sparse sources: {sparseIdentifiers}"
+                )
+
+            unknownSourceIdentifiers = [
+                sourceIdentifier
+                for sourceIdentifier, dsSource in zip(sourceIdentifiers, dsSources)
+                if dsSource is None
+            ]
+
+            if unknownSourceIdentifiers:
+                raise ValueError(
+                    f"kerning uses unknown source identifiers: {unknownSourceIdentifiers}"
+                )
+
+            kerningPerSource: dict = defaultdict(dict)
+
+            for left, rightDict in kerningTable.values.items():
+                for right, values in rightDict.items():
+                    for sourceIdentifier, value in zip(sourceIdentifiers, values):
+                        if value is not None:
+                            kerningPerSource[sourceIdentifier][left, right] = value
+
+            for dsSource in self.dsSources:
+                if dsSource.isSparse:
+                    continue
+                if kernType == "kern":
+                    dsSource.layer.reader.writeGroups(kerningTable.groups)
+                    ufoKerning = kerningPerSource.get(dsSource.identifier, {})
+                    dsSource.layer.reader.writeKerning(ufoKerning)
+                else:
+                    # TODO: store in lib
+                    logger.error(
+                        "kerning types other than 'kern' are not yet implemented for UFO"
+                    )
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
@@ -1866,3 +1946,26 @@ def sortedSourceDescriptors(newSourceDescriptors, oldSourceDescriptors, axisOrde
         s.name for s in newSourceDescriptors
     }
     return sortedSourceDescriptors
+
+
+def mergeKernGroups(
+    groupsA: dict[str, list[str]], groupsB: dict[str, list[str]]
+) -> dict[str, list[str]]:
+    mergedGroups = {}
+
+    for groupName in sorted(set(groupsA) | set(groupsB)):
+        gA = groupsA.get(groupName)
+        gB = groupsB.get(groupName)
+        if gA is None:
+            assert gB is not None
+            mergedGroups[groupName] = gB
+        elif gB is None:
+            mergedGroups[groupName] = gA
+        else:
+            if gA == gB:
+                mergedGroups[groupName] = gA
+            else:
+                gASet = set(gA)
+                mergedGroups[groupName] = gA + [n for n in gB if n not in gASet]
+
+    return mergedGroups

@@ -4,6 +4,7 @@ import json
 import logging
 import pathlib
 import shutil
+from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -13,6 +14,7 @@ from fontra.core.classes import (
     Font,
     FontInfo,
     FontSource,
+    Kerning,
     OpenTypeFeatures,
     VariableGlyph,
     structure,
@@ -28,6 +30,7 @@ logger = logging.getLogger(__name__)
 class FontraBackend:
     glyphInfoFileName = "glyph-info.csv"
     fontDataFileName = "font-data.json"
+    kerningFileName = "kerning.csv"
     featureTextFileName = "features.txt"
     glyphsDirName = "glyphs"
 
@@ -65,6 +68,10 @@ class FontraBackend:
     @property
     def fontDataPath(self):
         return self.path / self.fontDataFileName
+
+    @property
+    def kerningPath(self):
+        return self.path / self.kerningFileName
 
     @property
     def featureTextPath(self):
@@ -145,6 +152,14 @@ class FontraBackend:
         self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 
+    async def getKerning(self) -> dict[str, Kerning]:
+        return deepcopy(self.fontData.kerning)
+
+    async def putKerning(self, kerning: dict[str, Kerning]) -> None:
+        assert all(isinstance(table, Kerning) for table in kerning.values())
+        self.fontData.kerning = deepcopy(kerning)
+        self._scheduler.schedule(self._writeFontData)
+
     async def getFeatures(self) -> OpenTypeFeatures:
         return deepcopy(self.fontData.features)
 
@@ -189,11 +204,19 @@ class FontraBackend:
             self.fontData.features.text = self.featureTextPath.read_text(
                 encoding="utf-8"
             )
+        if self.kerningPath.exists():
+            self.fontData.kerning = readKerningFile(self.kerningPath)
 
     def _writeFontData(self) -> None:
         fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
+        fontData.pop("kerning", None)
+
+        if self.fontData.kerning:
+            writeKerningFile(self.kerningPath, self.fontData.kerning)
+        elif self.kerningPath.exists():
+            self.kerningPath.unlink()
 
         featureText = None
         if "features" in fontData:
@@ -249,6 +272,125 @@ def deserializeGlyph(jsonSource: str, glyphName: str | None = None) -> VariableG
 
 def serialize(data: list | dict) -> str:
     return json.dumps(data, indent=0, ensure_ascii=False)
+
+
+def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
+    with path.open("w", encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=";")
+
+        isFirst = True
+        for kernType, kerningTable in kerning.items():
+            if not isFirst:
+                writer.writerow([])
+            isFirst = False
+
+            writer.writerow(["TYPE"])
+            writer.writerow([kernType])
+            writer.writerow([])
+
+            writer.writerow(["GROUPS"])
+            for groupName, group in sorted(kerningTable.groups.items()):
+                writer.writerow([groupName] + group)
+            writer.writerow([])
+
+            writer.writerow(["VALUES"])
+            sourceIdentifiers = kerningTable.sourceIdentifiers
+            writer.writerow(["left", "right"] + sourceIdentifiers)
+            for left, rightDict in kerningTable.values.items():
+                for right, values in rightDict.items():
+                    row = ["" if v is None else v for v in values]
+                    writer.writerow([left, right] + row)
+
+
+class KerningParseError(Exception):
+    pass
+
+
+def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
+    kerning = {}
+
+    with path.open("r", encoding="utf-8") as file:
+        reader = csv.reader(file, delimiter=";")
+        rowIter = iter(enumerate(reader, 1))
+
+        kernType = kerningReadType(rowIter)
+        groups = kerningReadGroups(rowIter)
+        sourceIdentifiers, values = kerningReadValues(rowIter)
+
+        kerning[kernType] = Kerning(
+            groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+        )
+
+    return kerning
+
+
+def kerningReadType(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "TYPE":
+        raise KerningParseError(f"expected TYPE keyword (line {lineNumber})")
+
+    lineNumber, row = next(rowIter)
+    if not row or not row[0]:
+        raise KerningParseError(f"expected TYPE value string (line {lineNumber})")
+
+    return row[0]
+
+
+def kerningReadGroups(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "GROUPS":
+        raise KerningParseError(f"expected GROUPS keyword (line {lineNumber})")
+
+    groups = {}
+
+    for lineNumber, row in rowIter:
+        if not row or not row[0]:
+            break
+        groups[row[0]] = row[1:]
+
+    return groups
+
+
+def kerningReadValues(rowIter):
+    lineNumber, row = nextNonBlankRow(rowIter)
+    if not row or row[0] != "VALUES":
+        raise KerningParseError(f"expected VALUES keyword (line {lineNumber})")
+
+    lineNumber, row = next(rowIter)
+    if not row or len(row) < 3 or row[:2] != ["left", "right"]:
+        raise KerningParseError(f"expected source identifier row (line {lineNumber})")
+
+    sourceIdentifiers = row[2:]
+
+    values = defaultdict(dict)
+
+    for lineNumber, row in rowIter:
+        if not row or not row[0]:
+            break
+        if len(row) < 2:
+            raise KerningParseError(f"expected kern values (line {lineNumber})")
+
+        left = row[0]
+        right = row[1]
+        try:
+            values[left][right] = [kerningParseValue(v) if v else None for v in row[2:]]
+        except ValueError as e:
+            raise KerningParseError(f"parse error: {e!r} (line {lineNumber})")
+
+    return sourceIdentifiers, dict(values)
+
+
+def kerningParseValue(s):
+    f = float(s)
+    i = int(f)
+    return i if i == f else f
+
+
+def nextNonBlankRow(rowIter):
+    for lineNumber, row in rowIter:
+        if row and row[0]:
+            return lineNumber, row
+    return None, None
 
 
 @dataclass(kw_only=True)

@@ -856,6 +856,21 @@ async def test_glyphMetricsVerticalLayout(writableTestFont):
     assert glyph == reopenedGlyph
 
 
+async def test_kerning_read_write(writableTestFont):
+    kerning = await writableTestFont.getKerning()
+
+    assert len(kerning["kern"].sourceIdentifiers) == 5
+    kerning["kern"].values["A"]["J"] = [None, -25, -30, -15, None]
+    kerning["kern"].groups["public.kern1.@MMK_L_A"].append("X")
+
+    await writableTestFont.putKerning(kerning)
+
+    reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedKerning = await reopenedFont.getKerning()
+    assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
+    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == ["A", "X"]
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
