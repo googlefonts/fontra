@@ -536,11 +536,15 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
+    const resizeSelectionBounds = getResizeBounds(glyph, selection);
+    // resizeSelectionBounds can be undefiend if for example only one point is selected
+    if (!resizeSelectionBounds) {
+      return undefined;
+    }
 
     const handleMargin =
       handleMarginValue * this.editor.visualizationLayers.scaleFactor;
 
-    const resizeSelectionBounds = getResizeBounds(glyph, selection);
     const point = this.sceneController.selectedGlyphPoint(event);
     const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
