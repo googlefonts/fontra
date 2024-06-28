@@ -534,9 +534,7 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
-                if GLYPH_NOTE_LIB_KEY in glyph.customData:
-                    layerGlyph.note = glyph.customData[GLYPH_NOTE_LIB_KEY]
-                    del glyph.customData[GLYPH_NOTE_LIB_KEY]
+                layerGlyph.note = glyph.customData.pop(GLYPH_NOTE_LIB_KEY, "")
                 storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, glyph.customData)
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
