@@ -333,14 +333,17 @@ async def test_write_glyph_locked(writableTestFont):
     )
 
 
-async def test_readGlyphNotes(testFont):
-    glyphName = "space"
-    glyph = await testFont.getGlyph(glyphName)
-
+async def test_readGlyphNote(testFont):
+    glyph = await testFont.getGlyph("space")
     assert glyph.customData.get("fontra.glyph.note") == "This is a glyph note"
 
 
-async def test_writeGlyphNotes(writableTestFont):
+async def test_readGlyphNote_None(testFont):
+    glyph = await testFont.getGlyph("A")
+    assert glyph.customData.get("fontra.glyph.note") is None
+
+
+async def test_writeGlyphNote(writableTestFont):
     glyphName = "space"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
