@@ -1004,9 +1004,15 @@ class DesignspaceBackend:
             for dsSource in self.dsSources:
                 if dsSource.isSparse:
                     continue
-                dsSource.layer.reader.writeGroups(kerningTable.groups)
-                ufoKerning = kerningPerSource.get(dsSource.identifier, {})
-                dsSource.layer.reader.writeKerning(ufoKerning)
+                if kernType == "kern":
+                    dsSource.layer.reader.writeGroups(kerningTable.groups)
+                    ufoKerning = kerningPerSource.get(dsSource.identifier, {})
+                    dsSource.layer.reader.writeKerning(ufoKerning)
+                else:
+                    # TODO: store in lib
+                    logger.error(
+                        "kerning types other than 'kern' are not yet implemented for UFO"
+                    )
 
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
