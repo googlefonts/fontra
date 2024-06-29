@@ -333,6 +333,28 @@ async def test_write_glyph_locked(writableTestFont):
     )
 
 
+async def test_readGlyphNote(testFont):
+    glyph = await testFont.getGlyph("space")
+    assert glyph.customData.get("fontra.glyph.note") == "This is a glyph note"
+
+
+async def test_readGlyphNote_None(testFont):
+    glyph = await testFont.getGlyph("A")
+    assert glyph.customData.get("fontra.glyph.note") is None
+
+
+async def test_writeGlyphNote(writableTestFont):
+    glyphName = "space"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+    glyph.customData["fontra.glyph.note"] = "A glyph note"
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+    assert savedGlyph.customData.get("fontra.glyph.note") == "A glyph note"
+
+
 async def test_addLocalAxisAndSource(writableTestFont):
     glyphName = "period"
     glyphMap = await writableTestFont.getGlyphMap()

@@ -441,8 +441,8 @@ export class SceneController {
     switch (editMethodName) {
       case "editBegin":
         {
-          const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-          this.sceneModel.ghostPath = glyphController.flattenedPath2d;
+          const glyphController = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
+          this.sceneModel.ghostPath = glyphController?.flattenedPath2d;
         }
         break;
       case "editEnd":
@@ -822,6 +822,24 @@ export class SceneController {
     ignoreGlyphLock = false
   ) {
     return await this._editGlyphOrInstanceAndRecordChanges(
+      null,
+      editFunc,
+      senderID,
+      false,
+      requireSelectedLayer,
+      ignoreGlyphLock
+    );
+  }
+
+  async editNamedGlyphAndRecordChanges(
+    glyphName,
+    editFunc,
+    senderID,
+    requireSelectedLayer,
+    ignoreGlyphLock = false
+  ) {
+    return await this._editGlyphOrInstanceAndRecordChanges(
+      glyphName,
       editFunc,
       senderID,
       false,
@@ -832,6 +850,7 @@ export class SceneController {
 
   async editLayersAndRecordChanges(editFunc, senderID) {
     return await this._editGlyphOrInstanceAndRecordChanges(
+      null,
       (glyph) => {
         const layerGlyphs = this.getEditingLayerFromGlyphLayers(glyph.layers);
         return editFunc(layerGlyphs);
@@ -859,6 +878,7 @@ export class SceneController {
   }
 
   async _editGlyphOrInstanceAndRecordChanges(
+    glyphName,
     editFunc,
     senderID,
     doInstance,
@@ -866,6 +886,7 @@ export class SceneController {
     ignoreGlyphLock = false
   ) {
     await this._editGlyphOrInstance(
+      glyphName,
       (sendIncrementalChange, subject) => {
         let undoLabel;
         const changes = recordChanges(subject, (subject) => {
@@ -885,10 +906,11 @@ export class SceneController {
   }
 
   async editGlyph(editFunc, senderID) {
-    return await this._editGlyphOrInstance(editFunc, senderID, false, true);
+    return await this._editGlyphOrInstance(null, editFunc, senderID, false, true);
   }
 
   async _editGlyphOrInstance(
+    glyphName,
     editFunc,
     senderID,
     doInstance,
@@ -910,6 +932,7 @@ export class SceneController {
     });
     try {
       return await this._editGlyphOrInstanceUnchecked(
+        glyphName,
         editFunc,
         senderID,
         doInstance,
@@ -928,6 +951,7 @@ export class SceneController {
   }
 
   async _editGlyphOrInstanceUnchecked(
+    glyphName,
     editFunc,
     senderID,
     doInstance,
@@ -938,7 +962,9 @@ export class SceneController {
       this._dispatchEvent("glyphEditCannotEditReadOnly");
       return;
     }
-    const glyphName = this.sceneModel.getSelectedGlyphName();
+    if (!glyphName) {
+      glyphName = this.sceneModel.getSelectedGlyphName();
+    }
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 

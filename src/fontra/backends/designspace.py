@@ -66,6 +66,7 @@ LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 LINE_METRICS_HOR_ZONES_KEY = "xyz.fontra.lineMetricsHorizontalLayout.zones"
+GLYPH_NOTE_LIB_KEY = "fontra.glyph.note"
 
 
 defaultUFOInfoAttrs = {
@@ -348,6 +349,8 @@ class DesignspaceBackend:
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
                 customData = ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
+                if ufoGlyph.note:
+                    customData[GLYPH_NOTE_LIB_KEY] = ufoGlyph.note
 
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
@@ -531,6 +534,7 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
+                layerGlyph.note = glyph.customData.pop(GLYPH_NOTE_LIB_KEY, None)
                 storeInLib(layerGlyph, GLYPH_CUSTOM_DATA_LIB_KEY, glyph.customData)
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
@@ -1374,6 +1378,7 @@ class UFOGlyph:
     height: float | None = None
     anchors: list = []
     guidelines: list = []
+    note: str | None = None
     lib: dict
 
 
