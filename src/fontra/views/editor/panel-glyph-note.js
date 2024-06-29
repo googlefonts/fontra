@@ -31,7 +31,7 @@ export default class GlyphNotePanel extends Panel {
       text-wrap: wrap;
     }
 
-    .fontra-ui-panel-glyph-note-header {
+    .glyph-note-header {
       overflow-x: unset;
       font-weight: bold;
       grid-column: 1 / span 2;
@@ -65,10 +65,9 @@ export default class GlyphNotePanel extends Panel {
         class: "sidebar-glyph-note",
       },
       [
-        html.div(
-          { class: "fontra-ui-panel-glyph-note-header", id: "glyph-note-header" },
-          ["Glyph note"]
-        ),
+        html.div({ class: "glyph-note-header", id: "glyph-note-header" }, [
+          "Glyph note",
+        ]),
         html.createDomElement("textarea", {
           rows: 1,
           wrap: "off",
