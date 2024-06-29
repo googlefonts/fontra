@@ -32,17 +32,13 @@ export default class GlyphNotePanel extends Panel {
     }
 
     #glyph-note-textarea:disabled {
-      opacity: 50%;
+      opacity: 40%;
     }
 
     .glyph-note-header {
       overflow-x: unset;
-      font-weight: bold;
-      grid-column: 1 / span 2;
       text-align: left;
-      display: grid;
-      grid-template-columns: auto auto;
-      justify-content: space-between;
+      text-wrap: wrap;
     }
   `;
 
@@ -113,8 +109,8 @@ export default class GlyphNotePanel extends Panel {
     this._selectedGlyphName = varGlyph?.name;
 
     this.glyphNoteHeaderElement.innerHTML = varGlyph
-      ? `Glyph note (${varGlyph.name})`
-      : `Glyph note`;
+      ? `<b>Glyph note for ${varGlyph.name}</b>`
+      : `<b>Glyph note</b> (no glyph selected)`;
     const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
     this.glyphNoteElement.value = glyphNote;
     this.glyphNoteElement.disabled = !varGlyph;
