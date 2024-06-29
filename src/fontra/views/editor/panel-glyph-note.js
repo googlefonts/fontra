@@ -31,6 +31,10 @@ export default class GlyphNotePanel extends Panel {
       text-wrap: wrap;
     }
 
+    #glyph-note-textarea:disabled {
+      opacity: 50%;
+    }
+
     .glyph-note-header {
       overflow-x: unset;
       font-weight: bold;
