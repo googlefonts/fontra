@@ -48,7 +48,7 @@ export default class GlyphNotePanel extends Panel {
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
-    this.setupGlyphNotesElement();
+    this.setupGlyphNoteElement();
     this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection"],
       (event) => this.throttledUpdate()
@@ -78,50 +78,49 @@ export default class GlyphNotePanel extends Panel {
     );
   }
 
-  setupGlyphNotesElement() {
-    this.glyphNotesElement = this.contentElement.querySelector("#glyph-note-textarea");
-    this.glyphNotesHeaderElement =
+  setupGlyphNoteElement() {
+    this.glyphNoteElement = this.contentElement.querySelector("#glyph-note-textarea");
+    this.glyphNoteHeaderElement =
       this.contentElement.querySelector("#glyph-note-header");
 
-    this.glyphNotesElement.addEventListener("change", () => {
+    this.glyphNoteElement.addEventListener("change", () => {
       if (!this._selectedGlyphName) {
         return;
       }
-      saveGlyphNotes(
+      saveGlyphNote(
         this._selectedGlyphName,
         this.sceneController,
-        this.glyphNotesElement.value
+        this.glyphNoteElement.value
       );
     });
 
-    this.glyphNotesElement.addEventListener("input", async () => {
-      this.fixGlyphNotesHeight();
+    this.glyphNoteElement.addEventListener("input", async () => {
+      this.fixGlyphNoteHeight();
     });
   }
 
   async update() {
     // This method is called when the panel is opened or when the selected glyph changes.
-    // Therefore we need to update the glyph notes text area with the current glyph notes
+    // Therefore we need to update the glyph note text area with the current glyph note
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
 
     this._selectedGlyphName = varGlyph?.name;
 
-    this.glyphNotesHeaderElement.innerHTML = varGlyph
+    this.glyphNoteHeaderElement.innerHTML = varGlyph
       ? `Glyph note (${varGlyph.name})`
       : `Glyph note`;
     const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
-    this.glyphNotesElement.value = glyphNote;
-    this.glyphNotesElement.disabled = varGlyph ? false : true;
-    this.fixGlyphNotesHeight();
+    this.glyphNoteElement.value = glyphNote;
+    this.glyphNoteElement.disabled = varGlyph ? false : true;
+    this.fixGlyphNoteHeight();
   }
 
-  fixGlyphNotesHeight() {
+  fixGlyphNoteHeight() {
     // This adapts the text entry height to its content
-    this.glyphNotesElement.style.height = "auto";
-    this.glyphNotesElement.style.height =
-      this.glyphNotesElement.scrollHeight + 14 + "px";
+    this.glyphNoteElement.style.height = "auto";
+    this.glyphNoteElement.style.height = this.glyphNoteElement.scrollHeight + 14 + "px";
   }
 
   async toggle(on, focus) {
@@ -129,12 +128,12 @@ export default class GlyphNotePanel extends Panel {
       this.update();
       // Delay focusing until after the panel slide in animation,
       // or else the sliding animation will look glitchy
-      setTimeout(() => this.glyphNotesElement.focus(), 200);
+      setTimeout(() => this.glyphNoteElement.focus(), 200);
     }
   }
 }
 
-async function saveGlyphNotes(glyphName, sceneController, newNote) {
+async function saveGlyphNote(glyphName, sceneController, newNote) {
   await sceneController.editNamedGlyphAndRecordChanges(glyphName, (glyph) => {
     const oldNote = glyph.customData["fontra.glyph.note"];
     glyph.customData["fontra.glyph.note"] = newNote;
