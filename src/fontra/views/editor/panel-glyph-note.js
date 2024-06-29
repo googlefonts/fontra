@@ -39,6 +39,7 @@ export default class GlyphNotePanel extends Panel {
       overflow-x: unset;
       text-align: left;
       text-wrap: wrap;
+      word-break: break-word;
     }
   `;
 
