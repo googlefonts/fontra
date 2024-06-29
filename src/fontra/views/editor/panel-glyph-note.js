@@ -113,7 +113,7 @@ export default class GlyphNotePanel extends Panel {
       : `Glyph note`;
     const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
     this.glyphNoteElement.value = glyphNote;
-    this.glyphNoteElement.disabled = varGlyph ? false : true;
+    this.glyphNoteElement.disabled = !varGlyph;
     this.fixGlyphNoteHeight();
   }
 
