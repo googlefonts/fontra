@@ -137,6 +137,7 @@ async function saveGlyphNotes(sceneController, notes, undoLabel) {
   if (!varGlyphController) {
     return;
   }
+  // TODO: use explicit glyph name
   await sceneController.editGlyphAndRecordChanges((glyph) => {
     glyph.customData["fontra.glyph.note"] = notes;
     return undoLabel;
