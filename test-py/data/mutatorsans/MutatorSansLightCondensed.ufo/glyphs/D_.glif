@@ -3,6 +3,9 @@
   <advance width="493"/>
   <unicode hex="0044"/>
   <unicode hex="0064"/>
+  <note>
+DDDD
+</note>
   <outline>
     <contour>
       <point x="60" y="0" type="line"/>

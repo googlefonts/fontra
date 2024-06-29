@@ -3,7 +3,10 @@
   <advance width="380"/>
   <unicode hex="0045"/>
   <unicode hex="0065"/>
-  <guideline name="E Bar" x="0" y="334" angle="0" identifier="wb94MzpUaN"/>
+  <note>
+EEE
+</note>
+  <guideline x="0" y="334" angle="0" name="E Bar"/>
   <anchor x="207" y="746" name="top"/>
   <outline>
     <contour>

@@ -84,7 +84,11 @@ export default class GlyphNotesPanel extends Panel {
       this.contentElement.querySelector("#glyph-notes-header");
 
     this.glyphNotesElement.addEventListener("change", () => {
+      if (!this._selectedGlyphName) {
+        return;
+      }
       saveGlyphNotes(
+        this._selectedGlyphName,
         this.sceneController,
         this.glyphNotesElement.value,
         this.undoLabel
@@ -102,6 +106,8 @@ export default class GlyphNotesPanel extends Panel {
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
+
+    this._selectedGlyphName = varGlyph?.name;
 
     this.glyphNotesHeaderElement.innerHTML = varGlyph
       ? `Glyph note (${varGlyph.name})`
@@ -130,15 +136,8 @@ export default class GlyphNotesPanel extends Panel {
   }
 }
 
-async function saveGlyphNotes(sceneController, notes, undoLabel) {
-  const varGlyphController =
-    await sceneController.sceneModel.getSelectedVariableGlyphController();
-  // this check is neccecary because it may fail when clicking outside of a glyph
-  if (!varGlyphController) {
-    return;
-  }
-  // TODO: use explicit glyph name
-  await sceneController.editGlyphAndRecordChanges((glyph) => {
+async function saveGlyphNotes(glyphName, sceneController, notes, undoLabel) {
+  await sceneController.editNamedGlyphAndRecordChanges(glyphName, (glyph) => {
     glyph.customData["fontra.glyph.note"] = notes;
     return undoLabel;
   });
