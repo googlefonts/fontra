@@ -49,6 +49,7 @@ export default class GlyphNotePanel extends Panel {
     this.sceneController = this.editorController.sceneController;
 
     this.setupGlyphNoteElement();
+
     this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection"],
       (event) => this.throttledUpdate()
