@@ -90,8 +90,7 @@ export default class GlyphNotesPanel extends Panel {
       saveGlyphNotes(
         this._selectedGlyphName,
         this.sceneController,
-        this.glyphNotesElement.value,
-        this.undoLabel
+        this.glyphNotesElement.value
       );
     });
 
@@ -113,7 +112,6 @@ export default class GlyphNotesPanel extends Panel {
       ? `Glyph note (${varGlyph.name})`
       : `Glyph note`;
     const glyphNote = varGlyph?.customData["fontra.glyph.note"] ?? "";
-    this.undoLabel = glyphNote ? "update glyph note" : "add glyph note";
     this.glyphNotesElement.value = glyphNote;
     this.glyphNotesElement.disabled = varGlyph ? false : true;
     this.fixGlyphNotesHeight();
@@ -136,10 +134,15 @@ export default class GlyphNotesPanel extends Panel {
   }
 }
 
-async function saveGlyphNotes(glyphName, sceneController, notes, undoLabel) {
+async function saveGlyphNotes(glyphName, sceneController, newNote) {
   await sceneController.editNamedGlyphAndRecordChanges(glyphName, (glyph) => {
-    glyph.customData["fontra.glyph.note"] = notes;
-    return undoLabel;
+    const oldNote = glyph.customData["fontra.glyph.note"];
+    glyph.customData["fontra.glyph.note"] = newNote;
+    return oldNote
+      ? newNote
+        ? "edit glyph note"
+        : "delete glyph note"
+      : "add glyph note";
   });
 }
 
