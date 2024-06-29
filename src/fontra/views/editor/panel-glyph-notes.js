@@ -2,12 +2,12 @@ import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { throttleCalls } from "/core/utils.js";
 
-export default class GlyphNotesPanel extends Panel {
-  identifier = "glyph-notes";
+export default class GlyphNotePanel extends Panel {
+  identifier = "glyph-note";
   iconPath = "/tabler-icons/notes.svg";
 
   static styles = `
-    .sidebar-glyph-notes {
+    .sidebar-glyph-note {
       box-sizing: border-box;
       height: 100%;
       width: 100%;
@@ -17,7 +17,7 @@ export default class GlyphNotesPanel extends Panel {
       padding: 1em;
     }
 
-    #glyph-notes-textarea {
+    #glyph-note-textarea {
       background-color: var(--text-input-background-color);
       color: var(--text-input-foreground-color);
       border-radius: 0.25em;
@@ -31,7 +31,7 @@ export default class GlyphNotesPanel extends Panel {
       text-wrap: wrap;
     }
 
-    .fontra-ui-panel-glyph-notes-header {
+    .fontra-ui-panel-glyph-note-header {
       overflow-x: unset;
       font-weight: bold;
       grid-column: 1 / span 2;
@@ -62,26 +62,26 @@ export default class GlyphNotesPanel extends Panel {
   getContentElement() {
     return html.div(
       {
-        class: "sidebar-glyph-notes",
+        class: "sidebar-glyph-note",
       },
       [
         html.div(
-          { class: "fontra-ui-panel-glyph-notes-header", id: "glyph-notes-header" },
+          { class: "fontra-ui-panel-glyph-note-header", id: "glyph-note-header" },
           ["Glyph note"]
         ),
         html.createDomElement("textarea", {
           rows: 1,
           wrap: "off",
-          id: "glyph-notes-textarea",
+          id: "glyph-note-textarea",
         }),
       ]
     );
   }
 
   setupGlyphNotesElement() {
-    this.glyphNotesElement = this.contentElement.querySelector("#glyph-notes-textarea");
+    this.glyphNotesElement = this.contentElement.querySelector("#glyph-note-textarea");
     this.glyphNotesHeaderElement =
-      this.contentElement.querySelector("#glyph-notes-header");
+      this.contentElement.querySelector("#glyph-note-header");
 
     this.glyphNotesElement.addEventListener("change", () => {
       if (!this._selectedGlyphName) {
@@ -146,4 +146,4 @@ async function saveGlyphNotes(glyphName, sceneController, newNote) {
   });
 }
 
-customElements.define("panel-glyph-notes", GlyphNotesPanel);
+customElements.define("panel-glyph-note", GlyphNotePanel);
