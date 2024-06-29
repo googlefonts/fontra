@@ -83,7 +83,7 @@ export default class GlyphNotesPanel extends Panel {
     this.glyphNotesHeaderElement =
       this.contentElement.querySelector("#glyph-notes-header");
 
-    this.glyphNotesElement.addEventListener("change", async () => {
+    this.glyphNotesElement.addEventListener("change", () => {
       saveGlyphNotes(
         this.sceneController,
         this.glyphNotesElement.value,
