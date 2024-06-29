@@ -70,7 +70,7 @@ import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
-import GlyphNotePanel from "./panel-glyph-notes.js";
+import GlyphNotePanel from "./panel-glyph-note.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
