@@ -15,6 +15,7 @@ import {
   getRepresentation,
   registerRepresentationFactory,
 } from "./representation-cache.js";
+import { setPopFirst } from "./set-ops.js";
 import {
   Transform,
   decomposedToTransform,
@@ -230,13 +231,13 @@ export class VariableGlyphController {
     );
   }
 
-  async getDeltas(getGlyphFunc) {
+  getDeltas(glyphDependencies) {
     if (this._deltas === undefined) {
-      const masterValues = await ensureGlyphCompatibility(
+      const masterValues = ensureGlyphCompatibility(
         this.sources
           .filter((source) => !source.inactive)
           .map((source) => this.layers[source.layerName].glyph),
-        getGlyphFunc
+        glyphDependencies
       );
 
       this._deltas = this.model.getDeltas(masterValues);
@@ -377,9 +378,17 @@ export class VariableGlyphController {
   }
 
   async instantiate(sourceLocation, getGlyphFunc) {
+    const glyphDependencies = await getGlyphAndDependenciesShallow(
+      this.name,
+      getGlyphFunc
+    );
+    return this.instantiateSync(sourceLocation, glyphDependencies);
+  }
+
+  instantiateSync(sourceLocation, glyphDependencies) {
     let { instance, errors } = this.model.interpolateFromDeltas(
       sourceLocation,
-      await this.getDeltas(getGlyphFunc)
+      this.getDeltas(glyphDependencies)
     );
     if (errors) {
       errors = errors.map((error) => {
@@ -488,15 +497,19 @@ export class StaticGlyphController {
     this.components = [];
     const componentErrors = [];
     for (const compo of this.instance.components) {
-      const compoController = new ComponentController(compo);
-      const errors = await compoController.setupPath(
-        getGlyphFunc,
-        parentLocation,
-        [this.name],
-        fontAxisNames
+      const glyphDependencies = await getGlyphAndDependenciesDeep(
+        compo.name,
+        getGlyphFunc
       );
-      if (errors) {
-        componentErrors.push(...errors);
+      const compoController = new ComponentController(
+        compo,
+        parentLocation,
+        glyphDependencies,
+        fontAxisNames,
+        [this.name]
+      );
+      if (compoController.errors) {
+        componentErrors.push(...compoController.errors);
       }
       this.components.push(compoController);
     }
@@ -700,20 +713,23 @@ registerRepresentationFactory(
 );
 
 class ComponentController {
-  constructor(compo) {
+  constructor(
+    compo,
+    parentLocation,
+    glyphDependencies,
+    fontAxisNames,
+    parentGlyphNames
+  ) {
     this.compo = compo;
-  }
-
-  async setupPath(getGlyphFunc, parentLocation, parentGlyphNames, fontAxisNames) {
-    const { path, errors } = await flattenComponent(
-      this.compo,
-      getGlyphFunc,
+    const { path, errors } = flattenComponent(
+      compo,
+      glyphDependencies,
       parentLocation,
       parentGlyphNames,
       fontAxisNames
     );
     this.path = path;
-    return errors;
+    this.errors = errors;
   }
 
   get path2d() {
@@ -774,18 +790,18 @@ class ComponentController {
   }
 }
 
-async function flattenComponent(
+function flattenComponent(
   compo,
-  getGlyphFunc,
+  glyphDependencies,
   parentLocation,
   parentGlyphNames,
   fontAxisNames
 ) {
   let componentErrors = [];
   const paths = [];
-  for await (const { path, errors } of iterFlattenedComponentPaths(
+  for (const { path, errors } of iterFlattenedComponentPaths(
     compo,
-    getGlyphFunc,
+    glyphDependencies,
     parentLocation,
     parentGlyphNames,
     fontAxisNames
@@ -801,9 +817,9 @@ async function flattenComponent(
   return { path: joinPaths(paths), errors: componentErrors };
 }
 
-async function* iterFlattenedComponentPaths(
+function* iterFlattenedComponentPaths(
   compo,
-  getGlyphFunc,
+  glyphDependencies,
   parentLocation,
   parentGlyphNames,
   fontAxisNames,
@@ -820,13 +836,16 @@ async function* iterFlattenedComponentPaths(
   parentGlyphNames = [...parentGlyphNames, compo.name];
 
   const compoLocation = mergeLocations(parentLocation, compo.location);
-  const glyph = await getGlyphFunc(compo.name);
+  const glyph = glyphDependencies[compo.name];
   let inst, instErrors;
   if (!glyph) {
     // console.log(`component glyph ${compo.name} was not found`);
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
-    const { instance, errors } = await glyph.instantiate(compoLocation, getGlyphFunc);
+    const { instance, errors } = glyph.instantiateSync(
+      compoLocation,
+      glyphDependencies
+    );
     inst = instance;
     instErrors = errors?.map((error) => {
       return { ...error, glyphs: parentGlyphNames };
@@ -846,7 +865,7 @@ async function* iterFlattenedComponentPaths(
   for (const subCompo of inst.components) {
     yield* iterFlattenedComponentPaths(
       subCompo,
-      getGlyphFunc,
+      glyphDependencies,
       filterLocation(compoLocation, fontAxisNames),
       parentGlyphNames,
       fontAxisNames,
@@ -1015,10 +1034,10 @@ function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
 
-async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
+function ensureGlyphCompatibility(layerGlyphs, glyphDependencies) {
   const baseGlyphFallbackValues = {};
 
-  glyphs.forEach((glyph) =>
+  layerGlyphs.forEach((glyph) =>
     glyph.components.forEach((compo) => {
       let fallbackValues = baseGlyphFallbackValues[compo.name];
       if (!fallbackValues) {
@@ -1032,7 +1051,7 @@ async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
   );
 
   for (const [glyphName, fallbackValues] of Object.entries(baseGlyphFallbackValues)) {
-    const baseGlyph = await getGlyphFunc(glyphName);
+    const baseGlyph = glyphDependencies[glyphName];
     for (const axis of baseGlyph?.combinedAxes || []) {
       if (axis.name in fallbackValues) {
         fallbackValues[axis.name] = axis.defaultValue;
@@ -1040,9 +1059,9 @@ async function ensureGlyphCompatibility(glyphs, getGlyphFunc) {
     }
   }
 
-  const guidelinesAreCompatible = areGuidelinesCompatible(glyphs);
+  const guidelinesAreCompatible = areGuidelinesCompatible(layerGlyphs);
 
-  return glyphs.map((glyph) =>
+  return layerGlyphs.map((glyph) =>
     StaticGlyph.fromObject(
       {
         ...glyph,
@@ -1108,4 +1127,34 @@ function checkInterpolationCompatibility(
     }
   }
   return errors;
+}
+
+async function getGlyphAndDependenciesShallow(glyphName, getGlyphFunc) {
+  const glyphs = {};
+  const glyph = await getGlyphFunc(glyphName);
+  glyphs[glyphName] = glyph;
+
+  for (const compoName of glyph.getAllComponentNames()) {
+    if (!(compoName in glyphs)) {
+      glyphs[compoName] = await getGlyphFunc(compoName);
+    }
+  }
+  return glyphs;
+}
+
+async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
+  const glyphs = {};
+  const todo = new Set([glyphName]);
+
+  while (todo.size) {
+    const glyphName = setPopFirst(todo);
+    const glyph = await getGlyphFunc(glyphName);
+    glyphs[glyphName] = glyph;
+    for (const compoName of glyph.getAllComponentNames()) {
+      if (!(compoName in glyphs)) {
+        todo.add(compoName);
+      }
+    }
+  }
+  return glyphs;
 }

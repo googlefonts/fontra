@@ -11,6 +11,7 @@ import { CrossAxisMapping } from "./cross-axis-mapping.js";
 import { FontSourcesInstancer } from "./font-sources-instancer.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
+import { setPopFirst } from "./set-ops.js";
 import { TaskPool } from "./task-pool.js";
 import {
   chain,
@@ -879,18 +880,6 @@ function collectGlyphNames(change) {
   return collectChangePaths(change, 2)
     .filter((item) => item[0] === "glyphs" && item[1] !== undefined)
     .map((item) => item[1]);
-}
-
-function setPopFirst(set) {
-  if (!set.size) {
-    return;
-  }
-  let firstItem;
-  for (firstItem of set) {
-    break;
-  }
-  set.delete(firstItem);
-  return firstItem;
 }
 
 function objectPropertyTracker(obj) {

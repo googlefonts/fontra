@@ -80,3 +80,15 @@ export function updateSet(set, iterable) {
 export function filterSet(set, func) {
   return new Set([...set].filter(func));
 }
+
+export function setPopFirst(set) {
+  if (!set.size) {
+    return;
+  }
+  let firstItem;
+  for (firstItem of set) {
+    break;
+  }
+  set.delete(firstItem);
+  return firstItem;
+}
