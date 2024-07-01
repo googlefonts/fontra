@@ -981,14 +981,6 @@ class DesignspaceBackend:
                 for sourceIdentifier in sourceIdentifiers
             ]
 
-            if any(dsSource.isSparse for dsSource in dsSources):
-                sparseIdentifiers = [
-                    dsSource.identifier for dsSource in dsSources if dsSource.isSparse
-                ]
-                raise ValueError(
-                    f"can't write kerning to sparse sources: {sparseIdentifiers}"
-                )
-
             unknownSourceIdentifiers = [
                 sourceIdentifier
                 for sourceIdentifier, dsSource in zip(sourceIdentifiers, dsSources)
@@ -998,6 +990,14 @@ class DesignspaceBackend:
             if unknownSourceIdentifiers:
                 raise ValueError(
                     f"kerning uses unknown source identifiers: {unknownSourceIdentifiers}"
+                )
+
+            if any(dsSource.isSparse for dsSource in dsSources):
+                sparseIdentifiers = [
+                    dsSource.identifier for dsSource in dsSources if dsSource.isSparse
+                ]
+                raise ValueError(
+                    f"can't write kerning to sparse sources: {sparseIdentifiers}"
                 )
 
             kerningPerSource: dict = defaultdict(dict)
