@@ -631,7 +631,9 @@ export class StaticGlyphController {
 
     for (const anchorIndex of anchorIndices) {
       const anchor = this.instance.anchors[anchorIndex];
-      selectionRects.push(centeredRect(anchor.x, anchor.y, 0));
+      if (anchor) {
+        selectionRects.push(centeredRect(anchor.x, anchor.y, 0));
+      }
     }
 
     return unionRect(...selectionRects);
