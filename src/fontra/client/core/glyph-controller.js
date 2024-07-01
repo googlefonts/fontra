@@ -1145,6 +1145,7 @@ async function getGlyphAndDependenciesShallow(glyphName, getGlyphFunc) {
 async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
   const glyphs = {};
   const todo = new Set([glyphName]);
+
   while (todo.size) {
     const glyphName = setPopFirst(todo);
     const glyph = await getGlyphFunc(glyphName);
