@@ -672,8 +672,7 @@ export class SceneModel {
       : [...range(anchors.length)];
     for (const i of reversed(indices)) {
       const anchor = anchors[i];
-      const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
-      if (anchorMatch) {
+      if (anchor && pointInRect(anchor.x, anchor.y, selRect)) {
         return new Set([`anchor/${i}`]);
       }
     }
