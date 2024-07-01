@@ -225,6 +225,7 @@ class DropShapes(BaseFilter):
     dropPath: bool = True
     dropComponents: bool = True
     dropAnchors: bool = True
+    dropGuidelines: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         clearedItems: dict[str, Any] = {}
@@ -234,6 +235,8 @@ class DropShapes(BaseFilter):
             clearedItems["components"] = []
         if self.dropAnchors:
             clearedItems["anchors"] = []
+        if self.dropGuidelines:
+            clearedItems["guidelines"] = []
 
         return replace(
             glyph,
