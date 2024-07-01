@@ -378,10 +378,9 @@ export class VariableGlyphController {
   }
 
   async instantiate(sourceLocation, getGlyphFunc) {
-    const glyphDependencies = await getGlyphAndDependencies(
+    const glyphDependencies = await getGlyphAndDependenciesShallow(
       this.name,
-      getGlyphFunc,
-      false
+      getGlyphFunc
     );
     return this.instantiateSync(sourceLocation, glyphDependencies);
   }
@@ -498,10 +497,9 @@ export class StaticGlyphController {
     this.components = [];
     const componentErrors = [];
     for (const compo of this.instance.components) {
-      const glyphDependencies = await getGlyphAndDependencies(
+      const glyphDependencies = await getGlyphAndDependenciesDeep(
         compo.name,
-        getGlyphFunc,
-        true
+        getGlyphFunc
       );
       const compoController = new ComponentController(
         compo,
@@ -1131,7 +1129,20 @@ function checkInterpolationCompatibility(
   return errors;
 }
 
-async function getGlyphAndDependencies(glyphName, getGlyphFunc, recurse) {
+async function getGlyphAndDependenciesShallow(glyphName, getGlyphFunc) {
+  const glyphs = {};
+  const glyph = await getGlyphFunc(glyphName);
+  glyphs[glyphName] = glyph;
+
+  for (const compoName of glyph.getAllComponentNames()) {
+    if (!(compoName in glyphs)) {
+      glyphs[compoName] = await getGlyphFunc(compoName);
+    }
+  }
+  return glyphs;
+}
+
+async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
   const glyphs = {};
   const todo = new Set([glyphName]);
   while (todo.size) {
@@ -1140,11 +1151,7 @@ async function getGlyphAndDependencies(glyphName, getGlyphFunc, recurse) {
     glyphs[glyphName] = glyph;
     for (const compoName of glyph.getAllComponentNames()) {
       if (!(compoName in glyphs)) {
-        if (recurse) {
-          todo.add(compoName);
-        } else {
-          glyphs[glyphName] = await getGlyphFunc(glyphName);
-        }
+        todo.add(compoName);
       }
     }
   }
