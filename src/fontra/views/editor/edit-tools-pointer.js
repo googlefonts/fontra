@@ -55,16 +55,15 @@ export class PointerTool extends BaseTool {
     }
 
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
-    if (!resizeHandle) {
-      this.setCursor();
-      return;
-    }
-
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
     }
-    this.setCursorForResizeHandle(resizeHandle);
+    if (resizeHandle) {
+      this.setCursorForResizeHandle(resizeHandle);
+    } else {
+      this.setCursor();
+    }
   }
 
   setCursorForResizeHandle(handleName) {
