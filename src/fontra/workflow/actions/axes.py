@@ -15,6 +15,7 @@ from ...core.classes import (
     FontAxis,
     FontSource,
     GlyphSource,
+    Kerning,
     Layer,
     VariableGlyph,
     structure,
@@ -276,6 +277,11 @@ class SubsetAxes(BaseFilter):
     async def getSources(self) -> dict[str, FontSource]:
         return await self.processedSources
 
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        sources = await self.processedSources
+        mapping = {sourceIdentifier: sourceIdentifier for sourceIdentifier in sources}
+        return mapKerningSourcesAndFilter(kerning, mapping)
+
 
 def subsetLocationKeep(location, axisNames):
     return {n: v for n, v in location.items() if n in axisNames}
@@ -294,6 +300,29 @@ def getDefaultSourceLocation(axes):
         )
         for axis in axes
     }
+
+
+def mapKerningSourcesAndFilter(kerning, mapping):
+    newKerning = {}
+    for kernType, kernTable in kerning.items():
+        sourceIdentifiers = [mapping.get(sid) for sid in kernTable.sourceIdentifiers]
+        newValues = {
+            left: {
+                right: [
+                    v
+                    for v, sid in zip(values, sourceIdentifiers, strict=True)
+                    if sid is not None
+                ]
+                for right, values in rightDict.items()
+            }
+            for left, rightDict in kernTable.values.items()
+        }
+        newKerning[kernType] = replace(
+            kernTable,
+            sourceIdentifiers=[sid for sid in sourceIdentifiers if sid is not None],
+            values=newValues,
+        )
+    return newKerning
 
 
 class BaseMoveDefaultLocation(BaseFilter):
