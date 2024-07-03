@@ -59,5 +59,9 @@
 "xAdvance": 250
 }
 }
+},
+"customData": {
+"fontra.glyph.locked": true,
+"fontra.glyph.note": "This is a glyph note"
 }
 }

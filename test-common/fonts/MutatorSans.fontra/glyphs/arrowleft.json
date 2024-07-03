@@ -177,7 +177,13 @@
 }
 ]
 },
-"xAdvance": 569
+"xAdvance": 569,
+"guidelines": [
+{
+"x": 26,
+"y": 356
+}
+]
 }
 },
 "MutatorSansLightWide/foreground": {

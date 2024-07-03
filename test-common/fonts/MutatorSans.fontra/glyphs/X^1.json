@@ -261,7 +261,15 @@
 }
 ]
 },
-"xAdvance": 400
+"xAdvance": 400,
+"guidelines": [
+{
+"name": "Guideline X Diagonale",
+"x": 203,
+"y": 345,
+"angle": 294
+}
+]
 }
 },
 "MutatorSansLightWide/foreground": {

@@ -36,6 +36,15 @@
 "weight": 850,
 "width": 1000
 }
+},
+{
+"name": "LightCondensedItalic",
+"layerName": "MutatorSansLightCondensedItalic/public.default",
+"location": {
+"italic": 1,
+"weight": 150,
+"width": 0
+}
 }
 ],
 "layers": {
@@ -142,6 +151,40 @@
 {
 "x": 110,
 "y": 0
+},
+{
+"x": 110,
+"y": 120
+},
+{
+"x": 60,
+"y": 120
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 170
+}
+},
+"MutatorSansLightCondensedItalic/public.default": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 60,
+"y": 0
+},
+{
+"x": 110,
+"y": 0
+},
+{
+"x": 133,
+"y": 62
 },
 {
 "x": 110,
