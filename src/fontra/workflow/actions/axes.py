@@ -234,25 +234,14 @@ class SubsetAxes(BaseFilter):
         return axisNames - self.dropAxisNames
 
     @async_cached_property
-    async def locationToKeep(self):
+    async def mapFilterLocationFunc(self):
         axes = await self.inputAxes
         keepAxisNames = self.getAxisNamesToKeep(axes.axes)
         location = getDefaultSourceLocation(axes.axes)
 
-        return {n: v for n, v in location.items() if n not in keepAxisNames}
-
-    async def getAxes(self) -> Axes:
-        axes = await self.inputAxes
-        keepAxisNames = self.getAxisNamesToKeep(axes.axes)
-
-        return replace(
-            axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
-        )
-
-    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
         # but those axes are to be dropped, so it *also* says "axes to drop"
-        locationToKeep = await self.locationToKeep
+        locationToKeep = {n: v for n, v in location.items() if n not in keepAxisNames}
 
         def mapFilterFunc(location):
             if (
@@ -264,7 +253,25 @@ class SubsetAxes(BaseFilter):
 
             return subsetLocationDrop(location, locationToKeep)
 
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc)
+        return mapFilterFunc
+
+    async def getAxes(self) -> Axes:
+        axes = await self.inputAxes
+        keepAxisNames = self.getAxisNamesToKeep(axes.axes)
+
+        return replace(
+            axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
+        )
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        return mapGlyphSourceLocationsAndFilter(glyph, await self.mapFilterLocationFunc)
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        return mapFontSourceLocationsAndFilter(
+            sources, await self.mapFilterLocationFunc
+        )
 
 
 def subsetLocationKeep(location, axisNames):
