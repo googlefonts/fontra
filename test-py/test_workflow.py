@@ -1128,6 +1128,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-shapes
             - filter: drop-font-sources-and-kerning
             - output: fontra-write
               destination: "output-drop-font-sources-and-kerning.fontra"
