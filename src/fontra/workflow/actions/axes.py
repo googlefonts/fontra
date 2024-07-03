@@ -266,12 +266,15 @@ class SubsetAxes(BaseFilter):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return mapGlyphSourceLocationsAndFilter(glyph, await self.mapFilterLocationFunc)
 
-    async def processSources(
-        self, sources: dict[str, FontSource]
-    ) -> dict[str, FontSource]:
+    @async_cached_property
+    async def processedSources(self):
+        sources = await self.validatedInput.getSources()
         return mapFontSourceLocationsAndFilter(
             sources, await self.mapFilterLocationFunc
         )
+
+    async def getSources(self) -> dict[str, FontSource]:
+        return await self.processedSources
 
 
 def subsetLocationKeep(location, axisNames):
