@@ -95,6 +95,15 @@ export class PointerTool extends BaseTool {
 
   async handleDrag(eventStream, initialEvent) {
     const sceneController = this.sceneController;
+    const initialSelection = sceneController.selection;
+    const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
+    if (resizeHandle) {
+      sceneController.sceneModel.clickedResizeHandle = resizeHandle;
+      await this.handleBoundsResize(initialSelection, eventStream, initialEvent);
+      delete sceneController.sceneModel.clickedResizeHandle;
+      return;
+    }
+
     const point = sceneController.localPoint(initialEvent);
     const size = sceneController.mouseClickMargin;
     const { selection, pathHit } = this.sceneModel.selectionAtPoint(
@@ -124,7 +133,6 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    const initialSelection = sceneController.selection;
     let initiateDrag = false;
     let initiateRectSelect = false;
 
@@ -167,21 +175,14 @@ export class PointerTool extends BaseTool {
     }
 
     sceneController.hoveredGlyph = undefined;
-    const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
-
-    if (initiateRectSelect && !resizeHandle) {
+    if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    } else if (initiateDrag && !resizeHandle) {
+    } else if (initiateDrag) {
       this.sceneController.sceneModel.initialClickedPointIndex =
         initialClickedPointIndex;
       const result = await this.handleDragSelection(eventStream, initialEvent);
       delete this.sceneController.sceneModel.initialClickedPointIndex;
       return result;
-    } else if (resizeHandle) {
-      sceneController.selection = initialSelection;
-      this.sceneController.sceneModel.clickedResizeHandle = resizeHandle;
-      await this.handleBoundsResize(initialSelection, eventStream, initialEvent);
-      delete this.sceneController.sceneModel.clickedResizeHandle;
     }
   }
 
