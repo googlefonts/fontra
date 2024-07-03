@@ -2,6 +2,7 @@
   "action.add-anchor": "添加锚点",
   "action.add-component": "添加组件",
   "action.break-contour": "断开轮廓",
+  "action.close-contour": "Close Contour",
   "action.decompose-component": "释放 %0 个组件",
   "action.delete-glyph": "删除字符形",
   "action.delete-selection": "删除选中",

@@ -642,6 +642,12 @@ export class SceneController {
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
+        title: translate("action.close-contour"),
+        enabled: () => this.doCloseContour(),
+        callback: () => this.closeContour(),
+        shortCut: { keysOrCodes: "j", metaKey: true },
+      },
+      {
         title: translate("action.break-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
         callback: () => this.breakContour(),
@@ -1145,6 +1151,38 @@ export class SceneController {
 
       this.selection = newSelection;
       return "Set Start Point";
+    });
+  }
+
+  doCloseContour() {
+    // If start and end points are selected
+    if (this.contextMenuState.pointSelection?.length != 2) {
+      return false;
+    }
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      return false;
+    }
+
+    const { point: pointIndices } = parseSelection(this.selection);
+    const path = glyphController.instance.path;
+
+    for (const pointIndex of pointIndices) {
+      if (!path.isStartOrEndPoint(pointIndex)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  async closeContour() {
+    const { point: pointIndices } = parseSelection(this.selection);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const contourIndex = layerGlyph.path.getContourIndex(pointIndices[0]);
+        layerGlyph.path.contourInfo[contourIndex].isClosed = true;
+      }
+      return "Close Contour";
     });
   }
 

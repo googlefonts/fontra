@@ -2,6 +2,7 @@
   "action.add-anchor": "Add Anchor",
   "action.add-component": "Add Component",
   "action.break-contour": "Break Contour",
+  "action.close-contour": "Close Contour",
   "action.decompose-component": "Decompose %0 Component",
   "action.decompose-component.plural": "Decompose %0 Components",
   "action.delete-glyph": "Delete Glyph",
