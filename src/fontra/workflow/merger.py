@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
+from ..core.async_property import async_cached_property
 from ..core.classes import (
     Axes,
     FontInfo,
@@ -68,7 +69,8 @@ class FontBackendMerger:
         fontInfoB = await self.inputB.getFontInfo()
         return FontInfo(**(unstructure(fontInfoA) | unstructure(fontInfoB)))
 
-    async def getAxes(self) -> Axes:
+    @async_cached_property
+    async def mergedAxes(self) -> Axes:
         axesA = await self.inputA.getAxes()
         axesB = await self.inputB.getAxes()
         axesByNameA = {axis.name: axis for axis in axesA.axes}
@@ -84,6 +86,9 @@ class FontBackendMerger:
                 mergedAxes.append(axis)
 
         return replace(axesA, axes=mergedAxes)
+
+    async def getAxes(self) -> Axes:
+        return await self.mergedAxes
 
     async def getSources(self) -> dict[str, FontSource]:
         sourcesA = await self.inputA.getSources()
