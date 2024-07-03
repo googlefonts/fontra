@@ -1171,11 +1171,8 @@ export class SceneController {
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         for (const contourIndex of openContours) {
-          const contour = layerGlyph.path.contourInfo[contourIndex];
-          if (!contour.isClosed) {
-            // close open contour
-            layerGlyph.path.contourInfo[contourIndex].isClosed = true;
-          }
+          // close open contour
+          layerGlyph.path.contourInfo[contourIndex].isClosed = true;
         }
       }
       return "Close Contour" + (openContours.length > 1 ? "s" : "");
