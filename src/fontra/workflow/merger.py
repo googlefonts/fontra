@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from collections import defaultdict
 from copy import deepcopy
@@ -15,6 +17,8 @@ from ..core.classes import (
     unstructure,
 )
 from ..core.protocols import ReadableFontBackend
+from ..core.varutils import locationToTuple
+from .actions.axes import mapFontSourceLocationsAndFilter
 from .features import mergeFeatures
 
 logger = logging.getLogger(__name__)
@@ -90,10 +94,51 @@ class FontBackendMerger:
     async def getAxes(self) -> Axes:
         return await self.mergedAxes
 
+    @async_cached_property
+    async def mergedSourcesInfo(self) -> MergedSourcesInfo:
+        mergedAxes = await self.mergedAxes
+        defaultLocation = {axis.name: axis.defaultValue for axis in mergedAxes.axes}
+
+        def mapLocation(location):
+            return defaultLocation | location
+
+        sourcesA = mapFontSourceLocationsAndFilter(
+            await self.inputA.getSources(), mapLocation
+        )
+        sourcesB = mapFontSourceLocationsAndFilter(
+            await self.inputB.getSources(), mapLocation
+        )
+
+        sourcesAByLocation = sourcesByLocation(sourcesA)
+        sourcesBByLocation = sourcesByLocation(sourcesB)
+        allLocations = sorted(set(sourcesAByLocation) | set(sourcesBByLocation))
+
+        mergedSources = {}
+        identifierMappingA = {}
+        for location in allLocations:
+            idA, sourceA = sourcesAByLocation.get(location, (None, None))
+            idB, sourceB = sourcesBByLocation.get(location, (None, None))
+            if idA is None:
+                mergedSources[idB] = sourceB
+            elif idB is None:
+                mergedSources[idA] = sourceA
+            else:
+                identifierMappingA[idA] = idB
+                mergedSources[idB] = replace(
+                    sourceB,
+                    lineMetricsHorizontalLayout=sourceA.lineMetricsHorizontalLayout
+                    | sourceB.lineMetricsHorizontalLayout,
+                    lineMetricsVerticalLayout=sourceA.lineMetricsVerticalLayout
+                    | sourceB.lineMetricsVerticalLayout,
+                )
+
+        return MergedSourcesInfo(
+            sources=mergedSources, identifierMappingA=identifierMappingA
+        )
+
     async def getSources(self) -> dict[str, FontSource]:
-        sourcesA = await self.inputA.getSources()
-        sourcesB = await self.inputB.getSources()
-        return sourcesA | sourcesB
+        mergeInfo = await self.mergedSourcesInfo
+        return mergeInfo.sources
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
@@ -139,6 +184,19 @@ class FontBackendMerger:
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
+
+
+@dataclass(kw_only=True)
+class MergedSourcesInfo:
+    sources: dict[str, FontSource]
+    identifierMappingA: dict[str, str]
+
+
+def sourcesByLocation(sources):
+    return {
+        locationToTuple(source.location): (sourceIdentifier, source)
+        for sourceIdentifier, source in sources.items()
+    }
 
 
 def cmapFromGlyphMap(glyphMap):
