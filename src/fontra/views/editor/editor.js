@@ -50,6 +50,7 @@ import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
+import { KnifeTool } from "./edit-tools-knife.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
@@ -669,7 +670,14 @@ export class EditorController {
   initTools() {
     this.tools = {};
     this.topLevelTools = {};
-    const editToolClasses = [PointerTool, PenTool, ShapeTool, PowerRulerTool, HandTool];
+    const editToolClasses = [
+      PointerTool,
+      PenTool,
+      ShapeTool,
+      PowerRulerTool,
+      HandTool,
+      KnifeTool,
+    ];
 
     for (const editToolClass of editToolClasses) {
       this.addEditTool(new editToolClass(this));
