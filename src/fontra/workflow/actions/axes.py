@@ -141,6 +141,15 @@ class DropAxisMappings(BaseFilter):
             axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
         )
 
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
+        return {
+            sourceIdentifier: replace(source, location=mapFunc(source.location))
+            for sourceIdentifier, source in sources.items()
+        }
+
 
 def _dropAxisMapping(axis, mapFuncs):
     if axis.name in mapFuncs and axis.mapping:
