@@ -214,7 +214,7 @@ def test_command(tmpdir, configYAMLSources):
     "testName, configSource, continueOnError, expectedLog",
     [
         (
-            "plain",
+            "plain-merge",
             """
             steps:
             - input: fontra-read
