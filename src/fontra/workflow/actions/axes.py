@@ -58,12 +58,7 @@ class RenameAxes(BaseFilter):
     async def processSources(
         self, sources: dict[str, FontSource]
     ) -> dict[str, FontSource]:
-        return {
-            sourceIdentifier: replace(
-                source, location=self.renameLocationAxes(source.location)
-            )
-            for sourceIdentifier, source in sources.items()
-        }
+        return mapFontSourceLocationsAndFilter(sources, self.renameLocationAxes)
 
 
 def _renameLocationAxes(location, axisRenameMap):
@@ -145,10 +140,7 @@ class DropAxisMappings(BaseFilter):
         self, sources: dict[str, FontSource]
     ) -> dict[str, FontSource]:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
-        return {
-            sourceIdentifier: replace(source, location=mapFunc(source.location))
-            for sourceIdentifier, source in sources.items()
-        }
+        return mapFontSourceLocationsAndFilter(sources, mapFunc)
 
 
 def _dropAxisMapping(axis, mapFuncs):
@@ -215,6 +207,12 @@ class AdjustAxes(BaseFilter):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
         return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
+        return mapFontSourceLocationsAndFilter(sources, mapFunc)
 
 
 @registerFilterAction("subset-axes")
@@ -623,6 +621,15 @@ def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
         if layerName not in layersToDelete
     }
     return replace(glyph, sources=newSources, layers=newLayers)
+
+
+def mapFontSourceLocationsAndFilter(sources, mapFilterFunc):
+    newSources = {}
+    for sourceIdentifier, source in sources.items():
+        newLocation = mapFilterFunc(source.location)
+        if newLocation is not None:
+            newSources[sourceIdentifier] = replace(source, location=newLocation)
+    return newSources
 
 
 def mapLocation(location, mapFuncs):
