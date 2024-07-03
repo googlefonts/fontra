@@ -313,19 +313,26 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
         reader = csv.reader(file, delimiter=";")
         rowIter = iter(enumerate(reader, 1))
 
-        kernType = kerningReadType(rowIter)
-        groups = kerningReadGroups(rowIter)
-        sourceIdentifiers, values = kerningReadValues(rowIter)
+        while True:
+            kernType = kerningReadType(rowIter)
+            if kernType is None:
+                break
 
-        kerning[kernType] = Kerning(
-            groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
-        )
+            groups = kerningReadGroups(rowIter)
+            sourceIdentifiers, values = kerningReadValues(rowIter)
+
+            kerning[kernType] = Kerning(
+                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+            )
 
     return kerning
 
 
 def kerningReadType(rowIter):
     lineNumber, row = nextNonBlankRow(rowIter)
+    if lineNumber is None:
+        return None
+
     if not row or row[0] != "TYPE":
         raise KerningParseError(f"expected TYPE keyword (line {lineNumber})")
 
