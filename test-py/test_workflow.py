@@ -1122,6 +1122,19 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "drop-font-sources-and-kerning",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: drop-font-sources-and-kerning
+            - output: fontra-write
+              destination: "output-drop-font-sources-and-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
