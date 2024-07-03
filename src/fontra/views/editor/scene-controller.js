@@ -637,13 +637,25 @@ export class SceneController {
       parseSelection(relevantSelection);
     this.contextMenuState.pointSelection = pointSelection;
     this.contextMenuState.componentSelection = componentSelection;
+
+    // relevantSelection does not include cmd + A selection,
+    // why we need the following:
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    const { point: pointIndices } = parseSelection(this.selection);
+    this.contextMenuState.openContourSelection = glyphController.canEdit
+      ? getSelectedOpenContours(glyphController.instance.path, pointIndices)
+      : [];
   }
 
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
-        title: translate("action.close-contour"),
-        enabled: () => this.doCloseContour(),
+        title: () =>
+          translatePlural(
+            "action.close-contour",
+            this.contextMenuState.openContourSelection?.length
+          ),
+        enabled: () => this.contextMenuState.openContourSelection?.length,
         callback: () => this.closeContour(),
         shortCut: { keysOrCodes: "j", metaKey: true },
       },
@@ -1154,35 +1166,19 @@ export class SceneController {
     });
   }
 
-  doCloseContour() {
-    // If start and end points are selected
-    if (this.contextMenuState.pointSelection?.length != 2) {
-      return false;
-    }
-    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-    if (!glyphController.canEdit) {
-      return false;
-    }
-
-    const { point: pointIndices } = parseSelection(this.selection);
-    const path = glyphController.instance.path;
-
-    for (const pointIndex of pointIndices) {
-      if (!path.isStartOrEndPoint(pointIndex)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   async closeContour() {
-    const { point: pointIndices } = parseSelection(this.selection);
+    const openContours = this.contextMenuState.openContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        const contourIndex = layerGlyph.path.getContourIndex(pointIndices[0]);
-        layerGlyph.path.contourInfo[contourIndex].isClosed = true;
+        for (const contourIndex of openContours) {
+          const contour = layerGlyph.path.contourInfo[contourIndex];
+          if (!contour.isClosed) {
+            // close open contour
+            layerGlyph.path.contourInfo[contourIndex].isClosed = true;
+          }
+        }
       }
-      return "Close Contour";
+      return "Close Contour" + (openContours.length > 1 ? "s" : "");
     });
   }
 
@@ -1368,6 +1364,20 @@ function getSelectedContours(path, pointSelection) {
   for (const pointIndex of pointSelection) {
     selectedContours.add(path.getContourIndex(pointIndex));
   }
+  return [...selectedContours];
+}
+
+function getSelectedOpenContours(path, pointSelection) {
+  if (!path || !pointSelection) {
+    return [];
+  }
+  const selectedContours = new Set();
+  for (const contourIndex of getSelectedContours(path, pointSelection)) {
+    if (!path.contourInfo[contourIndex].isClosed) {
+      selectedContours.add(contourIndex);
+    }
+  }
+
   return [...selectedContours];
 }
 
