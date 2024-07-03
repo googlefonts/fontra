@@ -1,14 +1,13 @@
 {
+"fontInfo": {
+"familyName": "MutatorMathTest",
+"versionMajor": 1,
+"versionMinor": 2,
+"copyright": "License same as MutatorMath. BSD 3-clause. [test-token: C]",
+"licenseDescription": "License same as MutatorMath. BSD 3-clause. [test-token: C]"
+},
 "axes": {
 "axes": [
-{
-"name": "width",
-"label": "width",
-"tag": "wdth",
-"minValue": 0,
-"defaultValue": 0,
-"maxValue": 1000
-},
 {
 "name": "weight",
 "label": "weight",
@@ -28,6 +27,14 @@
 ]
 },
 {
+"name": "width",
+"label": "width",
+"tag": "wdth",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 1000
+},
+{
 "name": "italic",
 "label": "italic",
 "tag": "ital",
@@ -35,8 +42,214 @@
 0,
 1
 ],
-"defaultValue": 0
+"defaultValue": 0,
+"valueLabels": [
+{
+"name": "Upright",
+"value": 0,
+"linkedValue": 1,
+"elidable": true
+},
+{
+"name": "Italic",
+"value": 1
 }
 ]
+}
+]
+},
+"sources": {
+"bold-condensed": {
+"name": "BoldCondensed",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"bold-wide": {
+"name": "BoldWide",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"light-condensed": {
+"name": "LightCondensed",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 700,
+"zone": 16
+},
+"capHeight": {
+"value": 700,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+},
+"guidelines": [
+{
+"name": "Guideline Cap Height",
+"y": 700
+},
+{
+"name": "Guideline Left",
+"x": 60,
+"angle": 90
+},
+{
+"name": "Guideline Baseline Overshoot",
+"y": -10
+}
+]
+},
+"light-condensed-italic": {
+"name": "LightCondensedItalic",
+"location": {
+"italic": 1,
+"weight": 150,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 750,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -250,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"light-wide": {
+"name": "LightWide",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 700,
+"zone": 16
+},
+"capHeight": {
+"value": 700,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"support.S.middle": {
+"name": "support.S.middle",
+"isSparse": true,
+"location": {
+"italic": 0,
+"weight": 595,
+"width": 569.078
+}
+},
+"support.S.wide": {
+"name": "support.S.wide",
+"isSparse": true,
+"location": {
+"italic": 0,
+"weight": 595,
+"width": 1000
+}
+},
+"support.crossbar": {
+"name": "support.crossbar",
+"isSparse": true,
+"location": {
+"italic": 0,
+"weight": 595,
+"width": 0
+}
+}
 }
 }
