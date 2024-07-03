@@ -13,6 +13,7 @@ from ...core.classes import (
     Axes,
     DiscreteFontAxis,
     FontAxis,
+    FontSource,
     GlyphSource,
     Layer,
     VariableGlyph,
@@ -44,13 +45,25 @@ class RenameAxes(BaseFilter):
             for axisName, renameInfo in self.axes.items()
             if "name" in renameInfo
         }
+        self.renameLocationAxes = partial(
+            _renameLocationAxes, axisRenameMap=self.axisRenameMap
+        )
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        mapFunc = partial(_renameLocationAxes, axisRenameMap=self.axisRenameMap)
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+        return mapGlyphSourceLocationsAndFilter(glyph, self.renameLocationAxes)
 
     async def processAxes(self, axes: Axes) -> Axes:
         return replace(axes, axes=[_renameAxis(axis, self.axes) for axis in axes.axes])
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        return {
+            sourceIdentifier: replace(
+                source, location=self.renameLocationAxes(source.location)
+            )
+            for sourceIdentifier, source in sources.items()
+        }
 
 
 def _renameLocationAxes(location, axisRenameMap):
