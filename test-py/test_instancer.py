@@ -5,8 +5,19 @@ from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.recordingPen import RecordingPointPen
 
 from fontra.backends import getFileSystemBackend
-from fontra.core.classes import Component, StaticGlyph
-from fontra.core.instancer import FontInstancer, LocationCoordinateSystem
+from fontra.core.classes import (
+    Component,
+    FontAxis,
+    FontSource,
+    Guideline,
+    LineMetric,
+    StaticGlyph,
+)
+from fontra.core.instancer import (
+    FontInstancer,
+    FontSourcesInstancer,
+    LocationCoordinateSystem,
+)
 from fontra.core.path import Contour, Path
 
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -686,3 +697,124 @@ async def test_drawPoints(
 async def test_anchorInterpolation(instancer):
     glyphInstancer = await instancer.getGlyphInstancer("E")
     _ = glyphInstancer.instantiate({"Weight": 400})
+
+
+testData_FontSourcesInstancer = [
+    (
+        {},
+        FontSource(
+            name="Light",
+            location={"Weight": 400, "Width": 50},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=800)},
+            guidelines=[Guideline(name="guide", x=100, y=200, angle=0)],
+        ),
+    ),
+    (
+        {"Weight": 400, "Width": 50},
+        FontSource(
+            name="Light",
+            location={"Weight": 400, "Width": 50},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=800)},
+            guidelines=[Guideline(name="guide", x=100, y=200, angle=0)],
+        ),
+    ),
+    (
+        {"Weight": 900, "Width": 50},
+        FontSource(
+            name="Bold",
+            location={"Weight": 900, "Width": 50},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=900)},
+            guidelines=[],
+        ),
+    ),
+    (
+        {"Weight": 650},
+        FontSource(
+            name="",
+            location={},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=850)},
+            guidelines=[],
+        ),
+    ),
+    (
+        {"Width": 75},
+        FontSource(
+            name="",
+            location={},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=825)},
+            guidelines=[],
+        ),
+    ),
+    (
+        {"Weight": 650, "Width": 75},
+        FontSource(
+            name="",
+            location={},
+            lineMetricsHorizontalLayout={"ascender": LineMetric(value=875)},
+            guidelines=[],
+        ),
+    ),
+]
+
+testAxes_FontSourcesInstancer = [
+    FontAxis(
+        name="Weight",
+        label="Weight",
+        tag="wght",
+        minValue=400,
+        defaultValue=400,
+        maxValue=900,
+    ),
+    FontAxis(
+        name="Width",
+        label="Width",
+        tag="wdth",
+        minValue=50,
+        defaultValue=50,
+        maxValue=100,
+    ),
+]
+
+testSources_FontSourcesInstancer = {
+    "source1": FontSource(
+        name="Light",
+        location={"Weight": 400, "Width": 50},
+        lineMetricsHorizontalLayout={"ascender": LineMetric(value=800)},
+        guidelines=[Guideline(name="guide", x=100, y=200, angle=0)],
+    ),
+    "source2": FontSource(
+        name="Bold",
+        location={"Weight": 900, "Width": 50},
+        lineMetricsHorizontalLayout={"ascender": LineMetric(value=900)},
+        guidelines=[],
+    ),
+    "source3": FontSource(
+        name="Light Wide",
+        location={"Weight": 400, "Width": 100},
+        lineMetricsHorizontalLayout={"ascender": LineMetric(value=850)},
+        guidelines=[],
+    ),
+    "source4": FontSource(
+        name="Bold Wide",
+        location={"Weight": 900, "Width": 100},
+        lineMetricsHorizontalLayout={"ascender": LineMetric(value=950)},
+        guidelines=[],
+    ),
+}
+
+
+@pytest.mark.parametrize("location, expectedSource", testData_FontSourcesInstancer)
+def test_FontSourcesInstancer(location, expectedSource):
+    fsi = FontSourcesInstancer(
+        fontAxes=testAxes_FontSourcesInstancer,
+        fontSources=testSources_FontSourcesInstancer,
+    )
+
+    sourceInstance = fsi.instantiate(location)
+    assert sourceInstance == expectedSource
+
+
+def test_FontSourcesInstancer_empty_sources_list():
+    fsi = FontSourcesInstancer(fontAxes=[], fontSources={})
+    sourceInstance = fsi.instantiate({})
+    assert sourceInstance is None

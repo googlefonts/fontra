@@ -14,16 +14,24 @@ from .classes import (
     Component,
     DiscreteFontAxis,
     FontAxis,
+    FontSource,
     GlyphAxis,
     GlyphSource,
+    Guideline,
     Layer,
+    LineMetric,
     StaticGlyph,
     VariableGlyph,
 )
 from .discretevariationmodel import DiscreteDeltas, DiscreteVariationModel
+from .lrucache import LRUCache
 from .path import InterpolationError, PackedPath, joinPaths
 from .protocols import ReadableFontBackend
-from .varutils import mapAxesFromUserSpaceToSourceSpace
+from .varutils import (
+    locationToTuple,
+    makeDenseLocation,
+    mapAxesFromUserSpaceToSourceSpace,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +52,21 @@ class FontInstancer:
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
-        self.fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
+        self._fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
         self._glyphErrors: set[str] = set()
+
+    async def _ensureSetup(self):
+        if self._fontAxes is None:
+            self._fontAxes = (await self.backend.getAxes()).axes
+
+    @cached_property
+    def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
+        assert self._fontAxes is not None
+        return self._fontAxes
+
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        return {axis.name for axis in self.fontAxes}
 
     async def getGlyphInstancer(
         self,
@@ -53,10 +74,9 @@ class FontInstancer:
         addToCache: bool = False,
         fixComponentLocationCompatibility: bool = True,
     ) -> GlyphInstancer:
+        await self._ensureSetup()
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
-            if self.fontAxes is None:
-                self.fontAxes = (await self.backend.getAxes()).axes
             glyph = await self.backend.getGlyph(glyphName)
             if glyph is None:
                 raise GlyphNotFoundError(glyphName)
@@ -71,11 +91,6 @@ class FontInstancer:
         if errorMessage not in self._glyphErrors:
             logger.error(errorMessage)
             self._glyphErrors.add(errorMessage)
-
-    @cached_property
-    def fontAxisNames(self) -> set[str]:
-        assert self.fontAxes is not None
-        return {axis.name for axis in self.fontAxes}
 
     async def _ensureComponentLocationCompatibility(
         self, glyph: VariableGlyph
@@ -241,9 +256,9 @@ class GlyphInstancer:
                 for compo in instantiatedGlyph.components
             ]
         else:
-            assert isinstance(result.instance, MathGlyph)
-            assert isinstance(result.instance.glyph, StaticGlyph)
-            instantiatedGlyph = result.instance.glyph
+            assert isinstance(result.instance, MathWrapper)
+            assert isinstance(result.instance.subject, StaticGlyph)
+            instantiatedGlyph = result.instance.subject
             componentTypes = self.componentTypes
 
         # Only font axis values can be inherited, so filter out glyph axes
@@ -262,7 +277,6 @@ class GlyphInstancer:
 
     @cached_property
     def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
-        assert self.fontInstancer.fontAxes is not None
         return self.fontInstancer.fontAxes
 
     @cached_property
@@ -337,7 +351,9 @@ class GlyphInstancer:
 
     @cached_property
     def deltas(self) -> DiscreteDeltas:
-        sourceValues = [MathGlyph(layerGlyph) for layerGlyph in self.activeLayerGlyphs]
+        sourceValues = [
+            MathWrapper(layerGlyph) for layerGlyph in self.activeLayerGlyphs
+        ]
         return self.model.getDeltas(sourceValues)
 
     def checkCompatibility(self):
@@ -417,18 +433,114 @@ class GlyphInstance:
         return await instance.getDecomposedPath(transform)
 
 
+@dataclass(kw_only=True)
+class FontSourcesInstancer:
+    fontAxes: list[FontAxis | DiscreteFontAxis]
+    fontSources: dict[str, FontSource]
+
+    def __post_init__(self) -> None:
+        self.fontSourcesDense = {
+            sourceIdentifier: source
+            for sourceIdentifier, source in self.fontSources.items()
+            if not source.isSparse
+        }
+        assert self.fontAxes is not None
+        self.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(self.fontAxes)
+        self.defaultLocation = {
+            axis.name: axis.defaultValue for axis in self.fontAxesSourceSpace
+        }
+        self.sourceIdsByLocation = {
+            locationToTuple(
+                makeDenseLocation(source.location, self.defaultLocation)
+            ): sourceIdentifier
+            for sourceIdentifier, source in self.fontSourcesDense.items()
+        }
+        self._instanceCache = LRUCache(50)
+
+    @cached_property
+    def model(self):
+        locations = [
+            makeDenseLocation(source.location, self.defaultLocation)
+            for source in self.fontSourcesDense.values()
+        ]
+        return DiscreteVariationModel(
+            locations, self.fontAxesSourceSpace, softFail=False
+        )
+
+    @cached_property
+    def deltas(self):
+        guidelinesAreCompatible = areGuidelinesCompatible(
+            list(self.fontSourcesDense.values())
+        )
+
+        fixedSourceValues = [
+            MathWrapper(
+                replace(
+                    source,
+                    location={},
+                    name="",
+                    guidelines=source.goidelines if guidelinesAreCompatible else [],
+                )
+            )
+            for source in self.fontSourcesDense.values()
+        ]
+        return self.model.getDeltas(fixedSourceValues)
+
+    def instantiate(self, sourceLocation):
+        if not self.fontSourcesDense:
+            return None
+
+        sourceLocation = makeDenseLocation(sourceLocation, self.defaultLocation)
+        locationTuple = locationToTuple(sourceLocation)
+
+        sourceIdentifier = self.sourceIdsByLocation.get(locationTuple)
+        if sourceIdentifier is not None:
+            return self.fontSourcesDense[sourceIdentifier]
+
+        sourceInstance = self._instanceCache.get(locationTuple)
+
+        if sourceInstance is None:
+            deltas = self.deltas
+            result = self.model.interpolateFromDeltas(sourceLocation, deltas)
+            if result.errors:
+                logger.error(f"error while interpolating font sources {result.errors}")
+
+            sourceInstance = result.instance.subject
+            assert isinstance(sourceInstance, FontSource)
+            self._instanceCache[locationTuple] = sourceInstance
+
+        return sourceInstance
+
+
+def areGuidelinesCompatible(parents):
+    if not parents:
+        return True  # or False, doesn't matter
+
+    referenceGuidelines = parents[0].guidelines
+
+    for parent in parents[1:]:
+        if len(parent.guidelines) != len(referenceGuidelines):
+            return False
+
+        for guideline, reference in zip(parent.guidelines, referenceGuidelines):
+            if guideline.name != reference.name:
+                return False
+
+    return True
+
+
 @dataclass
-class MathGlyph:
-    glyph: StaticGlyph
+class MathWrapper:
+    subject: Any
 
-    def __add__(self, other: MathGlyph) -> MathGlyph:
-        return MathGlyph(add(self.glyph, other.glyph))
+    def __add__(self, other: MathWrapper) -> MathWrapper:
+        return MathWrapper(add(self.subject, other.subject))
 
-    def __sub__(self, other: MathGlyph) -> MathGlyph:
-        return MathGlyph(subtract(self.glyph, other.glyph))
+    def __sub__(self, other: MathWrapper) -> MathWrapper:
+        return MathWrapper(subtract(self.subject, other.subject))
 
-    def __mul__(self, scalar: MathGlyph) -> MathGlyph:
-        return MathGlyph(multiply(self.glyph, scalar))
+    def __mul__(self, scalar: MathWrapper) -> MathWrapper:
+        return MathWrapper(multiply(self.subject, scalar))
 
 
 @singledispatch
@@ -492,6 +604,21 @@ def _(v: list, scalar):
 
 
 @add.register
+def _(v1: dict, v2):
+    return _dictOperator(v1, v2, add)
+
+
+@subtract.register
+def _(v1: dict, v2):
+    return _dictOperator(v1, v2, subtract)
+
+
+@multiply.register
+def _(v: dict, scalar):
+    return _dictMul(v, scalar)
+
+
+@add.register
 def _(v1: Component, v2):
     return _componentOperator(v1, v2, add)
 
@@ -540,6 +667,79 @@ def _(v: None, scalar):
     return None
 
 
+@add.register
+def _(v1: FontSource, v2):
+    return _fontSourceOperator(v1, v2, add)
+
+
+@subtract.register
+def _(v1: FontSource, v2):
+    return _fontSourceOperator(v1, v2, subtract)
+
+
+@multiply.register
+def _(v: FontSource, scalar):
+    return _fontSourceMul(v, scalar)
+
+
+def _fontSourceOperator(source1, source2, op):
+    return FontSource(
+        name="",
+        location={},
+        lineMetricsHorizontalLayout=op(
+            source1.lineMetricsHorizontalLayout, source2.lineMetricsHorizontalLayout
+        ),
+        lineMetricsVerticalLayout=op(
+            source1.lineMetricsVerticalLayout, source2.lineMetricsVerticalLayout
+        ),
+        italicAngle=op(source1.italicAngle, source2.italicAngle),
+        guidelines=op(source1.guidelines, source2.guidelines),
+    )
+
+
+def _fontSourceMul(source, scalar):
+    return FontSource(
+        name=source.name,
+        location={},
+        lineMetricsHorizontalLayout=multiply(
+            source.lineMetricsHorizontalLayout, scalar
+        ),
+        lineMetricsVerticalLayout=multiply(source.lineMetricsVerticalLayout, scalar),
+        italicAngle=multiply(source.italicAngle, scalar),
+        guidelines=multiply(source.guidelines, scalar),
+    )
+
+
+@add.register
+def _(v1: LineMetric, v2):
+    return _dataClassOperator(v1, v2, add)
+
+
+@subtract.register
+def _(v1: LineMetric, v2):
+    return _dataClassOperator(v1, v2, subtract)
+
+
+@multiply.register
+def _(v: LineMetric, scalar):
+    return _dataClassMul(v, scalar)
+
+
+@add.register
+def _(v1: Guideline, v2):
+    return _dataClassOperator(v1, v2, add)
+
+
+@subtract.register
+def _(v1: Guideline, v2):
+    return _dataClassOperator(v1, v2, subtract)
+
+
+@multiply.register
+def _(v: Guideline, scalar):
+    return _dataClassMul(v, scalar)
+
+
 def _dataClassOperator(v1, v2, op):
     return type(v1)(
         **{
@@ -566,13 +766,23 @@ def _listMul(v1, scalar):
     return [multiply(i1, scalar) for i1 in v1]
 
 
+def _dictOperator(v1, v2, op):
+    if v1.keys() != v2.keys():
+        raise InterpolationError("incompatible component location")
+    return {k: op(v, v2[k]) for k, v in v1.items()}
+
+
+def _dictMul(location, scalar):
+    return {k: multiply(v, scalar) for k, v in location.items()}
+
+
 def _componentOperator(compo1, compo2, op):
     if compo1.name != compo2.name:
         raise InterpolationError("incompatible component name")
     return Component(
         name=compo1.name,
         transformation=op(compo1.transformation, compo2.transformation),
-        location=_locationOperator(compo1.location, compo2.location, op),
+        location=_dictOperator(compo1.location, compo2.location, op),
     )
 
 
@@ -580,7 +790,7 @@ def _componentMul(compo, scalar):
     return Component(
         name=compo.name,
         transformation=multiply(compo.transformation, scalar),
-        location=_locationMul(compo.location, scalar),
+        location=_dictMul(compo.location, scalar),
     )
 
 
@@ -592,16 +802,6 @@ def _anchorOperator(anchor1, anchor2, op):
 
 def _anchorMul(anchor, scalar):
     return replace(anchor, x=anchor.x * scalar, y=anchor.y * scalar)
-
-
-def _locationOperator(v1, v2, op):
-    if v1.keys() != v2.keys():
-        raise InterpolationError("incompatible component location")
-    return {k: op(v, v2[k]) for k, v in v1.items()}
-
-
-def _locationMul(location, scalar):
-    return {k: v * scalar for k, v in location.items()}
 
 
 def mapLocationFromUserToSource(location, fontAxes):
