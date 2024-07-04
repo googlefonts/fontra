@@ -53,6 +53,7 @@ from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
 from ..core.subprocess import runInSubProcess
+from ..core.varutils import makeDenseLocation, makeSparseLocation
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
 
@@ -1861,18 +1862,6 @@ def makeDSSourceIdentifier(
         ) + f"::fontra{sourceIndex:03}-{secrets.token_hex(4)}"
 
     return sourceName
-
-
-def makeSparseLocation(location, defaultLocation):
-    return {
-        name: location[name]
-        for name, value in defaultLocation.items()
-        if location.get(name, value) != value
-    }
-
-
-def makeDenseLocation(location, defaultLocation):
-    return {name: location.get(name, value) for name, value in defaultLocation.items()}
 
 
 def getDefaultSourceName(
