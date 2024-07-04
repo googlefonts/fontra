@@ -666,7 +666,15 @@ function getResizeHandles(resizeBounds, margin) {
 }
 
 function getResizeBounds(glyph, selection) {
-  const selectionBounds = glyph.getSelectionBounds(selection);
+  let selectionBounds;
+  try {
+    selectionBounds = glyph.getSelectionBounds(selection);
+  } catch (e) {
+    // getSelectionBounds may fail, when selection is invalid, for example:
+    // when switching between layers with different amount of components/points
+    return undefined;
+  }
+
   if (!selectionBounds) {
     return undefined;
   }
