@@ -1361,15 +1361,27 @@ function getSelectedContours(path, pointSelection) {
   return [...selectedContours];
 }
 
-function getSelectedOpenContours(path, pointSelection) {
+function getSelectedOpenContours(
+  path,
+  pointSelection,
+  ignoreSinglePointContour = true
+) {
   if (!path || !pointSelection) {
     return [];
   }
   const selectedContours = new Set();
   for (const contourIndex of getSelectedContours(path, pointSelection)) {
-    if (!path.contourInfo[contourIndex].isClosed) {
-      selectedContours.add(contourIndex);
+    if (path.contourInfo[contourIndex].isClosed) {
+      // skip if contour is closed already
+      continue;
     }
+    const contour = path.getContour(contourIndex);
+    const numOnCourvePoints = contour.pointTypes.filter((x) => x == 0).length;
+    if (numOnCourvePoints === 1 && ignoreSinglePointContour) {
+      // skip single point contour
+      continue;
+    }
+    selectedContours.add(contourIndex);
   }
 
   return [...selectedContours];
