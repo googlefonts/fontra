@@ -548,11 +548,8 @@ const identityGuideline = { x: 0, y: 0, angle: 0 };
 
 export function normalizeGuidelines(guidelines, resetLocked = false) {
   return guidelines.map((guideline) => {
-    return {
-      ...identityGuideline,
-      ...guideline,
-      locked: resetLocked ? false : guideline.locked,
-    };
+    const guidelineLocked = resetLocked ? false : guideline.locked ? true : false;
+    return { ...identityGuideline, ...guideline, locked: guidelineLocked };
   });
 }
 
