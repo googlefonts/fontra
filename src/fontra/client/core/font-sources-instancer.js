@@ -29,10 +29,7 @@ export class FontSourcesInstancer {
 
   get model() {
     if (!this._model) {
-      const locations = this.fontSourcesList.map(
-        (source) => source.location,
-        this.fontAxesSourceSpace
-      );
+      const locations = this.fontSourcesList.map((source) => source.location);
       this._model = new DiscreteVariationModel(locations, this.fontAxesSourceSpace);
     }
     return this._model;
