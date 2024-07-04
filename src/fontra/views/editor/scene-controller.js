@@ -1170,13 +1170,16 @@ export class SceneController {
 
   async closeContour() {
     const openContours = this.contextMenuState.openContourSelection;
+    const curveType = this.experimentalFeatures.quadPenTool ? "quad" : "cubic";
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         const path = layerGlyph.path;
         for (const contourIndex of openContours) {
           // close open contour
           path.contourInfo[contourIndex].isClosed = true;
-          this.closeContourEnsureCubicOffCurves(path, contourIndex);
+          if (curveType === "cubic") {
+            this.closeContourEnsureCubicOffCurves(path, contourIndex);
+          }
         }
       }
       return "Close Contour" + (openContours.length > 1 ? "s" : "");
