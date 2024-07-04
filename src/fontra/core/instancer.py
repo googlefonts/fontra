@@ -9,6 +9,7 @@ from typing import Any, Iterable
 from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.varLib.models import piecewiseLinearMap
 
+from .async_property import async_cached_property
 from .classes import (
     Anchor,
     Component,
@@ -67,6 +68,13 @@ class FontInstancer:
     @cached_property
     def fontAxisNames(self) -> set[str]:
         return {axis.name for axis in self.fontAxes}
+
+    @async_cached_property
+    async def fontSourcesInstancer(self):
+        await self._ensureSetup()
+        return FontSourcesInstancer(
+            fontAxes=self.fontAxes, fontSources=await self.backend.getSources()
+        )
 
     async def getGlyphInstancer(
         self,
@@ -446,12 +454,12 @@ class FontSourcesInstancer:
         }
         assert self.fontAxes is not None
         self.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(self.fontAxes)
-        self.defaultLocation = {
+        self.defaultSourceLocation = {
             axis.name: axis.defaultValue for axis in self.fontAxesSourceSpace
         }
         self.sourceIdsByLocation = {
             locationToTuple(
-                makeDenseLocation(source.location, self.defaultLocation)
+                makeDenseLocation(source.location, self.defaultSourceLocation)
             ): sourceIdentifier
             for sourceIdentifier, source in self.fontSourcesDense.items()
         }
@@ -460,7 +468,7 @@ class FontSourcesInstancer:
     @cached_property
     def model(self):
         locations = [
-            makeDenseLocation(source.location, self.defaultLocation)
+            makeDenseLocation(source.location, self.defaultSourceLocation)
             for source in self.fontSourcesDense.values()
         ]
         return DiscreteVariationModel(
@@ -490,7 +498,7 @@ class FontSourcesInstancer:
         if not self.fontSourcesDense:
             return None
 
-        sourceLocation = makeDenseLocation(sourceLocation, self.defaultLocation)
+        sourceLocation = makeDenseLocation(sourceLocation, self.defaultSourceLocation)
         locationTuple = locationToTuple(sourceLocation)
 
         sourceIdentifier = self.sourceIdsByLocation.get(locationTuple)
