@@ -638,12 +638,9 @@ export class SceneController {
     this.contextMenuState.pointSelection = pointSelection;
     this.contextMenuState.componentSelection = componentSelection;
 
-    // relevantSelection does not include cmd + A selection,
-    // why we need the following:
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-    const { point: pointIndices } = parseSelection(this.selection);
     this.contextMenuState.openContourSelection = glyphController.canEdit
-      ? getSelectedOpenContours(glyphController.instance.path, pointIndices)
+      ? getSelectedOpenContours(glyphController.instance.path, pointSelection)
       : [];
   }
 
