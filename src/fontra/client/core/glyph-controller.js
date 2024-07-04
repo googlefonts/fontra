@@ -1077,7 +1077,7 @@ function ensureGlyphCompatibility(layerGlyphs, glyphDependencies) {
           };
         }),
         guidelines: guidelinesAreCompatible
-          ? normalizeGuidelines(glyph.guidelines)
+          ? normalizeGuidelines(glyph.guidelines, true)
           : [],
       },
       true // noCopy

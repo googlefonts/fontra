@@ -47,7 +47,7 @@ export class FontSourcesInstancer {
         location: null,
         name: null,
         guidelines: guidelinesAreCompatible
-          ? normalizeGuidelines(source.guidelines)
+          ? normalizeGuidelines(source.guidelines, true)
           : [],
       };
     });
