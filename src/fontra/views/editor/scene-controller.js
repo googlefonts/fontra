@@ -9,7 +9,11 @@ import { decomposeComponents } from "../core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { ObservableController } from "../core/observable-object.js";
-import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
+import {
+  connectContours,
+  scalePoint,
+  splitPathAtPointIndices,
+} from "../core/path-functions.js";
 import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
 import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
@@ -23,6 +27,7 @@ import {
   zip,
 } from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
+import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
 import { translate, translatePlural } from "/core/localization.js";
@@ -1167,13 +1172,40 @@ export class SceneController {
     const openContours = this.contextMenuState.openContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
         for (const contourIndex of openContours) {
           // close open contour
-          layerGlyph.path.contourInfo[contourIndex].isClosed = true;
+          path.contourInfo[contourIndex].isClosed = true;
+          this.closeContourEnsureCubicOffCurves(path, contourIndex);
         }
       }
       return "Close Contour" + (openContours.length > 1 ? "s" : "");
     });
+  }
+
+  closeContourEnsureCubicOffCurves(path, contourIndex) {
+    const contourInfo = path.contourInfo[contourIndex];
+    const numContourPoints = path.getContour(contourIndex).pointTypes.length;
+
+    const prevEndPoint = path.getPoint(contourInfo.endPoint - 1);
+    const endPoint = path.getPoint(contourInfo.endPoint);
+    const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
+
+    if (prevEndPoint.type || !endPoint.type || startPoint.type) {
+      // Sanity check: we expect on-curve/off-curve/on-curve
+      return;
+    }
+
+    // Compute handles for a cubic segment that will look the same as the
+    // one-off-curve quad segment we have.
+    const [handle1, handle2] = [prevEndPoint, startPoint].map((point) => {
+      return {
+        ...vector.roundVector(scalePoint(point, endPoint, 2 / 3)),
+        type: "cubic",
+      };
+    });
+    path.setContourPoint(contourIndex, numContourPoints - 1, handle1);
+    path.insertPoint(contourIndex, numContourPoints, handle2);
   }
 
   async breakContour() {
