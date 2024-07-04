@@ -31,14 +31,16 @@ export class KnifeTool extends BaseTool {
       return;
     }
 
-    const initialPoint = this.sceneController.selectedGlyphPoint(initialEvent);
-    this.sceneModel.knifeToolPointA = initialPoint;
+    const pointA = this.sceneController.selectedGlyphPoint(initialEvent);
+    this.sceneModel.knifeToolPointA = pointA;
+
     if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
       // TODO: open dialog for numeric size input
       return;
     }
 
     let eventTemp;
+    let pointB;
     for await (const event of eventStream) {
       eventTemp = event;
       const point = this.sceneController.selectedGlyphPoint(event);
@@ -46,7 +48,8 @@ export class KnifeTool extends BaseTool {
         // We can receive non-pointer events like keyboard events: ignore
         continue;
       }
-      this.sceneModel.knifeToolPointB = point;
+
+      this.sceneModel.knifeToolPointB = pointB = point;
       this.sceneModel.event = event;
       this.canvasController.requestUpdate();
     }
@@ -55,6 +58,9 @@ export class KnifeTool extends BaseTool {
     delete this.sceneModel.event;
     this.canvasController.requestUpdate();
 
+    console.log(
+      `KnifeTool: cut from ${pointA.x}, ${pointA.y} to ${pointB.x}, ${pointB.y}`
+    );
     // TODO: cut the path with the knife tool
   }
 
