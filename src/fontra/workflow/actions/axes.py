@@ -380,7 +380,7 @@ class BaseMoveDefaultLocation(BaseFilter):
 
         remainingFontAxisNames = {axis.name for axis in (await self.processedAxes).axes}
 
-        return updateSourcesAndLayers(
+        return updateGlyphSourcesAndLayers(
             instancer,
             self._filterNewLocations(newLocations, await self.newDefaultSourceLocation),
             remainingFontAxisNames,
@@ -629,7 +629,7 @@ class TrimAxes(BaseFilter):
 
         newLocations = trimLocations(originalLocations, ranges)
 
-        return updateSourcesAndLayers(instancer, newLocations)
+        return updateGlyphSourcesAndLayers(instancer, newLocations)
 
 
 def trimLocations(originalLocations, ranges):
@@ -688,7 +688,7 @@ def uniqueSourceIdentifier(sources, seedString):
     return sourceIdentifier
 
 
-def updateSourcesAndLayers(
+def updateGlyphSourcesAndLayers(
     instancer, newLocations, remainingFontAxisNames=None
 ) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
