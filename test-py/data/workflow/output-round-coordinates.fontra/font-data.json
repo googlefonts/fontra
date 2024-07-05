@@ -29,6 +29,62 @@
 ]
 },
 "sources": {
+"639a3665": {
+"name": "weight=439.625",
+"location": {
+"weight": 439.625
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 741.375,
+"zone": 16
+},
+"capHeight": {
+"value": 741.375,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"6c8db0dd": {
+"name": "weight=595",
+"location": {
+"weight": 595
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 763.5714285714286,
+"zone": 16
+},
+"capHeight": {
+"value": 763.5714285714286,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
 "bold-condensed": {
 "name": "BoldCondensed",
 "location": {
@@ -99,13 +155,6 @@
 "y": -10
 }
 ]
-},
-"support.crossbar": {
-"name": "support.crossbar",
-"isSparse": true,
-"location": {
-"weight": 595
-}
 }
 }
 }

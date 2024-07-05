@@ -29,113 +29,11 @@
 ]
 },
 "sources": {
-"bold-condensed": {
-"name": "BoldCondensed",
-"location": {
-"weight": 850,
-"width": 0
-},
-"lineMetricsHorizontalLayout": {
-"ascender": {
-"value": 800,
-"zone": 16
-},
-"capHeight": {
-"value": 800,
-"zone": 16
-},
-"xHeight": {
-"value": 500,
-"zone": 16
-},
-"descender": {
-"value": -200,
-"zone": -16
-},
-"baseline": {
-"value": 0,
-"zone": -16
-}
-}
-},
-"bold-wide": {
-"name": "BoldWide",
-"location": {
-"weight": 850,
-"width": 1000
-},
-"lineMetricsHorizontalLayout": {
-"ascender": {
-"value": 800,
-"zone": 16
-},
-"capHeight": {
-"value": 800,
-"zone": 16
-},
-"xHeight": {
-"value": 500,
-"zone": 16
-},
-"descender": {
-"value": -200,
-"zone": -16
-},
-"baseline": {
-"value": 0,
-"zone": -16
-}
-}
-},
-"light-condensed": {
-"name": "LightCondensed",
+"3c84faa9": {
+"name": "weight=150,width=400",
 "location": {
 "weight": 150,
-"width": 0
-},
-"lineMetricsHorizontalLayout": {
-"ascender": {
-"value": 700,
-"zone": 16
-},
-"capHeight": {
-"value": 700,
-"zone": 16
-},
-"xHeight": {
-"value": 500,
-"zone": 16
-},
-"descender": {
-"value": -200,
-"zone": -16
-},
-"baseline": {
-"value": 0,
-"zone": -16
-}
-},
-"guidelines": [
-{
-"name": "Guideline Cap Height",
-"y": 700
-},
-{
-"name": "Guideline Left",
-"x": 60,
-"angle": 90
-},
-{
-"name": "Guideline Baseline Overshoot",
-"y": -10
-}
-]
-},
-"light-wide": {
-"name": "LightWide",
-"location": {
-"weight": 150,
-"width": 1000
+"width": 400
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -160,28 +58,62 @@
 }
 }
 },
-"support.S.middle": {
-"name": "support.S.middle",
-"isSparse": true,
+"3cfaa0c9": {
+"name": "weight=595,width=400",
 "location": {
 "weight": 595,
-"width": 569.078
+"width": 400
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 763.5714285714286,
+"zone": 16
+},
+"capHeight": {
+"value": 763.5714285714286,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
 }
 },
-"support.S.wide": {
-"name": "support.S.wide",
-"isSparse": true,
+"c0ba4f7a": {
+"name": "weight=850,width=400",
 "location": {
-"weight": 595,
-"width": 1000
-}
+"weight": 850,
+"width": 400
 },
-"support.crossbar": {
-"name": "support.crossbar",
-"isSparse": true,
-"location": {
-"weight": 595,
-"width": 0
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
 }
 }
 }
