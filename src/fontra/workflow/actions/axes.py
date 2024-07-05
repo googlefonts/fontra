@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
@@ -21,6 +22,7 @@ from ...core.classes import (
     structure,
     unstructure,
 )
+from ...core.varutils import locationToTuple, makeDenseLocation
 from . import ActionError
 from .base import (
     BaseFilter,
@@ -28,7 +30,6 @@ from .base import (
     getActiveSources,
     locationToString,
     registerFilterAction,
-    tuplifyLocation,
 )
 
 logger = logging.getLogger(__name__)
@@ -378,6 +379,34 @@ class BaseMoveDefaultLocation(BaseFilter):
             self._filterNewLocations(newLocations, await self.newDefaultSourceLocation),
         )
 
+    @async_cached_property
+    async def processedSources(self):
+        instancer = await self.fontInstancer.fontSourcesInstancer
+        sources = await self.validatedInput.getSources()
+
+        originalDefaultSourceLocation = instancer.defaultSourceLocation
+        newDefaultSourceLocation = await self.newDefaultSourceLocation
+
+        locations = [
+            makeDenseLocation(source.location, originalDefaultSourceLocation)
+            for source in sources.values()
+        ]
+
+        newLocations = moveDefaultLocations(
+            locations,
+            originalDefaultSourceLocation,
+            newDefaultSourceLocation,
+            self.fontInstancer.fontAxisNames,
+        )
+        newLocations = self._filterNewLocations(
+            newLocations, await self.newDefaultSourceLocation
+        )
+
+        return updateFontSources(instancer, newLocations)
+
+    async def getSources(self) -> dict[str, FontSource]:
+        return await self.processedSources
+
     def _filterAxisList(self, axes):
         raise NotImplementedError()
 
@@ -610,16 +639,54 @@ def trimLocation(originalLocation, ranges):
     return newLocation
 
 
+def updateFontSources(instancer, newLocations):
+    axisNames = instancer.fontAxisNames
+    sources = instancer.fontSources
+    sourceIdsByLocation = instancer.sourceIdsByLocation
+
+    locationTuples = sorted(
+        {locationToTuple(filterLocation(loc, axisNames)) for loc in newLocations}
+    )
+
+    newSources = {}
+
+    for locationTuple in locationTuples:
+        sourceIdentifier = sourceIdsByLocation.get(locationTuple)
+        if sourceIdentifier is not None:
+            newSource = sources[sourceIdentifier]
+        else:
+            location = dict(locationTuple)
+            name = locationToString(location)
+            sourceIdentifier = uniqueSourceIdentifier(newSources, name)
+            newSource = instancer.instantiate(location)
+            newSource = replace(newSource, name=name, location=location)
+
+        newSources[sourceIdentifier] = newSource
+
+    return newSources
+
+
+def uniqueSourceIdentifier(sources, seedString):
+    seedBytes = seedString.encode("utf-8")
+    pad = b""
+    while True:
+        sourceIdentifier = hashlib.sha1(seedBytes + pad).hexdigest()[:8]
+        if sourceIdentifier not in sources:
+            break
+        pad += b"+"
+    return sourceIdentifier
+
+
 def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
 
     sourcesByLocation = {
-        tuplifyLocation(filterLocation(source.location, axisNames)): source
+        locationToTuple(filterLocation(source.location, axisNames)): source
         for source in instancer.activeSources
     }
     locationTuples = sorted(
-        {tuplifyLocation(filterLocation(loc, axisNames)) for loc in newLocations}
+        {locationToTuple(filterLocation(loc, axisNames)) for loc in newLocations}
     )
 
     newSources = []
