@@ -940,7 +940,12 @@ def test_command(tmpdir, configYAMLSources):
               destination: "output-subset-features.fontra"
             """,
             False,
-            [],
+            [
+                (
+                    30,
+                    "Removing ineffective feature calt",
+                ),
+            ],
         ),
         (
             "subset-features-closure",
@@ -955,7 +960,12 @@ def test_command(tmpdir, configYAMLSources):
               destination: "output-subset-features.fontra"
             """,
             False,
-            [],
+            [
+                (
+                    30,
+                    "Removing ineffective feature calt",
+                ),
+            ],
         ),
         (
             "round-coordinates",
