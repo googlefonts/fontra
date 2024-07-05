@@ -29,11 +29,10 @@
 ]
 },
 "sources": {
-"3c84faa9": {
-"name": "weight=150,width=400",
+"30916594": {
+"name": "weight=150",
 "location": {
-"weight": 150,
-"width": 400
+"weight": 150
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -58,11 +57,10 @@
 }
 }
 },
-"3cfaa0c9": {
-"name": "weight=595,width=400",
+"6c8db0dd": {
+"name": "weight=595",
 "location": {
-"weight": 595,
-"width": 400
+"weight": 595
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -87,11 +85,10 @@
 }
 }
 },
-"c0ba4f7a": {
-"name": "weight=850,width=400",
+"c196a981": {
+"name": "weight=850",
 "location": {
-"weight": 850,
-"width": 400
+"weight": 850
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {

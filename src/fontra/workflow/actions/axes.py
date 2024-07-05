@@ -409,7 +409,9 @@ class BaseMoveDefaultLocation(BaseFilter):
             newLocations, await self.newDefaultSourceLocation
         )
 
-        return updateFontSources(instancer, newLocations)
+        remainingFontAxisNames = {axis.name for axis in (await self.processedAxes).axes}
+
+        return updateFontSources(instancer, newLocations, remainingFontAxisNames)
 
     async def getSources(self) -> dict[str, FontSource]:
         return await self.processedSources
@@ -646,7 +648,7 @@ def trimLocation(originalLocation, ranges):
     return newLocation
 
 
-def updateFontSources(instancer, newLocations):
+def updateFontSources(instancer, newLocations, remainingFontAxisNames):
     axisNames = instancer.fontAxisNames
     sources = instancer.fontSources
     sourceIdsByLocation = instancer.sourceIdsByLocation
@@ -658,15 +660,17 @@ def updateFontSources(instancer, newLocations):
     newSources = {}
 
     for locationTuple in locationTuples:
+        instanceLocation = dict(locationTuple)
+        newSourceLocation = subsetLocationKeep(instanceLocation, remainingFontAxisNames)
+
         sourceIdentifier = sourceIdsByLocation.get(locationTuple)
         if sourceIdentifier is not None:
-            newSource = sources[sourceIdentifier]
+            newSource = replace(sources[sourceIdentifier], location=newSourceLocation)
         else:
-            location = dict(locationTuple)
-            name = locationToString(location)
+            name = locationToString(newSourceLocation) or "default"
             sourceIdentifier = uniqueSourceIdentifier(newSources, name)
-            newSource = instancer.instantiate(location)
-            newSource = replace(newSource, name=name, location=location)
+            newSource = instancer.instantiate(instanceLocation)
+            newSource = replace(newSource, name=name, location=newSourceLocation)
 
         newSources[sourceIdentifier] = newSource
 
@@ -690,7 +694,7 @@ def updateSourcesAndLayers(
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
 
-    remainingAxisName = (
+    remainingAxisNames = (
         axisNames
         if remainingFontAxisNames is None
         else remainingFontAxisNames | {axis.name for axis in glyph.axes}
@@ -708,10 +712,10 @@ def updateSourcesAndLayers(
     newLayers = {}
 
     for locationTuple in locationTuples:
-        source = sourcesByLocation.get(locationTuple)
         instanceLocation = dict(locationTuple)
-        newSourceLocation = subsetLocationKeep(instanceLocation, remainingAxisName)
+        newSourceLocation = subsetLocationKeep(instanceLocation, remainingAxisNames)
 
+        source = sourcesByLocation.get(locationTuple)
         if source is not None:
             source = replace(source, location=newSourceLocation)
             newLayers[source.layerName] = glyph.layers[source.layerName]

@@ -7,12 +7,8 @@
 "licenseDescription": "License same as MutatorMath. BSD 3-clause. [test-token: C]"
 },
 "sources": {
-"99160889": {
-"name": "weight=325,width=400",
-"location": {
-"weight": 325,
-"width": 400
-},
+"7505d64a": {
+"name": "default",
 "lineMetricsHorizontalLayout": {
 "ascender": {
 "value": 725,
