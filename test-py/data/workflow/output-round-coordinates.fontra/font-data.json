@@ -85,18 +85,18 @@
 }
 }
 },
-"bold-condensed": {
-"name": "BoldCondensed",
+"c47cc23e": {
+"name": "weight=704.75",
 "location": {
-"weight": 850
+"weight": 704.75
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 800,
+"value": 779.25,
 "zone": 16
 },
 "capHeight": {
-"value": 800,
+"value": 779.25,
 "zone": 16
 },
 "xHeight": {
@@ -113,18 +113,18 @@
 }
 }
 },
-"light-condensed": {
-"name": "LightCondensed",
+"c81502e8": {
+"name": "weight=257.625",
 "location": {
-"weight": 150
+"weight": 257.625
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 700,
+"value": 715.375,
 "zone": 16
 },
 "capHeight": {
-"value": 700,
+"value": 715.375,
 "zone": 16
 },
 "xHeight": {
@@ -139,22 +139,7 @@
 "value": 0,
 "zone": -16
 }
-},
-"guidelines": [
-{
-"name": "Guideline Cap Height",
-"y": 700
-},
-{
-"name": "Guideline Left",
-"x": 60,
-"angle": 90
-},
-{
-"name": "Guideline Baseline Overshoot",
-"y": -10
 }
-]
 }
 }
 }
