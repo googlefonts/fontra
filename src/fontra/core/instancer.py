@@ -454,6 +454,7 @@ class FontSourcesInstancer:
         }
         assert self.fontAxes is not None
         self.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(self.fontAxes)
+        self.fontAxisNames = {axis.name for axis in self.fontAxes}
         self.defaultSourceLocation = {
             axis.name: axis.defaultValue for axis in self.fontAxesSourceSpace
         }
@@ -487,7 +488,7 @@ class FontSourcesInstancer:
                     source,
                     location={},
                     name="",
-                    guidelines=source.goidelines if guidelinesAreCompatible else [],
+                    guidelines=source.guidelines if guidelinesAreCompatible else [],
                 )
             )
             for source in self.fontSourcesDense.values()
