@@ -269,7 +269,7 @@ class SubsetAxes(BaseFilter):
         return mapGlyphSourceLocationsAndFilter(glyph, await self.mapFilterLocationFunc)
 
     @async_cached_property
-    async def processedSources(self):
+    async def processedSources(self) -> dict[str, FontSource]:
         sources = await self.validatedInput.getSources()
         return mapFontSourceLocationsAndFilter(
             sources, await self.mapFilterLocationFunc
@@ -387,7 +387,7 @@ class BaseMoveDefaultLocation(BaseFilter):
         )
 
     @async_cached_property
-    async def processedSources(self):
+    async def processedSources(self) -> dict[str, FontSource]:
         instancer = await self.fontInstancer.fontSourcesInstancer
         sources = await self.validatedInput.getSources()
 
@@ -606,6 +606,27 @@ class TrimAxes(BaseFilter):
         trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
         return trimmedAxes
 
+    @async_cached_property
+    async def processedSources(self) -> dict[str, FontSource]:
+        instancer = await self.fontInstancer.fontSourcesInstancer
+        sources = await self.validatedInput.getSources()
+
+        defaultLocation = instancer.defaultSourceLocation
+
+        originalLocations = [
+            makeDenseLocation(source.location, defaultLocation)
+            for source in sources.values()
+        ]
+
+        _, trimmedRanges = await self._trimmedAxesAndSourceRanges
+
+        newLocations = trimLocations(originalLocations, trimmedRanges)
+
+        return updateFontSources(instancer, newLocations)
+
+    async def getSources(self) -> dict[str, FontSource]:
+        return await self.processedSources
+
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
@@ -648,10 +669,13 @@ def trimLocation(originalLocation, ranges):
     return newLocation
 
 
-def updateFontSources(instancer, newLocations, remainingFontAxisNames):
+def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
     axisNames = instancer.fontAxisNames
     sources = instancer.fontSources
     sourceIdsByLocation = instancer.sourceIdsByLocation
+
+    if remainingFontAxisNames is None:
+        remainingFontAxisNames = axisNames
 
     locationTuples = sorted(
         {locationToTuple(filterLocation(loc, axisNames)) for loc in newLocations}
