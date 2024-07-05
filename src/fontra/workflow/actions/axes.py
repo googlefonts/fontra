@@ -347,12 +347,16 @@ class BaseMoveDefaultLocation(BaseFilter):
             for axis in relevantAxes
         }
 
-    async def getAxes(self) -> Axes:
+    @async_cached_property
+    async def processedAxes(self) -> Axes:
         axes = await self.inputAxes
         return replace(
             axes,
             axes=self._filterAxisList(axes.axes),
         )
+
+    async def getAxes(self) -> Axes:
+        return await self.processedAxes
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
