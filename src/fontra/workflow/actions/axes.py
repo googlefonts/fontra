@@ -378,9 +378,12 @@ class BaseMoveDefaultLocation(BaseFilter):
             allAxisNames,
         )
 
+        remainingFontAxisNames = {axis.name for axis in (await self.processedAxes).axes}
+
         return updateSourcesAndLayers(
             instancer,
             self._filterNewLocations(newLocations, await self.newDefaultSourceLocation),
+            remainingFontAxisNames,
         )
 
     @async_cached_property
@@ -681,9 +684,17 @@ def uniqueSourceIdentifier(sources, seedString):
     return sourceIdentifier
 
 
-def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
+def updateSourcesAndLayers(
+    instancer, newLocations, remainingFontAxisNames=None
+) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
+
+    remainingAxisName = (
+        axisNames
+        if remainingFontAxisNames is None
+        else remainingFontAxisNames | {axis.name for axis in glyph.axes}
+    )
 
     sourcesByLocation = {
         locationToTuple(filterLocation(source.location, axisNames)): source
@@ -698,13 +709,16 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
 
     for locationTuple in locationTuples:
         source = sourcesByLocation.get(locationTuple)
+        instanceLocation = dict(locationTuple)
+        newSourceLocation = subsetLocationKeep(instanceLocation, remainingAxisName)
+
         if source is not None:
+            source = replace(source, location=newSourceLocation)
             newLayers[source.layerName] = glyph.layers[source.layerName]
         else:
-            location = dict(locationTuple)
-            name = locationToString(location)
-            source = GlyphSource(name=name, location=location, layerName=name)
-            instance = instancer.instantiate(location)
+            name = locationToString(newSourceLocation) or "default"
+            source = GlyphSource(name=name, location=newSourceLocation, layerName=name)
+            instance = instancer.instantiate(instanceLocation)
             newLayers[source.layerName] = Layer(glyph=instance.glyph)
 
         newSources.append(source)
