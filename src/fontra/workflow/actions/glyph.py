@@ -8,7 +8,14 @@ from typing import Any
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
 
-from ...core.classes import Component, GlyphSource, Layer, StaticGlyph, VariableGlyph
+from ...core.classes import (
+    Component,
+    FontSource,
+    GlyphSource,
+    Layer,
+    StaticGlyph,
+    VariableGlyph,
+)
 from ...core.path import PackedPath
 from .base import (
     BaseFilter,
@@ -254,6 +261,8 @@ class RoundCoordinates(BaseFilter):
     roundComponentOrigins: bool = True
     roundGlyphMetrics: bool = True
     roundAnchors: bool = True
+    roundLineMetrics: bool = True
+    roundKerning: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         roundPathCoordinates = self.roundPathCoordinates
@@ -275,6 +284,17 @@ class RoundCoordinates(BaseFilter):
             for layerName, layer in glyph.layers.items()
         }
         return replace(glyph, layers=newLayers)
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        if not self.roundLineMetrics:
+            return sources
+
+        return {
+            sourceIdentifier: roundFontSourceCoordinates(source)
+            for sourceIdentifier, source in sources.items()
+        }
 
 
 def roundCoordinates(
@@ -313,6 +333,23 @@ def roundCoordinates(
         ]
 
     return replace(glyph, **newFields)
+
+
+def roundFontSourceCoordinates(source):
+    return replace(
+        source,
+        lineMetricsHorizontalLayout=roundLineMetrics(
+            source.lineMetricsHorizontalLayout
+        ),
+        lineMetricsVerticalLayout=roundLineMetrics(source.lineMetricsVerticalLayout),
+    )
+
+
+def roundLineMetrics(lineMetrics):
+    return {
+        name: replace(metric, value=round(metric.value), zone=round(metric.zone))
+        for name, metric in lineMetrics.items()
+    }
 
 
 @registerFilterAction("set-vertical-glyph-metrics")
