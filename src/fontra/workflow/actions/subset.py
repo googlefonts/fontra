@@ -122,6 +122,9 @@ def subsetKerning(kernTable, glyphNames):
         if rightDict and (left in glyphNames or left in newGroups):
             newValues[left] = rightDict
 
+    # TODO: should groups be dropped that are not used (anymore) in the subsetted
+    # kerning?
+
     return replace(kernTable, groups=newGroups, values=newValues)
 
 
