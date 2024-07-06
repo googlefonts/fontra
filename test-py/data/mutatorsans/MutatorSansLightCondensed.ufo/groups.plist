@@ -5,10 +5,14 @@
     <key>public.kern1.@MMK_L_A</key>
     <array>
       <string>A</string>
+      <string>Aacute</string>
+      <string>Adieresis</string>
     </array>
     <key>public.kern2.@MMK_R_A</key>
     <array>
       <string>A</string>
+      <string>Aacute</string>
+      <string>Adieresis</string>
     </array>
     <key>testGroup</key>
     <array>
