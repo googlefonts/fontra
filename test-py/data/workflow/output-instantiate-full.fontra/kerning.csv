@@ -1,0 +1,11 @@
+TYPE
+kern
+
+GROUPS
+public.kern1.@MMK_L_A;A
+public.kern2.@MMK_R_A;A
+
+VALUES
+side1;side2;light-condensed;bold-condensed;light-wide;bold-wide
+B;A;;-20;;
+B;public.kern2.@MMK_R_A;;;-25;

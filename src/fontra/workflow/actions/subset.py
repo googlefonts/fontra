@@ -25,10 +25,12 @@ class BaseGlyphSubsetter(BaseFilter):
 
     async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
         glyphMap, _ = await self._subsettedGlyphMapAndFeatures
-        return {
-            kernType: subsetKerning(kernTable, glyphMap)
-            for kernType, kernTable in kerning.items()
-        }
+        newKerning = {}
+        for kernType, kernTable in kerning.items():
+            newKernTable = subsetKerning(kernTable, glyphMap)
+            if newKernTable.groups or newKernTable.values:
+                newKerning[kernType] = newKernTable
+        return newKerning
 
     async def getFeatures(self) -> OpenTypeFeatures:
         _, features = await self._subsettedGlyphMapAndFeatures
