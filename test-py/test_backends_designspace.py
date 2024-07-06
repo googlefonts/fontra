@@ -890,7 +890,12 @@ async def test_kerning_read_write(writableTestFont):
     reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedKerning = await reopenedFont.getKerning()
     assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
-    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == ["A", "X"]
+    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == [
+        "A",
+        "Aacute",
+        "Adieresis",
+        "X",
+    ]
 
 
 def fileNamesFromDir(path):
