@@ -252,6 +252,25 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
+            "subset-glyphs-kerning",
+            """
+            steps:
+
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+
+            - filter: drop-shapes
+
+            - filter: subset-glyphs
+              glyphNames: ["A", "O", "T", "V"]
+
+            - output: fontra-write
+              destination: "output-subset-glyphs-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "subset+scale",
             """
             steps:

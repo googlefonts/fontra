@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ...core.async_property import async_cached_property
-from ...core.classes import OpenTypeFeatures, VariableGlyph
+from ...core.classes import Kerning, OpenTypeFeatures, VariableGlyph
 from ..features import LayoutHandling, subsetFeatures
 from . import ActionError
 from .base import BaseFilter, getActiveSources, registerFilterAction
@@ -22,6 +22,13 @@ class BaseGlyphSubsetter(BaseFilter):
         if glyphName not in glyphMap:
             return None
         return await self.validatedInput.getGlyph(glyphName)
+
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        glyphMap, _ = await self._subsettedGlyphMapAndFeatures
+        return {
+            kernType: subsetKerning(kernTable, glyphMap)
+            for kernType, kernTable in kerning.items()
+        }
 
     async def getFeatures(self) -> OpenTypeFeatures:
         _, features = await self._subsettedGlyphMapAndFeatures
@@ -94,6 +101,26 @@ class BaseGlyphSubsetter(BaseFilter):
             glyphsToCheck.update(uncheckedGlyphs)
 
         return glyphNamesExpanded
+
+
+def subsetKerning(kernTable, glyphNames):
+    newGroups = {}
+    for groupName, group in kernTable.groups.items():
+        group = [glyphName for glyphName in group if glyphName in glyphNames]
+        if group:
+            newGroups[groupName] = group
+
+    newValues = {}
+    for left, rightDict in kernTable.values.items():
+        rightDict = {
+            right: values
+            for right, values in rightDict.items()
+            if right in glyphNames or right in newGroups
+        }
+        if rightDict and (left in glyphNames or left in newGroups):
+            newValues[left] = rightDict
+
+    return replace(kernTable, groups=newGroups, values=newValues)
 
 
 def getComponentNames(glyph):
