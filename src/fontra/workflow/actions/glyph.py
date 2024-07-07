@@ -94,10 +94,11 @@ class Scale(BaseFilter):
         )
 
     async def processUnitsPerEm(self, unitsPerEm: int) -> int:
-        if self.scaleFontMetrics:
-            return otRound(unitsPerEm * self.scaleFactor)
-        else:
-            return unitsPerEm
+        return (
+            otRound(unitsPerEm * self.scaleFactor)
+            if self.scaleFontMetrics
+            else unitsPerEm
+        )
 
 
 @registerFilterAction("decompose-composites")
