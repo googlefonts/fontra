@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass(kw_only=True)
 class Scale(BaseFilter):
     scaleFactor: float
-    scaleUnitsPerEm: bool = True
+    scaleFontMetrics: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         transformation = Transform().scale(self.scaleFactor)
@@ -94,7 +94,7 @@ class Scale(BaseFilter):
         )
 
     async def processUnitsPerEm(self, unitsPerEm: int) -> int:
-        if self.scaleUnitsPerEm:
+        if self.scaleFontMetrics:
             return otRound(unitsPerEm * self.scaleFactor)
         else:
             return unitsPerEm

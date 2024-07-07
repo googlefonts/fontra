@@ -139,7 +139,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
@@ -162,7 +162,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
@@ -280,7 +280,7 @@ def test_command(tmpdir, configYAMLSources):
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["B", "Adieresis"]
                 glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
@@ -293,6 +293,26 @@ def test_command(tmpdir, configYAMLSources):
 
             - output: fontra-write
               destination: "output-subset-scale.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "subset-scale-kerning",
+            """
+            steps:
+
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+              steps:
+              - filter: scale
+                scaleFactor: 0.75
+              - filter: drop-shapes
+              - filter: subset-glyphs
+                glyphNames: ["A", "T", "V"]
+
+            - output: fontra-write
+              destination: "output-subset-scale-kerning.fontra"
             """,
             False,
             [],
