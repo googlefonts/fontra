@@ -107,13 +107,30 @@ class Scale(BaseFilter):
             return sources
 
         return {
-            sourceIdentifier: scaleFontSourceCoordinates(source)
+            sourceIdentifier: scaleFontSourceCoordinates(source, self.scaleFactor)
             for sourceIdentifier, source in sources.items()
         }
 
 
-def scaleFontSourceCoordinates(source):
-    return source
+def scaleFontSourceCoordinates(source, scaleFactor):
+    return replace(
+        source,
+        lineMetricsHorizontalLayout=scaleLineMetrics(
+            source.lineMetricsHorizontalLayout, scaleFactor
+        ),
+        lineMetricsVerticalLayout=scaleLineMetrics(
+            source.lineMetricsVerticalLayout, scaleFactor
+        ),
+    )
+
+
+def scaleLineMetrics(lineMetrics, scaleFactor):
+    return {
+        name: replace(
+            metric, value=metric.value * scaleFactor, zone=metric.zone * scaleFactor
+        )
+        for name, metric in lineMetrics.items()
+    }
 
 
 @registerFilterAction("decompose-composites")
