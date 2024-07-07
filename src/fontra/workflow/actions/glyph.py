@@ -12,6 +12,7 @@ from ...core.classes import (
     Component,
     FontSource,
     GlyphSource,
+    Kerning,
     Layer,
     StaticGlyph,
     VariableGlyph,
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 class Scale(BaseFilter):
     scaleFactor: float
     scaleFontMetrics: bool = True
+    scaleKerning: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         transformation = Transform().scale(self.scaleFactor)
@@ -111,6 +113,15 @@ class Scale(BaseFilter):
             for sourceIdentifier, source in sources.items()
         }
 
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        if not self.scaleKerning:
+            return kerning
+
+        return {
+            kernType: scaleKerning(kernTable, self.scaleFactor)
+            for kernType, kernTable in kerning.items()
+        }
+
 
 def scaleFontSourceCoordinates(source, scaleFactor):
     return replace(
@@ -131,6 +142,19 @@ def scaleLineMetrics(lineMetrics, scaleFactor):
         )
         for name, metric in lineMetrics.items()
     }
+
+
+def scaleKerning(kernTable: Kerning, scaleFactor) -> Kerning:
+    return replace(
+        kernTable,
+        values={
+            left: {
+                right: [v * scaleFactor if v else v for v in values]
+                for right, values in rightDict.items()
+            }
+            for left, rightDict in kernTable.values.items()
+        },
+    )
 
 
 @registerFilterAction("decompose-composites")
