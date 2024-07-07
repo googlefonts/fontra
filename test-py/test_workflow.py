@@ -311,6 +311,7 @@ def test_command(tmpdir, configYAMLSources):
               - filter: drop-shapes
               - filter: subset-glyphs
                 glyphNames: ["A", "T", "V"]
+              - filter: round-coordinates
 
             - output: fontra-write
               destination: "output-subset-scale-kerning.fontra"

@@ -353,6 +353,14 @@ class RoundCoordinates(BaseFilter):
             for sourceIdentifier, source in sources.items()
         }
 
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        if not self.roundKerning:
+            return kerning
+
+        return {
+            kernType: roundKerning(kernTable) for kernType, kernTable in kerning.items()
+        }
+
 
 def roundCoordinates(
     glyph, roundPathCoordinates, roundComponentOrigins, roundGlyphMetrics, roundAnchors
@@ -407,6 +415,19 @@ def roundLineMetrics(lineMetrics):
         name: replace(metric, value=round(metric.value), zone=round(metric.zone))
         for name, metric in lineMetrics.items()
     }
+
+
+def roundKerning(kernTable: Kerning) -> Kerning:
+    return replace(
+        kernTable,
+        values={
+            left: {
+                right: [round(v) if v else v for v in values]
+                for right, values in rightDict.items()
+            }
+            for left, rightDict in kernTable.values.items()
+        },
+    )
 
 
 @registerFilterAction("set-vertical-glyph-metrics")
