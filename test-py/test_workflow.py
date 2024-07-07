@@ -11,7 +11,7 @@ from fontra.backends import getFileSystemBackend
 from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
 from fontra.workflow.actions import FilterActionProtocol, getActionClass
-from fontra.workflow.actions import glyph as _  # noqa
+from fontra.workflow.actions import glyph as _  # noqa  for test_scaleAction
 from fontra.workflow.workflow import Workflow
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"

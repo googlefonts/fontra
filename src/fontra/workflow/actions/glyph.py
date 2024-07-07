@@ -100,6 +100,21 @@ class Scale(BaseFilter):
             else unitsPerEm
         )
 
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        if not self.scaleFontMetrics:
+            return sources
+
+        return {
+            sourceIdentifier: scaleFontSourceCoordinates(source)
+            for sourceIdentifier, source in sources.items()
+        }
+
+
+def scaleFontSourceCoordinates(source):
+    return source
+
 
 @registerFilterAction("decompose-composites")
 @dataclass(kw_only=True)
