@@ -214,7 +214,7 @@ def test_command(tmpdir, configYAMLSources):
     "testName, configSource, continueOnError, expectedLog",
     [
         (
-            "plain-merge",
+            "merge-plain",
             """
             steps:
             - input: fontra-read
@@ -222,7 +222,7 @@ def test_command(tmpdir, configYAMLSources):
             - input: fontra-read
               source: "test-py/data/workflow/input1-B.fontra"
             - output: fontra-write
-              destination: "output1.fontra"
+              destination: "output-merge-plain.fontra"
             """,
             False,
             [
@@ -233,7 +233,7 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
-            "axis-merge-1",
+            "merge-axes",
             """
             steps:
             - input: fontra-read
@@ -241,7 +241,7 @@ def test_command(tmpdir, configYAMLSources):
             - input: fontra-read
               source: "test-py/data/workflow/input2-B.fontra"
             - output: fontra-write
-              destination: "output2.fontra"
+              destination: "output-merge-axes.fontra"
             """,
             False,
             [
@@ -271,7 +271,7 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
-            "subset+scale",
+            "subset-scale",
             """
             steps:
 
@@ -292,7 +292,7 @@ def test_command(tmpdir, configYAMLSources):
                 glyphNames: ["C", "D"]
 
             - output: fontra-write
-              destination: "output3.fontra"
+              destination: "output-subset-scale.fontra"
             """,
             False,
             [],
