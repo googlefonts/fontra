@@ -733,41 +733,25 @@ async def processKerningHelper(filter, kerning):
     return updateKerning(
         kerning,
         instancer.fontAxesSourceSpace,
-        instancer.defaultSourceIdentifier,
         sourceLocations,
         instanceLocations,
     )
 
 
-def updateKerning(
-    kerning,
-    fontAxesSourceSpace,
-    defaultSourceIdentifier,
-    sourceLocations,
-    instanceLocations,
-):
+def updateKerning(kerning, fontAxesSourceSpace, sourceLocations, instanceLocations):
     return {
         kernType: updateKerningTable(
-            kernTable,
-            fontAxesSourceSpace,
-            defaultSourceIdentifier,
-            sourceLocations,
-            instanceLocations,
+            kernTable, fontAxesSourceSpace, sourceLocations, instanceLocations
         )
         for kernType, kernTable in kerning.items()
     }
 
 
 def updateKerningTable(
-    kernTable,
-    fontAxesSourceSpace,
-    defaultSourceIdentifier,
-    sourceLocations,
-    instanceLocations,
+    kernTable, fontAxesSourceSpace, sourceLocations, instanceLocations
 ):
     locations = [sourceLocations[sid] for sid in kernTable.sourceIdentifiers]
     model = DiscreteVariationModel(locations, fontAxesSourceSpace, softFail=False)
-    defaultSourceIndex = kernTable.sourceIdentifiers.index(defaultSourceIdentifier)
 
     newKernValues = {}
 
@@ -775,9 +759,8 @@ def updateKerningTable(
         newRightDict = {}
 
         for right, values in rightDict.items():
-            if values[defaultSourceIndex] is None:
-                values = list(values)
-                values[defaultSourceIndex] = 0  # XXX
+            # Fill in missing values
+            values = [0 if v is None else v for v in values]
             deltas = model.getDeltas(values)
             newRightDict[right] = [
                 model.interpolateFromDeltas(instanceLocation, deltas).instance
