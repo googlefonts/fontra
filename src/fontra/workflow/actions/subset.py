@@ -25,12 +25,7 @@ class BaseGlyphSubsetter(BaseFilter):
 
     async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
         glyphMap, _ = await self._subsettedGlyphMapAndFeatures
-        newKerning = {}
-        for kernType, kernTable in kerning.items():
-            newKernTable = subsetKerning(kernTable, glyphMap)
-            if newKernTable.groups or newKernTable.values:
-                newKerning[kernType] = newKernTable
-        return newKerning
+        return subsetKerning(kerning, glyphMap)
 
     async def getFeatures(self) -> OpenTypeFeatures:
         _, features = await self._subsettedGlyphMapAndFeatures
@@ -105,7 +100,16 @@ class BaseGlyphSubsetter(BaseFilter):
         return glyphNamesExpanded
 
 
-def subsetKerning(kernTable, glyphNames):
+def subsetKerning(kerning, glyphNames):
+    newKerning = {}
+    for kernType, kernTable in kerning.items():
+        newKernTable = subsetKernTable(kernTable, glyphNames)
+        if newKernTable.groups or newKernTable.values:
+            newKerning[kernType] = newKernTable
+    return newKerning
+
+
+def subsetKernTable(kernTable, glyphNames):
     newGroups = {}
     for groupName, group in kernTable.groups.items():
         group = [glyphName for glyphName in group if glyphName in glyphNames]
