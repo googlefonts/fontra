@@ -41,7 +41,7 @@ class DiscreteVariationModel:
         self._locationIndices: dict[LocationTupleType, list[int]] = {}
 
         for index, location in enumerate(self.locations):
-            discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
+            discreteLocation, continuousLocation = self.splitDiscreteLocation(location)
             key = locationToTuple(discreteLocation)
             self._locationKeys.append(key)
             if key not in self._locationIndices:
@@ -49,7 +49,7 @@ class DiscreteVariationModel:
             else:
                 self._locationIndices[key].append(index)
             normalizedLocation = makeSparseNormalizedLocation(
-                normalizeLocation(contiuousLocation, self._continuousAxesTriples)
+                normalizeLocation(continuousLocation, self._continuousAxesTriples)
             )
             if key not in self._locations:
                 self._locations[key] = [normalizedLocation]
@@ -116,13 +116,13 @@ class DiscreteVariationModel:
         return collectedErrors
 
     def interpolateFromDeltas(self, location, deltas) -> InterpolationResult:
-        discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
+        discreteLocation, continuousLocation = self.splitDiscreteLocation(location)
         key = locationToTuple(discreteLocation)
 
         discreteDeltas, model, errors = self._getDiscreteDeltasAndModel(key, deltas)
 
         instance = model.interpolateFromDeltas(
-            normalizeLocation(contiuousLocation, self._continuousAxesTriples),
+            normalizeLocation(continuousLocation, self._continuousAxesTriples),
             discreteDeltas,
         )
         return InterpolationResult(instance=instance, errors=errors)
