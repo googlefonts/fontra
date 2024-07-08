@@ -135,8 +135,6 @@ class DiscreteVariationModel:
             if None in sourceValues:
                 model, sourceValues = model.getSubModel(sourceValues)
 
-            deltas.models[key] = model
-
             try:
                 deltas.deltas[key] = model.getDeltas(sourceValues)
             except Exception as exc:  # ??? Which exception really
@@ -151,6 +149,8 @@ class DiscreteVariationModel:
                 deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey])
                 cachedModelInfo = (model, usedKey, errors)
                 self._models[key] = cachedModelInfo
+
+            deltas.models[key] = model
 
         return deltas.deltas[key], deltas.models[key], errors
 
