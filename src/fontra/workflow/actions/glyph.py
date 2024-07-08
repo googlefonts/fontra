@@ -422,7 +422,7 @@ def roundKerning(kernTable: Kerning) -> Kerning:
         kernTable,
         values={
             left: {
-                right: [round(v) if v else v for v in values]
+                right: [round(v) if v is not None else v for v in values]
                 for right, values in rightDict.items()
             }
             for left, rightDict in kernTable.values.items()
