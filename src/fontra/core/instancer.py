@@ -467,7 +467,7 @@ class FontSourcesInstancer:
         self._instanceCache = LRUCache(50)
 
     @cached_property
-    def defaultSourceIdentifier(self) -> str:
+    def defaultSourceIdentifier(self) -> str | None:
         locationTuple = locationToTuple(self.defaultSourceLocation)
         return self.sourceIdsByLocation.get(locationTuple)
 
