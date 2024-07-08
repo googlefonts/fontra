@@ -6,6 +6,6 @@ public.kern1.@MMK_L_A;A
 public.kern2.@MMK_R_A;A
 
 VALUES
-side1;side2;light-condensed;bold-condensed;light-wide;bold-wide
-B;A;;-20;;
-B;public.kern2.@MMK_R_A;;;-25;
+side1;side2;30916594;6c8db0dd;c196a981
+B;A;0.0;-13;-20
+B;public.kern2.@MMK_R_A;-10;-10;-10
