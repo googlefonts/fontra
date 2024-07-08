@@ -162,7 +162,7 @@ class DesignspaceBackend:
         self.zombieDSSources: dict[str, DSSource] = {}
 
     def startOptionalBackgroundTasks(self) -> None:
-        _ = self.glyphDependencies  # trigger background task
+        self._backgroundTasksTask = asyncio.create_task(self.glyphDependencies)
 
     @property
     def familyName(self) -> str:
