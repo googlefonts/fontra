@@ -387,7 +387,7 @@ class BaseMoveDefaultLocation(BaseFilter):
         )
 
     @async_cached_property
-    async def processedSources(self) -> dict[str, FontSource]:
+    async def processedSourcesAndLocations(self) -> dict[str, FontSource]:
         instancer = await self.fontInstancer.fontSourcesInstancer
         sources = await self.validatedInput.getSources()
 
@@ -414,7 +414,8 @@ class BaseMoveDefaultLocation(BaseFilter):
         return updateFontSources(instancer, newLocations, remainingFontAxisNames)
 
     async def getSources(self) -> dict[str, FontSource]:
-        return await self.processedSources
+        processedSources, _ = await self.processedSourcesAndLocations
+        return processedSources
 
     def _filterAxisList(self, axes):
         raise NotImplementedError()
@@ -607,7 +608,7 @@ class TrimAxes(BaseFilter):
         return trimmedAxes
 
     @async_cached_property
-    async def processedSources(self) -> dict[str, FontSource]:
+    async def processedSourcesAndLocations(self) -> dict[str, FontSource]:
         instancer = await self.fontInstancer.fontSourcesInstancer
         sources = await self.validatedInput.getSources()
 
@@ -625,7 +626,8 @@ class TrimAxes(BaseFilter):
         return updateFontSources(instancer, newLocations)
 
     async def getSources(self) -> dict[str, FontSource]:
-        return await self.processedSources
+        processedSources, _ = await self.processedSourcesAndLocations
+        return processedSources
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
@@ -682,6 +684,7 @@ def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
     )
 
     newSources = {}
+    instanceLocations = {}
 
     for locationTuple in locationTuples:
         instanceLocation = dict(locationTuple)
@@ -697,8 +700,9 @@ def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
             newSource = replace(newSource, name=name, location=newSourceLocation)
 
         newSources[sourceIdentifier] = newSource
+        instanceLocations[sourceIdentifier] = instanceLocation
 
-    return newSources
+    return newSources, instanceLocations
 
 
 def uniqueSourceIdentifier(sources, seedString):
