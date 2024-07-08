@@ -64,7 +64,7 @@ class DiscreteVariationModel:
         for key, value in zip(self._locationKeys, sourceValues, strict=True):
             sources[key].append(value)
 
-        return DiscreteDeltas(sources=dict(sources), deltas={})
+        return DiscreteDeltas(sources=dict(sources), deltas={}, models={})
 
     def _getModel(self, key: LocationTupleType) -> CachedModelInfoType:
         cachedModelInfo = self._models.get(key)
@@ -131,8 +131,19 @@ class DiscreteVariationModel:
         model, usedKey, errors = self._getModel(key)
 
         if key not in deltas.deltas:
+            sourceValues = deltas.sources[usedKey]
+            if None in sourceValues:
+                subModel, subSourceValues = model.getSubModel(sourceValues)
+                assert len(subSourceValues) == len(subModel.locations), (
+                    sourceValues,
+                    subSourceValues,
+                )
+                model, sourceValues = subModel, subSourceValues
+
+            deltas.models[key] = model
+
             try:
-                deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey])
+                deltas.deltas[key] = model.getDeltas(sourceValues)
             except Exception as exc:  # ??? Which exception really
                 if not self.softFail:
                     raise
@@ -146,7 +157,7 @@ class DiscreteVariationModel:
                 cachedModelInfo = (model, usedKey, errors)
                 self._models[key] = cachedModelInfo
 
-        return deltas.deltas[key], model, errors
+        return deltas.deltas[key], deltas.models[key], errors
 
     def splitDiscreteLocation(self, location):
         discreteLocation = {}
@@ -211,6 +222,7 @@ def formatDiscreteLocationKey(key):
 class DiscreteDeltas:
     sources: dict
     deltas: dict
+    models: dict
 
 
 @dataclass(kw_only=True)
