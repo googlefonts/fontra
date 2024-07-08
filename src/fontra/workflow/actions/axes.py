@@ -22,6 +22,7 @@ from ...core.classes import (
     structure,
     unstructure,
 )
+from ...core.discretevariationmodel import DiscreteVariationModel
 from ...core.varutils import locationToTuple, makeDenseLocation
 from . import ActionError
 from .base import (
@@ -417,6 +418,9 @@ class BaseMoveDefaultLocation(BaseFilter):
         processedSources, _ = await self.processedSourcesAndLocations
         return processedSources
 
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        return await processKerningHelper(self, kerning)
+
     def _filterAxisList(self, axes):
         raise NotImplementedError()
 
@@ -629,6 +633,9 @@ class TrimAxes(BaseFilter):
         processedSources, _ = await self.processedSourcesAndLocations
         return processedSources
 
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        return await processKerningHelper(self, kerning)
+
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
@@ -714,6 +721,76 @@ def uniqueSourceIdentifier(sources, seedString):
             break
         pad += b"+"
     return sourceIdentifier
+
+
+async def processKerningHelper(filter, kerning):
+    _, instanceLocations = await filter.processedSourcesAndLocations
+    instancer = await filter.fontInstancer.fontSourcesInstancer
+    sourceLocations = {
+        sourceIdentifier: source.location
+        for sourceIdentifier, source in instancer.fontSourcesDense.items()
+    }
+    return updateKerning(
+        kerning,
+        instancer.fontAxesSourceSpace,
+        instancer.defaultSourceIdentifier,
+        sourceLocations,
+        instanceLocations,
+    )
+
+
+def updateKerning(
+    kerning,
+    fontAxesSourceSpace,
+    defaultSourceIdentifier,
+    sourceLocations,
+    instanceLocations,
+):
+    return {
+        kernType: updateKerningTable(
+            kernTable,
+            fontAxesSourceSpace,
+            defaultSourceIdentifier,
+            sourceLocations,
+            instanceLocations,
+        )
+        for kernType, kernTable in kerning.items()
+    }
+
+
+def updateKerningTable(
+    kernTable,
+    fontAxesSourceSpace,
+    defaultSourceIdentifier,
+    sourceLocations,
+    instanceLocations,
+):
+    locations = [sourceLocations[sid] for sid in kernTable.sourceIdentifiers]
+    model = DiscreteVariationModel(locations, fontAxesSourceSpace, softFail=False)
+    defaultSourceIndex = kernTable.sourceIdentifiers.index(defaultSourceIdentifier)
+
+    newKernValues = {}
+
+    for left, rightDict in kernTable.values.items():
+        newRightDict = {}
+
+        for right, values in rightDict.items():
+            if values[defaultSourceIndex] is None:
+                values = list(values)
+                values[defaultSourceIndex] = 0  # XXX
+            deltas = model.getDeltas(values)
+            newRightDict[right] = [
+                model.interpolateFromDeltas(instanceLocation, deltas).instance
+                for instanceLocation in instanceLocations.values()
+            ]
+
+        newKernValues[left] = newRightDict
+
+    newSourceIdentifiers = list(instanceLocations.keys())
+
+    return replace(
+        kernTable, sourceIdentifiers=newSourceIdentifiers, values=newKernValues
+    )
 
 
 def updateGlyphSourcesAndLayers(
