@@ -133,12 +133,7 @@ class DiscreteVariationModel:
         if key not in deltas.deltas:
             sourceValues = deltas.sources[usedKey]
             if None in sourceValues:
-                subModel, subSourceValues = model.getSubModel(sourceValues)
-                assert len(subSourceValues) == len(subModel.locations), (
-                    sourceValues,
-                    subSourceValues,
-                )
-                model, sourceValues = subModel, subSourceValues
+                model, sourceValues = model.getSubModel(sourceValues)
 
             deltas.models[key] = model
 
