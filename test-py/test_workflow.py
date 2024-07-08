@@ -253,6 +253,20 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
+            "merge-kerning",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-merge-kerning-A.fontra"
+            - input: fontra-read
+              source: "test-py/data/workflow/input-merge-kerning-B.fontra"
+            - output: fontra-write
+              destination: "output-merge-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "subset-glyphs-kerning",
             """
             steps:

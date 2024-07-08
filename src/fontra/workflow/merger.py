@@ -19,6 +19,7 @@ from ..core.classes import (
 from ..core.protocols import ReadableFontBackend
 from ..core.varutils import locationToTuple
 from .actions.axes import mapFontSourceLocationsAndFilter
+from .actions.subset import subsetKerning
 from .features import mergeFeatures
 
 logger = logging.getLogger(__name__)
@@ -145,10 +146,36 @@ class FontBackendMerger:
         return self._glyphMap
 
     async def getKerning(self) -> dict[str, Kerning]:
-        # TODO: merge kerning
-        # kerningA = await self.inputA.getKerning()
-        kerningB = await self.inputB.getKerning()
-        return kerningB
+        await self._prepareGlyphMap()
+        mergeInfo = await self.mergedSourcesInfo
+
+        kerningA = subsetKerning(
+            await self.inputA.getKerning(), self._glyphNamesA - self._glyphNamesB
+        )
+        kerningB = subsetKerning(await self.inputB.getKerning(), self._glyphNamesB)
+        newKerning = {}
+        for kernType in sorted(set(kerningA) | set(kerningB)):
+            kernTableA = kerningA.get(kernType)
+            kernTableB = kerningB.get(kernType)
+
+            if kernTableA is not None:
+                kernTableA = replace(
+                    kernTableA,
+                    sourceIdentifiers=[
+                        mergeInfo.identifierMappingA.get(sid, sid)
+                        for sid in kernTableA.sourceIdentifiers
+                    ],
+                )
+
+            if kernTableA is None:
+                newKernTable = kernTableB
+            elif kernTableB is None:
+                newKernTable = kernTableA
+            else:
+                newKernTable = _mergeKernTable(kernTableA, kernTableB)
+
+            newKerning[kernType] = newKernTable
+        return newKerning
 
     async def getFeatures(self) -> OpenTypeFeatures:
         await self._prepareGlyphMap()
@@ -240,3 +267,64 @@ def _mergeAxes(axisA, axisB):
         resultAxis.minValue = min(axisA.minValue, axisB.minValue)
 
     return resultAxis
+
+
+def _mergeKernTable(kernTableA, kernTableB):
+    assert set(kernTableA.values).isdisjoint(set(kernTableB.values))
+
+    mergedSourceIdentifiers = list(kernTableA.sourceIdentifiers)
+    for sid in kernTableB.sourceIdentifiers:
+        if sid not in mergedSourceIdentifiers:
+            mergedSourceIdentifiers.append(sid)
+
+    sidIndicesA = {sid: i for i, sid in enumerate(kernTableA.sourceIdentifiers)}
+    sidIndicesB = {sid: i for i, sid in enumerate(kernTableB.sourceIdentifiers)}
+    sidMapA = [(sid, sidIndicesA.get(sid)) for sid in mergedSourceIdentifiers]
+    sidMapB = [(sid, sidIndicesB.get(sid)) for sid in mergedSourceIdentifiers]
+
+    mergedValues = _remapKernValues(kernTableA.values, sidMapA) | _remapKernValues(
+        kernTableB.values, sidMapB
+    )
+
+    mergedGroups = _mergeKernGroups(kernTableA.groups, kernTableB.groups)
+
+    return Kerning(
+        groups=mergedGroups,
+        sourceIdentifiers=mergedSourceIdentifiers,
+        values=mergedValues,
+    )
+
+
+def _remapKernValues(kerningValues, sidMap):
+    mappedKerningValues = {}
+
+    for left, rightDict in kerningValues.items():
+        mappedRightDict = {}
+
+        for right, values in rightDict.items():
+            mappedValues = [values[i] if i is not None else None for sid, i in sidMap]
+            mappedRightDict[right] = mappedValues
+
+        mappedKerningValues[left] = mappedRightDict
+
+    return mappedKerningValues
+
+
+def _mergeKernGroups(groupsA, groupsB):
+    mergedGroups = {}
+
+    for groupName in sorted(set(groupsA) | set(groupsB)):
+        groupA = groupsA.get(groupName)
+        groupB = groupsB.get(groupName)
+
+        if groupA is None:
+            mergedGroup = groupB
+        elif groupB is None:
+            mergedGroup = groupA
+        else:
+            assert set(groupA).isdisjoint(set(groupB))
+            mergedGroup = groupA + groupB
+
+        mergedGroups[groupName] = mergedGroup
+
+    return mergedGroups
