@@ -1,0 +1,11 @@
+TYPE
+kern
+
+GROUPS
+public.kern1.O;D;O
+public.kern2.MERGETEST;W
+
+VALUES
+side1;side2;38953841;f21bb6bb;10e1c129;14d3aeff
+public.kern1.O;W;12;22;32;
+public.kern1.O;public.kern2.MERGETEST;-5;-15;-25;-35
