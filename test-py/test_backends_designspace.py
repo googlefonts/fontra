@@ -41,9 +41,7 @@ def testFont():
 
 
 def getFontSingleUFO():
-    return UFOBackend.fromPath(
-        dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo"
-    )
+    return UFOBackend.fromPath(dataDir / "mutatorsans" / "MutatorSansLightWide.ufo")
 
 
 @pytest.fixture
@@ -114,7 +112,7 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
 
 async def test_getCustomDataSingleUFO(testFontSingleUFO):
     customData = await testFontSingleUFO.getCustomData()
-    assert 17 == len(customData)
+    assert 15 == len(customData)
 
 
 async def test_putCustomDataSingleUFO(writableTestFontSingleUFO):
@@ -410,7 +408,7 @@ async def test_putAxes(writableTestFont):
                 "Test_LightCondensed.ufo",
                 "Test_LightWide.ufo",
             ],
-            "Test_LightCondensed.ufo",
+            "Test_LightWide.ufo",
         ),
         (
             getFontSingleUFO(),
@@ -452,7 +450,6 @@ async def test_newFileSystemBackend(
     assert [
         "fontinfo.plist",
         "glyphs",
-        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
         "layercontents.plist",
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / referenceUFO)
