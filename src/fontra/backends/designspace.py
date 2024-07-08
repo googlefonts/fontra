@@ -1347,6 +1347,11 @@ class UFOBackend(DesignspaceBackend):
     async def putSources(self, sources: dict[str, FontSource]) -> None:
         if len(sources) > 1:
             logger.warning("The single-UFO backend does not support multiple sources")
+        else:
+            await super().putSources(sources)
+
+    def _writeDesignSpaceDocument(self):
+        pass
 
 
 def createDSDocFromUFOPath(ufoPath, styleName):

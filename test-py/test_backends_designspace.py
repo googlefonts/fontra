@@ -8,6 +8,7 @@ import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
+from fontra.backends.copy import copyFont
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
     Anchor,
@@ -893,6 +894,17 @@ async def test_kerning_read_write(writableTestFont):
         "Adieresis",
         "X",
     ]
+
+
+async def test_roundtrip_single_UFO(testFontSingleUFO, tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    outPath = tmpdir / "roundtripped.ufo"
+    outBackend = newFileSystemBackend(outPath)
+    await copyFont(testFontSingleUFO, outBackend)
+    reopenedBackend = getFileSystemBackend(outPath)
+    assert await testFontSingleUFO.getFontInfo() == await reopenedBackend.getFontInfo()
+    assert await testFontSingleUFO.getKerning() == await reopenedBackend.getKerning()
+    assert await testFontSingleUFO.getSources() == await reopenedBackend.getSources()
 
 
 def fileNamesFromDir(path):
