@@ -82,6 +82,11 @@ export class PathHitTester {
     const maxLength = width + height;
     const p1 = vector.addVectors(point, vector.mulVectorScalar(direction, maxLength));
     const p2 = vector.addVectors(point, vector.mulVectorScalar(direction, -maxLength));
+
+    return this.lineIntersections(p1, p2, direction, extraLines);
+  }
+
+  lineIntersections(p1, p2, direction, extraLines) {
     const line = { p1, p2 };
 
     const intersections = [];
@@ -111,6 +116,7 @@ export class PathHitTester {
       }
       return d;
     });
+
     return intersections;
   }
 
