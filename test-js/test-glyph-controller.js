@@ -243,6 +243,7 @@ describe("StaticGlyphController getSelectionBounds", () => {
         { xMin: 0, yMin: 0, xMax: 110, yMax: 200 },
       ],
       [["point/0", "point/1", "anchor/0"], { xMin: 60, yMin: 0, xMax: 110, yMax: 100 }],
+      [["point/18"], undefined], // out of bounds
     ],
     (testData) => {
       const [selection, result] = testData;
