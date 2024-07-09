@@ -1386,8 +1386,11 @@ function getSelectedOpenContours(
       continue;
     }
     const contour = path.getContour(contourIndex);
-    const numOnCourvePoints = contour.pointTypes.filter((x) => x == 0).length;
-    if (numOnCourvePoints === 1 && ignoreSinglePointContour) {
+    const numOnCurvePoints = contour.pointTypes.reduce(
+      (acc, pt) => acc + (pt == 0 ? 1 : 0),
+      0
+    );
+    if (numOnCurvePoints === 1 && ignoreSinglePointContour) {
       // skip single point contour
       continue;
     }
