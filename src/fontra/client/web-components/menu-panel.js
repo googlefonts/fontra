@@ -208,7 +208,7 @@ export class MenuPanel extends SimpleElement {
       const containerRect = this.positionContainer.getBoundingClientRect();
       const thisRect = this.getBoundingClientRect();
       if (thisRect.right > containerRect.right) {
-        position.x -= thisRect.right - containerRect.right + 2;
+        position.x -= thisRect.width + 2;
       }
       if (thisRect.bottom > containerRect.bottom) {
         position.y -= thisRect.bottom - containerRect.bottom + 2;
