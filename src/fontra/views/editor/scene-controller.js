@@ -26,7 +26,7 @@ import {
   withTimeout,
   zip,
 } from "../core/utils.js";
-import { packContour } from "../core/var-path.js";
+import { VarPackedPath, packContour } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
@@ -1387,7 +1387,11 @@ function getSelectedOpenContours(
     }
     const contour = path.getContour(contourIndex);
     const numOnCurvePoints = contour.pointTypes.reduce(
-      (acc, pt) => acc + (pt == 0 ? 1 : 0),
+      (acc, pointType) =>
+        acc +
+        ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE
+          ? 1
+          : 0),
       0
     );
     if (numOnCurvePoints === 1 && ignoreSinglePointContour) {
