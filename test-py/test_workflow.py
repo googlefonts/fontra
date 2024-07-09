@@ -733,6 +733,26 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
+            "subset-move-default-location-no-sources",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-move-default-location.fontra"
+            - filter: drop-font-sources-and-kerning
+            - filter: subset-axes
+              dropAxisNames: ["italic"]
+            - filter: move-default-location
+              newDefaultUserLocation:
+                width: 400
+                weight: 300
+
+            - output: fontra-write
+              destination: "output-move-default-location-no-sources.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "trim-axes",
             """
             steps:

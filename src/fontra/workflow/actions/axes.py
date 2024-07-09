@@ -704,10 +704,12 @@ def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
             name = locationToString(newSourceLocation) or "default"
             sourceIdentifier = uniqueSourceIdentifier(newSources, name)
             newSource = instancer.instantiate(instanceLocation)
-            newSource = replace(newSource, name=name, location=newSourceLocation)
+            if newSource is not None:
+                newSource = replace(newSource, name=name, location=newSourceLocation)
 
-        newSources[sourceIdentifier] = newSource
-        instanceLocations[sourceIdentifier] = instanceLocation
+        if newSource is not None:
+            newSources[sourceIdentifier] = newSource
+            instanceLocations[sourceIdentifier] = instanceLocation
 
     return newSources, instanceLocations
 
