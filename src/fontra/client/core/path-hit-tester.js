@@ -67,7 +67,7 @@ export class PathHitTester {
     return results[0];
   }
 
-  lineIntersections(point, direction, extraLines) {
+  rayIntersections(point, direction, extraLines) {
     // `point` is the pivot point, and `direction` is the normalized direction vector
     this._ensureAllContoursAreLoaded();
     const rectangles = this.controlBounds ? [this.controlBounds] : [];
