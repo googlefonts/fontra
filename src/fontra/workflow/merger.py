@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import logging
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
+from ..core.async_property import async_cached_property
 from ..core.classes import (
     Axes,
     FontInfo,
@@ -14,6 +17,9 @@ from ..core.classes import (
     unstructure,
 )
 from ..core.protocols import ReadableFontBackend
+from ..core.varutils import locationToTuple
+from .actions.axes import mapFontSourceLocationsAndFilter
+from .actions.subset import subsetKerning
 from .features import mergeFeatures
 
 logger = logging.getLogger(__name__)
@@ -68,7 +74,8 @@ class FontBackendMerger:
         fontInfoB = await self.inputB.getFontInfo()
         return FontInfo(**(unstructure(fontInfoA) | unstructure(fontInfoB)))
 
-    async def getAxes(self) -> Axes:
+    @async_cached_property
+    async def mergedAxes(self) -> Axes:
         axesA = await self.inputA.getAxes()
         axesB = await self.inputB.getAxes()
         axesByNameA = {axis.name: axis for axis in axesA.axes}
@@ -85,20 +92,90 @@ class FontBackendMerger:
 
         return replace(axesA, axes=mergedAxes)
 
+    async def getAxes(self) -> Axes:
+        return await self.mergedAxes
+
+    @async_cached_property
+    async def mergedSourcesInfo(self) -> MergedSourcesInfo:
+        mergedAxes = await self.mergedAxes
+        defaultLocation = {axis.name: axis.defaultValue for axis in mergedAxes.axes}
+
+        def mapLocation(location):
+            return defaultLocation | location
+
+        sourcesA = mapFontSourceLocationsAndFilter(
+            await self.inputA.getSources(), mapLocation
+        )
+        sourcesB = mapFontSourceLocationsAndFilter(
+            await self.inputB.getSources(), mapLocation
+        )
+
+        sourcesAByLocation = sourcesByLocation(sourcesA)
+        sourcesBByLocation = sourcesByLocation(sourcesB)
+        allLocations = sorted(set(sourcesAByLocation) | set(sourcesBByLocation))
+
+        mergedSources = {}
+        identifierMappingA = {}
+        for location in allLocations:
+            idA, sourceA = sourcesAByLocation.get(location, (None, None))
+            idB, sourceB = sourcesBByLocation.get(location, (None, None))
+            if idA is None:
+                mergedSources[idB] = sourceB
+            elif idB is None:
+                mergedSources[idA] = sourceA
+            else:
+                identifierMappingA[idA] = idB
+                mergedSources[idB] = replace(
+                    sourceB,
+                    lineMetricsHorizontalLayout=sourceA.lineMetricsHorizontalLayout
+                    | sourceB.lineMetricsHorizontalLayout,
+                    lineMetricsVerticalLayout=sourceA.lineMetricsVerticalLayout
+                    | sourceB.lineMetricsVerticalLayout,
+                )
+
+        return MergedSourcesInfo(
+            sources=mergedSources, identifierMappingA=identifierMappingA
+        )
+
     async def getSources(self) -> dict[str, FontSource]:
-        sourcesA = await self.inputA.getSources()
-        sourcesB = await self.inputB.getSources()
-        return sourcesA | sourcesB
+        mergeInfo = await self.mergedSourcesInfo
+        return mergeInfo.sources
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
         return self._glyphMap
 
     async def getKerning(self) -> dict[str, Kerning]:
-        # TODO: merge kerning
-        # kerningA = await self.inputA.getKerning()
-        kerningB = await self.inputB.getKerning()
-        return kerningB
+        await self._prepareGlyphMap()
+        mergeInfo = await self.mergedSourcesInfo
+
+        kerningA = subsetKerning(
+            await self.inputA.getKerning(), self._glyphNamesA - self._glyphNamesB
+        )
+        kerningB = subsetKerning(await self.inputB.getKerning(), self._glyphNamesB)
+        newKerning = {}
+        for kernType in sorted(set(kerningA) | set(kerningB)):
+            kernTableA = kerningA.get(kernType)
+            kernTableB = kerningB.get(kernType)
+
+            if kernTableA is not None:
+                kernTableA = replace(
+                    kernTableA,
+                    sourceIdentifiers=[
+                        mergeInfo.identifierMappingA.get(sid, sid)
+                        for sid in kernTableA.sourceIdentifiers
+                    ],
+                )
+
+            if kernTableA is None:
+                newKernTable = kernTableB
+            elif kernTableB is None:
+                newKernTable = kernTableA
+            else:
+                newKernTable = _mergeKernTable(kernTableA, kernTableB)
+
+            newKerning[kernType] = newKernTable
+        return newKerning
 
     async def getFeatures(self) -> OpenTypeFeatures:
         await self._prepareGlyphMap()
@@ -134,6 +211,19 @@ class FontBackendMerger:
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
+
+
+@dataclass(kw_only=True)
+class MergedSourcesInfo:
+    sources: dict[str, FontSource]
+    identifierMappingA: dict[str, str]
+
+
+def sourcesByLocation(sources):
+    return {
+        locationToTuple(source.location): (sourceIdentifier, source)
+        for sourceIdentifier, source in sources.items()
+    }
 
 
 def cmapFromGlyphMap(glyphMap):
@@ -177,3 +267,64 @@ def _mergeAxes(axisA, axisB):
         resultAxis.minValue = min(axisA.minValue, axisB.minValue)
 
     return resultAxis
+
+
+def _mergeKernTable(kernTableA, kernTableB):
+    assert set(kernTableA.values).isdisjoint(set(kernTableB.values))
+
+    mergedSourceIdentifiers = list(kernTableA.sourceIdentifiers)
+    for sid in kernTableB.sourceIdentifiers:
+        if sid not in mergedSourceIdentifiers:
+            mergedSourceIdentifiers.append(sid)
+
+    sidIndicesA = {sid: i for i, sid in enumerate(kernTableA.sourceIdentifiers)}
+    sidIndicesB = {sid: i for i, sid in enumerate(kernTableB.sourceIdentifiers)}
+    sidMapA = [(sid, sidIndicesA.get(sid)) for sid in mergedSourceIdentifiers]
+    sidMapB = [(sid, sidIndicesB.get(sid)) for sid in mergedSourceIdentifiers]
+
+    mergedValues = _remapKernValues(kernTableA.values, sidMapA) | _remapKernValues(
+        kernTableB.values, sidMapB
+    )
+
+    mergedGroups = _mergeKernGroups(kernTableA.groups, kernTableB.groups)
+
+    return Kerning(
+        groups=mergedGroups,
+        sourceIdentifiers=mergedSourceIdentifiers,
+        values=mergedValues,
+    )
+
+
+def _remapKernValues(kerningValues, sidMap):
+    mappedKerningValues = {}
+
+    for left, rightDict in kerningValues.items():
+        mappedRightDict = {}
+
+        for right, values in rightDict.items():
+            mappedValues = [values[i] if i is not None else None for sid, i in sidMap]
+            mappedRightDict[right] = mappedValues
+
+        mappedKerningValues[left] = mappedRightDict
+
+    return mappedKerningValues
+
+
+def _mergeKernGroups(groupsA, groupsB):
+    mergedGroups = {}
+
+    for groupName in sorted(set(groupsA) | set(groupsB)):
+        groupA = groupsA.get(groupName)
+        groupB = groupsB.get(groupName)
+
+        if groupA is None:
+            mergedGroup = groupB
+        elif groupB is None:
+            mergedGroup = groupA
+        else:
+            assert set(groupA).isdisjoint(set(groupB))
+            mergedGroup = groupA + groupB
+
+        mergedGroups[groupName] = mergedGroup
+
+    return mergedGroups

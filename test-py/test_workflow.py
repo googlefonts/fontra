@@ -11,6 +11,7 @@ from fontra.backends import getFileSystemBackend
 from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
 from fontra.workflow.actions import FilterActionProtocol, getActionClass
+from fontra.workflow.actions import glyph as _  # noqa  for test_scaleAction
 from fontra.workflow.workflow import Workflow
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -139,7 +140,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
@@ -162,7 +163,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
@@ -214,7 +215,7 @@ def test_command(tmpdir, configYAMLSources):
     "testName, configSource, continueOnError, expectedLog",
     [
         (
-            "plain",
+            "merge-plain",
             """
             steps:
             - input: fontra-read
@@ -222,7 +223,7 @@ def test_command(tmpdir, configYAMLSources):
             - input: fontra-read
               source: "test-py/data/workflow/input1-B.fontra"
             - output: fontra-write
-              destination: "output1.fontra"
+              destination: "output-merge-plain.fontra"
             """,
             False,
             [
@@ -233,7 +234,7 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
-            "axis-merge-1",
+            "merge-axes",
             """
             steps:
             - input: fontra-read
@@ -241,7 +242,7 @@ def test_command(tmpdir, configYAMLSources):
             - input: fontra-read
               source: "test-py/data/workflow/input2-B.fontra"
             - output: fontra-write
-              destination: "output2.fontra"
+              destination: "output-merge-axes.fontra"
             """,
             False,
             [
@@ -252,7 +253,40 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
-            "subset+scale",
+            "merge-kerning",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-merge-kerning-A.fontra"
+            - input: fontra-read
+              source: "test-py/data/workflow/input-merge-kerning-B.fontra"
+            - output: fontra-write
+              destination: "output-merge-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "subset-glyphs-kerning",
+            """
+            steps:
+
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+
+            - filter: drop-shapes
+
+            - filter: subset-glyphs
+              glyphNames: ["A", "O", "T", "V"]
+
+            - output: fontra-write
+              destination: "output-subset-glyphs-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "subset-scale",
             """
             steps:
 
@@ -261,7 +295,7 @@ def test_command(tmpdir, configYAMLSources):
               steps:
               - filter: scale
                 scaleFactor: 0.75
-                scaleUnitsPerEm: false
+                scaleFontMetrics: false
               - filter: subset-glyphs
                 glyphNames: ["B", "Adieresis"]
                 glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
@@ -273,7 +307,28 @@ def test_command(tmpdir, configYAMLSources):
                 glyphNames: ["C", "D"]
 
             - output: fontra-write
-              destination: "output3.fontra"
+              destination: "output-subset-scale.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "subset-scale-kerning",
+            """
+            steps:
+
+            - input: fontra-read
+              source: "test-common/fonts/MutatorSans.fontra"
+              steps:
+              - filter: scale
+                scaleFactor: 0.75
+              - filter: drop-shapes
+              - filter: subset-glyphs
+                glyphNames: ["A", "T", "V"]
+              - filter: round-coordinates
+
+            - output: fontra-write
+              destination: "output-subset-scale-kerning.fontra"
             """,
             False,
             [],
@@ -673,6 +728,27 @@ def test_command(tmpdir, configYAMLSources):
 
             - output: fontra-write
               destination: "output-move-default-location.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "subset-move-default-location-no-sources",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-move-default-location.fontra"
+            - filter: drop-font-sources-and-kerning
+            - filter: drop-shapes
+            - filter: subset-axes
+              dropAxisNames: ["italic"]
+            - filter: move-default-location
+              newDefaultUserLocation:
+                width: 400
+                weight: 300
+
+            - output: fontra-write
+              destination: "output-move-default-location-no-sources.fontra"
             """,
             False,
             [],

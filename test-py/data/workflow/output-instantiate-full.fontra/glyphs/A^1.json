@@ -2,16 +2,12 @@
 "name": "A",
 "sources": [
 {
-"name": "weight=325,width=400",
-"layerName": "weight=325,width=400",
-"location": {
-"weight": 325,
-"width": 400
-}
+"name": "default",
+"layerName": "default"
 }
 ],
 "layers": {
-"weight=325,width=400": {
+"default": {
 "glyph": {
 "path": {
 "contours": [

@@ -1,0 +1,12 @@
+TYPE
+kern
+
+GROUPS
+public.kern1.A;A;Adieresis
+public.kern2.MERGETEST;A;Adieresis
+
+VALUES
+side1;side2;bf09a48e;2fd8a75f;4c8cddbd;c6801eea
+public.kern1.A;T;10;20;30;40
+public.kern1.A;V;15;25;35;
+A;public.kern2.MERGETEST;-10;-20;-30;-40

@@ -53,6 +53,7 @@ from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
 from ..core.subprocess import runInSubProcess
+from ..core.varutils import makeDenseLocation, makeSparseLocation
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
 
@@ -161,7 +162,7 @@ class DesignspaceBackend:
         self.zombieDSSources: dict[str, DSSource] = {}
 
     def startOptionalBackgroundTasks(self) -> None:
-        _ = self.glyphDependencies  # trigger background task
+        self._backgroundTasksTask = asyncio.create_task(self.glyphDependencies)
 
     @property
     def familyName(self) -> str:
@@ -1346,6 +1347,11 @@ class UFOBackend(DesignspaceBackend):
     async def putSources(self, sources: dict[str, FontSource]) -> None:
         if len(sources) > 1:
             logger.warning("The single-UFO backend does not support multiple sources")
+        else:
+            await super().putSources(sources)
+
+    def _writeDesignSpaceDocument(self):
+        pass
 
 
 def createDSDocFromUFOPath(ufoPath, styleName):
@@ -1861,18 +1867,6 @@ def makeDSSourceIdentifier(
         ) + f"::fontra{sourceIndex:03}-{secrets.token_hex(4)}"
 
     return sourceName
-
-
-def makeSparseLocation(location, defaultLocation):
-    return {
-        name: location[name]
-        for name, value in defaultLocation.items()
-        if location.get(name, value) != value
-    }
-
-
-def makeDenseLocation(location, defaultLocation):
-    return {name: location.get(name, value) for name, value in defaultLocation.items()}
 
 
 def getDefaultSourceName(

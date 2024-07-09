@@ -1,0 +1,72 @@
+{
+"name": "C",
+"sources": [
+{
+"name": "weight=150,width=400",
+"layerName": "weight=150,width=400",
+"location": {
+"weight": 150,
+"width": 400
+}
+},
+{
+"name": "weight=325,width=0",
+"layerName": "weight=325,width=0",
+"location": {
+"weight": 325,
+"width": 0
+}
+},
+{
+"name": "weight=325,width=400",
+"layerName": "weight=325,width=400",
+"location": {
+"weight": 325,
+"width": 400
+}
+},
+{
+"name": "weight=325,width=1000",
+"layerName": "weight=325,width=1000",
+"location": {
+"weight": 325,
+"width": 1000
+}
+},
+{
+"name": "weight=850,width=400",
+"layerName": "weight=850,width=400",
+"location": {
+"weight": 850,
+"width": 400
+}
+}
+],
+"layers": {
+"weight=150,width=400": {
+"glyph": {
+"xAdvance": 820.6
+}
+},
+"weight=325,width=0": {
+"glyph": {
+"xAdvance": 579.75
+}
+},
+"weight=325,width=1000": {
+"glyph": {
+"xAdvance": 1383.75
+}
+},
+"weight=325,width=400": {
+"glyph": {
+"xAdvance": 901.35
+}
+},
+"weight=850,width=400": {
+"glyph": {
+"xAdvance": 1143.6
+}
+}
+}
+}

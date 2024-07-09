@@ -1,0 +1,150 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "LightCondensed",
+"layerName": "MutatorSansLightCondensed/foreground",
+"location": {
+"weight": 150,
+"width": 0
+}
+},
+{
+"name": "weight=150,width=400",
+"layerName": "weight=150,width=400",
+"location": {
+"weight": 150,
+"width": 400
+}
+},
+{
+"name": "LightWide",
+"layerName": "MutatorSansLightWide/foreground",
+"location": {
+"weight": 150,
+"width": 1000
+}
+},
+{
+"name": "weight=325,width=0",
+"layerName": "weight=325,width=0",
+"location": {
+"weight": 325,
+"width": 0
+}
+},
+{
+"name": "weight=325,width=400",
+"layerName": "weight=325,width=400",
+"location": {
+"weight": 325,
+"width": 400
+}
+},
+{
+"name": "weight=325,width=1000",
+"layerName": "weight=325,width=1000",
+"location": {
+"weight": 325,
+"width": 1000
+}
+},
+{
+"name": "support.crossbar",
+"layerName": "MutatorSansLightCondensed/support.crossbar",
+"location": {
+"weight": 595,
+"width": 0
+}
+},
+{
+"name": "weight=595,width=400",
+"layerName": "weight=595,width=400",
+"location": {
+"weight": 595,
+"width": 400
+}
+},
+{
+"name": "BoldCondensed",
+"layerName": "MutatorSansBoldCondensed/foreground",
+"location": {
+"weight": 850,
+"width": 0
+}
+},
+{
+"name": "weight=850,width=400",
+"layerName": "weight=850,width=400",
+"location": {
+"weight": 850,
+"width": 400
+}
+},
+{
+"name": "BoldWide",
+"layerName": "MutatorSansBoldWide/foreground",
+"location": {
+"weight": 850,
+"width": 1000
+}
+}
+],
+"layers": {
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"xAdvance": 710
+}
+},
+"MutatorSansBoldWide/foreground": {
+"glyph": {
+"xAdvance": 1270
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"xAdvance": 443
+}
+},
+"MutatorSansLightCondensed/support.crossbar": {
+"glyph": {
+"xAdvance": 645
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"xAdvance": 1173
+}
+},
+"weight=150,width=400": {
+"glyph": {
+"xAdvance": 735
+}
+},
+"weight=325,width=0": {
+"glyph": {
+"xAdvance": 522.438202247191
+}
+},
+"weight=325,width=1000": {
+"glyph": {
+"xAdvance": 1209.938202247191
+}
+},
+"weight=325,width=400": {
+"glyph": {
+"xAdvance": 797.438202247191
+}
+},
+"weight=595,width=400": {
+"glyph": {
+"xAdvance": 893.7714285714286
+}
+},
+"weight=850,width=400": {
+"glyph": {
+"xAdvance": 934
+}
+}
+}
+}

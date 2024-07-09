@@ -440,7 +440,7 @@ registerHook(Axes, customData=_unstructureDictSortedRecursively)
 registerHook(OpenTypeFeatures, customData=_unstructureDictSortedRecursively)
 registerHook(
     Font,
-    source=_unstructureDictSorted,
+    sources=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
 

@@ -28,5 +28,268 @@
 ]
 }
 ]
+},
+"sources": {
+"28725cb4": {
+"name": "BoldCondensed",
+"location": {
+"weight": 850,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"289ae35b": {
+"name": "BoldWide",
+"location": {
+"weight": 850,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"40e7dc56": {
+"name": "LightCondensed",
+"location": {
+"weight": 150,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 700,
+"zone": 16
+},
+"capHeight": {
+"value": 700,
+"zone": 16
+},
+"xHeight": {
+"value": 16,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"4c8c6b92": {
+"name": "Condensed",
+"location": {
+"weight": 325,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 725,
+"zone": 16
+},
+"capHeight": {
+"value": 725,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"5cde2655": {
+"name": "Regular",
+"location": {
+"weight": 325,
+"width": 400
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 725,
+"zone": 16
+},
+"capHeight": {
+"value": 725,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"8cde5a87": {
+"name": "LightWide",
+"location": {
+"weight": 150,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 700,
+"zone": 16
+},
+"capHeight": {
+"value": 700,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"b6207287": {
+"name": "Bold",
+"location": {
+"weight": 850,
+"width": 400
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 800,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"ccb364c2": {
+"name": "Light",
+"location": {
+"weight": 150,
+"width": 400
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 700,
+"zone": 16
+},
+"capHeight": {
+"value": 700,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"db0402af": {
+"name": "Wide",
+"location": {
+"weight": 325,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 725,
+"zone": 16
+},
+"capHeight": {
+"value": 725,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+}
 }
 }

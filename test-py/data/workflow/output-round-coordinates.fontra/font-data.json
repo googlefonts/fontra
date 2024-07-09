@@ -1,4 +1,11 @@
 {
+"fontInfo": {
+"familyName": "MutatorMathTest",
+"versionMajor": 1,
+"versionMinor": 2,
+"copyright": "License same as MutatorMath. BSD 3-clause. [test-token: C]",
+"licenseDescription": "License same as MutatorMath. BSD 3-clause. [test-token: C]"
+},
 "axes": {
 "axes": [
 {
@@ -20,5 +27,119 @@
 ]
 }
 ]
+},
+"sources": {
+"639a3665": {
+"name": "weight=439.625",
+"location": {
+"weight": 439.625
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 741,
+"zone": 16
+},
+"capHeight": {
+"value": 741,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"6c8db0dd": {
+"name": "weight=595",
+"location": {
+"weight": 595
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 764,
+"zone": 16
+},
+"capHeight": {
+"value": 764,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"c47cc23e": {
+"name": "weight=704.75",
+"location": {
+"weight": 704.75
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 779,
+"zone": 16
+},
+"capHeight": {
+"value": 779,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+},
+"c81502e8": {
+"name": "weight=257.625",
+"location": {
+"weight": 257.625
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 715,
+"zone": 16
+},
+"capHeight": {
+"value": 715,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"descender": {
+"value": -200,
+"zone": -16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+}
+}
+}
 }
 }

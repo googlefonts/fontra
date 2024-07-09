@@ -41,7 +41,7 @@ class DiscreteVariationModel:
         self._locationIndices: dict[LocationTupleType, list[int]] = {}
 
         for index, location in enumerate(self.locations):
-            discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
+            discreteLocation, continuousLocation = self.splitDiscreteLocation(location)
             key = locationToTuple(discreteLocation)
             self._locationKeys.append(key)
             if key not in self._locationIndices:
@@ -49,7 +49,7 @@ class DiscreteVariationModel:
             else:
                 self._locationIndices[key].append(index)
             normalizedLocation = makeSparseNormalizedLocation(
-                normalizeLocation(contiuousLocation, self._continuousAxesTriples)
+                normalizeLocation(continuousLocation, self._continuousAxesTriples)
             )
             if key not in self._locations:
                 self._locations[key] = [normalizedLocation]
@@ -64,7 +64,7 @@ class DiscreteVariationModel:
         for key, value in zip(self._locationKeys, sourceValues, strict=True):
             sources[key].append(value)
 
-        return DiscreteDeltas(sources=dict(sources), deltas={})
+        return DiscreteDeltas(sources=dict(sources), deltas={}, models={})
 
     def _getModel(self, key: LocationTupleType) -> CachedModelInfoType:
         cachedModelInfo = self._models.get(key)
@@ -116,13 +116,13 @@ class DiscreteVariationModel:
         return collectedErrors
 
     def interpolateFromDeltas(self, location, deltas) -> InterpolationResult:
-        discreteLocation, contiuousLocation = self.splitDiscreteLocation(location)
+        discreteLocation, continuousLocation = self.splitDiscreteLocation(location)
         key = locationToTuple(discreteLocation)
 
         discreteDeltas, model, errors = self._getDiscreteDeltasAndModel(key, deltas)
 
         instance = model.interpolateFromDeltas(
-            normalizeLocation(contiuousLocation, self._continuousAxesTriples),
+            normalizeLocation(continuousLocation, self._continuousAxesTriples),
             discreteDeltas,
         )
         return InterpolationResult(instance=instance, errors=errors)
@@ -131,8 +131,12 @@ class DiscreteVariationModel:
         model, usedKey, errors = self._getModel(key)
 
         if key not in deltas.deltas:
+            sourceValues = deltas.sources[usedKey]
+            if None in sourceValues:
+                model, sourceValues = model.getSubModel(sourceValues)
+
             try:
-                deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey])
+                deltas.deltas[key] = model.getDeltas(sourceValues)
             except Exception as exc:  # ??? Which exception really
                 if not self.softFail:
                     raise
@@ -146,7 +150,9 @@ class DiscreteVariationModel:
                 cachedModelInfo = (model, usedKey, errors)
                 self._models[key] = cachedModelInfo
 
-        return deltas.deltas[key], model, errors
+            deltas.models[key] = model
+
+        return deltas.deltas[key], deltas.models[key], errors
 
     def splitDiscreteLocation(self, location):
         discreteLocation = {}
@@ -211,6 +217,7 @@ def formatDiscreteLocationKey(key):
 class DiscreteDeltas:
     sources: dict
     deltas: dict
+    models: dict
 
 
 @dataclass(kw_only=True)

@@ -8,6 +8,7 @@ import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
+from fontra.backends.copy import copyFont
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
     Anchor,
@@ -41,9 +42,7 @@ def testFont():
 
 
 def getFontSingleUFO():
-    return UFOBackend.fromPath(
-        dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo"
-    )
+    return UFOBackend.fromPath(dataDir / "mutatorsans" / "MutatorSansLightWide.ufo")
 
 
 @pytest.fixture
@@ -114,7 +113,7 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
 
 async def test_getCustomDataSingleUFO(testFontSingleUFO):
     customData = await testFontSingleUFO.getCustomData()
-    assert 17 == len(customData)
+    assert 15 == len(customData)
 
 
 async def test_putCustomDataSingleUFO(writableTestFontSingleUFO):
@@ -410,7 +409,7 @@ async def test_putAxes(writableTestFont):
                 "Test_LightCondensed.ufo",
                 "Test_LightWide.ufo",
             ],
-            "Test_LightCondensed.ufo",
+            "Test_LightWide.ufo",
         ),
         (
             getFontSingleUFO(),
@@ -452,7 +451,6 @@ async def test_newFileSystemBackend(
     assert [
         "fontinfo.plist",
         "glyphs",
-        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
         "layercontents.plist",
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / referenceUFO)
@@ -890,7 +888,26 @@ async def test_kerning_read_write(writableTestFont):
     reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedKerning = await reopenedFont.getKerning()
     assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
-    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == ["A", "X"]
+    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == [
+        "A",
+        "Aacute",
+        "Adieresis",
+        "X",
+    ]
+
+
+async def test_roundtrip_single_UFO(testFontSingleUFO, tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    outPath = tmpdir / "roundtripped.ufo"
+    outBackend = newFileSystemBackend(outPath)
+    await copyFont(testFontSingleUFO, outBackend)
+    reopenedBackend = getFileSystemBackend(outPath)
+    assert await testFontSingleUFO.getGlyph("A") == await reopenedBackend.getGlyph("A")
+    assert await testFontSingleUFO.getGlyph("Q") == await reopenedBackend.getGlyph("Q")
+    assert await testFontSingleUFO.getGlyphMap() == await reopenedBackend.getGlyphMap()
+    assert await testFontSingleUFO.getFontInfo() == await reopenedBackend.getFontInfo()
+    assert await testFontSingleUFO.getKerning() == await reopenedBackend.getKerning()
+    assert await testFontSingleUFO.getSources() == await reopenedBackend.getSources()
 
 
 def fileNamesFromDir(path):

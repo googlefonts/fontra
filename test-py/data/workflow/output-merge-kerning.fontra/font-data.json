@@ -1,0 +1,212 @@
+{
+"axes": {
+"axes": [
+{
+"name": "weight",
+"label": "Weight",
+"tag": "wght",
+"minValue": 100,
+"defaultValue": 400,
+"maxValue": 900
+},
+{
+"name": "optical",
+"label": "Optical Size",
+"tag": "opsz",
+"minValue": 8,
+"defaultValue": 14,
+"maxValue": 144
+},
+{
+"name": "width",
+"label": "Width",
+"tag": "wdth",
+"minValue": 50,
+"defaultValue": 100,
+"maxValue": 200
+}
+]
+},
+"sources": {
+"10e1c129": {
+"name": "Display",
+"location": {
+"optical": 144,
+"weight": 400,
+"width": 100
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"14d3aeff": {
+"name": "Bold Display",
+"location": {
+"optical": 144,
+"weight": 900,
+"width": 100
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"38953841": {
+"name": "Regular",
+"location": {
+"optical": 14,
+"weight": 400,
+"width": 100
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"4c8cddbd": {
+"name": "Wide",
+"location": {
+"optical": 14,
+"weight": 400,
+"width": 200
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"c6801eea": {
+"name": "Bold Wide",
+"location": {
+"optical": 14,
+"weight": 900,
+"width": 200
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"f21bb6bb": {
+"name": "Bold",
+"location": {
+"optical": 14,
+"weight": 900,
+"width": 100
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+}
+}
+}

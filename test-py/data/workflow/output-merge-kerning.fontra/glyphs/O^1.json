@@ -1,0 +1,16 @@
+{
+"name": "O",
+"sources": [
+{
+"name": "default",
+"layerName": "default"
+}
+],
+"layers": {
+"default": {
+"glyph": {
+"xAdvance": 500
+}
+}
+}
+}

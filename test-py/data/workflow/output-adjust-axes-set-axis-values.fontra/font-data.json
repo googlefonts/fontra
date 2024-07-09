@@ -50,5 +50,157 @@
 "defaultValue": 0
 }
 ]
+},
+"sources": {
+"3aa9223b": {
+"name": "Support",
+"location": {
+"italic": 0,
+"weight": 595,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"5bea6334": {
+"name": "LightCondensed",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"5d4e7f1d": {
+"name": "BoldWide",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"d7abd222": {
+"name": "LightWide",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 1000
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+},
+"f22d1bbd": {
+"name": "BoldCondensed",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 0
+},
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 800,
+"zone": 16
+},
+"capHeight": {
+"value": 750,
+"zone": 16
+},
+"xHeight": {
+"value": 500,
+"zone": 16
+},
+"baseline": {
+"value": 0,
+"zone": -16
+},
+"descender": {
+"value": -250,
+"zone": -16
+}
+}
+}
 }
 }

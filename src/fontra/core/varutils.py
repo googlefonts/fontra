@@ -40,3 +40,15 @@ def locationToTuple(loc: dict[str, float]) -> tuple[tuple[str, float], ...]:
 def makeSparseNormalizedLocation(location: dict[str, float]) -> dict[str, float]:
     # location must be normalized
     return {name: value for name, value in location.items() if value}
+
+
+def makeSparseLocation(location, defaultLocation):
+    return {
+        name: location[name]
+        for name, value in defaultLocation.items()
+        if location.get(name, value) != value
+    }
+
+
+def makeDenseLocation(location, defaultLocation):
+    return {name: location.get(name, value) for name, value in defaultLocation.items()}

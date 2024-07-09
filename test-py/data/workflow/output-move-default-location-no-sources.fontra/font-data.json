@@ -6,7 +6,7 @@
 "label": "width",
 "tag": "wdth",
 "minValue": 0,
-"defaultValue": 0,
+"defaultValue": 400,
 "maxValue": 1000
 },
 {
@@ -14,7 +14,7 @@
 "label": "weight",
 "tag": "wght",
 "minValue": 100,
-"defaultValue": 100,
+"defaultValue": 300,
 "maxValue": 900,
 "mapping": [
 [
@@ -26,16 +26,6 @@
 850
 ]
 ]
-},
-{
-"name": "italic",
-"label": "italic",
-"tag": "ital",
-"values": [
-0,
-1
-],
-"defaultValue": 0
 }
 ]
 }

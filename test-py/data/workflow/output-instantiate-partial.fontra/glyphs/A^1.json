@@ -2,24 +2,22 @@
 "name": "A",
 "sources": [
 {
-"name": "weight=150,width=400",
-"layerName": "weight=150,width=400",
+"name": "weight=150",
+"layerName": "weight=150",
 "location": {
-"weight": 150,
-"width": 400
+"weight": 150
 }
 },
 {
-"name": "weight=850,width=400",
-"layerName": "weight=850,width=400",
+"name": "weight=850",
+"layerName": "weight=850",
 "location": {
-"weight": 850,
-"width": 400
+"weight": 850
 }
 }
 ],
 "layers": {
-"weight=150,width=400": {
+"weight=150": {
 "glyph": {
 "path": {
 "contours": [
@@ -112,7 +110,7 @@
 "xAdvance": 714
 }
 },
-"weight=850,width=400": {
+"weight=850": {
 "glyph": {
 "path": {
 "contours": [

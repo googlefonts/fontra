@@ -8,7 +8,15 @@ from typing import Any
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
 
-from ...core.classes import Component, GlyphSource, Layer, StaticGlyph, VariableGlyph
+from ...core.classes import (
+    Component,
+    FontSource,
+    GlyphSource,
+    Kerning,
+    Layer,
+    StaticGlyph,
+    VariableGlyph,
+)
 from ...core.path import PackedPath
 from .base import (
     BaseFilter,
@@ -26,7 +34,8 @@ logger = logging.getLogger(__name__)
 @dataclass(kw_only=True)
 class Scale(BaseFilter):
     scaleFactor: float
-    scaleUnitsPerEm: bool = True
+    scaleFontMetrics: bool = True
+    scaleKerning: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         transformation = Transform().scale(self.scaleFactor)
@@ -87,10 +96,65 @@ class Scale(BaseFilter):
         )
 
     async def processUnitsPerEm(self, unitsPerEm: int) -> int:
-        if self.scaleUnitsPerEm:
-            return otRound(unitsPerEm * self.scaleFactor)
-        else:
-            return unitsPerEm
+        return (
+            otRound(unitsPerEm * self.scaleFactor)
+            if self.scaleFontMetrics
+            else unitsPerEm
+        )
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        if not self.scaleFontMetrics:
+            return sources
+
+        return {
+            sourceIdentifier: scaleFontSourceCoordinates(source, self.scaleFactor)
+            for sourceIdentifier, source in sources.items()
+        }
+
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        if not self.scaleKerning:
+            return kerning
+
+        return {
+            kernType: scaleKerning(kernTable, self.scaleFactor)
+            for kernType, kernTable in kerning.items()
+        }
+
+
+def scaleFontSourceCoordinates(source, scaleFactor):
+    return replace(
+        source,
+        lineMetricsHorizontalLayout=scaleLineMetrics(
+            source.lineMetricsHorizontalLayout, scaleFactor
+        ),
+        lineMetricsVerticalLayout=scaleLineMetrics(
+            source.lineMetricsVerticalLayout, scaleFactor
+        ),
+    )
+
+
+def scaleLineMetrics(lineMetrics, scaleFactor):
+    return {
+        name: replace(
+            metric, value=metric.value * scaleFactor, zone=metric.zone * scaleFactor
+        )
+        for name, metric in lineMetrics.items()
+    }
+
+
+def scaleKerning(kernTable: Kerning, scaleFactor) -> Kerning:
+    return replace(
+        kernTable,
+        values={
+            left: {
+                right: [v * scaleFactor if v else v for v in values]
+                for right, values in rightDict.items()
+            }
+            for left, rightDict in kernTable.values.items()
+        },
+    )
 
 
 @registerFilterAction("decompose-composites")
@@ -254,6 +318,8 @@ class RoundCoordinates(BaseFilter):
     roundComponentOrigins: bool = True
     roundGlyphMetrics: bool = True
     roundAnchors: bool = True
+    roundLineMetrics: bool = True
+    roundKerning: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         roundPathCoordinates = self.roundPathCoordinates
@@ -275,6 +341,25 @@ class RoundCoordinates(BaseFilter):
             for layerName, layer in glyph.layers.items()
         }
         return replace(glyph, layers=newLayers)
+
+    async def processSources(
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
+        if not self.roundLineMetrics:
+            return sources
+
+        return {
+            sourceIdentifier: roundFontSourceCoordinates(source)
+            for sourceIdentifier, source in sources.items()
+        }
+
+    async def processKerning(self, kerning: dict[str, Kerning]) -> dict[str, Kerning]:
+        if not self.roundKerning:
+            return kerning
+
+        return {
+            kernType: roundKerning(kernTable) for kernType, kernTable in kerning.items()
+        }
 
 
 def roundCoordinates(
@@ -313,6 +398,36 @@ def roundCoordinates(
         ]
 
     return replace(glyph, **newFields)
+
+
+def roundFontSourceCoordinates(source):
+    return replace(
+        source,
+        lineMetricsHorizontalLayout=roundLineMetrics(
+            source.lineMetricsHorizontalLayout
+        ),
+        lineMetricsVerticalLayout=roundLineMetrics(source.lineMetricsVerticalLayout),
+    )
+
+
+def roundLineMetrics(lineMetrics):
+    return {
+        name: replace(metric, value=round(metric.value), zone=round(metric.zone))
+        for name, metric in lineMetrics.items()
+    }
+
+
+def roundKerning(kernTable: Kerning) -> Kerning:
+    return replace(
+        kernTable,
+        values={
+            left: {
+                right: [round(v) if v is not None else v for v in values]
+                for right, values in rightDict.items()
+            }
+            for left, rightDict in kernTable.values.items()
+        },
+    )
 
 
 @registerFilterAction("set-vertical-glyph-metrics")
