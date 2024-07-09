@@ -53,7 +53,7 @@ from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
 from ..core.subprocess import runInSubProcess
-from ..core.varutils import makeDenseLocation, makeSparseLocation
+from ..core.varutils import locationToTuple, makeDenseLocation, makeSparseLocation
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
 
@@ -430,7 +430,7 @@ class DesignspaceBackend:
                 sourceLocation, localAxisNames
             )
             dsSource = self.dsSources.findItem(
-                locationTuple=tuplifyLocation(globalLocation)
+                locationTuple=locationToTuple(globalLocation)
             )
             assert dsSource is not None
             ufoPath = dsSource.layer.path
@@ -623,7 +623,7 @@ class DesignspaceBackend:
         )
 
         dsSource = self.dsSources.findItem(
-            locationTuple=tuplifyLocation(globalLocation)
+            locationTuple=locationToTuple(globalLocation)
         )
         if dsSource is None:
             dsSource = self._createDSSourceForGlyph(
@@ -703,7 +703,7 @@ class DesignspaceBackend:
             dsSources = self.dsSources
         atPole, _ = splitLocationByPolePosition(location, self.axisPolePositions)
         atPole = {**self.defaultLocation, **atPole}
-        poleDSSource = dsSources.findItem(locationTuple=tuplifyLocation(atPole))
+        poleDSSource = dsSources.findItem(locationTuple=locationToTuple(atPole))
         if poleDSSource is None:
             poleDSSource = dsSources.findItem(isDefault=True)
             assert poleDSSource is not None
@@ -869,7 +869,7 @@ class DesignspaceBackend:
             if dsSource is None:
                 # Fall back to search by location
                 dsSource = self.dsSources.findItem(
-                    locationTuple=tuplifyLocation(denseSourceLocation)
+                    locationTuple=locationToTuple(denseSourceLocation)
                 )
 
             if dsSource is not None:
@@ -1416,7 +1416,7 @@ class DSSource:
 
     @cached_property
     def locationTuple(self):
-        return tuplifyLocation(self.location)
+        return locationToTuple(self.location)
 
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
         if self.isSparse:
@@ -1718,11 +1718,6 @@ def cleanupTransform(t):
     """Convert any integer float values into ints. This is to prevent glifLib
     from writing float values that can be integers."""
     return tuple(int(v) if int(v) == v else v for v in t)
-
-
-def tuplifyLocation(loc):
-    # TODO: find good place to share this (duplicated from opentype.py)
-    return tuple(sorted(loc.items()))
 
 
 def splitLocationByPolePosition(location, poles):
