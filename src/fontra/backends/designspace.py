@@ -135,6 +135,7 @@ class DesignspaceBackend:
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
         self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._glyphDependencies: GlyphDependencies | None = None
+        self._backgroundTasksTask: asyncio.Task | None = None
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
@@ -229,6 +230,8 @@ class DesignspaceBackend:
             await self.fileWatcher.aclose()
         if self._glyphDependenciesTask is not None:
             self._glyphDependenciesTask.cancel()
+        if self._backgroundTasksTask is not None:
+            self._backgroundTasksTask.cancel()
 
     @property
     def defaultDSSource(self):
