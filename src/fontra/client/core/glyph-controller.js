@@ -615,9 +615,12 @@ export class StaticGlyphController {
 
     const selectionRects = [];
     if (pointIndices.length) {
-      const path = filterPathByPointIndices(this.instance.path, pointIndices);
-      if (path.getBounds()) {
-        selectionRects.push(path.getBounds());
+      const pathBounds = filterPathByPointIndices(
+        this.instance.path,
+        pointIndices
+      ).getBounds();
+      if (pathBounds) {
+        selectionRects.push(pathBounds);
       }
     }
 
