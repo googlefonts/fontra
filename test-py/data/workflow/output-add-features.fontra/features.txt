@@ -8,6 +8,7 @@ feature calt {
     sub A by A.alt;
     sub @group_A by A.alt;
 } calt;
+
 feature ss01 {
     sub A A A A by A;
 } ss01;

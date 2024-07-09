@@ -39,8 +39,12 @@ def mergeFeatures(
     featureTextB: str,
     glyphMapB: dict[str, list[int]],
 ) -> tuple[str, dict[str, list[int]]]:
-    ufoA = MinimalUFO(glyphMap=glyphMapA, features=OpenTypeFeatures(text=featureTextA))
-    ufoB = MinimalUFO(glyphMap=glyphMapB, features=OpenTypeFeatures(text=featureTextB))
+    ufoA = MinimalUFO(
+        glyphMap=glyphMapA, features=OpenTypeFeatures(text=featureTextA + "\n")
+    )
+    ufoB = MinimalUFO(
+        glyphMap=glyphMapB, features=OpenTypeFeatures(text=featureTextB + "\n")
+    )
 
     merger = ufomerge.UFOMerger(ufoA, ufoB)
     merger.merge()
