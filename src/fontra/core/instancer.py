@@ -359,9 +359,13 @@ class GlyphInstancer:
 
     @cached_property
     def deltas(self) -> DiscreteDeltas:
-        sourceValues = [
-            MathWrapper(layerGlyph) for layerGlyph in self.activeLayerGlyphs
-        ]
+        layerGlyphs = self.activeLayerGlyphs
+        if not areGuidelinesCompatible(layerGlyphs):
+            layerGlyphs = [
+                replace(layerGlyph, guidelines=[]) for layerGlyph in layerGlyphs
+            ]
+
+        sourceValues = [MathWrapper(layerGlyph) for layerGlyph in layerGlyphs]
         return self.model.getDeltas(sourceValues)
 
     def checkCompatibility(self):
