@@ -626,14 +626,15 @@ export function scalePoint(pinPoint, point, factor) {
 export function getSelectionByContour(path, pointIndices) {
   const selectionByContour = new Map();
   for (const pointIndex of pointIndices) {
-    if (pointIndex !== undefined && pointIndex < path.numPoints) {
-      const [contourIndex, contourPointIndex] =
-        path.getContourAndPointIndex(pointIndex);
-      if (!selectionByContour.has(contourIndex)) {
-        selectionByContour.set(contourIndex, []);
-      }
-      selectionByContour.get(contourIndex).push(contourPointIndex);
+    if (pointIndex >= path.numPoints) {
+      // Ignore out-of-bounds indices
+      continue;
     }
+    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+    if (!selectionByContour.has(contourIndex)) {
+      selectionByContour.set(contourIndex, []);
+    }
+    selectionByContour.get(contourIndex).push(contourPointIndex);
   }
   return selectionByContour;
 }
