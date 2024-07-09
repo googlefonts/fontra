@@ -1,4 +1,5 @@
 import { getDecomposedIdentity } from "./transform.js";
+import { normalizeGuidelines } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 
 export class VariableGlyph {
@@ -60,7 +61,7 @@ export class StaticGlyph {
     source.anchors = noCopy ? obj.anchors || [] : copyCustomData(obj.anchors || []);
     source.guidelines = noCopy
       ? obj.guidelines || []
-      : copyCustomData(obj.guidelines || []);
+      : normalizeGuidelines(obj.guidelines || []);
     return source;
   }
 

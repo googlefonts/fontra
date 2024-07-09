@@ -138,8 +138,8 @@ describe("glyph-controller Tests", () => {
       undefined
     );
     const expectedGuidelines = [
-      { name: "top", x: 100, y: 100, angle: 0 },
-      { name: "center", x: 100, y: 0, angle: 90 },
+      { name: "top", x: 100, y: 100, angle: 0, locked: false },
+      { name: "center", x: 100, y: 0, angle: 90, locked: false },
     ];
     expect(staticGlyphController.guidelines).to.deep.equal(expectedGuidelines);
   });

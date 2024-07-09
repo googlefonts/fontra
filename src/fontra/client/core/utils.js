@@ -546,9 +546,13 @@ export function areGuidelinesCompatible(parents) {
 
 const identityGuideline = { x: 0, y: 0, angle: 0 };
 
-export function normalizeGuidelines(guidelines) {
+export function normalizeGuidelines(guidelines, resetLocked = false) {
   return guidelines.map((guideline) => {
-    return { ...identityGuideline, ...guideline, locked: false };
+    return {
+      ...identityGuideline,
+      ...guideline,
+      locked: resetLocked ? false : !!guideline.locked,
+    };
   });
 }
 
