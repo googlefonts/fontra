@@ -1,0 +1,9 @@
+
+@kern.top.AB = [A B];
+@kern.bottom.BC = [B C];
+feature vkrn {
+    pos C C (wdth=100,wght=400:-5 wdth=100,wght=900:-15 wdth=200,wght=400:-25 wdth=200,wght=900:-35);
+    pos C @kern.bottom.BC (wdth=100,wght=400:-10 wdth=100,wght=900:-20 wdth=200,wght=400:-30 wdth=200,wght=900:-40);
+    pos @kern.top.AB C (wdth=100,wght=400:10 wdth=100,wght=900:20 wdth=200,wght=400:30 wdth=200,wght=900:40);
+    pos @kern.top.AB @kern.bottom.BC (wdth=100,wght=400:5 wdth=100,wght=900:15 wdth=200,wght=400:25 wdth=200,wght=900:35);
+} vkrn;

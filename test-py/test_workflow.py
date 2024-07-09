@@ -1222,6 +1222,19 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "generate-vkrn-feature",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-generate-vkrn-feature.fontra"
+            - filter: generate-vkrn-feature
+            - output: fontra-write
+              destination: "output-generate-vkrn-feature.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
