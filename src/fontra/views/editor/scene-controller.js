@@ -1412,6 +1412,17 @@ function closeContourEnsureCubicOffCurves(path, contourIndex) {
   const endPoint = path.getPoint(contourInfo.endPoint);
   const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
 
+  if (startPoint.type && !endPoint.type) {
+    // contour starts with off-curve and ends with on-curve point,
+    // reverse the contour, first.
+    const contour = path.getUnpackedContour(contourIndex);
+    contour.points.reverse();
+    const packedContour = packContour(contour);
+    path.deleteContour(contourIndex);
+    path.insertContour(contourIndex, packedContour);
+    closeContourEnsureCubicOffCurves(path, contourIndex);
+  }
+
   if (prevEndPoint.type || !endPoint.type || startPoint.type) {
     // Sanity check: we expect on-curve/off-curve/on-curve
     return;
