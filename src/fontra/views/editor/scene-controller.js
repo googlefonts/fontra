@@ -1408,35 +1408,33 @@ function closeContourEnsureCubicOffCurves(path, contourIndex) {
   const contourInfo = path.contourInfo[contourIndex];
   const numContourPoints = path.getContour(contourIndex).pointTypes.length;
 
+  const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
+  const secondPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 2);
   const prevEndPoint = path.getPoint(contourInfo.endPoint - 1);
   const endPoint = path.getPoint(contourInfo.endPoint);
-  const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
 
-  if (startPoint.type && !endPoint.type) {
-    // contour starts with off-curve and ends with on-curve point,
-    // reverse the contour, first.
-    const contour = path.getUnpackedContour(contourIndex);
-    contour.points.reverse();
-    const packedContour = packContour(contour);
-    path.deleteContour(contourIndex);
-    path.insertContour(contourIndex, packedContour);
-    closeContourEnsureCubicOffCurves(path, contourIndex);
-  }
+  const startPointOffCurveSituation =
+    !secondPoint.type && startPoint.type && !endPoint.type;
+  const firstPoint = startPointOffCurveSituation ? secondPoint : prevEndPoint;
+  const middlePoint = startPointOffCurveSituation ? startPoint : endPoint;
+  const lastPoint = startPointOffCurveSituation ? endPoint : startPoint;
 
-  if (prevEndPoint.type || !endPoint.type || startPoint.type) {
+  if (firstPoint.type || !middlePoint.type || lastPoint.type) {
     // Sanity check: we expect on-curve/off-curve/on-curve
     return;
   }
 
   // Compute handles for a cubic segment that will look the same as the
   // one-off-curve quad segment we have.
-  const [handle1, handle2] = [prevEndPoint, startPoint].map((point) => {
+  const [handle1, handle2] = [firstPoint, lastPoint].map((point) => {
     return {
-      ...vector.roundVector(scalePoint(point, endPoint, 2 / 3)),
+      ...vector.roundVector(scalePoint(point, middlePoint, 2 / 3)),
       type: "cubic",
     };
   });
-  path.setContourPoint(contourIndex, numContourPoints - 1, handle1);
+
+  const handle1ContourIndex = startPointOffCurveSituation ? 0 : numContourPoints - 1;
+  path.setContourPoint(contourIndex, handle1ContourIndex, handle1);
   path.insertPoint(contourIndex, numContourPoints, handle2);
 }
 
