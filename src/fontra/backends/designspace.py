@@ -225,7 +225,7 @@ class DesignspaceBackend:
         self.axisPolePositions = axisPolePositions
         self.defaultLocation = defaultLocation
 
-    async def aclose(self):
+    async def aclose(self) -> None:
         if self.fileWatcher is not None:
             await self.fileWatcher.aclose()
         if self._glyphDependenciesTask is not None:
