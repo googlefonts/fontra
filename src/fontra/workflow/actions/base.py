@@ -109,6 +109,14 @@ class BaseFilter:
     def inputGlyphMap(self):
         return self.validatedInput.getGlyphMap()
 
+    @async_cached_property
+    def inputSources(self):
+        return self.validatedInput.getSources()
+
+    @async_cached_property
+    def inputKerning(self):
+        return self.validatedInput.getKerning()
+
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend

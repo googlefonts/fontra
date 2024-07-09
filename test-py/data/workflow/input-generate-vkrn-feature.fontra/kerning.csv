@@ -1,0 +1,13 @@
+TYPE
+vkrn
+
+GROUPS
+kern.bottom.BC;B;C
+kern.top.AB;A;B
+
+VALUES
+side1;side2;0075ca4f;f563722c;d77f29e2;09259dfc
+kern.top.AB;C;10;20;30;40
+kern.top.AB;kern.bottom.BC;5;15;25;35
+C;kern.bottom.BC;-10;-20;-30;-40
+C;C;-5;-15;-25;-35

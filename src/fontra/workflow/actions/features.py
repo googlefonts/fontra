@@ -8,10 +8,11 @@ from types import SimpleNamespace
 
 from fontTools.varLib.models import piecewiseLinearMap
 
-from ...core.classes import OpenTypeFeatures
+from ...core.classes import Kerning, OpenTypeFeatures
+from ...core.varutils import locationToTuple
 from ..features import mergeFeatures
 from ..featurewriter import FeatureWriter, VariableScalar
-from .base import BaseFilter, getActiveSources, registerFilterAction, tuplifyLocation
+from .base import BaseFilter, getActiveSources, registerFilterAction
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class GeneratePaltVpalFeature(BaseFilter):
     async def processFeatures(self, features):
         glyphMap = await self.inputGlyphMap
 
-        axes = await self.getAxes()
+        axes = await self.inputAxes
 
         horAdjustments, verAdjustments = await self._collectAdjustments(
             glyphMap, axes.axes
@@ -33,17 +34,7 @@ class GeneratePaltVpalFeature(BaseFilter):
         if not horAdjustments and not verAdjustments:
             return features
 
-        axisList = [
-            SimpleNamespace(
-                axisTag=axis.tag,
-                minValue=axis.minValue,
-                defaultValue=axis.defaultValue,
-                maxValue=axis.maxValue,
-            )
-            for axis in axes.axes
-        ]
-
-        axisTagMapping = {axis.name: axis.tag for axis in axes.axes}
+        axisList, axisTagMapping = _makeAxisListAndMapping(axes.axes)
 
         w = FeatureWriter()
         for script, language in self.languageSystems:
@@ -66,7 +57,7 @@ class GeneratePaltVpalFeature(BaseFilter):
                     advanceScalar.axes = axisList
                     for location, placementAdjust, advanceAdjust in glyphAdjustments:
                         location = {axisTagMapping[k]: v for k, v in location.items()}
-                        locationTuple = tuplifyLocation(location)
+                        locationTuple = locationToTuple(location)
                         placementScalar.add_value(locationTuple, placementAdjust)
                         advanceScalar.add_value(locationTuple, advanceAdjust)
                 if isHor:
@@ -163,6 +154,22 @@ def _makeLocationMapFunc(axes):
     }
 
 
+def _makeAxisListAndMapping(axes):
+    axisList = [
+        SimpleNamespace(
+            axisTag=axis.tag,
+            minValue=axis.minValue,
+            defaultValue=axis.defaultValue,
+            maxValue=axis.maxValue,
+        )
+        for axis in axes
+    ]
+
+    axisTagMapping = {axis.name: axis.tag for axis in axes}
+
+    return axisList, axisTagMapping
+
+
 @registerFilterAction("add-features")
 @dataclass(kw_only=True)
 class AddFeatures(BaseFilter):
@@ -174,3 +181,91 @@ class AddFeatures(BaseFilter):
         featureText = featureFile.read_text(encoding="utf-8")
         featureText, _ = mergeFeatures(features.text, glyphMap, featureText, glyphMap)
         return OpenTypeFeatures(text=featureText)
+
+
+vkrnTopPrefix = "kern.top."
+vkrnBottomPrefix = "kern.bottom."
+
+
+def _kernKeySortFunc(item):
+    key, _ = item
+    return key.startswith(vkrnTopPrefix) or key.startswith(vkrnBottomPrefix)
+
+
+@registerFilterAction("generate-vkrn-feature")
+@dataclass(kw_only=True)
+class GenerateVkrnFeature(BaseFilter):
+    dropVkrn: bool = True
+
+    async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
+        verticalKerning = (await self.inputKerning).get("vkrn")
+        if verticalKerning is None:
+            return features
+
+        glyphMap = await self.inputGlyphMap
+        axes = await self.inputAxes
+        sources = await self.inputSources
+        mapLocation = _makeLocationMapFunc(axes.axes)
+
+        axisList, axisTagMapping = _makeAxisListAndMapping(axes.axes)
+
+        locations = [
+            locationToTuple(
+                {
+                    axisTagMapping[k]: v
+                    for k, v in mapLocation(sources[sid].location).items()
+                }
+            )
+            for sid in verticalKerning.sourceIdentifiers
+        ]
+
+        w = FeatureWriter()
+
+        for groupName, group in sorted(verticalKerning.groups.items()):
+            w.addGroup(groupName, group)
+
+        fea = w.addFeature("vkrn")
+
+        for left, rightDict in sorted(
+            verticalKerning.values.items(), key=_kernKeySortFunc
+        ):
+            if left.startswith(vkrnTopPrefix):
+                left = "@" + left
+
+            for right, values in sorted(rightDict.items(), key=_kernKeySortFunc):
+                if right.startswith(vkrnBottomPrefix):
+                    right = "@" + right
+
+                values = [0 if v is None else round(v) for v in values]
+                firstValue = values[0]
+                if all(v == firstValue for v in values[1:]):
+                    if firstValue == 0:
+                        continue
+                    scalar = firstValue
+                else:
+                    scalar = VariableScalar()
+                    scalar.axes = axisList
+                    for loc, v in zip(locations, values, strict=True):
+                        scalar.add_value(loc, v)
+
+                fea.addLine(f"pos {left} {right} {scalar}")
+
+        featureText = w.asFea()
+
+        featureText, _ = mergeFeatures(features.text, glyphMap, featureText, glyphMap)
+
+        return OpenTypeFeatures(text=featureText)
+
+    async def getKerning(
+        self,
+    ) -> dict[str, Kerning]:
+        kerning = await self.inputKerning
+        return (
+            kerning
+            if not self.dropVkrn
+            else {
+                kernType: kernTable
+                for kernType, kernTable in kerning.items()
+                if kernType != "vkrn"
+            }
+        )
