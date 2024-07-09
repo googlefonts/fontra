@@ -1178,37 +1178,12 @@ export class SceneController {
           // close open contour
           path.contourInfo[contourIndex].isClosed = true;
           if (curveType === "cubic") {
-            this.closeContourEnsureCubicOffCurves(path, contourIndex);
+            closeContourEnsureCubicOffCurves(path, contourIndex);
           }
         }
       }
       return translatePlural("action.close-contour", openContours.length);
     });
-  }
-
-  closeContourEnsureCubicOffCurves(path, contourIndex) {
-    const contourInfo = path.contourInfo[contourIndex];
-    const numContourPoints = path.getContour(contourIndex).pointTypes.length;
-
-    const prevEndPoint = path.getPoint(contourInfo.endPoint - 1);
-    const endPoint = path.getPoint(contourInfo.endPoint);
-    const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
-
-    if (prevEndPoint.type || !endPoint.type || startPoint.type) {
-      // Sanity check: we expect on-curve/off-curve/on-curve
-      return;
-    }
-
-    // Compute handles for a cubic segment that will look the same as the
-    // one-off-curve quad segment we have.
-    const [handle1, handle2] = [prevEndPoint, startPoint].map((point) => {
-      return {
-        ...vector.roundVector(scalePoint(point, endPoint, 2 / 3)),
-        type: "cubic",
-      };
-    });
-    path.setContourPoint(contourIndex, numContourPoints - 1, handle1);
-    path.insertPoint(contourIndex, numContourPoints, handle2);
   }
 
   async breakContour() {
@@ -1420,6 +1395,31 @@ function getSelectedOpenContours(
   }
 
   return [...selectedContours];
+}
+
+function closeContourEnsureCubicOffCurves(path, contourIndex) {
+  const contourInfo = path.contourInfo[contourIndex];
+  const numContourPoints = path.getContour(contourIndex).pointTypes.length;
+
+  const prevEndPoint = path.getPoint(contourInfo.endPoint - 1);
+  const endPoint = path.getPoint(contourInfo.endPoint);
+  const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
+
+  if (prevEndPoint.type || !endPoint.type || startPoint.type) {
+    // Sanity check: we expect on-curve/off-curve/on-curve
+    return;
+  }
+
+  // Compute handles for a cubic segment that will look the same as the
+  // one-off-curve quad segment we have.
+  const [handle1, handle2] = [prevEndPoint, startPoint].map((point) => {
+    return {
+      ...vector.roundVector(scalePoint(point, endPoint, 2 / 3)),
+      type: "cubic",
+    };
+  });
+  path.setContourPoint(contourIndex, numContourPoints - 1, handle1);
+  path.insertPoint(contourIndex, numContourPoints, handle2);
 }
 
 function positionedGlyphPosition(positionedGlyph) {
