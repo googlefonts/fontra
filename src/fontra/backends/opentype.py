@@ -25,6 +25,7 @@ from ..core.classes import (
     VariableGlyph,
 )
 from ..core.path import PackedPath, PackedPathPointPen
+from ..core.varutils import locationToTuple
 
 
 class OTFBackend:
@@ -99,7 +100,7 @@ class OTFBackend:
 
         if self.gvarVariations is not None and glyphName in self.gvarVariations:
             locations |= {
-                tuplifyLocation({k: v[1] for k, v in variation.axes.items()})
+                locationToTuple({k: v[1] for k, v in variation.axes.items()})
                 for variation in self.gvarVariations[glyphName]
             }
 
@@ -115,14 +116,14 @@ class OTFBackend:
                 for component in composite.components:
                     if component.axisValuesVarIndex != NO_VARIATION_INDEX:
                         locations.update(
-                            tuplifyLocation(loc)
+                            locationToTuple(loc)
                             for loc in getLocationsFromMultiVarstore(
                                 component.axisValuesVarIndex >> 16, varStore, fvarAxes
                             )
                         )
                     if component.transformVarIndex != NO_VARIATION_INDEX:
                         locations.update(
-                            tuplifyLocation(loc)
+                            locationToTuple(loc)
                             for loc in getLocationsFromMultiVarstore(
                                 component.transformVarIndex >> 16, varStore, fvarAxes
                             )
@@ -141,7 +142,7 @@ class OTFBackend:
             fvarAxes = self.font["fvar"].axes
             varStore = self.charStrings.varStore.otVarStore
             locations = {
-                tuplifyLocation(loc)
+                locationToTuple(loc)
                 for varDataIndex in vsIndices
                 for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
             }
@@ -170,10 +171,6 @@ class OTFBackend:
 
     async def getCustomData(self) -> dict[str, Any]:
         return {}
-
-
-def tuplifyLocation(loc: dict[str, float]) -> tuple:
-    return tuple(sorted(loc.items()))
 
 
 def getLocationsFromVarstore(
@@ -266,7 +263,7 @@ def unpackAxes(font: TTFont) -> Axes:
                 continue
 
             for loc in getLocationsFromVarstore(varIdx >> 16, varStore, fvarAxes):
-                locations.add(tuplifyLocation(loc))
+                locations.add(locationToTuple(loc))
 
         for locTuple in sorted(locations):
             inputLocation = dict(locTuple)

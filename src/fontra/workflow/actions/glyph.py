@@ -18,13 +18,13 @@ from ...core.classes import (
     VariableGlyph,
 )
 from ...core.path import PackedPath
+from ...core.varutils import locationToTuple
 from .base import (
     BaseFilter,
     getActiveSources,
     locationToString,
     registerFilterAction,
     sparseLocation,
-    tuplifyLocation,
 )
 
 logger = logging.getLogger(__name__)
@@ -256,7 +256,7 @@ async def getFontSourceLocationsFromBaseGlyphs(
 
 def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation) -> set[tuple]:
     return {
-        tuplifyLocation(
+        locationToTuple(
             defaultFontSourceLocation
             | {
                 k: v
@@ -280,7 +280,7 @@ def multiplyLocations(
         haveLoc | needLoc
         for haveLoc, needLoc in itertools.product(haveLocations, needLocations)
     ]
-    return {tuplifyLocation(loc) for loc in needLocations}
+    return {locationToTuple(loc) for loc in needLocations}
 
 
 @registerFilterAction("drop-shapes")

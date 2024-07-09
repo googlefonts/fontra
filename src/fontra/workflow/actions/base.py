@@ -273,9 +273,5 @@ def locationToString(loc):
     return ",".join(parts)
 
 
-def tuplifyLocation(loc: dict[str, float]) -> tuple:
-    return tuple(sorted(loc.items()))
-
-
 def filterLocation(loc: dict[str, float], axisNames: set[str]) -> dict[str, float]:
     return {name: value for name, value in loc.items() if name in axisNames}
