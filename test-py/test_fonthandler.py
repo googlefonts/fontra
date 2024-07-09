@@ -46,7 +46,7 @@ async def testFontHandler(testFontPath):
 @pytest.mark.asyncio
 async def test_fontHandler_basic(testFontHandler):
     async with aclosing(testFontHandler):
-        # await testFontHandler.startTasks()
+        await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
 
     layerName, layer = firstLayerItem(glyph)
@@ -165,6 +165,7 @@ async def test_fontHandler_editGlyph_delete_layer(testFontHandler):
 @pytest.mark.asyncio
 async def test_fontHandler_getData(testFontHandler):
     async with aclosing(testFontHandler):
+        await testFontHandler.startTasks()
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
 
