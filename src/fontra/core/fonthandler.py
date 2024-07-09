@@ -50,14 +50,15 @@ class FontHandler:
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
         self.glyphMap = {}
-        if hasattr(self.backend, "startOptionalBackgroundTasks"):
-            self.backend.startOptionalBackgroundTasks()
 
     @cached_property
     def writableBackend(self) -> WritableFontBackend | None:
         return self.backend if isinstance(self.backend, WritableFontBackend) else None
 
     async def startTasks(self) -> None:
+        if hasattr(self.backend, "startOptionalBackgroundTasks"):
+            self.backend.startOptionalBackgroundTasks()
+
         if isinstance(self.backend, WatchableFontBackend):
             await self.backend.watchExternalChanges(self.processExternalChanges)
 
