@@ -739,6 +739,7 @@ def test_command(tmpdir, configYAMLSources):
             - input: fontra-read
               source: "test-py/data/workflow/input-move-default-location.fontra"
             - filter: drop-font-sources-and-kerning
+            - filter: drop-shapes
             - filter: subset-axes
               dropAxisNames: ["italic"]
             - filter: move-default-location
