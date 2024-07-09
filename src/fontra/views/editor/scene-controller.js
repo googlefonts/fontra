@@ -1182,7 +1182,7 @@ export class SceneController {
           }
         }
       }
-      return "Close Contour" + (openContours.length > 1 ? "s" : "");
+      return translatePlural("action.close-contour", openContours.length);
     });
   }
 
