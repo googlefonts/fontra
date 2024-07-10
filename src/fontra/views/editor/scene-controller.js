@@ -645,7 +645,7 @@ export class SceneController {
 
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     this.contextMenuState.openContourSelection = glyphController.canEdit
-      ? getSelectedOpenContours(glyphController.instance.path, pointSelection)
+      ? getSelectedClosableContours(glyphController.instance.path, pointSelection)
       : [];
   }
 
@@ -1371,7 +1371,7 @@ function getSelectedContours(path, pointSelection) {
   return [...selectedContours];
 }
 
-function getSelectedOpenContours(path, pointSelection, ignoreEdgeCases = true) {
+function getSelectedClosableContours(path, pointSelection) {
   if (!path || !pointSelection) {
     return [];
   }
@@ -1381,26 +1381,24 @@ function getSelectedOpenContours(path, pointSelection, ignoreEdgeCases = true) {
       // skip if contour is closed already
       continue;
     }
-    if (ignoreEdgeCases) {
-      if (path.getNumPointsOfContour(contourIndex) <= 2) {
-        // skip if contour has two (or less) points only
-        // (two on-curve or one off-curve and one on-curve)
-        continue;
-      }
-      const contour = path.getContour(contourIndex);
-      const numOnCurvePoints = contour.pointTypes.reduce(
-        (acc, pointType) =>
-          acc +
-          ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE
-            ? 1
-            : 0),
-        0
-      );
-      if (numOnCurvePoints === 1) {
-        // skip single point contour
-        // could have one on-curve, but two off-curve points
-        continue;
-      }
+    if (path.getNumPointsOfContour(contourIndex) <= 2) {
+      // skip if contour has two (or less) points only
+      // (two on-curve or one off-curve and one on-curve)
+      continue;
+    }
+    const contour = path.getContour(contourIndex);
+    const numOnCurvePoints = contour.pointTypes.reduce(
+      (acc, pointType) =>
+        acc +
+        ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE
+          ? 1
+          : 0),
+      0
+    );
+    if (numOnCurvePoints === 1) {
+      // skip single point contour
+      // could have one on-curve, but two off-curve points
+      continue;
     }
     selectedContours.add(contourIndex);
   }
