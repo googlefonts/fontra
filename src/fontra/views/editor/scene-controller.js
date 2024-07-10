@@ -1395,7 +1395,7 @@ function getSelectedClosableContours(path, pointSelection) {
           : 0),
       0
     );
-    if (numOnCurvePoints === 1) {
+    if (numOnCurvePoints <= 1) {
       // skip single point contour
       // could have one on-curve, but two off-curve points
       continue;
