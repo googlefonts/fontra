@@ -43,7 +43,6 @@ export class KnifeTool extends BaseTool {
 
     let eventTemp;
     let pointB;
-    let intersections;
     for await (const event of eventStream) {
       eventTemp = event;
       const point = this.sceneController.selectedGlyphPoint(event);
@@ -53,11 +52,7 @@ export class KnifeTool extends BaseTool {
       }
 
       this.sceneModel.knifeToolPointB = pointB = point;
-      this.sceneModel.intersections = intersections = getIntersections(
-        glyphController,
-        pointA,
-        pointB
-      );
+      this.sceneModel.intersections = getIntersections(glyphController, pointA, pointB);
       this.sceneModel.event = event;
       this.canvasController.requestUpdate();
     }
@@ -67,8 +62,32 @@ export class KnifeTool extends BaseTool {
     delete this.sceneModel.event;
     this.canvasController.requestUpdate();
 
-    console.log("KnifeTool intersections:", intersections);
-    // TODO: cut the path with the knife tool
+    console.log("KnifeTool:");
+    cutPath(pointA, pointB);
+  }
+
+  async cutPath(pointA, pointB) {
+    this.sceneController.selection = new Set(); // Clear selection
+
+    // await this.sceneController.editGlyphAndRecordChanges(
+    //   (glyph) => {
+    //     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+    //       glyph.layers
+    //     );
+
+    //     for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+    //       layerGlyph.path.appendPath(pathNew);
+    //       const intersection = getIntersections(
+    //         glyphController,
+    //         pointA,
+    //         pointB
+    //       );
+    //     }
+    //     return `Knife Tool cut`;
+    //   },
+    //   undefined,
+    //   true
+    // );
   }
 
   deactivate() {
