@@ -4,12 +4,13 @@ kern
 GROUPS
 public.kern1.A;A;Adieresis
 public.kern1.O;D;O
-public.kern2.MERGETEST;A;Adieresis;W
+public.kern2.MERGETEST;W
+public.kern2.MERGETEST.1;A;Adieresis
 
 VALUES
 side1;side2;38953841;f21bb6bb;4c8cddbd;c6801eea;10e1c129;14d3aeff
 public.kern1.A;T;10;20;30;40;;
 public.kern1.A;V;15;25;35;;;
-A;public.kern2.MERGETEST;-10;-20;-30;-40;;
+A;public.kern2.MERGETEST.1;-10;-20;-30;-40;;
 public.kern1.O;W;12;22;;;32;
 public.kern1.O;public.kern2.MERGETEST;-5;-15;;;-25;-35

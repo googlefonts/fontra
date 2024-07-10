@@ -153,6 +153,7 @@ class FontBackendMerger:
             await self.inputA.getKerning(), self._glyphNamesA - self._glyphNamesB
         )
         kerningB = subsetKerning(await self.inputB.getKerning(), self._glyphNamesB)
+
         newKerning = {}
         for kernType in sorted(set(kerningA) | set(kerningB)):
             kernTableA = kerningA.get(kernType)
@@ -270,6 +271,10 @@ def _mergeAxes(axisA, axisB):
 
 
 def _mergeKernTable(kernTableA, kernTableB):
+    if not set(kernTableA.groups).isdisjoint(set(kernTableB.groups)):
+        kernTableA = _disambiguateKerningGroupNames(kernTableA, kernTableB)
+
+    assert set(kernTableA.groups).isdisjoint(set(kernTableB.groups))
     assert set(kernTableA.values).isdisjoint(set(kernTableB.values))
 
     mergedSourceIdentifiers = list(kernTableA.sourceIdentifiers)
@@ -282,20 +287,49 @@ def _mergeKernTable(kernTableA, kernTableB):
     sidMapA = [(sid, sidIndicesA.get(sid)) for sid in mergedSourceIdentifiers]
     sidMapB = [(sid, sidIndicesB.get(sid)) for sid in mergedSourceIdentifiers]
 
-    mergedValues = _remapKernValues(kernTableA.values, sidMapA) | _remapKernValues(
-        kernTableB.values, sidMapB
-    )
-
-    mergedGroups = _mergeKernGroups(kernTableA.groups, kernTableB.groups)
+    mappedValuesA = _remapKernValuesBySourceIdentifiers(kernTableA.values, sidMapA)
+    mappedValuesB = _remapKernValuesBySourceIdentifiers(kernTableB.values, sidMapB)
 
     return Kerning(
-        groups=mergedGroups,
+        groups=kernTableA.groups | kernTableB.groups,
         sourceIdentifiers=mergedSourceIdentifiers,
-        values=mergedValues,
+        values=mappedValuesA | mappedValuesB,
     )
 
 
-def _remapKernValues(kerningValues, sidMap):
+def _disambiguateKerningGroupNames(kernTableA, kernTableB):
+    groupsNamesA = set(kernTableA.groups)
+    groupsNamesB = set(kernTableB.groups)
+
+    conflictingNames = groupsNamesA & groupsNamesB
+    usedNames = groupsNamesA | groupsNamesB
+
+    renameMap = {}
+    for name in sorted(conflictingNames):
+        count = 1
+        while True:
+            newName = f"{name}.{count}"
+            if newName not in usedNames:
+                break
+            count += 1
+        usedNames.add(newName)
+        renameMap[name] = newName
+
+    newGroups = {
+        renameMap.get(name, name): group for name, group in kernTableA.groups.items()
+    }
+
+    newValues = {
+        renameMap.get(left, left): {
+            renameMap.get(right, right): values for right, values in rightDict.items()
+        }
+        for left, rightDict in kernTableA.values.items()
+    }
+
+    return replace(kernTableA, groups=newGroups, values=newValues)
+
+
+def _remapKernValuesBySourceIdentifiers(kerningValues, sidMap):
     mappedKerningValues = {}
 
     for left, rightDict in kerningValues.items():
@@ -308,23 +342,3 @@ def _remapKernValues(kerningValues, sidMap):
         mappedKerningValues[left] = mappedRightDict
 
     return mappedKerningValues
-
-
-def _mergeKernGroups(groupsA, groupsB):
-    mergedGroups = {}
-
-    for groupName in sorted(set(groupsA) | set(groupsB)):
-        groupA = groupsA.get(groupName)
-        groupB = groupsB.get(groupName)
-
-        if groupA is None:
-            mergedGroup = groupB
-        elif groupB is None:
-            mergedGroup = groupA
-        else:
-            assert set(groupA).isdisjoint(set(groupB))
-            mergedGroup = groupA + groupB
-
-        mergedGroups[groupName] = mergedGroup
-
-    return mergedGroups
