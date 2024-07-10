@@ -53,6 +53,7 @@
   "dialog.create-new-glyph.body.2": "为字符\"%0\" (%1)",
   "dialog.create-new-glyph.title": "创建新字符形 \"%0\"？",
   "editor.hand-tool": "拖拽工具",
+  "editor.knife-tool": "Knife Tool",
   "editor.pen-tool": "钢笔工具",
   "editor.pointer-tool": "指针工具",
   "editor.power-ruler-tool": "Power 测量尺工具",
