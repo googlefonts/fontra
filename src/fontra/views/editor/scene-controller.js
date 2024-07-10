@@ -9,7 +9,11 @@ import { decomposeComponents } from "../core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { ObservableController } from "../core/observable-object.js";
-import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
+import {
+  connectContours,
+  scalePoint,
+  splitPathAtPointIndices,
+} from "../core/path-functions.js";
 import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
 import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
@@ -22,7 +26,8 @@ import {
   withTimeout,
   zip,
 } from "../core/utils.js";
-import { packContour } from "../core/var-path.js";
+import { VarPackedPath, packContour } from "../core/var-path.js";
+import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
 import { translate, translatePlural } from "/core/localization.js";
@@ -637,10 +642,25 @@ export class SceneController {
       parseSelection(relevantSelection);
     this.contextMenuState.pointSelection = pointSelection;
     this.contextMenuState.componentSelection = componentSelection;
+
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    this.contextMenuState.openContourSelection = glyphController.canEdit
+      ? getSelectedClosableContours(glyphController.instance.path, pointSelection)
+      : [];
   }
 
   getContextMenuItems(event) {
     const contextMenuItems = [
+      {
+        title: () =>
+          translatePlural(
+            "action.close-contour",
+            this.contextMenuState.openContourSelection?.length
+          ),
+        enabled: () => this.contextMenuState.openContourSelection?.length,
+        callback: () => this.doCloseSelectedOpenContours(),
+        shortCut: { keysOrCodes: "j", metaKey: true },
+      },
       {
         title: translate("action.break-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
@@ -1148,6 +1168,21 @@ export class SceneController {
     });
   }
 
+  async doCloseSelectedOpenContours() {
+    const openContours = this.contextMenuState.openContourSelection;
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
+        for (const contourIndex of openContours) {
+          // close open contour
+          path.contourInfo[contourIndex].isClosed = true;
+          closeContourEnsureCubicOffCurves(path, contourIndex);
+        }
+      }
+      return translatePlural("action.close-contour", openContours.length);
+    });
+  }
+
   async breakContour() {
     const { point: pointIndices } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
@@ -1331,6 +1366,70 @@ function getSelectedContours(path, pointSelection) {
     selectedContours.add(path.getContourIndex(pointIndex));
   }
   return [...selectedContours];
+}
+
+function getSelectedClosableContours(path, pointSelection) {
+  if (!path || !pointSelection) {
+    return [];
+  }
+  const selectedContours = new Set();
+  for (const contourIndex of getSelectedContours(path, pointSelection)) {
+    if (path.contourInfo[contourIndex].isClosed) {
+      // skip if contour is closed already
+      continue;
+    }
+    if (path.getNumPointsOfContour(contourIndex) <= 2) {
+      // skip if contour has two (or less) points only
+      // (two on-curve or one off-curve and one on-curve)
+      continue;
+    }
+    const contour = path.getContour(contourIndex);
+    const numOnCurvePoints = contour.pointTypes.reduce(
+      (acc, pointType) =>
+        acc +
+        ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE
+          ? 1
+          : 0),
+      0
+    );
+    if (numOnCurvePoints <= 1) {
+      // skip single point contour
+      // could have one on-curve, but two off-curve points
+      continue;
+    }
+    selectedContours.add(contourIndex);
+  }
+
+  return [...selectedContours];
+}
+
+function closeContourEnsureCubicOffCurves(path, contourIndex) {
+  const startPoint = path.getContourPoint(contourIndex, 0);
+  const secondPoint = path.getContourPoint(contourIndex, 1);
+  const prevEndPoint = path.getContourPoint(contourIndex, -2);
+  const endPoint = path.getContourPoint(contourIndex, -1);
+
+  const offCurveAtStart = !secondPoint.type && startPoint.type && !endPoint.type;
+  const firstPoint = offCurveAtStart ? secondPoint : prevEndPoint;
+  const middlePoint = offCurveAtStart ? startPoint : endPoint;
+  const lastPoint = offCurveAtStart ? endPoint : startPoint;
+
+  if (firstPoint.type || middlePoint.type != "cubic" || lastPoint.type) {
+    // Sanity check: we expect on-curve/cubic-off-curve/on-curve
+    return;
+  }
+
+  // Compute handles for a cubic segment that will look the same as the
+  // one-off-curve quad segment we have.
+  const [handle1, handle2] = [firstPoint, lastPoint].map((point) => {
+    return {
+      ...vector.roundVector(scalePoint(point, middlePoint, 2 / 3)),
+      type: "cubic",
+    };
+  });
+
+  path.setContourPoint(contourIndex, offCurveAtStart ? 0 : -1, handle1);
+  path.appendPoint(contourIndex, handle2);
 }
 
 function positionedGlyphPosition(positionedGlyph) {
