@@ -1,5 +1,11 @@
+import {
+  connectContours,
+  insertPoint,
+  splitPathAtPointIndices,
+} from "../core/path-functions.js";
+import { PathHitTester } from "../core/path-hit-tester.js";
 import * as rectangle from "../core/rectangle.js";
-import { range } from "../core/utils.js";
+import { enumerate, parseSelection, range, reversed } from "../core/utils.js";
 import { VarPackedPath, packContour } from "../core/var-path.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import {
@@ -63,36 +69,95 @@ export class KnifeTool extends BaseTool {
     this.canvasController.requestUpdate();
 
     console.log("KnifeTool:");
-    cutPath(pointA, pointB);
+    const glyphWidth = glyphController.xAdvance;
+    const xScalePointA = pointA.x / glyphWidth;
+    const xScalePointB = pointB.x / glyphWidth;
+    this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
   }
 
-  async cutPath(pointA, pointB) {
+  async doCutPath(pointA, pointB, xScalePointA, xScalePointB) {
     this.sceneController.selection = new Set(); // Clear selection
+    const staticGlyphControllers =
+      await this.sceneController.getStaticGlyphControllers();
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+          glyph.layers
+        );
 
-    // await this.sceneController.editGlyphAndRecordChanges(
-    //   (glyph) => {
-    //     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-    //       glyph.layers
-    //     );
+        for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+          const layerGlyphWidth = layerGlyph.xAdvance;
+          const layerGlyphController = staticGlyphControllers[layerName];
+          const cutPointA = { x: xScalePointA * layerGlyphWidth, y: pointA.y };
+          const cutPointB = { x: xScalePointB * layerGlyphWidth, y: pointB.y };
+          const intersections = getIntersections(
+            layerGlyphController,
+            cutPointA,
+            cutPointB
+          );
 
-    //     for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-    //       layerGlyph.path.appendPath(pathNew);
-    //       const intersection = getIntersections(
-    //         glyphController,
-    //         pointA,
-    //         pointB
-    //       );
-    //     }
-    //     return `Knife Tool cut`;
-    //   },
-    //   undefined,
-    //   true
-    // );
+          // insert points at intersections
+          for (const [i, intersection] of enumerate(intersections)) {
+            // NOTE: Need to create new PathHitTester for each intersection, because the
+            // number of point indices have changed after adding a new point
+            const pathHitTester = new PathHitTester(
+              layerGlyph.path,
+              layerGlyph.controlBounds
+            );
+            const intersectionsRecalculated = pathHitTester.lineIntersections(
+              cutPointA,
+              cutPointB,
+              undefined,
+              []
+            );
+            insertPoint(layerGlyph.path, intersectionsRecalculated[i]);
+          }
+
+          // split path at added points
+          const pointIndices = _findAddedPoints(layerGlyph.path, intersections);
+          splitPathAtPointIndices(
+            layerGlyph.path,
+            pointIndices.sort((a, b) => a - b)
+          );
+
+          const pointIndicesAfterSplit = _findAddedPoints(
+            layerGlyph.path,
+            intersections
+          );
+          console.log("pointIndicesAfterSplit:", pointIndicesAfterSplit);
+          //TODO: close contours, connect paths
+          // for (const i of range(0, pointIndicesAfterSplit.length, 2)){
+          //   if (pointIndicesAfterSplit[i] && pointIndicesAfterSplit[i+1]){
+          //     connectContours(layerGlyph.path, pointIndicesAfterSplit[i], pointIndicesAfterSplit[i+1])
+          //   }
+          // }
+        }
+        return `Knife Tool cut`;
+      },
+      undefined,
+      true
+    );
   }
 
   deactivate() {
     this.canvasController.requestUpdate();
   }
+}
+
+function _findAddedPoints(path, intersections) {
+  const pointIndecies = [];
+  for (const intersection of intersections) {
+    for (const pointIndex of range(path.numPoints)) {
+      const point = path.getPoint(pointIndex);
+      if (
+        point.x === Math.round(intersection.x) &&
+        point.y === Math.round(intersection.y)
+      ) {
+        pointIndecies.push(pointIndex);
+      }
+    }
+  }
+  return pointIndecies;
 }
 
 registerVisualizationLayerDefinition({
