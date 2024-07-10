@@ -1429,10 +1429,8 @@ function closeContourEnsureCubicOffCurves(path, contourIndex) {
     };
   });
 
-  const numContourPoints = path.getNumPointsOfContour(contourIndex);
-  const handle1ContourIndex = offCurveAtStart ? 0 : numContourPoints - 1;
-  path.setContourPoint(contourIndex, handle1ContourIndex, handle1);
-  path.insertPoint(contourIndex, numContourPoints, handle2);
+  path.setContourPoint(contourIndex, offCurveAtStart ? 0 : -1, handle1);
+  path.appendPoint(contourIndex, handle2);
 }
 
 function positionedGlyphPosition(positionedGlyph) {
