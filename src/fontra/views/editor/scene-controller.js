@@ -658,7 +658,7 @@ export class SceneController {
             this.contextMenuState.openContourSelection?.length
           ),
         enabled: () => this.contextMenuState.openContourSelection?.length,
-        callback: () => this.closeContour(),
+        callback: () => this.doCloseSelectedOpenContour(),
         shortCut: { keysOrCodes: "j", metaKey: true },
       },
       {
@@ -1168,7 +1168,7 @@ export class SceneController {
     });
   }
 
-  async closeContour() {
+  async doCloseSelectedOpenContour() {
     const openContours = this.contextMenuState.openContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
