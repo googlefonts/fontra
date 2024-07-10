@@ -287,14 +287,13 @@ def _mergeKernTable(kernTableA, kernTableB):
     sidMapA = [(sid, sidIndicesA.get(sid)) for sid in mergedSourceIdentifiers]
     sidMapB = [(sid, sidIndicesB.get(sid)) for sid in mergedSourceIdentifiers]
 
-    mergedValues = _remapKernValuesBySourceIdentifiers(
-        kernTableA.values, sidMapA
-    ) | _remapKernValuesBySourceIdentifiers(kernTableB.values, sidMapB)
+    mappedValuesA = _remapKernValuesBySourceIdentifiers(kernTableA.values, sidMapA)
+    mappedValuesB = _remapKernValuesBySourceIdentifiers(kernTableB.values, sidMapB)
 
     return Kerning(
         groups=kernTableA.groups | kernTableB.groups,
         sourceIdentifiers=mergedSourceIdentifiers,
-        values=mergedValues,
+        values=mappedValuesA | mappedValuesB,
     )
 
 
