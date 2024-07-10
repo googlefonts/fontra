@@ -1405,19 +1405,15 @@ function getSelectedOpenContours(
 }
 
 function closeContourEnsureCubicOffCurves(path, contourIndex) {
-  const contourInfo = path.contourInfo[contourIndex];
-  const numContourPoints = path.getContour(contourIndex).pointTypes.length;
+  const startPoint = path.getContourPoint(contourIndex, 0);
+  const secondPoint = path.getContourPoint(contourIndex, 1);
+  const prevEndPoint = path.getContourPoint(contourIndex, -2);
+  const endPoint = path.getContourPoint(contourIndex, -1);
 
-  const startPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 1);
-  const secondPoint = path.getPoint(contourInfo.endPoint - numContourPoints + 2);
-  const prevEndPoint = path.getPoint(contourInfo.endPoint - 1);
-  const endPoint = path.getPoint(contourInfo.endPoint);
-
-  const startPointOffCurveSituation =
-    !secondPoint.type && startPoint.type && !endPoint.type;
-  const firstPoint = startPointOffCurveSituation ? secondPoint : prevEndPoint;
-  const middlePoint = startPointOffCurveSituation ? startPoint : endPoint;
-  const lastPoint = startPointOffCurveSituation ? endPoint : startPoint;
+  const offCurveAtStart = !secondPoint.type && startPoint.type && !endPoint.type;
+  const firstPoint = offCurveAtStart ? secondPoint : prevEndPoint;
+  const middlePoint = offCurveAtStart ? startPoint : endPoint;
+  const lastPoint = offCurveAtStart ? endPoint : startPoint;
 
   if (firstPoint.type || !middlePoint.type || lastPoint.type) {
     // Sanity check: we expect on-curve/off-curve/on-curve
@@ -1433,7 +1429,8 @@ function closeContourEnsureCubicOffCurves(path, contourIndex) {
     };
   });
 
-  const handle1ContourIndex = startPointOffCurveSituation ? 0 : numContourPoints - 1;
+  const numContourPoints = path.getNumPointsOfContour(contourIndex);
+  const handle1ContourIndex = offCurveAtStart ? 0 : numContourPoints - 1;
   path.setContourPoint(contourIndex, handle1ContourIndex, handle1);
   path.insertPoint(contourIndex, numContourPoints, handle2);
 }
