@@ -98,6 +98,13 @@ class CheckInterpolation(BaseFilter):
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         try:
             instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        except Exception as e:
+            logger.error(
+                f"{self.actionName}: glyph {glyphName} can't be interpolated {e!r}"
+            )
+            return None
+
+        try:
             instancer.checkCompatibility()
         except Exception as e:
             if not self.fixWithFallback:
