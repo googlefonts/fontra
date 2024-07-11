@@ -854,8 +854,6 @@ class DesignspaceBackend:
         }
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
-        fallbackDefaultSource = self.dsSources.findItem(isDefault=True)
-
         newDSSources = ItemList()
         for sourceIdentifier, fontSource in sorted(
             sources.items(), key=lambda item: item[1].isSparse
@@ -910,8 +908,9 @@ class DesignspaceBackend:
             newDSSources.append(dsSource)
 
         if not newDSSources:
-            assert fallbackDefaultSource, "no fallback default source available"
-            newDSSources.append(fallbackDefaultSource)
+            fallbackDefaultSource = self.dsSources.findItem(isDefault=True)
+            if fallbackDefaultSource is not None:
+                newDSSources.append(fallbackDefaultSource)
 
         self.zombieDSSources.update(
             {s.identifier: s for s in self.dsSources if s.identifier not in sources}
