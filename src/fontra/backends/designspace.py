@@ -239,6 +239,7 @@ class DesignspaceBackend:
 
     @property
     def defaultUFOLayer(self):
+        assert self.defaultDSSource is not None
         return self.defaultDSSource.layer
 
     @property
@@ -853,6 +854,8 @@ class DesignspaceBackend:
         }
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
+        fallbackDefaultSource = self.dsSources.findItem(isDefault=True)
+
         newDSSources = ItemList()
         for sourceIdentifier, fontSource in sorted(
             sources.items(), key=lambda item: item[1].isSparse
@@ -905,6 +908,10 @@ class DesignspaceBackend:
                 updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
 
             newDSSources.append(dsSource)
+
+        if not newDSSources:
+            assert fallbackDefaultSource, "no fallback default source available"
+            newDSSources.append(fallbackDefaultSource)
 
         self.zombieDSSources.update(
             {s.identifier: s for s in self.dsSources if s.identifier not in sources}
