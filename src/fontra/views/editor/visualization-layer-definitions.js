@@ -1256,6 +1256,50 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.point.index",
+  name: "sidebar.user-settings.glyph.point.index",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 10 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    let { point: pointSelection } = parseSelection(
+      model.sceneSettings.combinedSelection
+    );
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = (1.68 * fontSize) / 2;
+    const bottomY = -0.75 * fontSize * 2;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    for (const pointIndex of pointSelection || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      const xString = `${pointIndex}`;
+      const width = context.measureText(xString).width + 2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(xString, pt.x, -pt.y - bottomY);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.connect-insert.point",
   name: "Connect/insert point",
   selectionMode: "editing",
