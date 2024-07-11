@@ -119,6 +119,16 @@ export class KnifeTool extends BaseTool {
               []
             );
             insertPoint(layerGlyph.path, intersectionsRecalculated[i]);
+
+            // let prevInterSection = intersections[i-1];
+            // if (prevInterSection === undefined) {
+            //   continue;
+            //   //nextInterSection = intersections[i-1];
+            // }
+            // // console.log("nextInterSection:", nextInterSection);
+            // // insertPoint(layerGlyph.path, nextInterSection);
+            // // layerGlyph.path.appendPoint(intersectionsRecalculated[i]);
+            // layerGlyph.path.appendPoint(intersection.contourIndex, {x: prevInterSection.x, y: prevInterSection.y});
           }
 
           // split path at added points
@@ -132,8 +142,10 @@ export class KnifeTool extends BaseTool {
             layerGlyph.path,
             intersections
           );
+
           console.log("pointIndicesAfterSplit:", pointIndicesAfterSplit);
           //TODO: close contours, connect paths
+          const collectUnpackedContours = {};
           for (const i of range(0, pointIndicesAfterSplit.length, 4)) {
             console.log(
               "connect points:",
@@ -141,11 +153,22 @@ export class KnifeTool extends BaseTool {
               pointIndicesAfterSplit[i + 2]
             );
             try {
-              _connectContours(
-                layerGlyph.path,
-                pointIndicesAfterSplit[i],
-                pointIndicesAfterSplit[i + 2]
-              );
+              const [newUnpackedContour, sourceContourIndex, targetContourIndex] =
+                _connectContours(
+                  layerGlyph.path,
+                  pointIndicesAfterSplit[i],
+                  pointIndicesAfterSplit[i + 2]
+                );
+              console.log("newUnpackedContour:", newUnpackedContour);
+              console.log("contour indicies:", sourceContourIndex, targetContourIndex);
+              const contourIndicies = [sourceContourIndex, targetContourIndex].sort();
+              if (!collectUnpackedContours[contourIndicies]) {
+                collectUnpackedContours[contourIndicies] = [
+                  newUnpackedContour,
+                  sourceContourIndex,
+                  targetContourIndex,
+                ];
+              }
             } catch (error) {
               console.log("Error connecting contours:", error);
             }
@@ -157,14 +180,40 @@ export class KnifeTool extends BaseTool {
               pointIndicesAfterSplit[i + 2]
             );
             try {
-              _connectContours(
-                layerGlyph.path,
-                pointIndicesAfterSplit[i],
-                pointIndicesAfterSplit[i + 2]
-              );
+              const [newUnpackedContour, sourceContourIndex, targetContourIndex] =
+                _connectContours(
+                  layerGlyph.path,
+                  pointIndicesAfterSplit[i],
+                  pointIndicesAfterSplit[i + 2]
+                );
+              console.log("newUnpackedContour:", newUnpackedContour);
+              const contourIndicies = [sourceContourIndex, targetContourIndex].sort();
+              if (!collectUnpackedContours[contourIndicies]) {
+                collectUnpackedContours[contourIndicies] = [
+                  newUnpackedContour,
+                  sourceContourIndex,
+                  targetContourIndex,
+                ];
+              }
+              console.log("contour indicies:", sourceContourIndex, targetContourIndex);
             } catch (error) {
               console.log("Error connecting contours:", error);
             }
+          }
+
+          console.log("collectUnpackedContours: ", collectUnpackedContours);
+          const deleteContours = new Set();
+          for (const [key, value] of Object.entries(collectUnpackedContours)) {
+            deleteContours.add(value[1]);
+            deleteContours.add(value[2]);
+            layerGlyph.path.appendUnpackedContour(value[0]);
+          }
+          const deleteContoursArray = Array.from(deleteContours);
+          deleteContoursArray.sort((a, b) => b - a); // sorted + reverse order
+          console.log("deleteContoursSorted:", deleteContoursArray);
+          for (const contourIndex of deleteContoursArray) {
+            console.log("delete contour:", contourIndex);
+            layerGlyph.path.deleteContour(contourIndex);
           }
         }
         return `Knife Tool cut`;
@@ -184,17 +233,40 @@ function _connectContours(path, sourcePointIndex, targetPointIndex) {
     path.getContourAndPointIndex(sourcePointIndex);
   const [targetContourIndex, targetContourPointIndex] =
     path.getContourAndPointIndex(targetPointIndex);
-  console.log(
-    "sourceContourIndex, targetContourIndex:",
-    sourceContourIndex,
-    targetContourIndex
-  );
   if (sourceContourIndex == targetContourIndex) {
-    // Close contour
+    // if it's the same contour -> close contour
     path.contourInfo[sourceContourIndex].isClosed = true;
+  } else {
+    //   connectContours(path, sourcePointIndex, targetPointIndex, );
+    // }
+    //Connect contours
+    // const sourceContour = path.getUnpackedContour(sourceContourIndex);
+    // const targetContour = path.getUnpackedContour(targetContourIndex);
+    // if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+    //   targetContour.points.reverse();
+    // }
+    // sourceContour.points.splice(
+    //   -0,//sourceContourPointIndex ? -1 : 0,
+    //   1,
+    //   ...targetContour.points
+    // );
+    console.log("connect points::", sourcePointIndex, targetPointIndex);
+
+    const sourceContour = path.getUnpackedContour(sourceContourIndex);
+    const targetContour = path.getUnpackedContour(targetContourIndex);
+    sourceContour.points.push(...targetContour.points);
+    sourceContour.isClosed = true;
+    return [sourceContour, sourceContourIndex, targetContourIndex];
+    // path.deleteContour(sourceContourIndex);
+    // path.insertUnpackedContour(sourceContourIndex, sourceContour);
+    // path.deleteContour(targetContourIndex);
+    // TODO:
+    // when connection the different contours, the pointIndecies change again.
+    // So, the next connection will be wrong
   }
 }
 
+// TODO: There is still an issue, to sort the indicies the right way.
 function _findAddedPoints(path, intersections) {
   const pointIndecies = [];
   for (const intersection of intersections) {

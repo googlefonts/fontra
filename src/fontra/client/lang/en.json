@@ -175,6 +175,7 @@
   "sidebar.user-settings.glyph.dragcrosshair": "Drag crosshair",
   "sidebar.user-settings.glyph.dragghostpath": "Drag “ghost” path",
   "sidebar.user-settings.glyph.lockicon": "Glyph lock icon for non-editing glyphs",
+  "sidebar.user-settings.glyph.point.index": "Point indices",
   "sidebar.user-settings.glyph.powerruler": "Power Ruler",
   "sidebar.user-settings.glyph.referencefont": "Reference font",
   "sidebar.user-settings.glyph.sidebearings": "Sidebearings for non-editing glyphs",

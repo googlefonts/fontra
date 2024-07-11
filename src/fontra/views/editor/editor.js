@@ -674,10 +674,10 @@ export class EditorController {
     const editToolClasses = [
       PointerTool,
       PenTool,
+      KnifeTool,
       ShapeTool,
       PowerRulerTool,
       HandTool,
-      KnifeTool,
     ];
 
     for (const editToolClass of editToolClasses) {
