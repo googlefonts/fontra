@@ -72,6 +72,14 @@ export class KnifeTool extends BaseTool {
     const glyphWidth = glyphController.xAdvance;
     const xScalePointA = pointA.x / glyphWidth;
     const xScalePointB = pointB.x / glyphWidth;
+
+    // TODO: proportional scaling for y-axis
+    // const lineMetrics = this.sceneModel.fontSourceInstance.lineMetricsHorizontalLayout;
+    // console.log("lineMetrics.ascender: ", lineMetrics.ascender.value)
+    // const glyphHeight = lineMetrics.ascender.value;
+    // const yScalePointA = pointA.y / glyphHeight;
+    // const yScalePointB = pointB.y / glyphHeight;
+
     this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
   }
 
@@ -126,11 +134,38 @@ export class KnifeTool extends BaseTool {
           );
           console.log("pointIndicesAfterSplit:", pointIndicesAfterSplit);
           //TODO: close contours, connect paths
-          // for (const i of range(0, pointIndicesAfterSplit.length, 2)){
-          //   if (pointIndicesAfterSplit[i] && pointIndicesAfterSplit[i+1]){
-          //     connectContours(layerGlyph.path, pointIndicesAfterSplit[i], pointIndicesAfterSplit[i+1])
-          //   }
-          // }
+          for (const i of range(0, pointIndicesAfterSplit.length, 4)) {
+            console.log(
+              "connect points:",
+              pointIndicesAfterSplit[i],
+              pointIndicesAfterSplit[i + 2]
+            );
+            try {
+              _connectContours(
+                layerGlyph.path,
+                pointIndicesAfterSplit[i],
+                pointIndicesAfterSplit[i + 2]
+              );
+            } catch (error) {
+              console.log("Error connecting contours:", error);
+            }
+          }
+          for (const i of range(1, pointIndicesAfterSplit.length, 4)) {
+            console.log(
+              "connect points:",
+              pointIndicesAfterSplit[i],
+              pointIndicesAfterSplit[i + 2]
+            );
+            try {
+              _connectContours(
+                layerGlyph.path,
+                pointIndicesAfterSplit[i],
+                pointIndicesAfterSplit[i + 2]
+              );
+            } catch (error) {
+              console.log("Error connecting contours:", error);
+            }
+          }
         }
         return `Knife Tool cut`;
       },
@@ -141,6 +176,22 @@ export class KnifeTool extends BaseTool {
 
   deactivate() {
     this.canvasController.requestUpdate();
+  }
+}
+
+function _connectContours(path, sourcePointIndex, targetPointIndex) {
+  const [sourceContourIndex, sourceContourPointIndex] =
+    path.getContourAndPointIndex(sourcePointIndex);
+  const [targetContourIndex, targetContourPointIndex] =
+    path.getContourAndPointIndex(targetPointIndex);
+  console.log(
+    "sourceContourIndex, targetContourIndex:",
+    sourceContourIndex,
+    targetContourIndex
+  );
+  if (sourceContourIndex == targetContourIndex) {
+    // Close contour
+    path.contourInfo[sourceContourIndex].isClosed = true;
   }
 }
 
