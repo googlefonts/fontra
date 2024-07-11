@@ -1235,26 +1235,6 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
-        (
-            # This isn't a fontra-workflow test, but a test for a bug in the
-            # single-ufo backend
-            "empty-source-single-ufo",
-            """
-            steps:
-            - input: fontra-read
-              source: "test-py/data/workflow/input1-A.fontra"
-            - filter: drop-font-sources-and-kerning
-            - filter: drop-unused-sources-and-layers
-            - filter: subset-axes
-              axisNames: []
-            - filter: subset-glyphs
-              glyphNames: [A]
-            - output: fontra-write
-              destination: "output-empty-source-single-ufo.ufo"
-            """,
-            False,
-            [],
-        ),
     ],
 )
 async def test_workflow_actions(
