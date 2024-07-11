@@ -86,7 +86,7 @@ export class PathHitTester {
     return this.lineIntersections(p1, p2, direction, extraLines);
   }
 
-  lineIntersections(p1, p2, direction, extraLines) {
+  lineIntersections(p1, p2, direction = undefined, extraLines = undefined) {
     this._ensureAllContoursAreLoaded();
     const line = { p1, p2 };
 
