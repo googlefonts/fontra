@@ -1,12 +1,8 @@
-import {
-  connectContours,
-  insertPoint,
-  splitPathAtPointIndices,
-} from "../core/path-functions.js";
+import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
 import { PathHitTester } from "../core/path-hit-tester.js";
-import * as rectangle from "../core/rectangle.js";
-import { enumerate, parseSelection, range, reversed } from "../core/utils.js";
-import { VarPackedPath, packContour } from "../core/var-path.js";
+import { enumerate, range } from "../core/utils.js";
+import * as vector from "../core/vector.js";
+import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import {
   fillRoundNode,
@@ -47,17 +43,22 @@ export class KnifeTool extends BaseTool {
     this.sceneModel.knifeToolPointA = pointA;
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
 
-    let eventTemp;
     let pointB;
     for await (const event of eventStream) {
-      eventTemp = event;
       const point = this.sceneController.selectedGlyphPoint(event);
       if (point.x === undefined) {
         // We can receive non-pointer events like keyboard events: ignore
         continue;
       }
 
-      this.sceneModel.knifeToolPointB = pointB = point;
+      if (event.shiftKey) {
+        const delta = constrainHorVerDiag(vector.subVectors(point, pointA));
+        pointB = vector.addVectors(pointA, delta);
+      } else {
+        pointB = point;
+      }
+
+      this.sceneModel.knifeToolPointB = pointB;
       this.sceneModel.intersections = getIntersections(glyphController, pointA, pointB);
       this.sceneModel.event = event;
       this.canvasController.requestUpdate();
