@@ -105,7 +105,9 @@ export class KnifeTool extends BaseTool {
           // insert points at intersections
           for (const [i, intersection] of enumerate(intersections)) {
             // INFO: Need to create new PathHitTester for each intersection, because the
-            // number of point indices have changed after adding a new point via insertPoint
+            // number of point indices have changed after adding a new point via insertPoint.
+            // A reversed loop does not work, because it's possible, that the last
+            // intersection is not the last point
             const pathHitTester = new PathHitTester(
               layerGlyph.path,
               layerGlyph.controlBounds
@@ -118,49 +120,43 @@ export class KnifeTool extends BaseTool {
           }
 
           // split path at added points
-          const pointIndices = _findAddedPoints(layerGlyph.path, intersections);
+          const pointIndices = _getIntersectionPointIndicies(
+            layerGlyph.path,
+            intersections
+          );
           splitPathAtPointIndices(
             layerGlyph.path,
             pointIndices.sort((a, b) => a - b)
           );
 
-          // At given point pairs make copy of connected contours, so we can add it later.
-          // Connect them in a loop won't work, because contours change, when we connect them.
-          const pointIndicesGrouped = _findAddedPointsGrouped(
+          // connect contours
+          const pointIndicesGrouped = _getIntersectionPointIndiciesGrouped(
             layerGlyph.path,
             intersections
           );
-          const collectUnpackedContours = {};
-          for (const pair of pointIndicesGrouped) {
-            try {
-              const [newUnpackedContour, sourceContourIndex, targetContourIndex] =
-                _connectContours(layerGlyph.path, pair[0], pair[1]);
-              const contourIndicies = [sourceContourIndex, targetContourIndex].sort();
-              if (!collectUnpackedContours[contourIndicies]) {
-                collectUnpackedContours[contourIndicies] = [
-                  newUnpackedContour,
-                  sourceContourIndex,
-                  targetContourIndex,
-                ];
-              }
-            } catch (error) {
-              console.log("Error connecting contours:", error);
+          for (const [i, oldPair] of enumerate(pointIndicesGrouped)) {
+            // Recalculate pointIndicies is needed, because they changed after connecting/merging contours
+            const pointIndicesGroupedRecalculated =
+              _getIntersectionPointIndiciesGrouped(layerGlyph.path, intersections);
+            const [pointIndex1, pointIndex2] = pointIndicesGroupedRecalculated[i];
+            _connectContours(layerGlyph.path, pointIndex1, pointIndex2);
+          }
+
+          // close open contours
+          const pointIndicesGroupedNew = _getIntersectionPointIndiciesGrouped(
+            layerGlyph.path,
+            intersections
+          );
+          for (const pointPair of pointIndicesGroupedNew) {
+            const [pointIndex1, pointIndex2] = pointPair;
+            if (pointIndex1 === undefined || pointIndex2 === undefined) {
+              continue;
             }
-          }
-
-          // add connected contours to path
-          const deleteContours = new Set();
-          for (const [key, value] of Object.entries(collectUnpackedContours)) {
-            deleteContours.add(value[1]);
-            deleteContours.add(value[2]);
-            layerGlyph.path.appendUnpackedContour(value[0]);
-          }
-
-          // remove previours contours
-          const deleteContoursArray = Array.from(deleteContours);
-          deleteContoursArray.sort((a, b) => b - a); // sort + reverse order
-          for (const contourIndex of deleteContoursArray) {
-            layerGlyph.path.deleteContour(contourIndex);
+            const contourIndex1 = layerGlyph.path.getContourIndex(pointIndex1);
+            const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
+            if (contourIndex1 == contourIndex2) {
+              layerGlyph.path.contourInfo[contourIndex1].isClosed = true;
+            }
           }
         }
 
@@ -177,24 +173,30 @@ export class KnifeTool extends BaseTool {
 }
 
 function _connectContours(path, sourcePointIndex, targetPointIndex) {
+  if (sourcePointIndex === undefined || targetPointIndex === undefined) {
+    return;
+  }
   const sourceContourIndex = path.getContourIndex(sourcePointIndex);
   const targetContourIndex = path.getContourIndex(targetPointIndex);
   if (sourceContourIndex == targetContourIndex) {
-    // if it's the same contour -> close contour
-    path.contourInfo[sourceContourIndex].isClosed = true;
+    // Skip, will be closed at the end.
+    // In fact, we need to keep all contours open, because it's possible
+    // that we connect multiple contours into one, and if one contour is
+    // closed already, we get wrong outlines.
   } else {
     const sourceContour = path.getUnpackedContour(sourceContourIndex);
     const targetContour = path.getUnpackedContour(targetContourIndex);
-    sourceContour.points.push(...targetContour.points);
-    sourceContour.isClosed = true;
-
-    // INFO: When connecting the different contours, the pointIndecies change, therefore
-    // would be wrong, why we return the outline with contourIndcisies to be removed later.
-    return [sourceContour, sourceContourIndex, targetContourIndex];
+    const newContour = {
+      points: sourceContour.points.concat(targetContour.points),
+      isClosed: false, // keep open, because we will close at the end
+    };
+    path.deleteContour(sourceContourIndex);
+    path.insertUnpackedContour(sourceContourIndex, newContour);
+    path.deleteContour(targetContourIndex);
   }
 }
 
-function _findAddedPoints(path, intersections) {
+function _getIntersectionPointIndicies(path, intersections) {
   const pointIndecies = [];
   for (const intersection of intersections) {
     for (const pointIndex of range(path.numPoints)) {
@@ -210,26 +212,33 @@ function _findAddedPoints(path, intersections) {
   return pointIndecies;
 }
 
-// NOTE: This is probably the most important and also most difficult
-// part of the code, because we need to find the right point connections.
-function _findAddedPointsGrouped(path, intersections) {
+// NOTE: This is probably the most important and also most difficult part
+// of the code, because we need to find the right point connections.
+function _getIntersectionPointIndiciesGrouped(path, intersections) {
   const pointIndecies = [];
   for (const intersection of intersections) {
     let pointIndex1;
     let pointIndex2;
     for (const pointIndex of range(path.numPoints)) {
+      if (!isNaN(pointIndex1) && !isNaN(pointIndex2)) {
+        // found both points, stop loop
+        break;
+      }
       const point = path.getPoint(pointIndex);
       if (
         point.x === Math.round(intersection.x) &&
         point.y === Math.round(intersection.y)
       ) {
-        // 'point' must be either start or endpoint
         const contourIndex = path.getContourIndex(pointIndex);
-        const contourInfo = path.contourInfo[contourIndex];
-        let comparePointIndex = 1; // after StartPoint
-        if (contourInfo.endPoint === pointIndex) {
-          comparePointIndex = -2; // before endPoint
+        const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+        const endPointIndex = path.contourInfo[contourIndex].endPoint;
+        if (pointIndex != startPointIndex && pointIndex != endPointIndex) {
+          // skip, because this contour is connected already
+          continue;
         }
+        // 'point' must be either start or endpoint
+        // compare point is the point, which is before or after start or end point
+        const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
         const comparePoint = path.getContourPoint(contourIndex, comparePointIndex);
         if (comparePoint.y != point.y) {
           if (comparePoint.y > point.y) {
@@ -244,23 +253,18 @@ function _findAddedPointsGrouped(path, intersections) {
             pointIndex2 = pointIndex;
           }
         }
-
-        if (!isNaN(pointIndex1) && !isNaN(pointIndex2)) {
-          pointIndecies.push(pointIndex1);
-          pointIndecies.push(pointIndex2);
-          break;
-        }
       }
     }
+    pointIndecies.push(pointIndex1);
+    pointIndecies.push(pointIndex2);
   }
 
   // group in paires for each connection
   const pointIndeciesGrouped = [];
-  for (const i of range(0, pointIndecies.length, 4)) {
-    pointIndeciesGrouped.push([pointIndecies[i], pointIndecies[i + 2]]);
-  }
-  for (const i of range(1, pointIndecies.length, 4)) {
-    pointIndeciesGrouped.push([pointIndecies[i], pointIndecies[i + 2]]);
+  for (const rangeStartIndex of [0, 1]) {
+    for (const i of range(rangeStartIndex, pointIndecies.length, 4)) {
+      pointIndeciesGrouped.push([pointIndecies[i], pointIndecies[i + 2]]);
+    }
   }
 
   return pointIndeciesGrouped;
