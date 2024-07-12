@@ -135,23 +135,21 @@ export class KnifeTool extends BaseTool {
             intersections
           );
 
-          for (const [i, oldPair] of enumerate(group1)) {
-            // Recalculate pointIndicies is needed, because they changed after connecting/merging contours
-            const [group1Recalc, group2Recalc] = _getIntersectionPointIndiciesGrouped(
-              layerGlyph.path,
-              intersections
-            );
-            const [pointIndex1, pointIndex2] = group1Recalc[i];
-            _connectContours(layerGlyph.path, pointIndex1, pointIndex2);
-          }
-          for (const [i, oldPair] of enumerate(group2)) {
-            // Recalculate pointIndicies is needed, because they changed after connecting/merging contours
-            const [group1Recalc, group2Recalc] = _getIntersectionPointIndiciesGrouped(
-              layerGlyph.path,
-              intersections
-            );
-            const [pointIndex1, pointIndex2] = group2Recalc[i];
-            _connectContours(layerGlyph.path, pointIndex1, pointIndex2);
+          console.log("group1, group2: ", group1, group2);
+
+          for (const i of range(2)) {
+            const group = [group1, group2][i];
+            console.log("group: ", group);
+            for (const [j, oldPair] of enumerate(group)) {
+              // Recalculate pointIndicies is needed, because they changed after connecting/merging contours
+              const [group1Recalc, group2Recalc] = _getIntersectionPointIndiciesGrouped(
+                layerGlyph.path,
+                intersections
+              );
+              const [pointIndex1, pointIndex2] = [group1Recalc, group2Recalc][i][j];
+              console.log("pointIndex1, pointIndex2: ", pointIndex1, pointIndex2);
+              _connectContours(layerGlyph.path, pointIndex1, pointIndex2);
+            }
           }
 
           // close open contours
@@ -159,27 +157,23 @@ export class KnifeTool extends BaseTool {
             layerGlyph.path,
             intersections
           );
-          for (const pointPair of group1New) {
-            const [pointIndex1, pointIndex2] = pointPair;
-            if (pointIndex1 === undefined || pointIndex2 === undefined) {
-              continue;
-            }
-            const contourIndex1 = layerGlyph.path.getContourIndex(pointIndex1);
-            const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
-            if (contourIndex1 == contourIndex2) {
-              layerGlyph.path.contourInfo[contourIndex1].isClosed = true;
-            }
-          }
-
-          for (const pointPair of group2New) {
-            const [pointIndex1, pointIndex2] = pointPair;
-            if (pointIndex1 === undefined || pointIndex2 === undefined) {
-              continue;
-            }
-            const contourIndex1 = layerGlyph.path.getContourIndex(pointIndex1);
-            const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
-            if (contourIndex1 == contourIndex2) {
-              layerGlyph.path.contourInfo[contourIndex1].isClosed = true;
+          for (const groupNew of [group1New, group2New]) {
+            for (const pointPair of groupNew) {
+              const [pointIndex1, pointIndex2] = pointPair;
+              const contour1 =
+                layerGlyph.path.contourInfo[
+                  layerGlyph.path.getContourIndex(pointIndex1)
+                ];
+              const contour2 =
+                layerGlyph.path.contourInfo[
+                  layerGlyph.path.getContourIndex(pointIndex2)
+                ];
+              if (contour1) {
+                contour1.isClosed = true;
+              }
+              if (contour2) {
+                contour2.isClosed = true;
+              }
             }
           }
         }
@@ -234,64 +228,6 @@ function _getIntersectionPointIndicies(path, intersections) {
     }
   }
   return pointIndecies;
-}
-
-// NOTE: This is probably the most important and also most difficult part
-// of the code, because we need to find the right point connections.
-function _getIntersectionPointIndiciesGroupedXXX(path, intersections) {
-  const pointIndecies = [];
-  for (const intersection of intersections) {
-    let pointIndex1;
-    let pointIndex2;
-    for (const pointIndex of range(path.numPoints)) {
-      if (!isNaN(pointIndex1) && !isNaN(pointIndex2)) {
-        // found both points, stop loop
-        break;
-      }
-      const point = path.getPoint(pointIndex);
-      if (
-        point.x === Math.round(intersection.x) &&
-        point.y === Math.round(intersection.y)
-      ) {
-        const contourIndex = path.getContourIndex(pointIndex);
-        const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-        const endPointIndex = path.contourInfo[contourIndex].endPoint;
-        if (pointIndex != startPointIndex && pointIndex != endPointIndex) {
-          // skip, because this contour is connected already
-          continue;
-        }
-        // 'point' must be either start or endpoint
-        // compare point is the point, which is before or after start or end point
-        const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
-        const comparePoint = path.getContourPoint(contourIndex, comparePointIndex);
-        if (comparePoint.y != point.y) {
-          if (comparePoint.y > point.y) {
-            pointIndex1 = pointIndex;
-          } else {
-            pointIndex2 = pointIndex;
-          }
-        } else {
-          if (comparePoint.x > point.x) {
-            pointIndex1 = pointIndex;
-          } else {
-            pointIndex2 = pointIndex;
-          }
-        }
-      }
-    }
-    pointIndecies.push(pointIndex1);
-    pointIndecies.push(pointIndex2);
-  }
-  console.log("pointIndecies: ", pointIndecies);
-  // group in paires for each connection
-  const pointIndeciesGrouped = [];
-  for (const rangeStartIndex of [0, 1]) {
-    for (const i of range(rangeStartIndex, pointIndecies.length, 4)) {
-      pointIndeciesGrouped.push([pointIndecies[i], pointIndecies[i + 2]]);
-    }
-  }
-  console.log("pointIndeciesGrouped: ", pointIndeciesGrouped);
-  return pointIndeciesGrouped;
 }
 
 function _getPointIndiciesForIntersectionBreak(path, intersection) {
@@ -350,7 +286,6 @@ function pointIsTopLeftOriented(path, pointIndex) {
 }
 
 function _getIntersectionPointIndiciesGrouped(path, intersections) {
-  const pointIndecies = [];
   const group1 = [];
   const group2 = [];
   for (const intersectionIndex of range(0, intersections.length, 2)) {
@@ -366,8 +301,6 @@ function _getIntersectionPointIndiciesGrouped(path, intersections) {
       path,
       intersections[intersectionIndex + 1]
     );
-    console.log("pointIndiciesConnection1: ", pointIndiciesConnection1);
-    console.log("pointIndiciesConnection2: ", pointIndiciesConnection2);
     const pointIndex1Connection = findConnectionPoint(
       path,
       pointIndiciesConnection1[0],
@@ -378,24 +311,12 @@ function _getIntersectionPointIndiciesGrouped(path, intersections) {
       pointIndiciesConnection1[1],
       pointIndiciesConnection2
     );
-    console.log("[pointIndiciesConnection1[0], pointIndex1Connection]: ", [
-      pointIndiciesConnection1[0],
-      pointIndex1Connection,
-    ]);
-    console.log("[pointIndiciesConnection1[1], pointIndex2Connection]: ", [
-      pointIndiciesConnection1[1],
-      pointIndex2Connection,
-    ]);
     if (pointIsTopLeftOriented(path, pointIndiciesConnection1[0])) {
       group1.push([pointIndiciesConnection1[0], pointIndex1Connection]);
       group2.push([pointIndiciesConnection1[1], pointIndex2Connection]);
-      // pointIndecies.push([pointIndiciesConnection1[0], pointIndex1Connection]);
-      // pointIndecies.push([pointIndiciesConnection1[1], pointIndex2Connection]);
     } else {
       group1.push([pointIndiciesConnection1[1], pointIndex2Connection]);
       group2.push([pointIndiciesConnection1[0], pointIndex1Connection]);
-      pointIndecies.push([pointIndiciesConnection1[1], pointIndex2Connection]);
-      pointIndecies.push([pointIndiciesConnection1[0], pointIndex1Connection]);
     }
   }
   console.log("[group1, group2]: ", [group1, group2]);
