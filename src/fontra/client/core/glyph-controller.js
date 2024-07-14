@@ -1154,6 +1154,9 @@ async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
   while (todo.size) {
     const glyphName = setPopFirst(todo);
     const glyph = await getGlyphFunc(glyphName);
+    if (!glyph) {
+      continue;
+    }
     glyphs[glyphName] = glyph;
     for (const compoName of glyph.getAllComponentNames()) {
       if (!(compoName in glyphs)) {
