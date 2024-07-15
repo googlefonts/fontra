@@ -141,7 +141,7 @@ class OTFBackend:
             vsIndices = sorted(collector.vsIndices)
             fvarAxes = self.font["fvar"].axes
             varStore = self.charStrings.varStore.otVarStore
-            locations = {
+            locations |= {
                 locationToTuple(loc)
                 for varDataIndex in vsIndices
                 for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
