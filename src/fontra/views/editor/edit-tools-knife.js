@@ -76,10 +76,10 @@ export class KnifeTool extends BaseTool {
     const xScalePointB = pointB.x / glyphWidth;
 
     // TODO: Multi-source editing, how do we want to implement this?
-    // Today (2024/07/16) we talked in our scram-call about 't-positioning' as a possible solution,
+    // Today (2024/07/16) we talked in our scrum-call about 't-positioning' as a possible solution,
     // to keep the glyphs sources always compatible – even if a straight line won't be a straight cut
     // through the glyph anymore in a different layer.
-    // Together with Just, we figured out, that this is not as easy as thought.
+    // Together with Just (after the meeting) we figured out, that this is not as easy as thought.
     // Point indicies and segments change during the loop through the first initiated intersections.
 
     this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
