@@ -71,6 +71,7 @@ import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphNotePanel from "./panel-glyph-note.js";
+import GlyphRelationshipsPanel from "./panel-glyph-relationships.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
@@ -821,6 +822,7 @@ export class EditorController {
     this.addSidebarPanel(new SelectionInfoPanel(this), "right");
     this.addSidebarPanel(new TransformationPanel(this), "right");
     this.addSidebarPanel(new GlyphNotePanel(this), "right");
+    this.addSidebarPanel(new GlyphRelationshipsPanel(this), "right");
 
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
