@@ -59,18 +59,16 @@ export class KnifeTool extends BaseTool {
       }
 
       this.sceneModel.knifeToolPointB = pointB;
-      this.sceneModel.intersections = _getIntersections(
+      this.sceneModel.knifeToolIntersections = _getIntersections(
         glyphController,
         pointA,
         pointB
       );
-      this.sceneModel.event = event;
       this.canvasController.requestUpdate();
     }
 
-    delete this.sceneModel.intersections;
+    delete this.sceneModel.knifeToolIntersections;
     delete this.sceneModel.knifeToolPointB;
-    delete this.sceneModel.event;
     this.canvasController.requestUpdate();
 
     const glyphWidth = glyphController.xAdvance;
@@ -320,7 +318,7 @@ registerVisualizationLayerDefinition({
     strokeLine(context, pointA.x, pointA.y, pointB.x, pointB.y);
 
     context.fillStyle = parameters.nodeColor;
-    for (const intersection of model.intersections) {
+    for (const intersection of model.knifeToolIntersections) {
       fillRoundNode(context, intersection, parameters.nodeSize);
     }
   },
