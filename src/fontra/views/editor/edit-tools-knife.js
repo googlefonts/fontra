@@ -75,10 +75,12 @@ export class KnifeTool extends BaseTool {
     const xScalePointA = pointA.x / glyphWidth;
     const xScalePointB = pointB.x / glyphWidth;
 
-    // TOTO: Multi-source editing, how do we want to implement this?
-    // Today (2024/07/16) we talked in out scam call abput 't-positioning' as a possible solution,
-    // to keep the glyph spirces always compatible – even if a straight line won't be a straight cut
+    // TODO: Multi-source editing, how do we want to implement this?
+    // Today (2024/07/16) we talked in our scram-call about 't-positioning' as a possible solution,
+    // to keep the glyphs sources always compatible – even if a straight line won't be a straight cut
     // through the glyph anymore in a different layer.
+    // Together with Just, we figured out, that this is not as easy as thought.
+    // Point indicies and segments change during the loop through the first initiated intersections.
 
     this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
   }
@@ -109,7 +111,6 @@ export class KnifeTool extends BaseTool {
 
           // 2. Insert points and split at intersections
           for (const [i, intersection] of enumerate(intersections)) {
-            console.log("intersection", intersection);
             // INFO: Need to create new PathHitTester for each intersection, because the
             // number of point indices have changed after adding a new point via insertPoint.
             // A reversed loop does not work, because it's possible, that the last
@@ -136,9 +137,6 @@ export class KnifeTool extends BaseTool {
           }
 
           // 3. Connect contours
-          // NOTE: We need to keep all contours open, because it's possible
-          // that we connect multiple contours into one (example @), and if one contour is
-          // closed already, before we want to add another contour, we get wrong outlines.
           const [group1, group2] = getIntersectionPointIndiciesGrouped(
             layerGlyph.path,
             intersections,
@@ -198,6 +196,9 @@ function getIntersections(glyphController, p1, p2) {
 }
 
 function connectContours(path, sourcePointIndex, targetPointIndex) {
+  // NOTE: We need to keep all contours open, because it's possible that we
+  // connect multiple contours into one (example @), and if one contour is
+  // closed before we want to add another contour, we get wrong outlines.
   if (sourcePointIndex === undefined || targetPointIndex === undefined) {
     return;
   }
@@ -219,6 +220,8 @@ function connectContours(path, sourcePointIndex, targetPointIndex) {
 }
 
 function isLeftFromLine(path, line, pointIndex) {
+  // the intersection point is on the line, therefore we need to check
+  // the previous or next point to determine the side
   const contourIndex = path.getContourIndex(pointIndex);
   const endPointIndex = path.contourInfo[contourIndex].endPoint;
   const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
@@ -233,6 +236,8 @@ function isLeftFromLine(path, line, pointIndex) {
 }
 
 function getPointIndiciesForIntersectionBreak(path, intersection) {
+  // based on the intersection position, we can find the two points that are
+  // connected to the intersection
   let pointIndicies = [];
   for (const pointIndex of range(path.numPoints)) {
     if (pointIndicies.length == 2) {
@@ -250,6 +255,7 @@ function getPointIndiciesForIntersectionBreak(path, intersection) {
 }
 
 function findConnectionPoint(path, pointIndex, pointIndicies, line) {
+  // based on the side of the line, we can find the point which we want to connect with
   for (const pIndex of pointIndicies) {
     if (isLeftFromLine(path, line, pIndex) === isLeftFromLine(path, line, pointIndex)) {
       return pIndex;
@@ -258,13 +264,17 @@ function findConnectionPoint(path, pointIndex, pointIndicies, line) {
 }
 
 function getIntersectionPointIndiciesGrouped(path, intersections, line) {
+  // this function finds the point indicies for the intersection break and sorts them into
+  // two groups, depending on the side of the line they are related to (via isLeftFromLine)
   const group1 = [];
   const group2 = [];
   for (const intersectionIndex of range(0, intersections.length, 2)) {
+    // we loop every second intersection, because we want to connect the points between each other
     if (intersectionIndex + 1 >= intersections.length) {
       break;
     }
 
+    // we have for each intersection two points (because we split the path at the intersection)
     const pointIndiciesConnection1 = getPointIndiciesForIntersectionBreak(
       path,
       intersections[intersectionIndex]
