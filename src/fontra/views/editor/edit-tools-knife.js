@@ -59,7 +59,11 @@ export class KnifeTool extends BaseTool {
       }
 
       this.sceneModel.knifeToolPointB = pointB;
-      this.sceneModel.intersections = getIntersections(glyphController, pointA, pointB);
+      this.sceneModel.intersections = _getIntersections(
+        glyphController,
+        pointA,
+        pointB
+      );
       this.sceneModel.event = event;
       this.canvasController.requestUpdate();
     }
@@ -73,11 +77,10 @@ export class KnifeTool extends BaseTool {
     const xScalePointA = pointA.x / glyphWidth;
     const xScalePointB = pointB.x / glyphWidth;
 
-    // TODO: DO we want proportional scaling for y-axis as well?
-    // const lineMetrics = this.sceneModel.fontSourceInstance.lineMetricsHorizontalLayout;
-    // const glyphHeight = lineMetrics.ascender.value;
-    // const yScalePointA = pointA.y / glyphHeight;
-    // const yScalePointB = pointB.y / glyphHeight;
+    // TOTO: Multi-source editing, how do we want to implement this?
+    // Today (2024/07/16) we talked in out scam call abput 't-positioning' as a possible solution,
+    // to keep the glyph spirces always compatible – even if a straight line won't be a straight cut
+    // through the glyph anymore in a different layer.
 
     this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
   }
@@ -95,15 +98,18 @@ export class KnifeTool extends BaseTool {
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const layerGlyphWidth = layerGlyph.xAdvance;
           const layerGlyphController = staticGlyphControllers[layerName];
-          const cutPointA = { x: xScalePointA * layerGlyphWidth, y: pointA.y };
-          const cutPointB = { x: xScalePointB * layerGlyphWidth, y: pointB.y };
-          const intersections = getIntersections(
+          const line = {
+            p1: { x: xScalePointA * layerGlyphWidth, y: pointA.y },
+            p2: { x: xScalePointB * layerGlyphWidth, y: pointB.y },
+          };
+          // 1. Get intersections
+          const intersections = _getIntersections(
             layerGlyphController,
-            cutPointA,
-            cutPointB
+            line.p1,
+            line.p2
           );
 
-          // insert points at intersections
+          // 2. Insert points and split at intersections
           for (const [i, intersection] of enumerate(intersections)) {
             // INFO: Need to create new PathHitTester for each intersection, because the
             // number of point indices have changed after adding a new point via insertPoint.
@@ -114,8 +120,8 @@ export class KnifeTool extends BaseTool {
               layerGlyph.controlBounds
             );
             const intersectionsRecalculated = pathHitTester.lineIntersections(
-              cutPointA,
-              cutPointB
+              line.p1,
+              line.p2
             );
             const selection = insertPoint(
               layerGlyph.path,
@@ -124,42 +130,41 @@ export class KnifeTool extends BaseTool {
 
             // split path at added points
             let { point: pointIndices } = parseSelection(selection);
-            console.log("// split path at added points: ", pointIndices);
             splitPathAtPointIndices(
               layerGlyph.path,
               pointIndices.sort((a, b) => a - b)
             );
           }
 
-          // connect contours
+          // 3. Connect contours
+          // NOTE: We need to keep all contours open, because it's possible
+          // that we connect multiple contours into one (example @), and if one contour is
+          // closed already, before we want to add another contour, we get wrong outlines.
           const [group1, group2] = _getIntersectionPointIndiciesGrouped(
             layerGlyph.path,
             intersections,
-            cutPointA,
-            cutPointB
+            line
           );
 
           for (const i of range(2)) {
             const group = [group1, group2][i];
             for (const [j, oldPair] of enumerate(group)) {
-              // Recalculate pointIndicies is needed, because they changed after connecting/merging contours
+              // 'Recalculation of pointIndicies' is required, because they change after connecting/merging contours
               const [group1Recalc, group2Recalc] = _getIntersectionPointIndiciesGrouped(
                 layerGlyph.path,
                 intersections,
-                cutPointA,
-                cutPointB
+                line
               );
               const [pointIndex1, pointIndex2] = [group1Recalc, group2Recalc][i][j];
               _connectContours(layerGlyph.path, pointIndex1, pointIndex2);
             }
           }
 
-          // close open contours
+          // 4. Close open contours
           const [group1New, group2New] = _getIntersectionPointIndiciesGrouped(
             layerGlyph.path,
             intersections,
-            cutPointA,
-            cutPointB
+            line
           );
           for (const groupNew of [group1New, group2New]) {
             for (const pointPair of groupNew) {
@@ -186,6 +191,13 @@ export class KnifeTool extends BaseTool {
   }
 }
 
+function _getIntersections(glyphController, p1, p2) {
+  // NOTE: Do we want to cut components as well? If so, we would need:
+  //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
+  const pathHitTester = glyphController.pathHitTester;
+  return pathHitTester.lineIntersections(p1, p2);
+}
+
 function _connectContours(path, sourcePointIndex, targetPointIndex) {
   if (sourcePointIndex === undefined || targetPointIndex === undefined) {
     return;
@@ -194,20 +206,30 @@ function _connectContours(path, sourcePointIndex, targetPointIndex) {
   const targetContourIndex = path.getContourIndex(targetPointIndex);
   if (sourceContourIndex == targetContourIndex) {
     // Skip, will be closed at the end.
-    // In fact, we need to keep all contours open, because it's possible
-    // that we connect multiple contours into one, and if one contour is
-    // closed already, we get wrong outlines.
   } else {
     const sourceContour = path.getUnpackedContour(sourceContourIndex);
     const targetContour = path.getUnpackedContour(targetContourIndex);
     const newContour = {
       points: sourceContour.points.concat(targetContour.points),
-      isClosed: false, // keep open, because we will close at the end
+      isClosed: false, // keep open, will be closed at the end
     };
     path.deleteContour(sourceContourIndex);
     path.insertUnpackedContour(sourceContourIndex, newContour);
     path.deleteContour(targetContourIndex);
   }
+}
+
+function _isLeftFromLine(path, line, pointIndex) {
+  const contourIndex = path.getContourIndex(pointIndex);
+  const endPointIndex = path.contourInfo[contourIndex].endPoint;
+  const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
+  const c = path.getContourPoint(contourIndex, comparePointIndex);
+
+  return (
+    (line.p2.x - line.p1.x) * (c.y - line.p1.y) -
+      (line.p2.y - line.p1.y) * (c.x - line.p1.x) >
+    0
+  );
 }
 
 function _getPointIndiciesForIntersectionBreak(path, intersection) {
@@ -227,36 +249,17 @@ function _getPointIndiciesForIntersectionBreak(path, intersection) {
   return pointIndicies;
 }
 
-function findConnectionPoint(path, pointIndex, pointIndicies, cutPointA, cutPointB) {
+function _findConnectionPoint(path, pointIndex, pointIndicies, line) {
   for (const pIndex of pointIndicies) {
     if (
-      isLeftFromLine(path, cutPointA, cutPointB, pIndex) ===
-      isLeftFromLine(path, cutPointA, cutPointB, pointIndex)
+      _isLeftFromLine(path, line, pIndex) === _isLeftFromLine(path, line, pointIndex)
     ) {
       return pIndex;
     }
   }
 }
 
-function isLeftFromLine(path, cutPointA, cutPointB, pointIndex) {
-  const contourIndex = path.getContourIndex(pointIndex);
-  const endPointIndex = path.contourInfo[contourIndex].endPoint;
-  const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
-  const c = path.getContourPoint(contourIndex, comparePointIndex);
-
-  return (
-    (cutPointB.x - cutPointA.x) * (c.y - cutPointA.y) -
-      (cutPointB.y - cutPointA.y) * (c.x - cutPointA.x) >
-    0
-  );
-}
-
-function _getIntersectionPointIndiciesGrouped(
-  path,
-  intersections,
-  cutPointA,
-  cutPointB
-) {
+function _getIntersectionPointIndiciesGrouped(path, intersections, line) {
   const group1 = [];
   const group2 = [];
   for (const intersectionIndex of range(0, intersections.length, 2)) {
@@ -273,22 +276,20 @@ function _getIntersectionPointIndiciesGrouped(
       intersections[intersectionIndex + 1]
     );
 
-    const pointIndex1Connection = findConnectionPoint(
+    const pointIndex1Connection = _findConnectionPoint(
       path,
       pointIndiciesConnection1[0],
       pointIndiciesConnection2,
-      cutPointA,
-      cutPointB
+      line
     );
-    const pointIndex2Connection = findConnectionPoint(
+    const pointIndex2Connection = _findConnectionPoint(
       path,
       pointIndiciesConnection1[1],
       pointIndiciesConnection2,
-      cutPointA,
-      cutPointB
+      line
     );
 
-    if (isLeftFromLine(path, cutPointA, cutPointB, pointIndiciesConnection1[0])) {
+    if (_isLeftFromLine(path, line, pointIndiciesConnection1[0])) {
       group1.push([pointIndiciesConnection1[0], pointIndex1Connection]);
       group2.push([pointIndiciesConnection1[1], pointIndex2Connection]);
     } else {
@@ -324,10 +325,3 @@ registerVisualizationLayerDefinition({
     }
   },
 });
-
-function getIntersections(glyphController, p1, p2) {
-  // NOTE: Do we want to cut components as well? If so, we would need:
-  //const pathHitTester = glyphController.flattenedPathHitTester;
-  const pathHitTester = glyphController.pathHitTester;
-  return pathHitTester.lineIntersections(p1, p2);
-}
