@@ -45,6 +45,7 @@ export class KnifeTool extends BaseTool {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
 
     let pointB;
+    let shiftConstrain;
     for await (const event of eventStream) {
       const point = this.sceneController.selectedGlyphPoint(event);
       if (point.x === undefined) {
@@ -55,6 +56,7 @@ export class KnifeTool extends BaseTool {
       if (event.shiftKey) {
         const delta = constrainHorVerDiag(vector.subVectors(point, pointA));
         pointB = vector.addVectors(pointA, delta);
+        shiftConstrain = true;
       } else {
         pointB = point;
       }
@@ -83,10 +85,10 @@ export class KnifeTool extends BaseTool {
     // Together with Just (after the meeting) we figured out, that this is not as easy as thought.
     // Point indicies and segments change during the loop through the first initiated intersections.
 
-    this.doCutPath(pointA, pointB, xScalePointA, xScalePointB);
+    this.doCutPath(pointA, pointB, xScalePointA, xScalePointB, shiftConstrain);
   }
 
-  async doCutPath(pointA, pointB, xScalePointA, xScalePointB) {
+  async doCutPath(pointA, pointB, xScalePointA, xScalePointB, shiftConstrain) {
     this.sceneController.selection = new Set(); // Clear selection
     const staticGlyphControllers =
       await this.sceneController.getStaticGlyphControllers();
@@ -110,7 +112,8 @@ export class KnifeTool extends BaseTool {
           const intersections = getIntersections(
             layerGlyphController,
             line.p1,
-            line.p2
+            line.p2,
+            shiftConstrain
           );
 
           // 2. Insert points and split at intersections
@@ -214,11 +217,24 @@ export class KnifeTool extends BaseTool {
   }
 }
 
-function getIntersections(glyphController, p1, p2) {
+function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
   // NOTE: Do we want to cut components as well? If so, we would need:
   //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
   const pathHitTester = glyphController.pathHitTester;
-  return pathHitTester.lineIntersections(p1, p2);
+  const nearestHit = pathHitTester.findNearest(p1);
+  let directionVector;
+  if (nearestHit) {
+    const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
+    directionVector = vector.normalizeVector({
+      x: -derivative.y,
+      y: derivative.x,
+    });
+
+    if (shiftConstrain) {
+      directionVector = constrainHorVerDiag(directionVector);
+    }
+  }
+  return pathHitTester.lineIntersections(p1, p2, directionVector);
 }
 
 function findOpenContourStartPoints(path) {
