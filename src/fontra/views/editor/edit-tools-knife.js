@@ -114,7 +114,11 @@ export class KnifeTool extends BaseTool {
           );
 
           // 2. Insert points and split at intersections
+          let allContoursAreOpen = true;
           for (const [i, intersection] of enumerate(intersections)) {
+            if (layerGlyph.path.contourInfo[intersection.contourIndex].isClosed) {
+              allContoursAreOpen = false;
+            }
             // INFO: Need to create new PathHitTester for each intersection, because the
             // number of point indices have changed after adding a new point via insertPoint.
             // A reversed loop does not work, because it's possible, that the last
@@ -138,6 +142,11 @@ export class KnifeTool extends BaseTool {
               layerGlyph.path,
               pointIndices.sort((a, b) => a - b)
             );
+          }
+
+          if (allContoursAreOpen) {
+            // Skip connection, if all contours are open.
+            continue;
           }
 
           // 3. Connect contours
