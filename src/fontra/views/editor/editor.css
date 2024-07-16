@@ -496,7 +496,6 @@ body {
   fill: var(--background-color);
 }
 
-.selected .subtool-button:first-child,
 .tool-button.selected .icon-tabler {
   stroke: var(--background-color);
 }
@@ -505,8 +504,8 @@ body {
   border-right: 5px solid var(--background-color);
 }
 
-.selected .subtool-button:first-child .icon-tabler {
-  stroke: var(--background-color);
+.subtool-button:not(:first-child) .icon-tabler {
+  stroke: var(--foreground-color);
 }
 
 #mini-console {
