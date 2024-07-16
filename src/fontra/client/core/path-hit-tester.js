@@ -42,7 +42,7 @@ export class PathHitTester {
     return {};
   }
 
-  findNearest(point, extraLines) {
+  findNearest(point, extraLines = undefined) {
     this._ensureAllContoursAreLoaded();
     let results = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
