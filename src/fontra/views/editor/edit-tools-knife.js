@@ -1,6 +1,6 @@
 import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
 import { PathHitTester } from "../core/path-hit-tester.js";
-import { enumerate, range } from "../core/utils.js";
+import { enumerate, parseSelection, range } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -117,18 +117,19 @@ export class KnifeTool extends BaseTool {
               cutPointA,
               cutPointB
             );
-            insertPoint(layerGlyph.path, intersectionsRecalculated[i]);
-          }
+            const selection = insertPoint(
+              layerGlyph.path,
+              intersectionsRecalculated[i]
+            );
 
-          // split path at added points
-          const pointIndices = _getIntersectionPointIndicies(
-            layerGlyph.path,
-            intersections
-          );
-          splitPathAtPointIndices(
-            layerGlyph.path,
-            pointIndices.sort((a, b) => a - b)
-          );
+            // split path at added points
+            let { point: pointIndices } = parseSelection(selection);
+            console.log("// split path at added points: ", pointIndices);
+            splitPathAtPointIndices(
+              layerGlyph.path,
+              pointIndices.sort((a, b) => a - b)
+            );
+          }
 
           // connect contours
           const [group1, group2] = _getIntersectionPointIndiciesGrouped(
@@ -207,22 +208,6 @@ function _connectContours(path, sourcePointIndex, targetPointIndex) {
     path.insertUnpackedContour(sourceContourIndex, newContour);
     path.deleteContour(targetContourIndex);
   }
-}
-
-function _getIntersectionPointIndicies(path, intersections) {
-  const pointIndecies = [];
-  for (const intersection of intersections) {
-    for (const pointIndex of range(path.numPoints)) {
-      const point = path.getPoint(pointIndex);
-      if (
-        point.x === Math.round(intersection.x) &&
-        point.y === Math.round(intersection.y)
-      ) {
-        pointIndecies.push(pointIndex);
-      }
-    }
-  }
-  return pointIndecies;
 }
 
 function _getPointIndiciesForIntersectionBreak(path, intersection) {
