@@ -1,6 +1,7 @@
 import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
 import { PathHitTester } from "../core/path-hit-tester.js";
 import { enumerate, parseSelection, range } from "../core/utils.js";
+import { packContour } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -96,6 +97,9 @@ export class KnifeTool extends BaseTool {
         );
 
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+          // 0. Find open path points
+          const openContourStartPoints = findOpenContourStartPoints(layerGlyph.path);
+
           const layerGlyphWidth = layerGlyph.xAdvance;
           const layerGlyphController = staticGlyphControllers[layerName];
           const line = {
@@ -174,6 +178,19 @@ export class KnifeTool extends BaseTool {
               }
             }
           }
+
+          // 5. Reopen contours, which were open before
+          for (const pointIndex of range(layerGlyph.path.numPoints)) {
+            const point = layerGlyph.path.getPoint(pointIndex);
+            for (const startPoint of openContourStartPoints) {
+              if (point.x === startPoint.x && point.y === startPoint.y) {
+                const contourIndex = layerGlyph.path.getContourIndex(pointIndex);
+                setStartPoint(layerGlyph.path, pointIndex, contourIndex);
+                layerGlyph.path.contourInfo[contourIndex].isClosed = false;
+                break;
+              }
+            }
+          }
         }
 
         return `Knife Tool cut`;
@@ -193,6 +210,41 @@ function getIntersections(glyphController, p1, p2) {
   //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
   const pathHitTester = glyphController.pathHitTester;
   return pathHitTester.lineIntersections(p1, p2);
+}
+
+function findOpenContourStartPoints(path) {
+  const collectPointStarts = new Set();
+  for (const i of range(path.numContours)) {
+    const contourInfo = path.contourInfo[i];
+    if (contourInfo.isClosed) {
+      continue;
+    }
+
+    const startPoint = path.getContourPoint(i, 0);
+    collectPointStarts.add(startPoint);
+  }
+  return collectPointStarts;
+}
+
+function setStartPoint(path, pointIndex, contourIndex) {
+  // This is almost a copy from setStartPoint() scene-controller.js
+  // With a few exceptions only, eg. don't scipt open contours.
+  const contourToPointMap = new Map();
+  const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+  contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
+
+  contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+    if (contourPointIndex === 0) {
+      // Already start point
+      return;
+    }
+
+    const contour = path.getUnpackedContour(contourIndex);
+    const head = contour.points.splice(0, contourPointIndex);
+    contour.points.push(...head);
+    path.deleteContour(contourIndex);
+    path.insertContour(contourIndex, packContour(contour));
+  });
 }
 
 function connectContours(path, sourcePointIndex, targetPointIndex) {
