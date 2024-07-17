@@ -980,8 +980,6 @@ export class EditorController {
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
-    const glyphLocations = {};
-    const glyphInfos = [];
 
     const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
       (componentIndex) =>
@@ -1001,6 +999,9 @@ export class EditorController {
       // User cancelled
       return;
     }
+
+    const glyphLocations = {};
+    const glyphInfos = [];
 
     for (const componentIndex of this.sceneController.doubleClickedComponentIndices) {
       const glyphName = instance.components[componentIndex].name;
