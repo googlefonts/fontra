@@ -78,24 +78,28 @@ export default class RelatedGlyphPanel extends Panel {
       : `<b>Related glyphs</b> (no glyph selected)`;
 
     for (const item of this.accordion.items) {
-      const element = item.content;
-      element.innerHTML = "";
-      if (glyphName) {
-        const relatedGlyphsByExtension = item.getRelatedGlyphsFunc(
-          this.fontController,
-          glyphName
-        );
-        if (relatedGlyphsByExtension?.length) {
-          for (const glyphName of relatedGlyphsByExtension) {
-            element.appendChild(new GlyphCell(this.fontController, glyphName));
-          }
-        } else {
-          element.innerText = "No related glyphs were found";
-        }
-      }
+      this._updateAccordionItem(item, glyphName); // No await
     }
 
     this.accordion.hidden = !glyphName;
+  }
+
+  async _updateAccordionItem(item, glyphName) {
+    const element = item.content;
+    element.innerHTML = "";
+    if (glyphName) {
+      const relatedGlyphsByExtension = item.getRelatedGlyphsFunc(
+        this.fontController,
+        glyphName
+      );
+      if (relatedGlyphsByExtension?.length) {
+        for (const glyphName of relatedGlyphsByExtension) {
+          element.appendChild(new GlyphCell(this.fontController, glyphName));
+        }
+      } else {
+        element.innerText = "No related glyphs were found";
+      }
+    }
   }
 
   async toggle(on, focus) {
