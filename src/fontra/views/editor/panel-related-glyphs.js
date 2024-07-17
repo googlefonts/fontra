@@ -42,6 +42,13 @@ export default class RelatedGlyphPanel extends Panel {
   getContentElement() {
     this.accordion = new Accordion();
 
+    this.accordion.appendStyle(`
+    .no-glyphs-found-label {
+      font-size: 0.9em;
+      opacity: 40%;
+    }
+    `);
+
     this.accordion.items = [
       {
         label: "Alternate glyphs (glyph name extension)",
@@ -56,6 +63,13 @@ export default class RelatedGlyphPanel extends Panel {
         content: html.div({ style: "height: 100%;" }, []),
         getRelatedGlyphsFunc: getComponentGlyphs,
         noGlyphsString: "No component glyphs were found",
+      },
+      {
+        label: "Glyphs using this glyph as a component",
+        open: true,
+        content: html.div({ style: "height: 100%;" }, []),
+        getRelatedGlyphsFunc: getUsedByGlyphs,
+        noGlyphsString: "No glyphs were found that use this glyph",
       },
     ];
 
@@ -117,7 +131,9 @@ export default class RelatedGlyphPanel extends Panel {
           element.appendChild(glyphCell);
         }
       } else {
-        element.innerText = item.noGlyphsString;
+        element.appendChild(
+          html.span({ class: "no-glyphs-found-label" }, [item.noGlyphsString])
+        );
       }
     }
   }
@@ -136,16 +152,13 @@ export default class RelatedGlyphPanel extends Panel {
 
 function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
   const targetBaseGlyphName = targetGlyphName.split(".")[0];
-  const glyphMap = fontController.glyphMap;
-  return Object.keys(glyphMap)
+  const glyphNames = Object.keys(fontController.glyphMap)
     .filter((glyphName) => {
       const baseGlyphName = glyphName.split(".")[0];
       return baseGlyphName == targetBaseGlyphName && glyphName != targetGlyphName;
     })
-    .sort()
-    .map((glyphName) => {
-      return { glyphName, codePoints: glyphMap[glyphName] };
-    });
+    .sort();
+  return addCharInfo(fontController, glyphNames);
 }
 
 async function getComponentGlyphs(fontController, targetGlyphName) {
@@ -153,8 +166,17 @@ async function getComponentGlyphs(fontController, targetGlyphName) {
   const componentNames = [...varGlyph.getAllComponentNames()];
   componentNames.sort();
 
+  return addCharInfo(fontController, componentNames);
+}
+
+async function getUsedByGlyphs(fontController, targetGlyphName) {
+  const glyphNames = await fontController.findGlyphsThatUseGlyph(targetGlyphName);
+  return addCharInfo(fontController, glyphNames);
+}
+
+function addCharInfo(fontController, glyphNames) {
   const glyphMap = fontController.glyphMap;
-  return componentNames.map((glyphName) => {
+  return glyphNames.map((glyphName) => {
     return { glyphName, codePoints: glyphMap[glyphName] || [] };
   });
 }
