@@ -66,13 +66,13 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   async update() {
+    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
 
-    const glyphName = varGlyph?.name;
-
-    const codePoints = glyphName ? this.fontController.glyphMap[glyphName] : [];
+    const codePoints = glyphName ? this.fontController.glyphMap[glyphName] || [] : [];
     const character = getCharFromCodePoint(codePoints[0]);
     const s =
       character && character != glyphName ? `“${character}”, ${glyphName}` : glyphName;
