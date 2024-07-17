@@ -10,8 +10,8 @@ import * as vector from "./vector.js";
 
 export function insertPoint(path, intersection) {
   let selectedPointIndex;
-  //let numPointsInserted = 0;
-  //let selectedPointIndices = [];
+  let numPointsInserted = 0;
+  let selectedPointIndices = [];
   const segment = intersection.segment;
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
     segment.parentPointIndices[0]
@@ -31,6 +31,7 @@ export function insertPoint(path, intersection) {
       vector.roundVector(vector.interpolateVectors(...points, intersection.t))
     );
     selectedPointIndex = insertIndex;
+    numPointsInserted = 1;
   } else {
     // insert point in curve
     const segments = [...path.iterContourDecomposedSegments(contourIndex)];
@@ -65,6 +66,7 @@ export function insertPoint(path, intersection) {
       deleteIndices.forEach((pointIndex) =>
         path.deletePoint(contourIndex, pointIndex + absToRel)
       );
+      numPointsInserted = 3;
     } else {
       // quad
       const points = [left.points[1], left.points[2], right.points[1]].map(
@@ -83,7 +85,6 @@ export function insertPoint(path, intersection) {
       }
       if (point1.type) {
         path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
-        insertIndex++;
       }
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
@@ -91,18 +92,17 @@ export function insertPoint(path, intersection) {
       // Insert split
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
+        // TODO: calculate number of added points for quad.
+        // numPointsInserted++;
       }
       selectedPointIndex = insertIndex + 1;
     }
   }
-  //return {numPointsInserted, selectedPointIndices};
-  const selection = new Set();
   if (selectedPointIndex !== undefined) {
     selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
-    selection.add(`point/${selectedPointIndex}`);
+    selectedPointIndices.push(selectedPointIndex);
   }
-  // return indicies not selection +
-  return selection;
+  return { numPointsInserted, selectedPointIndices };
 }
 
 function impliedPoint(pointA, pointB) {
