@@ -92,12 +92,12 @@ export default class RelatedGlyphPanel extends Panel {
     const element = item.content;
     element.innerHTML = "";
     if (glyphName) {
-      const relatedGlyphNames = await item.getRelatedGlyphsFunc(
+      const relatedGlyphs = await item.getRelatedGlyphsFunc(
         this.fontController,
         glyphName
       );
-      if (relatedGlyphNames?.length) {
-        for (const glyphName of relatedGlyphNames) {
+      if (relatedGlyphs?.length) {
+        for (const { glyphName, codePoints } of relatedGlyphs) {
           const glyphCell = new GlyphCell(
             this.fontController,
             glyphName,
@@ -121,12 +121,16 @@ export default class RelatedGlyphPanel extends Panel {
 
 function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
   const targetBaseGlyphName = targetGlyphName.split(".")[0];
-  return Object.keys(fontController.glyphMap)
+  const glyphMap = fontController.glyphMap;
+  return Object.keys(glyphMap)
     .filter((glyphName) => {
       const baseGlyphName = glyphName.split(".")[0];
       return baseGlyphName == targetBaseGlyphName && glyphName != targetGlyphName;
     })
-    .sort();
+    .sort()
+    .map((glyphName) => {
+      return { glyphName, codePoints: glyphMap[glyphName] };
+    });
 }
 
 customElements.define("panel-related-glyph", RelatedGlyphPanel);
