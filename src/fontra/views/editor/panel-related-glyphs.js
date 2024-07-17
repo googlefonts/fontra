@@ -106,12 +106,18 @@ export default class RelatedGlyphPanel extends Panel {
             this.sceneController.sceneSettingsController,
             "fontLocationSourceMapped"
           );
+          glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
           element.appendChild(glyphCell);
         }
       } else {
         element.innerText = "No related glyphs were found";
       }
     }
+  }
+
+  handleDoubleClick(event, glyphName) {
+    const glyphInfos = [this.fontController.glyphInfoFromGlyphName(glyphName)];
+    this.editorController.insertGlyphInfos(glyphInfos, 0, true);
   }
 
   async toggle(on, focus) {
