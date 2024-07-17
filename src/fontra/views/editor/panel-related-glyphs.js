@@ -98,14 +98,13 @@ export default class RelatedGlyphPanel extends Panel {
       );
       if (relatedGlyphNames?.length) {
         for (const glyphName of relatedGlyphNames) {
-          element.appendChild(
-            new GlyphCell(
-              this.fontController,
-              glyphName,
-              this.sceneController.sceneSettingsController,
-              "fontLocationSourceMapped"
-            )
+          const glyphCell = new GlyphCell(
+            this.fontController,
+            glyphName,
+            this.sceneController.sceneSettingsController,
+            "fontLocationSourceMapped"
           );
+          element.appendChild(glyphCell);
         }
       } else {
         element.innerText = "No related glyphs were found";
