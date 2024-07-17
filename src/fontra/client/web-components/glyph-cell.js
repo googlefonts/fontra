@@ -68,9 +68,37 @@ export class GlyphCell extends UnlitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.locationController.addKeyListener(this.locationKey, this.throttledUpdate);
-    this.fontController.addGlyphChangeListener(this.glyphName, this.throttledUpdate);
-    this._updateGlyph();
+
+    const observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > 0) {
+            this.locationController.addKeyListener(
+              this.locationKey,
+              this.throttledUpdate
+            );
+            this.fontController.addGlyphChangeListener(
+              this.glyphName,
+              this.throttledUpdate
+            );
+            this.throttledUpdate();
+          } else {
+            this.locationController.removeKeyListener(
+              this.locationKey,
+              this.throttledUpdate
+            );
+            this.fontController.removeGlyphChangeListener(
+              this.glyphName,
+              this.throttledUpdate
+            );
+          }
+        });
+      },
+      {
+        root: this.parentElement,
+      }
+    );
+    observer.observe(this);
   }
 
   disconnectedCallback() {
@@ -139,7 +167,7 @@ export class GlyphCell extends UnlitElement {
       html.div({ id: "glyph-cell-content" }, [
         this._glyphSVG
           ? this._glyphSVG
-          : html.div({ style: `width: 1em; height: ${this.height}px;` }, ["hello"]),
+          : html.div({ style: `width: 1em; height: ${this.height}px;` }, ["..."]),
         html.span({ class: "glyph-name-label" }, [this.glyphName]),
         html.div(
           {
