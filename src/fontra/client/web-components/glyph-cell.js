@@ -1,18 +1,26 @@
 import { InlineSVG } from "./inline-svg.js";
+import { themeColorCSS } from "./theme-support.js";
 import { SVGPath2D } from "/core/glyph-svg.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
 import * as svg from "/core/svg-utils.js";
 import { Transform } from "/core/transform.js";
-import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
+import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
+
+const colors = {
+  "cell-background-color": ["#EEE", "#383838"],
+};
 
 export class GlyphCell extends UnlitElement {
   static styles = `
+    ${themeColorCSS(colors)}
+
   :host {
-    background-color: #EEE;
+    background-color: var(--cell-background-color);
     display: inline-block;
     margin: 1px;
     border-radius: 0.3rem;
+    overflow: hidden;
   }
 
   #glyph-cell-content {
@@ -25,6 +33,11 @@ export class GlyphCell extends UnlitElement {
     font-size: 0.85em;
     padding-left: 0.3em;
     padding-right: 0.3em;
+  }
+
+  .glyph-status-color {
+    height: 0.3rem;
+    justify-self: stretch;
   }
   `;
 
@@ -50,6 +63,7 @@ export class GlyphCell extends UnlitElement {
 
   async _updateGlyph() {
     const location = this.locationController.model[this.locationKey];
+    const varGlyph = await this.fontController.getGlyph(this.glyphName);
     const glyphController = await this.fontController.getGlyphInstance(
       this.glyphName,
       location
@@ -92,6 +106,12 @@ export class GlyphCell extends UnlitElement {
         }),
       ]
     );
+
+    this._glyphStatusColor = getStatusColor(
+      this.fontController.customData["fontra.sourceStatusFieldDefinitions"],
+      varGlyph,
+      glyphController.sourceIndex
+    );
     this._glyphSVG = svgElement;
     this.requestUpdate();
   }
@@ -100,9 +120,35 @@ export class GlyphCell extends UnlitElement {
     this._glyphCellContent = html.div({ id: "glyph-cell-content" }, [
       this._glyphSVG ? this._glyphSVG : `loading ${this.glyphName}`,
       html.span({ class: "glyph-name-label" }, [this.glyphName]),
+      html.div(
+        {
+          class: "glyph-status-color",
+          style: `background-color: ${this._glyphStatusColor};`,
+        },
+        []
+      ),
     ]);
     return this._glyphCellContent;
   }
+}
+
+function getStatusColor(statusFieldDefinitions, varGlyph, sourceIndex) {
+  let statusColor = "var(--cell-background-color)";
+  if (!statusFieldDefinitions || sourceIndex === undefined) {
+    return statusColor;
+  }
+
+  let status = varGlyph.sources[sourceIndex].customData["fontra.development.status"];
+  if (status === undefined) {
+    status = statusFieldDefinitions.find((statusDef) => statusDef.isDefault)?.value;
+  }
+
+  const color = statusFieldDefinitions[status]?.color;
+  if (color) {
+    statusColor = rgbaToCSS(color);
+  }
+
+  return statusColor;
 }
 
 customElements.define("glyph-cell", GlyphCell);
