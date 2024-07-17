@@ -12,8 +12,19 @@ export class GlyphCell extends UnlitElement {
     background-color: #EEE;
     display: inline-block;
     margin: 1px;
-    border-radius: 0.2rem;
-    // height: 3rem;
+    border-radius: 0.3rem;
+  }
+
+  #glyph-cell-content {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+  }
+
+  .glyph-name-label {
+    font-size: 0.85em;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
   }
   `;
 
@@ -25,10 +36,6 @@ export class GlyphCell extends UnlitElement {
     this.locationKey = locationKey;
     this.throttledUpdate = throttleCalls(() => this._updateGlyph(), 50);
   }
-
-  static properties = {
-    _glyphSVG: {},
-  };
 
   connectedCallback() {
     super.connectedCallback();
@@ -86,11 +93,13 @@ export class GlyphCell extends UnlitElement {
       ]
     );
     this._glyphSVG = svgElement;
+    this.requestUpdate();
   }
 
   render() {
     this._glyphCellContent = html.div({ id: "glyph-cell-content" }, [
       this._glyphSVG ? this._glyphSVG : `loading ${this.glyphName}`,
+      html.span({ class: "glyph-name-label" }, [this.glyphName]),
     ]);
     return this._glyphCellContent;
   }
