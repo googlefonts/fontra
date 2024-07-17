@@ -88,7 +88,7 @@ export default class RelatedGlyphPanel extends Panel {
     const element = item.content;
     element.innerHTML = "";
     if (glyphName) {
-      const relatedGlyphsByExtension = item.getRelatedGlyphsFunc(
+      const relatedGlyphsByExtension = await item.getRelatedGlyphsFunc(
         this.fontController,
         glyphName
       );
