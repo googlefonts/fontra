@@ -53,12 +53,14 @@ export class GlyphCell extends UnlitElement {
   connectedCallback() {
     super.connectedCallback();
     this.locationController.addKeyListener(this.locationKey, this.throttledUpdate);
+    this.fontController.addGlyphChangeListener(this.glyphName, this.throttledUpdate);
     this._updateGlyph();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
     this.locationController.removeKeyListener(this.locationKey, this.throttledUpdate);
+    this.fontController.removeGlyphChangeListener(this.glyphName, this.throttledUpdate);
   }
 
   async _updateGlyph() {
