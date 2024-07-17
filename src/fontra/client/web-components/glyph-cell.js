@@ -96,6 +96,9 @@ export class GlyphCell extends UnlitElement {
       },
       {
         root: this.parentElement,
+        // Somehow out cell is only seen as intersecting if the glyph name / status
+        // color is visible. Let's take the cell height as addition bottom root margin.
+        rootMargin: `0px 0px ${this.height}px 0px`, // (top, right, bottom, left).
       }
     );
     observer.observe(this);
