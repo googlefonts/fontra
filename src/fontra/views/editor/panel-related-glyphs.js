@@ -45,7 +45,7 @@ export default class RelatedGlyphPanel extends Panel {
     this.accordion.items = [
       {
         id: "glyph-name-extension-accordion-item",
-        label: "Related glyphs via glyph name extension",
+        label: "Alternate glyphs (glyph name extension)",
         open: true,
         content: html.div({ id: "glyph-name-extension", style: "height: 100%;" }, []),
         getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
