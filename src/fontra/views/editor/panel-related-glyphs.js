@@ -34,14 +34,14 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   getContentElement() {
-    const accordion = new Accordion();
+    this.accordion = new Accordion();
 
     this.glyphNameExtensionElement = html.div(
       { id: "glyph-name-extension", style: "height: 100%;" },
       []
     );
 
-    accordion.items = [
+    this.accordion.items = [
       {
         id: "glyph-name-extension-accordion-item",
         label: "Related glyphs via glyph name extension",
@@ -53,7 +53,7 @@ export default class RelatedGlyphPanel extends Panel {
       {
         class: "sidebar-glyph-relationships",
       },
-      [html.div({ id: "related-glyphs-header" }, ["Related Glyphs"]), accordion]
+      [html.div({ id: "related-glyphs-header" }, ["Related Glyphs"]), this.accordion]
     );
   }
 
@@ -69,6 +69,7 @@ export default class RelatedGlyphPanel extends Panel {
     const varGlyph = varGlyphController?.glyph;
 
     const glyphName = varGlyph?.name;
+
     const codePoints = glyphName ? this.fontController.glyphMap[glyphName] : [];
     const character = getCharFromCodePoint(codePoints[0]);
     const s =
@@ -89,6 +90,8 @@ export default class RelatedGlyphPanel extends Panel {
     } else {
       this.glyphNameExtensionElement.innerHTML;
     }
+
+    this.accordion.hidden = !glyphName;
   }
 
   async toggle(on, focus) {
