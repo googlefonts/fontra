@@ -169,13 +169,10 @@ export class GlyphCell extends UnlitElement {
           ? this._glyphSVG
           : html.div({ style: `width: 1em; height: ${this.height}px;` }, ["..."]),
         html.span({ class: "glyph-name-label" }, [this.glyphName]),
-        html.div(
-          {
-            class: "glyph-status-color",
-            style: `background-color: ${this._glyphStatusColor};`,
-          },
-          []
-        ),
+        html.div({
+          class: "glyph-status-color",
+          style: `background-color: ${this._glyphStatusColor};`,
+        }),
       ]),
     ]);
     return this._glyphCellContent;
