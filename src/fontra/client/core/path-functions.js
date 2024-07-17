@@ -10,6 +10,8 @@ import * as vector from "./vector.js";
 
 export function insertPoint(path, intersection) {
   let selectedPointIndex;
+  //let numPointsInserted = 0;
+  //let selectedPointIndices = [];
   const segment = intersection.segment;
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
     segment.parentPointIndices[0]
@@ -35,7 +37,7 @@ export function insertPoint(path, intersection) {
     const segment = segments[intersection.segmentIndex];
     const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const { left, right } = bezier.split(intersection.t);
+    const { left, right } = bezier.split(intersection.t); // helperfunction bezierSplitMultiple(bezier, intersection.ts) return a list of things
     if (firstOffCurve.type === "cubic") {
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         vector.roundVector
@@ -93,11 +95,13 @@ export function insertPoint(path, intersection) {
       selectedPointIndex = insertIndex + 1;
     }
   }
+  //return {numPointsInserted, selectedPointIndices};
   const selection = new Set();
   if (selectedPointIndex !== undefined) {
     selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
     selection.add(`point/${selectedPointIndex}`);
   }
+  // return indicies not selection +
   return selection;
 }
 
