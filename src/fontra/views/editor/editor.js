@@ -1028,16 +1028,13 @@ export class EditorController {
     );
     this.sceneSettings.glyphLines = glyphLines;
 
+    const glyphIndex =
+      selectedGlyphInfo.glyphIndex +
+      (select ? (where == 1 ? 1 : 0) : where == -1 ? glyphInfos.length : 0);
+
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
-      glyphIndex:
-        selectedGlyphInfo.glyphIndex + select
-          ? where == 1
-            ? 1
-            : 0
-          : where == -1
-          ? glyphInfos.length
-          : 0,
+      glyphIndex: glyphIndex,
       isEditing: where && select ? false : this.sceneSettings.selectedGlyph.isEditing,
     };
   }
