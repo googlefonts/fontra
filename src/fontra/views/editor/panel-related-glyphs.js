@@ -88,12 +88,12 @@ export default class RelatedGlyphPanel extends Panel {
     const element = item.content;
     element.innerHTML = "";
     if (glyphName) {
-      const relatedGlyphsByExtension = await item.getRelatedGlyphsFunc(
+      const relatedGlyphNames = await item.getRelatedGlyphsFunc(
         this.fontController,
         glyphName
       );
-      if (relatedGlyphsByExtension?.length) {
-        for (const glyphName of relatedGlyphsByExtension) {
+      if (relatedGlyphNames?.length) {
+        for (const glyphName of relatedGlyphNames) {
           element.appendChild(new GlyphCell(this.fontController, glyphName));
         }
       } else {
