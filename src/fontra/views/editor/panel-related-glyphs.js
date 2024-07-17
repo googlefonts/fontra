@@ -44,11 +44,18 @@ export default class RelatedGlyphPanel extends Panel {
 
     this.accordion.items = [
       {
-        id: "glyph-name-extension-accordion-item",
         label: "Alternate glyphs (glyph name extension)",
         open: true,
-        content: html.div({ id: "glyph-name-extension", style: "height: 100%;" }, []),
+        content: html.div({ style: "height: 100%;" }, []),
         getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
+        noGlyphsString: "No alternate glyphs were found",
+      },
+      {
+        label: "Component glyphs",
+        open: true,
+        content: html.div({ style: "height: 100%;" }, []),
+        getRelatedGlyphsFunc: getComponentGlyphs,
+        noGlyphsString: "No component glyphs were found",
       },
     ];
 
@@ -110,7 +117,7 @@ export default class RelatedGlyphPanel extends Panel {
           element.appendChild(glyphCell);
         }
       } else {
-        element.innerText = "No related glyphs were found";
+        element.innerText = item.noGlyphsString;
       }
     }
   }
@@ -139,6 +146,17 @@ function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
     .map((glyphName) => {
       return { glyphName, codePoints: glyphMap[glyphName] };
     });
+}
+
+async function getComponentGlyphs(fontController, targetGlyphName) {
+  const varGlyph = await fontController.getGlyph(targetGlyphName);
+  const componentNames = [...varGlyph.getAllComponentNames()];
+  componentNames.sort();
+
+  const glyphMap = fontController.glyphMap;
+  return componentNames.map((glyphName) => {
+    return { glyphName, codePoints: glyphMap[glyphName] || [] };
+  });
 }
 
 customElements.define("panel-related-glyph", RelatedGlyphPanel);
