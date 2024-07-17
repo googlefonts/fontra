@@ -11,7 +11,7 @@ export default class RelatedGlyphPanel extends Panel {
   static styles = `
     .sidebar-glyph-relationships {
       box-sizing: border-box;
-      height: 100%;
+      height: calc(100% - 2em); // Would be nice to do without the calc
       width: 100%;
     }
 
