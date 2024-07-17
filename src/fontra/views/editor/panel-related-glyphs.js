@@ -163,7 +163,7 @@ function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
 
 async function getComponentGlyphs(fontController, targetGlyphName) {
   const varGlyph = await fontController.getGlyph(targetGlyphName);
-  const componentNames = [...varGlyph.getAllComponentNames()];
+  const componentNames = [...(varGlyph?.getAllComponentNames() || [])];
   componentNames.sort();
 
   return addCharInfo(fontController, componentNames);
