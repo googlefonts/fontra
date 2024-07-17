@@ -154,14 +154,20 @@ export class KnifeTool extends BaseTool {
             const group = [group1, group2][groupIndex];
             for (const [pairIndex, oldPair] of enumerate(group)) {
               // 'Recalculation of pointIndicies' is required, because they change after connecting/merging contours
-              const [group1Recalc, group2Recalc] = getIntersectionPointIndiciesGrouped(
+              const RecalcGroups = getIntersectionPointIndiciesGrouped(
                 layerGlyph.path,
                 intersections,
                 line
               );
-              const [pointIndex1, pointIndex2] = [group1Recalc, group2Recalc][
-                groupIndex
-              ][pairIndex];
+              const [pointIndex1, pointIndex2] = RecalcGroups[groupIndex][pairIndex];
+              if (
+                !isStartOrEndPoint(layerGlyph.path, pointIndex1) ||
+                !isStartOrEndPoint(layerGlyph.path, pointIndex2)
+              ) {
+                // Skip, because it's not the start or end point of the contour,
+                // therefore it's very likely that it has already been connected.
+                continue;
+              }
               connectContours(layerGlyph.path, pointIndex1, pointIndex2);
             }
           }
@@ -209,6 +215,16 @@ export class KnifeTool extends BaseTool {
   deactivate() {
     this.canvasController.requestUpdate();
   }
+}
+
+function isStartOrEndPoint(path, pointIndex) {
+  const contourIndex = path.getContourIndex(pointIndex);
+  const endPointIndex = path.contourInfo[contourIndex].endPoint;
+  const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+  if (pointIndex != endPointIndex && pointIndex != startPointIndex) {
+    return false;
+  }
+  return true;
 }
 
 function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
@@ -300,7 +316,13 @@ function isLeftFromLine(path, line, pointIndex) {
   // the previous or next point to determine the side
   const contourIndex = path.getContourIndex(pointIndex);
   const endPointIndex = path.contourInfo[contourIndex].endPoint;
-  const comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
+
+  let comparePointIndex = pointIndex === endPointIndex ? -2 : 1;
+  const numPoints = path.getNumPointsOfContour(contourIndex);
+  if (numPoints === 2) {
+    // if the contour has two points only, use the other
+    comparePointIndex = pointIndex === endPointIndex ? 0 : -1;
+  }
   const c = path.getContourPoint(contourIndex, comparePointIndex);
 
   // cross product
@@ -368,12 +390,11 @@ function getIntersectionPointIndiciesGrouped(path, intersections, line) {
       pointIndiciesConnection2,
       line
     );
-    const pointIndex2Connection = findConnectionPoint(
-      path,
-      pointIndiciesConnection1[1],
-      pointIndiciesConnection2,
-      line
-    );
+    // if we found the one connection point, it must be the other:
+    const pointIndex2Connection =
+      pointIndex1Connection === pointIndiciesConnection2[0]
+        ? pointIndiciesConnection2[1]
+        : pointIndiciesConnection2[0];
 
     if (isLeftFromLine(path, line, pointIndiciesConnection1[0])) {
       group1.push([pointIndiciesConnection1[0], pointIndex1Connection]);
