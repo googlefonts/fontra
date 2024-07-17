@@ -32,6 +32,10 @@ export default class RelatedGlyphPanel extends Panel {
       ["selectedGlyphName"],
       (event) => this.throttledUpdate()
     );
+
+    this.fontController.addChangeListener({ glyphMap: null }, (event) =>
+      this.throttledUpdate()
+    );
   }
 
   getContentElement() {
