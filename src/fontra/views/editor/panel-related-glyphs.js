@@ -101,6 +101,7 @@ export default class RelatedGlyphPanel extends Panel {
           const glyphCell = new GlyphCell(
             this.fontController,
             glyphName,
+            codePoints,
             this.sceneController.sceneSettingsController,
             "fontLocationSourceMapped"
           );

@@ -52,10 +52,11 @@ export class GlyphCell extends UnlitElement {
   }
   `;
 
-  constructor(fontController, glyphName, locationController, locationKey) {
+  constructor(fontController, glyphName, codePoints, locationController, locationKey) {
     super();
     this.fontController = fontController;
     this.glyphName = glyphName;
+    this.codePoints = codePoints;
     this.locationController = locationController;
     this.locationKey = locationKey;
     this.throttledUpdate = throttleCalls(() => this._updateGlyph(), 50);
