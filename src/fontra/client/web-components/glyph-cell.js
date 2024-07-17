@@ -24,6 +24,7 @@ export class GlyphCell extends UnlitElement {
     border-radius: 0.3rem;
     overflow: hidden;
     transition: 100ms;
+    cursor: pointer;
   }
 
   #glyph-cell-container:hover {

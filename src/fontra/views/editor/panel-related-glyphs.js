@@ -17,6 +17,7 @@ export default class RelatedGlyphPanel extends Panel {
 
     #related-glyphs-header {
       padding: 1em 1em 0 1em;
+      text-wrap: wrap;
     }
   `;
 
