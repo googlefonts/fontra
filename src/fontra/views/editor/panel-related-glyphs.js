@@ -51,14 +51,14 @@ export default class RelatedGlyphPanel extends Panel {
 
     this.accordion.items = [
       {
-        label: "Alternate glyphs (glyph name extension)",
+        label: "Alternate glyphs",
         open: true,
         content: html.div({ style: "height: 100%;" }, []),
         getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
         noGlyphsString: "No alternate glyphs were found",
       },
       {
-        label: "Component glyphs",
+        label: "Components used by this glyph",
         open: true,
         content: html.div({ style: "height: 100%;" }, []),
         getRelatedGlyphsFunc: getComponentGlyphs,
