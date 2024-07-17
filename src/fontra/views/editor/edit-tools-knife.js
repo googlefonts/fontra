@@ -218,6 +218,9 @@ export class KnifeTool extends BaseTool {
 }
 
 function isStartOrEndPoint(path, pointIndex) {
+  if (pointIndex === undefined) {
+    return false;
+  }
   const contourIndex = path.getContourIndex(pointIndex);
   const endPointIndex = path.contourInfo[contourIndex].endPoint;
   const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
