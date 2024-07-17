@@ -1012,18 +1012,33 @@ export class EditorController {
       glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
     this.sceneController.updateGlyphLocations(glyphLocations);
+    this.insertGlyphInfos(glyphInfos, 1, true);
+  }
+
+  insertGlyphInfos(glyphInfos, where = 0, select = false) {
+    // where == 0: replace selected glyph
+    // where == 1: insert after selected glyph
+    // where == -1: insert before selected glyph
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     glyphLines[selectedGlyphInfo.lineIndex].splice(
-      selectedGlyphInfo.glyphIndex + 1,
-      0,
+      Math.max(selectedGlyphInfo.glyphIndex + where, 0),
+      where ? 0 : 1,
       ...glyphInfos
     );
     this.sceneSettings.glyphLines = glyphLines;
 
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
-      glyphIndex: selectedGlyphInfo.glyphIndex + 1,
+      glyphIndex:
+        selectedGlyphInfo.glyphIndex + select
+          ? where == 1
+            ? 1
+            : 0
+          : where == -1
+          ? glyphInfos.length
+          : 0,
+      isEditing: where && select ? false : this.sceneSettings.selectedGlyph.isEditing,
     };
   }
 
