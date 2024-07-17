@@ -9,18 +9,29 @@ import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEE", "#383838"],
+  "cell-hover-color": ["#D8D8D8", "#303030"],
+  "cell-active-color": ["#D0D0D0", "#282828"],
 };
 
 export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
-  :host {
+  #glyph-cell-container {
     background-color: var(--cell-background-color);
     display: inline-block;
     margin: 1px;
     border-radius: 0.3rem;
     overflow: hidden;
+    transition: 100ms;
+  }
+
+  #glyph-cell-container:hover {
+    background-color: var(--cell-hover-color);
+  }
+
+  #glyph-cell-container:active {
+    background-color: var(--cell-active-color);
   }
 
   #glyph-cell-content {
@@ -119,16 +130,18 @@ export class GlyphCell extends UnlitElement {
   }
 
   render() {
-    this._glyphCellContent = html.div({ id: "glyph-cell-content" }, [
-      this._glyphSVG ? this._glyphSVG : `loading ${this.glyphName}`,
-      html.span({ class: "glyph-name-label" }, [this.glyphName]),
-      html.div(
-        {
-          class: "glyph-status-color",
-          style: `background-color: ${this._glyphStatusColor};`,
-        },
-        []
-      ),
+    this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
+      html.div({ id: "glyph-cell-content" }, [
+        this._glyphSVG ? this._glyphSVG : `loading ${this.glyphName}`,
+        html.span({ class: "glyph-name-label" }, [this.glyphName]),
+        html.div(
+          {
+            class: "glyph-status-color",
+            style: `background-color: ${this._glyphStatusColor};`,
+          },
+          []
+        ),
+      ]),
     ]);
     return this._glyphCellContent;
   }
