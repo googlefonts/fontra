@@ -61,6 +61,9 @@ export class GlyphCell extends UnlitElement {
     this.locationController = locationController;
     this.locationKey = locationKey;
     this.throttledUpdate = throttleCalls(() => this._updateGlyph(), 50);
+    this.margin = 0.05;
+    this.size = 80;
+    this.height = (1 + 2 * this.margin) * this.size;
   }
 
   connectedCallback() {
@@ -91,16 +94,16 @@ export class GlyphCell extends UnlitElement {
     const unitsPerEm = this.fontController.unitsPerEm;
     const fontSource = this.fontController.fontSourcesInstancer.instantiate(location);
     const ascender =
-      fontSource.lineMetricsHorizontalLayout["ascender"]?.value || 0.8 * unitsPerEm;
+      fontSource?.lineMetricsHorizontalLayout["ascender"]?.value || 0.8 * unitsPerEm;
     const descender =
-      fontSource.lineMetricsHorizontalLayout["descender"]?.value || -0.2 * unitsPerEm;
+      fontSource?.lineMetricsHorizontalLayout["descender"]?.value || -0.2 * unitsPerEm;
 
     const svgPath = new SVGPath2D();
     glyphController.flattenedPath.drawToPath2d(svgPath);
 
-    const margin = 0.05;
-    const size = 80;
-    const height = (1 + 2 * margin) * size;
+    const margin = this.margin;
+    const size = this.size;
+    const height = this.height;
     const width = ((1 + 2 * margin) * size * glyphController.xAdvance) / unitsPerEm;
 
     const svgElement = svg.svg(
@@ -134,7 +137,9 @@ export class GlyphCell extends UnlitElement {
   render() {
     this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
       html.div({ id: "glyph-cell-content" }, [
-        this._glyphSVG ? this._glyphSVG : "",
+        this._glyphSVG
+          ? this._glyphSVG
+          : html.div({ style: `width: 1em; height: ${this.height}px;` }, ["hello"]),
         html.span({ class: "glyph-name-label" }, [this.glyphName]),
         html.div(
           {
