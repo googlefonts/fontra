@@ -8,9 +8,9 @@ import { Transform } from "/core/transform.js";
 import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
-  "cell-background-color": ["#EEE", "#383838"],
-  "cell-hover-color": ["#D8D8D8", "#303030"],
-  "cell-active-color": ["#D0D0D0", "#282828"],
+  "cell-background-color": ["#EEE", "#585858"],
+  "cell-hover-color": ["#D8D8D8", "#606060"],
+  "cell-active-color": ["#D0D0D0", "#686868"],
 };
 
 export class GlyphCell extends UnlitElement {
