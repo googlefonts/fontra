@@ -1,6 +1,7 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
+import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 export default class RelatedGlyphPanel extends Panel {
@@ -36,19 +37,16 @@ export default class RelatedGlyphPanel extends Panel {
   getContentElement() {
     this.accordion = new Accordion();
 
-    this.glyphNameExtensionElement = html.div(
-      { id: "glyph-name-extension", style: "height: 100%;" },
-      []
-    );
-
     this.accordion.items = [
       {
         id: "glyph-name-extension-accordion-item",
         label: "Related glyphs via glyph name extension",
         open: true,
-        content: this.glyphNameExtensionElement,
+        content: html.div({ id: "glyph-name-extension", style: "height: 100%;" }, []),
+        getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
       },
     ];
+
     return html.div(
       {
         class: "sidebar-glyph-relationships",
@@ -79,16 +77,22 @@ export default class RelatedGlyphPanel extends Panel {
       ? `<b>Related glyphs for ${s}</b>`
       : `<b>Related glyphs</b> (no glyph selected)`;
 
-    if (glyphName) {
-      const relatedGlyphsByExtension = getRelatedGlyphsByExtension(
-        this.fontController.glyphMap,
-        glyphName
-      );
-      this.glyphNameExtensionElement.innerText = relatedGlyphsByExtension.length
-        ? relatedGlyphsByExtension.join(", ")
-        : "No related glyphs were found";
-    } else {
-      this.glyphNameExtensionElement.innerHTML;
+    for (const item of this.accordion.items) {
+      const element = item.content;
+      element.innerHTML = "";
+      if (glyphName) {
+        const relatedGlyphsByExtension = item.getRelatedGlyphsFunc(
+          this.fontController,
+          glyphName
+        );
+        if (relatedGlyphsByExtension?.length) {
+          for (const glyphName of relatedGlyphsByExtension) {
+            element.appendChild(new GlyphCell(this.fontController, glyphName));
+          }
+        } else {
+          element.innerText = "No related glyphs were found";
+        }
+      }
     }
 
     this.accordion.hidden = !glyphName;
@@ -101,9 +105,9 @@ export default class RelatedGlyphPanel extends Panel {
   }
 }
 
-function getRelatedGlyphsByExtension(glyphMap, targetGlyphName) {
+function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
   const targetBaseGlyphName = targetGlyphName.split(".")[0];
-  return Object.keys(glyphMap)
+  return Object.keys(fontController.glyphMap)
     .filter((glyphName) => {
       const baseGlyphName = glyphName.split(".")[0];
       return baseGlyphName == targetBaseGlyphName && glyphName != targetGlyphName;
