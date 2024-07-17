@@ -134,7 +134,7 @@ export class GlyphCell extends UnlitElement {
   render() {
     this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
       html.div({ id: "glyph-cell-content" }, [
-        this._glyphSVG ? this._glyphSVG : `loading ${this.glyphName}`,
+        this._glyphSVG ? this._glyphSVG : "",
         html.span({ class: "glyph-name-label" }, [this.glyphName]),
         html.div(
           {
