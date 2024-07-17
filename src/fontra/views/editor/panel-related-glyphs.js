@@ -50,7 +50,9 @@ export default class RelatedGlyphPanel extends Panel {
 
     .related-glyphs-accordion-item {
       height: 100%;
+      width: 100%;
       overflow-y: scroll;
+      white-space: normal;
     }
     `);
 
