@@ -47,27 +47,32 @@ export default class RelatedGlyphPanel extends Panel {
       font-size: 0.9em;
       opacity: 40%;
     }
+
+    .related-glyphs-accordion-item {
+      height: 100%;
+      overflow-y: scroll;
+    }
     `);
 
     this.accordion.items = [
       {
         label: "Alternate glyphs",
         open: true,
-        content: html.div({ style: "height: 100%;" }, []),
+        content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
         noGlyphsString: "No alternate glyphs were found",
       },
       {
         label: "Components used by this glyph",
         open: true,
-        content: html.div({ style: "height: 100%;" }, []),
+        content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getComponentGlyphs,
         noGlyphsString: "No component glyphs were found",
       },
       {
         label: "Glyphs using this glyph as a component",
         open: true,
-        content: html.div({ style: "height: 100%;" }, []),
+        content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getUsedByGlyphs,
         noGlyphsString: "No glyphs were found that use this glyph",
       },
