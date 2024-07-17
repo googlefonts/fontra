@@ -2,8 +2,8 @@ import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { throttleCalls } from "/core/utils.js";
 
-export default class GlyphRelationshipsPanel extends Panel {
-  identifier = "glyph-relationships";
+export default class RelatedGlyphPanel extends Panel {
+  identifier = "related-glyphs";
   iconPath = "/tabler-icons/binary-tree-2.svg";
 
   static styles = `
@@ -73,4 +73,4 @@ export default class GlyphRelationshipsPanel extends Panel {
   }
 }
 
-customElements.define("panel-glyph-relationships", GlyphRelationshipsPanel);
+customElements.define("panel-related-glyph", RelatedGlyphPanel);
