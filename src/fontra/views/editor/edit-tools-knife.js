@@ -234,19 +234,23 @@ function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
   // NOTE: Do we want to cut components as well? If so, we would need:
   //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
   const pathHitTester = glyphController.pathHitTester;
-  const nearestHit = pathHitTester.findNearest(p1);
-  let directionVector;
-  if (nearestHit) {
-    const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
-    directionVector = vector.normalizeVector({
-      x: -derivative.y,
-      y: derivative.x,
-    });
 
-    if (shiftConstrain) {
-      directionVector = constrainHorVerDiag(directionVector);
-    }
-  }
+  // this whole winding direction part is actually not needed for the knife tool
+  // but keep it for now, because we were wondering why all intersections had no winding
+  let directionVector;
+  // const nearestHit = pathHitTester.findNearest(p1);
+  // if (nearestHit) {
+  //   const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
+  //   directionVector = vector.normalizeVector({
+  //     x: -derivative.y,
+  //     y: derivative.x,
+  //   });
+
+  //   if (shiftConstrain) {
+  //     directionVector = constrainHorVerDiag(directionVector);
+  //   }
+  // }
+
   return pathHitTester.lineIntersections(p1, p2, directionVector);
 }
 
