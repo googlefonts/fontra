@@ -59,12 +59,12 @@ export class ShapeToolRect extends BaseTool {
       const drawPath = new Path2D();
       this.drawShapePath2D(drawPath, mouseRect, event);
       this.sceneModel.shapeToolShapePath = drawPath;
-      this.sceneModel.event = event;
+      this.sceneModel.shapeToolCtrlKey = event.ctrlKey;
       this.canvasController.requestUpdate();
     }
 
     delete this.sceneModel.shapeToolShapePath;
-    delete this.sceneModel.event;
+    delete this.sceneModel.shapeToolCtrlKey;
     this.canvasController.requestUpdate();
 
     // rectsize return when too small
@@ -233,7 +233,7 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    if (model.event.ctrlKey) {
+    if (model.shapeToolCtrlKey) {
       context.fillStyle = parameters.boxColor;
       context.fill(shape);
     }
