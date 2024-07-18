@@ -1,6 +1,7 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import {
+  getCodePointFromGlyphName,
   getSuggestedGlyphName,
   unicodeDecompose,
   unicodeUsedBy,
@@ -115,9 +116,12 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   async update() {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const { glyphName, character } = positionedGlyph || {};
+    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+    const character = glyphName
+      ? this.fontController.characterMap[glyphName] ||
+        getCharFromCodePoint(await getCodePointFromGlyphName(glyphName)) ||
+        ""
+      : "";
     const codePoint = character ? character.codePointAt(0) : undefined;
 
     const varGlyphController =
