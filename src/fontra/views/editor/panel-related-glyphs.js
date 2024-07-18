@@ -147,7 +147,11 @@ export default class RelatedGlyphPanel extends Panel {
 
   handleDoubleClick(event, glyphName) {
     const glyphInfos = [this.fontController.glyphInfoFromGlyphName(glyphName)];
-    this.editorController.insertGlyphInfos(glyphInfos, 0, true);
+    this.editorController.insertGlyphInfos(
+      glyphInfos,
+      event.altKey ? 1 : 0,
+      !event.altKey
+    );
   }
 
   async toggle(on, focus) {
