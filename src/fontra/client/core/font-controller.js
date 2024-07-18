@@ -967,12 +967,12 @@ class InstanceRequestQueue {
         // The request got cancelled in the meantime
         return;
       }
+      this.requests.delete(requestID);
       const instance = await this.fontController.getGlyphInstance(
         glyphName,
         sourceLocation
       );
       resolveInstancePromise(instance);
-      this.requests.delete(requestID);
     });
 
     return {
