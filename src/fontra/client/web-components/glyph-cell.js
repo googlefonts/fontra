@@ -135,7 +135,10 @@ export class GlyphCell extends UnlitElement {
     const margin = this.margin;
     const size = this.size;
     const height = this.height;
-    const width = ((1 + 2 * margin) * size * glyphController.xAdvance) / unitsPerEm;
+    const width = Math.max(
+      height,
+      ((1 + 2 * margin) * size * glyphController.xAdvance) / unitsPerEm
+    );
 
     const svgElement = svg.svg(
       {
@@ -170,7 +173,9 @@ export class GlyphCell extends UnlitElement {
       html.div({ id: "glyph-cell-content" }, [
         this._glyphSVG
           ? this._glyphSVG
-          : html.div({ style: `width: 1em; height: ${this.height}px;` }, ["..."]),
+          : html.div({ style: `width: ${this.height}px; height: ${this.height}px;` }, [
+              "...",
+            ]),
         html.span({ class: "glyph-name-label" }, [this.glyphName]),
         html.div({
           class: "glyph-status-color",
