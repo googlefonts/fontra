@@ -9,7 +9,6 @@ import {
 import * as vector from "./vector.js";
 
 export function insertPoint(path, intersection) {
-  let selectedPointIndex;
   let numPointsInserted = 0;
   let selectedPointIndices = [];
   const segment = intersection.segment;
@@ -30,7 +29,7 @@ export function insertPoint(path, intersection) {
       insertIndex,
       vector.roundVector(vector.interpolateVectors(...points, intersection.t))
     );
-    selectedPointIndex = insertIndex;
+    selectedPointIndices.push(path.getAbsolutePointIndex(contourIndex, insertIndex));
     numPointsInserted = 1;
   } else {
     // insert point in curve
@@ -38,45 +37,58 @@ export function insertPoint(path, intersection) {
     const segment = segments[intersection.segmentIndex];
     const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    //const splitBeziers = bezierSplitMultiple(bezier, intersection);
-    const { left, right } = bezier.split(intersection.t);
+    const splitBeziers = bezierSplitMultiple(bezier, intersection);
     if (firstOffCurve.type === "cubic") {
-      // for (const {left, right} of splitBeziers) {
-      const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
-        vector.roundVector
-      );
-      points[0].type = "cubic";
-      points[1].type = "cubic";
-      points[2].smooth = true;
-      points[3].type = "cubic";
-      points[4].type = "cubic";
+      const points = [];
+      for (const bezierElement of splitBeziers) {
+        const pointsTemp = [...bezierElement.points.slice(1)].map(vector.roundVector);
+        pointsTemp[0].type = "cubic";
+        pointsTemp[1].type = "cubic";
+        pointsTemp[2].smooth = true;
+        points.push(...pointsTemp);
+      }
+      points.pop(); // remove last on-curve point
 
       const deleteIndices = segment.parentPointIndices.slice(1, -1);
       if (insertIndex < deleteIndices.length) {
         insertIndex = numContourPoints;
-      }
-      for (const point of reversed(points)) {
-        path.insertPoint(contourIndex, insertIndex, point);
       }
       // selectionBias is non-zero if the cubic segment has more than
       // two off-curve points, which is currently invalid. We delete all
       // off-curve, and replace with clean cubic segments, but this messes
       // with the selection index
       const selectionBias = segment.parentPointIndices.length - 4;
-      selectedPointIndex = insertIndex - selectionBias;
+      let selectedContourPointIndex = insertIndex - selectionBias;
+      let selectedPathPointIndex =
+        path.getAbsolutePointIndex(contourIndex, selectedContourPointIndex) +
+        points.length -
+        3;
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+        numPointsInserted++;
+        if (point.smooth) {
+          selectedPointIndices.push(selectedPathPointIndex);
+        }
+        selectedPathPointIndex--;
+      }
+
       deleteIndices.sort((a, b) => b - a); // reverse sort
-      deleteIndices.forEach((pointIndex) =>
-        path.deletePoint(contourIndex, pointIndex + absToRel)
-      );
-      numPointsInserted = 3;
+      deleteIndices.forEach((pointIndex) => {
+        path.deletePoint(contourIndex, pointIndex + absToRel);
+        numPointsInserted--;
+      });
     } else {
       // quad
-      const points = [left.points[1], left.points[2], right.points[1]].map(
-        vector.roundVector
-      );
-      points[0].type = "quad";
-      points[1].smooth = true;
-      points[2].type = "quad";
+      const points = [];
+      for (const bezierElement of splitBeziers) {
+        const pointsTemp = [bezierElement.points[1], bezierElement.points[2]].map(
+          vector.roundVector
+        );
+        pointsTemp[0].type = "quad";
+        pointsTemp[1].smooth = true;
+        points.push(...pointsTemp);
+      }
+      points.pop(); // remove last on-curve point
 
       const point1 = path.getPoint(segment.pointIndices[0]);
       const point2 = path.getPoint(segment.pointIndices[1]);
@@ -90,19 +102,25 @@ export function insertPoint(path, intersection) {
       }
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
+      numPointsInserted--;
 
       // Insert split
+      let selectedContourPointIndex = insertIndex + 1;
+      let selectedPathPointIndex =
+        path.getAbsolutePointIndex(contourIndex, selectedContourPointIndex) +
+        points.length;
+
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
-        // TODO: calculate number of added points for quad.
-        // numPointsInserted++;
+        numPointsInserted++;
+        if (point.smooth) {
+          // TODO: the right calculation of selectedPointIndices,
+          // This is not correct.
+          selectedPointIndices.push(selectedPathPointIndex);
+        }
+        selectedPathPointIndex--;
       }
-      selectedPointIndex = insertIndex + 1;
     }
-  }
-  if (selectedPointIndex !== undefined) {
-    selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
-    selectedPointIndices.push(selectedPointIndex);
   }
   return { numPointsInserted, selectedPointIndices };
 }
@@ -116,16 +134,14 @@ function impliedPoint(pointA, pointB) {
 }
 
 function bezierSplitMultiple(bezier, intersection) {
-  const ts = intersection.ts ? intersection.ts : [intersection.t];
+  // it's possible to have 3 ts
+  const ts = intersection.ts ? [0, ...intersection.ts, 1] : [0, intersection.t, 1];
+  ts.sort((a, b) => a - b);
   const splitBeziers = [];
-  let prevT = 0;
-  for (const t of ts) {
-    const splitBezier = bezier.split(t - prevT);
-    splitBeziers.push(splitBezier);
-    prevT = t;
+  for (const i of range(ts.length - 1)) {
+    const bezierElement = bezier.split(ts[i], ts[i + 1]);
+    splitBeziers.push(bezierElement);
   }
-  console.log("splitBeziers: ", splitBeziers);
-  //const { left, right } = bezier.split(intersection.t);
   return splitBeziers;
 }
 
@@ -240,6 +256,7 @@ export function splitPathAtPointIndices(path, pointIndices) {
   // contour indices
   selectedContours.sort((a, b) => b - a);
 
+  let collectNewPointIndices = [];
   for (const contourIndex of selectedContours) {
     const contour = path.getUnpackedContour(contourIndex);
     const isClosed = path.contourInfo[contourIndex].isClosed;
@@ -255,10 +272,17 @@ export function splitPathAtPointIndices(path, pointIndices) {
 
     const pointArrays = [points];
     let pointIndexBias = 0;
+    let numAddedPoints = contourPointIndices.length;
     if (isClosed) {
       const splitPointIndex = contourPointIndices.pop();
       pointArrays[0] = splitClosedPointsArray(points, splitPointIndex);
       pointIndexBias = points.length - splitPointIndex;
+      const splitPointIndexAbs = path.getAbsolutePointIndex(
+        contourIndex,
+        splitPointIndex
+      );
+      collectNewPointIndices.push(splitPointIndexAbs + numAddedPoints);
+      numAddedPoints--;
     }
 
     for (const splitPointIndex of reversed(contourPointIndices)) {
@@ -269,6 +293,12 @@ export function splitPathAtPointIndices(path, pointIndices) {
       );
       pointArrays.push(points2);
       pointArrays.push(points1);
+      const splitPointIndexAbs = path.getAbsolutePointIndex(
+        contourIndex,
+        splitPointIndex + pointIndexBias
+      );
+      collectNewPointIndices.push(splitPointIndexAbs + numAddedPoints);
+      numAddedPoints--;
     }
 
     path.deleteContour(contourIndex);
@@ -280,7 +310,7 @@ export function splitPathAtPointIndices(path, pointIndices) {
       path.insertUnpackedContour(contourIndex, { points: points, isClosed: false });
     }
   }
-  return numSplits;
+  return collectNewPointIndices;
 }
 
 function splitClosedPointsArray(points, splitPointIndex) {

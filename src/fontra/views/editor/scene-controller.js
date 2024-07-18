@@ -1188,7 +1188,8 @@ export class SceneController {
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let numSplits;
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
+        collectNewPointIndices = splitPathAtPointIndices(layerGlyph.path, pointIndices);
+        numSplits = collectNewPointIndices.length;
       }
       this.selection = new Set();
       return "Break Contour" + (numSplits > 1 ? "s" : "");
