@@ -47,6 +47,8 @@ export class GlyphCell extends UnlitElement {
     padding-right: 0.3em;
     overflow-x: hidden;
     text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
     text-align: center;
   }
 
