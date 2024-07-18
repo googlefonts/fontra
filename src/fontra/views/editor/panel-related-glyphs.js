@@ -1,5 +1,10 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import {
+  getSuggestedGlyphName,
+  unicodeDecompose,
+  unicodeUsedBy,
+} from "/core/server-utils.js";
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { showMenu } from "/web-components/menu-panel.js";
@@ -79,6 +84,20 @@ export default class RelatedGlyphPanel extends Panel {
         getRelatedGlyphsFunc: getUsedByGlyphs,
         noGlyphsString: "No glyphs were found that use this glyph",
       },
+      {
+        label: "Character decomposition",
+        open: true,
+        content: html.div({ class: "related-glyphs-accordion-item" }, []),
+        getRelatedGlyphsFunc: getUnicodeDecomposed,
+        noGlyphsString: "No decomposition information was found",
+      },
+      {
+        label: "Characters that decompose using this character",
+        open: true,
+        content: html.div({ class: "related-glyphs-accordion-item" }, []),
+        getRelatedGlyphsFunc: getUnicodeUsedBy,
+        noGlyphsString: "No characters were found that use this character",
+      },
     ];
 
     return html.div(
@@ -135,7 +154,7 @@ export default class RelatedGlyphPanel extends Panel {
             this.sceneController.sceneSettingsController,
             "fontLocationSourceMapped"
           );
-          glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
+          glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
           glyphCell.addEventListener("contextmenu", (event) =>
             this.handleContextMenu(event, glyphCell, item)
           );
@@ -150,12 +169,17 @@ export default class RelatedGlyphPanel extends Panel {
     }
   }
 
-  handleDoubleClick(event, glyphName) {
-    this.insertGlyphIntoTextString(glyphName, event.altKey ? 1 : 0, !event.altKey);
+  handleDoubleClick(event, glyphCell) {
+    this.insertGlyphIntoTextString(glyphCell, event.altKey ? 1 : 0, !event.altKey);
   }
 
-  insertGlyphIntoTextString(glyphName, where, select) {
-    const glyphInfos = [this.fontController.glyphInfoFromGlyphName(glyphName)];
+  insertGlyphIntoTextString(glyphCell, where, select) {
+    const glyphInfos = [
+      {
+        glyphName: glyphCell.glyphName,
+        character: getCharFromCodePoint(glyphCell.codePoints[0]),
+      },
+    ];
     this.editorController.insertGlyphInfos(glyphInfos, where, select);
   }
 
@@ -166,31 +190,31 @@ export default class RelatedGlyphPanel extends Panel {
       {
         title: "Replace selected glyph",
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell.glyphName, 0, true);
+          this.insertGlyphIntoTextString(glyphCell, 0, true);
         },
       },
       {
         title: "Insert after selected glyph",
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell.glyphName, 1, false);
+          this.insertGlyphIntoTextString(glyphCell, 1, false);
         },
       },
       {
         title: "Insert after selected glyph and select",
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell.glyphName, 1, true);
+          this.insertGlyphIntoTextString(glyphCell, 1, true);
         },
       },
       {
         title: "Insert before selected glyph",
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell.glyphName, -1, false);
+          this.insertGlyphIntoTextString(glyphCell, -1, false);
         },
       },
       {
         title: "Insert before selected glyph and select",
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell.glyphName, -1, true);
+          this.insertGlyphIntoTextString(glyphCell, -1, true);
         },
       },
     ];
@@ -227,6 +251,30 @@ async function getComponentGlyphs(fontController, targetGlyphName) {
 async function getUsedByGlyphs(fontController, targetGlyphName) {
   const glyphNames = await fontController.findGlyphsThatUseGlyph(targetGlyphName);
   return addCharInfo(fontController, glyphNames);
+}
+
+async function getUnicodeDecomposed(fontController, targetGlyphName) {
+  return await _getRelatedUnicode(fontController, targetGlyphName, unicodeDecompose);
+}
+
+async function getUnicodeUsedBy(fontController, targetGlyphName) {
+  return await _getRelatedUnicode(fontController, targetGlyphName, unicodeUsedBy);
+}
+
+async function _getRelatedUnicode(fontController, targetGlyphName, uniFunc) {
+  const codePoint = fontController.codePointForGlyph(targetGlyphName);
+  if (!codePoint) {
+    return [];
+  }
+  const usedByCodePoints = await uniFunc(codePoint);
+  const glyphInfo = [];
+  for (const codePoint of usedByCodePoints) {
+    const glyphName =
+      fontController.characterMap[codePoint] ||
+      (await getSuggestedGlyphName(codePoint));
+    glyphInfo.push({ glyphName, codePoints: [codePoint] });
+  }
+  return glyphInfo;
 }
 
 function addCharInfo(fontController, glyphNames) {
