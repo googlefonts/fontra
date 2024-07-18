@@ -67,7 +67,7 @@ export class GlyphCell extends UnlitElement {
     this.marginTop = 0.2;
     this.marginBottom = 0.05;
     this.marginSide = 0;
-    this.size = 75;
+    this.size = 60;
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
     this.width = this.height;
   }
