@@ -172,11 +172,23 @@ export default class RelatedGlyphPanel extends Panel {
       {
         title: "Insert after selected glyph",
         callback: () => {
+          this.insertGlyphIntoTextString(glyphCell.glyphName, 1, false);
+        },
+      },
+      {
+        title: "Insert after selected glyph and select",
+        callback: () => {
           this.insertGlyphIntoTextString(glyphCell.glyphName, 1, true);
         },
       },
       {
         title: "Insert before selected glyph",
+        callback: () => {
+          this.insertGlyphIntoTextString(glyphCell.glyphName, -1, false);
+        },
+      },
+      {
+        title: "Insert before selected glyph and select",
         callback: () => {
           this.insertGlyphIntoTextString(glyphCell.glyphName, -1, true);
         },
