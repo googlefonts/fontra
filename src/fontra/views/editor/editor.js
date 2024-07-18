@@ -1021,8 +1021,10 @@ export class EditorController {
     // where == -1: insert before selected glyph
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
+
+    const insertIndex = selectedGlyphInfo.glyphIndex + (where == 1 ? 1 : 0);
     glyphLines[selectedGlyphInfo.lineIndex].splice(
-      Math.max(selectedGlyphInfo.glyphIndex + where, 0),
+      insertIndex,
       where ? 0 : 1,
       ...glyphInfos
     );
