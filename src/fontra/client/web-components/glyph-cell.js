@@ -89,6 +89,12 @@ export class GlyphCell extends UnlitElement {
             );
             this.throttledUpdate();
           } else {
+            if (this._glyphInstanceRequestID) {
+              this.fontController.cancelGlyphInstanceRequest(
+                this._glyphInstanceRequestID
+              );
+              delete this._glyphInstanceRequestID;
+            }
             this.locationController.removeKeyListener(
               this.locationKey,
               this.throttledUpdate
@@ -118,15 +124,18 @@ export class GlyphCell extends UnlitElement {
 
   async _updateGlyph() {
     this.width = this.height;
+
     const location = this.locationController.model[this.locationKey];
-    const glyphController = await this.fontController.getGlyphInstance(
-      this.glyphName,
-      location
-    );
+    const request = this.fontController.requestGlyphInstance(this.glyphName, location);
+    this._glyphInstanceRequestID = request.requestID;
+    const glyphController = await request.instancePromise;
+    delete this._glyphInstanceRequestID;
     if (!glyphController) {
+      // glyph instance request got cancelled, or glyph does not exist
       this._glyphSVG = null;
       return;
     }
+
     const varGlyph = glyphController.varGlyph;
 
     const unitsPerEm = this.fontController.unitsPerEm;
