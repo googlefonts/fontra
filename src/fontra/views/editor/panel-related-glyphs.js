@@ -2,6 +2,7 @@ import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
+import { showMenu } from "/web-components/menu-panel.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 export default class RelatedGlyphPanel extends Panel {
@@ -135,6 +136,10 @@ export default class RelatedGlyphPanel extends Panel {
             "fontLocationSourceMapped"
           );
           glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
+          glyphCell.addEventListener("contextmenu", (event) =>
+            this.handleContextMenu(event, glyphCell, item)
+          );
+
           element.appendChild(glyphCell);
         }
       } else {
@@ -146,12 +151,39 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   handleDoubleClick(event, glyphName) {
+    this.insertGlyphIntoTextString(glyphName, event.altKey ? 1 : 0, !event.altKey);
+  }
+
+  insertGlyphIntoTextString(glyphName, where, select) {
     const glyphInfos = [this.fontController.glyphInfoFromGlyphName(glyphName)];
-    this.editorController.insertGlyphInfos(
-      glyphInfos,
-      event.altKey ? 1 : 0,
-      !event.altKey
-    );
+    this.editorController.insertGlyphInfos(glyphInfos, where, select);
+  }
+
+  handleContextMenu(event, glyphCell, item) {
+    event.preventDefault();
+
+    const items = [
+      {
+        title: "Replace selected glyph",
+        callback: () => {
+          this.insertGlyphIntoTextString(glyphCell.glyphName, 0, true);
+        },
+      },
+      {
+        title: "Insert after selected glyph",
+        callback: () => {
+          this.insertGlyphIntoTextString(glyphCell.glyphName, 1, true);
+        },
+      },
+      {
+        title: "Insert before selected glyph",
+        callback: () => {
+          this.insertGlyphIntoTextString(glyphCell.glyphName, -1, true);
+        },
+      },
+    ];
+    const { x, y } = event;
+    showMenu(items, { x: x + 1, y: y - 1 }, document.documentElement);
   }
 
   async toggle(on, focus) {
