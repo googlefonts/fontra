@@ -64,9 +64,11 @@ export class GlyphCell extends UnlitElement {
     this.locationController = locationController;
     this.locationKey = locationKey;
     this.throttledUpdate = throttleCalls(() => this._updateGlyph(), 50);
-    this.margin = 0.05;
-    this.size = 80;
-    this.height = (1 + 2 * this.margin) * this.size;
+    this.marginTop = 0.2;
+    this.marginBottom = 0.05;
+    this.marginSide = 0;
+    this.size = 75;
+    this.height = (1 + this.marginTop + this.marginBottom) * this.size;
     this.width = this.height;
   }
 
@@ -137,21 +139,20 @@ export class GlyphCell extends UnlitElement {
     const svgPath = new SVGPath2D();
     glyphController.flattenedPath.drawToPath2d(svgPath);
 
-    const margin = this.margin;
     const size = this.size;
     const height = this.height;
     this.width = Math.max(
       height,
-      ((1 + 2 * margin) * size * glyphController.xAdvance) / unitsPerEm
+      ((1 + 2 * this.marginSide) * size * glyphController.xAdvance) / unitsPerEm
     );
 
     const svgElement = svg.svg(
       {
         viewBox: svg.viewBox(
-          -margin * unitsPerEm,
-          -(ascender + margin * unitsPerEm),
-          glyphController.xAdvance + 2 * margin * unitsPerEm,
-          ascender - descender + 2 * margin * unitsPerEm
+          -this.marginSide * unitsPerEm,
+          -(ascender + this.marginTop * unitsPerEm),
+          glyphController.xAdvance + 2 * this.marginSide * unitsPerEm,
+          ascender - descender + (this.marginTop + this.marginBottom) * unitsPerEm
         ),
         width: this.width,
         height,
