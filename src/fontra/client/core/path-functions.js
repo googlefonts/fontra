@@ -38,8 +38,10 @@ export function insertPoint(path, intersection) {
     const segment = segments[intersection.segmentIndex];
     const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const { left, right } = bezier.split(intersection.t); // helperfunction bezierSplitMultiple(bezier, intersection.ts) return a list of things
+    //const splitBeziers = bezierSplitMultiple(bezier, intersection);
+    const { left, right } = bezier.split(intersection.t);
     if (firstOffCurve.type === "cubic") {
+      // for (const {left, right} of splitBeziers) {
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         vector.roundVector
       );
@@ -111,6 +113,20 @@ function impliedPoint(pointA, pointB) {
     y: Math.round((pointA.y + pointB.y) / 2),
     smooth: true,
   };
+}
+
+function bezierSplitMultiple(bezier, intersection) {
+  const ts = intersection.ts ? intersection.ts : [intersection.t];
+  const splitBeziers = [];
+  let prevT = 0;
+  for (const t of ts) {
+    const splitBezier = bezier.split(t - prevT);
+    splitBeziers.push(splitBezier);
+    prevT = t;
+  }
+  console.log("splitBeziers: ", splitBeziers);
+  //const { left, right } = bezier.split(intersection.t);
+  return splitBeziers;
 }
 
 export function insertHandles(path, segmentPoints, insertIndex, type = "cubic") {
