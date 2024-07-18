@@ -45,6 +45,9 @@ export class GlyphCell extends UnlitElement {
     font-size: 0.85em;
     padding-left: 0.3em;
     padding-right: 0.3em;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
   }
 
   .glyph-status-color {
@@ -64,6 +67,7 @@ export class GlyphCell extends UnlitElement {
     this.margin = 0.05;
     this.size = 80;
     this.height = (1 + 2 * this.margin) * this.size;
+    this.width = this.height;
   }
 
   connectedCallback() {
@@ -111,6 +115,7 @@ export class GlyphCell extends UnlitElement {
   }
 
   async _updateGlyph() {
+    this.width = this.height;
     const location = this.locationController.model[this.locationKey];
     const varGlyph = await this.fontController.getGlyph(this.glyphName);
     const glyphController = await this.fontController.getGlyphInstance(
@@ -135,7 +140,7 @@ export class GlyphCell extends UnlitElement {
     const margin = this.margin;
     const size = this.size;
     const height = this.height;
-    const width = Math.max(
+    this.width = Math.max(
       height,
       ((1 + 2 * margin) * size * glyphController.xAdvance) / unitsPerEm
     );
@@ -148,7 +153,7 @@ export class GlyphCell extends UnlitElement {
           glyphController.xAdvance + 2 * margin * unitsPerEm,
           ascender - descender + 2 * margin * unitsPerEm
         ),
-        width,
+        width: this.width,
         height,
       },
       [
@@ -173,10 +178,12 @@ export class GlyphCell extends UnlitElement {
       html.div({ id: "glyph-cell-content" }, [
         this._glyphSVG
           ? this._glyphSVG
-          : html.div({ style: `width: ${this.height}px; height: ${this.height}px;` }, [
+          : html.div({ style: `width: ${this.width}px; height: ${this.height}px;` }, [
               "...",
             ]),
-        html.span({ class: "glyph-name-label" }, [this.glyphName]),
+        html.div({ class: "glyph-name-label", style: `width: ${this.width}px;` }, [
+          this.glyphName,
+        ]),
         html.div({
           class: "glyph-status-color",
           style: `background-color: ${this._glyphStatusColor};`,
