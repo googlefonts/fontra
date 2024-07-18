@@ -92,7 +92,7 @@ export default class RelatedGlyphPanel extends Panel {
         noGlyphsString: "No decomposition information was found",
       },
       {
-        label: "Characters that decompose using this character",
+        label: "Characters that decompose with this character",
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getUnicodeUsedBy,
@@ -115,35 +115,37 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   async update() {
-    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const { glyphName, character } = positionedGlyph || {};
+    const codePoint = character ? character.codePointAt(0) : undefined;
 
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const varGlyph = varGlyphController?.glyph;
 
-    const codePoints = glyphName ? this.fontController.glyphMap[glyphName] || [] : [];
-    const character = getCharFromCodePoint(codePoints[0]);
-    const s =
+    const displayGlyphString =
       character && character != glyphName ? `“${character}”, ${glyphName}` : glyphName;
 
     this.relatedGlyphsHeaderElement.innerHTML = glyphName
-      ? `<b>Related glyphs for ${s}</b>`
+      ? `<b>Related glyphs for ${displayGlyphString}</b>`
       : `<b>Related glyphs</b> (no glyph selected)`;
 
     for (const item of this.accordion.items) {
-      this._updateAccordionItem(item, glyphName); // No await
+      this._updateAccordionItem(item, glyphName, codePoint); // No await
     }
 
     this.accordion.hidden = !glyphName;
   }
 
-  async _updateAccordionItem(item, glyphName) {
+  async _updateAccordionItem(item, glyphName, codePoint) {
     const element = item.content;
     element.innerHTML = "";
     if (glyphName) {
       const relatedGlyphs = await item.getRelatedGlyphsFunc(
         this.fontController,
-        glyphName
+        glyphName,
+        codePoint
       );
       if (relatedGlyphs?.length) {
         for (const { glyphName, codePoints } of relatedGlyphs) {
@@ -229,7 +231,7 @@ export default class RelatedGlyphPanel extends Panel {
   }
 }
 
-function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
+function getRelatedGlyphsByExtension(fontController, targetGlyphName, targetCodePoint) {
   const targetBaseGlyphName = targetGlyphName.split(".")[0];
   const glyphNames = Object.keys(fontController.glyphMap)
     .filter((glyphName) => {
@@ -240,7 +242,7 @@ function getRelatedGlyphsByExtension(fontController, targetGlyphName) {
   return addCharInfo(fontController, glyphNames);
 }
 
-async function getComponentGlyphs(fontController, targetGlyphName) {
+async function getComponentGlyphs(fontController, targetGlyphName, targetCodePoint) {
   const varGlyph = await fontController.getGlyph(targetGlyphName);
   const componentNames = [...(varGlyph?.getAllComponentNames() || [])];
   componentNames.sort();
@@ -248,21 +250,37 @@ async function getComponentGlyphs(fontController, targetGlyphName) {
   return addCharInfo(fontController, componentNames);
 }
 
-async function getUsedByGlyphs(fontController, targetGlyphName) {
+async function getUsedByGlyphs(fontController, targetGlyphName, targetCodePoint) {
   const glyphNames = await fontController.findGlyphsThatUseGlyph(targetGlyphName);
   return addCharInfo(fontController, glyphNames);
 }
 
-async function getUnicodeDecomposed(fontController, targetGlyphName) {
-  return await _getRelatedUnicode(fontController, targetGlyphName, unicodeDecompose);
+async function getUnicodeDecomposed(fontController, targetGlyphName, targetCodePoint) {
+  return await _getRelatedUnicode(
+    fontController,
+    targetGlyphName,
+    targetCodePoint,
+    unicodeDecompose
+  );
 }
 
-async function getUnicodeUsedBy(fontController, targetGlyphName) {
-  return await _getRelatedUnicode(fontController, targetGlyphName, unicodeUsedBy);
+async function getUnicodeUsedBy(fontController, targetGlyphName, targetCodePoint) {
+  return await _getRelatedUnicode(
+    fontController,
+    targetGlyphName,
+    targetCodePoint,
+    unicodeUsedBy
+  );
 }
 
-async function _getRelatedUnicode(fontController, targetGlyphName, uniFunc) {
-  const codePoint = fontController.codePointForGlyph(targetGlyphName);
+async function _getRelatedUnicode(
+  fontController,
+  targetGlyphName,
+  targetCodePoint,
+  uniFunc
+) {
+  const codePoint =
+    fontController.codePointForGlyph(targetGlyphName) || targetCodePoint;
   if (!codePoint) {
     return [];
   }
