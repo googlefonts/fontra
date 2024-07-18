@@ -4,4 +4,5 @@ fonttools[ufo,unicode]==4.53.1
 glyphsLib==6.7.1
 pyyaml==6.0.1
 ufomerge==1.7.0
+unicodedata2==15.1.0
 watchfiles==0.22.0

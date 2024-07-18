@@ -20,6 +20,7 @@ dependencies = [
     "watchfiles>=0.10",
     "pyyaml>=6.0.1",
     "ufomerge>=1.6.2",
+    "unicodedata2>=15.1.0",
 ]
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -135,22 +136,5 @@ testpaths = [
 ]
 asyncio_mode = "auto"
 
-[[tool.mypy.overrides]]
-module = "fontTools.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "glyphsLib.glyphdata"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "importlib.resources.abc"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "lxml.etree"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "ufomerge"
+[tool.mypy]
 ignore_missing_imports = true

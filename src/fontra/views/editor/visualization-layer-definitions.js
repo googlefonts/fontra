@@ -260,7 +260,7 @@ registerVisualizationLayerDefinition({
 
 function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, controller) {
   if (
-    !!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"] ||
+    !!positionedGlyph.varGlyph?.glyph.customData["fontra.glyph.locked"] ||
     model.fontController.readOnly
   ) {
     const boundsYMin = positionedGlyph.glyph.controlBounds?.yMin || 0;

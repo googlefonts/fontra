@@ -24,3 +24,11 @@ export const getCodePointFromGlyphName = memoize(async (glyphName) => {
 export async function parseClipboard(data) {
   return await callServerAPI("parseClipboard", { data });
 }
+
+export const unicodeDecompose = memoize(async (codePoint) => {
+  return await callServerAPI("unicodeDecompose", { codePoint });
+});
+
+export const unicodeUsedBy = memoize(async (codePoint) => {
+  return await callServerAPI("unicodeUsedBy", { codePoint });
+});

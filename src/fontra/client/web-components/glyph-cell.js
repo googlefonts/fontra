@@ -11,6 +11,7 @@ const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],
   "cell-hover-color": ["#E0E0E0", "#606060"],
   "cell-active-color": ["#D8D8D8", "#686868"],
+  "glyph-shape-placeholder-color": ["#AAA", "#AAA"],
 };
 
 export class GlyphCell extends UnlitElement {
@@ -41,12 +42,21 @@ export class GlyphCell extends UnlitElement {
     gap: 0;
   }
 
+  .glyph-shape-placeholder {
+    display: grid;  /* for vertical text centering */
+    place-items: center;
+    color: var(--glyph-shape-placeholder-color);
+    text-align: center;
+  }
+
   .glyph-name-label {
     font-size: 0.85em;
     padding-left: 0.3em;
     padding-right: 0.3em;
     overflow-x: hidden;
     text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
     text-align: center;
   }
 
@@ -70,6 +80,9 @@ export class GlyphCell extends UnlitElement {
     this.size = 60;
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
     this.width = this.height;
+    this._glyphCharacter = this.codePoints?.[0]
+      ? getCharFromCodePoint(this.codePoints[0]) || ""
+      : "";
   }
 
   connectedCallback() {
@@ -183,13 +196,23 @@ export class GlyphCell extends UnlitElement {
   }
 
   render() {
+    const fallbackFontSize = this.height / 2;
     this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
       html.div({ id: "glyph-cell-content" }, [
         this._glyphSVG
           ? this._glyphSVG
-          : html.div({ style: `width: ${this.width}px; height: ${this.height}px;` }, [
-              "...",
-            ]),
+          : html.div(
+              {
+                class: "glyph-shape-placeholder",
+                style: `
+                  width: ${this.width}px;
+                  height: ${this.height}px;
+                  font-size: ${fallbackFontSize}px;
+                  line-height: ${fallbackFontSize}px;
+                `,
+              },
+              [this._glyphCharacter]
+            ),
         html.div({ class: "glyph-name-label", style: `width: ${this.width}px;` }, [
           this.glyphName,
         ]),
