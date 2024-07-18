@@ -118,9 +118,10 @@ export default class RelatedGlyphPanel extends Panel {
   async update() {
     const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
     const character = glyphName
-      ? this.fontController.codePointForGlyph(glyphName) ||
-        getCharFromCodePoint(await getCodePointFromGlyphName(glyphName)) ||
-        ""
+      ? getCharFromCodePoint(
+          this.fontController.codePointForGlyph(glyphName) ||
+            (await getCodePointFromGlyphName(glyphName))
+        ) || ""
       : "";
     const codePoint = character ? character.codePointAt(0) : undefined;
 
