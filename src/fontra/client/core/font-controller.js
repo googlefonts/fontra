@@ -18,6 +18,7 @@ import {
   getCharFromCodePoint,
   mapObjectValues,
   throttleCalls,
+  uniqueID,
 } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString, mapBackward, mapForward } from "./var-model.js";
@@ -42,6 +43,7 @@ export class FontController {
     });
     this.undoStacks = {}; // glyph name -> undo stack
     this.readOnly = true;
+    this._instanceRequestQueue = new InstanceRequestQueue(this);
   }
 
   async initialize(initListener = true) {
@@ -362,6 +364,19 @@ export class FontController {
     }
     const getGlyphFunc = this.getGlyph.bind(this);
     return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+  }
+
+  requestGlyphInstance(glyphName, sourceLocation) {
+    // Request a glyph instance. This returns { requestID, instancePromise }.
+    // The `requestID` can be used to cancel the request (if it is still queued)
+    // using the `cancelGlyphInstanceRequest()` method.
+    // You must await `instancePromise` to get the instance. This will resolve to
+    // `null` if the request was cancelled.
+    return this._instanceRequestQueue.requestGlyphInstance(glyphName, sourceLocation);
+  }
+
+  cancelGlyphInstanceRequest(requestID) {
+    return this._instanceRequestQueue.cancelGlyphInstanceRequest(requestID);
   }
 
   async getGlyphInstance(glyphName, sourceLocation, layerName) {
@@ -927,4 +942,50 @@ function ensureDenseSources(sources) {
       ),
     };
   });
+}
+
+class InstanceRequestQueue {
+  constructor(fontController) {
+    this.fontController = fontController;
+    this.taskPool = new TaskPool(NUM_TASKS);
+    this.requests = new Map(); // requestID -> resolveInstancePromise
+  }
+
+  requestGlyphInstance(glyphName, sourceLocation) {
+    const requestID = uniqueID();
+
+    let resolveInstancePromise;
+    const instancePromise = new Promise((resolve) => {
+      resolveInstancePromise = resolve;
+    });
+
+    this.requests.set(requestID, resolveInstancePromise);
+
+    this.taskPool.schedule(async () => {
+      const resolveInstancePromise = this.requests.get(requestID);
+      if (!resolveInstancePromise) {
+        // The request got cancelled in the meantime
+        return;
+      }
+      this.requests.delete(requestID);
+      const instance = await this.fontController.getGlyphInstance(
+        glyphName,
+        sourceLocation
+      );
+      resolveInstancePromise(instance);
+    });
+
+    return {
+      requestID,
+      instancePromise: instancePromise,
+    };
+  }
+
+  cancelGlyphInstanceRequest(requestID) {
+    const resolveInstancePromise = this.requests.get(requestID);
+    if (resolveInstancePromise) {
+      resolveInstancePromise(null);
+      this.requests.delete(requestID);
+    }
+  }
 }

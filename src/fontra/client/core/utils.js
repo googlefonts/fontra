@@ -562,3 +562,8 @@ export function mapObjectValues(obj, func) {
     Object.entries(obj).map(([key, value]) => [key, func(value)])
   );
 }
+
+let _uniqueID = 1;
+export function uniqueID() {
+  return _uniqueID++;
+}
