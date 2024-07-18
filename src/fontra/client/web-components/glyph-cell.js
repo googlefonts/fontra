@@ -119,7 +119,6 @@ export class GlyphCell extends UnlitElement {
   async _updateGlyph() {
     this.width = this.height;
     const location = this.locationController.model[this.locationKey];
-    const varGlyph = await this.fontController.getGlyph(this.glyphName);
     const glyphController = await this.fontController.getGlyphInstance(
       this.glyphName,
       location
@@ -128,6 +127,7 @@ export class GlyphCell extends UnlitElement {
       this._glyphSVG = null;
       return;
     }
+    const varGlyph = glyphController.varGlyph;
 
     const unitsPerEm = this.fontController.unitsPerEm;
     const fontSource = this.fontController.fontSourcesInstancer.instantiate(location);
@@ -201,7 +201,7 @@ function getStatusColor(statusFieldDefinitions, varGlyph, sourceIndex) {
     return statusColor;
   }
 
-  let status = varGlyph.sources[sourceIndex].customData["fontra.development.status"];
+  let status = varGlyph?.sources[sourceIndex].customData["fontra.development.status"];
   if (status === undefined) {
     status = statusFieldDefinitions.find((statusDef) => statusDef.isDefault)?.value;
   }
