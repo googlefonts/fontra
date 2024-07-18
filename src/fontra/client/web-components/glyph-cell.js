@@ -137,8 +137,6 @@ export class GlyphCell extends UnlitElement {
       return;
     }
 
-    const varGlyph = glyphController.varGlyph;
-
     const unitsPerEm = this.fontController.unitsPerEm;
     const fontSource = this.fontController.fontSourcesInstancer.instantiate(location);
     const ascender =
@@ -177,7 +175,7 @@ export class GlyphCell extends UnlitElement {
 
     this._glyphStatusColor = getStatusColor(
       this.fontController.customData["fontra.sourceStatusFieldDefinitions"],
-      varGlyph,
+      glyphController.varGlyph,
       glyphController.sourceIndex
     );
     this._glyphSVG = svgElement;
