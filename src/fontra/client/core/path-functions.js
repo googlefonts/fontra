@@ -53,23 +53,30 @@ export function insertPoint(path, intersection) {
       if (insertIndex < deleteIndices.length) {
         insertIndex = numContourPoints;
       }
+
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+        numPointsInserted++;
+      }
+
+      // Get selected point indices
       // selectionBias is non-zero if the cubic segment has more than
       // two off-curve points, which is currently invalid. We delete all
       // off-curve, and replace with clean cubic segments, but this messes
       // with the selection index
       const selectionBias = segment.parentPointIndices.length - 4;
-      let selectedContourPointIndex = insertIndex - selectionBias;
-      let selectedPathPointIndex =
-        path.getAbsolutePointIndex(contourIndex, selectedContourPointIndex) +
-        points.length -
-        3;
+      let selectedContourPointIndex = insertIndex - selectionBias + points.length - 3;
+      // I don't know why, but a separate loop is needed to calculate the selectedPointIndices.
+      // It failed when I had it in the loop above integrated.
       for (const point of reversed(points)) {
-        path.insertPoint(contourIndex, insertIndex, point);
-        numPointsInserted++;
         if (point.smooth) {
+          const selectedPathPointIndex = path.getAbsolutePointIndex(
+            contourIndex,
+            selectedContourPointIndex
+          );
           selectedPointIndices.push(selectedPathPointIndex);
         }
-        selectedPathPointIndex--;
+        selectedContourPointIndex--;
       }
 
       deleteIndices.sort((a, b) => b - a); // reverse sort
@@ -96,32 +103,48 @@ export function insertPoint(path, intersection) {
       insertIndex = segment.pointIndices[1] + absToRel;
       if (point3.type) {
         path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
+        numPointsInserted++;
       }
       if (point1.type) {
         path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
+        numPointsInserted++;
       }
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
       numPointsInserted--;
 
       // Insert split
-      let selectedContourPointIndex = insertIndex + 1;
-      let selectedPathPointIndex =
-        path.getAbsolutePointIndex(contourIndex, selectedContourPointIndex) +
-        points.length;
-
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
         numPointsInserted++;
-        if (point.smooth) {
-          // TODO: the right calculation of selectedPointIndices,
-          // This is not correct.
-          selectedPointIndices.push(selectedPathPointIndex);
+      }
+
+      // Get selected point indices
+      const segmentPointIndexStart = segment.parentPointIndices[0];
+      const segmentPointIndexEnd =
+        segment.parentPointIndices[0] +
+        segment.parentPointIndices.length +
+        numPointsInserted;
+      for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
+        if (pointIndex >= path.numPoints) {
+          pointIndex = 0;
         }
-        selectedPathPointIndex--;
+        const point = path.getPoint(pointIndex);
+        if (!point.smooth) {
+          continue;
+        }
+        // Check for smooth only makes no sense here, because in case of quadradic curves
+        // it might be that there are multiple new on-curve points, not just one.
+        if (
+          point.x === Math.round(intersection.x) &&
+          point.y === Math.round(intersection.y)
+        ) {
+          selectedPointIndices.push(pointIndex);
+        }
       }
     }
   }
+
   return { numPointsInserted, selectedPointIndices };
 }
 
