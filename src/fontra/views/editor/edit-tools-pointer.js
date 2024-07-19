@@ -293,6 +293,11 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
+    const resizeSelectionSettings =
+      this.editor.visualizationLayersSettings.model["fontra.resize.selection"];
+    if (resizeSelectionSettings) {
+      this.editor.visualizationLayersSettings.model["fontra.resize.selection"] = false;
+    }
     this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
@@ -395,6 +400,8 @@ export class PointerTool extends BaseTool {
         broadcast: true,
       };
     });
+    this.editor.visualizationLayersSettings.model["fontra.resize.selection"] =
+      resizeSelectionSettings;
   }
 
   async handleBoundsResize(selection, eventStream, initialEvent) {
@@ -666,6 +673,9 @@ function getResizeHandles(resizeBounds, margin) {
 }
 
 function getResizeBounds(glyph, selection) {
+  if (selection.size <= 1) {
+    return undefined;
+  }
   const selectionBounds = glyph.getSelectionBounds(selection);
   if (!selectionBounds) {
     return undefined;
