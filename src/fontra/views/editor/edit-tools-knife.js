@@ -176,7 +176,7 @@ export class KnifeTool extends BaseTool {
           );
 
           // Split path at added points
-          const newPointIndices = splitPathAtPointIndices(
+          splitPathAtPointIndices(
             layerGlyph.path,
             splitPointIndices.sort((a, b) => a - b)
           );
