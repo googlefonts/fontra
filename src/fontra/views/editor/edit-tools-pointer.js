@@ -54,6 +54,7 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
+    this.sceneController.sceneModel.showResizeSelection = true;
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
@@ -293,11 +294,7 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
-    const resizeSelectionViewStatus =
-      this.editor.visualizationLayersSettings.model["fontra.resize.selection"];
-    if (resizeSelectionViewStatus) {
-      this.editor.visualizationLayersSettings.model["fontra.resize.selection"] = false;
-    }
+    this.sceneController.sceneModel.showResizeSelection = false;
     this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
@@ -400,8 +397,7 @@ export class PointerTool extends BaseTool {
         broadcast: true,
       };
     });
-    this.editor.visualizationLayersSettings.model["fontra.resize.selection"] =
-      resizeSelectionViewStatus;
+    this.sceneController.sceneModel.showResizeSelection = true;
   }
 
   async handleBoundsResize(selection, eventStream, initialEvent) {
@@ -600,6 +596,9 @@ registerVisualizationLayerDefinition({
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
   colorsDarkMode: { handleColor: "#777", strokeColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (!model.showResizeSelection) {
+      return;
+    }
     const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
     if (!resizeBounds) {
       return;
