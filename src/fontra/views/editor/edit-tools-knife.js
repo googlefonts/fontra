@@ -171,14 +171,12 @@ export class KnifeTool extends BaseTool {
             }
           }
 
-          const splitPointIndices = intersectionPoints.map(
-            (point) => point.recalculatedIndex
-          );
-
           // Split path at added points
           splitPathAtPointIndices(
             layerGlyph.path,
-            splitPointIndices.sort((a, b) => a - b)
+            intersectionPoints
+              .map((point) => point.recalculatedIndex)
+              .sort((a, b) => a - b)
           );
 
           if (allContoursAreOpen) {
