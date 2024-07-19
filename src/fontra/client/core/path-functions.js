@@ -87,6 +87,7 @@ export function insertPoint(path, intersection) {
     } else {
       // quad
       const points = [];
+      const splitPointsOnCurve = [];
       for (const bezierElement of splitBeziers) {
         const pointsTemp = [bezierElement.points[1], bezierElement.points[2]].map(
           vector.roundVector
@@ -94,6 +95,9 @@ export function insertPoint(path, intersection) {
         pointsTemp[0].type = "quad";
         pointsTemp[1].smooth = true;
         points.push(...pointsTemp);
+
+        // collect on-curve points for selectedPointIndices later
+        splitPointsOnCurve.push(pointsTemp[1]);
       }
       points.pop(); // remove last on-curve point
 
@@ -112,6 +116,8 @@ export function insertPoint(path, intersection) {
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
       numPointsInserted--;
+      path.deletePoint(contourIndex, insertIndex);
+      numPointsInserted--;
 
       // Insert split
       for (const point of reversed(points)) {
@@ -125,21 +131,28 @@ export function insertPoint(path, intersection) {
         segment.parentPointIndices[0] +
         segment.parentPointIndices.length +
         numPointsInserted;
-      for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
-        if (pointIndex >= path.numPoints) {
-          pointIndex = 0;
-        }
-        const point = path.getPoint(pointIndex);
-        if (!point.smooth) {
-          continue;
-        }
-        // Check for smooth only makes no sense here, because in case of quadradic curves
-        // it might be that there are multiple new on-curve points, not just one.
-        if (
-          point.x === Math.round(intersection.x) &&
-          point.y === Math.round(intersection.y)
-        ) {
-          selectedPointIndices.push(pointIndex);
+
+      // Need to loop through splitPointsOnCurve to find the correct selectedPointIndices,
+      // because one segment can be split multiple times via .ts,
+      // why it's not enough to check the intersection.x and .y
+      for (const i of range(splitPointsOnCurve.length - 1)) {
+        const splitPoint = splitPointsOnCurve[i];
+        for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
+          if (pointIndex >= path.numPoints) {
+            pointIndex = 0;
+          }
+          const point = path.getPoint(pointIndex);
+          if (!point.smooth) {
+            continue;
+          }
+          // Check for smooth only makes no sense here, because in case of quadradic curves
+          // it might be that there are multiple new on-curve points, not just one.
+          if (
+            point.x === Math.round(splitPoint.x) &&
+            point.y === Math.round(splitPoint.y)
+          ) {
+            selectedPointIndices.push(pointIndex);
+          }
         }
       }
     }
