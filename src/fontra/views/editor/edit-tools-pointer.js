@@ -61,13 +61,17 @@ export class PointerTool extends BaseTool {
       this.canvasController.requestUpdate();
     }
     if (resizeHandle) {
-      this.setCursorForResizeHandle(resizeHandle);
+      this.setCursorForResizeHandle(resizeHandle, event.metaKey);
     } else {
       this.setCursor();
     }
   }
 
-  setCursorForResizeHandle(handleName) {
+  setCursorForResizeHandle(handleName, rotationKey = undefined) {
+    if (handleName && rotationKey) {
+      this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
+      return;
+    }
     if (handleName === "bottom-left" || handleName === "top-right") {
       this.setCursor("nesw-resize");
     } else if (handleName === "bottom-right" || handleName === "top-left") {
@@ -466,21 +470,35 @@ export class PointerTool extends BaseTool {
         const deepEditChanges = [];
         for (const layer of layerInfo) {
           const layerGlyph = layer.layerGlyphController.instance;
+          const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
+          let transformation;
+          if (event.metaKey) {
+            // Rotate (based on pinPoint)
+            this.sceneController.sceneModel.showResizeSelection = false;
+            const angleInitial = Math.atan2(
+              pinPoint.y - initialPoint.y,
+              pinPoint.x - initialPoint.x
+            );
+            const angle = Math.atan2(
+              pinPoint.y - currentPoint.y,
+              pinPoint.x - currentPoint.x
+            );
+            transformation = new Transform().rotate(angle - angleInitial);
+          } else {
+            // Scale (based on pinPoint)
+            let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
+            let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-          let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
-          let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
-
-          if (clickedResizeHandle.includes("middle")) {
-            scaleY = event.shiftKey ? scaleX : 1;
-          } else if (clickedResizeHandle.includes("center")) {
-            scaleX = event.shiftKey ? scaleY : 1;
-          } else if (event.shiftKey) {
-            scaleX = scaleY = Math.max(scaleX, scaleY);
+            if (clickedResizeHandle.includes("middle")) {
+              scaleY = event.shiftKey ? scaleX : 1;
+            } else if (clickedResizeHandle.includes("center")) {
+              scaleX = event.shiftKey ? scaleY : 1;
+            } else if (event.shiftKey) {
+              scaleX = scaleY = Math.max(scaleX, scaleY);
+            }
+            transformation = new Transform().scale(scaleX, scaleY);
           }
 
-          const transformation = new Transform().scale(scaleX, scaleY);
-
-          const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           const t = new Transform()
             .translate(pinPoint.x, pinPoint.y)
             .transform(transformation)
