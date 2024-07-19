@@ -1,5 +1,5 @@
 import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
-import { enumerate, parseSelection, range } from "../core/utils.js";
+import { enumerate, range } from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
@@ -104,7 +104,7 @@ export class KnifeTool extends BaseTool {
             intersectionsReordered[contourIndex][segmentIndex].ts.push(intersection.t);
           }
 
-          // Find open path points (for reopening them later)
+          // Find open contour points (for reopening them later)
           const openContourStartPoints = findOpenContourStartPoints(
             layerGlyph.path,
             effectedContourIndices
@@ -134,7 +134,7 @@ export class KnifeTool extends BaseTool {
                 }
               }
 
-              const tempArray = [];
+              const selectedPoints = [];
               for (const pointIndex of selectedPointIndices) {
                 // remembering all kind of information – is needed for later steps
                 const pointInfo = {
@@ -142,14 +142,14 @@ export class KnifeTool extends BaseTool {
                   intersectionIndex: intersectionIndex,
                   point: layerGlyph.path.getPoint(pointIndex),
                 };
-                tempArray.push(pointInfo);
+                selectedPoints.push(pointInfo);
                 // Because we loop over intersectionsReordered based on
                 // contourIndex and segmentIndex -> NOT intersectionIndex
                 // -> we need to increase the intersectionIndex manually
                 intersectionIndex++;
               }
 
-              intersectionPoints.push(...tempArray);
+              intersectionPoints.push(...selectedPoints);
 
               // recalculate pointIndex based on numPointsInserted
               for (const i of range(
@@ -170,7 +170,7 @@ export class KnifeTool extends BaseTool {
               .sort((a, b) => a - b)
           );
 
-          // Check if all contours are open, so we do not need to close them later
+          // Check if all contours are open, so we do not need to close them
           if (effectedContourIndices.size === openContourStartPoints.size) {
             continue;
           }
@@ -409,7 +409,7 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
   const group1 = [];
   const group2 = [];
 
-  // find split pints, to reduce number of loops through all point indices
+  // find split points, to reduce number of loops through all point indices
   const splitPointIndices = intersectionPoints
     .map((pointInfo) => getPointIndicesForPoint(path, pointInfo.point))
     .flat(1);
@@ -420,26 +420,28 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
       break;
     }
 
-    const p1 = intersectionPoints[intersectionIndex].point;
-    const p2 = intersectionPoints[intersectionIndex + 1].point;
+    const inter1 = intersectionPoints[intersectionIndex].point;
+    const inter2 = intersectionPoints[intersectionIndex + 1].point;
     // Because of multi-source-editing, we cannot use the initial knife tool cut line,
     // instead we use the line of the intersection points to determine the side.
-    const line = { p1: p1, p2: p2 };
+    const line = { p1: inter1, p2: inter2 };
     const intersection1PointIndices = getPointIndicesForPoint(
       path,
-      p1,
+      inter1,
       splitPointIndices
     );
 
     const intersection2PointIndices = getPointIndicesForPoint(
       path,
-      p2,
+      inter2,
       splitPointIndices
     );
+    const p1Index = intersection1PointIndices[0];
+    const p2Index = intersection1PointIndices[1];
 
     const connection1PointIndex = findConnectionPoint(
       path,
-      intersection1PointIndices[0],
+      p1Index,
       intersection2PointIndices,
       line
     );
@@ -451,8 +453,8 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
 
     // remove all pointIndices, which are not needed anymore
     for (const pointIndex of [
-      intersection1PointIndices[0],
-      intersection1PointIndices[1],
+      p1Index,
+      p2Index,
       connection1PointIndex,
       connection2PointIndex,
     ]) {
@@ -460,12 +462,12 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
       splitPointIndices.splice(arrayIndex, 1);
     }
 
-    if (isLeftFromLine(path, line, intersection1PointIndices[0])) {
-      group1.push([intersection1PointIndices[0], connection1PointIndex]);
-      group2.push([intersection1PointIndices[1], connection2PointIndex]);
+    if (isLeftFromLine(path, line, p1Index)) {
+      group1.push([p1Index, connection1PointIndex]);
+      group2.push([p2Index, connection2PointIndex]);
     } else {
-      group1.push([intersection1PointIndices[1], connection2PointIndex]);
-      group2.push([intersection1PointIndices[0], connection1PointIndex]);
+      group1.push([p2Index, connection2PointIndex]);
+      group2.push([p1Index, connection1PointIndex]);
     }
   }
   return [group1, group2];
