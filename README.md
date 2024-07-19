@@ -133,7 +133,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Advanced outline editing: edit segments
 - Connecting open paths ✅
 - Show point coordinates and component origins numerically ✅
-- Knife tool
+- Knife tool ✅
 - Shape tool ✅
 - Measure tool ✅
 - Copy / paste ✅
