@@ -116,8 +116,11 @@ export function insertPoint(path, intersection) {
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
       numPointsInserted--;
-      path.deletePoint(contourIndex, insertIndex);
-      numPointsInserted--;
+
+      if (!point3.type) {
+        path.deletePoint(contourIndex, insertIndex);
+        numPointsInserted--;
+      }
 
       // Insert split
       for (const point of reversed(points)) {
