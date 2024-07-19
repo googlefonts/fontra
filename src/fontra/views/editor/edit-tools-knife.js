@@ -1,5 +1,4 @@
 import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
-import { PathHitTester } from "../core/path-hit-tester.js";
 import { enumerate, parseSelection, range } from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -87,11 +86,7 @@ export class KnifeTool extends BaseTool {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
           glyph.layers
         );
-
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-          // Find open path points (to reopen them later)
-          const openContourStartPoints = findOpenContourStartPoints(layerGlyph.path);
-
           // Get intersections sorted by contour and segments
           const effectedContourIndices = new Set();
           const intersectionsReordered = {};
@@ -109,15 +104,11 @@ export class KnifeTool extends BaseTool {
             intersectionsReordered[contourIndex][segmentIndex].ts.push(intersection.t);
           }
 
-          // Check if all contours are open, so we do not need to close them later
-          let allContoursAreOpen = true;
-          for (const contourIndex of effectedContourIndices) {
-            const contourInfo = layerGlyph.path.contourInfo[contourIndex];
-            if (contourInfo.isClosed) {
-              allContoursAreOpen = false;
-              break;
-            }
-          }
+          // Find open path points (for reopening them later)
+          const openContourStartPoints = findOpenContourStartPoints(
+            layerGlyph.path,
+            effectedContourIndices
+          );
 
           // Insert points at intersections segments (be compatible for multi-source-editing)
           const intersectionPoints = [];
@@ -179,9 +170,8 @@ export class KnifeTool extends BaseTool {
               .sort((a, b) => a - b)
           );
 
-          if (allContoursAreOpen) {
-            // Do not connect or close contours,
-            // because they all have been open before
+          // Check if all contours are open, so we do not need to close them later
+          if (effectedContourIndices.size === openContourStartPoints.size) {
             continue;
           }
 
@@ -295,9 +285,12 @@ function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
   return pathHitTester.lineIntersections(p1, p2, directionVector);
 }
 
-function findOpenContourStartPoints(path) {
+function findOpenContourStartPoints(path, contourIndices = undefined) {
+  if (contourIndices === undefined) {
+    contourIndices = range(path.numContours);
+  }
   const collectPointStarts = new Set();
-  for (const i of range(path.numContours)) {
+  for (const i of contourIndices) {
     const contourInfo = path.contourInfo[i];
     if (contourInfo.isClosed) {
       continue;
