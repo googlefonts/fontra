@@ -256,7 +256,6 @@ export function splitPathAtPointIndices(path, pointIndices) {
   // contour indices
   selectedContours.sort((a, b) => b - a);
 
-  let collectNewPointIndices = [];
   for (const contourIndex of selectedContours) {
     const contour = path.getUnpackedContour(contourIndex);
     const isClosed = path.contourInfo[contourIndex].isClosed;
@@ -272,17 +271,10 @@ export function splitPathAtPointIndices(path, pointIndices) {
 
     const pointArrays = [points];
     let pointIndexBias = 0;
-    let numAddedPoints = contourPointIndices.length;
     if (isClosed) {
       const splitPointIndex = contourPointIndices.pop();
       pointArrays[0] = splitClosedPointsArray(points, splitPointIndex);
       pointIndexBias = points.length - splitPointIndex;
-      const splitPointIndexAbs = path.getAbsolutePointIndex(
-        contourIndex,
-        splitPointIndex
-      );
-      collectNewPointIndices.push(splitPointIndexAbs + numAddedPoints);
-      numAddedPoints--;
     }
 
     for (const splitPointIndex of reversed(contourPointIndices)) {
@@ -293,12 +285,6 @@ export function splitPathAtPointIndices(path, pointIndices) {
       );
       pointArrays.push(points2);
       pointArrays.push(points1);
-      const splitPointIndexAbs = path.getAbsolutePointIndex(
-        contourIndex,
-        splitPointIndex + pointIndexBias
-      );
-      collectNewPointIndices.push(splitPointIndexAbs + numAddedPoints);
-      numAddedPoints--;
     }
 
     path.deleteContour(contourIndex);
@@ -310,7 +296,7 @@ export function splitPathAtPointIndices(path, pointIndices) {
       path.insertUnpackedContour(contourIndex, { points: points, isClosed: false });
     }
   }
-  return collectNewPointIndices;
+  return numSplits;
 }
 
 function splitClosedPointsArray(points, splitPointIndex) {
