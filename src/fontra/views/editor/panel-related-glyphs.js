@@ -50,7 +50,7 @@ export default class RelatedGlyphPanel extends Panel {
     this.accordion = new Accordion();
 
     this.accordion.appendStyle(`
-    .no-glyphs-found-label {
+    .placeholder-label {
       font-size: 0.9em;
       opacity: 40%;
     }
@@ -147,11 +147,13 @@ export default class RelatedGlyphPanel extends Panel {
     const element = item.content;
     element.innerHTML = "";
     if (glyphName) {
+      element.appendChild(html.span({ class: "placeholder-label" }, ["(loading)"]));
       const relatedGlyphs = await item.getRelatedGlyphsFunc(
         this.fontController,
         glyphName,
         codePoint
       );
+      element.innerHTML = "";
       if (relatedGlyphs?.length) {
         for (const { glyphName, codePoints } of relatedGlyphs) {
           const glyphCell = new GlyphCell(
@@ -170,7 +172,7 @@ export default class RelatedGlyphPanel extends Panel {
         }
       } else {
         element.appendChild(
-          html.span({ class: "no-glyphs-found-label" }, [item.noGlyphsString])
+          html.span({ class: "placeholder-label" }, [item.noGlyphsString])
         );
       }
     }
