@@ -293,9 +293,9 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
-    const resizeSelectionSettings =
+    const resizeSelectionViewStatus =
       this.editor.visualizationLayersSettings.model["fontra.resize.selection"];
-    if (resizeSelectionSettings) {
+    if (resizeSelectionViewStatus) {
       this.editor.visualizationLayersSettings.model["fontra.resize.selection"] = false;
     }
     this._selectionBeforeSingleClick = undefined;
@@ -401,7 +401,7 @@ export class PointerTool extends BaseTool {
       };
     });
     this.editor.visualizationLayersSettings.model["fontra.resize.selection"] =
-      resizeSelectionSettings;
+      resizeSelectionViewStatus;
   }
 
   async handleBoundsResize(selection, eventStream, initialEvent) {
