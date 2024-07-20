@@ -22,8 +22,8 @@ def _makeUsedByTable():
     return {k: sorted(v) for k, v in table.items()}
 
 
-_useByTable = _makeUsedByTable()
+_usedByTable = _makeUsedByTable()
 
 
 def usedBy(codePoint: int) -> list[int]:
-    return _useByTable.get(codePoint, [])
+    return _usedByTable.get(codePoint, [])
