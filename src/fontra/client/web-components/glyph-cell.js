@@ -58,6 +58,7 @@ export class GlyphCell extends UnlitElement {
     text-overflow: ellipsis;
     text-wrap: nowrap;
     text-align: center;
+    word-break: keep-all;
   }
 
   .glyph-status-color {

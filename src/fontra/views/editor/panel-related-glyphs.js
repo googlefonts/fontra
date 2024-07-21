@@ -26,6 +26,11 @@ export default class RelatedGlyphPanel extends Panel {
       padding: 1em 1em 0 1em;
       text-wrap: wrap;
     }
+
+    .no-related-glyphs {
+      color: #AAA;
+      padding-top: 1em;
+    }
   `;
 
   constructor(editorController) {
@@ -69,35 +74,30 @@ export default class RelatedGlyphPanel extends Panel {
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
-        noGlyphsString: "No alternate glyphs were found",
       },
       {
         label: "Components used by this glyph",
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getComponentGlyphs,
-        noGlyphsString: "No component glyphs were found",
       },
       {
         label: "Glyphs using this glyph as a component",
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getUsedByGlyphs,
-        noGlyphsString: "No glyphs were found that use this glyph",
       },
       {
         label: "Character decomposition",
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getUnicodeDecomposed,
-        noGlyphsString: "No decomposition information was found",
       },
       {
         label: "Characters that decompose with this character",
         open: true,
         content: html.div({ class: "related-glyphs-accordion-item" }, []),
         getRelatedGlyphsFunc: getUnicodeUsedBy,
-        noGlyphsString: "No characters were found that use this character",
       },
     ];
 
@@ -133,11 +133,26 @@ export default class RelatedGlyphPanel extends Panel {
       character && character != glyphName ? `“${character}”, ${glyphName}` : glyphName;
 
     this.relatedGlyphsHeaderElement.innerHTML = glyphName
-      ? `<b>Related glyphs for ${displayGlyphString}</b>`
-      : `<b>Related glyphs</b> (no glyph selected)`;
+      ? `<b>Related glyphs & characters for ${displayGlyphString}</b>`
+      : `<b>Related glyphs & characters</b>`;
+
+    const results = [];
 
     for (const item of this.accordion.items) {
-      this._updateAccordionItem(item, glyphName, codePoint); // No await
+      this._updateAccordionItem(item, glyphName, codePoint).then((hasResult) => {
+        results.push(hasResult);
+        if (results.length === this.accordion.items.length) {
+          if (!results.some((hasResult) => hasResult)) {
+            this.relatedGlyphsHeaderElement.appendChild(
+              html.div({ class: "no-related-glyphs" }, [
+                glyphName
+                  ? "(No related glyphs or characters were found)"
+                  : "(No glyph selected)",
+              ])
+            );
+          }
+        }
+      });
     }
 
     this.accordion.hidden = !glyphName;
@@ -145,7 +160,10 @@ export default class RelatedGlyphPanel extends Panel {
 
   async _updateAccordionItem(item, glyphName, codePoint) {
     const element = item.content;
+    const parent = findParentWithClass(element, "ui-accordion-item");
+
     element.innerHTML = "";
+    let hideAccordionItem = true;
     if (glyphName) {
       element.appendChild(html.span({ class: "placeholder-label" }, ["(loading)"]));
       const relatedGlyphs = await item.getRelatedGlyphsFunc(
@@ -153,8 +171,9 @@ export default class RelatedGlyphPanel extends Panel {
         glyphName,
         codePoint
       );
-      element.innerHTML = "";
+
       if (relatedGlyphs?.length) {
+        const documentFragment = document.createDocumentFragment();
         for (const { glyphName, codePoints } of relatedGlyphs) {
           const glyphCell = new GlyphCell(
             this.fontController,
@@ -168,14 +187,24 @@ export default class RelatedGlyphPanel extends Panel {
             this.handleContextMenu(event, glyphCell, item)
           );
 
-          element.appendChild(glyphCell);
+          documentFragment.appendChild(glyphCell);
         }
+        element.innerHTML = "";
+        element.appendChild(documentFragment);
+
+        // At least in Chrome, we need to reset the scroll position, but it doesn't
+        // work if we do it right away, only after the next event iteration.
+        setTimeout(() => {
+          element.scrollTop = 0;
+        }, 0);
+
+        hideAccordionItem = false;
       } else {
-        element.appendChild(
-          html.span({ class: "placeholder-label" }, [item.noGlyphsString])
-        );
+        element.innerHTML = "";
       }
     }
+    parent.hidden = hideAccordionItem;
+    return !hideAccordionItem;
   }
 
   handleDoubleClick(event, glyphCell) {
@@ -307,6 +336,14 @@ function addCharInfo(fontController, glyphNames) {
   return glyphNames.map((glyphName) => {
     return { glyphName, codePoints: glyphMap[glyphName] || [] };
   });
+}
+
+function findParentWithClass(element, parentClass) {
+  let parent = element;
+  do {
+    parent = parent.parentElement;
+  } while (parent && !parent.classList.contains(parentClass));
+  return parent;
 }
 
 customElements.define("panel-related-glyph", RelatedGlyphPanel);
