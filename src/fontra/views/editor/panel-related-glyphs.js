@@ -191,6 +191,13 @@ export default class RelatedGlyphPanel extends Panel {
         }
         element.innerHTML = "";
         element.appendChild(documentFragment);
+
+        // At least in Chrome, we need to reset the scroll position, but it doesn't
+        // work if we do it right away, only after the next event iteration.
+        setTimeout(() => {
+          element.scrollTop = 0;
+        }, 0);
+
         hideAccordionItem = false;
       } else {
         element.innerHTML = "";
