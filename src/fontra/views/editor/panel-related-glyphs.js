@@ -133,8 +133,8 @@ export default class RelatedGlyphPanel extends Panel {
       character && character != glyphName ? `“${character}”, ${glyphName}` : glyphName;
 
     this.relatedGlyphsHeaderElement.innerHTML = glyphName
-      ? `<b>Related glyphs for ${displayGlyphString}</b>`
-      : `<b>Related glyphs</b> (no glyph selected)`;
+      ? `<b>Related glyphs & characters for ${displayGlyphString}</b>`
+      : `<b>Related glyphs & characters</b>`;
 
     const results = [];
 
@@ -145,7 +145,9 @@ export default class RelatedGlyphPanel extends Panel {
           if (!results.some((hasResult) => hasResult)) {
             this.relatedGlyphsHeaderElement.appendChild(
               html.div({ class: "no-related-glyphs" }, [
-                "(No related glyphs or characters were found)",
+                glyphName
+                  ? "(No related glyphs or characters were found)"
+                  : "(No glyph selected)",
               ])
             );
           }
