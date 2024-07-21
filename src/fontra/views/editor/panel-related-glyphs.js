@@ -26,6 +26,11 @@ export default class RelatedGlyphPanel extends Panel {
       padding: 1em 1em 0 1em;
       text-wrap: wrap;
     }
+
+    .no-related-glyphs {
+      color: #AAA;
+      padding-top: 1em;
+    }
   `;
 
   constructor(editorController) {
@@ -131,8 +136,21 @@ export default class RelatedGlyphPanel extends Panel {
       ? `<b>Related glyphs for ${displayGlyphString}</b>`
       : `<b>Related glyphs</b> (no glyph selected)`;
 
+    const results = [];
+
     for (const item of this.accordion.items) {
-      this._updateAccordionItem(item, glyphName, codePoint); // No await
+      this._updateAccordionItem(item, glyphName, codePoint).then((hasResult) => {
+        results.push(hasResult);
+        if (results.length === this.accordion.items.length) {
+          if (!results.some((hasResult) => hasResult)) {
+            this.relatedGlyphsHeaderElement.appendChild(
+              html.div({ class: "no-related-glyphs" }, [
+                "(No related glyphs were found)",
+              ])
+            );
+          }
+        }
+      });
     }
 
     this.accordion.hidden = !glyphName;
@@ -143,6 +161,7 @@ export default class RelatedGlyphPanel extends Panel {
     const parent = findParentWithClass(element, "ui-accordion-item");
 
     element.innerHTML = "";
+    let hideAccordionItem = true;
     if (glyphName) {
       element.appendChild(html.span({ class: "placeholder-label" }, ["(loading)"]));
       const relatedGlyphs = await item.getRelatedGlyphsFunc(
@@ -151,9 +170,8 @@ export default class RelatedGlyphPanel extends Panel {
         codePoint
       );
 
-      const documentFragment = document.createDocumentFragment();
-
       if (relatedGlyphs?.length) {
+        const documentFragment = document.createDocumentFragment();
         for (const { glyphName, codePoints } of relatedGlyphs) {
           const glyphCell = new GlyphCell(
             this.fontController,
@@ -171,11 +189,13 @@ export default class RelatedGlyphPanel extends Panel {
         }
         element.innerHTML = "";
         element.appendChild(documentFragment);
-        parent.hidden = false;
+        hideAccordionItem = false;
       } else {
-        parent.hidden = true;
+        element.innerHTML = "";
       }
     }
+    parent.hidden = hideAccordionItem;
+    return !hideAccordionItem;
   }
 
   handleDoubleClick(event, glyphCell) {
