@@ -145,7 +145,7 @@ export default class RelatedGlyphPanel extends Panel {
           if (!results.some((hasResult) => hasResult)) {
             this.relatedGlyphsHeaderElement.appendChild(
               html.div({ class: "no-related-glyphs" }, [
-                "(No related glyphs were found)",
+                "(No related glyphs or characters were found)",
               ])
             );
           }
