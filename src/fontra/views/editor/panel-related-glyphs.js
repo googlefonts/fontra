@@ -3,9 +3,9 @@ import * as html from "/core/html-utils.js";
 import {
   getCodePointFromGlyphName,
   getSuggestedGlyphName,
-  unicodeDecompose,
-  unicodeUsedBy,
 } from "/core/server-utils.js";
+import { unicodeMadeOf, unicodeUsedBy } from "/core/unicode-utils.js";
+
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { showMenu } from "/web-components/menu-panel.js";
@@ -267,7 +267,7 @@ async function getUnicodeDecomposed(fontController, targetGlyphName, targetCodeP
     fontController,
     targetGlyphName,
     targetCodePoint,
-    unicodeDecompose
+    unicodeMadeOf
   );
 }
 
@@ -291,7 +291,7 @@ async function _getRelatedUnicode(
   if (!codePoint) {
     return [];
   }
-  const usedByCodePoints = await uniFunc(codePoint);
+  const usedByCodePoints = uniFunc(codePoint);
   const glyphInfo = [];
   for (const codePoint of usedByCodePoints) {
     const glyphName =
