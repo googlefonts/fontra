@@ -24,7 +24,12 @@ function makeTestGlyphObject() {
           xAdvance: 500,
           yAdvance: 1000,
           verticalOrigin: 800,
-          path: { contourInfo: [], coordinates: [], pointTypes: [] },
+          path: {
+            contourInfo: [],
+            coordinates: [],
+            pointTypes: [],
+            pointAttributes: null,
+          },
           components: [
             {
               name: "test",
@@ -70,6 +75,7 @@ describe("var-glyph Tests", () => {
         contourInfo: [],
         coordinates: [],
         pointTypes: [],
+        pointAttributes: null,
       },
       verticalOrigin: undefined,
       xAdvance: 500,

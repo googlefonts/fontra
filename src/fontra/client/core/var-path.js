@@ -2,7 +2,7 @@ import { Bezier } from "../third-party/bezier-js.js";
 import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
-import { arrayExtend, enumerate, range, reversed } from "./utils.js";
+import { arrayExtend, enumerate, isObjectEmpty, range, reversed } from "./utils.js";
 import VarArray from "./var-array.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
@@ -16,15 +16,17 @@ export class VarPackedPath {
   static SMOOTH_FLAG = 0x08;
   static POINT_TYPE_MASK = 0x07;
 
-  constructor(coordinates, pointTypes, contourInfo) {
+  constructor(coordinates, pointTypes, contourInfo, pointAttributes) {
     if (coordinates === undefined) {
       this.coordinates = new VarArray();
       this.pointTypes = [];
       this.contourInfo = [];
+      this.pointAttributes = null;
     } else {
       this.coordinates = coordinates;
       this.pointTypes = pointTypes;
       this.contourInfo = contourInfo;
+      this.pointAttributes = pointAttributes || null;
     }
   }
 
@@ -35,6 +37,10 @@ export class VarPackedPath {
     path.contourInfo = obj.contourInfo.map((item) => {
       return { ...item };
     });
+    path.pointAttributes =
+      obj.pointAttributes?.map((attrs) => {
+        return copyPointAttrs(attrs);
+      }) || null;
     return path;
   }
 
@@ -205,6 +211,9 @@ export class VarPackedPath {
     return {
       coordinates: this.coordinates.slice(startPoint * 2, (contour.endPoint + 1) * 2),
       pointTypes: this.pointTypes.slice(startPoint, contour.endPoint + 1),
+      pointAttributes: filterPointAttributes(
+        this.pointAttributes?.slice(startPoint, contour.endPoint + 1)
+      ),
       isClosed: contour.isClosed,
     };
   }
@@ -217,7 +226,8 @@ export class VarPackedPath {
       startPoint,
       numOldPoints,
       contour.coordinates,
-      contour.pointTypes
+      contour.pointTypes,
+      contour.pointAttributes
     );
     this._moveEndPoints(contourIndex, contour.pointTypes.length - numOldPoints);
     this.contourInfo[contourIndex].isClosed = contour.isClosed;
@@ -230,7 +240,13 @@ export class VarPackedPath {
   insertContour(contourIndex, contour) {
     contourIndex = this._normalizeContourIndex(contourIndex, true);
     const startPoint = this._getContourStartPoint(contourIndex);
-    this._replacePoints(startPoint, 0, contour.coordinates, contour.pointTypes);
+    this._replacePoints(
+      startPoint,
+      0,
+      contour.coordinates,
+      contour.pointTypes,
+      contour.pointAttributes
+    );
     const contourInfo = { endPoint: startPoint - 1, isClosed: contour.isClosed };
     this.contourInfo.splice(contourIndex, 0, contourInfo);
     this._moveEndPoints(contourIndex, contour.pointTypes.length);
@@ -241,7 +257,7 @@ export class VarPackedPath {
     const contour = this.contourInfo[contourIndex];
     const startPoint = this._getContourStartPoint(contourIndex);
     const numPoints = contour.endPoint + 1 - startPoint;
-    this._replacePoints(startPoint, numPoints, [], []);
+    this._replacePoints(startPoint, numPoints, [], [], null);
     this.contourInfo.splice(contourIndex, 1);
     this._moveEndPoints(contourIndex, -numPoints);
   }
@@ -271,6 +287,7 @@ export class VarPackedPath {
     if (point.x === undefined) {
       return undefined;
     }
+
     const pointType = this.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
     if (pointType) {
       point["type"] =
@@ -280,12 +297,18 @@ export class VarPackedPath {
     } else if (this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG) {
       point["smooth"] = true;
     }
+
+    const attrs = this.pointAttributes?.[pointIndex];
+    if (attrs) {
+      point["attrs"] = attrs;
+    }
     return point;
   }
 
   setPoint(pointIndex, point) {
     this.setPointPosition(pointIndex, point.x, point.y);
     this.setPointType(pointIndex, point.type, point.smooth);
+    this.setPointAttrs(pointIndex, point.attrs);
   }
 
   getPointPosition(pointIndex) {
@@ -310,6 +333,20 @@ export class VarPackedPath {
       );
     }
     this.pointTypes[pointIndex] = packPointType(type, smooth);
+  }
+
+  setPointAttrs(pointIndex, attrs) {
+    if (pointIndex >= this.pointAttributes?.length) {
+      throw new Error(
+        `pointIndex out of range: ${pointIndex} >= ${this.pointAttributes.length}`
+      );
+    }
+    if (attrs && !isObjectEmpty(attrs) && !this.pointAttributes) {
+      this.pointAttributes = new Array(this.pointTypes.length).fill(null);
+    }
+    if (this.pointAttributes) {
+      this.pointAttributes[pointIndex] = copyPointAttrs(attrs);
+    }
   }
 
   getContourPoint(contourIndex, contourPointIndex) {
@@ -351,6 +388,7 @@ export class VarPackedPath {
     const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex);
     this.coordinates.splice(pointIndex * 2, 2);
     this.pointTypes.splice(pointIndex, 1);
+    this.pointAttributes?.splice(pointIndex, 1);
     this._moveEndPoints(contourIndex, -1);
   }
 
@@ -358,12 +396,23 @@ export class VarPackedPath {
     this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(pointIndex, 0, 0);
     this.setPointType(pointIndex, point.type, point.smooth);
+    this.pointAttributes?.splice(pointIndex, 0, point.attrs || null);
     this._moveEndPoints(contourIndex, 1);
   }
 
-  _replacePoints(startPoint, numPoints, coordinates, pointTypes) {
+  _replacePoints(startPoint, numPoints, coordinates, pointTypes, pointAttributes) {
     this.coordinates.splice(startPoint * 2, numPoints * 2, ...coordinates);
     this.pointTypes.splice(startPoint, numPoints, ...pointTypes);
+    if (pointAttributes) {
+      pointAttributes = new Array(pointTypes.length).fill(null);
+    }
+    this.pointAttributes?.splice(
+      startPoint,
+      numPoints,
+      ...pointAttributes.map((attr) => {
+        return attr ? { ...attr } : null;
+      })
+    );
   }
 
   _moveEndPoints(fromContourIndex, offset) {
@@ -543,18 +592,25 @@ export class VarPackedPath {
       this.pointTypes.slice(),
       this.contourInfo.map((item) => {
         return { ...item };
-      })
+      }),
+      copyPointAttributesArray(this.pointAttributes)
     );
   }
 
-  _appendPoint(x, y, pointType) {
+  _appendPoint(x, y, pointType, attrs) {
     this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
     this.pointTypes.push(pointType);
+    this.pointAttributes?.push(attrs ? attrs : null);
   }
 
   moveTo(x, y) {
-    this.appendContour({ coordinates: [], pointTypes: [], isClosed: false });
+    this.appendContour({
+      coordinates: [],
+      pointTypes: [],
+      pointAttributes: null,
+      isClosed: false,
+    });
     this._appendPoint(x, y, VarPackedPath.ON_CURVE);
   }
 
@@ -589,7 +645,8 @@ export class VarPackedPath {
     return new this.constructor(
       this.coordinates.addItemwise(other.coordinates),
       this.pointTypes,
-      this.contourInfo
+      this.contourInfo,
+      this.pointAttributes
     );
   }
 
@@ -598,7 +655,8 @@ export class VarPackedPath {
     return new this.constructor(
       this.coordinates.subItemwise(other.coordinates),
       this.pointTypes,
-      this.contourInfo
+      this.contourInfo,
+      this.pointAttributes
     );
   }
 
@@ -616,7 +674,8 @@ export class VarPackedPath {
     return new this.constructor(
       this.coordinates.mulScalar(scalar),
       this.pointTypes,
-      this.contourInfo
+      this.contourInfo,
+      this.pointAttributes
     );
   }
 
@@ -726,7 +785,12 @@ export class VarPackedPath {
     for (let i = 0; i < this.coordinates.length; i++) {
       coordinates[i] = roundFunc(this.coordinates[i]);
     }
-    return new this.constructor(coordinates, this.pointTypes, this.contourInfo);
+    return new this.constructor(
+      coordinates,
+      this.pointTypes,
+      this.contourInfo,
+      this.pointAttributes
+    );
   }
 
   transformed(transformation) {
@@ -736,7 +800,12 @@ export class VarPackedPath {
       const y = this.coordinates[i + 1];
       [coordinates[i], coordinates[i + 1]] = transformation.transformPoint(x, y);
     }
-    return new this.constructor(coordinates, this.pointTypes, this.contourInfo);
+    return new this.constructor(
+      coordinates,
+      this.pointTypes,
+      this.contourInfo,
+      this.pointAttributes
+    );
   }
 
   concat(other) {
@@ -746,10 +815,25 @@ export class VarPackedPath {
     result.contourInfo = this.contourInfo.concat(other.contourInfo).map((c) => {
       return { ...c };
     });
+
+    const otherPointAttributes =
+      this.pointAttributes && !other.pointAttributes
+        ? new Array(other.pointTypes.length).fill(null)
+        : other.pointAttributes;
+    const thisPointAttributes =
+      !this.pointAttributes && other.pointAttributes
+        ? new Array(this.pointTypes.length).fill(null)
+        : null;
+    result.pointAttributes =
+      thisPointAttributes?.concat(otherPointAttributes).map((attrs) => {
+        return copyPointAttrs(attrs);
+      }) || null;
+
     const endPointOffset = this.numPoints;
     for (let i = this.contourInfo.length; i < result.contourInfo.length; i++) {
       result.contourInfo[i].endPoint += endPointOffset;
     }
+
     return result;
   }
 
@@ -958,15 +1042,18 @@ function packPointType(type, smooth) {
 export function packContour(unpackedContour) {
   const coordinates = new VarArray(unpackedContour.points.length * 2);
   const pointTypes = new Array(unpackedContour.points.length);
+  const pointAttributes = new Array(unpackedContour.points.length);
   for (let i = 0; i < unpackedContour.points.length; i++) {
     const point = unpackedContour.points[i];
     coordinates[i * 2] = point.x;
     coordinates[i * 2 + 1] = point.y;
     pointTypes[i] = packPointType(point.type, point.smooth);
+    pointAttributes[i] = copyPointAttrs(point.attrs);
   }
   return {
     coordinates: coordinates,
     pointTypes: pointTypes,
+    pointAttributes: filterPointAttributes(pointAttributes),
     isClosed: unpackedContour.isClosed,
   };
 }
@@ -994,4 +1081,16 @@ export async function joinPathsAsync(pathsIterable) {
     result.appendPath(path);
   }
   return result;
+}
+
+function copyPointAttrs(attrs) {
+  return attrs ? { ...attrs } : null;
+}
+
+function copyPointAttributesArray(pointAttributes) {
+  return pointAttributes?.map((attrs) => copyPointAttrs(attrs)) || null;
+}
+
+function filterPointAttributes(pointAttributes) {
+  return pointAttributes?.some((attrs) => attrs) ? pointAttributes : null;
 }

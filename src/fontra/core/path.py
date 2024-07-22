@@ -4,7 +4,7 @@ import logging
 from copy import copy
 from dataclasses import dataclass, field, replace
 from enum import IntEnum
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import DecomposedTransform, Transform
@@ -75,6 +75,7 @@ class PackedPath:
     coordinates: list[float] = field(default_factory=list)
     pointTypes: list[PointType] = field(default_factory=list)
     contourInfo: list[ContourInfo] = field(default_factory=list)
+    pointAttributes: Optional[list[dict]] = None
 
     @classmethod
     def fromUnpackedContours(cls, unpackedContours: list[dict]) -> PackedPath:
