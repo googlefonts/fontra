@@ -401,17 +401,20 @@ export class VarPackedPath {
   }
 
   _replacePoints(startPoint, numPoints, coordinates, pointTypes, pointAttributes) {
+    const originalNumPoints = this.pointTypes.length;
+
     this.coordinates.splice(startPoint * 2, numPoints * 2, ...coordinates);
     this.pointTypes.splice(startPoint, numPoints, ...pointTypes);
-    if (pointAttributes) {
+
+    if (this.pointAttributes && !pointAttributes) {
       pointAttributes = new Array(pointTypes.length).fill(null);
+    } else if (!this.pointAttributes && pointAttributes) {
+      this.pointAttributes = new Array(originalNumPoints).fill(null);
     }
     this.pointAttributes?.splice(
       startPoint,
       numPoints,
-      ...pointAttributes.map((attr) => {
-        return attr ? { ...attr } : null;
-      })
+      ...copyPointAttributesArray(pointAttributes)
     );
   }
 
@@ -853,6 +856,13 @@ export class VarPackedPath {
     }
     if (this.coordinates.length !== this.pointTypes.length * 2) {
       console.log("coordinates length does not match point types length");
+      bad = true;
+    }
+    if (
+      this.pointAttributes &&
+      this.pointAttributes.length !== this.pointTypes.length
+    ) {
+      console.log("point attributes length does not match point types length");
       bad = true;
     }
     return bad;
