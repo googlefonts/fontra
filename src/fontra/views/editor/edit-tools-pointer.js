@@ -18,7 +18,7 @@ import {
 } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
-import { EditBehaviorFactory } from "./edit-behavior.js";
+import { EditBehaviorFactory, constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { getPinPoint } from "./panel-transformation.js";
 import { equalGlyphSelection } from "./scene-controller.js";
@@ -502,10 +502,6 @@ export class PointerTool extends BaseTool {
       let editChange;
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
-        const delta = {
-          x: (currentPoint.x - initialPoint.x) * fixDragLeftValue,
-          y: (currentPoint.y - initialPoint.y) * fixDragBottomValue,
-        };
 
         const deepEditChanges = [];
         for (const layer of layerInfo) {
@@ -515,17 +511,32 @@ export class PointerTool extends BaseTool {
           if (roation) {
             // Rotate (based on pinPoint)
             this.sceneController.sceneModel.showTransformationSelection = false;
+            let pointB;
+            if (event.shiftKey) {
+              const delta = constrainHorVerDiag(
+                vector.subVectors(currentPoint, pinPoint)
+              );
+              pointB = vector.addVectors(pinPoint, delta);
+            } else {
+              pointB = currentPoint;
+            }
+            const angle = Math.atan2(pinPoint.y - pointB.y, pinPoint.x - pointB.x);
             const angleInitial = Math.atan2(
               pinPoint.y - initialPoint.y,
               pinPoint.x - initialPoint.x
             );
-            const angle = Math.atan2(
-              pinPoint.y - currentPoint.y,
-              pinPoint.x - currentPoint.x
-            );
-            transformation = new Transform().rotate(angle - angleInitial);
+            // Snap to 45 degrees by rounding to the nearest 45 degree angle if shift is pressed
+            const rotationAngle = !event.shiftKey
+              ? angle - angleInitial
+              : Math.round((angle - angleInitial) / (Math.PI / 4)) * (Math.PI / 4);
+            transformation = new Transform().rotate(rotationAngle);
           } else {
             // Scale (based on pinPoint)
+            const delta = {
+              x: (currentPoint.x - initialPoint.x) * fixDragLeftValue,
+              y: (currentPoint.y - initialPoint.y) * fixDragBottomValue,
+            };
+
             let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
             let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
