@@ -74,13 +74,13 @@ export class PointerTool extends BaseTool {
 
   setCursorForRotationHandle(handleName) {
     if (handleName === "bottom-left") {
-      this.setCursor("url('/images/cursor-rotate-top-right.svg') 12 12, auto");
+      this.setCursor("url('/images/cursor-rotate-top-right.svg') 14 14, auto");
     } else if (handleName === "bottom-right") {
-      this.setCursor("url('/images/cursor-rotate-left-top.svg') 12 12, auto");
+      this.setCursor("url('/images/cursor-rotate-left-top.svg') 16 16, auto");
     } else if (handleName === "top-left") {
-      this.setCursor("url('/images/cursor-rotate-down-right.svg') 12 12, auto");
+      this.setCursor("url('/images/cursor-rotate-down-right.svg') 16 12, auto");
     } else if (handleName === "top-right") {
-      this.setCursor("url('/images/cursor-rotate-left-down.svg') 12 12, auto");
+      this.setCursor("url('/images/cursor-rotate-left-down.svg') 16 10, auto");
     } else if (handleName === "middle-left") {
       this.setCursor("url('/images/cursor-rotate-top-down-left.svg') 20 14, auto");
     } else if (handleName === "middle-right") {
