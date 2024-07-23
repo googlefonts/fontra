@@ -329,20 +329,29 @@ class PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 - v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
-            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
+            coordinates,
+            list(self.pointTypes),
+            copyContourInfo(self.contourInfo),
+            deepcopy(self.pointAttributes),
         )
 
     def __add__(self, other: PackedPath) -> PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 + v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
-            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
+            coordinates,
+            list(self.pointTypes),
+            copyContourInfo(self.contourInfo),
+            deepcopy(self.pointAttributes),
         )
 
     def __mul__(self, scalar: float) -> PackedPath:
         coordinates = [v * scalar for v in self.coordinates]
         return PackedPath(
-            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
+            coordinates,
+            list(self.pointTypes),
+            copyContourInfo(self.contourInfo),
+            deepcopy(self.pointAttributes),
         )
 
 
