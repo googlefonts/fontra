@@ -135,6 +135,7 @@ class PackedPath:
             self.pointAttributes = [None] * originalNumPoints
 
         if self.pointAttributes is not None:
+            assert pointAttributes is not None
             self.pointAttributes.extend(pointAttributes)
 
     def transformed(self, transform: Transform) -> PackedPath:
@@ -321,6 +322,7 @@ class PackedPath:
             self.pointAttributes = [None] * originalNumPoints
 
         if self.pointAttributes is not None:
+            assert pointAttributes is not None
             self.pointAttributes[startPoint : startPoint + numPoints] = deepcopy(
                 pointAttributes
             )
