@@ -101,8 +101,10 @@ class PackedPath:
         )
 
     def __post_init__(self):
-        if self.pointAttributes is not None and not any(self.pointAttributes):
-            self.pointAttributes = None
+        if self.pointAttributes is not None:
+            assert len(self.pointAttributes) == len(self.pointTypes)
+            if not any(self.pointAttributes):
+                self.pointAttributes = None
 
     def asPath(self) -> Path:
         from .classes import structure
@@ -379,6 +381,7 @@ class PackedPathPointPen:
     def __init__(self):
         self.coordinates = []
         self.pointTypes = []
+        self.pointAttributes = []
         self.contourInfo = []
         self.components = []
         self._currentContour = None
@@ -388,30 +391,47 @@ class PackedPathPointPen:
             self.coordinates,
             [PointType(tp) for tp in self.pointTypes],
             self.contourInfo,
+            self.pointAttributes,
         )
 
     def beginPath(self, **kwargs) -> None:
         self._currentContour = []
 
-    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs) -> None:
-        self._currentContour.append((pt, segmentType, smooth))
+    def addPoint(
+        self,
+        pt,
+        segmentType=None,
+        smooth=False,
+        name=None,
+        identifier=None,
+        *args,
+        **kwargs,
+    ) -> None:
+        attrs = {}
+        if name is not None:
+            attrs["name"] = name
+        if identifier is not None:
+            attrs["identifier"] = name
+        self._currentContour.append((pt, segmentType, smooth, attrs))
 
     def endPath(self) -> None:
         if not self._currentContour:
             return
         isClosed = self._currentContour[0][1] != "move"
         isQuadBlob = all(
-            segmentType is None for _, segmentType, _ in self._currentContour
+            segmentType is None for _, segmentType, _, _ in self._currentContour
         )
         if isQuadBlob:
             self.pointTypes.extend(
                 [PointType.OFF_CURVE_QUAD] * len(self._currentContour)
             )
-            for pt, _, _ in self._currentContour:
+            for pt, _, _, attrs in self._currentContour:
                 self.coordinates.extend(pt)
+                self.pointAttributes.append(attrs)
         else:
             pointTypes = []
-            for pt, segmentType, smooth in self._currentContour:
+            pointAttributes = []
+            for pt, segmentType, smooth, attrs in self._currentContour:
                 if segmentType is None:
                     pointTypes.append(PointType.OFF_CURVE_CUBIC)
                 elif segmentType in {"move", "line", "curve", "qcurve"}:
@@ -420,11 +440,11 @@ class PackedPathPointPen:
                     )
                 else:
                     raise TypeError(f"unexpected segment type: {segmentType}")
-
+                pointAttributes.append(attrs)
                 self.coordinates.extend(pt)
-            assert len(pointTypes) == len(self._currentContour)
+            assert len(pointTypes) == len(pointAttributes) == len(self._currentContour)
             # Fix the quad point types
-            for i, (_, segmentType, _) in enumerate(self._currentContour):
+            for i, (_, segmentType, _, _) in enumerate(self._currentContour):
                 if segmentType == "qcurve":
                     stopIndex = i - len(pointTypes) if isClosed else -1
                     for j in range(i - 1, stopIndex, -1):
@@ -432,6 +452,7 @@ class PackedPathPointPen:
                             break
                         pointTypes[j] = PointType.OFF_CURVE_QUAD
             self.pointTypes.extend(pointTypes)
+            self.pointAttributes.extend(pointAttributes)
         self.contourInfo.append(
             ContourInfo(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
         )
