@@ -72,10 +72,11 @@ export function insertPoint(path, intersection) {
 
       const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
       selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
-      selectedPointIndices.sort((a, b) => b - a);
     } else {
       // quad
       const points = [];
+      let localIndices = [];
+      let localIndex = 0;
       const splitPointsOnCurve = [];
       for (const bezierElement of splitBeziers) {
         const pointsTemp = [bezierElement.points[1], bezierElement.points[2]].map(
@@ -87,8 +88,11 @@ export function insertPoint(path, intersection) {
 
         // collect on-curve points for selectedPointIndices later
         splitPointsOnCurve.push(pointsTemp[1]);
+        localIndices.push(localIndex);
+        localIndex += 2;
       }
       points.pop(); // remove last on-curve point
+      localIndices.pop(); // remove last index
 
       const point1 = path.getPoint(segment.pointIndices[0]);
       const point2 = path.getPoint(segment.pointIndices[1]);
@@ -97,10 +101,12 @@ export function insertPoint(path, intersection) {
       if (point3.type) {
         path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
         numPointsInserted++;
+        localIndices = localIndices.map((i) => i + 1);
       }
       if (point1.type) {
         path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
         numPointsInserted++;
+        localIndices = localIndices.map((i) => i + 1);
       }
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
@@ -117,36 +123,8 @@ export function insertPoint(path, intersection) {
         numPointsInserted++;
       }
 
-      // Get selected point indices
-      const segmentPointIndexStart = segment.parentPointIndices[0];
-      const segmentPointIndexEnd =
-        segment.parentPointIndices[0] +
-        segment.parentPointIndices.length +
-        numPointsInserted;
-
-      // Need to loop through splitPointsOnCurve to find the correct selectedPointIndices,
-      // because one segment can be split multiple times via .ts,
-      // why it's not enough to check the intersection.x and .y
-      for (const i of range(splitPointsOnCurve.length - 1)) {
-        const splitPoint = splitPointsOnCurve[i];
-        for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
-          if (pointIndex >= path.numPoints) {
-            pointIndex = 0;
-          }
-          const point = path.getPoint(pointIndex);
-          if (!point.smooth) {
-            continue;
-          }
-          // Check for smooth only makes no sense here, because in case of quadradic curves
-          // it might be that there are multiple new on-curve points, not just one.
-          if (
-            point.x === Math.round(splitPoint.x) &&
-            point.y === Math.round(splitPoint.y)
-          ) {
-            selectedPointIndices.push(pointIndex);
-          }
-        }
-      }
+      const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+      selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
     }
   }
 
