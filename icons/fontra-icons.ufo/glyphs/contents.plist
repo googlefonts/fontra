@@ -68,6 +68,22 @@
     <string>r.glif</string>
     <key>reference</key>
     <string>reference.glif</string>
+    <key>cursor-rotate-down-right</key>
+    <string>cursor-rotate-down-right.glif</string>
+    <key>cursor-rotate-left-down</key>
+    <string>cursor-rotate-left-down.glif</string>
+    <key>cursor-rotate-left-right-bottom</key>
+    <string>cursor-rotate-left-right-bottom.glif</string>
+    <key>cursor-rotate-left-right-top</key>
+    <string>cursor-rotate-left-right-top.glif</string>
+    <key>cursor-rotate-left-top</key>
+    <string>cursor-rotate-left-top.glif</string>
+    <key>cursor-rotate-top-down-left</key>
+    <string>cursor-rotate-top-down-left.glif</string>
+    <key>cursor-rotate-top-down-right</key>
+    <string>cursor-rotate-top-down-right.glif</string>
+    <key>cursor-rotate-top-right</key>
+    <string>cursor-rotate-top-right.glif</string>
     <key>ruler</key>
     <string>ruler.glif</string>
     <key>s</key>

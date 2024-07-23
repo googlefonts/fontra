@@ -73,12 +73,25 @@ export class PointerTool extends BaseTool {
   }
 
   setCursorForRotationHandle(handleName) {
-    if (handleName) {
+    if (handleName === "bottom-left") {
+      this.setCursor("url('/images/cursor-rotate-top-right.svg') 12 12, auto");
+    } else if (handleName === "bottom-right") {
+      this.setCursor("url('/images/cursor-rotate-left-top.svg') 12 12, auto");
+    } else if (handleName === "top-left") {
+      this.setCursor("url('/images/cursor-rotate-down-right.svg') 12 12, auto");
+    } else if (handleName === "top-right") {
+      this.setCursor("url('/images/cursor-rotate-left-down.svg') 12 12, auto");
+    } else if (handleName === "middle-left") {
+      this.setCursor("url('/images/cursor-rotate-top-down-left.svg') 16 12, auto");
+    } else if (handleName === "middle-right") {
+      this.setCursor("url('/images/cursor-rotate-top-down-right.svg') 16 12, auto");
+    } else if (handleName === "top-center") {
+      this.setCursor("url('/images/cursor-rotate-left-right-top.svg') 16 12, auto");
+    } else if (handleName === "bottom-center") {
+      this.setCursor("url('/images/cursor-rotate-left-right-bottom.svg') 16 12, auto");
+    } else {
       this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
-      return;
     }
-    // TODO: Implement rotation cursor for each handle
-    this.setCursor();
   }
 
   setCursorForResizeHandle(handleName) {

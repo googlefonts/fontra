@@ -10,9 +10,9 @@ def numToString(number):
     return str(otRound(number))
 
 
-def makeSVG(pathString, width, height):
+def makeSVG(pathString, width, height, scaling=""):
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'<svg xmlns="http://www.w3.org/2000/svg" {scaling}'
         f'viewBox="0 0 {width} {height}">'
         f'<path d="{pathString}"/></svg>\n'
     )
@@ -38,4 +38,9 @@ for iconName in iconNames:
     glyph.draw(TransformPen(pen, (1, 0, 0, -1, 0, 800)))
     svgPath = pen.getCommands()
     iconPath = imagesDir / f"{iconName}.svg"
-    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000))
+
+    if iconName.startswith("cursor"):
+        scaling = "width='32' height='32' "
+    else:
+        scaling = ""
+    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, scaling))
