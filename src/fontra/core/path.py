@@ -174,6 +174,11 @@ class PackedPath:
             coordinates = self.coordinates[startPoint * 2 : endIndex * 2]
             points = list(pairwise(coordinates))
             pointTypes = self.pointTypes[startPoint:endIndex]
+            pointAttributes = (
+                self.pointAttributes[startPoint:endIndex]
+                if self.pointAttributes
+                else [None] * len(pointTypes)
+            )
             if not contourInfo.isClosed:
                 # strip leading and trailing off-curve points, they cause
                 # validation problems
@@ -194,7 +199,9 @@ class PackedPath:
                 if contourInfo.isClosed
                 else "move"
             )
-            for point, pointType in zip(points, pointTypes):
+            for point, pointType, attrs in zip(
+                points, pointTypes, pointAttributes, strict=True
+            ):
                 isSmooth = False
                 pointSegmentType = None
                 if pointType == PointType.ON_CURVE:
@@ -202,10 +209,19 @@ class PackedPath:
                 elif pointType == PointType.ON_CURVE_SMOOTH:
                     pointSegmentType = segmentType
                     isSmooth = True
+
+                name = None
+                identifier = None
+                if attrs:
+                    name = attrs.get("name")
+                    identifier = attrs.get("identifier")
+
                 pen.addPoint(
                     point,
                     segmentType=pointSegmentType,
                     smooth=isSmooth,
+                    name=name,
+                    identifier=identifier,
                 )
                 segmentType = _pointToSegmentType.get(pointType, "line")
             pen.endPath()
