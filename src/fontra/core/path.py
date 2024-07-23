@@ -407,7 +407,7 @@ class PackedPathPointPen:
             self.coordinates,
             [PointType(tp) for tp in self.pointTypes],
             self.contourInfo,
-            self.pointAttributes,
+            [attrs if attrs else None for attrs in self.pointAttributes],
         )
 
     def beginPath(self, **kwargs) -> None:
