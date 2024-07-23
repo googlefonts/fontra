@@ -302,3 +302,104 @@ def test_pathMath(path, arg, expectedResult, op, exception):
     else:
         with pytest.raises(exception):
             _ = op(path, arg)
+
+
+expectedNoAttrsPath = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+                {"x": -10, "y": -4},
+            ],
+            isClosed=True,
+        ),
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+                {"x": -10, "y": -4},
+            ],
+            isClosed=True,
+        ),
+    ]
+)
+
+expectedAttrsPath1 = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 60, "y": 0},
+                {"x": 110, "y": 0, "attrs": {"test": 321}},
+                {"x": 110, "y": 120},
+                {"x": 60, "y": 120},
+            ],
+            isClosed=True,
+        ),
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+                {"x": -10, "y": -4},
+            ],
+            isClosed=True,
+        ),
+    ]
+)
+
+expectedAttrsPath2 = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+                {"x": -10, "y": -4},
+            ],
+            isClosed=True,
+        ),
+        Contour(
+            points=[
+                {"x": 60, "y": 0},
+                {"x": 110, "y": 0, "attrs": {"test": 321}},
+                {"x": 110, "y": 120},
+                {"x": 60, "y": 120},
+            ],
+            isClosed=True,
+        ),
+    ]
+)
+
+
+@pytest.mark.parametrize(
+    "path1, path2, expectedResult",
+    [
+        (pathMathPath2, pathMathPath2, expectedNoAttrsPath),
+        (pathMathPath1, pathMathPath2, expectedAttrsPath1),
+        (pathMathPath2, pathMathPath1, expectedAttrsPath2),
+    ],
+)
+def test_appendPath(path1, path2, expectedResult):
+    path1 = path1.asPackedPath()
+    assert path1.pointAttributes is None or any(path1.pointAttributes)
+    path2 = path2.asPackedPath()
+    assert path2.pointAttributes is None or any(path2.pointAttributes)
+
+    path1.appendPath(path2)
+    result = path1.asPath()
+    assert expectedResult == result
+
+
+def test_insertPoint_deletePoint_deleteContour():
+    path = pathMathPath2.asPackedPath()
+    assert path.pointAttributes is None
+    path.insertPoint(0, 2, {"x": 100, "y": 100, "attrs": {"test": 654}})
+    assert path.pointAttributes == [None, None, {"test": 654}, None, None]
+    path.deletePoint(0, 2)
+    assert path.pointAttributes == [None, None, None, None]
+    path.deleteContour(0)
+    assert path.pointAttributes == []
+    assert path.pointTypes == []
