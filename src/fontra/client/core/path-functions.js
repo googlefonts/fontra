@@ -40,14 +40,19 @@ export function insertPoint(path, intersection) {
     const splitBeziers = bezierSplitMultiple(bezier, intersection);
     if (firstOffCurve.type === "cubic") {
       const points = [];
+      let localIndices = [];
+      let localIndex = 0;
       for (const bezierElement of splitBeziers) {
         const pointsTemp = [...bezierElement.points.slice(1)].map(vector.roundVector);
         pointsTemp[0].type = "cubic";
         pointsTemp[1].type = "cubic";
         pointsTemp[2].smooth = true;
         points.push(...pointsTemp);
+        localIndices.push(localIndex);
+        localIndex += 3;
       }
       points.pop(); // remove last on-curve point
+      localIndices.pop(); // remove last index
 
       const deleteIndices = segment.parentPointIndices.slice(1, -1);
       if (insertIndex < deleteIndices.length) {
@@ -59,31 +64,15 @@ export function insertPoint(path, intersection) {
         numPointsInserted++;
       }
 
-      // Get selected point indices
-      // selectionBias is non-zero if the cubic segment has more than
-      // two off-curve points, which is currently invalid. We delete all
-      // off-curve, and replace with clean cubic segments, but this messes
-      // with the selection index
-      const selectionBias = segment.parentPointIndices.length - 4;
-      let selectedContourPointIndex = insertIndex - selectionBias + points.length - 3;
-      // I don't know why, but a separate loop is needed to calculate the selectedPointIndices.
-      // It failed when I had it in the loop above integrated.
-      for (const point of reversed(points)) {
-        if (point.smooth) {
-          const selectedPathPointIndex = path.getAbsolutePointIndex(
-            contourIndex,
-            selectedContourPointIndex
-          );
-          selectedPointIndices.push(selectedPathPointIndex);
-        }
-        selectedContourPointIndex--;
-      }
-
       deleteIndices.sort((a, b) => b - a); // reverse sort
       deleteIndices.forEach((pointIndex) => {
         path.deletePoint(contourIndex, pointIndex + absToRel);
         numPointsInserted--;
       });
+
+      const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+      selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
+      selectedPointIndices.sort((a, b) => b - a);
     } else {
       // quad
       const points = [];
