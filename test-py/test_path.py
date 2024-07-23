@@ -403,3 +403,28 @@ def test_insertPoint_deletePoint_deleteContour():
     path.deleteContour(0)
     assert path.pointAttributes == []
     assert path.pointTypes == []
+
+
+def test_insertContour():
+    path = pathMathPath2.asPackedPath()
+    assert path.pointAttributes is None
+    path.insertContour(
+        1,
+        {
+            "coordinates": [0, 0],
+            "pointTypes": [0],
+            "pointAttributes": None,
+            "isClosed": False,
+        },
+    )
+    assert path.pointAttributes is None
+    path.insertContour(
+        2,
+        {
+            "coordinates": [0, 0],
+            "pointTypes": [0],
+            "pointAttributes": [{"test": 432}],
+            "isClosed": False,
+        },
+    )
+    assert path.pointAttributes == [None, None, None, None, None, {"test": 432}]
