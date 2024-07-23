@@ -97,8 +97,12 @@ class PackedPath:
             coordinates=coordinates,
             pointTypes=pointTypes,
             contourInfo=contourInfo,
-            pointAttributes=pointAttributes if any(pointAttributes) else None,
+            pointAttributes=pointAttributes,
         )
+
+    def __post_init__(self):
+        if self.pointAttributes is not None and not any(self.pointAttributes):
+            self.pointAttributes = None
 
     def asPath(self) -> Path:
         from .classes import structure
