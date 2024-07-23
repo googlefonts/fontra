@@ -427,7 +427,7 @@ class PackedPathPointPen:
         if name is not None:
             attrs["name"] = name
         if identifier is not None:
-            attrs["identifier"] = name
+            attrs["identifier"] = identifier
         self._currentContour.append((pt, segmentType, smooth, attrs))
 
     def endPath(self) -> None:
