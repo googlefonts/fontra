@@ -116,6 +116,8 @@ class PackedPath:
         return not self.contourInfo
 
     def appendPath(self, path: PackedPath) -> None:
+        originalNumPoints = len(self.pointTypes)
+
         self.coordinates.extend(path.coordinates)
         self.pointTypes.extend(path.pointTypes)
         endPointOffset = (
@@ -125,6 +127,15 @@ class PackedPath:
             replace(contourInfo, endPoint=contourInfo.endPoint + endPointOffset)
             for contourInfo in path.contourInfo
         )
+
+        pointAttributes = path.pointAttributes
+        if self.pointAttributes is not None and pointAttributes is None:
+            pointAttributes = [None] * len(path.pointTypes)
+        elif self.pointAttributes is None and pointAttributes is not None:
+            self.pointAttributes = [None] * originalNumPoints
+
+        if self.pointAttributes is not None:
+            self.pointAttributes.extend(pointAttributes)
 
     def transformed(self, transform: Transform) -> PackedPath:
         coordinates = self.coordinates
