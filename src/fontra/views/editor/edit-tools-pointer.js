@@ -441,35 +441,30 @@ export class PointerTool extends BaseTool {
     rotation = false
   ) {
     const sceneController = this.sceneController;
-    const clickedTransformationSelectionHandle =
+    const clickedHandle =
       sceneController.sceneModel.clickedTransformationSelectionHandle;
 
     // The following may seem wrong, but it's correct, because we say
     // for example bottom-left and not left-bottom. Y-X order.
-    const [resizeHandlePositionY, resizeHandlePositionX] =
-      clickedTransformationSelectionHandle.split("-");
+    const [handlePositionY, handlePositionX] = clickedHandle.split("-");
 
-    const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
+    const origin = { x: handlePositionX, y: handlePositionY };
     // origin must be the opposite side of where we have our mouse
-    if (resizeHandlePositionX === "left") {
+    if (handlePositionX === "left") {
       origin.x = "right";
-    } else if (resizeHandlePositionX === "right") {
+    } else if (handlePositionX === "right") {
       origin.x = "left";
     }
-    if (resizeHandlePositionY === "top") {
+    if (handlePositionY === "top") {
       origin.y = "bottom";
-    } else if (resizeHandlePositionY === "bottom") {
+    } else if (handlePositionY === "bottom") {
       origin.y = "top";
     }
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeftValue = clickedTransformationSelectionHandle.includes("left")
-      ? -1
-      : 1;
-    const fixDragBottomValue = clickedTransformationSelectionHandle.includes("bottom")
-      ? -1
-      : 1;
+    const fixDragLeftValue = clickedHandle.includes("left") ? -1 : 1;
+    const fixDragBottomValue = clickedHandle.includes("bottom") ? -1 : 1;
 
     const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
 
@@ -540,9 +535,9 @@ export class PointerTool extends BaseTool {
             let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
             let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-            if (clickedTransformationSelectionHandle.includes("middle")) {
+            if (clickedHandle.includes("middle")) {
               scaleY = event.shiftKey ? scaleX : 1;
-            } else if (clickedTransformationSelectionHandle.includes("center")) {
+            } else if (clickedHandle.includes("center")) {
               scaleX = event.shiftKey ? scaleY : 1;
             } else if (event.shiftKey) {
               scaleX = scaleY = Math.max(scaleX, scaleY);
