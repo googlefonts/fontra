@@ -194,7 +194,7 @@ pathMathPath1 = Path(
         Contour(
             points=[
                 {"x": 60, "y": 0},
-                {"x": 110, "y": 0},
+                {"x": 110, "y": 0, "attrs": {"test": 321}},
                 {"x": 110, "y": 120},
                 {"x": 60, "y": 120},
             ],
@@ -232,7 +232,7 @@ pathMathPathAdd = Path(
         Contour(
             points=[
                 {"x": 90, "y": 2},
-                {"x": 120, "y": 5},
+                {"x": 120, "y": 5, "attrs": {"test": 321}},
                 {"x": 130, "y": 100},
                 {"x": 50, "y": 116},
             ],
@@ -245,7 +245,7 @@ pathMathPathSub = Path(
         Contour(
             points=[
                 {"x": 30, "y": -2},
-                {"x": 100, "y": -5},
+                {"x": 100, "y": -5, "attrs": {"test": 321}},
                 {"x": 90, "y": 140},
                 {"x": 70, "y": 124},
             ],
@@ -258,7 +258,7 @@ pathMathPathMul = Path(
         Contour(
             points=[
                 {"x": 120, "y": 0},
-                {"x": 220, "y": 0},
+                {"x": 220, "y": 0, "attrs": {"test": 321}},
                 {"x": 220, "y": 240},
                 {"x": 120, "y": 240},
             ],
