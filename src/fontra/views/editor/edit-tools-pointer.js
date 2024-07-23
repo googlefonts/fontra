@@ -55,14 +55,9 @@ export class PointerTool extends BaseTool {
     }
 
     this.sceneController.sceneModel.showTransformationSelection = true;
-    const resizeHandle = this.getTransformationSelectionHandle(
-      event,
-      sceneController.selection
-    );
-    if (
-      this.sceneController.sceneModel.hoverTransformationSelectionHandle != resizeHandle
-    ) {
-      this.sceneController.sceneModel.hoverTransformationSelectionHandle = resizeHandle;
+    const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
+      this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
     }
     if (resizeHandle) {
@@ -106,18 +101,15 @@ export class PointerTool extends BaseTool {
   async handleDrag(eventStream, initialEvent) {
     const sceneController = this.sceneController;
     const initialSelection = sceneController.selection;
-    const resizeHandle = this.getTransformationSelectionHandle(
-      initialEvent,
-      initialSelection
-    );
+    const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
     if (resizeHandle) {
-      sceneController.sceneModel.clickedTransformationSelectionHandle = resizeHandle;
+      sceneController.sceneModel.clickedResizeHandle = resizeHandle;
       await this.handleBoundsTransformationSelection(
         initialSelection,
         eventStream,
         initialEvent
       );
-      delete sceneController.sceneModel.clickedTransformationSelectionHandle;
+      delete sceneController.sceneModel.clickedResizeHandle;
       return;
     }
 
@@ -418,13 +410,12 @@ export class PointerTool extends BaseTool {
 
   async handleBoundsTransformationSelection(selection, eventStream, initialEvent) {
     const sceneController = this.sceneController;
-    const clickedTransformationSelectionHandle =
-      sceneController.sceneModel.clickedTransformationSelectionHandle;
+    const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
 
     // The following may seem wrong, but it's correct, because we say
     // for example bottom-left and not left-bottom. Y-X order.
     const [resizeHandlePositionY, resizeHandlePositionX] =
-      clickedTransformationSelectionHandle.split("-");
+      clickedResizeHandle.split("-");
 
     const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
     // origin must be the opposite side of where we have our mouse
@@ -441,12 +432,8 @@ export class PointerTool extends BaseTool {
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeftValue = clickedTransformationSelectionHandle.includes("left")
-      ? -1
-      : 1;
-    const fixDragBottomValue = clickedTransformationSelectionHandle.includes("bottom")
-      ? -1
-      : 1;
+    const fixDragLeftValue = clickedResizeHandle.includes("left") ? -1 : 1;
+    const fixDragBottomValue = clickedResizeHandle.includes("bottom") ? -1 : 1;
 
     const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
 
@@ -506,9 +493,9 @@ export class PointerTool extends BaseTool {
             let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
             let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-            if (clickedTransformationSelectionHandle.includes("middle")) {
+            if (clickedResizeHandle.includes("middle")) {
               scaleY = event.shiftKey ? scaleX : 1;
-            } else if (clickedTransformationSelectionHandle.includes("center")) {
+            } else if (clickedResizeHandle.includes("center")) {
               scaleX = event.shiftKey ? scaleY : 1;
             } else if (event.shiftKey) {
               scaleX = scaleY = Math.max(scaleX, scaleY);
@@ -563,7 +550,7 @@ export class PointerTool extends BaseTool {
     });
   }
 
-  getTransformationSelectionHandle(event, selection) {
+  getResizeHandle(event, selection) {
     if (
       !this.editor.visualizationLayersSettings.model["fontra.transformation.selection"]
     ) {
@@ -576,9 +563,12 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
-    const resizeSelectionBounds = getTransformationSelectionBounds(glyph, selection);
-    // resizeSelectionBounds can be undefiend if for example only one point is selected
-    if (!resizeSelectionBounds) {
+    const transformationSelectionBounds = getTransformationSelectionBounds(
+      glyph,
+      selection
+    );
+    // transformationSelectionBounds can be undefiend if for example only one point is selected
+    if (!transformationSelectionBounds) {
       return undefined;
     }
 
@@ -586,10 +576,7 @@ export class PointerTool extends BaseTool {
       handleMarginValue * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
-    const resizeHandles = getTransformationSelectionHandles(
-      resizeSelectionBounds,
-      handleMargin
-    );
+    const resizeHandles = getResizeHandles(transformationSelectionBounds, handleMargin);
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
       if (vector.distance(handle, point) < handleMargin / 2) {
         return handleName;
@@ -639,11 +626,11 @@ registerVisualizationLayerDefinition({
     if (!model.showTransformationSelection) {
       return;
     }
-    const resizeBounds = getTransformationSelectionBounds(
+    const transformationBounds = getTransformationSelectionBounds(
       positionedGlyph.glyph,
       model.selection
     );
-    if (!resizeBounds) {
+    if (!transformationBounds) {
       return;
     }
 
@@ -651,19 +638,16 @@ registerVisualizationLayerDefinition({
     context.lineWidth = parameters.strokeWidth;
 
     // draw resize handles
-    const handles = getTransformationSelectionHandles(resizeBounds, parameters.margin);
+    const handles = getResizeHandles(transformationBounds, parameters.margin);
     for (const [handleName, handle] of Object.entries(handles)) {
       strokeRoundNode(context, handle, parameters.handleSize);
     }
 
     // draw resize handles hover
-    if (
-      !model.clickedTransformationSelectionHandle &&
-      handles[model.hoverTransformationSelectionHandle]
-    ) {
+    if (!model.clickedResizeHandle && handles[model.hoverResizeHandle]) {
       strokeRoundNode(
         context,
-        handles[model.hoverTransformationSelectionHandle],
+        handles[model.hoverResizeHandle],
         parameters.handleSize + parameters.hoverStrokeOffset
       );
     }
@@ -672,22 +656,22 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
-      resizeBounds.xMin,
-      resizeBounds.yMin,
-      resizeBounds.xMax - resizeBounds.xMin,
-      resizeBounds.yMax - resizeBounds.yMin
+      transformationBounds.xMin,
+      transformationBounds.yMin,
+      transformationBounds.xMax - transformationBounds.xMin,
+      transformationBounds.yMax - transformationBounds.yMin
     );
   },
 });
 
-function getTransformationSelectionHandles(resizeBounds, margin) {
-  const { width, height } = rectSize(resizeBounds);
+function getResizeHandles(transformationBounds, margin) {
+  const { width, height } = rectSize(transformationBounds);
 
   const [x, y, w, h] = [
-    resizeBounds.xMin - margin,
-    resizeBounds.yMin - margin,
-    resizeBounds.xMax - resizeBounds.xMin + margin * 2,
-    resizeBounds.yMax - resizeBounds.yMin + margin * 2,
+    transformationBounds.xMin - margin,
+    transformationBounds.yMin - margin,
+    transformationBounds.xMax - transformationBounds.xMin + margin * 2,
+    transformationBounds.yMax - transformationBounds.yMin + margin * 2,
   ];
 
   const handles = {
