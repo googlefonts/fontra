@@ -112,7 +112,8 @@ export function insertPoint(path, intersection) {
       path.deletePoint(contourIndex, insertIndex);
       numPointsInserted--;
 
-      if (!point3.type) {
+      // TODO: Review by Just. It seems to work, but I am not sure about the solution.
+      if (!point3.type && segment.parentPointIndices.length > 3) {
         path.deletePoint(contourIndex, insertIndex);
         numPointsInserted--;
       }
@@ -124,7 +125,43 @@ export function insertPoint(path, intersection) {
       }
 
       const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-      selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
+      const selectedPointIndicesDiffAproach = localIndices.map(
+        (i) => startPointIndex + insertIndex + i
+      );
+
+      // 'selectedPointIndicesDiffAproach' does not work, and I don't know why.
+      // Why I keep the following code for reference.
+      const segmentPointIndexStart = segment.parentPointIndices[0];
+      const segmentPointIndexEnd =
+        segment.parentPointIndices[0] +
+        segment.parentPointIndices.length +
+        numPointsInserted;
+      // Need to loop through splitPointsOnCurve to find the correct selectedPointIndices,
+      // because one segment can be split multiple times via .ts,
+      // why it's not enough to check the intersection.x and .y
+      for (const i of range(splitPointsOnCurve.length - 1)) {
+        const splitPoint = splitPointsOnCurve[i];
+        for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
+          if (pointIndex >= path.numPoints) {
+            pointIndex = 0;
+          }
+          const point = path.getPoint(pointIndex);
+          if (!point.smooth) {
+            continue;
+          }
+          // Check for smooth only makes no sense here, because in case of quadradic curves
+          // it might be that there are multiple new on-curve points, not just one.
+          if (
+            point.x === Math.round(splitPoint.x) &&
+            point.y === Math.round(splitPoint.y)
+          ) {
+            selectedPointIndices.push(pointIndex);
+          }
+        }
+      }
+
+      console.log("selectedPointIndicesDiffAproach", selectedPointIndicesDiffAproach);
+      console.log("selectedPointIndices", selectedPointIndices);
     }
   }
 
