@@ -28,7 +28,8 @@ import {
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
-const handleMarginValue = 10;
+const resizeHandleMarginValue = 10;
+const rotationHandleMarginValue = 20;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -55,23 +56,32 @@ export class PointerTool extends BaseTool {
     }
 
     this.sceneController.sceneModel.showTransformationSelection = true;
+
+    const rotationHandle = this.getRotationHandle(event, sceneController.selection);
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
-    if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
-      this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
-      this.canvasController.requestUpdate();
-    }
-    if (resizeHandle) {
-      this.setCursorForTransformationSelectionHandle(resizeHandle, event.metaKey);
+    if (rotationHandle) {
+      this.setCursorForRotationHandle(rotationHandle);
+    } else if (resizeHandle) {
+      if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
+        this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
+        this.canvasController.requestUpdate();
+      }
+      this.setCursorForResizeHandle(resizeHandle);
     } else {
       this.setCursor();
     }
   }
 
-  setCursorForTransformationSelectionHandle(handleName, rotationKey = undefined) {
-    if (handleName && rotationKey) {
+  setCursorForRotationHandle(handleName) {
+    if (handleName) {
       this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
       return;
     }
+    // TODO: Implement rotation cursor for each handle
+    this.setCursor();
+  }
+
+  setCursorForResizeHandle(handleName) {
     if (handleName === "bottom-left" || handleName === "top-right") {
       this.setCursor("nesw-resize");
     } else if (handleName === "bottom-right" || handleName === "top-left") {
@@ -102,14 +112,17 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const initialSelection = sceneController.selection;
     const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
-    if (resizeHandle) {
-      sceneController.sceneModel.clickedResizeHandle = resizeHandle;
+    const roationHandle = this.getRotationHandle(initialEvent, initialSelection);
+    if (resizeHandle || roationHandle) {
+      sceneController.sceneModel.clickedTransformationSelectionHandle =
+        resizeHandle || roationHandle;
       await this.handleBoundsTransformationSelection(
         initialSelection,
         eventStream,
-        initialEvent
+        initialEvent,
+        !!roationHandle
       );
-      delete sceneController.sceneModel.clickedResizeHandle;
+      delete sceneController.sceneModel.clickedTransformationSelectionHandle;
       return;
     }
 
@@ -408,14 +421,20 @@ export class PointerTool extends BaseTool {
     this.sceneController.sceneModel.showTransformationSelection = true;
   }
 
-  async handleBoundsTransformationSelection(selection, eventStream, initialEvent) {
+  async handleBoundsTransformationSelection(
+    selection,
+    eventStream,
+    initialEvent,
+    roation = false
+  ) {
     const sceneController = this.sceneController;
-    const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
+    const clickedTransformationSelectionHandle =
+      sceneController.sceneModel.clickedTransformationSelectionHandle;
 
     // The following may seem wrong, but it's correct, because we say
     // for example bottom-left and not left-bottom. Y-X order.
     const [resizeHandlePositionY, resizeHandlePositionX] =
-      clickedResizeHandle.split("-");
+      clickedTransformationSelectionHandle.split("-");
 
     const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
     // origin must be the opposite side of where we have our mouse
@@ -432,8 +451,12 @@ export class PointerTool extends BaseTool {
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeftValue = clickedResizeHandle.includes("left") ? -1 : 1;
-    const fixDragBottomValue = clickedResizeHandle.includes("bottom") ? -1 : 1;
+    const fixDragLeftValue = clickedTransformationSelectionHandle.includes("left")
+      ? -1
+      : 1;
+    const fixDragBottomValue = clickedTransformationSelectionHandle.includes("bottom")
+      ? -1
+      : 1;
 
     const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
 
@@ -476,7 +499,7 @@ export class PointerTool extends BaseTool {
           const layerGlyph = layer.layerGlyphController.instance;
           const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           let transformation;
-          if (event.metaKey) {
+          if (roation) {
             // Rotate (based on pinPoint)
             this.sceneController.sceneModel.showTransformationSelection = false;
             const angleInitial = Math.atan2(
@@ -493,9 +516,9 @@ export class PointerTool extends BaseTool {
             let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
             let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-            if (clickedResizeHandle.includes("middle")) {
+            if (clickedTransformationSelectionHandle.includes("middle")) {
               scaleY = event.shiftKey ? scaleX : 1;
-            } else if (clickedResizeHandle.includes("center")) {
+            } else if (clickedTransformationSelectionHandle.includes("center")) {
               scaleX = event.shiftKey ? scaleY : 1;
             } else if (event.shiftKey) {
               scaleX = scaleY = Math.max(scaleX, scaleY);
@@ -550,7 +573,24 @@ export class PointerTool extends BaseTool {
     });
   }
 
+  getRotationHandle(event, selection) {
+    return this.getTransformationSelectionHandle(
+      event,
+      selection,
+      rotationHandleMarginValue,
+      1 / 3
+    );
+  }
+
   getResizeHandle(event, selection) {
+    return this.getTransformationSelectionHandle(
+      event,
+      selection,
+      resizeHandleMarginValue
+    );
+  }
+
+  getTransformationSelectionHandle(event, selection, margin, distanceFactor = 1 / 2) {
     if (
       !this.editor.visualizationLayersSettings.model["fontra.transformation.selection"]
     ) {
@@ -572,13 +612,12 @@ export class PointerTool extends BaseTool {
       return undefined;
     }
 
-    const handleMargin =
-      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
+    const handleMargin = margin * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
     const resizeHandles = getResizeHandles(transformationSelectionBounds, handleMargin);
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
-      if (vector.distance(handle, point) < handleMargin / 2) {
+      if (vector.distance(handle, point) < handleMargin * distanceFactor) {
         return handleName;
       }
     }
@@ -617,7 +656,7 @@ registerVisualizationLayerDefinition({
     lineDash: [2, 4],
     handleSize: 8,
     hoverStrokeOffset: 4,
-    margin: handleMarginValue,
+    margin: resizeHandleMarginValue,
   },
 
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
@@ -644,7 +683,10 @@ registerVisualizationLayerDefinition({
     }
 
     // draw resize handles hover
-    if (!model.clickedResizeHandle && handles[model.hoverResizeHandle]) {
+    if (
+      !model.clickedTransformationSelectionHandle &&
+      handles[model.hoverResizeHandle]
+    ) {
       strokeRoundNode(
         context,
         handles[model.hoverResizeHandle],
@@ -665,6 +707,10 @@ registerVisualizationLayerDefinition({
 });
 
 function getResizeHandles(transformationBounds, margin) {
+  return getTransformationSelectionHandles(transformationBounds, margin);
+}
+
+function getTransformationSelectionHandles(transformationBounds, margin) {
   const { width, height } = rectSize(transformationBounds);
 
   const [x, y, w, h] = [
