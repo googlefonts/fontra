@@ -29,7 +29,7 @@ import {
 import { copyComponent } from "/core/var-glyph.js";
 
 const resizeHandleMarginValue = 10;
-const rotationHandleMarginValue = 20;
+const rotationHandleMarginValue = 22;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -59,13 +59,13 @@ export class PointerTool extends BaseTool {
 
     const rotationHandle = this.getRotationHandle(event, sceneController.selection);
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
+      this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
+      this.canvasController.requestUpdate();
+    }
     if (rotationHandle) {
       this.setCursorForRotationHandle(rotationHandle);
     } else if (resizeHandle) {
-      if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
-        this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
-        this.canvasController.requestUpdate();
-      }
       this.setCursorForResizeHandle(resizeHandle);
     } else {
       this.setCursor();
@@ -82,13 +82,13 @@ export class PointerTool extends BaseTool {
     } else if (handleName === "top-right") {
       this.setCursor("url('/images/cursor-rotate-left-down.svg') 12 12, auto");
     } else if (handleName === "middle-left") {
-      this.setCursor("url('/images/cursor-rotate-top-down-left.svg') 16 12, auto");
+      this.setCursor("url('/images/cursor-rotate-top-down-left.svg') 20 14, auto");
     } else if (handleName === "middle-right") {
-      this.setCursor("url('/images/cursor-rotate-top-down-right.svg') 16 12, auto");
+      this.setCursor("url('/images/cursor-rotate-top-down-right.svg') 12 14, auto");
     } else if (handleName === "top-center") {
-      this.setCursor("url('/images/cursor-rotate-left-right-top.svg') 16 12, auto");
+      this.setCursor("url('/images/cursor-rotate-left-right-top.svg') 16 18, auto");
     } else if (handleName === "bottom-center") {
-      this.setCursor("url('/images/cursor-rotate-left-right-bottom.svg') 16 12, auto");
+      this.setCursor("url('/images/cursor-rotate-left-right-bottom.svg') 16 10, auto");
     } else {
       this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
     }

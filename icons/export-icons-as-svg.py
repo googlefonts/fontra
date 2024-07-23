@@ -40,7 +40,7 @@ for iconName in iconNames:
     iconPath = imagesDir / f"{iconName}.svg"
 
     if iconName.startswith("cursor"):
-        # For cursors the max size seem to be 32:
+        # For cursors, the maximum size seems to be 32:
         # https://stackoverflow.com/questions/6648279/cursor-256x256-px-size#answer-6648759
         scaling = "width='32' height='32' "
     else:
