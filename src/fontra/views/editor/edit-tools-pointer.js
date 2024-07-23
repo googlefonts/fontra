@@ -125,15 +125,15 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const initialSelection = sceneController.selection;
     const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
-    const roationHandle = this.getRotationHandle(initialEvent, initialSelection);
-    if (resizeHandle || roationHandle) {
+    const rotationHandle = this.getRotationHandle(initialEvent, initialSelection);
+    if (resizeHandle || rotationHandle) {
       sceneController.sceneModel.clickedTransformationSelectionHandle =
-        resizeHandle || roationHandle;
+        resizeHandle || rotationHandle;
       await this.handleBoundsTransformationSelection(
         initialSelection,
         eventStream,
         initialEvent,
-        !!roationHandle
+        !!rotationHandle
       );
       delete sceneController.sceneModel.clickedTransformationSelectionHandle;
       return;
@@ -438,7 +438,7 @@ export class PointerTool extends BaseTool {
     selection,
     eventStream,
     initialEvent,
-    roation = false
+    rotation = false
   ) {
     const sceneController = this.sceneController;
     const clickedTransformationSelectionHandle =
@@ -508,7 +508,7 @@ export class PointerTool extends BaseTool {
           const layerGlyph = layer.layerGlyphController.instance;
           const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           let transformation;
-          if (roation) {
+          if (rotation) {
             // Rotate (based on pinPoint)
             this.sceneController.sceneModel.showTransformationSelection = false;
             let pointB;
