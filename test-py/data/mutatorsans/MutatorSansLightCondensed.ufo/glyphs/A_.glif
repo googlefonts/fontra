@@ -6,8 +6,8 @@
   <outline>
     <contour>
       <point x="20" y="0" type="line"/>
-      <point x="60" y="0" type="line"/>
-      <point x="200" y="700" type="line"/>
+      <point x="60" y="0" type="line" name="test-name"/>
+      <point x="200" y="700" type="line" identifier="test-identifier"/>
       <point x="165" y="700" type="line"/>
     </contour>
     <contour>
