@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import Optional, TypedDict
@@ -216,7 +216,7 @@ class PackedPath:
         contour = self.contourInfo[contourIndex]
         startPoint = self._getContourStartPoint(contourIndex)
         numPoints = contour.endPoint + 1 - startPoint
-        self._replacePoints(startPoint, numPoints, [], [])
+        self._replacePoints(startPoint, numPoints, [], [], None)
         del self.contourInfo[contourIndex]
         self._moveEndPoints(contourIndex, -numPoints)
 
@@ -224,7 +224,11 @@ class PackedPath:
         contourIndex = self._normalizeContourIndex(contourIndex, True)
         startPoint = self._getContourStartPoint(contourIndex)
         self._replacePoints(
-            startPoint, 0, contour["coordinates"], contour["pointTypes"]
+            startPoint,
+            0,
+            contour["coordinates"],
+            contour["pointTypes"],
+            contour.get("pointAttributes"),
         )
         contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
         self.contourInfo.insert(contourIndex, contourInfo)
@@ -233,14 +237,21 @@ class PackedPath:
     def deletePoint(self, contourIndex: int, contourPointIndex: int) -> None:
         contourIndex = self._normalizeContourIndex(contourIndex)
         pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex)
-        self._replacePoints(pointIndex, 1, [], [])
+        self._replacePoints(pointIndex, 1, [], [], None)
         self._moveEndPoints(contourIndex, -1)
 
     def insertPoint(self, contourIndex: int, contourPointIndex: int, point: dict):
         contourIndex = self._normalizeContourIndex(contourIndex)
         pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex, True)
         pointType = packPointType(point.get("type"), point.get("smooth"))
-        self._replacePoints(pointIndex, 0, [point["x"], point["y"]], [pointType])
+        attrs = point.get("attrs")
+        self._replacePoints(
+            pointIndex,
+            0,
+            [point["x"], point["y"]],
+            [pointType],
+            [attrs] if attrs else None,
+        )
         self._moveEndPoints(contourIndex, 1)
 
     def _getContourStartPoint(self, contourIndex: int) -> int:
@@ -281,10 +292,23 @@ class PackedPath:
         numPoints: int,
         coordinates: list[float],
         pointTypes: list[PointType],
+        pointAttributes: list[dict | None] | None,
     ):
+        originalNumPoints = len(self.pointTypes)
+
         dblIndex = startPoint * 2
         self.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
         self.pointTypes[startPoint : startPoint + numPoints] = pointTypes
+
+        if self.pointAttributes is not None and pointAttributes is None:
+            pointAttributes = [None] * len(pointTypes)
+        elif self.pointAttributes is None and pointAttributes is not None:
+            self.pointAttributes = [None] * originalNumPoints
+
+        if self.pointAttributes is not None:
+            self.pointAttributes[startPoint : startPoint + numPoints] = deepcopy(
+                pointAttributes
+            )
 
     def _moveEndPoints(self, fromContourIndex: int, offset: int) -> None:
         for contourInfo in self.contourInfo[fromContourIndex:]:
