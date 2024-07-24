@@ -1470,4 +1470,30 @@ describe("VarPackedPath Tests", () => {
     expect(path.pointAttributes).to.deep.equal([]);
     expect(path.pointTypes).to.deep.equal([]);
   });
+
+  it("test insertContour", () => {
+    const path = VarPackedPath.fromUnpackedContours(pathPlain);
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertContour(1, {
+      coordinates: [0, 0],
+      pointTypes: [0],
+      pointAttributes: null,
+      isClosed: false,
+    });
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertContour(2, {
+      coordinates: [0, 0],
+      pointTypes: [0],
+      pointAttributes: [{ test: 432 }],
+      isClosed: false,
+    });
+    expect(path.pointAttributes).to.deep.equal([
+      null,
+      null,
+      null,
+      null,
+      null,
+      { test: 432 },
+    ]);
+  });
 });
