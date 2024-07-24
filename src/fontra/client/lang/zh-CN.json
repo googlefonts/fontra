@@ -7,6 +7,7 @@
   "action.decompose-component": "释放 %0 个组件",
   "action.delete-glyph": "删除字符形",
   "action.delete-selection": "删除选中",
+  "action.join-contours": "Join Contours",
   "action.redo": "重做",
   "action.reverse-contour": "反转轮廓方向",
   "action.select-all": "全选",

@@ -569,18 +569,18 @@ export class SceneController {
         consolidateChanges(rollbackChanges)
       );
 
-      let newSelection;
+      let newSelection = new Set();
       for (const { layerGlyph, changePath } of layerInfo) {
         const connectDetector = this.getPathConnectDetector(layerGlyph.path);
         if (connectDetector.shouldConnect()) {
           const connectChanges = recordChanges(layerGlyph, (layerGlyph) => {
-            const thisSelection = connectContours(
+            const selectionPointIndices = connectContours(
               layerGlyph.path,
               connectDetector.connectSourcePointIndex,
               connectDetector.connectTargetPointIndex
             );
-            if (newSelection === undefined) {
-              newSelection = thisSelection;
+            for (const pointIndex of selectionPointIndices) {
+              newSelection.add(`point/${pointIndex}`);
             }
           });
           if (connectChanges.hasChange) {
@@ -665,7 +665,9 @@ export class SceneController {
             );
           }
         },
-        enabled: () => this.contextMenuState.openContourSelection?.length,
+        enabled: () =>
+          this.contextMenuState.joinContourSelection?.length ||
+          this.contextMenuState.openContourSelection?.length,
         callback: () => {
           if (this.contextMenuState.joinContourSelection?.length === 2) {
             return this.doJoinSelectedOpenContours();
@@ -1183,17 +1185,18 @@ export class SceneController {
   }
 
   async doJoinSelectedOpenContours() {
-    let newSelection;
+    let newSelection = new Set();
     const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        const thisSelection = connectContours(
+        const selectionPointIndices = connectContours(
           layerGlyph.path,
           pointIndex1,
-          pointIndex2
+          pointIndex2,
+          true // join two points
         );
-        if (newSelection === undefined) {
-          newSelection = thisSelection;
+        for (const pointIndex of selectionPointIndices) {
+          newSelection.add(`point/${pointIndex}`);
         }
       }
       if (newSelection) {
@@ -1396,7 +1399,7 @@ function reversePointSelection(path, pointSelection) {
 }
 
 function getSelectedJoinContours(path, pointSelection) {
-  if (pointSelection.length !== 2) {
+  if (pointSelection?.length !== 2) {
     return [];
   }
 

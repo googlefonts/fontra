@@ -378,13 +378,13 @@ export class PointerTool extends BaseTool {
         }
 
         const connectChanges = recordChanges(layer.layerGlyph, (layerGlyph) => {
-          const selection = connectContours(
+          const selectionPointIndices = connectContours(
             layerGlyph.path,
             layer.connectDetector.connectSourcePointIndex,
             layer.connectDetector.connectTargetPointIndex
           );
           if (layer.isPrimaryLayer) {
-            sceneController.selection = selection;
+            sceneController.selection = new Set([`point/${selectionPointIndices[0]}`]);
           }
         });
         if (connectChanges.hasChange) {
