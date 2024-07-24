@@ -73,25 +73,19 @@ export class PointerTool extends BaseTool {
   }
 
   setCursorForRotationHandle(handleName) {
-    if (handleName === "bottom-left") {
-      this.setCursor("url('/images/cursor-rotate-top-right.svg') 14 14, auto");
-    } else if (handleName === "bottom-right") {
-      this.setCursor("url('/images/cursor-rotate-left-top.svg') 16 16, auto");
-    } else if (handleName === "top-left") {
-      this.setCursor("url('/images/cursor-rotate-down-right.svg') 16 12, auto");
-    } else if (handleName === "top-right") {
-      this.setCursor("url('/images/cursor-rotate-left-down.svg') 16 10, auto");
-    } else if (handleName === "middle-left") {
-      this.setCursor("url('/images/cursor-rotate-top-down-left.svg') 20 14, auto");
-    } else if (handleName === "middle-right") {
-      this.setCursor("url('/images/cursor-rotate-top-down-right.svg') 12 14, auto");
-    } else if (handleName === "top-center") {
-      this.setCursor("url('/images/cursor-rotate-left-right-top.svg') 16 18, auto");
-    } else if (handleName === "bottom-center") {
-      this.setCursor("url('/images/cursor-rotate-left-right-bottom.svg') 16 10, auto");
-    } else {
-      this.setCursor("url('/tabler-icons/rotate.svg') 12 12, auto");
-    }
+    const cursorPositions = {
+      "bottom-left": "14 14",
+      "bottom-right": "16 16",
+      "top-left": "16 12",
+      "top-right": "16 10",
+      "middle-left": "20 14",
+      "middle-right": "12 14",
+      "top-center": "16 18",
+      "bottom-center": "16 10",
+    };
+    this.setCursor(
+      `url('/images/cursor-rotate-${handleName}.svg') ${cursorPositions[handleName]}, auto`
+    );
   }
 
   setCursorForResizeHandle(handleName) {
