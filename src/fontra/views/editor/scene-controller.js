@@ -647,18 +647,32 @@ export class SceneController {
     this.contextMenuState.openContourSelection = glyphController.canEdit
       ? getSelectedClosableContours(glyphController.instance.path, pointSelection)
       : [];
+    this.contextMenuState.joinContourSelection = glyphController.canEdit
+      ? getSelectedJoinContours(glyphController.instance.path, pointSelection)
+      : [];
   }
 
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
-        title: () =>
-          translatePlural(
-            "action.close-contour",
-            this.contextMenuState.openContourSelection?.length
-          ),
+        title: () => {
+          if (this.contextMenuState.joinContourSelection?.length === 2) {
+            return translate("action.join-contours");
+          } else {
+            return translatePlural(
+              "action.close-contour",
+              this.contextMenuState.openContourSelection?.length
+            );
+          }
+        },
         enabled: () => this.contextMenuState.openContourSelection?.length,
-        callback: () => this.doCloseSelectedOpenContours(),
+        callback: () => {
+          if (this.contextMenuState.joinContourSelection?.length === 2) {
+            return this.doJoinSelectedOpenContours();
+          } else {
+            return this.doCloseSelectedOpenContours();
+          }
+        },
         shortCut: { keysOrCodes: "j", metaKey: true },
       },
       {
@@ -1168,6 +1182,27 @@ export class SceneController {
     });
   }
 
+  async doJoinSelectedOpenContours() {
+    let newSelection;
+    const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const thisSelection = connectContours(
+          layerGlyph.path,
+          pointIndex1,
+          pointIndex2
+        );
+        if (newSelection === undefined) {
+          newSelection = thisSelection;
+        }
+      }
+      if (newSelection) {
+        this.selection = newSelection;
+      }
+      return translate("action.join-contours");
+    });
+  }
+
   async doCloseSelectedOpenContours() {
     const openContours = this.contextMenuState.openContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
@@ -1358,6 +1393,25 @@ function reversePointSelection(path, pointSelection) {
   }
   newSelection.sort((a, b) => (a > b) - (a < b));
   return new Set(newSelection);
+}
+
+function getSelectedJoinContours(path, pointSelection) {
+  if (pointSelection.length !== 2) {
+    return [];
+  }
+
+  for (const pointIndex of pointSelection) {
+    if (!path.isStartOrEndPoint(pointIndex)) {
+      // must be start or end point
+      return [];
+    }
+    const contourIndex = path.getContourIndex(pointIndex);
+    if (path.contourInfo[contourIndex].isClosed) {
+      // return, because at least one of the selected points is a closed contour
+      return [];
+    }
+  }
+  return pointSelection;
 }
 
 function getSelectedContours(path, pointSelection) {
