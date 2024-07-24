@@ -10,11 +10,15 @@ def numToString(number):
     return str(otRound(number))
 
 
-def makeSVG(pathString, width, height, scaling=""):
+def makeSVG(pathString, width, height, iconSize=None):
+    iconSizeString = (
+        "" if iconSize is None else f'width="{iconSize} height="{iconSize}" '
+    )
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" {scaling}'
-        f'viewBox="0 0 {width} {height}">'
-        f'<path d="{pathString}"/></svg>\n'
+        '<svg xmlns="http://www.w3.org/2000/svg" '
+        + iconSizeString
+        + f'viewBox="0 0 {width} {height}">'
+        + f'<path d="{pathString}"/></svg>\n'
     )
 
 
@@ -42,7 +46,6 @@ for iconName in iconNames:
     if iconName.startswith("cursor"):
         # For cursors, the maximum size seems to be 32:
         # https://stackoverflow.com/questions/6648279/cursor-256x256-px-size#answer-6648759
-        scaling = "width='32' height='32' "
+        iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, 32))
     else:
-        scaling = ""
-    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, scaling))
+        iconPath.write_text(makeSVG(svgPath, glyph.width, 1000))
