@@ -1556,12 +1556,10 @@ export function connectTwoDistinctContours(path, firstPointIndex, secondPointInd
   let selectedContourPointIndex2 = selectedContourPointIndex1 + 1;
   let loneCubicHandle;
   const lastPointFirstContour = firstContour.points.at(-1);
-  if (lastPointFirstContour.type) {
-    loneCubicHandle = firstContour.points.pop();
-  }
-
   const firstPointSecondContour = secondContour.points.at(0);
-  if (firstPointSecondContour.type && !lastPointFirstContour.type) {
+  if (lastPointFirstContour.type && !firstPointSecondContour.type) {
+    loneCubicHandle = firstContour.points.pop();
+  } else if (firstPointSecondContour.type && !lastPointFirstContour.type) {
     loneCubicHandle = secondContour.points.shift();
   }
 
