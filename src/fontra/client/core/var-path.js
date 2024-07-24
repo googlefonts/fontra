@@ -844,7 +844,8 @@ export class VarPackedPath {
     const thisPointAttributes =
       !this.pointAttributes && other.pointAttributes
         ? new Array(this.pointTypes.length).fill(null)
-        : null;
+        : this.pointAttributes;
+
     result.pointAttributes =
       thisPointAttributes?.concat(otherPointAttributes).map((attrs) => {
         return copyPointAttrs(attrs);

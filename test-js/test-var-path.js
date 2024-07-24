@@ -1459,6 +1459,14 @@ describe("VarPackedPath Tests", () => {
     expect(path1).to.deep.equal(expectedResult);
   });
 
+  parametrize("test concat", appendPathTestData, (testCase) => {
+    const path1 = VarPackedPath.fromUnpackedContours(testCase.path1);
+    const path2 = VarPackedPath.fromUnpackedContours(testCase.path2);
+    const expectedResult = VarPackedPath.fromUnpackedContours(testCase.expectedResult);
+    const concated = path1.concat(path2);
+    expect(concated).to.deep.equal(expectedResult);
+  });
+
   it("test insertPoint deletePoint deleteContour", () => {
     const path = VarPackedPath.fromUnpackedContours(pathPlain);
     expect(path.pointAttributes).to.deep.equal(null);
