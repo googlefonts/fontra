@@ -1495,5 +1495,20 @@ describe("VarPackedPath Tests", () => {
       null,
       { test: 432 },
     ]);
+
+    const unpackedContours = path.unpackedContours();
+    expect(unpackedContours).to.deep.equal([
+      {
+        points: [
+          { x: 30, y: 2 },
+          { x: 10, y: 5 },
+          { x: 20, y: -20 },
+          { x: -10, y: -4 },
+        ],
+        isClosed: true,
+      },
+      { points: [{ x: 0, y: 0 }], isClosed: false },
+      { points: [{ x: 0, y: 0, attrs: { test: 432 } }], isClosed: false },
+    ]);
   });
 });
