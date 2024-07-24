@@ -1537,5 +1537,54 @@ function splitLocation(location, glyphAxes) {
 export function connectTwoDistinctContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
 
+  const [firstContourIndex, firstContourPointIndex] =
+    path.getContourAndPointIndex(firstPointIndex);
+  const [secondContourIndex, secondContourPointIndex] =
+    path.getContourAndPointIndex(secondPointIndex);
+
+  let firstContour = path.getUnpackedContour(firstContourIndex);
+  let secondContour = path.getUnpackedContour(secondContourIndex);
+
+  if (!!firstContourPointIndex == !!secondContourPointIndex) {
+    secondContour.points.reverse();
+  }
+
+  if (!firstContourPointIndex) {
+    [firstContour, secondContour] = [secondContour, firstContour];
+  }
+
+  let loneCubicHandle;
+  const lastPointFirstContour = firstContour.points.at(-1);
+  if (lastPointFirstContour.type) {
+    loneCubicHandle = firstContour.points.pop();
+  }
+
+  const firstPointSecondContour = secondContour.points.at(0);
+  if (firstPointSecondContour.type && !lastPointFirstContour.type) {
+    loneCubicHandle = secondContour.points.shift();
+  }
+
+  if (loneCubicHandle) {
+    const [handle1, handle2] = [lastPointFirstContour, firstPointSecondContour].map(
+      (point) => {
+        return {
+          ...vector.roundVector(scalePoint(point, loneCubicHandle, 2 / 3)),
+          type: "cubic",
+        };
+      }
+    );
+    firstContour.points.push(handle1);
+    firstContour.points.push(handle2);
+  }
+
+  const newContour = {
+    points: firstContour.points.concat(secondContour.points),
+    isClosed: false,
+  };
+
+  path.deleteContour(firstContourIndex);
+  path.insertUnpackedContour(firstContourIndex, newContour);
+  path.deleteContour(secondContourIndex);
+
   return selectedPointIndices;
 }
