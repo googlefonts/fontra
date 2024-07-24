@@ -1192,19 +1192,8 @@ export class SceneController {
     const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        const path = layerGlyph.path;
-        const contourIndex1 = path.getContourIndex(pointIndex1);
-        const contourIndex2 = path.getContourIndex(pointIndex2);
-        if (contourIndex1 === contourIndex2) {
-          path.contourInfo[contourIndex1].isClosed = true;
-          closeContourEnsureCubicOffCurves(path, contourIndex1);
-          newSelection.add(`point/${pointIndex1}`);
-          newSelection.add(`point/${pointIndex2}`);
-          continue;
-        }
-
         const selectionPointIndices = connectTwoDistinctContours(
-          path,
+          layerGlyph.path,
           pointIndex1,
           pointIndex2
         );
@@ -1416,18 +1405,26 @@ function getSelectedJoinContoursPointIndices(path, pointSelection) {
   if (pointSelection?.length !== 2) {
     return [];
   }
-
+  const contourIndices = [];
   for (const pointIndex of pointSelection) {
     if (!path.isStartOrEndPoint(pointIndex)) {
       // must be start or end point
       return [];
     }
     const contourIndex = path.getContourIndex(pointIndex);
+    contourIndices.push(contourIndex);
     if (path.contourInfo[contourIndex].isClosed) {
       // return, because at least one of the selected points is a closed contour
       return [];
     }
   }
+
+  const contourIndicesSet = new Set(contourIndices);
+  if (contourIndicesSet.size !== 2) {
+    // must be two distinct contours, if same use 'close contour'
+    return [];
+  }
+
   return pointSelection;
 }
 
