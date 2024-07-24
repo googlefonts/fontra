@@ -310,6 +310,10 @@ export function connectContours(
     const sourceContour = path.getUnpackedContour(sourceContourIndex);
     const targetContour = path.getUnpackedContour(targetContourIndex);
 
+    if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+      targetContour.points.reverse();
+    }
+
     const newContour = {
       points:
         sourcePointIndex === path.contourInfo[sourceContourIndex].endPoint
