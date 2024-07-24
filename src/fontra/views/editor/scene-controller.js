@@ -648,7 +648,10 @@ export class SceneController {
       ? getSelectedClosableContours(glyphController.instance.path, pointSelection)
       : [];
     this.contextMenuState.joinContourSelection = glyphController.canEdit
-      ? getSelectedJoinContours(glyphController.instance.path, pointSelection)
+      ? getSelectedJoinContoursPointIndices(
+          glyphController.instance.path,
+          pointSelection
+        )
       : [];
   }
 
@@ -1398,7 +1401,7 @@ function reversePointSelection(path, pointSelection) {
   return new Set(newSelection);
 }
 
-function getSelectedJoinContours(path, pointSelection) {
+function getSelectedJoinContoursPointIndices(path, pointSelection) {
   if (pointSelection?.length !== 2) {
     return [];
   }
