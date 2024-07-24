@@ -1552,7 +1552,8 @@ export function connectTwoDistinctContours(path, firstPointIndex, secondPointInd
   if (!firstContourPointIndex) {
     [firstContour, secondContour] = [secondContour, firstContour];
   }
-
+  let selectedContourPointIndex1 = firstContour.points.length - 1;
+  let selectedContourPointIndex2 = selectedContourPointIndex1 + 1;
   let loneCubicHandle;
   const lastPointFirstContour = firstContour.points.at(-1);
   if (lastPointFirstContour.type) {
@@ -1575,6 +1576,7 @@ export function connectTwoDistinctContours(path, firstPointIndex, secondPointInd
     );
     firstContour.points.push(handle1);
     firstContour.points.push(handle2);
+    selectedContourPointIndex2 += 1;
   }
 
   const newContour = {
@@ -1585,6 +1587,13 @@ export function connectTwoDistinctContours(path, firstPointIndex, secondPointInd
   path.deleteContour(firstContourIndex);
   path.insertUnpackedContour(firstContourIndex, newContour);
   path.deleteContour(secondContourIndex);
+
+  selectedPointIndices.push(
+    path.getAbsolutePointIndex(firstContourIndex, selectedContourPointIndex1)
+  );
+  selectedPointIndices.push(
+    path.getAbsolutePointIndex(firstContourIndex, selectedContourPointIndex2)
+  );
 
   return selectedPointIndices;
 }
