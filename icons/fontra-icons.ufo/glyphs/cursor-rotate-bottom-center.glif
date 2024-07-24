@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<glyph name="cursor-rotate-top-down-right" format="2">
+<glyph name="cursor-rotate-bottom-center" format="2">
   <advance width="1000"/>
   <outline>
-    <component base="cursor-rotate-left-down" xScale="0.7071067811865476" xyScale="0.7071067811865475" yxScale="0.7071067811865475" yScale="-0.7071067811865476" xOffset="-100.92621902642873" yOffset="193.63037400209885"/>
+    <component base="cursor-rotate-top-right" xScale="0.7071067811865476" xyScale="-0.7071067811865475" yxScale="-0.7071067811865475" yScale="-0.7071067811865476" xOffset="372.8905011085477" yOffset="950.0089618815757"/>
   </outline>
   <lib>
     <dict>

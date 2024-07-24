@@ -68,22 +68,22 @@
     <string>r.glif</string>
     <key>reference</key>
     <string>reference.glif</string>
-    <key>cursor-rotate-down-right</key>
-    <string>cursor-rotate-down-right.glif</string>
-    <key>cursor-rotate-left-down</key>
-    <string>cursor-rotate-left-down.glif</string>
-    <key>cursor-rotate-left-right-bottom</key>
-    <string>cursor-rotate-left-right-bottom.glif</string>
-    <key>cursor-rotate-left-right-top</key>
-    <string>cursor-rotate-left-right-top.glif</string>
-    <key>cursor-rotate-left-top</key>
-    <string>cursor-rotate-left-top.glif</string>
-    <key>cursor-rotate-top-down-left</key>
-    <string>cursor-rotate-top-down-left.glif</string>
-    <key>cursor-rotate-top-down-right</key>
-    <string>cursor-rotate-top-down-right.glif</string>
+    <key>cursor-rotate-top-left</key>
+    <string>cursor-rotate-top-left.glif</string>
     <key>cursor-rotate-top-right</key>
     <string>cursor-rotate-top-right.glif</string>
+    <key>cursor-rotate-bottom-center</key>
+    <string>cursor-rotate-bottom-center.glif</string>
+    <key>cursor-rotate-top-center</key>
+    <string>cursor-rotate-top-center.glif</string>
+    <key>cursor-rotate-bottom-right</key>
+    <string>cursor-rotate-bottom-right.glif</string>
+    <key>cursor-rotate-middle-left</key>
+    <string>cursor-rotate-middle-left.glif</string>
+    <key>cursor-rotate-middle-right</key>
+    <string>cursor-rotate-middle-right.glif</string>
+    <key>cursor-rotate-bottom-left</key>
+    <string>cursor-rotate-bottom-left.glif</string>
     <key>ruler</key>
     <string>ruler.glif</string>
     <key>s</key>
