@@ -1564,14 +1564,15 @@ export function connectTwoDistinctContours(path, firstPointIndex, secondPointInd
   }
 
   if (loneCubicHandle) {
-    const [handle1, handle2] = [lastPointFirstContour, firstPointSecondContour].map(
-      (point) => {
-        return {
-          ...vector.roundVector(scalePoint(point, loneCubicHandle, 2 / 3)),
-          type: "cubic",
-        };
-      }
-    );
+    const [handle1, handle2] = [
+      firstContour.points.at(-1),
+      secondContour.points.at(0),
+    ].map((point) => {
+      return {
+        ...vector.roundVector(scalePoint(point, loneCubicHandle, 2 / 3)),
+        type: "cubic",
+      };
+    });
     firstContour.points.push(handle1);
     firstContour.points.push(handle2);
     selectedContourPointIndex2 += 1;
