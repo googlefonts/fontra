@@ -1193,8 +1193,8 @@ export class SceneController {
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         const path = layerGlyph.path;
-        const contourIndex1 = layerGlyph.path.getContourIndex(pointIndex1);
-        const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
+        const contourIndex1 = path.getContourIndex(pointIndex1);
+        const contourIndex2 = path.getContourIndex(pointIndex2);
         if (contourIndex1 === contourIndex2) {
           path.contourInfo[contourIndex1].isClosed = true;
           closeContourEnsureCubicOffCurves(path, contourIndex1);
@@ -1208,6 +1208,7 @@ export class SceneController {
           pointIndex1,
           pointIndex2
         );
+
         for (const pointIndex of selectionPointIndices) {
           newSelection.add(`point/${pointIndex}`);
         }
@@ -1537,16 +1538,32 @@ export function connectTwoDistinctContours(path, sourcePointIndex, targetPointIn
   let selectedPointIndices = [];
   const [sourceContourIndex, sourceContourPointIndex] =
     path.getContourAndPointIndex(sourcePointIndex);
-  const [targetContourIndex, targetContourPointIndex] =
+  let [targetContourIndex, targetContourPointIndex] =
     path.getContourAndPointIndex(targetPointIndex);
+
+  // Reverse the target contour, if contours are have same start/end point.
+  if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+    const contour = path.getUnpackedContour(targetContourIndex);
+    contour.points.reverse();
+    const packedContour = packContour(contour);
+    path.deleteContour(targetContourIndex);
+    path.insertContour(targetContourIndex, packedContour);
+    targetContourPointIndex = targetContourPointIndex === 0 ? -1 : 0;
+  }
+
+  const sourcePoint = path.getContourPoint(sourceContourIndex, sourceContourPointIndex);
+  const targetPoint = path.getContourPoint(targetContourIndex, targetContourPointIndex);
+
+  // check if we need to ensure cubic off-curves, because one of the points is off-curve
+  if (sourcePoint.type || targetPoint.type) {
+    const contourIndex1 = sourcePoint.type ? sourceContourIndex : targetContourIndex;
+    const contourIndex2 = sourcePoint.type ? targetContourIndex : sourceContourIndex;
+    joinContourEnsureCubicOffCurves(path, contourIndex1, contourIndex2);
+  }
 
   // Connect contours
   const sourceContour = path.getUnpackedContour(sourceContourIndex);
   const targetContour = path.getUnpackedContour(targetContourIndex);
-
-  if (!!sourceContourPointIndex == !!targetContourPointIndex) {
-    targetContour.points.reverse();
-  }
 
   const newContour = {
     points:
@@ -1575,4 +1592,28 @@ export function connectTwoDistinctContours(path, sourcePointIndex, targetPointIn
   );
 
   return selectedPointIndices;
+}
+
+function joinContourEnsureCubicOffCurves(path, contourIndex, contourIndex2) {
+  // contourIndex must be the contour with the off-curve handle
+  const firstPoint = path.getContourPoint(contourIndex, 1);
+  const middlePoint = path.getContourPoint(contourIndex, 0);
+  const lastPoint = path.getContourPoint(contourIndex2, -1);
+
+  if (firstPoint.type || middlePoint.type != "cubic" || lastPoint.type) {
+    // Sanity check: we expect on-curve/cubic-off-curve/on-curve
+    return;
+  }
+
+  // Compute handles for a cubic segment that will look the same as the
+  // one-off-curve quad segment we have.
+  const [handle1, handle2] = [firstPoint, lastPoint].map((point) => {
+    return {
+      ...vector.roundVector(scalePoint(point, middlePoint, 2 / 3)),
+      type: "cubic",
+    };
+  });
+
+  path.setContourPoint(contourIndex, 0, handle1);
+  path.appendPoint(contourIndex2, handle2);
 }
