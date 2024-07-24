@@ -618,11 +618,11 @@ export class VarPackedPath {
     );
   }
 
-  _appendPoint(x, y, pointType, attrs) {
+  _appendPoint(x, y, pointType) {
     this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
     this.pointTypes.push(pointType);
-    this.pointAttributes?.push(attrs ? attrs : null);
+    this.pointAttributes?.push(null);
   }
 
   moveTo(x, y) {
