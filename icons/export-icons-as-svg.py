@@ -12,7 +12,9 @@ def numToString(number):
 
 def makeSVG(pathString, width, height, iconSize=None):
     iconSizeString = (
-        "" if iconSize is None else f'width="{iconSize}" height="{iconSize}" '
+        ""
+        if iconSize is None
+        else f'width="{iconSize}" height="{iconSize}" stroke="rgb(255,255,255)" stroke-width="20" '
     )
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" '
