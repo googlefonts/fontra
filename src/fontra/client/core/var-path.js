@@ -405,9 +405,15 @@ export class VarPackedPath {
   }
 
   _insertPoint(contourIndex, pointIndex, point) {
+    const originalNumPoints = this.pointTypes.length;
+
     this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(pointIndex, 0, 0);
     this.setPointType(pointIndex, point.type, point.smooth);
+
+    if (point.attrs && !this.pointAttributes) {
+      this.pointAttributes = new Array(originalNumPoints).fill(null);
+    }
     this.pointAttributes?.splice(pointIndex, 0, point.attrs || null);
     this._moveEndPoints(contourIndex, 1);
   }

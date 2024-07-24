@@ -1458,4 +1458,16 @@ describe("VarPackedPath Tests", () => {
     path1.appendPath(path2);
     expect(path1).to.deep.equal(expectedResult);
   });
+
+  it("test insertPoint deletePoint deleteContour", () => {
+    const path = VarPackedPath.fromUnpackedContours(pathPlain);
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertPoint(0, 2, { x: 100, y: 100, attrs: { test: 654 } });
+    expect(path.pointAttributes).to.deep.equal([null, null, { test: 654 }, null, null]);
+    path.deletePoint(0, 2);
+    expect(path.pointAttributes).to.deep.equal([null, null, null, null]);
+    path.deleteContour(0);
+    expect(path.pointAttributes).to.deep.equal([]);
+    expect(path.pointTypes).to.deep.equal([]);
+  });
 });
