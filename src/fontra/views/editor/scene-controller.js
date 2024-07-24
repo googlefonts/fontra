@@ -569,18 +569,18 @@ export class SceneController {
         consolidateChanges(rollbackChanges)
       );
 
-      let newSelection = new Set();
+      let newSelection;
       for (const { layerGlyph, changePath } of layerInfo) {
         const connectDetector = this.getPathConnectDetector(layerGlyph.path);
         if (connectDetector.shouldConnect()) {
           const connectChanges = recordChanges(layerGlyph, (layerGlyph) => {
-            const selectionPointIndices = connectContours(
+            const thisSelection = connectContours(
               layerGlyph.path,
               connectDetector.connectSourcePointIndex,
               connectDetector.connectTargetPointIndex
             );
-            for (const pointIndex of selectionPointIndices) {
-              newSelection.add(`point/${pointIndex}`);
+            if (newSelection === undefined) {
+              newSelection = thisSelection;
             }
           });
           if (connectChanges.hasChange) {
@@ -1192,11 +1192,20 @@ export class SceneController {
     const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        const selectionPointIndices = connectContours(
-          layerGlyph.path,
+        const path = layerGlyph.path;
+        const contourIndex1 = layerGlyph.path.getContourIndex(pointIndex1);
+        const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
+        if (contourIndex1 === contourIndex2) {
+          path.contourInfo[contourIndex1].isClosed = true;
+          newSelection.add(`point/${pointIndex1}`);
+          newSelection.add(`point/${pointIndex2}`);
+          continue;
+        }
+
+        const selectionPointIndices = connectTwoDistinctContours(
+          path,
           pointIndex1,
-          pointIndex2,
-          true // join two points
+          pointIndex2
         );
         for (const pointIndex of selectionPointIndices) {
           newSelection.add(`point/${pointIndex}`);
@@ -1521,4 +1530,48 @@ function splitLocation(location, glyphAxes) {
   }
 
   return { fontLocation, glyphLocation };
+}
+
+export function connectTwoDistinctContours(path, sourcePointIndex, targetPointIndex) {
+  let selectedPointIndices = [];
+  const [sourceContourIndex, sourceContourPointIndex] =
+    path.getContourAndPointIndex(sourcePointIndex);
+  const [targetContourIndex, targetContourPointIndex] =
+    path.getContourAndPointIndex(targetPointIndex);
+
+  // Connect contours
+  const sourceContour = path.getUnpackedContour(sourceContourIndex);
+  const targetContour = path.getUnpackedContour(targetContourIndex);
+
+  if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+    targetContour.points.reverse();
+  }
+
+  const newContour = {
+    points:
+      sourcePointIndex === path.contourInfo[sourceContourIndex].endPoint
+        ? sourceContour.points.concat(targetContour.points)
+        : targetContour.points.concat(sourceContour.points),
+    isClosed: false,
+  };
+
+  path.deleteContour(sourceContourIndex);
+  path.insertUnpackedContour(sourceContourIndex, newContour);
+  path.deleteContour(targetContourIndex);
+
+  const selectedPointIndex = path.getAbsolutePointIndex(
+    targetContourIndex < sourceContourIndex
+      ? sourceContourIndex - 1
+      : sourceContourIndex,
+    sourceContourPointIndex ? sourceContourPointIndex : targetContour.points.length - 1
+  );
+
+  selectedPointIndices.push(selectedPointIndex);
+  selectedPointIndices.push(
+    targetContourIndex < sourceContourIndex
+      ? selectedPointIndex - 1
+      : selectedPointIndex + 1
+  );
+
+  return selectedPointIndices;
 }
