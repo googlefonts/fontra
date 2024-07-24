@@ -1197,6 +1197,7 @@ export class SceneController {
         const contourIndex2 = layerGlyph.path.getContourIndex(pointIndex2);
         if (contourIndex1 === contourIndex2) {
           path.contourInfo[contourIndex1].isClosed = true;
+          closeContourEnsureCubicOffCurves(path, contourIndex1);
           newSelection.add(`point/${pointIndex1}`);
           newSelection.add(`point/${pointIndex2}`);
           continue;
