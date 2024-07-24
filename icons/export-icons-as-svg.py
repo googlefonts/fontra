@@ -43,9 +43,7 @@ for iconName in iconNames:
     svgPath = pen.getCommands()
     iconPath = imagesDir / f"{iconName}.svg"
 
-    if iconName.startswith("cursor"):
-        # For cursors, the maximum size seems to be 32:
-        # https://stackoverflow.com/questions/6648279/cursor-256x256-px-size#answer-6648759
-        iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, 32))
-    else:
-        iconPath.write_text(makeSVG(svgPath, glyph.width, 1000))
+    # For cursors, the maximum size seems to be 32:
+    # https://stackoverflow.com/questions/6648279/cursor-256x256-px-size#answer-6648759
+    iconSize = 32 if iconName.startswith("cursor") else None
+    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, iconSize))
