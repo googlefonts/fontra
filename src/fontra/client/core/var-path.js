@@ -263,6 +263,8 @@ export class VarPackedPath {
   }
 
   appendPath(path) {
+    const originalNumPoints = this.pointTypes.length;
+
     arrayExtend(this.coordinates, path.coordinates);
     arrayExtend(this.pointTypes, path.pointTypes);
     const endPointOffset = this.contourInfo.length
@@ -278,7 +280,15 @@ export class VarPackedPath {
       })
     );
 
-    // TODO: ADD SUPPORT FOR pointAttributes
+    let pointAttributes = path.pointAttributes;
+    if (this.pointAttributes && !pointAttributes) {
+      pointAttributes = new Array(path.pointTypes.length).fill(null);
+    } else if (!this.pointAttributes && pointAttributes) {
+      this.pointAttributes = new Array(originalNumPoints).fill(null);
+    }
+    if (this.pointAttributes) {
+      arrayExtend(this.pointAttributes, copyPointAttributesArray(pointAttributes));
+    }
   }
 
   getPoint(pointIndex) {

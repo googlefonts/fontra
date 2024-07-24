@@ -1345,4 +1345,117 @@ describe("VarPackedPath Tests", () => {
       },
     ]);
   });
+
+  const pathPlain = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const pathWithAttrs = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedNoAttrsPath = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedAttrsPath1 = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedAttrsPath2 = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const appendPathTestData = [
+    {
+      path1: pathPlain,
+      path2: pathPlain,
+      expectedResult: expectedNoAttrsPath,
+    },
+    {
+      path1: pathWithAttrs,
+      path2: pathPlain,
+      expectedResult: expectedAttrsPath1,
+    },
+    {
+      path1: pathPlain,
+      path2: pathWithAttrs,
+      expectedResult: expectedAttrsPath2,
+    },
+  ];
+
+  parametrize("test appendPath", appendPathTestData, (testCase) => {
+    const path1 = VarPackedPath.fromUnpackedContours(testCase.path1);
+    const path2 = VarPackedPath.fromUnpackedContours(testCase.path2);
+    const expectedResult = VarPackedPath.fromUnpackedContours(testCase.expectedResult);
+    path1.appendPath(path2);
+    expect(path1).to.deep.equal(expectedResult);
+  });
 });
