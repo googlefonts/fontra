@@ -846,10 +846,9 @@ export class VarPackedPath {
         ? new Array(this.pointTypes.length).fill(null)
         : this.pointAttributes;
 
-    result.pointAttributes =
-      thisPointAttributes?.concat(otherPointAttributes).map((attrs) => {
-        return copyPointAttrs(attrs);
-      }) || null;
+    result.pointAttributes = copyPointAttributesArray(
+      thisPointAttributes?.concat(otherPointAttributes)
+    );
 
     const endPointOffset = this.numPoints;
     for (let i = this.contourInfo.length; i < result.contourInfo.length; i++) {
