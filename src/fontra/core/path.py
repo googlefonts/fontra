@@ -24,6 +24,7 @@ class Point(TypedDict, total=False):
     y: float
     type: str  # Py 3.11: NotRequired[str]
     smooth: bool  # Py 3.11: NotRequired[bool]
+    attrs: dict  # Py 3.11: NotRequired[dict]
 
 
 @dataclass

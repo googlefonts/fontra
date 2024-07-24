@@ -277,6 +277,8 @@ export class VarPackedPath {
         };
       })
     );
+
+    // TODO: ADD SUPPORT FOR pointAttributes
   }
 
   getPoint(pointIndex) {
