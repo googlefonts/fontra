@@ -658,26 +658,20 @@ export class SceneController {
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
-        title: () => {
-          if (this.contextMenuState.joinContourSelection?.length === 2) {
-            return translate("action.join-contours");
-          } else {
-            return translatePlural(
-              "action.close-contour",
-              this.contextMenuState.openContourSelection?.length
-            );
-          }
-        },
+        title: () =>
+          this.contextMenuState.joinContourSelection?.length === 2
+            ? translate("action.join-contours")
+            : translatePlural(
+                "action.close-contour",
+                this.contextMenuState.openContourSelection?.length
+              ),
         enabled: () =>
           this.contextMenuState.joinContourSelection?.length ||
           this.contextMenuState.openContourSelection?.length,
-        callback: () => {
-          if (this.contextMenuState.joinContourSelection?.length === 2) {
-            return this.doJoinSelectedOpenContours();
-          } else {
-            return this.doCloseSelectedOpenContours();
-          }
-        },
+        callback: () =>
+          this.contextMenuState.joinContourSelection?.length === 2
+            ? this.doJoinSelectedOpenContours()
+            : this.doCloseSelectedOpenContours(),
         shortCut: { keysOrCodes: "j", metaKey: true },
       },
       {
