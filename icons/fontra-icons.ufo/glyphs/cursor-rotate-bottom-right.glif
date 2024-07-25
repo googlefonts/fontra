@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="cursor-rotate-bottom-right" format="2">
+  <advance width="1000"/>
+  <outline>
+    <component base="cursor-rotate-top-right" xScale="0" xyScale="-1" yxScale="1" yScale="0" xOffset="189.62107312014217" yOffset="844.4298858033361"/>
+  </outline>
+  <lib>
+    <dict>
+      <key>xyz.fontra.layer-names</key>
+      <dict>
+        <key>fontra-icons/foreground</key>
+        <string>default</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

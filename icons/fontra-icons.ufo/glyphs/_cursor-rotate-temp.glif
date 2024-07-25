@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="_cursor-rotate-temp" format="2">
+  <advance width="1000"/>
+  <guideline x="557" y="660" angle="0"/>
+  <guideline x="570" y="-60" angle="0"/>
+  <guideline x="398" y="572" angle="315"/>
+  <guideline x="398" y="374" angle="45"/>
+  <guideline x="348" y="373" angle="315"/>
+  <guideline x="347" y="573" angle="45"/>
+  <outline>
+    <contour>
+      <point x="720" y="199" type="line"/>
+      <point x="720" y="380"/>
+      <point x="591" y="509"/>
+      <point x="410" y="509" type="curve"/>
+      <point x="340" y="509" type="line"/>
+      <point x="340" y="443" type="line"/>
+      <point x="410" y="443" type="line"/>
+      <point x="555" y="443"/>
+      <point x="654" y="344"/>
+      <point x="654" y="199" type="curve"/>
+      <point x="654" y="139" type="line"/>
+      <point x="720" y="139" type="line"/>
+    </contour>
+    <contour>
+      <point x="248" y="473" type="line"/>
+      <point x="373" y="348" type="line"/>
+      <point x="372" y="598" type="line"/>
+    </contour>
+    <contour>
+      <point x="687" y="48" type="line"/>
+      <point x="812" y="173" type="line"/>
+      <point x="563" y="173" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>xyz.fontra.layer-names</key>
+      <dict>
+        <key>fontra-icons/foreground</key>
+        <string>default</string>
+      </dict>
+    </dict>
+  </lib>
+</glyph>

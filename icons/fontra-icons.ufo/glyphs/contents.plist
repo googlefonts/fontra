@@ -18,6 +18,24 @@
     <string>bullseye.glif</string>
     <key>c</key>
     <string>c.glif</string>
+    <key>cursor-rotate-bottom-center</key>
+    <string>cursor-rotate-bottom-center.glif</string>
+    <key>cursor-rotate-bottom-left</key>
+    <string>cursor-rotate-bottom-left.glif</string>
+    <key>cursor-rotate-bottom-right</key>
+    <string>cursor-rotate-bottom-right.glif</string>
+    <key>cursor-rotate-middle-left</key>
+    <string>cursor-rotate-middle-left.glif</string>
+    <key>cursor-rotate-middle-right</key>
+    <string>cursor-rotate-middle-right.glif</string>
+    <key>_cursor-rotate-temp</key>
+    <string>_cursor-rotate-temp.glif</string>
+    <key>cursor-rotate-top-center</key>
+    <string>cursor-rotate-top-center.glif</string>
+    <key>cursor-rotate-top-left</key>
+    <string>cursor-rotate-top-left.glif</string>
+    <key>cursor-rotate-top-right</key>
+    <string>cursor-rotate-top-right.glif</string>
     <key>d</key>
     <string>d.glif</string>
     <key>e</key>

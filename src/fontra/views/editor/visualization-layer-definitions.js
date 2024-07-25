@@ -1543,7 +1543,7 @@ function fillRoundNode(context, pt, nodeSize) {
   context.fill();
 }
 
-function strokeSquareNode(context, pt, nodeSize) {
+export function strokeSquareNode(context, pt, nodeSize) {
   context.strokeRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
 }
 
