@@ -18,6 +18,7 @@ import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectang
 import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
+  assert,
   commandKeyProperty,
   enumerate,
   objectsEqual,
@@ -1525,22 +1526,18 @@ function splitLocation(location, glyphAxes) {
 
 export function joinContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
-  if (firstPointIndex === secondPointIndex) {
-    throw new Error(
-      "firstPointIndex and secondPointIndex are the same, but must be different."
-    );
-  }
-  if (
-    !path.isStartOrEndPoint(firstPointIndex) ||
-    !path.isStartOrEndPoint(secondPointIndex)
-  ) {
-    throw new Error(
-      "firstPointIndex and/or secondPointIndex is not a start or end point, but both must be start and/or end point."
-    );
-  }
-  if (firstPointIndex > secondPointIndex) {
-    [firstPointIndex, secondPointIndex] = [secondPointIndex, firstPointIndex];
-  }
+  assert(
+    firstPointIndex != secondPointIndex,
+    "firstPointIndex and secondPointIndex are the same, but must be different."
+  );
+  assert(
+    path.isStartOrEndPoint(firstPointIndex) && path.isStartOrEndPoint(secondPointIndex),
+    "firstPointIndex and/or secondPointIndex is not a start or end point, but both must be start and/or end point."
+  );
+  assert(
+    firstPointIndex < secondPointIndex,
+    "firstPointIndex must be smaller than secondPointIndex, but it is not."
+  );
 
   const [firstContourIndex, firstContourPointIndex] =
     path.getContourAndPointIndex(firstPointIndex);
