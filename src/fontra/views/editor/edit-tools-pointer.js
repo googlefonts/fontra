@@ -516,26 +516,26 @@ export class PointerTool extends BaseTool {
           let transformation;
           if (rotation) {
             // Rotate (based on pinPoint of selected layer)
-            const originPoint = event.altKey
+            const pinPointSelectedLayer = event.altKey
               ? layer.altPinPointSelectedLayer
               : layer.regularPinPointSelectedLayer;
             this.sceneController.sceneModel.showTransformationSelection = false;
             let pointB;
             if (event.shiftKey) {
               const delta = constrainHorVerDiag(
-                vector.subVectors(currentPoint, originPoint)
+                vector.subVectors(currentPoint, pinPointSelectedLayer)
               );
-              pointB = vector.addVectors(originPoint, delta);
+              pointB = vector.addVectors(pinPointSelectedLayer, delta);
             } else {
               pointB = currentPoint;
             }
             const angle = Math.atan2(
-              originPoint.y - pointB.y,
-              originPoint.x - pointB.x
+              pinPointSelectedLayer.y - pointB.y,
+              pinPointSelectedLayer.x - pointB.x
             );
             const angleInitial = Math.atan2(
-              originPoint.y - initialPoint.y,
-              originPoint.x - initialPoint.x
+              pinPointSelectedLayer.y - initialPoint.y,
+              pinPointSelectedLayer.x - initialPoint.x
             );
             // Snap to 45 degrees by rounding to the nearest 45 degree angle if shift is pressed
             const rotationAngle = !event.shiftKey
