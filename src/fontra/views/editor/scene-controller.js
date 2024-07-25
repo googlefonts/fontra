@@ -1186,7 +1186,7 @@ export class SceneController {
     const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        const selectionPointIndices = connectTwoDistinctContours(
+        const selectionPointIndices = joinContours(
           layerGlyph.path,
           pointIndex1,
           pointIndex2
@@ -1523,7 +1523,7 @@ function splitLocation(location, glyphAxes) {
   return { fontLocation, glyphLocation };
 }
 
-export function connectTwoDistinctContours(path, firstPointIndex, secondPointIndex) {
+export function joinContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
 
   const [firstContourIndex, firstContourPointIndex] =
