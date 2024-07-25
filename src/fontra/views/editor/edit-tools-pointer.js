@@ -5,6 +5,7 @@ import {
   centeredRect,
   normalizeRect,
   offsetRect,
+  pointInRect,
   rectSize,
 } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
@@ -28,8 +29,8 @@ import {
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
-const resizeHandleMarginValue = 10;
-const rotationHandleMarginValue = 22;
+const transformationHandleMargin = 10;
+const transformationHandleSize = 8;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -74,14 +75,14 @@ export class PointerTool extends BaseTool {
 
   setCursorForRotationHandle(handleName) {
     const cursorPositions = {
-      "bottom-left": "14 14",
+      "bottom-left": "16 16",
       "bottom-right": "16 16",
-      "top-left": "16 12",
-      "top-right": "16 10",
+      "top-left": "16 16",
+      "top-right": "16 16",
       "middle-left": "20 14",
       "middle-right": "12 14",
       "top-center": "16 18",
-      "bottom-center": "16 10",
+      "bottom-center": "16 12",
     };
     this.setCursor(
       `url('/images/cursor-rotate-${handleName}.svg') ${cursorPositions[handleName]}, auto`
@@ -609,23 +610,14 @@ export class PointerTool extends BaseTool {
   }
 
   getRotationHandle(event, selection) {
-    return this.getTransformationSelectionHandle(
-      event,
-      selection,
-      rotationHandleMarginValue,
-      1 / 3
-    );
+    return this.getTransformationSelectionHandle(event, selection, true);
   }
 
   getResizeHandle(event, selection) {
-    return this.getTransformationSelectionHandle(
-      event,
-      selection,
-      resizeHandleMarginValue
-    );
+    return this.getTransformationSelectionHandle(event, selection);
   }
 
-  getTransformationSelectionHandle(event, selection, margin, distanceFactor = 1 / 2) {
+  getTransformationSelectionHandle(event, selection, rotation = false) {
     if (
       !this.editor.visualizationLayersSettings.model["fontra.transformation.selection"]
     ) {
@@ -638,26 +630,50 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
-    const transformationSelectionBounds = getTransformationSelectionBounds(
-      glyph,
-      selection
-    );
+    const bounds = getTransformationSelectionBounds(glyph, selection);
     // transformationSelectionBounds can be undefiend if for example only one point is selected
-    if (!transformationSelectionBounds) {
+    if (!bounds) {
       return undefined;
     }
 
-    const handleMargin = margin * this.editor.visualizationLayers.scaleFactor;
+    const handleSize =
+      transformationHandleSize * this.editor.visualizationLayers.scaleFactor;
+    const handleMargin =
+      transformationHandleMargin * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
-    const resizeHandles = getResizeHandles(transformationSelectionBounds, handleMargin);
+    const resizeHandles = getTransformationHandles(bounds, handleMargin);
+    const rotationHandles = rotation
+      ? getTransformationHandles(bounds, handleMargin * 1.5)
+      : {};
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
-      if (vector.distance(handle, point) < handleMargin * distanceFactor) {
-        return handleName;
+      const inCircle = pointInCircleHandle(point, handle, handleSize);
+      if (rotation) {
+        const inSquare = pointInSquareHandle(
+          point,
+          rotationHandles[handleName],
+          handleSize * 1.5
+        );
+        if (inSquare && !inCircle) {
+          return handleName;
+        }
+      } else {
+        if (inCircle) {
+          return handleName;
+        }
       }
     }
     return undefined;
   }
+}
+
+function pointInSquareHandle(point, handle, handleSize) {
+  const selRect = centeredRect(handle.x, handle.y, handleSize);
+  return pointInRect(point.x, point.y, selRect);
+}
+
+function pointInCircleHandle(point, handle, handleSize) {
+  return vector.distance(handle, point) <= handleSize / 2;
 }
 
 function getBehaviorName(event) {
@@ -689,9 +705,9 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 1,
     lineDash: [2, 4],
-    handleSize: 8,
+    handleSize: transformationHandleSize,
     hoverStrokeOffset: 4,
-    margin: resizeHandleMarginValue,
+    margin: transformationHandleSize,
   },
 
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
@@ -712,7 +728,7 @@ registerVisualizationLayerDefinition({
     context.lineWidth = parameters.strokeWidth;
 
     // draw resize handles
-    const handles = getResizeHandles(transformationBounds, parameters.margin);
+    const handles = getTransformationHandles(transformationBounds, parameters.margin);
     for (const [handleName, handle] of Object.entries(handles)) {
       strokeRoundNode(context, handle, parameters.handleSize);
     }
@@ -741,7 +757,7 @@ registerVisualizationLayerDefinition({
   },
 });
 
-function getResizeHandles(transformationBounds, margin) {
+function getTransformationHandles(transformationBounds, margin) {
   const { width, height } = rectSize(transformationBounds);
 
   const [x, y, w, h] = [
