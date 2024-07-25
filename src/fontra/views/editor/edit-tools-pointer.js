@@ -60,8 +60,10 @@ export class PointerTool extends BaseTool {
 
     this.sceneController.sceneModel.showTransformSelection = true;
 
-    const rotationHandle = this.getRotationHandle(event, sceneController.selection);
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    const rotationHandle = !resizeHandle
+      ? this.getRotationHandle(event, sceneController.selection)
+      : undefined;
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
