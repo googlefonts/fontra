@@ -48,6 +48,7 @@ describe("Path Functions tests", () => {
 
       const hitTester = new PathHitTester(path);
       const hit = hitTester.hitTest(testCase.testPoint, 5);
+
       const selection = insertPoint(path, hit);
 
       const resultPath = path.unpackedContours();
@@ -102,10 +103,10 @@ describe("Path Functions tests", () => {
     ],
     (testCase) => {
       const path = VarPackedPath.fromUnpackedContours(testCase.path);
+
       const numSplits = splitPathAtPointIndices(path, testCase.pointIndices);
 
       const unpackedPath = path.unpackedContours();
-
       const resultPath = path.unpackedContours();
 
       expect(resultPath).to.deep.equal(testCase.expectedPath);
