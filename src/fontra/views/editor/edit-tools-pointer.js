@@ -30,8 +30,8 @@ import {
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
-const transformationHandleMargin = 6;
-const transformationHandleSize = 8;
+const transformHandleMargin = 6;
+const transformHandleSize = 8;
 const rotationHandleSizeFactor = 1.5;
 
 export class PointerTool extends BaseTool {
@@ -58,7 +58,7 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
-    this.sceneController.sceneModel.showTransformationSelection = true;
+    this.sceneController.sceneModel.showTransformSelection = true;
 
     const rotationHandle = this.getRotationHandle(event, sceneController.selection);
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
@@ -124,15 +124,15 @@ export class PointerTool extends BaseTool {
     const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
     const rotationHandle = this.getRotationHandle(initialEvent, initialSelection);
     if (resizeHandle || rotationHandle) {
-      sceneController.sceneModel.clickedTransformationSelectionHandle =
+      sceneController.sceneModel.clickedTransformSelectionHandle =
         resizeHandle || rotationHandle;
-      await this.handleBoundsTransformationSelection(
+      await this.handleBoundsTransformSelection(
         initialSelection,
         eventStream,
         initialEvent,
         !!rotationHandle
       );
-      delete sceneController.sceneModel.clickedTransformationSelectionHandle;
+      delete sceneController.sceneModel.clickedTransformSelectionHandle;
       return;
     }
 
@@ -325,7 +325,7 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
-    this.sceneController.sceneModel.showTransformationSelection = false;
+    this.sceneController.sceneModel.showTransformSelection = false;
     this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
@@ -428,18 +428,17 @@ export class PointerTool extends BaseTool {
         broadcast: true,
       };
     });
-    this.sceneController.sceneModel.showTransformationSelection = true;
+    this.sceneController.sceneModel.showTransformSelection = true;
   }
 
-  async handleBoundsTransformationSelection(
+  async handleBoundsTransformSelection(
     selection,
     eventStream,
     initialEvent,
     rotation = false
   ) {
     const sceneController = this.sceneController;
-    const clickedHandle =
-      sceneController.sceneModel.clickedTransformationSelectionHandle;
+    const clickedHandle = sceneController.sceneModel.clickedTransformSelectionHandle;
 
     // The following may seem wrong, but it's correct, because we say
     // for example bottom-left and not left-bottom. Y-X order.
@@ -518,7 +517,7 @@ export class PointerTool extends BaseTool {
           let transformation;
           if (rotation) {
             // Rotate (based on pinPoint of selected layer)
-            this.sceneController.sceneModel.showTransformationSelection = false;
+            this.sceneController.sceneModel.showTransformSelection = false;
             const pinPointSelectedLayer = event.altKey
               ? layer.altPinPointSelectedLayer
               : layer.regularPinPointSelectedLayer;
@@ -595,7 +594,7 @@ export class PointerTool extends BaseTool {
       );
 
       return {
-        undoLabel: "transformation selection",
+        undoLabel: "transform selection",
         changes: changes,
         broadcast: true,
       };
@@ -603,17 +602,15 @@ export class PointerTool extends BaseTool {
   }
 
   getRotationHandle(event, selection) {
-    return this.getTransformationSelectionHandle(event, selection, true);
+    return this.getTransformSelectionHandle(event, selection, true);
   }
 
   getResizeHandle(event, selection) {
-    return this.getTransformationSelectionHandle(event, selection);
+    return this.getTransformSelectionHandle(event, selection);
   }
 
-  getTransformationSelectionHandle(event, selection, rotation = false) {
-    if (
-      !this.editor.visualizationLayersSettings.model["fontra.transformation.selection"]
-    ) {
+  getTransformSelectionHandle(event, selection, rotation = false) {
+    if (!this.editor.visualizationLayersSettings.model["fontra.transform.selection"]) {
       return undefined;
     }
     if (!selection.size) {
@@ -623,24 +620,21 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
-    const bounds = getTransformationSelectionBounds(glyph, selection);
-    // transformationSelectionBounds can be undefiend if for example only one point is selected
+    const bounds = getTransformSelectionBounds(glyph, selection);
+    // bounds can be undefined if for example only one point is selected
     if (!bounds) {
       return undefined;
     }
 
     const handleSize =
-      transformationHandleSize * this.editor.visualizationLayers.scaleFactor;
+      transformHandleSize * this.editor.visualizationLayers.scaleFactor;
     const handleMargin =
-      transformationHandleMargin * this.editor.visualizationLayers.scaleFactor;
+      transformHandleMargin * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
-    const resizeHandles = getTransformationHandles(
-      bounds,
-      handleMargin + handleSize / 2
-    );
+    const resizeHandles = getTransformHandles(bounds, handleMargin + handleSize / 2);
     const rotationHandles = rotation
-      ? getTransformationHandles(
+      ? getTransformHandles(
           bounds,
           handleMargin + (handleSize * rotationHandleSizeFactor) / 2 + handleSize / 2
         )
@@ -695,8 +689,8 @@ function getSelectModeFunction(event) {
 }
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.transformation.selection",
-  name: "Transformation selection",
+  identifier: "fontra.transform.selection",
+  name: "Transform selection",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -704,22 +698,22 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 1,
     lineDash: [2, 4],
-    handleSize: transformationHandleSize,
+    handleSize: transformHandleSize,
     hoverStrokeOffset: 4,
-    margin: transformationHandleMargin,
+    margin: transformHandleMargin,
   },
 
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
   colorsDarkMode: { handleColor: "#777", strokeColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!model.showTransformationSelection) {
+    if (!model.showTransformSelection) {
       return;
     }
-    const transformationBounds = getTransformationSelectionBounds(
+    const transformBounds = getTransformSelectionBounds(
       positionedGlyph.glyph,
       model.selection
     );
-    if (!transformationBounds) {
+    if (!transformBounds) {
       return;
     }
 
@@ -728,14 +722,14 @@ registerVisualizationLayerDefinition({
 
     // The following code is helpful for designing/adjusting the invisible rotation handle areas
     // draw rotation handles
-    // const rotationHandles = getTransformationHandles(transformationBounds, parameters.margin + parameters.handleSize * rotationHandleSizeFactor / 2 + parameters.handleSize / 2);
+    // const rotationHandles = getTransformHandles(transformBounds, parameters.margin + parameters.handleSize * rotationHandleSizeFactor / 2 + parameters.handleSize / 2);
     // for (const [handleName, handle] of Object.entries(rotationHandles)) {
     //   strokeSquareNode(context, handle, parameters.handleSize * rotationHandleSizeFactor);
     // }
 
     // draw resize handles
-    const handles = getTransformationHandles(
-      transformationBounds,
+    const handles = getTransformHandles(
+      transformBounds,
       parameters.margin + parameters.handleSize / 2
     );
     for (const [handleName, handle] of Object.entries(handles)) {
@@ -743,10 +737,7 @@ registerVisualizationLayerDefinition({
     }
 
     // draw resize handles hover
-    if (
-      !model.clickedTransformationSelectionHandle &&
-      handles[model.hoverResizeHandle]
-    ) {
+    if (!model.clickedTransformSelectionHandle && handles[model.hoverResizeHandle]) {
       strokeRoundNode(
         context,
         handles[model.hoverResizeHandle],
@@ -758,22 +749,22 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
-      transformationBounds.xMin,
-      transformationBounds.yMin,
-      transformationBounds.xMax - transformationBounds.xMin,
-      transformationBounds.yMax - transformationBounds.yMin
+      transformBounds.xMin,
+      transformBounds.yMin,
+      transformBounds.xMax - transformBounds.xMin,
+      transformBounds.yMax - transformBounds.yMin
     );
   },
 });
 
-function getTransformationHandles(transformationBounds, margin) {
-  const { width, height } = rectSize(transformationBounds);
+function getTransformHandles(transformBounds, margin) {
+  const { width, height } = rectSize(transformBounds);
 
   const [x, y, w, h] = [
-    transformationBounds.xMin - margin,
-    transformationBounds.yMin - margin,
-    transformationBounds.xMax - transformationBounds.xMin + margin * 2,
-    transformationBounds.yMax - transformationBounds.yMin + margin * 2,
+    transformBounds.xMin - margin,
+    transformBounds.yMin - margin,
+    transformBounds.xMax - transformBounds.xMin + margin * 2,
+    transformBounds.yMax - transformBounds.yMin + margin * 2,
   ];
 
   const handles = {
@@ -803,7 +794,7 @@ function getTransformationHandles(transformationBounds, margin) {
   return handles;
 }
 
-function getTransformationSelectionBounds(glyph, selection) {
+function getTransformSelectionBounds(glyph, selection) {
   if (selection.size <= 1) {
     return undefined;
   }
