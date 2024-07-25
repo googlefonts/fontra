@@ -51,7 +51,7 @@ for iconName in iconNames:
     svgPath = pen.getCommands()
     iconPath = imagesDir / f"{iconName}.svg"
 
-    if iconName.startswith("cursor"):
+    if iconName.startswith("cursor-"):
         iconPath.write_text(makeCursorSVG(svgPath, glyph.width, 1000))
     else:
         iconPath.write_text(makeSVG(svgPath, glyph.width, 1000))
