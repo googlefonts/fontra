@@ -460,8 +460,22 @@ export class PointerTool extends BaseTool {
     const fixDragLeftValue = clickedHandle.includes("left") ? -1 : 1;
     const fixDragBottomValue = clickedHandle.includes("bottom") ? -1 : 1;
 
-    const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
+    // The following is only needed in case of rotation, because we want to have
+    // the roation angle for all layers the same and not different.
+    let regularPinPointSelectedLayer, altPinPointSelectedLayer;
+    if (rotation) {
+      const glyphController =
+        await sceneController.sceneModel.getSelectedStaticGlyphController();
+      const selectedLayerBounds = glyphController.getSelectionBounds(selection);
+      regularPinPointSelectedLayer = getPinPoint(
+        selectedLayerBounds,
+        origin.x,
+        origin.y
+      );
+      altPinPointSelectedLayer = getPinPoint(selectedLayerBounds, undefined, undefined);
+    }
 
+    const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
 
@@ -483,6 +497,8 @@ export class PointerTool extends BaseTool {
           editBehavior: behaviorFactory.getBehavior("default", true),
           regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
           altPinPoint: getPinPoint(layerBounds, undefined, undefined),
+          regularPinPointSelectedLayer: regularPinPointSelectedLayer,
+          altPinPointSelectedLayer: altPinPointSelectedLayer,
           selectionWidth: layerBounds.xMax - layerBounds.xMin,
           selectionHeight: layerBounds.yMax - layerBounds.yMin,
         };
@@ -498,21 +514,27 @@ export class PointerTool extends BaseTool {
           const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           let transformation;
           if (rotation) {
-            // Rotate (based on pinPoint)
+            // Rotate (based on pinPoint of selected layer)
+            const originPoint = event.altKey
+              ? layer.altPinPointSelectedLayer
+              : layer.regularPinPointSelectedLayer;
             this.sceneController.sceneModel.showTransformationSelection = false;
             let pointB;
             if (event.shiftKey) {
               const delta = constrainHorVerDiag(
-                vector.subVectors(currentPoint, pinPoint)
+                vector.subVectors(currentPoint, originPoint)
               );
-              pointB = vector.addVectors(pinPoint, delta);
+              pointB = vector.addVectors(originPoint, delta);
             } else {
               pointB = currentPoint;
             }
-            const angle = Math.atan2(pinPoint.y - pointB.y, pinPoint.x - pointB.x);
+            const angle = Math.atan2(
+              originPoint.y - pointB.y,
+              originPoint.x - pointB.x
+            );
             const angleInitial = Math.atan2(
-              pinPoint.y - initialPoint.y,
-              pinPoint.x - initialPoint.x
+              originPoint.y - initialPoint.y,
+              originPoint.x - initialPoint.x
             );
             // Snap to 45 degrees by rounding to the nearest 45 degree angle if shift is pressed
             const rotationAngle = !event.shiftKey
