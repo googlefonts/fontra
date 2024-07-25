@@ -26,11 +26,13 @@ import { equalGlyphSelection } from "./scene-controller.js";
 import {
   registerVisualizationLayerDefinition,
   strokeRoundNode,
+  strokeSquareNode,
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
-const transformationHandleMargin = 10;
+const transformationHandleMargin = 6;
 const transformationHandleSize = 8;
+const rotationHandleSizeFactor = 1.5;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -633,9 +635,15 @@ export class PointerTool extends BaseTool {
       transformationHandleMargin * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
-    const resizeHandles = getTransformationHandles(bounds, handleMargin);
+    const resizeHandles = getTransformationHandles(
+      bounds,
+      handleMargin + handleSize / 2
+    );
     const rotationHandles = rotation
-      ? getTransformationHandles(bounds, handleMargin * 1.5)
+      ? getTransformationHandles(
+          bounds,
+          handleMargin + (handleSize * rotationHandleSizeFactor) / 2 + handleSize / 2
+        )
       : {};
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
       const inCircle = pointInCircleHandle(point, handle, handleSize);
@@ -643,7 +651,7 @@ export class PointerTool extends BaseTool {
         const inSquare = pointInSquareHandle(
           point,
           rotationHandles[handleName],
-          handleSize * 1.5
+          handleSize * rotationHandleSizeFactor
         );
         if (inSquare && !inCircle) {
           return handleName;
@@ -698,7 +706,7 @@ registerVisualizationLayerDefinition({
     lineDash: [2, 4],
     handleSize: transformationHandleSize,
     hoverStrokeOffset: 4,
-    margin: transformationHandleSize,
+    margin: transformationHandleMargin,
   },
 
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
@@ -718,8 +726,18 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.handleColor;
     context.lineWidth = parameters.strokeWidth;
 
+    // The following code is helpful for designing/adjusting the invisible rotation handle areas
+    // draw rotation handles
+    // const rotationHandles = getTransformationHandles(transformationBounds, parameters.margin + parameters.handleSize * rotationHandleSizeFactor / 2 + parameters.handleSize / 2);
+    // for (const [handleName, handle] of Object.entries(rotationHandles)) {
+    //   strokeSquareNode(context, handle, parameters.handleSize * rotationHandleSizeFactor);
+    // }
+
     // draw resize handles
-    const handles = getTransformationHandles(transformationBounds, parameters.margin);
+    const handles = getTransformationHandles(
+      transformationBounds,
+      parameters.margin + parameters.handleSize / 2
+    );
     for (const [handleName, handle] of Object.entries(handles)) {
       strokeRoundNode(context, handle, parameters.handleSize);
     }
