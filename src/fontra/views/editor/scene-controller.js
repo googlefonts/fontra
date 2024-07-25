@@ -1417,7 +1417,7 @@ function getSelectedJoinContoursPointIndices(path, pointSelection) {
     return [];
   }
 
-  return pointSelection;
+  return pointSelection.sort((a, b) => a - b);
 }
 
 function getSelectedContours(path, pointSelection) {
