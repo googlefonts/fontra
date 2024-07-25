@@ -25,8 +25,9 @@ def makeCursorSVG(pathString, width, height):
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" '
         + f'viewBox="0 0 {width} {height}">'
-        + f'<path stroke="rgb(255,255,255)" stroke-width="55" d="{pathString}"/>'
-        + f'<path d="{pathString}"/></svg>\n'
+        + f'<defs><path id="icon-path" d="{pathString}"/></defs>'
+        + '<use href="#icon-path" stroke="rgb(255,255,255)" stroke-width="55"/>'
+        + '<use href="#icon-path"/></svg>\n'
     )
 
 
