@@ -74,6 +74,7 @@ function complexTestPath() {
   const on = VarPackedPath.ON_CURVE;
   const off = VarPackedPath.OFF_CURVE_QUAD;
   p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
+  p.pointAttributes = [null, null, { z: 12 }, null, null, null, null, null, null, null];
   p.contourInfo = [
     { endPoint: 2, isClosed: true },
     { endPoint: 5, isClosed: true },
@@ -161,13 +162,14 @@ describe("VarPackedPath Tests", () => {
         VarPackedPath.OFF_CURVE_QUAD,
         VarPackedPath.ON_CURVE,
       ],
-      [{ endPoint: 3, isClosed: true }]
+      [{ endPoint: 3, isClosed: true }],
+      [null, { a: 123 }, null, null]
     );
     expect(p.unpackedContours()).to.deep.equal([
       {
         points: [
           { x: 0, y: 0, type: "quad" },
-          { x: 0, y: 100 },
+          { x: 0, y: 100, attrs: { a: 123 } },
           { x: 100, y: 100, type: "quad" },
           { x: 100, y: 0 },
         ],
@@ -940,7 +942,7 @@ describe("VarPackedPath Tests", () => {
         points: [
           { x: 0, y: 1 },
           { x: 2, y: 3, type: "quad" },
-          { x: 4, y: 5 },
+          { x: 4, y: 5, attrs: { z: 12 } },
         ],
         isClosed: true,
       },
@@ -995,7 +997,7 @@ describe("VarPackedPath Tests", () => {
         points: [
           { x: 0, y: 1 },
           { x: 2, y: 3, type: "quad" },
-          { x: 4, y: 5 },
+          { x: 4, y: 5, attrs: { z: 12 } },
         ],
         isClosed: true,
       },
@@ -1018,7 +1020,7 @@ describe("VarPackedPath Tests", () => {
         points: [
           { x: 0, y: 1 },
           { x: 2, y: 3, type: "quad" },
-          { x: 4, y: 5 },
+          { x: 4, y: 5, attrs: { z: 12 } },
         ],
         isClosed: true,
       },
@@ -1061,16 +1063,19 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [6, 7, 8, 9, 10, 11],
       pointTypes: [0, 0, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
   });
@@ -1081,16 +1086,19 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.numContours).to.equal(3);
@@ -1103,21 +1111,25 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [6, 7, 8, 9, 10, 11],
       pointTypes: [0, 0, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(3)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.numContours).to.equal(4);
@@ -1130,21 +1142,25 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [6, 7, 8, 9, 10, 11],
       pointTypes: [0, 0, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(3)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.numContours).to.equal(4);
@@ -1157,21 +1173,25 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 0],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [6, 7, 8, 9, 10, 11],
       pointTypes: [0, 0, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.getContour(3)).to.deep.equal({
       coordinates: [6, 7, 8, 9, 10, 11],
       pointTypes: [0, 0, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.numContours).to.equal(4);
@@ -1185,16 +1205,19 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(0)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 8],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(1)).to.deep.equal({
       coordinates: [0, 1, 2, 3, 4, 5],
       pointTypes: [0, 1, 8],
+      pointAttributes: [null, null, { z: 12 }],
       isClosed: true,
     });
     expect(p.getContour(2)).to.deep.equal({
       coordinates: [12, 13, 14, 15, 16, 17, 18, 19],
       pointTypes: [0, 1, 1, 0],
+      pointAttributes: null,
       isClosed: true,
     });
     expect(p.numContours).to.equal(3);
@@ -1204,6 +1227,8 @@ describe("VarPackedPath Tests", () => {
   it("test fromUnpackedContours", () => {
     const p1 = complexTestPath();
     const p2 = VarPackedPath.fromUnpackedContours(p1.unpackedContours());
+
+    expect(p2._checkIntegrity()).to.equal(false);
     expect(p1).to.deep.equal(p2);
     expect(p1.unpackedContours()).to.deep.equal(p2.unpackedContours());
   });
@@ -1318,6 +1343,180 @@ describe("VarPackedPath Tests", () => {
         ],
         isClosed: true,
       },
+    ]);
+  });
+
+  const pathPlain = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const pathWithAttrs = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedNoAttrsPath = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedAttrsPath1 = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const expectedAttrsPath2 = [
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5 },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+    {
+      points: [
+        { x: 30, y: 2 },
+        { x: 10, y: 5, attrs: { test: 321 } },
+        { x: 20, y: -20 },
+        { x: -10, y: -4 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const appendPathTestData = [
+    {
+      path1: pathPlain,
+      path2: pathPlain,
+      expectedResult: expectedNoAttrsPath,
+    },
+    {
+      path1: pathWithAttrs,
+      path2: pathPlain,
+      expectedResult: expectedAttrsPath1,
+    },
+    {
+      path1: pathPlain,
+      path2: pathWithAttrs,
+      expectedResult: expectedAttrsPath2,
+    },
+  ];
+
+  parametrize("test appendPath", appendPathTestData, (testCase) => {
+    const path1 = VarPackedPath.fromUnpackedContours(testCase.path1);
+    const path2 = VarPackedPath.fromUnpackedContours(testCase.path2);
+    const expectedResult = VarPackedPath.fromUnpackedContours(testCase.expectedResult);
+    path1.appendPath(path2);
+    expect(path1).to.deep.equal(expectedResult);
+  });
+
+  parametrize("test concat", appendPathTestData, (testCase) => {
+    const path1 = VarPackedPath.fromUnpackedContours(testCase.path1);
+    const path2 = VarPackedPath.fromUnpackedContours(testCase.path2);
+    const expectedResult = VarPackedPath.fromUnpackedContours(testCase.expectedResult);
+    const concatenated = path1.concat(path2);
+    expect(concatenated).to.deep.equal(expectedResult);
+  });
+
+  it("test insertPoint deletePoint deleteContour", () => {
+    const path = VarPackedPath.fromUnpackedContours(pathPlain);
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertPoint(0, 2, { x: 100, y: 100, attrs: { test: 654 } });
+    expect(path.pointAttributes).to.deep.equal([null, null, { test: 654 }, null, null]);
+    path.deletePoint(0, 2);
+    expect(path.pointAttributes).to.deep.equal([null, null, null, null]);
+    path.deleteContour(0);
+    expect(path.pointAttributes).to.deep.equal([]);
+    expect(path.pointTypes).to.deep.equal([]);
+  });
+
+  it("test insertContour", () => {
+    const path = VarPackedPath.fromUnpackedContours(pathPlain);
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertContour(1, {
+      coordinates: [0, 0],
+      pointTypes: [0],
+      pointAttributes: null,
+      isClosed: false,
+    });
+    expect(path.pointAttributes).to.deep.equal(null);
+    path.insertContour(2, {
+      coordinates: [0, 0],
+      pointTypes: [0],
+      pointAttributes: [{ test: 432 }],
+      isClosed: false,
+    });
+    expect(path.pointAttributes).to.deep.equal([
+      null,
+      null,
+      null,
+      null,
+      null,
+      { test: 432 },
+    ]);
+
+    const unpackedContours = path.unpackedContours();
+    expect(unpackedContours).to.deep.equal([
+      {
+        points: [
+          { x: 30, y: 2 },
+          { x: 10, y: 5 },
+          { x: 20, y: -20 },
+          { x: -10, y: -4 },
+        ],
+        isClosed: true,
+      },
+      { points: [{ x: 0, y: 0 }], isClosed: false },
+      { points: [{ x: 0, y: 0, attrs: { test: 432 } }], isClosed: false },
     ]);
   });
 });
