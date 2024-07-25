@@ -596,7 +596,7 @@ export class PointerTool extends BaseTool {
       );
 
       return {
-        undoLabel: "transform selection",
+        undoLabel: `${rotation ? "rotate" : "resize"} selection`,
         changes: changes,
         broadcast: true,
       };
