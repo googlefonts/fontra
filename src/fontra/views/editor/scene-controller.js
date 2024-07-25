@@ -1182,7 +1182,7 @@ export class SceneController {
   }
 
   async doJoinSelectedOpenContours() {
-    let newSelection = new Set();
+    const newSelection = new Set();
     const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
@@ -1196,9 +1196,7 @@ export class SceneController {
           newSelection.add(`point/${pointIndex}`);
         }
       }
-      if (newSelection) {
-        this.selection = newSelection;
-      }
+      this.selection = newSelection;
       return translate("action.join-contours");
     });
   }
