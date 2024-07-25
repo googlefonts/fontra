@@ -19,7 +19,7 @@ import {
 } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
-import { EditBehaviorFactory, constrainHorVerDiag } from "./edit-behavior.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { getPinPoint } from "./panel-transformation.js";
 import { equalGlyphSelection } from "./scene-controller.js";
@@ -516,22 +516,13 @@ export class PointerTool extends BaseTool {
           let transformation;
           if (rotation) {
             // Rotate (based on pinPoint of selected layer)
+            this.sceneController.sceneModel.showTransformationSelection = false;
             const pinPointSelectedLayer = event.altKey
               ? layer.altPinPointSelectedLayer
               : layer.regularPinPointSelectedLayer;
-            this.sceneController.sceneModel.showTransformationSelection = false;
-            let pointB;
-            if (event.shiftKey) {
-              const delta = constrainHorVerDiag(
-                vector.subVectors(currentPoint, pinPointSelectedLayer)
-              );
-              pointB = vector.addVectors(pinPointSelectedLayer, delta);
-            } else {
-              pointB = currentPoint;
-            }
             const angle = Math.atan2(
-              pinPointSelectedLayer.y - pointB.y,
-              pinPointSelectedLayer.x - pointB.x
+              pinPointSelectedLayer.y - currentPoint.y,
+              pinPointSelectedLayer.x - currentPoint.x
             );
             const angleInitial = Math.atan2(
               pinPointSelectedLayer.y - initialPoint.y,
