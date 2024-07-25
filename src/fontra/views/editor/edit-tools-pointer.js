@@ -742,10 +742,6 @@ registerVisualizationLayerDefinition({
 });
 
 function getResizeHandles(transformationBounds, margin) {
-  return getTransformationSelectionHandles(transformationBounds, margin);
-}
-
-function getTransformationSelectionHandles(transformationBounds, margin) {
   const { width, height } = rectSize(transformationBounds);
 
   const [x, y, w, h] = [
