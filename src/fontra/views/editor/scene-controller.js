@@ -1525,6 +1525,22 @@ function splitLocation(location, glyphAxes) {
 
 export function joinContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
+  if (firstPointIndex === secondPointIndex) {
+    throw new Error(
+      "firstPointIndex and secondPointIndex are the same, but must be different."
+    );
+  }
+  if (
+    !path.isStartOrEndPoint(firstPointIndex) ||
+    !path.isStartOrEndPoint(secondPointIndex)
+  ) {
+    throw new Error(
+      "firstPointIndex and/or secondPointIndex is not a start or end point, but both must be start and/or end point."
+    );
+  }
+  if (firstPointIndex > secondPointIndex) {
+    [firstPointIndex, secondPointIndex] = [secondPointIndex, firstPointIndex];
+  }
 
   const [firstContourIndex, firstContourPointIndex] =
     path.getContourAndPointIndex(firstPointIndex);
