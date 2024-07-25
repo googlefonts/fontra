@@ -32,7 +32,7 @@ import { copyComponent } from "/core/var-glyph.js";
 
 const transformHandleMargin = 6;
 const transformHandleSize = 8;
-const rotationHandleSizeFactor = 1.5;
+const rotationHandleSizeFactor = 1.2;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
