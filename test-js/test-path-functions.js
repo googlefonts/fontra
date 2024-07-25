@@ -41,6 +41,7 @@ describe("Path Functions tests", () => {
             isClosed: true,
           },
         ],
+        expectedResult: { numPointsInserted: 1, selectedPointIndices: [2] },
       },
     ],
     (testCase) => {
@@ -49,11 +50,12 @@ describe("Path Functions tests", () => {
       const hitTester = new PathHitTester(path);
       const hit = hitTester.hitTest(testCase.testPoint, 5);
 
-      const selection = insertPoint(path, hit);
+      const result = insertPoint(path, hit);
 
       const resultPath = path.unpackedContours();
 
       expect(resultPath).to.deep.equal(testCase.expectedPath);
+      expect(result).to.deep.equal(testCase.expectedResult);
     }
   );
 
