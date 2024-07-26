@@ -830,6 +830,7 @@ def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
+        # We do *not* need to take source.locationBase into account here
         newLocation = mapFilterFunc(source.location)
         if newLocation is None:
             layersToDelete.add(source.layerName)
