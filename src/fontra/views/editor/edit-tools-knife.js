@@ -134,6 +134,7 @@ export class KnifeTool extends BaseTool {
                   intersectionIndex: intersectionIndex,
                   point: layerGlyph.path.getPoint(pointIndex),
                   isClosed: layerGlyph.path.contourInfo[contourIndex].isClosed,
+                  winding: intersectionReordered.winding,
                 };
                 selectedPoints.push(pointInfo);
                 // Because we loop over intersectionsReordered based on
@@ -391,7 +392,7 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
 
   const intersectionPointsIndicesDone = [];
   for (const [intersectionIndex, intersectionPoint] of enumerate(intersectionPoints)) {
-    if (intersectionIndex in intersectionPointsIndicesDone) {
+    if (intersectionPointsIndicesDone.includes(intersectionIndex)) {
       continue;
     }
     if (!intersectionPoint.isClosed) {
@@ -404,10 +405,18 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
       intersectionIndex + 1,
       intersectionPoints.length
     )) {
-      if (nextIntersectionIndex in intersectionPointsIndicesDone) {
+      if (intersectionPointsIndicesDone.includes(nextIntersectionIndex)) {
+        // skip if already used
         continue;
       }
       if (!intersectionPoints[nextIntersectionIndex].isClosed) {
+        // skip if open contour
+        continue;
+      }
+      if (
+        intersectionPoints[nextIntersectionIndex].winding === intersectionPoint.winding
+      ) {
+        // skip if has the same winding direction
         continue;
       }
       nextIntersectionPointIndex = nextIntersectionIndex;
