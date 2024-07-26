@@ -502,6 +502,7 @@ export class SceneController {
   setSelectedTool(tool) {
     this.selectedTool?.deactivate();
     this.selectedTool = tool;
+    this.selectedTool?.activate();
     this.hoverSelection = new Set();
     this.updateHoverState();
   }

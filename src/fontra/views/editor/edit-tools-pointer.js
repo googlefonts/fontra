@@ -648,6 +648,18 @@ export class PointerTool extends BaseTool {
     }
     return undefined;
   }
+
+  activate() {
+    super.activate();
+    this.sceneController.sceneModel.showTransformSelection = true;
+    this.canvasController.requestUpdate();
+  }
+
+  deactivate() {
+    super.deactivate();
+    this.sceneController.sceneModel.showTransformSelection = false;
+    this.canvasController.requestUpdate();
+  }
 }
 
 function pointInSquareHandle(point, handle, handleSize) {
