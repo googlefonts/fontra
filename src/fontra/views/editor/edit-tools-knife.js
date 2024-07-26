@@ -184,19 +184,23 @@ export class KnifeTool extends BaseTool {
           }
 
           // Close open contours
+          // This needs to be done a second time after connecting the contours,
+          // because contour and point indices have changed meanwhile.
           const [group1New, group2New] = getIntersectionPointIndicesGrouped(
             layerGlyph.path,
             intersectionPoints
           );
-
+          const closedContours = new Set();
           for (const groupNew of [group1New, group2New]) {
             for (const pointPair of groupNew) {
-              for (const pointIndex of pointPair) {
-                const contourIndex = layerGlyph.path.getContourIndex(pointIndex);
-                const contour = layerGlyph.path.contourInfo[contourIndex];
-                if (contour) {
-                  contour.isClosed = true;
-                }
+              const contourIndex = layerGlyph.path.getContourIndex(pointPair[0]);
+              if (closedContours.has(contourIndex)) {
+                continue;
+              }
+              const contour = layerGlyph.path.contourInfo[contourIndex];
+              if (contour) {
+                contour.isClosed = true;
+                closedContours.add(contourIndex);
               }
             }
           }
