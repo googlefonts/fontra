@@ -44,7 +44,6 @@ export class KnifeTool extends BaseTool {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
 
     let pointB;
-    let shiftConstrain;
     let intersections;
     for await (const event of eventStream) {
       const point = this.sceneController.selectedGlyphPoint(event);
@@ -56,7 +55,6 @@ export class KnifeTool extends BaseTool {
       if (event.shiftKey) {
         const delta = constrainHorVerDiag(vector.subVectors(point, pointA));
         pointB = vector.addVectors(pointA, delta);
-        shiftConstrain = true;
       } else {
         pointB = point;
       }
@@ -181,14 +179,6 @@ export class KnifeTool extends BaseTool {
                 intersectionPoints
               );
               const [pointIndex1, pointIndex2] = RecalcGroups[groupIndex][pairIndex];
-              if (
-                !isStartOrEndPoint(layerGlyph.path, pointIndex1) ||
-                !isStartOrEndPoint(layerGlyph.path, pointIndex2)
-              ) {
-                // Skip, because it's not the start or end point of the contour,
-                // therefore it's very likely that it has already been connected.
-                continue;
-              }
               connectContours(layerGlyph.path, pointIndex1, pointIndex2);
             }
           }
@@ -224,19 +214,6 @@ export class KnifeTool extends BaseTool {
   }
 }
 
-function isStartOrEndPoint(path, pointIndex) {
-  if (pointIndex === undefined) {
-    return false;
-  }
-  const contourIndex = path.getContourIndex(pointIndex);
-  const endPointIndex = path.contourInfo[contourIndex].endPoint;
-  const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-  if (pointIndex != endPointIndex && pointIndex != startPointIndex) {
-    return false;
-  }
-  return true;
-}
-
 function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
   // NOTE: Do we want to cut components as well? If so, we would need:
   //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
@@ -259,44 +236,6 @@ function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
   }
 
   return pathHitTester.lineIntersections(p1, p2, directionVector);
-}
-
-function findOpenContourStartPoints(path, contourIndices = undefined) {
-  if (contourIndices === undefined) {
-    contourIndices = range(path.numContours);
-  }
-  const collectPointStarts = new Set();
-  for (const i of contourIndices) {
-    const contourInfo = path.contourInfo[i];
-    if (contourInfo.isClosed) {
-      continue;
-    }
-
-    const startPoint = path.getContourPoint(i, 0);
-    collectPointStarts.add(startPoint);
-  }
-  return collectPointStarts;
-}
-
-function setStartPoint(path, pointIndex, contourIndex) {
-  // This is almost a copy from setStartPoint() scene-controller.js
-  // With a few exceptions only, eg. don't scipt open contours.
-  const contourToPointMap = new Map();
-  const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
-  contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
-
-  contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-    if (contourPointIndex === 0) {
-      // Already start point
-      return;
-    }
-
-    const contour = path.getUnpackedContour(contourIndex);
-    const head = contour.points.splice(0, contourPointIndex);
-    contour.points.push(...head);
-    path.deleteContour(contourIndex);
-    path.insertContour(contourIndex, packContour(contour));
-  });
 }
 
 function connectContours(path, sourcePointIndex, targetPointIndex) {
