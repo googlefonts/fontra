@@ -826,7 +826,9 @@ def updateGlyphSourcesAndLayers(
     )
 
 
-def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
+def mapGlyphSourceLocationsAndFilter(
+    glyph: VariableGlyph, mapFilterFunc
+) -> VariableGlyph:
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
@@ -846,7 +848,9 @@ def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
     return replace(glyph, sources=newSources, layers=newLayers)
 
 
-def mapFontSourceLocationsAndFilter(sources, mapFilterFunc):
+def mapFontSourceLocationsAndFilter(
+    sources: dict[str, FontSource], mapFilterFunc
+) -> dict[str, FontSource]:
     newSources = {}
     for sourceIdentifier, source in sources.items():
         newLocation = mapFilterFunc(source.location)
