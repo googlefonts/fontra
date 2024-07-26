@@ -1532,7 +1532,7 @@ export function joinContours(path, firstPointIndex, secondPointIndex) {
   );
   assert(
     path.isStartOrEndPoint(firstPointIndex) && path.isStartOrEndPoint(secondPointIndex),
-    "firstPointIndex and/or secondPointIndex is not a start or end point, but both must be start and/or end point."
+    "firstPointIndex and secondPointIndex must be start or end points"
   );
   assert(
     firstPointIndex < secondPointIndex,
