@@ -1235,6 +1235,22 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "instantiate-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: instantiate
+              location:
+                weight: 300
+                width: 400
+            - output: fontra-write
+              destination: "output-instantiate-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
