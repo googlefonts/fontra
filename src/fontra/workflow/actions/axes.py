@@ -366,7 +366,8 @@ class BaseMoveDefaultLocation(BaseFilter):
         newDefaultSourceLocation = await self.newDefaultSourceLocation
 
         locations = [
-            originalDefaultSourceLocation | source.location
+            originalDefaultSourceLocation
+            | self.fontInstancer.getGlyphSourceLocation(source)
             for source in instancer.activeSources
         ]
 
@@ -791,7 +792,9 @@ def updateGlyphSourcesAndLayers(
     )
 
     sourcesByLocation = {
-        locationToTuple(filterLocation(source.location, axisNames)): source
+        locationToTuple(
+            filterLocation(instancer.getGlyphSourceLocation(source), axisNames)
+        ): source
         for source in instancer.activeSources
     }
     locationTuples = sorted(
