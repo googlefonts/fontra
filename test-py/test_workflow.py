@@ -1251,6 +1251,22 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "move-default-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: move-default-location
+              newDefaultUserLocation:
+                width: 400
+                weight: 300
+            - output: fontra-write
+              destination: "output-move-default-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
