@@ -1528,7 +1528,7 @@ export function joinContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
   assert(
     firstPointIndex != secondPointIndex,
-    "firstPointIndex and secondPointIndex are the same, but must be different."
+    "firstPointIndex and secondPointIndex must be different"
   );
   assert(
     path.isStartOrEndPoint(firstPointIndex) && path.isStartOrEndPoint(secondPointIndex),
@@ -1543,6 +1543,11 @@ export function joinContours(path, firstPointIndex, secondPointIndex) {
     path.getContourAndPointIndex(firstPointIndex);
   const [secondContourIndex, secondContourPointIndex] =
     path.getContourAndPointIndex(secondPointIndex);
+
+  assert(
+    firstContourIndex != secondContourIndex,
+    "firstContourIndex and secondContourIndex must be different"
+  );
 
   let firstContour = path.getUnpackedContour(firstContourIndex);
   let secondContour = path.getUnpackedContour(secondContourIndex);
