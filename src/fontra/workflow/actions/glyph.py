@@ -199,7 +199,9 @@ class DecomposeComposites(BaseFilter):
         newLayers = {}
 
         for source in newSources:
-            instance = instancer.instantiate(source.location)
+            instance = instancer.instantiate(
+                self.fontInstancer.getGlyphSourceLocation(source)
+            )
 
             newLayers[source.layerName] = Layer(
                 glyph=replace(
