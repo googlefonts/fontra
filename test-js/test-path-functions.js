@@ -47,6 +47,22 @@ describe("Path Functions tests", () => {
     },
   ];
 
+  // example which causes issues,
+  // because multiple off-curve points are on the same segment
+  const blobPathQuad = [
+    {
+      points: [
+        { x: 196, y: 100, smooth: true },
+        { x: 300, y: 100, type: "quad" },
+        { x: 300, y: 250, type: "quad" },
+        { x: 220, y: 250, smooth: true },
+        { x: 150, y: 250, type: "quad" },
+        { x: 150, y: 100, type: "quad" },
+      ],
+      isClosed: true,
+    },
+  ];
+
   parametrize(
     "insertPoint tests",
     [
@@ -112,6 +128,27 @@ describe("Path Functions tests", () => {
           },
         ],
         expectedResult: { numPointsInserted: 4, selectedPointIndices: [2, 4] },
+      },
+      {
+        path: blobPathQuad,
+        testPoint: undefined,
+        testLine: { p1: { x: 163, y: 112 }, p2: { x: 167, y: 116 } },
+        expectedPath: [
+          {
+            points: [
+              { x: 150, y: 132, type: "quad" },
+              { x: 165, y: 114, smooth: true },
+              { x: 176, y: 100, type: "quad" },
+              { x: 196, y: 100, smooth: true },
+              { x: 300, y: 100, type: "quad" },
+              { x: 300, y: 250, type: "quad" },
+              { x: 220, y: 250, smooth: true },
+              { x: 150, y: 250, type: "quad" },
+            ],
+            isClosed: true,
+          },
+        ],
+        expectedResult: { numPointsInserted: 2, selectedPointIndices: [1] },
       },
     ],
     (testCase) => {

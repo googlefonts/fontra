@@ -9,6 +9,7 @@ import {
 import * as vector from "./vector.js";
 
 export function insertPoint(path, intersection) {
+  const numPointsPath = path.numPoints;
   let numPointsInserted = 0;
   let selectedPointIndices = [];
   const segment = intersection.segment;
@@ -77,7 +78,6 @@ export function insertPoint(path, intersection) {
       const points = [];
       let localIndices = [];
       let localIndex = 0;
-      const splitPointsOnCurve = [];
       for (const bezierElement of splitBeziers) {
         const pointsTemp = [bezierElement.points[1], bezierElement.points[2]].map(
           vector.roundVector
@@ -86,84 +86,26 @@ export function insertPoint(path, intersection) {
         pointsTemp[1].smooth = true;
         points.push(...pointsTemp);
 
-        // collect on-curve points for selectedPointIndices later
-        splitPointsOnCurve.push(pointsTemp[1]);
         localIndices.push(localIndex);
         localIndex += 2;
       }
       points.pop(); // remove last on-curve point
       localIndices.pop(); // remove last index
 
-      const point1 = path.getPoint(segment.pointIndices[0]);
-      const point2 = path.getPoint(segment.pointIndices[1]);
-      const point3 = path.getPoint(segment.pointIndices[2]);
-      insertIndex = segment.pointIndices[1] + absToRel;
-      if (point3.type) {
-        path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
-        numPointsInserted++;
-        localIndices = localIndices.map((i) => i + 1);
-      }
-
-      if (point1.type) {
-        path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
-        numPointsInserted++;
-        localIndices = localIndices.map((i) => i + 1);
-      }
-      // Delete off-curve
-      path.deletePoint(contourIndex, insertIndex);
-      numPointsInserted--;
-
-      // TODO: Review by Just. It seems to work, but I am not sure about the solution.
-      if (!point3.type && segment.parentPointIndices.length > 3) {
-        path.deletePoint(contourIndex, insertIndex);
-        numPointsInserted--;
-      }
-      if (!point1.type && point2.type && !point3.type) {
-        numPointsInserted++;
-        localIndices = localIndices.map((i) => i + 1);
-      }
-
       // Insert split
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
-        numPointsInserted++;
+        //numPointsInserted++;
       }
+
+      // Delete first off-curve
+      path.deletePoint(contourIndex, insertIndex - 1);
+      //numPointsInserted--;
+
+      numPointsInserted = path.numPoints - numPointsPath;
 
       const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
       selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
-
-      // // Keep see code just for reference:
-      // const segmentPointIndexStart = segment.parentPointIndices[0];
-      // const segmentPointIndexEnd =
-      //   segment.parentPointIndices[0] +
-      //   segment.parentPointIndices.length +
-      //   numPointsInserted;
-      // // Need to loop through splitPointsOnCurve to find the correct selectedPointIndices,
-      // // because one segment can be split multiple times via .ts,
-      // // why it's not enough to check the intersection.x and .y
-      // for (const i of range(splitPointsOnCurve.length - 1)) {
-      //   const splitPoint = splitPointsOnCurve[i];
-      //   for (let pointIndex of range(segmentPointIndexStart, segmentPointIndexEnd)) {
-      //     if (pointIndex >= path.numPoints) {
-      //       pointIndex = 0;
-      //     }
-      //     const point = path.getPoint(pointIndex);
-      //     if (!point.smooth) {
-      //       continue;
-      //     }
-      //     // Check for smooth only makes no sense here, because in case of quadradic curves
-      //     // it might be that there are multiple new on-curve points, not just one.
-      //     if (
-      //       point.x === Math.round(splitPoint.x) &&
-      //       point.y === Math.round(splitPoint.y)
-      //     ) {
-      //       selectedPointIndices.push(pointIndex);
-      //     }
-      //   }
-      // }
-
-      // console.log("selectedPointIndicesDiffAproach", selectedPointIndicesDiffAproach);
-      // console.log("selectedPointIndices", selectedPointIndices);
     }
   }
 
