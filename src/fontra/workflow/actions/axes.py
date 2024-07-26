@@ -643,7 +643,8 @@ class TrimAxes(BaseFilter):
         defaultLocation = instancer.defaultSourceLocation
 
         originalLocations = [
-            defaultLocation | source.location for source in instancer.activeSources
+            defaultLocation | self.fontInstancer.getGlyphSourceLocation(source)
+            for source in instancer.activeSources
         ]
 
         _, trimmedRanges = await self._trimmedAxesAndSourceRanges
