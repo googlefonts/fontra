@@ -74,6 +74,7 @@ import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphNotePanel from "./panel-glyph-note.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
+import RelatedGlyphsPanel from "./panel-related-glyphs.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
@@ -829,6 +830,7 @@ export class EditorController {
     this.addSidebarPanel(new SelectionInfoPanel(this), "right");
     this.addSidebarPanel(new TransformationPanel(this), "right");
     this.addSidebarPanel(new GlyphNotePanel(this), "right");
+    this.addSidebarPanel(new RelatedGlyphsPanel(this), "right");
 
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
@@ -986,8 +988,6 @@ export class EditorController {
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
-    const glyphLocations = {};
-    const glyphInfos = [];
 
     const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
       (componentIndex) =>
@@ -1008,6 +1008,9 @@ export class EditorController {
       return;
     }
 
+    const glyphLocations = {};
+    const glyphInfos = [];
+
     for (const componentIndex of this.sceneController.doubleClickedComponentIndices) {
       const glyphName = instance.components[componentIndex].name;
       const location = instance.components[componentIndex].location;
@@ -1017,18 +1020,32 @@ export class EditorController {
       glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
     this.sceneController.updateGlyphLocations(glyphLocations);
+    this.insertGlyphInfos(glyphInfos, 1, true);
+  }
+
+  insertGlyphInfos(glyphInfos, where = 0, select = false) {
+    // where == 0: replace selected glyph
+    // where == 1: insert after selected glyph
+    // where == -1: insert before selected glyph
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
+
+    const insertIndex = selectedGlyphInfo.glyphIndex + (where == 1 ? 1 : 0);
     glyphLines[selectedGlyphInfo.lineIndex].splice(
-      selectedGlyphInfo.glyphIndex + 1,
-      0,
+      insertIndex,
+      where ? 0 : 1,
       ...glyphInfos
     );
     this.sceneSettings.glyphLines = glyphLines;
 
+    const glyphIndex =
+      selectedGlyphInfo.glyphIndex +
+      (select ? (where == 1 ? 1 : 0) : where == -1 ? glyphInfos.length : 0);
+
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
-      glyphIndex: selectedGlyphInfo.glyphIndex + 1,
+      glyphIndex: glyphIndex,
+      isEditing: where && select ? false : this.sceneSettings.selectedGlyph.isEditing,
     };
   }
 

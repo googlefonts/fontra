@@ -54,6 +54,7 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
+    this.sceneController.sceneModel.showResizeSelection = true;
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
@@ -293,6 +294,7 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
+    this.sceneController.sceneModel.showResizeSelection = false;
     this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
@@ -395,6 +397,7 @@ export class PointerTool extends BaseTool {
         broadcast: true,
       };
     });
+    this.sceneController.sceneModel.showResizeSelection = true;
   }
 
   async handleBoundsResize(selection, eventStream, initialEvent) {
@@ -593,6 +596,9 @@ registerVisualizationLayerDefinition({
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
   colorsDarkMode: { handleColor: "#777", strokeColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (!model.showResizeSelection) {
+      return;
+    }
     const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
     if (!resizeBounds) {
       return;
@@ -666,6 +672,9 @@ function getResizeHandles(resizeBounds, margin) {
 }
 
 function getResizeBounds(glyph, selection) {
+  if (selection.size <= 1) {
+    return undefined;
+  }
   const selectionBounds = glyph.getSelectionBounds(selection);
   if (!selectionBounds) {
     return undefined;

@@ -133,7 +133,15 @@ const testData = [
     expectedChange: { f: "deleteContour", a: [0] },
     expectedRollbackChange: {
       f: "insertContour",
-      a: [0, { coordinates: [100, 200], pointTypes: [0], isClosed: false }],
+      a: [
+        0,
+        {
+          coordinates: [100, 200],
+          pointTypes: [0],
+          pointAttributes: null,
+          isClosed: false,
+        },
+      ],
     },
   },
   {

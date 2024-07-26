@@ -116,6 +116,7 @@
   "sidebar.referencefont.customcharacter": "自定义字符",
   "sidebar.referencefont.info": "将一个或多个.ttf、.otf、.woff或.woff2字体文件拖放到下面的方框内",
   "sidebar.referencefont.language": "语言",
+  "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.selection-info": "选区信息",
   "sidebar.selection-info.advance-width": "步进宽度",
   "sidebar.selection-info.component": "组件 #%0",

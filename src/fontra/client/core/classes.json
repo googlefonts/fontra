@@ -207,6 +207,10 @@
     "contourInfo": {
       "type": "list",
       "subtype": "ContourInfo"
+    },
+    "pointAttributes": {
+      "type": "list",
+      "optional": true
     }
   },
   "ContourInfo": {

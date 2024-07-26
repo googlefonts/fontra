@@ -116,6 +116,7 @@
   "sidebar.referencefont.customcharacter": "Custom character",
   "sidebar.referencefont.info": "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below",
   "sidebar.referencefont.language": "Language",
+  "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.selection-info": "Selection Info",
   "sidebar.selection-info.advance-width": "Advance width",
   "sidebar.selection-info.component": "Component #%0",

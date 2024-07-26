@@ -10,6 +10,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
+from fontra.backends.null import NullBackend
 from fontra.core.classes import (
     Anchor,
     Axes,
@@ -908,6 +909,16 @@ async def test_roundtrip_single_UFO(testFontSingleUFO, tmpdir):
     assert await testFontSingleUFO.getFontInfo() == await reopenedBackend.getFontInfo()
     assert await testFontSingleUFO.getKerning() == await reopenedBackend.getKerning()
     assert await testFontSingleUFO.getSources() == await reopenedBackend.getSources()
+
+
+@pytest.mark.parametrize("suffix", [".ufo", ".designspace"])
+async def test_null_output(tmpdir, suffix):
+    tmpdir = pathlib.Path(tmpdir)
+    outPath = tmpdir / ("null" + suffix)
+    outBackend = newFileSystemBackend(outPath)
+    inputBackend = NullBackend()
+    async with aclosing(outBackend):
+        await copyFont(inputBackend, outBackend)
 
 
 def fileNamesFromDir(path):

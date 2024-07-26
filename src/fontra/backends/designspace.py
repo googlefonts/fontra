@@ -239,6 +239,7 @@ class DesignspaceBackend:
 
     @property
     def defaultUFOLayer(self):
+        assert self.defaultDSSource is not None
         return self.defaultDSSource.layer
 
     @property
@@ -905,6 +906,11 @@ class DesignspaceBackend:
                 updateFontInfoFromFontSource(dsSource.layer.reader, fontSource)
 
             newDSSources.append(dsSource)
+
+        if not newDSSources:
+            fallbackDefaultSource = self.dsSources.findItem(isDefault=True)
+            if fallbackDefaultSource is not None:
+                newDSSources.append(fallbackDefaultSource)
 
         self.zombieDSSources.update(
             {s.identifier: s for s in self.dsSources if s.identifier not in sources}

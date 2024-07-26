@@ -359,7 +359,9 @@ export class VariableGlyphController {
           this.name,
           layer.glyph,
           sourceIndex,
-          layerName
+          layerName,
+          undefined,
+          this
         );
         await instanceController.setupComponents(
           getGlyphFunc,
@@ -430,7 +432,8 @@ export class VariableGlyphController {
       instance,
       sourceIndex,
       layerName,
-      errors
+      errors,
+      this
     );
 
     await instanceController.setupComponents(
@@ -483,12 +486,13 @@ export class VariableGlyphController {
 }
 
 export class StaticGlyphController {
-  constructor(name, instance, sourceIndex, layerName, errors) {
+  constructor(name, instance, sourceIndex, layerName, errors, varGlyph) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
     this.layerName = layerName;
     this.errors = errors;
+    this.varGlyph = varGlyph;
     this.canEdit = layerName != undefined;
     this.components = [];
   }
@@ -1154,6 +1158,9 @@ async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
   while (todo.size) {
     const glyphName = setPopFirst(todo);
     const glyph = await getGlyphFunc(glyphName);
+    if (!glyph) {
+      continue;
+    }
     glyphs[glyphName] = glyph;
     for (const compoName of glyph.getAllComponentNames()) {
       if (!(compoName in glyphs)) {

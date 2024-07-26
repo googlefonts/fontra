@@ -1,5 +1,5 @@
 import * as html from "./html-utils.js";
-import { zip } from "./utils.js";
+import { uniqueID, zip } from "./utils.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";
@@ -167,11 +167,6 @@ export function labeledTextInput(label, controller, key, options) {
     items.push(choicesForInput(options.choices, inputElement));
   }
   return items;
-}
-
-let _uniqueID = 1;
-function uniqueID() {
-  return _uniqueID++;
 }
 
 export const DefaultFormatter = {

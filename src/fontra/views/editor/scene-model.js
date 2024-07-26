@@ -474,17 +474,24 @@ export class SceneModel {
     // First we'll see if the clicked point falls within the current selection
     selection = this._selectionAtPoint(point, size, currentSelection);
 
-    if (selection.selection?.size || selection.pathHit) {
+    if (selection.selection?.size) {
       return selection;
     }
 
     // If not, search all items
     selection = this._selectionAtPoint(point, size, undefined);
-    if (selection.selection?.size || selection.pathHit) {
+    if (selection.selection?.size) {
       return selection;
     }
 
-    // Lastly, look for components
+    // Then, look for segment selection (they should *not* participate in the
+    // "prefer if it's in the current selection" logic)
+    selection = this.segmentSelectionAtPoint(point, size);
+    if (selection.pathHit) {
+      return selection;
+    }
+
+    // Lastly, look for components (ditto)
     const componentSelection = this.componentSelectionAtPoint(
       point,
       size,
@@ -531,12 +538,6 @@ export class SceneModel {
     // if (fontGuidelineSelection.size) {
     //   return { selection: fontGuidelineSelection };
     // }
-
-    const { selection: segmentSelection, pathHit: pathHit } =
-      this.segmentSelectionAtPoint(point, size);
-    if (pathHit) {
-      return { selection: segmentSelection, pathHit: pathHit };
-    }
 
     return {};
   }
