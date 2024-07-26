@@ -318,6 +318,18 @@ function findConnectionPoint(path, pointIndex, pointindices, line) {
   }
 }
 
+function getIntersectionIndicesForConnection(intersectionPoints) {
+  // ignore open contours
+  const intersectionIndices = [];
+  for (const [intersectionIndex, intersectionPoint] of enumerate(intersectionPoints)) {
+    if (!intersectionPoint.isClosed) {
+      continue;
+    }
+    intersectionIndices.push(intersectionIndex);
+  }
+  return intersectionIndices;
+}
+
 function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
   // this function finds the point indices for the intersection break and sorts them into
   // two groups, depending on the side of the line they are related to (via isLeftFromLine)
@@ -329,47 +341,42 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
     .map((pointInfo) => getPointIndicesForPoint(path, pointInfo.point))
     .flat(1);
 
-  const intersectionPointsIndicesDone = [];
-  for (const [intersectionIndex, intersectionPoint] of enumerate(intersectionPoints)) {
-    if (intersectionPointsIndicesDone.includes(intersectionIndex)) {
-      continue;
-    }
-    if (!intersectionPoint.isClosed) {
-      intersectionPointsIndicesDone.push(intersectionIndex);
+  const intersectionIndicesDone = new Set();
+  const intersectionIndices = getIntersectionIndicesForConnection(intersectionPoints);
+  for (const intersectionIndex of intersectionIndices) {
+    if (intersectionIndicesDone.has(intersectionIndex)) {
       continue;
     }
 
-    let nextIntersectionPointIndex;
-    for (const nextIntersectionIndex of range(
-      intersectionIndex + 1,
-      intersectionPoints.length
-    )) {
-      if (intersectionPointsIndicesDone.includes(nextIntersectionIndex)) {
+    let nextIntersectionIndex;
+    for (const nextIndex of intersectionIndices) {
+      if (intersectionIndex === nextIndex) {
+        // skip if same index
+        continue;
+      }
+      if (intersectionIndicesDone.has(nextIndex)) {
         // skip if already used
         continue;
       }
-      if (!intersectionPoints[nextIntersectionIndex].isClosed) {
-        // skip if open contour
-        continue;
-      }
       if (
-        intersectionPoints[nextIntersectionIndex].winding === intersectionPoint.winding
+        intersectionPoints[nextIndex].winding ===
+        intersectionPoints[intersectionIndex].winding
       ) {
         // skip if has the same winding direction
         continue;
       }
-      nextIntersectionPointIndex = nextIntersectionIndex;
+      nextIntersectionIndex = nextIndex;
       break;
     }
-    if (nextIntersectionPointIndex === undefined) {
+    if (nextIntersectionIndex === undefined) {
       continue;
     }
 
-    intersectionPointsIndicesDone.push(intersectionIndex);
-    intersectionPointsIndicesDone.push(nextIntersectionPointIndex);
+    intersectionIndicesDone.add(intersectionIndex);
+    intersectionIndicesDone.add(nextIntersectionIndex);
 
     const inter1 = intersectionPoints[intersectionIndex].point;
-    const inter2 = intersectionPoints[nextIntersectionPointIndex].point;
+    const inter2 = intersectionPoints[nextIntersectionIndex].point;
 
     // Because of multi-source-editing, we cannot use the initial knife tool cut line,
     // instead we use the line of the intersection points to determine the side.
