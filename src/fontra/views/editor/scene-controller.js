@@ -1536,7 +1536,7 @@ export function joinContours(path, firstPointIndex, secondPointIndex) {
   );
   assert(
     firstPointIndex < secondPointIndex,
-    "firstPointIndex must be smaller than secondPointIndex, but it is not."
+    "firstPointIndex must be less than secondPointIndex"
   );
 
   const [firstContourIndex, firstContourPointIndex] =
