@@ -650,12 +650,13 @@ export class PointerTool extends BaseTool {
   }
 
   activate() {
-    this.setCursor();
+    super.activate();
     this.sceneController.sceneModel.showTransformSelection = true;
     this.canvasController.requestUpdate();
   }
 
   deactivate() {
+    super.deactivate();
     this.sceneController.sceneModel.showTransformSelection = false;
     this.canvasController.requestUpdate();
   }
