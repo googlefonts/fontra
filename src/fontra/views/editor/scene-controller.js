@@ -1527,10 +1527,6 @@ function splitLocation(location, glyphAxes) {
 export function joinContours(path, firstPointIndex, secondPointIndex) {
   let selectedPointIndices = [];
   assert(
-    firstPointIndex != secondPointIndex,
-    "firstPointIndex and secondPointIndex must be different"
-  );
-  assert(
     path.isStartOrEndPoint(firstPointIndex) && path.isStartOrEndPoint(secondPointIndex),
     "firstPointIndex and secondPointIndex must be start or end points"
   );
