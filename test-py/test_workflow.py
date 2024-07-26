@@ -1241,6 +1241,8 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
             - filter: instantiate
               location:
                 weight: 300
@@ -1257,6 +1259,8 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
             - filter: move-default-location
               newDefaultUserLocation:
                 width: 400
@@ -1273,6 +1277,8 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - input: fontra-read
               source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
             - filter: trim-axes
               axes:
                 width:
@@ -1284,6 +1290,19 @@ def test_command(tmpdir, configYAMLSources):
 
             - output: fontra-write
               destination: "output-trim-axes-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "decompose-composites-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: decompose-composites
+            - output: fontra-write
+              destination: "output-decompose-composites-location-base.fontra"
             """,
             False,
             [],
