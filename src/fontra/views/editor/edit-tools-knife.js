@@ -88,12 +88,10 @@ export class KnifeTool extends BaseTool {
         );
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           // Get intersections sorted by contour and segments
-          const effectedContourIndices = new Set();
           const intersectionsReordered = {};
           for (const [i, intersection] of enumerate(intersections)) {
             const contourIndex = intersection.contourIndex;
             const segmentIndex = intersection.segmentIndex;
-            effectedContourIndices.add(contourIndex);
             if (!intersectionsReordered.hasOwnProperty(contourIndex)) {
               intersectionsReordered[contourIndex] = {};
             }
@@ -103,12 +101,6 @@ export class KnifeTool extends BaseTool {
             }
             intersectionsReordered[contourIndex][segmentIndex].ts.push(intersection.t);
           }
-
-          // Find open contour points (for reopening them later)
-          const openContourStartPoints = findOpenContourStartPoints(
-            layerGlyph.path,
-            effectedContourIndices
-          );
 
           // Insert points at intersections segments (be compatible for multi-source-editing)
           const intersectionPoints = [];
@@ -171,11 +163,6 @@ export class KnifeTool extends BaseTool {
               .sort((a, b) => a - b)
           );
 
-          // Check if all contours are open, so we do not need to close them
-          if (effectedContourIndices.size === openContourStartPoints.size) {
-            continue;
-          }
-
           // Sort intersectionPoints by intersections-order
           intersectionPoints.sort((a, b) => a.intersectionIndex - b.intersectionIndex);
 
@@ -219,19 +206,6 @@ export class KnifeTool extends BaseTool {
                 if (contour) {
                   contour.isClosed = true;
                 }
-              }
-            }
-          }
-
-          // Reopen contours, which were open before
-          for (const pointIndex of range(layerGlyph.path.numPoints)) {
-            const point = layerGlyph.path.getPoint(pointIndex);
-            for (const startPoint of openContourStartPoints) {
-              if (point.x === startPoint.x && point.y === startPoint.y) {
-                const contourIndex = layerGlyph.path.getContourIndex(pointIndex);
-                setStartPoint(layerGlyph.path, pointIndex, contourIndex);
-                layerGlyph.path.contourInfo[contourIndex].isClosed = false;
-                break;
               }
             }
           }
@@ -415,12 +389,13 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
     .map((pointInfo) => getPointIndicesForPoint(path, pointInfo.point))
     .flat(1);
 
-  const connectedIntersectionPointsIndices = [];
+  const intersectionPointsIndicesDone = [];
   for (const [intersectionIndex, intersectionPoint] of enumerate(intersectionPoints)) {
-    if (intersectionIndex in connectedIntersectionPointsIndices) {
+    if (intersectionIndex in intersectionPointsIndicesDone) {
       continue;
     }
     if (!intersectionPoint.isClosed) {
+      intersectionPointsIndicesDone.push(intersectionIndex);
       continue;
     }
 
@@ -429,7 +404,7 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
       intersectionIndex + 1,
       intersectionPoints.length
     )) {
-      if (nextIntersectionIndex in connectedIntersectionPointsIndices) {
+      if (nextIntersectionIndex in intersectionPointsIndicesDone) {
         continue;
       }
       if (!intersectionPoints[nextIntersectionIndex].isClosed) {
@@ -442,8 +417,8 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
       continue;
     }
 
-    connectedIntersectionPointsIndices.push(intersectionIndex);
-    connectedIntersectionPointsIndices.push(nextIntersectionPointIndex);
+    intersectionPointsIndicesDone.push(intersectionIndex);
+    intersectionPointsIndicesDone.push(nextIntersectionPointIndex);
 
     const inter1 = intersectionPoints[intersectionIndex].point;
     const inter2 = intersectionPoints[nextIntersectionPointIndex].point;
