@@ -141,6 +141,7 @@ export class KnifeTool extends BaseTool {
                   recalculatedIndex: pointIndex,
                   intersectionIndex: intersectionIndex,
                   point: layerGlyph.path.getPoint(pointIndex),
+                  isClosed: layerGlyph.path.contourInfo[contourIndex].isClosed,
                 };
                 selectedPoints.push(pointInfo);
                 // Because we loop over intersectionsReordered based on
@@ -414,14 +415,39 @@ function getIntersectionPointIndicesGrouped(path, intersectionPoints) {
     .map((pointInfo) => getPointIndicesForPoint(path, pointInfo.point))
     .flat(1);
 
-  for (const intersectionIndex of range(0, intersectionPoints.length, 2)) {
-    // we have for each intersection two points (because we split the path at the intersection)
-    if (intersectionIndex + 1 >= intersectionPoints.length) {
-      break;
+  const connectedIntersectionPointsIndices = [];
+  for (const [intersectionIndex, intersectionPoint] of enumerate(intersectionPoints)) {
+    if (intersectionIndex in connectedIntersectionPointsIndices) {
+      continue;
+    }
+    if (!intersectionPoint.isClosed) {
+      continue;
     }
 
+    let nextIntersectionPointIndex;
+    for (const nextIntersectionIndex of range(
+      intersectionIndex + 1,
+      intersectionPoints.length
+    )) {
+      if (nextIntersectionIndex in connectedIntersectionPointsIndices) {
+        continue;
+      }
+      if (!intersectionPoints[nextIntersectionIndex].isClosed) {
+        continue;
+      }
+      nextIntersectionPointIndex = nextIntersectionIndex;
+      break;
+    }
+    if (nextIntersectionPointIndex === undefined) {
+      continue;
+    }
+
+    connectedIntersectionPointsIndices.push(intersectionIndex);
+    connectedIntersectionPointsIndices.push(nextIntersectionPointIndex);
+
     const inter1 = intersectionPoints[intersectionIndex].point;
-    const inter2 = intersectionPoints[intersectionIndex + 1].point;
+    const inter2 = intersectionPoints[nextIntersectionPointIndex].point;
+
     // Because of multi-source-editing, we cannot use the initial knife tool cut line,
     // instead we use the line of the intersection points to determine the side.
     const line = { p1: inter1, p2: inter2 };
