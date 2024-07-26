@@ -92,15 +92,26 @@ export function insertPoint(path, intersection) {
       points.pop(); // remove last on-curve point
       localIndices.pop(); // remove last index
 
+      const point1 = path.getPoint(segment.pointIndices[0]);
+      const point2 = path.getPoint(segment.pointIndices[1]);
+      const point3 = path.getPoint(segment.pointIndices[2]);
+      insertIndex = segment.pointIndices[1] + absToRel;
+      if (point3.type) {
+        path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
+      }
+      if (point1.type) {
+        path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
+        insertIndex++;
+      }
+
+      // Delete off-curve
+      path.deletePoint(contourIndex, insertIndex);
+
       // Insert split
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
         //numPointsInserted++;
       }
-
-      // Delete first off-curve
-      path.deletePoint(contourIndex, insertIndex - 1);
-      //numPointsInserted--;
 
       numPointsInserted = path.numPoints - numPointsPath;
 

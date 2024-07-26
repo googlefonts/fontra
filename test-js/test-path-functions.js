@@ -136,19 +136,20 @@ describe("Path Functions tests", () => {
         expectedPath: [
           {
             points: [
-              { x: 150, y: 132, type: "quad" },
-              { x: 165, y: 114, smooth: true },
-              { x: 176, y: 100, type: "quad" },
               { x: 196, y: 100, smooth: true },
               { x: 300, y: 100, type: "quad" },
               { x: 300, y: 250, type: "quad" },
               { x: 220, y: 250, smooth: true },
               { x: 150, y: 250, type: "quad" },
+              { x: 150, y: 175, smooth: true },
+              { x: 150, y: 132, type: "quad" },
+              { x: 165, y: 114, smooth: true },
+              { x: 176, y: 100, type: "quad" },
             ],
             isClosed: true,
           },
         ],
-        expectedResult: { numPointsInserted: 2, selectedPointIndices: [1] },
+        expectedResult: { numPointsInserted: 3, selectedPointIndices: [7] },
       },
     ],
     (testCase) => {
