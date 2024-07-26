@@ -110,13 +110,13 @@ export function insertPoint(path, intersection) {
       // Insert split
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
-        //numPointsInserted++;
       }
 
-      numPointsInserted = path.numPoints - numPointsPath;
-
       const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-      selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
+      selectedPointIndices = localIndices.map(
+        (i) => startPointIndex + insertIndex + i + 1
+      );
+      numPointsInserted = path.numPoints - numPointsPath;
     }
   }
 
