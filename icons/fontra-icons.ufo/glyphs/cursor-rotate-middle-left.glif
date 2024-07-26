@@ -2,7 +2,7 @@
 <glyph name="cursor-rotate-middle-left" format="2">
   <advance width="1000"/>
   <outline>
-    <component base="cursor-rotate-top-right" xScale="-0.7071067811865476" xyScale="0.7071067811865475" yxScale="-0.7071067811865475" yScale="-0.7071067811865476" xOffset="1154.718647665583" yOffset="193.63037400209885"/>
+    <component base="_cursor-rotate-hotspot-0-0" xScale="-0.7071067811865476" xyScale="-0.7071067811865475" yxScale="-0.7071067811865475" yScale="0.7071067811865476" xOffset="500" yOffset="300"/>
   </outline>
   <lib>
     <dict>

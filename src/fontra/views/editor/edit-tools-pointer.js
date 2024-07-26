@@ -78,19 +78,7 @@ export class PointerTool extends BaseTool {
   }
 
   setCursorForRotationHandle(handleName) {
-    const cursorPositions = {
-      "bottom-left": "16 16",
-      "bottom-right": "16 16",
-      "top-left": "16 16",
-      "top-right": "16 16",
-      "middle-left": "20 14",
-      "middle-right": "12 14",
-      "top-center": "16 18",
-      "bottom-center": "16 12",
-    };
-    this.setCursor(
-      `url('/images/cursor-rotate-${handleName}.svg') ${cursorPositions[handleName]}, auto`
-    );
+    this.setCursor(`url('/images/cursor-rotate-${handleName}.svg') 16 16, auto`);
   }
 
   setCursorForResizeHandle(handleName) {
