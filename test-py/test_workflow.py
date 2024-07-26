@@ -1267,6 +1267,27 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "trim-axes-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: trim-axes
+              axes:
+                width:
+                  minValue: 0
+                  maxValue: 400
+                weight:
+                  minValue: 100
+                  maxValue: 300
+
+            - output: fontra-write
+              destination: "output-trim-axes-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
