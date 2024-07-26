@@ -500,6 +500,9 @@ export class SceneController {
   }
 
   setSelectedTool(tool) {
+    this.sceneModel.showTransformSelection =
+      tool.identifier === "pointer-tool" ? true : false;
+    this.canvasController.requestUpdate();
     this.selectedTool?.deactivate();
     this.selectedTool = tool;
     this.hoverSelection = new Set();
