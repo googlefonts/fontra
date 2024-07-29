@@ -1425,7 +1425,10 @@ function getSelectedJoinContoursPointIndices(path, pointSelection) {
 function getSelectedContours(path, pointSelection) {
   const selectedContours = new Set();
   for (const pointIndex of pointSelection) {
-    selectedContours.add(path.getContourIndex(pointIndex));
+    const contourIndex = path.getContourIndex(pointIndex);
+    if (contourIndex != undefined) {
+      selectedContours.add(contourIndex);
+    }
   }
   return [...selectedContours];
 }
