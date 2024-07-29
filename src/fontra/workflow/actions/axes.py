@@ -366,7 +366,8 @@ class BaseMoveDefaultLocation(BaseFilter):
         newDefaultSourceLocation = await self.newDefaultSourceLocation
 
         locations = [
-            originalDefaultSourceLocation | source.location
+            originalDefaultSourceLocation
+            | self.fontInstancer.getGlyphSourceLocation(source)
             for source in instancer.activeSources
         ]
 
@@ -642,7 +643,8 @@ class TrimAxes(BaseFilter):
         defaultLocation = instancer.defaultSourceLocation
 
         originalLocations = [
-            defaultLocation | source.location for source in instancer.activeSources
+            defaultLocation | self.fontInstancer.getGlyphSourceLocation(source)
+            for source in instancer.activeSources
         ]
 
         _, trimmedRanges = await self._trimmedAxesAndSourceRanges
@@ -791,7 +793,9 @@ def updateGlyphSourcesAndLayers(
     )
 
     sourcesByLocation = {
-        locationToTuple(filterLocation(source.location, axisNames)): source
+        locationToTuple(
+            filterLocation(instancer.getGlyphSourceLocation(source), axisNames)
+        ): source
         for source in instancer.activeSources
     }
     locationTuples = sorted(
@@ -822,10 +826,13 @@ def updateGlyphSourcesAndLayers(
     )
 
 
-def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
+def mapGlyphSourceLocationsAndFilter(
+    glyph: VariableGlyph, mapFilterFunc
+) -> VariableGlyph:
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
+        # We do *not* need to take source.locationBase into account here
         newLocation = mapFilterFunc(source.location)
         if newLocation is None:
             layersToDelete.add(source.layerName)
@@ -841,7 +848,9 @@ def mapGlyphSourceLocationsAndFilter(glyph, mapFilterFunc):
     return replace(glyph, sources=newSources, layers=newLayers)
 
 
-def mapFontSourceLocationsAndFilter(sources, mapFilterFunc):
+def mapFontSourceLocationsAndFilter(
+    sources: dict[str, FontSource], mapFilterFunc
+) -> dict[str, FontSource]:
     newSources = {}
     for sourceIdentifier, source in sources.items():
         newLocation = mapFilterFunc(source.location)

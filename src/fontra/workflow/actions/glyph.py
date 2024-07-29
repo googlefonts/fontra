@@ -173,11 +173,14 @@ class DecomposeComposites(BaseFilter):
             return glyph
 
         haveLocations = getFontSourceLocationsFromSources(
-            instancer.activeSources, defaultFontSourceLocation
+            self.fontInstancer, instancer.activeSources, defaultFontSourceLocation
         )
 
         needLocations = await getFontSourceLocationsFromBaseGlyphs(
-            glyph, self.fontInstancer.backend, defaultFontSourceLocation
+            self.fontInstancer,
+            glyph,
+            self.fontInstancer.backend,
+            defaultFontSourceLocation,
         )
 
         needLocations = multiplyLocations(
@@ -196,7 +199,9 @@ class DecomposeComposites(BaseFilter):
         newLayers = {}
 
         for source in newSources:
-            instance = instancer.instantiate(source.location)
+            instance = instancer.instantiate(
+                self.fontInstancer.getGlyphSourceLocation(source)
+            )
 
             newLayers[source.layerName] = Layer(
                 glyph=replace(
@@ -210,7 +215,7 @@ class DecomposeComposites(BaseFilter):
 
 
 async def getFontSourceLocationsFromBaseGlyphs(
-    glyph, backend, defaultFontSourceLocation, seenGlyphNames=None
+    fontInstancer, glyph, backend, defaultFontSourceLocation, seenGlyphNames=None
 ) -> set[tuple]:
     if seenGlyphNames is None:
         seenGlyphNames = set()
@@ -238,7 +243,9 @@ async def getFontSourceLocationsFromBaseGlyphs(
     for baseGlyph in baseGlyphs:
         locations.update(
             getFontSourceLocationsFromSources(
-                getActiveSources(baseGlyph.sources), defaultFontSourceLocation
+                fontInstancer,
+                getActiveSources(baseGlyph.sources),
+                defaultFontSourceLocation,
             )
         )
 
@@ -247,20 +254,26 @@ async def getFontSourceLocationsFromBaseGlyphs(
     for baseGlyph in baseGlyphs:
         locations.update(
             await getFontSourceLocationsFromBaseGlyphs(
-                baseGlyph, backend, defaultFontSourceLocation, seenGlyphNames
+                fontInstancer,
+                baseGlyph,
+                backend,
+                defaultFontSourceLocation,
+                seenGlyphNames,
             )
         )
 
     return locations
 
 
-def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation) -> set[tuple]:
+def getFontSourceLocationsFromSources(
+    fontInstancer, sources, defaultFontSourceLocation
+) -> set[tuple]:
     return {
         locationToTuple(
             defaultFontSourceLocation
             | {
                 k: v
-                for k, v in source.location.items()
+                for k, v in fontInstancer.getGlyphSourceLocation(source).items()
                 if k in defaultFontSourceLocation
             }
         )

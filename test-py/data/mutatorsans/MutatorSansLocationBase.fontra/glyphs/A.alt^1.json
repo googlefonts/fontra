@@ -1,0 +1,21 @@
+{
+"name": "A.alt",
+"sources": [
+{
+"name": "default",
+"layerName": "default"
+}
+],
+"layers": {
+"default": {
+"glyph": {
+"components": [
+{
+"name": "A"
+}
+],
+"xAdvance": 1290
+}
+}
+}
+}
