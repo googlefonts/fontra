@@ -54,11 +54,14 @@ class FontInstancer:
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
         self._fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
+        self._fontSources: dict[str, FontSource] | None = None
         self._glyphErrors: set[str] = set()
 
     async def _ensureSetup(self):
         if self._fontAxes is None:
             self._fontAxes = (await self.backend.getAxes()).axes
+            assert self._fontSources is None
+            self._fontSources = await self.backend.getSources()
 
     @cached_property
     def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
@@ -66,14 +69,29 @@ class FontInstancer:
         return self._fontAxes
 
     @cached_property
+    def fontSources(self) -> dict[str, FontSource]:
+        assert self._fontSources is not None
+        return self._fontSources
+
+    @cached_property
     def fontAxisNames(self) -> set[str]:
         return {axis.name for axis in self.fontAxes}
+
+    def getGlyphSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
+        fontSource = (
+            self.fontSources.get(glyphSource.locationBase)
+            if glyphSource.locationBase
+            else None
+        )
+        return (
+            fontSource.location if fontSource is not None else {}
+        ) | glyphSource.location
 
     @async_cached_property
     async def fontSourcesInstancer(self):
         await self._ensureSetup()
         return FontSourcesInstancer(
-            fontAxes=self.fontAxes, fontSources=await self.backend.getSources()
+            fontAxes=self.fontAxes, fontSources=self.fontSources
         )
 
     async def getGlyphInstancer(
@@ -300,7 +318,11 @@ class GlyphInstancer:
     def defaultSource(self) -> GlyphSource | None:
         defaultSourceLocation = self.defaultSourceLocation
         for source in self.activeSources:
-            if defaultSourceLocation | source.location == defaultSourceLocation:
+            if (
+                defaultSourceLocation
+                | self.fontInstancer.getGlyphSourceLocation(source)
+                == defaultSourceLocation
+            ):
                 return source
         return None
 
@@ -354,7 +376,10 @@ class GlyphInstancer:
 
     @cached_property
     def model(self) -> DiscreteVariationModel:
-        locations = [source.location for source in self.activeSources]
+        locations = [
+            self.fontInstancer.getGlyphSourceLocation(source)
+            for source in self.activeSources
+        ]
         return DiscreteVariationModel(locations, self.combinedAxes, softFail=False)
 
     @cached_property
@@ -370,6 +395,9 @@ class GlyphInstancer:
 
     def checkCompatibility(self):
         return self.model.checkCompatibilityFromDeltas(self.deltas)
+
+    def getGlyphSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
+        return self.fontInstancer.getGlyphSourceLocation(glyphSource)
 
 
 @dataclass

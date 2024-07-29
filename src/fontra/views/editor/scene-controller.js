@@ -18,6 +18,7 @@ import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectang
 import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
+  assert,
   commandKeyProperty,
   enumerate,
   objectsEqual,
@@ -501,6 +502,7 @@ export class SceneController {
   setSelectedTool(tool) {
     this.selectedTool?.deactivate();
     this.selectedTool = tool;
+    this.selectedTool?.activate();
     this.hoverSelection = new Set();
     this.updateHoverState();
   }
@@ -647,18 +649,31 @@ export class SceneController {
     this.contextMenuState.openContourSelection = glyphController.canEdit
       ? getSelectedClosableContours(glyphController.instance.path, pointSelection)
       : [];
+    this.contextMenuState.joinContourSelection = glyphController.canEdit
+      ? getSelectedJoinContoursPointIndices(
+          glyphController.instance.path,
+          pointSelection
+        )
+      : [];
   }
 
   getContextMenuItems(event) {
     const contextMenuItems = [
       {
         title: () =>
-          translatePlural(
-            "action.close-contour",
-            this.contextMenuState.openContourSelection?.length
-          ),
-        enabled: () => this.contextMenuState.openContourSelection?.length,
-        callback: () => this.doCloseSelectedOpenContours(),
+          this.contextMenuState.joinContourSelection?.length === 2
+            ? translate("action.join-contours")
+            : translatePlural(
+                "action.close-contour",
+                this.contextMenuState.openContourSelection?.length
+              ),
+        enabled: () =>
+          this.contextMenuState.joinContourSelection?.length ||
+          this.contextMenuState.openContourSelection?.length,
+        callback: () =>
+          this.contextMenuState.joinContourSelection?.length === 2
+            ? this.doJoinSelectedOpenContours()
+            : this.doCloseSelectedOpenContours(),
         shortCut: { keysOrCodes: "j", metaKey: true },
       },
       {
@@ -1168,6 +1183,26 @@ export class SceneController {
     });
   }
 
+  async doJoinSelectedOpenContours() {
+    const newSelection = new Set();
+    const [pointIndex1, pointIndex2] = this.contextMenuState.joinContourSelection;
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const selectionPointIndices = joinContours(
+          layerGlyph.path,
+          pointIndex1,
+          pointIndex2
+        );
+
+        for (const pointIndex of selectionPointIndices) {
+          newSelection.add(`point/${pointIndex}`);
+        }
+      }
+      this.selection = newSelection;
+      return translate("action.join-contours");
+    });
+  }
+
   async doCloseSelectedOpenContours() {
     const openContours = this.contextMenuState.openContourSelection;
     await this.editLayersAndRecordChanges((layerGlyphs) => {
@@ -1360,6 +1395,33 @@ function reversePointSelection(path, pointSelection) {
   return new Set(newSelection);
 }
 
+function getSelectedJoinContoursPointIndices(path, pointSelection) {
+  if (pointSelection?.length !== 2) {
+    return [];
+  }
+  const contourIndices = [];
+  for (const pointIndex of pointSelection) {
+    if (!path.isStartOrEndPoint(pointIndex)) {
+      // must be start or end point
+      return [];
+    }
+    const contourIndex = path.getContourIndex(pointIndex);
+    contourIndices.push(contourIndex);
+    if (path.contourInfo[contourIndex].isClosed) {
+      // return, because at least one of the selected points is a closed contour
+      return [];
+    }
+  }
+
+  const contourIndicesSet = new Set(contourIndices);
+  if (contourIndicesSet.size !== 2) {
+    // must be two distinct contours, if same use 'close contour'
+    return [];
+  }
+
+  return pointSelection;
+}
+
 function getSelectedContours(path, pointSelection) {
   const selectedContours = new Set();
   for (const pointIndex of pointSelection) {
@@ -1461,4 +1523,80 @@ function splitLocation(location, glyphAxes) {
   }
 
   return { fontLocation, glyphLocation };
+}
+
+export function joinContours(path, firstPointIndex, secondPointIndex) {
+  let selectedPointIndices = [];
+  assert(
+    path.isStartOrEndPoint(firstPointIndex) && path.isStartOrEndPoint(secondPointIndex),
+    "firstPointIndex and secondPointIndex must be start or end points"
+  );
+  assert(
+    firstPointIndex < secondPointIndex,
+    "firstPointIndex must be less than secondPointIndex"
+  );
+
+  const [firstContourIndex, firstContourPointIndex] =
+    path.getContourAndPointIndex(firstPointIndex);
+  const [secondContourIndex, secondContourPointIndex] =
+    path.getContourAndPointIndex(secondPointIndex);
+
+  assert(
+    firstContourIndex != secondContourIndex,
+    "firstContourIndex and secondContourIndex must be different"
+  );
+
+  let firstContour = path.getUnpackedContour(firstContourIndex);
+  let secondContour = path.getUnpackedContour(secondContourIndex);
+
+  if (!!firstContourPointIndex == !!secondContourPointIndex) {
+    secondContour.points.reverse();
+  }
+
+  if (!firstContourPointIndex) {
+    [firstContour, secondContour] = [secondContour, firstContour];
+  }
+  let selectedContourPointIndex1 = firstContour.points.length - 1;
+  let selectedContourPointIndex2 = selectedContourPointIndex1 + 1;
+  let loneCubicHandle;
+  const lastPointFirstContour = firstContour.points.at(-1);
+  const firstPointSecondContour = secondContour.points.at(0);
+  if (lastPointFirstContour.type && !firstPointSecondContour.type) {
+    loneCubicHandle = firstContour.points.pop();
+  } else if (firstPointSecondContour.type && !lastPointFirstContour.type) {
+    loneCubicHandle = secondContour.points.shift();
+  }
+
+  if (loneCubicHandle) {
+    const [handle1, handle2] = [
+      firstContour.points.at(-1),
+      secondContour.points.at(0),
+    ].map((point) => {
+      return {
+        ...vector.roundVector(scalePoint(point, loneCubicHandle, 2 / 3)),
+        type: "cubic",
+      };
+    });
+    firstContour.points.push(handle1);
+    firstContour.points.push(handle2);
+    selectedContourPointIndex2 += 1;
+  }
+
+  const newContour = {
+    points: firstContour.points.concat(secondContour.points),
+    isClosed: false,
+  };
+
+  path.deleteContour(firstContourIndex);
+  path.insertUnpackedContour(firstContourIndex, newContour);
+  path.deleteContour(secondContourIndex);
+
+  selectedPointIndices.push(
+    path.getAbsolutePointIndex(firstContourIndex, selectedContourPointIndex1)
+  );
+  selectedPointIndices.push(
+    path.getAbsolutePointIndex(firstContourIndex, selectedContourPointIndex2)
+  );
+
+  return selectedPointIndices;
 }

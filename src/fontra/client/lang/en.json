@@ -8,6 +8,7 @@
   "action.decompose-component.plural": "Decompose %0 Components",
   "action.delete-glyph": "Delete Glyph",
   "action.delete-selection": "Delete Selection",
+  "action.join-contours": "Join Contours",
   "action.redo": "Redo",
   "action.reverse-contour": "Reverse Contour Direction",
   "action.select-all": "Select All",

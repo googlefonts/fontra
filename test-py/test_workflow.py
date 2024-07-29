@@ -1235,6 +1235,78 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "instantiate-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
+            - filter: instantiate
+              location:
+                weight: 300
+                width: 400
+            - output: fontra-write
+              destination: "output-instantiate-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "move-default-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
+            - filter: move-default-location
+              newDefaultUserLocation:
+                width: 400
+                weight: 300
+            - output: fontra-write
+              destination: "output-move-default-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "trim-axes-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: subset-glyphs
+              glyphNames: ["A", "B"]
+            - filter: trim-axes
+              axes:
+                width:
+                  minValue: 0
+                  maxValue: 400
+                weight:
+                  minValue: 100
+                  maxValue: 300
+
+            - output: fontra-write
+              destination: "output-trim-axes-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "decompose-composites-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSansLocationBase.fontra"
+            - filter: decompose-composites
+            - output: fontra-write
+              destination: "output-decompose-composites-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(

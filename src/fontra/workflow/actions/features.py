@@ -75,6 +75,7 @@ class GeneratePaltVpalFeature(BaseFilter):
         return OpenTypeFeatures(text=featureText)
 
     async def _collectAdjustments(self, glyphMap, axes):
+        fontInstancer = self.fontInstancer
         mapLocation = _makeLocationMapFunc(axes)
 
         horAdjustments = {}
@@ -92,6 +93,7 @@ class GeneratePaltVpalFeature(BaseFilter):
             hAdjustments = []
             vAdjustments = []
             for source in getActiveSources(glyph.sources):
+                sourceLocation = fontInstancer.getGlyphSourceLocation(source)
                 layerGlyph = glyph.layers[source.layerName].glyph
                 lsbAnchorPos = None
                 rsbAnchorPos = None
@@ -111,7 +113,7 @@ class GeneratePaltVpalFeature(BaseFilter):
                 if lsbAnchorPos is not None and rsbAnchorPos is not None:
                     placementAdjust = -lsbAnchorPos
                     advanceAdjust = rsbAnchorPos - lsbAnchorPos - layerGlyph.xAdvance
-                    location = mapLocation(source.location)
+                    location = mapLocation(sourceLocation)
                     hAdjustments.append((location, placementAdjust, advanceAdjust))
 
                 if (
@@ -122,7 +124,7 @@ class GeneratePaltVpalFeature(BaseFilter):
                 ):
                     placementAdjust = layerGlyph.verticalOrigin - tsbAnchorPos
                     advanceAdjust = tsbAnchorPos - bsbAnchorPos - layerGlyph.yAdvance
-                    location = mapLocation(source.location)
+                    location = mapLocation(sourceLocation)
                     vAdjustments.append((location, placementAdjust, advanceAdjust))
 
             if hAdjustments:

@@ -567,3 +567,9 @@ let _uniqueID = 1;
 export function uniqueID() {
   return _uniqueID++;
 }
+
+export function assert(condition, message) {
+  if (!condition) {
+    throw new Error(`assert -- ${message}`);
+  }
+}

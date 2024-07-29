@@ -5,6 +5,7 @@ import {
   centeredRect,
   normalizeRect,
   offsetRect,
+  pointInRect,
   rectSize,
 } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
@@ -25,10 +26,13 @@ import { equalGlyphSelection } from "./scene-controller.js";
 import {
   registerVisualizationLayerDefinition,
   strokeRoundNode,
+  strokeSquareNode,
 } from "./visualization-layer-definitions.js";
 import { copyComponent } from "/core/var-glyph.js";
 
-const handleMarginValue = 10;
+const transformHandleMargin = 6;
+const transformHandleSize = 8;
+const rotationHandleSizeFactor = 1.2;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -54,17 +58,27 @@ export class PointerTool extends BaseTool {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
-    this.sceneController.sceneModel.showResizeSelection = true;
+    this.sceneController.sceneModel.showTransformSelection = true;
+
     const resizeHandle = this.getResizeHandle(event, sceneController.selection);
+    const rotationHandle = !resizeHandle
+      ? this.getRotationHandle(event, sceneController.selection)
+      : undefined;
     if (this.sceneController.sceneModel.hoverResizeHandle != resizeHandle) {
       this.sceneController.sceneModel.hoverResizeHandle = resizeHandle;
       this.canvasController.requestUpdate();
     }
-    if (resizeHandle) {
+    if (rotationHandle) {
+      this.setCursorForRotationHandle(rotationHandle);
+    } else if (resizeHandle) {
       this.setCursorForResizeHandle(resizeHandle);
     } else {
       this.setCursor();
     }
+  }
+
+  setCursorForRotationHandle(handleName) {
+    this.setCursor(`url('/images/cursor-rotate-${handleName}.svg') 16 16, auto`);
   }
 
   setCursorForResizeHandle(handleName) {
@@ -98,10 +112,17 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const initialSelection = sceneController.selection;
     const resizeHandle = this.getResizeHandle(initialEvent, initialSelection);
-    if (resizeHandle) {
-      sceneController.sceneModel.clickedResizeHandle = resizeHandle;
-      await this.handleBoundsResize(initialSelection, eventStream, initialEvent);
-      delete sceneController.sceneModel.clickedResizeHandle;
+    const rotationHandle = this.getRotationHandle(initialEvent, initialSelection);
+    if (resizeHandle || rotationHandle) {
+      sceneController.sceneModel.clickedTransformSelectionHandle =
+        resizeHandle || rotationHandle;
+      await this.handleBoundsTransformSelection(
+        initialSelection,
+        eventStream,
+        initialEvent,
+        !!rotationHandle
+      );
+      delete sceneController.sceneModel.clickedTransformSelectionHandle;
       return;
     }
 
@@ -294,7 +315,7 @@ export class PointerTool extends BaseTool {
   }
 
   async handleDragSelection(eventStream, initialEvent) {
-    this.sceneController.sceneModel.showResizeSelection = false;
+    this.sceneController.sceneModel.showTransformSelection = false;
     this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
@@ -397,38 +418,56 @@ export class PointerTool extends BaseTool {
         broadcast: true,
       };
     });
-    this.sceneController.sceneModel.showResizeSelection = true;
+    this.sceneController.sceneModel.showTransformSelection = true;
   }
 
-  async handleBoundsResize(selection, eventStream, initialEvent) {
+  async handleBoundsTransformSelection(
+    selection,
+    eventStream,
+    initialEvent,
+    rotation = false
+  ) {
     const sceneController = this.sceneController;
-    const clickedResizeHandle = sceneController.sceneModel.clickedResizeHandle;
+    const clickedHandle = sceneController.sceneModel.clickedTransformSelectionHandle;
 
     // The following may seem wrong, but it's correct, because we say
     // for example bottom-left and not left-bottom. Y-X order.
-    const [resizeHandlePositionY, resizeHandlePositionX] =
-      clickedResizeHandle.split("-");
+    const [handlePositionY, handlePositionX] = clickedHandle.split("-");
 
-    const origin = { x: resizeHandlePositionX, y: resizeHandlePositionY };
+    const origin = { x: handlePositionX, y: handlePositionY };
     // origin must be the opposite side of where we have our mouse
-    if (resizeHandlePositionX === "left") {
+    if (handlePositionX === "left") {
       origin.x = "right";
-    } else if (resizeHandlePositionX === "right") {
+    } else if (handlePositionX === "right") {
       origin.x = "left";
     }
-    if (resizeHandlePositionY === "top") {
+    if (handlePositionY === "top") {
       origin.y = "bottom";
-    } else if (resizeHandlePositionY === "bottom") {
+    } else if (handlePositionY === "bottom") {
       origin.y = "top";
     }
     // no else because could be middle or center
 
     // must be set to the opposite side of the mouse if left or bottom
-    const fixDragLeftValue = clickedResizeHandle.includes("left") ? -1 : 1;
-    const fixDragBottomValue = clickedResizeHandle.includes("bottom") ? -1 : 1;
+    const fixDragLeftValue = clickedHandle.includes("left") ? -1 : 1;
+    const fixDragBottomValue = clickedHandle.includes("bottom") ? -1 : 1;
+
+    // The following is only needed in case of rotation, because we want to have
+    // the roation angle for all layers the same and not different.
+    let regularPinPointSelectedLayer, altPinPointSelectedLayer;
+    if (rotation) {
+      const glyphController =
+        await sceneController.sceneModel.getSelectedStaticGlyphController();
+      const selectedLayerBounds = glyphController.getSelectionBounds(selection);
+      regularPinPointSelectedLayer = getPinPoint(
+        selectedLayerBounds,
+        origin.x,
+        origin.y
+      );
+      altPinPointSelectedLayer = getPinPoint(selectedLayerBounds, undefined, undefined);
+    }
 
     const staticGlyphControllers = await sceneController.getStaticGlyphControllers();
-
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.selectedGlyphPoint(initialEvent);
 
@@ -450,6 +489,8 @@ export class PointerTool extends BaseTool {
           editBehavior: behaviorFactory.getBehavior("default", true),
           regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
           altPinPoint: getPinPoint(layerBounds, undefined, undefined),
+          regularPinPointSelectedLayer: regularPinPointSelectedLayer,
+          altPinPointSelectedLayer: altPinPointSelectedLayer,
           selectionWidth: layerBounds.xMax - layerBounds.xMin,
           selectionHeight: layerBounds.yMax - layerBounds.yMin,
         };
@@ -458,29 +499,51 @@ export class PointerTool extends BaseTool {
       let editChange;
       for await (const event of eventStream) {
         const currentPoint = sceneController.selectedGlyphPoint(event);
-        const delta = {
-          x: (currentPoint.x - initialPoint.x) * fixDragLeftValue,
-          y: (currentPoint.y - initialPoint.y) * fixDragBottomValue,
-        };
 
         const deepEditChanges = [];
         for (const layer of layerInfo) {
           const layerGlyph = layer.layerGlyphController.instance;
+          const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
+          let transformation;
+          if (rotation) {
+            // Rotate (based on pinPoint of selected layer)
+            this.sceneController.sceneModel.showTransformSelection = false;
+            const pinPointSelectedLayer = event.altKey
+              ? layer.altPinPointSelectedLayer
+              : layer.regularPinPointSelectedLayer;
+            const angle = Math.atan2(
+              pinPointSelectedLayer.y - currentPoint.y,
+              pinPointSelectedLayer.x - currentPoint.x
+            );
+            const angleInitial = Math.atan2(
+              pinPointSelectedLayer.y - initialPoint.y,
+              pinPointSelectedLayer.x - initialPoint.x
+            );
+            // Snap to 45 degrees by rounding to the nearest 45 degree angle if shift is pressed
+            const rotationAngle = !event.shiftKey
+              ? angle - angleInitial
+              : Math.round((angle - angleInitial) / (Math.PI / 4)) * (Math.PI / 4);
+            transformation = new Transform().rotate(rotationAngle);
+          } else {
+            // Scale (based on pinPoint)
+            const delta = {
+              x: (currentPoint.x - initialPoint.x) * fixDragLeftValue,
+              y: (currentPoint.y - initialPoint.y) * fixDragBottomValue,
+            };
 
-          let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
-          let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
+            let scaleX = (layer.selectionWidth + delta.x) / layer.selectionWidth;
+            let scaleY = (layer.selectionHeight + delta.y) / layer.selectionHeight;
 
-          if (clickedResizeHandle.includes("middle")) {
-            scaleY = event.shiftKey ? scaleX : 1;
-          } else if (clickedResizeHandle.includes("center")) {
-            scaleX = event.shiftKey ? scaleY : 1;
-          } else if (event.shiftKey) {
-            scaleX = scaleY = Math.max(scaleX, scaleY);
+            if (clickedHandle.includes("middle")) {
+              scaleY = event.shiftKey ? scaleX : 1;
+            } else if (clickedHandle.includes("center")) {
+              scaleX = event.shiftKey ? scaleY : 1;
+            } else if (event.shiftKey) {
+              scaleX = scaleY = Math.max(scaleX, scaleY);
+            }
+            transformation = new Transform().scale(scaleX, scaleY);
           }
 
-          const transformation = new Transform().scale(scaleX, scaleY);
-
-          const pinPoint = event.altKey ? layer.altPinPoint : layer.regularPinPoint;
           const t = new Transform()
             .translate(pinPoint.x, pinPoint.y)
             .transform(transformation)
@@ -521,15 +584,23 @@ export class PointerTool extends BaseTool {
       );
 
       return {
-        undoLabel: "resize selection",
+        undoLabel: `${rotation ? "rotate" : "resize"} selection`,
         changes: changes,
         broadcast: true,
       };
     });
   }
 
+  getRotationHandle(event, selection) {
+    return this.getTransformSelectionHandle(event, selection, true);
+  }
+
   getResizeHandle(event, selection) {
-    if (!this.editor.visualizationLayersSettings.model["fontra.resize.selection"]) {
+    return this.getTransformSelectionHandle(event, selection);
+  }
+
+  getTransformSelectionHandle(event, selection, rotation = false) {
+    if (!this.editor.visualizationLayersSettings.model["fontra.transform.selection"]) {
       return undefined;
     }
     if (!selection.size) {
@@ -539,24 +610,65 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
-    const resizeSelectionBounds = getResizeBounds(glyph, selection);
-    // resizeSelectionBounds can be undefiend if for example only one point is selected
-    if (!resizeSelectionBounds) {
+    const bounds = getTransformSelectionBounds(glyph, selection);
+    // bounds can be undefined if for example only one point is selected
+    if (!bounds) {
       return undefined;
     }
 
+    const handleSize =
+      transformHandleSize * this.editor.visualizationLayers.scaleFactor;
     const handleMargin =
-      handleMarginValue * this.editor.visualizationLayers.scaleFactor;
+      transformHandleMargin * this.editor.visualizationLayers.scaleFactor;
 
     const point = this.sceneController.selectedGlyphPoint(event);
-    const resizeHandles = getResizeHandles(resizeSelectionBounds, handleMargin);
+    const resizeHandles = getTransformHandles(bounds, handleMargin + handleSize / 2);
+    const rotationHandles = rotation
+      ? getTransformHandles(
+          bounds,
+          handleMargin + (handleSize * rotationHandleSizeFactor) / 2 + handleSize / 2
+        )
+      : {};
     for (const [handleName, handle] of Object.entries(resizeHandles)) {
-      if (vector.distance(handle, point) < handleMargin / 2) {
-        return handleName;
+      const inCircle = pointInCircleHandle(point, handle, handleSize);
+      if (rotation) {
+        const inSquare = pointInSquareHandle(
+          point,
+          rotationHandles[handleName],
+          handleSize * rotationHandleSizeFactor
+        );
+        if (inSquare && !inCircle) {
+          return handleName;
+        }
+      } else {
+        if (inCircle) {
+          return handleName;
+        }
       }
     }
     return undefined;
   }
+
+  activate() {
+    super.activate();
+    this.sceneController.sceneModel.showTransformSelection = true;
+    this.canvasController.requestUpdate();
+  }
+
+  deactivate() {
+    super.deactivate();
+    this.sceneController.sceneModel.showTransformSelection = false;
+    this.canvasController.requestUpdate();
+  }
+}
+
+function pointInSquareHandle(point, handle, handleSize) {
+  const selRect = centeredRect(handle.x, handle.y, handleSize);
+  return pointInRect(point.x, point.y, selRect);
+}
+
+function pointInCircleHandle(point, handle, handleSize) {
+  return vector.distance(handle, point) <= handleSize / 2;
 }
 
 function getBehaviorName(event) {
@@ -579,8 +691,8 @@ function getSelectModeFunction(event) {
 }
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.resize.selection",
-  name: "Resize selection",
+  identifier: "fontra.transform.selection",
+  name: "Transform selection",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -588,33 +700,46 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 1,
     lineDash: [2, 4],
-    handleSize: 8,
+    handleSize: transformHandleSize,
     hoverStrokeOffset: 4,
-    margin: handleMarginValue,
+    margin: transformHandleMargin,
   },
 
   colors: { handleColor: "#BBB", strokeColor: "#DDD" },
   colorsDarkMode: { handleColor: "#777", strokeColor: "#555" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!model.showResizeSelection) {
+    if (!model.showTransformSelection) {
       return;
     }
-    const resizeBounds = getResizeBounds(positionedGlyph.glyph, model.selection);
-    if (!resizeBounds) {
+    const transformBounds = getTransformSelectionBounds(
+      positionedGlyph.glyph,
+      model.selection
+    );
+    if (!transformBounds) {
       return;
     }
 
     context.strokeStyle = parameters.handleColor;
     context.lineWidth = parameters.strokeWidth;
 
+    // The following code is helpful for designing/adjusting the invisible rotation handle areas
+    // draw rotation handles
+    // const rotationHandles = getTransformHandles(transformBounds, parameters.margin + parameters.handleSize * rotationHandleSizeFactor / 2 + parameters.handleSize / 2);
+    // for (const [handleName, handle] of Object.entries(rotationHandles)) {
+    //   strokeSquareNode(context, handle, parameters.handleSize * rotationHandleSizeFactor);
+    // }
+
     // draw resize handles
-    const handles = getResizeHandles(resizeBounds, parameters.margin);
+    const handles = getTransformHandles(
+      transformBounds,
+      parameters.margin + parameters.handleSize / 2
+    );
     for (const [handleName, handle] of Object.entries(handles)) {
       strokeRoundNode(context, handle, parameters.handleSize);
     }
 
     // draw resize handles hover
-    if (!model.clickedResizeHandle && handles[model.hoverResizeHandle]) {
+    if (!model.clickedTransformSelectionHandle && handles[model.hoverResizeHandle]) {
       strokeRoundNode(
         context,
         handles[model.hoverResizeHandle],
@@ -626,22 +751,22 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.setLineDash(parameters.lineDash);
     context.strokeRect(
-      resizeBounds.xMin,
-      resizeBounds.yMin,
-      resizeBounds.xMax - resizeBounds.xMin,
-      resizeBounds.yMax - resizeBounds.yMin
+      transformBounds.xMin,
+      transformBounds.yMin,
+      transformBounds.xMax - transformBounds.xMin,
+      transformBounds.yMax - transformBounds.yMin
     );
   },
 });
 
-function getResizeHandles(resizeBounds, margin) {
-  const { width, height } = rectSize(resizeBounds);
+function getTransformHandles(transformBounds, margin) {
+  const { width, height } = rectSize(transformBounds);
 
   const [x, y, w, h] = [
-    resizeBounds.xMin - margin,
-    resizeBounds.yMin - margin,
-    resizeBounds.xMax - resizeBounds.xMin + margin * 2,
-    resizeBounds.yMax - resizeBounds.yMin + margin * 2,
+    transformBounds.xMin - margin,
+    transformBounds.yMin - margin,
+    transformBounds.xMax - transformBounds.xMin + margin * 2,
+    transformBounds.yMax - transformBounds.yMin + margin * 2,
   ];
 
   const handles = {
@@ -671,7 +796,7 @@ function getResizeHandles(resizeBounds, margin) {
   return handles;
 }
 
-function getResizeBounds(glyph, selection) {
+function getTransformSelectionBounds(glyph, selection) {
   if (selection.size <= 1) {
     return undefined;
   }
