@@ -219,8 +219,6 @@ function doCutLayerGlyph(intersections, layerGlyph) {
 }
 
 function getIntersections(glyphController, p1, p2, shiftConstrain = undefined) {
-  // NOTE: Do we want to cut components as well? If so, we would need:
-  //const pathHitTester = glyphController.flattenedPathHitTester; + decompose
   const pathHitTester = glyphController.pathHitTester;
 
   // this whole winding direction part is actually not needed for the knife tool
