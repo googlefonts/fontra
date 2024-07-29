@@ -73,139 +73,20 @@ export class KnifeTool extends BaseTool {
     this.canvasController.requestUpdate();
 
     if (intersections.length >= 1) {
-      this.doCutPath(intersections);
+      this.doSliceGlyph(intersections);
     }
   }
 
-  async doCutPath(intersections) {
+  async doSliceGlyph(intersections) {
     this.sceneController.selection = new Set(); // Clear selection
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
           glyph.layers
         );
-        for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-          // Get intersections sorted by contour and segments
-          const intersectionsReordered = {};
-          for (const [i, intersection] of enumerate(intersections)) {
-            const contourIndex = intersection.contourIndex;
-            const segmentIndex = intersection.segmentIndex;
-            if (!intersectionsReordered.hasOwnProperty(contourIndex)) {
-              intersectionsReordered[contourIndex] = {};
-            }
-            if (!intersectionsReordered[contourIndex].hasOwnProperty(segmentIndex)) {
-              intersection.ts = []; // create new ts for multiple intersections in one segment
-              intersectionsReordered[contourIndex][segmentIndex] = intersection;
-            }
-            intersectionsReordered[contourIndex][segmentIndex].ts.push(intersection.t);
-          }
-
-          // Insert points at intersections segments (be compatible for multi-source-editing)
-          const intersectionPoints = [];
-          for (const contourIndex of Object.keys(intersectionsReordered).toReversed()) {
-            for (const segmentIndex of Object.keys(
-              intersectionsReordered[contourIndex]
-            ).toReversed()) {
-              const intersectionReordered =
-                intersectionsReordered[contourIndex][segmentIndex];
-              const { numPointsInserted, selectedPointIndices } = insertPoint(
-                layerGlyph.path,
-                intersectionReordered
-              );
-
-              let intersectionIndex;
-              for (const [i, intersection] of enumerate(intersections)) {
-                if (
-                  intersection.contourIndex === intersectionReordered.contourIndex &&
-                  intersection.segmentIndex === intersectionReordered.segmentIndex
-                ) {
-                  intersectionIndex = i;
-                  break;
-                }
-              }
-
-              const selectedPoints = [];
-              for (const pointIndex of selectedPointIndices) {
-                // remembering all kind of information – is needed for later steps
-                const pointInfo = {
-                  recalculatedIndex: pointIndex,
-                  intersectionIndex: intersectionIndex,
-                  point: layerGlyph.path.getPoint(pointIndex),
-                  isClosed: layerGlyph.path.contourInfo[contourIndex].isClosed,
-                  winding: intersectionReordered.winding,
-                };
-                selectedPoints.push(pointInfo);
-                // Because we loop over intersectionsReordered based on
-                // contourIndex and segmentIndex -> NOT intersectionIndex
-                // -> we need to increase the intersectionIndex manually
-                intersectionIndex++;
-              }
-
-              intersectionPoints.push(...selectedPoints);
-
-              // recalculate pointIndex based on numPointsInserted
-              for (const i of range(
-                0,
-                intersectionPoints.length - selectedPointIndices.length
-              )) {
-                intersectionPoints[i].recalculatedIndex =
-                  intersectionPoints[i].recalculatedIndex + numPointsInserted;
-              }
-            }
-          }
-
-          // Split path at added points
-          splitPathAtPointIndices(
-            layerGlyph.path,
-            intersectionPoints
-              .map((point) => point.recalculatedIndex)
-              .sort((a, b) => a - b)
-          );
-
-          // Sort intersectionPoints by intersections-order
-          intersectionPoints.sort((a, b) => a.intersectionIndex - b.intersectionIndex);
-
-          // Connect contours
-          const [group1, group2] = getIntersectionPointIndicesGrouped(
-            layerGlyph.path,
-            intersectionPoints
-          );
-          for (const groupIndex of range(2)) {
-            const group = [group1, group2][groupIndex];
-            for (const [pairIndex, oldPair] of enumerate(group)) {
-              // 'Recalculation of pointindices' is required, because they change after connecting/merging contours
-              const RecalcGroups = getIntersectionPointIndicesGrouped(
-                layerGlyph.path,
-                intersectionPoints
-              );
-              const [pointIndex1, pointIndex2] = RecalcGroups[groupIndex][pairIndex];
-              connectContours(layerGlyph.path, pointIndex1, pointIndex2);
-            }
-          }
-
-          // Close open contours
-          // This needs to be done a second time after connecting the contours,
-          // because contour and point indices have changed meanwhile.
-          const [group1New, group2New] = getIntersectionPointIndicesGrouped(
-            layerGlyph.path,
-            intersectionPoints
-          );
-          const closedContours = new Set();
-          for (const groupNew of [group1New, group2New]) {
-            for (const pointPair of groupNew) {
-              const contourIndex = layerGlyph.path.getContourIndex(pointPair[0]);
-              if (closedContours.has(contourIndex)) {
-                continue;
-              }
-              const contour = layerGlyph.path.contourInfo[contourIndex];
-              if (contour) {
-                contour.isClosed = true;
-                closedContours.add(contourIndex);
-              }
-            }
-          }
+        for (const layerGlyph of Object.values(editLayerGlyphs)) {
+          doCutLayerGlyph(intersections, layerGlyph);
         }
-
         return `Knife Tool cut`;
       },
       undefined,
@@ -215,6 +96,125 @@ export class KnifeTool extends BaseTool {
 
   deactivate() {
     this.canvasController.requestUpdate();
+  }
+}
+
+function doCutLayerGlyph(intersections, layerGlyph) {
+  // Get intersections sorted by contour and segments
+  const intersectionsReordered = {};
+  for (const [i, intersection] of enumerate(intersections)) {
+    const contourIndex = intersection.contourIndex;
+    const segmentIndex = intersection.segmentIndex;
+    if (!intersectionsReordered.hasOwnProperty(contourIndex)) {
+      intersectionsReordered[contourIndex] = {};
+    }
+    if (!intersectionsReordered[contourIndex].hasOwnProperty(segmentIndex)) {
+      intersection.ts = []; // create new ts for multiple intersections in one segment
+      intersectionsReordered[contourIndex][segmentIndex] = intersection;
+    }
+    intersectionsReordered[contourIndex][segmentIndex].ts.push(intersection.t);
+  }
+
+  // Insert points at intersections segments (be compatible for multi-source-editing)
+  const intersectionPoints = [];
+  for (const contourIndex of Object.keys(intersectionsReordered).toReversed()) {
+    for (const segmentIndex of Object.keys(
+      intersectionsReordered[contourIndex]
+    ).toReversed()) {
+      const intersectionReordered = intersectionsReordered[contourIndex][segmentIndex];
+      const { numPointsInserted, selectedPointIndices } = insertPoint(
+        layerGlyph.path,
+        intersectionReordered
+      );
+
+      let intersectionIndex;
+      for (const [i, intersection] of enumerate(intersections)) {
+        if (
+          intersection.contourIndex === intersectionReordered.contourIndex &&
+          intersection.segmentIndex === intersectionReordered.segmentIndex
+        ) {
+          intersectionIndex = i;
+          break;
+        }
+      }
+
+      const selectedPoints = [];
+      for (const pointIndex of selectedPointIndices) {
+        // remembering all kind of information – is needed for later steps
+        const pointInfo = {
+          recalculatedIndex: pointIndex,
+          intersectionIndex: intersectionIndex,
+          point: layerGlyph.path.getPoint(pointIndex),
+          isClosed: layerGlyph.path.contourInfo[contourIndex].isClosed,
+          winding: intersectionReordered.winding,
+        };
+        selectedPoints.push(pointInfo);
+        // Because we loop over intersectionsReordered based on
+        // contourIndex and segmentIndex -> NOT intersectionIndex
+        // -> we need to increase the intersectionIndex manually
+        intersectionIndex++;
+      }
+
+      intersectionPoints.push(...selectedPoints);
+
+      // recalculate pointIndex based on numPointsInserted
+      for (const i of range(
+        0,
+        intersectionPoints.length - selectedPointIndices.length
+      )) {
+        intersectionPoints[i].recalculatedIndex =
+          intersectionPoints[i].recalculatedIndex + numPointsInserted;
+      }
+    }
+  }
+
+  // Split path at added points
+  splitPathAtPointIndices(
+    layerGlyph.path,
+    intersectionPoints.map((point) => point.recalculatedIndex).sort((a, b) => a - b)
+  );
+
+  // Sort intersectionPoints by intersections-order
+  intersectionPoints.sort((a, b) => a.intersectionIndex - b.intersectionIndex);
+
+  // Connect contours
+  const [group1, group2] = getIntersectionPointIndicesGrouped(
+    layerGlyph.path,
+    intersectionPoints
+  );
+  for (const groupIndex of range(2)) {
+    const group = [group1, group2][groupIndex];
+    for (const [pairIndex, oldPair] of enumerate(group)) {
+      // 'Recalculation of pointindices' is required, because they change after connecting/merging contours
+      const RecalcGroups = getIntersectionPointIndicesGrouped(
+        layerGlyph.path,
+        intersectionPoints
+      );
+      const [pointIndex1, pointIndex2] = RecalcGroups[groupIndex][pairIndex];
+      connectContours(layerGlyph.path, pointIndex1, pointIndex2);
+    }
+  }
+
+  // Close open contours
+  // This needs to be done a second time after connecting the contours,
+  // because contour and point indices have changed meanwhile.
+  const [group1New, group2New] = getIntersectionPointIndicesGrouped(
+    layerGlyph.path,
+    intersectionPoints
+  );
+  const closedContours = new Set();
+  for (const groupNew of [group1New, group2New]) {
+    for (const pointPair of groupNew) {
+      const contourIndex = layerGlyph.path.getContourIndex(pointPair[0]);
+      if (closedContours.has(contourIndex)) {
+        continue;
+      }
+      const contour = layerGlyph.path.contourInfo[contourIndex];
+      if (contour) {
+        contour.isClosed = true;
+        closedContours.add(contourIndex);
+      }
+    }
   }
 }
 
