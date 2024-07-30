@@ -1,7 +1,6 @@
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
-import { staticGlyphToGLIF } from "/core/glyph-glif.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import {
@@ -9,16 +8,8 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
-import { unionPath } from "/core/server-utils.js";
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
-import {
-  enumerate,
-  parseSelection,
-  range,
-  readFromClipboard,
-  reversed,
-  zip,
-} from "/core/utils.js";
+import { enumerate, parseSelection, range, zip } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -456,7 +447,7 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doUnionPath(),
+          "onclick": (event) => this.doNothing("Remove overlaps"),
           "data-tooltip": "Remove overlaps",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -505,56 +496,6 @@ export default class TransformationPanel extends Panel {
 
   async doNothing(someVariable) {
     console.log("doNothing: ", someVariable);
-  }
-
-  async doUnionPath() {
-    let { point: pointIndices } = parseSelection(this.sceneController.selection);
-    pointIndices = pointIndices || [];
-
-    if (!pointIndices.length) {
-      return;
-    }
-
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-
-    const selectedContourIndices = [];
-    for (const pointIndex of pointIndices) {
-      const contourIndex = positionedGlyph.glyph.path.getContourIndex(pointIndex);
-      if (!selectedContourIndices.includes(contourIndex)) {
-        selectedContourIndices.push(contourIndex);
-      }
-    }
-
-    await this.sceneController.editGlyphAndRecordChanges(
-      (glyph) => {
-        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-          glyph.layers
-        );
-        for (const layerGlyph of Object.values(editLayerGlyphs)) {
-          this.doUnionPathLayerGlyph(
-            glyph.glyphName,
-            layerGlyph,
-            selectedContourIndices
-          );
-        }
-        return "Remove overlap(s)";
-      },
-      undefined,
-      true
-    );
-
-    this.editorController.canvasController.requestUpdate();
-    this.sceneController.selection = new Set(); // Clear selection
-  }
-
-  async doUnionPathLayerGlyph(glyphName, layerGlyph, selectedContourIndices) {
-    const plainText = await staticGlyphToGLIF(glyphName, layerGlyph, []);
-    const staticGlyph = await unionPath(plainText, selectedContourIndices);
-    for (const contourIndex of reversed(selectedContourIndices)) {
-      layerGlyph.path.deleteContour(contourIndex);
-    }
-    layerGlyph.path.appendPath(staticGlyph.path);
   }
 
   async transformSelection(transformation, undoLabel) {
