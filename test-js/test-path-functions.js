@@ -156,23 +156,19 @@ describe("Path Functions tests", () => {
       const path = VarPackedPath.fromUnpackedContours(testCase.path);
       const hitTester = new PathHitTester(path);
 
-      let hit;
+      let intersections;
       if (testCase.testPoint) {
-        hit = hitTester.hitTest(testCase.testPoint, 5);
+        const hit = hitTester.hitTest(testCase.testPoint, 5);
+        intersections = [hit];
       } else if (testCase.testLine) {
-        const intersections = hitTester.lineIntersections(
+        intersections = hitTester.lineIntersections(
           testCase.testLine.p1,
           testCase.testLine.p2
         );
-        hit = intersections[0];
-        hit.ts = [];
-        for (const intersection of intersections) {
-          hit.ts.push(intersection.t);
-        }
       } else {
         throw new Error("Invalid test case");
       }
-      const result = insertPoint(path, hit);
+      const result = insertPoint(path, ...intersections);
       const resultPath = path.unpackedContours();
 
       expect(resultPath).to.deep.equal(testCase.expectedPath);
