@@ -154,7 +154,6 @@ function impliedPoint(pointA, pointB) {
 function bezierSplitMultiple(bezier, ts) {
   // it's possible to have 3 ts
   ts = [0, ...ts, 1];
-  ts.sort((a, b) => a - b);
   const splitBeziers = [];
   for (const i of range(ts.length - 1)) {
     const bezierElement = bezier.split(ts[i], ts[i + 1]);
