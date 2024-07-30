@@ -13,7 +13,7 @@ from .classes import classCastFuncs, classSchema
 
 def setItem(subject, key, item, *, itemCast=None):
     if itemCast is not None:
-        item = itemCast(item)
+        item = itemCast(item) if item is not None else item
     if isinstance(subject, (MutableMapping, MutableSequence)):
         subject[key] = item
     else:
