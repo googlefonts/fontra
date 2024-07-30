@@ -364,9 +364,9 @@ registerVisualizationLayerDefinition({
   name: "Knife tool line",
   selectionMode: "editing",
   zIndex: 500,
-  screenParameters: { strokeWidth: 1, nodeSize: 5 },
-  colors: { strokeColor: "#1118", nodeColor: "#000", color: "#000" },
-  colorsDarkMode: { strokeColor: "#FFFB", nodeColor: "#FFF", color: "#FFF" },
+  screenParameters: { strokeWidth: 1, nodeSize: 10 },
+  colors: { strokeColor: "#1118", nodeColor: "#3080FF80" },
+  colorsDarkMode: { strokeColor: "#FFFB", nodeColor: "#50A0FF80" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const pointA = model.knifeToolPointA;
     const pointB = model.knifeToolPointB;
