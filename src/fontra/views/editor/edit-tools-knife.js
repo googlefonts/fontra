@@ -104,7 +104,7 @@ export class KnifeTool extends BaseTool {
         for (const layerGlyph of Object.values(editLayerGlyphs)) {
           doSliceLayerGlyph(intersections, sortedIntersections, layerGlyph.path);
         }
-        return `Knife Tool cut`;
+        return "slice glyph";
       },
       undefined,
       true
