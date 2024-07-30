@@ -165,9 +165,8 @@ function doCutLayerGlyph(intersections, sortedIntersections, layerPath) {
 
   // We will now determine which intersections can be connected to other intersections
 
-  const connectableIntersections = filterConnectableIntersections(
-    intersections,
-    intersectionInfo
+  const connectableIntersections = filterSelfIntersectingContours(
+    filterOpenContours(intersections, intersectionInfo)
   );
 
   if (connectableIntersections.length < 2 || connectableIntersections.length % 2) {
@@ -259,30 +258,27 @@ function* groupIntersectionsByPair(intersections) {
   }
 }
 
-function filterConnectableIntersections(intersections, intersectionInfo) {
-  // Skip open contours
-  let connectableIntersections = intersections.filter(
+function filterOpenContours(intersections, intersectionInfo) {
+  return intersections.filter(
     (intersection) =>
       intersection.winding && intersectionInfo[intersection.sortIndex].contourIsClosed
   );
+}
 
-  // We only take intersections which have contours cut an even number of times and have
-  // balanced winding directions, *or* intersections which have cut contours a single time.
-  // Both cases allow for unambiguously connecting to other contours.
+function filterSelfIntersectingContours(intersections) {
   const contourWindings = [];
-  const contourIntersectionCount = [];
-  for (const intersection of connectableIntersections) {
-    contourWindings[intersection.contourIndex] =
-      (contourWindings[intersection.contourIndex] || 0) + intersection.winding;
-    contourIntersectionCount[intersection.contourIndex] =
-      (contourIntersectionCount[intersection.contourIndex] || 0) + 1;
+  const contourSelfIntersects = [];
+  for (const intersection of intersections) {
+    const contourIndex = intersection.contourIndex;
+    contourWindings[contourIndex] =
+      (contourWindings[contourIndex] || 0) + intersection.winding;
+    if (contourWindings[contourIndex] > 1 || contourWindings[contourIndex] < -1) {
+      contourSelfIntersects[contourIndex] = true;
+    }
   }
-  connectableIntersections = connectableIntersections.filter(
-    (intersection) =>
-      contourWindings[intersection.contourIndex] === 0 ||
-      contourIntersectionCount[intersection.contourIndex] === 1
+  return intersections.filter(
+    (intersection) => !contourSelfIntersects[intersection.contourIndex]
   );
-  return connectableIntersections;
 }
 
 function collectContoursToConnect(layerPath) {
