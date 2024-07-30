@@ -42,7 +42,7 @@ export class PathHitTester {
     return {};
   }
 
-  findNearest(point, extraLines) {
+  findNearest(point, extraLines = undefined) {
     this._ensureAllContoursAreLoaded();
     let results = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
@@ -67,7 +67,7 @@ export class PathHitTester {
     return results[0];
   }
 
-  lineIntersections(point, direction, extraLines) {
+  rayIntersections(point, direction, extraLines) {
     // `point` is the pivot point, and `direction` is the normalized direction vector
     this._ensureAllContoursAreLoaded();
     const rectangles = this.controlBounds ? [this.controlBounds] : [];
@@ -82,7 +82,16 @@ export class PathHitTester {
     const maxLength = width + height;
     const p1 = vector.addVectors(point, vector.mulVectorScalar(direction, maxLength));
     const p2 = vector.addVectors(point, vector.mulVectorScalar(direction, -maxLength));
+
+    return this.lineIntersections(p1, p2, direction, extraLines);
+  }
+
+  lineIntersections(p1, p2, direction = undefined, extraLines = undefined) {
+    this._ensureAllContoursAreLoaded();
     const line = { p1, p2 };
+    if (!direction) {
+      direction = vector.normalizeVector(vector.subVectors(p2, p1));
+    }
 
     const intersections = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
@@ -111,6 +120,7 @@ export class PathHitTester {
       }
       return d;
     });
+
     return intersections;
   }
 

@@ -199,7 +199,7 @@ export class PowerRulerTool extends BaseTool {
   recalcRulerFromLine(glyphController, basePoint, directionVector, extraLines) {
     const pathHitTester = glyphController.flattenedPathHitTester;
 
-    const intersections = pathHitTester.lineIntersections(
+    const intersections = pathHitTester.rayIntersections(
       basePoint,
       directionVector,
       extraLines

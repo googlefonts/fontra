@@ -154,12 +154,13 @@ export class PenTool extends BaseTool {
 
   async _handleInsertPoint() {
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
-      let selection;
+      const selection = new Set();
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        selection = insertPoint(
+        const { numPointsInserted, selectedPointIndices } = insertPoint(
           layerGlyph.path,
           this.sceneModel.pathConnectTargetPoint
         );
+        selection.add(`point/${selectedPointIndices[0]}`);
       }
       delete this.sceneModel.pathConnectTargetPoint;
       this.sceneController.selection = selection;

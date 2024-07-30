@@ -1,6 +1,6 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { fitCubic } from "./fit-cubic.js";
-import { enumerate, modulo, range, reversed } from "./utils.js";
+import { assert, enumerate, modulo, range, reversed } from "./utils.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
@@ -8,8 +8,30 @@ import {
 } from "./var-path.js";
 import * as vector from "./vector.js";
 
-export function insertPoint(path, intersection) {
-  let selectedPointIndex;
+export function insertPoint(path, intersection, ...additionalSameSegmentIntersections) {
+  assert(
+    additionalSameSegmentIntersections.every(
+      (additionalIntersection) =>
+        intersection.contourIndex == additionalIntersection.contourIndex &&
+        intersection.segmentIndex == additionalIntersection.segmentIndex
+    ),
+    "segments should be the same"
+  );
+  const ts = [
+    intersection.t,
+    ...additionalSameSegmentIntersections.map(
+      (additionalIntersection) => additionalIntersection.t
+    ),
+  ];
+
+  ts.sort((a, b) => {
+    assert(a >= b, "segments must be sorted by t");
+    return 1;
+  });
+
+  const numPointsPath = path.numPoints;
+  let numPointsInserted = 0;
+  let selectedPointIndices = [];
   const segment = intersection.segment;
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
     segment.parentPointIndices[0]
@@ -28,49 +50,67 @@ export function insertPoint(path, intersection) {
       insertIndex,
       vector.roundVector(vector.interpolateVectors(...points, intersection.t))
     );
-    selectedPointIndex = insertIndex;
+    selectedPointIndices.push(path.getAbsolutePointIndex(contourIndex, insertIndex));
+    numPointsInserted = 1;
   } else {
     // insert point in curve
     const segments = [...path.iterContourDecomposedSegments(contourIndex)];
     const segment = segments[intersection.segmentIndex];
     const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const { left, right } = bezier.split(intersection.t);
+    const splitBeziers = bezierSplitMultiple(bezier, ts);
     if (firstOffCurve.type === "cubic") {
-      const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
-        vector.roundVector
-      );
-      points[0].type = "cubic";
-      points[1].type = "cubic";
-      points[2].smooth = true;
-      points[3].type = "cubic";
-      points[4].type = "cubic";
+      const points = [];
+      let localIndices = [];
+      let localIndex = 0;
+      for (const bezierElement of splitBeziers) {
+        const pointsTemp = [...bezierElement.points.slice(1)].map(vector.roundVector);
+        pointsTemp[0].type = "cubic";
+        pointsTemp[1].type = "cubic";
+        pointsTemp[2].smooth = true;
+        points.push(...pointsTemp);
+        localIndices.push(localIndex);
+        localIndex += 3;
+      }
+      points.pop(); // remove last on-curve point
+      localIndices.pop(); // remove last index
 
       const deleteIndices = segment.parentPointIndices.slice(1, -1);
       if (insertIndex < deleteIndices.length) {
         insertIndex = numContourPoints;
       }
+
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
+        numPointsInserted++;
       }
-      // selectionBias is non-zero if the cubic segment has more than
-      // two off-curve points, which is currently invalid. We delete all
-      // off-curve, and replace with clean cubic segments, but this messes
-      // with the selection index
-      const selectionBias = segment.parentPointIndices.length - 4;
-      selectedPointIndex = insertIndex - selectionBias;
+
       deleteIndices.sort((a, b) => b - a); // reverse sort
-      deleteIndices.forEach((pointIndex) =>
-        path.deletePoint(contourIndex, pointIndex + absToRel)
-      );
+      deleteIndices.forEach((pointIndex) => {
+        path.deletePoint(contourIndex, pointIndex + absToRel);
+        numPointsInserted--;
+      });
+
+      const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+      selectedPointIndices = localIndices.map((i) => startPointIndex + insertIndex + i);
     } else {
       // quad
-      const points = [left.points[1], left.points[2], right.points[1]].map(
-        vector.roundVector
-      );
-      points[0].type = "quad";
-      points[1].smooth = true;
-      points[2].type = "quad";
+      const points = [];
+      let localIndices = [];
+      let localIndex = 0;
+      for (const bezierElement of splitBeziers) {
+        const pointsTemp = [bezierElement.points[1], bezierElement.points[2]].map(
+          vector.roundVector
+        );
+        pointsTemp[0].type = "quad";
+        pointsTemp[1].smooth = true;
+        points.push(...pointsTemp);
+
+        localIndices.push(localIndex);
+        localIndex += 2;
+      }
+      points.pop(); // remove last on-curve point
+      localIndices.pop(); // remove last index
 
       const point1 = path.getPoint(segment.pointIndices[0]);
       const point2 = path.getPoint(segment.pointIndices[1]);
@@ -83,6 +123,7 @@ export function insertPoint(path, intersection) {
         path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
         insertIndex++;
       }
+
       // Delete off-curve
       path.deletePoint(contourIndex, insertIndex);
 
@@ -90,15 +131,16 @@ export function insertPoint(path, intersection) {
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
       }
-      selectedPointIndex = insertIndex + 1;
+
+      const startPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+      selectedPointIndices = localIndices.map(
+        (i) => startPointIndex + insertIndex + i + 1
+      );
+      numPointsInserted = path.numPoints - numPointsPath;
     }
   }
-  const selection = new Set();
-  if (selectedPointIndex !== undefined) {
-    selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
-    selection.add(`point/${selectedPointIndex}`);
-  }
-  return selection;
+
+  return { numPointsInserted, selectedPointIndices };
 }
 
 function impliedPoint(pointA, pointB) {
@@ -107,6 +149,17 @@ function impliedPoint(pointA, pointB) {
     y: Math.round((pointA.y + pointB.y) / 2),
     smooth: true,
   };
+}
+
+function bezierSplitMultiple(bezier, ts) {
+  // it's possible to have 3 ts
+  ts = [0, ...ts, 1];
+  const splitBeziers = [];
+  for (const i of range(ts.length - 1)) {
+    const bezierElement = bezier.split(ts[i], ts[i + 1]);
+    splitBeziers.push(bezierElement);
+  }
+  return splitBeziers;
 }
 
 export function insertHandles(path, segmentPoints, insertIndex, type = "cubic") {

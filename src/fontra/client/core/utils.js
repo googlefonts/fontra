@@ -570,6 +570,6 @@ export function uniqueID() {
 
 export function assert(condition, message) {
   if (!condition) {
-    throw new Error(`assert -- ${message}`);
+    throw new Error(`assert failed${message ? ` -- ${message}` : ""}`);
   }
 }

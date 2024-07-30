@@ -59,7 +59,7 @@ const castDefinitions = {
   },
 
   list(classDef, value) {
-    value = [...value.map(classDef.itemCast)];
+    value = value ? [...value.map(classDef.itemCast)] : value;
     return value;
   },
 

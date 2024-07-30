@@ -496,12 +496,16 @@ body {
   fill: var(--background-color);
 }
 
+.tool-button.selected .icon-tabler {
+  stroke: var(--background-color);
+}
+
 .multi-tool.selected::after {
   border-right: 5px solid var(--background-color);
 }
 
-.selected .subtool-button:first-child .icon-tabler {
-  stroke: var(--background-color);
+.subtool-button:not(:first-child) .icon-tabler {
+  stroke: var(--foreground-color);
 }
 
 #mini-console {

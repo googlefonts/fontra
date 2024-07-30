@@ -357,7 +357,9 @@ export class VarPackedPath {
       this.pointAttributes = new Array(this.pointTypes.length).fill(null);
     }
     if (this.pointAttributes) {
-      this.pointAttributes[pointIndex] = copyPointAttrs(attrs);
+      this.pointAttributes[pointIndex] = isObjectEmpty(attrs)
+        ? null
+        : copyPointAttrs(attrs);
     }
   }
 
