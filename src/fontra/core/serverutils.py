@@ -1,3 +1,5 @@
+import pathops
+
 from . import clipboard, glyphnames
 from .classes import unstructure
 
@@ -22,3 +24,23 @@ def getCodePointFromGlyphName(glyphName):
 @api
 def parseClipboard(data):
     return unstructure(clipboard.parseClipboard(data))
+
+
+def skiaPathFromFontraPath(fontraPath: str) -> pathops.Path:
+    path = pathops.Path()
+    return path
+
+
+def fontraPathFromSkiaPath(skiaPath: pathops.Path) -> str:
+    # path = pathops.Path()
+    return "fontraPathFromSkiaPath"
+
+
+@api
+def unionPath(pathA, pathB=None):
+    skPathA = skiaPathFromFontraPath(pathA)
+    if pathB is not None:
+        skPathB = skiaPathFromFontraPath(pathB)
+        skPathA.union(skPathB)
+    print("python unionPath: ", pathA)
+    return pathops.simplify(skPathA, clockwise=skPathA.clockwise)

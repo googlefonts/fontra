@@ -24,3 +24,7 @@ export const getCodePointFromGlyphName = memoize(async (glyphName) => {
 export async function parseClipboard(data) {
   return await callServerAPI("parseClipboard", { data });
 }
+
+export async function unionPath(glyphName) {
+  return await callServerAPI("unionPath", { glyphName });
+}
