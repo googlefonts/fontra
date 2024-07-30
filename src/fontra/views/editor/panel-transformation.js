@@ -434,6 +434,49 @@ export default class TransformationPanel extends Panel {
       },
     });
 
+    formContents.push({ type: "spacer" });
+    formContents.push({
+      type: "header",
+      label: "Boolean operations",
+    });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "removeOverlaps",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-union.svg",
+          "onclick": (event) => this.doNothing("Remove overlaps"),
+          "data-tooltip": "Remove overlaps",
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "subtractOverlaps",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-subtract.svg",
+          "onclick": (event) => this.doNothing("Subtract selected contours"),
+          "data-tooltip": "Subtract selected contours",
+          "data-tooltipposition": "top",
+          "class": "ui-form-icon",
+        }),
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "intersectContours",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-intersect.svg",
+          "onclick": (event) => this.doNothing("Intersect selected contours"),
+          "data-tooltip": "Intersect selected contours",
+          "data-tooltipposition": "top-right",
+          "class": "ui-form-icon",
+        }),
+      },
+    });
+
     this.infoForm.setFieldDescriptions(formContents);
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
@@ -449,6 +492,10 @@ export default class TransformationPanel extends Panel {
         });
       }
     };
+  }
+
+  async doNothing(someVariable) {
+    console.log("doNothing: ", someVariable);
   }
 
   async transformSelection(transformation, undoLabel) {
