@@ -684,7 +684,7 @@ export class SceneController {
       {
         title: translate("action.reverse-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.doReverseSelectedContoursDirection(),
+        callback: () => this.doReverseSelectedContours(),
       },
       {
         title: translate("action.set-contour-start"),
@@ -1116,7 +1116,7 @@ export class SceneController {
     return undoInfo !== undefined;
   }
 
-  async doReverseSelectedContoursDirection() {
+  async doReverseSelectedContours() {
     const { point: pointSelection } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let selection;
