@@ -679,17 +679,17 @@ export class SceneController {
       {
         title: translate("action.break-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.breakContour(),
+        callback: () => this.doBreakSelectedContours(),
       },
       {
         title: translate("action.reverse-contour"),
         enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.reverseSelectedContoursDirection(),
+        callback: () => this.doReverseSelectedContoursDirection(),
       },
       {
         title: translate("action.set-contour-start"),
         enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.setStartPoint(),
+        callback: () => this.doSetStartPoint(),
       },
       {
         title: () =>
@@ -698,7 +698,7 @@ export class SceneController {
             this.contextMenuState.componentSelection?.length
           ),
         enabled: () => !!this.contextMenuState?.componentSelection?.length,
-        callback: () => this.decomposeSelectedComponents(),
+        callback: () => this.doDecomposeSelectedComponents(),
         shortCut: { keysOrCodes: "d", metaKey: true, shiftKey: true },
       },
     ];
@@ -1116,7 +1116,7 @@ export class SceneController {
     return undoInfo !== undefined;
   }
 
-  async reverseSelectedContoursDirection() {
+  async doReverseSelectedContoursDirection() {
     const { point: pointSelection } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let selection;
@@ -1142,7 +1142,7 @@ export class SceneController {
     });
   }
 
-  async setStartPoint() {
+  async doSetStartPoint() {
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let newSelection;
       for (const layerGlyph of Object.values(layerGlyphs)) {
@@ -1218,7 +1218,7 @@ export class SceneController {
     });
   }
 
-  async breakContour() {
+  async doBreakSelectedContours() {
     const { point: pointIndices } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let numSplits;
@@ -1230,7 +1230,7 @@ export class SceneController {
     });
   }
 
-  async decomposeSelectedComponents() {
+  async doDecomposeSelectedComponents() {
     const varGlyph = await this.sceneModel.getSelectedVariableGlyphController();
 
     // Retrieve the global location for each editing layer
