@@ -163,7 +163,7 @@ function doCutLayerGlyph(intersections, sortedIntersections, layerPath) {
   // Split path at the insert points
   splitPathAtPointIndices(layerPath, insertedPointIndices);
 
-  // We will now determine which intersections can be reconnected to other intersections
+  // We will now determine which intersections can be connected to other intersections
 
   const connectableIntersections = filterConnectableIntersections(
     intersections,
