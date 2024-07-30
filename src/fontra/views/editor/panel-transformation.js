@@ -8,6 +8,7 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
+import { unionPath } from "/core/server-utils.js";
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
 import { enumerate, parseSelection, range, zip } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
@@ -447,7 +448,7 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doNothing("Remove overlaps"),
+          "onclick": (event) => this.doUnionPath(),
           "data-tooltip": "Remove overlaps",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -496,6 +497,25 @@ export default class TransformationPanel extends Panel {
 
   async doNothing(someVariable) {
     console.log("doNothing: ", someVariable);
+  }
+
+  async doUnionPath() {
+    let { point: pointIndices } = parseSelection(this.sceneController.selection);
+    console.log("doUnionPath: ", pointIndices);
+
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+          glyph.layers
+        );
+        for (const layerGlyph of Object.values(editLayerGlyphs)) {
+          unionPath(layerGlyph.path);
+        }
+        return "Remove overlap(s)";
+      },
+      undefined,
+      true
+    );
   }
 
   async transformSelection(transformation, undoLabel) {

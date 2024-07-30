@@ -92,3 +92,4 @@ def unionPath(data, contourIndices):
     staticGlyph.path = Path(contours=contours).asPackedPath()
 
     return unstructure(staticGlyph)
+
