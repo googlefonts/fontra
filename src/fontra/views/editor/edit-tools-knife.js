@@ -102,7 +102,7 @@ export class KnifeTool extends BaseTool {
           glyph.layers
         );
         for (const layerGlyph of Object.values(editLayerGlyphs)) {
-          doCutLayerGlyph(intersections, sortedIntersections, layerGlyph.path);
+          doSliceLayerGlyph(intersections, sortedIntersections, layerGlyph.path);
         }
         return `Knife Tool cut`;
       },
@@ -120,7 +120,7 @@ function getIntersections(glyphController, p1, p2) {
   return glyphController.pathHitTester.lineIntersections(p1, p2);
 }
 
-function doCutLayerGlyph(intersections, sortedIntersections, layerPath) {
+function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
   const intersectionInfo = new Array(intersections.length);
 
   // Insert points
