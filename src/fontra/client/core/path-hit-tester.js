@@ -89,6 +89,9 @@ export class PathHitTester {
   lineIntersections(p1, p2, direction = undefined, extraLines = undefined) {
     this._ensureAllContoursAreLoaded();
     const line = { p1, p2 };
+    if (!direction) {
+      direction = vector.normalizeVector(vector.subVectors(p2, p1));
+    }
 
     const intersections = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
