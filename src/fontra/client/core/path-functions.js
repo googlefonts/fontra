@@ -1,6 +1,6 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { fitCubic } from "./fit-cubic.js";
-import { enumerate, modulo, range, reversed } from "./utils.js";
+import { assert, enumerate, modulo, range, reversed } from "./utils.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
@@ -8,7 +8,27 @@ import {
 } from "./var-path.js";
 import * as vector from "./vector.js";
 
-export function insertPoint(path, intersection) {
+export function insertPoint(path, intersection, ...additionalSameSegmentIntersections) {
+  assert(
+    additionalSameSegmentIntersections.every(
+      (additionalIntersection) =>
+        intersection.contourIndex == additionalIntersection.contourIndex &&
+        intersection.segmentIndex == additionalIntersection.segmentIndex
+    ),
+    "segments should be the same"
+  );
+  const ts = [
+    intersection.t,
+    ...additionalSameSegmentIntersections.map(
+      (additionalIntersection) => additionalIntersection.t
+    ),
+  ];
+
+  ts.sort((a, b) => {
+    assert(a >= b, "segments must be sorted by t");
+    return 1;
+  });
+
   const numPointsPath = path.numPoints;
   let numPointsInserted = 0;
   let selectedPointIndices = [];
@@ -38,7 +58,7 @@ export function insertPoint(path, intersection) {
     const segment = segments[intersection.segmentIndex];
     const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const splitBeziers = bezierSplitMultiple(bezier, intersection);
+    const splitBeziers = bezierSplitMultiple(bezier, ts);
     if (firstOffCurve.type === "cubic") {
       const points = [];
       let localIndices = [];
@@ -131,9 +151,9 @@ function impliedPoint(pointA, pointB) {
   };
 }
 
-function bezierSplitMultiple(bezier, intersection) {
+function bezierSplitMultiple(bezier, ts) {
   // it's possible to have 3 ts
-  const ts = intersection.ts ? [0, ...intersection.ts, 1] : [0, intersection.t, 1];
+  ts = [0, ...ts, 1];
   ts.sort((a, b) => a - b);
   const splitBeziers = [];
   for (const i of range(ts.length - 1)) {
