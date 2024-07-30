@@ -61,11 +61,9 @@ export class KnifeTool extends BaseTool {
       }
 
       this.sceneModel.knifeToolPointB = pointB;
-      this.sceneModel.knifeToolIntersections = intersections = getIntersections(
-        glyphController,
-        pointA,
-        pointB
-      );
+      this.sceneModel.knifeToolIntersections = intersections =
+        glyphController.pathHitTester.lineIntersections(pointA, pointB);
+
       this.canvasController.requestUpdate();
     }
 
@@ -114,10 +112,6 @@ export class KnifeTool extends BaseTool {
   deactivate() {
     this.canvasController.requestUpdate();
   }
-}
-
-function getIntersections(glyphController, p1, p2) {
-  return glyphController.pathHitTester.lineIntersections(p1, p2);
 }
 
 function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
