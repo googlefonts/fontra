@@ -573,3 +573,11 @@ export function assert(condition, message) {
     throw new Error(`assert failed${message ? ` -- ${message}` : ""}`);
   }
 }
+
+export function pointCompareFunc(pointA, pointB) {
+  let d = pointA.x - pointB.x;
+  if (Math.abs(d) < 0.00000001) {
+    d = pointA.y - pointB.y;
+  }
+  return d;
+}

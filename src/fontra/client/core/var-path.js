@@ -2,7 +2,14 @@ import { Bezier } from "../third-party/bezier-js.js";
 import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
-import { arrayExtend, enumerate, isObjectEmpty, range, reversed } from "./utils.js";
+import {
+  arrayExtend,
+  assert,
+  enumerate,
+  isObjectEmpty,
+  range,
+  reversed,
+} from "./utils.js";
 import VarArray from "./var-array.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
@@ -23,6 +30,16 @@ export class VarPackedPath {
       this.contourInfo = [];
       this.pointAttributes = null;
     } else {
+      if (pointAttributes) {
+        assert(
+          pointAttributes.length == pointTypes.length,
+          "mismatching point attributes"
+        );
+        if (!pointAttributes.some((attrs) => attrs && !isObjectEmpty(attrs))) {
+          pointAttributes = null;
+        }
+      }
+
       this.coordinates = coordinates;
       this.pointTypes = pointTypes;
       this.contourInfo = contourInfo;
@@ -31,17 +48,16 @@ export class VarPackedPath {
   }
 
   static fromObject(obj) {
-    const path = new VarPackedPath();
-    path.coordinates = VarArray.from(obj.coordinates);
-    path.pointTypes = [...obj.pointTypes];
-    path.contourInfo = obj.contourInfo.map((item) => {
+    const coordinates = VarArray.from(obj.coordinates);
+    const pointTypes = [...obj.pointTypes];
+    const contourInfo = obj.contourInfo.map((item) => {
       return { ...item };
     });
-    path.pointAttributes =
+    const pointAttributes =
       obj.pointAttributes?.map((attrs) => {
         return copyPointAttrs(attrs);
       }) || null;
-    return path;
+    return new VarPackedPath(coordinates, pointTypes, contourInfo, pointAttributes);
   }
 
   static fromUnpackedContours(unpackedContours) {
@@ -663,6 +679,14 @@ export class VarPackedPath {
     this.contourInfo[this.contourInfo.length - 1].isClosed = true;
   }
 
+  isCompatible(other) {
+    return (
+      other instanceof VarPackedPath &&
+      arrayEquals(this.contourInfo, other.contourInfo) &&
+      pointTypesEquals(this.pointTypes, other.pointTypes)
+    );
+  }
+
   addItemwise(other) {
     this._ensureCompatibility(other);
     return new this.constructor(
@@ -684,11 +708,7 @@ export class VarPackedPath {
   }
 
   _ensureCompatibility(other) {
-    if (
-      !(other instanceof VarPackedPath) ||
-      !arrayEquals(this.contourInfo, other.contourInfo) ||
-      !pointTypesEquals(this.pointTypes, other.pointTypes)
-    ) {
+    if (!this.isCompatible(other)) {
       throw new VariationError("paths are not compatible");
     }
   }
@@ -832,10 +852,9 @@ export class VarPackedPath {
   }
 
   concat(other) {
-    const result = new VarPackedPath();
-    result.coordinates = this.coordinates.concat(other.coordinates);
-    result.pointTypes = this.pointTypes.concat(other.pointTypes);
-    result.contourInfo = this.contourInfo.concat(other.contourInfo).map((c) => {
+    const coordinates = this.coordinates.concat(other.coordinates);
+    const pointTypes = this.pointTypes.concat(other.pointTypes);
+    const contourInfo = this.contourInfo.concat(other.contourInfo).map((c) => {
       return { ...c };
     });
 
@@ -848,16 +867,16 @@ export class VarPackedPath {
         ? new Array(this.pointTypes.length).fill(null)
         : this.pointAttributes;
 
-    result.pointAttributes = copyPointAttributesArray(
+    const pointAttributes = copyPointAttributesArray(
       thisPointAttributes?.concat(otherPointAttributes)
     );
 
     const endPointOffset = this.numPoints;
-    for (let i = this.contourInfo.length; i < result.contourInfo.length; i++) {
-      result.contourInfo[i].endPoint += endPointOffset;
+    for (let i = this.contourInfo.length; i < contourInfo.length; i++) {
+      contourInfo[i].endPoint += endPointOffset;
     }
 
-    return result;
+    return new VarPackedPath(coordinates, pointTypes, contourInfo, pointAttributes);
   }
 
   _checkIntegrity() {
@@ -1111,6 +1130,17 @@ export async function joinPathsAsync(pathsIterable) {
     result.appendPath(path);
   }
   return result;
+}
+
+export function arePathsCompatible(paths) {
+  assert(paths.length, "`paths` needs to contain at least one path");
+  const firstPath = paths[0];
+  for (const path of paths.slice(1)) {
+    if (!firstPath.isCompatible(path)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function copyPointAttrs(attrs) {

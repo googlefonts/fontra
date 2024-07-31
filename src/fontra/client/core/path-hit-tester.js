@@ -6,7 +6,7 @@ import {
   sectRect,
   unionRect,
 } from "./rectangle.js";
-import { enumerate, range, reversedEnumerate } from "./utils.js";
+import { enumerate, pointCompareFunc, range, reversedEnumerate } from "./utils.js";
 import * as vector from "./vector.js";
 
 export class PathHitTester {
@@ -113,13 +113,7 @@ export class PathHitTester {
       intersections.push(...findIntersections(lineBezier, line, null, {}));
     }
 
-    intersections.sort((a, b) => {
-      let d = a.x - b.x;
-      if (Math.abs(d) < 0.00000001) {
-        d = a.y - b.y;
-      }
-      return d;
-    });
+    intersections.sort(pointCompareFunc);
 
     return intersections;
   }

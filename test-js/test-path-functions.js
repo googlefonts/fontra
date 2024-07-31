@@ -3,6 +3,7 @@ import fs from "fs";
 
 import {
   insertPoint,
+  slicePaths,
   splitPathAtPointIndices,
 } from "../src/fontra/client/core/path-functions.js";
 import { PathHitTester } from "../src/fontra/client/core/path-hit-tester.js";
@@ -18,6 +19,18 @@ describe("Path Functions tests", () => {
         { x: 0, y: 0 },
         { x: 0, y: 100, attrs: { test: 123 } },
         { x: 100, y: 100 },
+        { x: 100, y: 0 },
+      ],
+      isClosed: true,
+    },
+  ];
+
+  const smallRectPath = [
+    {
+      points: [
+        { x: 0, y: 0 },
+        { x: 0, y: 50 },
+        { x: 100, y: 50 },
         { x: 100, y: 0 },
       ],
       isClosed: true,
@@ -230,6 +243,121 @@ describe("Path Functions tests", () => {
 
       expect(resultPath).to.deep.equal(testCase.expectedPath);
       expect(numSplits).to.equal(testCase.expectedNumSplits);
+    }
+  );
+
+  parametrize(
+    "slicePaths tests",
+    [
+      {
+        paths: [rectPath],
+        pt1: { x: -10, y: 50 },
+        pt2: { x: 50, y: 50 },
+        expectedPaths: [
+          [
+            {
+              points: [
+                { x: 0, y: 50 },
+                { x: 0, y: 100, attrs: { test: 123 } },
+                { x: 100, y: 100 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 50 },
+              ],
+              isClosed: false,
+            },
+          ],
+        ],
+      },
+      {
+        paths: [rectPath],
+        pt1: { x: -10, y: 50 },
+        pt2: { x: 110, y: 50 },
+        expectedPaths: [
+          [
+            {
+              points: [
+                { x: 100, y: 50 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 50 },
+              ],
+              isClosed: true,
+            },
+            {
+              points: [
+                { x: 0, y: 50 },
+                { x: 0, y: 100, attrs: { test: 123 } },
+                { x: 100, y: 100 },
+                { x: 100, y: 50 },
+              ],
+              isClosed: true,
+            },
+          ],
+        ],
+      },
+      {
+        paths: [rectPath, smallRectPath],
+        pt1: { x: -10, y: 50 },
+        pt2: { x: 110, y: 50 },
+        expectedPaths: [
+          [
+            {
+              points: [
+                { x: 100, y: 50 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 50 },
+              ],
+              isClosed: true,
+            },
+            {
+              points: [
+                { x: 0, y: 50 },
+                { x: 0, y: 100, attrs: { test: 123 } },
+                { x: 100, y: 100 },
+                { x: 100, y: 50 },
+              ],
+              isClosed: true,
+            },
+          ],
+          [
+            {
+              points: [
+                { x: 100, y: 25 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 25 },
+              ],
+              isClosed: true,
+            },
+            {
+              points: [
+                { x: 0, y: 25 },
+                { x: 0, y: 50 },
+                { x: 100, y: 50 },
+                { x: 100, y: 25 },
+              ],
+              isClosed: true,
+            },
+          ],
+        ],
+      },
+    ],
+    (testCase) => {
+      const paths = testCase.paths.map((path) =>
+        VarPackedPath.fromUnpackedContours(path)
+      );
+      const hitTester = new PathHitTester(paths[0]);
+      const intersections = hitTester.lineIntersections(testCase.pt1, testCase.pt2);
+
+      slicePaths(intersections, ...paths);
+
+      const resultPaths = paths.map((path) => path.unpackedContours());
+
+      // console.log(JSON.stringify(resultPaths));
+
+      expect(resultPaths).to.deep.equal(testCase.expectedPaths);
     }
   );
 });
