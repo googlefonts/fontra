@@ -7,8 +7,8 @@ const __dirname = dirname(__filename);
 export function parametrize(testName, testItems, func) {
   for (let i = 0; i < testItems.length; i++) {
     const testItem = testItems[i];
-    it(`${testName} ${i}`, () => {
-      func(testItem);
+    it(`${testName} ${i}`, async () => {
+      await func(testItem);
     });
   }
 }
