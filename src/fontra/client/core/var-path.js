@@ -1132,6 +1132,17 @@ export async function joinPathsAsync(pathsIterable) {
   return result;
 }
 
+export function arePathsCompatible(paths) {
+  assert(paths.length, "`paths` needs to contain at least one path");
+  const firstPath = paths[0];
+  for (const path of paths.slice(1)) {
+    if (!firstPath.isCompatible(path)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function copyPointAttrs(attrs) {
   return attrs ? { ...attrs } : null;
 }
