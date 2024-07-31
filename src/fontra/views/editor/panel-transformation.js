@@ -555,9 +555,9 @@ export default class TransformationPanel extends Panel {
 
     const path = VarPackedPath.fromUnpackedContours(unpackedContours);
     const newPath = await unionPath(path);
-    const newPathPackedPath = VarPackedPath.fromObject(newPath);
+    const newPackedPath = VarPackedPath.fromObject(newPath);
 
-    layerGlyph.path.appendPath(newPathPackedPath);
+    layerGlyph.path.appendPath(newPackedPath);
 
     for (const contourIndex of reversed(selectedContourIndices)) {
       layerGlyph.path.deleteContour(contourIndex);
