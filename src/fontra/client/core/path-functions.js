@@ -901,6 +901,13 @@ export function slicePaths(intersections, ...paths) {
 const intersectionIdentifierKey = "fontra.knife.tmp.intersection.identifier";
 
 function sliceSinglePath(intersections, sortedIntersections, path) {
+  // `intersections` is expected to be sorted by intersection point position (x, y).
+  // `sortedIntersections` is expected to be reverse-sorted by contourIndex and
+  // segmentIndex, but forward-sorted by t.
+  // We insert points from the end of the path, so preceding indices stay valid.
+  // Single segments with multiple intersections should be passed together to
+  // insertPoint, but sorted by t.
+
   assert(intersections.length == sortedIntersections.length);
 
   const intersectionInfo = new Array(intersections.length);
