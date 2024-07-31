@@ -38,10 +38,10 @@ def unionPath(path):
     skiaPath = pathops.Path()
     fontraPath.drawPoints(PointToSegmentPen(skiaPath.getPen()))
 
-    simplifySkiaPath = pathops.simplify(skiaPath, clockwise=skiaPath.clockwise)
+    skiaPathSimplifed = pathops.simplify(skiaPath, clockwise=skiaPath.clockwise)
 
     pen = PackedPathPointPen()
-    simplifySkiaPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
+    skiaPathSimplifed.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
 
     return unstructure(pen.getPath())
 
