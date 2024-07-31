@@ -215,10 +215,10 @@ function findNearestValue(value, values) {
 }
 
 function getAllDiscreteLocations(discreteAxes) {
-  const descreteLocations = [
+  const discreteLocations = [
     ...product(...discreteAxes.map((axis) => axis.values.map((v) => [axis.name, v]))),
   ];
-  return descreteLocations.map((locs) => Object.fromEntries(locs));
+  return discreteLocations.map((locs) => Object.fromEntries(locs));
 }
 
 export function findNearestLocationIndex(targetLocation, locations) {
