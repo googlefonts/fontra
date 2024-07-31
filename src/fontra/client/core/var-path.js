@@ -35,7 +35,7 @@ export class VarPackedPath {
           pointAttributes.length == pointTypes.length,
           "mismatching point attributes"
         );
-        if (!pointAttributes.some((attrs) => attrs)) {
+        if (!pointAttributes.some((attrs) => attrs && !isObjectEmpty(attrs))) {
           pointAttributes = null;
         }
       }
