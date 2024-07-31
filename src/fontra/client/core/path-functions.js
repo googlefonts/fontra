@@ -953,6 +953,7 @@ function sliceSinglePath(intersections, sortedIntersections, path) {
   if (connectableIntersections.length < 2 || connectableIntersections.length % 2) {
     // We're not going to try to make sense of an odd number of intersections,
     // or there's nothing to connect
+    cleanupPointAttributes(path);
     return;
   }
 
@@ -1000,15 +1001,7 @@ function sliceSinglePath(intersections, sortedIntersections, path) {
     path.insertUnpackedContour(contourInsertionIndex, contour)
   );
 
-  // Clean up temp point attrs
-  for (const pointIndex of range(path.numPoints)) {
-    const point = path.getPoint(pointIndex);
-    if (point.attrs && intersectionIdentifierKey in point.attrs) {
-      point.attrs = { ...point.attrs };
-      delete point.attrs[intersectionIdentifierKey];
-      path.setPoint(pointIndex, point);
-    }
-  }
+  cleanupPointAttributes(path);
 }
 
 function* groupIntersectionsBySegment(intersections) {
@@ -1134,4 +1127,17 @@ function chainContours(
   }
 
   return chainedContourIndices;
+}
+
+function cleanupPointAttributes(path) {
+  // Clean up temp point attrs
+  assert(path.numPoints, path.numPoints);
+  for (const pointIndex of range(path.numPoints)) {
+    const point = path.getPoint(pointIndex);
+    if (point.attrs && intersectionIdentifierKey in point.attrs) {
+      point.attrs = { ...point.attrs };
+      delete point.attrs[intersectionIdentifierKey];
+      path.setPoint(pointIndex, point);
+    }
+  }
 }
