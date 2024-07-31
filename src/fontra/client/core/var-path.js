@@ -2,7 +2,14 @@ import { Bezier } from "../third-party/bezier-js.js";
 import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
-import { arrayExtend, enumerate, isObjectEmpty, range, reversed } from "./utils.js";
+import {
+  arrayExtend,
+  assert,
+  enumerate,
+  isObjectEmpty,
+  range,
+  reversed,
+} from "./utils.js";
 import VarArray from "./var-array.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
@@ -23,6 +30,13 @@ export class VarPackedPath {
       this.contourInfo = [];
       this.pointAttributes = null;
     } else {
+      if (pointAttributes) {
+        assert(
+          pointAttributes.length == pointTypes.length,
+          "mismatching point attributes"
+        );
+      }
+
       this.coordinates = coordinates;
       this.pointTypes = pointTypes;
       this.contourInfo = contourInfo;
