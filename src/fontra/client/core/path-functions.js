@@ -14,6 +14,7 @@ import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
   VarPackedPath,
+  arePathsCompatible,
 } from "./var-path.js";
 import * as vector from "./vector.js";
 
@@ -869,6 +870,7 @@ function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
 }
 
 export function slicePaths(intersections, ...paths) {
+  assert(arePathsCompatible(paths), "paths must be compatible");
   intersections = intersections.map((intersection) => {
     return { ...intersection };
   });
