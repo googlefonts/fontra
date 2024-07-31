@@ -1,4 +1,5 @@
 import { slicePaths } from "../core/path-functions.js";
+import { zip } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import {
@@ -74,15 +75,24 @@ export class KnifeTool extends BaseTool {
   async doSliceGlyph(intersections) {
     this.sceneController.selection = new Set(); // Clear selection
 
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    const varGlyph = positionedGlyph.varGlyph.glyph;
+    const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+      varGlyph.layers
+    );
+    const layerPaths = Object.fromEntries(
+      Object.entries(editLayerGlyphs).map(([layerName, layerGlyph]) => [
+        layerName,
+        layerGlyph.path.copy(),
+      ])
+    );
+    slicePaths(intersections, ...Object.values(layerPaths));
+
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-          glyph.layers
-        );
-        const layerPaths = Object.values(editLayerGlyphs).map(
-          (layerGlyph) => layerGlyph.path
-        );
-        slicePaths(intersections, ...layerPaths);
+        for (const [layerName, layerPath] of Object.entries(layerPaths)) {
+          glyph.layers[layerName].glyph.path = layerPath;
+        }
         return "slice glyph";
       },
       undefined,
