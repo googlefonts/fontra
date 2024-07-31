@@ -563,6 +563,15 @@ export function mapObjectValues(obj, func) {
   );
 }
 
+export async function mapObjectValuesAsync(obj, func) {
+  // Return a copy of the object, with each value passed through `func`
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = await func(value);
+  }
+  return result;
+}
+
 let _uniqueID = 1;
 export function uniqueID() {
   return _uniqueID++;
@@ -580,4 +589,8 @@ export function pointCompareFunc(pointA, pointB) {
     d = pointA.y - pointB.y;
   }
   return d;
+}
+
+export function sleepAsync(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
