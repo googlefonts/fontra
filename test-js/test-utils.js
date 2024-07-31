@@ -17,6 +17,7 @@ import {
   loadURLFragment,
   makeUPlusStringFromCodePoint,
   mapObjectValues,
+  mapObjectValuesAsync,
   memoize,
   modulo,
   objectsEqual,
@@ -30,6 +31,7 @@ import {
   rgbaToHex,
   round,
   scheduleCalls,
+  sleepAsync,
   splitGlyphNameExtension,
   throttleCalls,
   withTimeout,
@@ -636,5 +638,37 @@ describe("mapObjectValues", () => {
   ];
   parametrize("mapObjectValues test", testData, (testCase) => {
     expect(mapObjectValues(testCase.obj, testCase.func)).to.deep.equal(testCase.result);
+  });
+
+  const testDataAsync = [
+    {
+      obj: {},
+      func: async (v) => {
+        await sleepAsync(0);
+        return v;
+      },
+      result: {},
+    },
+    {
+      obj: { a: 1 },
+      func: async (v) => {
+        await sleepAsync(0);
+        return v + 1;
+      },
+      result: { a: 2 },
+    },
+    {
+      obj: { a: 1, b: 2, c: 3 },
+      func: async (v) => {
+        await sleepAsync(0);
+        return v * v;
+      },
+      result: { a: 1, b: 4, c: 9 },
+    },
+  ];
+  parametrize("mapObjectValuesAsync test", testDataAsync, async (testCase) => {
+    expect(await mapObjectValuesAsync(testCase.obj, testCase.func)).to.deep.equal(
+      testCase.result
+    );
   });
 });
