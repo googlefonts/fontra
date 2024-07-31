@@ -1,6 +1,7 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { fitCubic } from "./fit-cubic.js";
 import {
+  arrayExtend,
   assert,
   enumerate,
   modulo,
@@ -985,7 +986,7 @@ function sliceSinglePath(intersections, sortedIntersections, path) {
     const newContour = { points: [], isClosed: true };
     for (const contourIndex of contoursToBeConnected) {
       const contour = path.getUnpackedContour(contourIndex);
-      newContour.points.push(...contour.points);
+      arrayExtend(newContour.points, contour.points);
     }
     newContours.push(newContour);
   }
