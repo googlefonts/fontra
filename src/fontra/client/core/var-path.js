@@ -679,6 +679,14 @@ export class VarPackedPath {
     this.contourInfo[this.contourInfo.length - 1].isClosed = true;
   }
 
+  isCompatible(other) {
+    return (
+      other instanceof VarPackedPath &&
+      arrayEquals(this.contourInfo, other.contourInfo) &&
+      pointTypesEquals(this.pointTypes, other.pointTypes)
+    );
+  }
+
   addItemwise(other) {
     this._ensureCompatibility(other);
     return new this.constructor(
@@ -700,11 +708,7 @@ export class VarPackedPath {
   }
 
   _ensureCompatibility(other) {
-    if (
-      !(other instanceof VarPackedPath) ||
-      !arrayEquals(this.contourInfo, other.contourInfo) ||
-      !pointTypesEquals(this.pointTypes, other.pointTypes)
-    ) {
+    if (!this.isCompatible(other)) {
       throw new VariationError("paths are not compatible");
     }
   }
