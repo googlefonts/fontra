@@ -25,7 +25,7 @@ export async function parseClipboard(data) {
   return await callServerAPI("parseClipboard", { data });
 }
 
-export async function unionPath(data, contourIndices) {
-  return await callServerAPI("unionPath", { data, contourIndices });
+export async function unionPath(path) {
+  return await callServerAPI("unionPath", { path });
 }
 
