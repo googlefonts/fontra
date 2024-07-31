@@ -1,4 +1,4 @@
-import { fetchJSON } from "./utils.js";
+import { fetchJSON, mapObjectValues } from "./utils.js";
 import { Layer, StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { VarPackedPath } from "./var-path.js";
 
@@ -64,10 +64,7 @@ const castDefinitions = {
   },
 
   dict(classDef, value) {
-    value = Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, classDef.itemCast(v)])
-    );
-    return value;
+    return mapObjectValues(value, (v) => classDef.itemCast(v));
   },
 };
 

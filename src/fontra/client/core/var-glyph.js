@@ -1,5 +1,5 @@
 import { getDecomposedIdentity } from "./transform.js";
-import { normalizeGuidelines } from "./utils.js";
+import { mapObjectValues, normalizeGuidelines } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 
 export class VariableGlyph {
@@ -11,9 +11,7 @@ export class VariableGlyph {
         return { ...axis };
       }) || [];
     glyph.sources = obj.sources.map((source) => GlyphSource.fromObject(source));
-    glyph.layers = Object.fromEntries(
-      Object.entries(obj.layers).map(([name, layer]) => [name, Layer.fromObject(layer)])
-    );
+    glyph.layers = mapObjectValues(obj.layers, (layer) => Layer.fromObject(layer));
     glyph.customData = copyCustomData(obj.customData || {});
     return glyph;
   }
