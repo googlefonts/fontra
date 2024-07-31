@@ -25,6 +25,18 @@ describe("Path Functions tests", () => {
     },
   ];
 
+  const smallRectPath = [
+    {
+      points: [
+        { x: 0, y: 0 },
+        { x: 0, y: 50 },
+        { x: 100, y: 50 },
+        { x: 100, y: 0 },
+      ],
+      isClosed: true,
+    },
+  ];
+
   const curvedPath = [
     {
       points: [
@@ -278,6 +290,53 @@ describe("Path Functions tests", () => {
                 { x: 0, y: 100, attrs: { test: 123 } },
                 { x: 100, y: 100 },
                 { x: 100, y: 50 },
+              ],
+              isClosed: true,
+            },
+          ],
+        ],
+      },
+      {
+        paths: [rectPath, smallRectPath],
+        pt1: { x: -10, y: 50 },
+        pt2: { x: 110, y: 50 },
+        expectedPaths: [
+          [
+            {
+              points: [
+                { x: 100, y: 50 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 50 },
+              ],
+              isClosed: true,
+            },
+            {
+              points: [
+                { x: 0, y: 50 },
+                { x: 0, y: 100, attrs: { test: 123 } },
+                { x: 100, y: 100 },
+                { x: 100, y: 50 },
+              ],
+              isClosed: true,
+            },
+          ],
+          [
+            {
+              points: [
+                { x: 100, y: 25 },
+                { x: 100, y: 0 },
+                { x: 0, y: 0 },
+                { x: 0, y: 25 },
+              ],
+              isClosed: true,
+            },
+            {
+              points: [
+                { x: 0, y: 25 },
+                { x: 0, y: 50 },
+                { x: 100, y: 50 },
+                { x: 100, y: 25 },
               ],
               isClosed: true,
             },
