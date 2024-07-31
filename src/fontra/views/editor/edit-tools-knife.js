@@ -1,6 +1,7 @@
 import { slicePaths } from "../core/path-functions.js";
 import { zip } from "../core/utils.js";
 import * as vector from "../core/vector.js";
+import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import {
   fillRoundNode,
