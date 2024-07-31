@@ -20,6 +20,7 @@ import {
   zip,
 } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
+import { VarPackedPath } from "/core/var-path.js";
 import { Form } from "/web-components/ui-form.js";
 
 export default class TransformationPanel extends Panel {
@@ -508,34 +509,39 @@ export default class TransformationPanel extends Panel {
   }
 
   async doUnionPath() {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
-    const selectedContours = [];
-    for (const pointIndex of pointIndices) {
-      const contourIndex = positionedGlyph.glyph.path.getContourIndex(pointIndex);
-      if (!selectedContours.includes(contourIndex)) {
-        selectedContours.push(contourIndex);
-      }
-    }
 
-    if (!selectedContours.length) {
+    if (!pointIndices.length) {
       return;
     }
 
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    const selectedContourIndices = [];
+    for (const pointIndex of pointIndices) {
+      const contourIndex = positionedGlyph.glyph.path.getContourIndex(pointIndex);
+      if (!selectedContourIndices.includes(contourIndex)) {
+        selectedContourIndices.push(contourIndex);
+      }
+    }
+    const glyphName = positionedGlyph.glyphName;
+    const codePoints = this.fontController.glyphMap[glyphName] || [];
+
     await this.sceneController.editGlyphAndRecordChanges(
-      async (glyph) => {
+      (glyph) => {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
           glyph.layers
         );
+
         for (const layerGlyph of Object.values(editLayerGlyphs)) {
-          const plainText = staticGlyphToGLIF(glyph.glyphName, layerGlyph, []);
-          const staticGlyph = await unionPath(plainText, selectedContours);
-          for (const contourIndex of reversed(selectedContours)) {
-            layerGlyph.path.deleteContour(contourIndex);
-          }
-          layerGlyph.path.appendPath(staticGlyph.path);
+          this.doUnionPathLayerGlyph(
+            glyphName,
+            codePoints,
+            layerGlyph,
+            selectedContourIndices
+          );
         }
         return "Remove overlap(s)";
       },
@@ -543,8 +549,24 @@ export default class TransformationPanel extends Panel {
       true
     );
 
-    this.editorController.canvasController.requestUpdate();
-    this.sceneController.selection = new Set();
+    //this.editorController.canvasController.requestUpdate();
+    this.sceneController.selection = new Set(); // Clear selection
+  }
+
+  async doUnionPathLayerGlyph(
+    glyphName,
+    codePoints,
+    layerGlyph,
+    selectedContourIndices
+  ) {
+    const plainText = staticGlyphToGLIF(glyphName, layerGlyph, codePoints);
+    const staticGlyph = await unionPath(plainText, selectedContourIndices);
+    const newPath = await VarPackedPath.fromObject(staticGlyph.path);
+    layerGlyph.path.appendPath(newPath);
+
+    for (const contourIndex of reversed(selectedContourIndices)) {
+      layerGlyph.path.deleteContour(contourIndex);
+    }
   }
 
   async transformSelection(transformation, undoLabel) {
