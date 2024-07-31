@@ -1,5 +1,12 @@
 import { insertPoint, splitPathAtPointIndices } from "../core/path-functions.js";
-import { assert, enumerate, range, uniqueID, zip } from "../core/utils.js";
+import {
+  assert,
+  enumerate,
+  pointCompareFunc,
+  range,
+  uniqueID,
+  zip,
+} from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
@@ -77,21 +84,6 @@ export class KnifeTool extends BaseTool {
   }
 
   async doSliceGlyph(intersections) {
-    for (const [i, intersection] of enumerate(intersections)) {
-      intersection.sortIndex = i; // Keep the original sort order
-    }
-
-    const sortedIntersections = [...intersections];
-    sortedIntersections.sort((a, b) => {
-      if (a.contourIndex != b.contourIndex) {
-        return b.contourIndex - a.contourIndex; // descending sort
-      } else if (a.segmentIndex != b.segmentIndex) {
-        return b.segmentIndex - a.segmentIndex; // descending sort
-      } else {
-        return a.t - b.t; // ascending sort
-      }
-    });
-
     this.sceneController.selection = new Set(); // Clear selection
 
     await this.sceneController.editGlyphAndRecordChanges(
@@ -99,9 +91,10 @@ export class KnifeTool extends BaseTool {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
           glyph.layers
         );
-        for (const layerGlyph of Object.values(editLayerGlyphs)) {
-          doSliceLayerGlyph(intersections, sortedIntersections, layerGlyph.path);
-        }
+        const layerPaths = Object.values(editLayerGlyphs).map(
+          (layerGlyph) => layerGlyph.path
+        );
+        slicePaths(intersections, ...layerPaths);
         return "slice glyph";
       },
       undefined,
@@ -114,14 +107,40 @@ export class KnifeTool extends BaseTool {
   }
 }
 
-function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
+function slicePaths(intersections, ...paths) {
+  intersections = intersections.map((intersection) => {
+    return { ...intersection };
+  });
+  intersections.sort(pointCompareFunc);
+
+  for (const [i, intersection] of enumerate(intersections)) {
+    intersection.sortIndex = i; // Keep the original sort order
+  }
+
+  const sortedIntersections = [...intersections];
+  sortedIntersections.sort((a, b) => {
+    if (a.contourIndex != b.contourIndex) {
+      return b.contourIndex - a.contourIndex; // descending sort
+    } else if (a.segmentIndex != b.segmentIndex) {
+      return b.segmentIndex - a.segmentIndex; // descending sort
+    } else {
+      return a.t - b.t; // ascending sort
+    }
+  });
+
+  for (const path of paths) {
+    sliceSinglePath(intersections, sortedIntersections, path);
+  }
+}
+
+function sliceSinglePath(intersections, sortedIntersections, path) {
   const intersectionInfo = new Array(intersections.length);
 
   // Insert points
   let insertedPointIndices = [];
   for (const segmentIntersections of groupIntersectionsBySegment(sortedIntersections)) {
     const { numPointsInserted, selectedPointIndices } = insertPoint(
-      layerPath,
+      path,
       ...segmentIntersections
     );
 
@@ -132,20 +151,20 @@ function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
       selectedPointIndices,
       segmentIntersections
     )) {
-      const point = layerPath.getPoint(pointIndex);
+      const point = path.getPoint(pointIndex);
       assert(
         !intersectionInfo[intersection.sortIndex],
         `${intersection.sortIndex} ${intersectionInfo[intersection.sortIndex]}`
       );
       intersectionInfo[intersection.sortIndex] = {
         contourIndex: firstIntersection.contourIndex,
-        contourIsClosed: layerPath.contourInfo[firstIntersection.contourIndex].isClosed,
+        contourIsClosed: path.contourInfo[firstIntersection.contourIndex].isClosed,
       };
       const attrs = {
         ...point.attrs,
         [intersectionIdentifierKey]: intersection.sortIndex,
       };
-      layerPath.setPointAttrs(pointIndex, attrs);
+      path.setPointAttrs(pointIndex, attrs);
     }
 
     insertedPointIndices = insertedPointIndices.map(
@@ -155,7 +174,7 @@ function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
   }
 
   // Split path at the insert points
-  splitPathAtPointIndices(layerPath, insertedPointIndices);
+  splitPathAtPointIndices(path, insertedPointIndices);
 
   // We will now determine which intersections can be connected to other intersections
 
@@ -170,7 +189,7 @@ function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
   }
 
   // Collect contours to be connected
-  const contoursToConnect = collectContoursToConnect(layerPath);
+  const contoursToConnect = collectContoursToConnect(path);
 
   // If the remaining intersections are a clean run with alternating winding directions,
   // join paths, taking all remaining intersections into account. Else, we join per
@@ -196,7 +215,7 @@ function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
   for (const contoursToBeConnected of chainedContourIndices) {
     const newContour = { points: [], isClosed: true };
     for (const contourIndex of contoursToBeConnected) {
-      const contour = layerPath.getUnpackedContour(contourIndex);
+      const contour = path.getUnpackedContour(contourIndex);
       newContour.points.push(...contour.points);
     }
     newContours.push(newContour);
@@ -207,19 +226,19 @@ function doSliceLayerGlyph(intersections, sortedIntersections, layerPath) {
   );
   const contourInsertionIndex = Math.min(...chainedContourIndices.flat());
 
-  contoursToBeDeleted.forEach((contourIndex) => layerPath.deleteContour(contourIndex));
+  contoursToBeDeleted.forEach((contourIndex) => path.deleteContour(contourIndex));
   newContours.reverse();
   newContours.forEach((contour) =>
-    layerPath.insertUnpackedContour(contourInsertionIndex, contour)
+    path.insertUnpackedContour(contourInsertionIndex, contour)
   );
 
   // Clean up temp point attrs
-  for (const pointIndex of range(layerPath.numPoints)) {
-    const point = layerPath.getPoint(pointIndex);
+  for (const pointIndex of range(path.numPoints)) {
+    const point = path.getPoint(pointIndex);
     if (point.attrs && intersectionIdentifierKey in point.attrs) {
       point.attrs = { ...point.attrs };
       delete point.attrs[intersectionIdentifierKey];
-      layerPath.setPoint(pointIndex, point);
+      path.setPoint(pointIndex, point);
     }
   }
 }
@@ -275,14 +294,14 @@ function filterSelfIntersectingContours(intersections) {
   );
 }
 
-function collectContoursToConnect(layerPath) {
+function collectContoursToConnect(path) {
   let firstPointIndex = 0;
   const intersectionContoursRight = [];
   const intersectionContoursLeft = [];
-  for (const contourIndex of range(layerPath.numContours)) {
-    const lastPointIndex = layerPath.contourInfo[contourIndex].endPoint;
-    const firstPoint = layerPath.getPoint(firstPointIndex);
-    const lastPoint = layerPath.getPoint(lastPointIndex);
+  for (const contourIndex of range(path.numContours)) {
+    const lastPointIndex = path.contourInfo[contourIndex].endPoint;
+    const firstPoint = path.getPoint(firstPointIndex);
+    const lastPoint = path.getPoint(lastPointIndex);
 
     const firstIntersectionIndex = firstPoint.attrs?.[intersectionIdentifierKey];
     const lastIntersectionIndex = lastPoint.attrs?.[intersectionIdentifierKey];
