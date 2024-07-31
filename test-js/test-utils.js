@@ -531,31 +531,39 @@ describe("memoize", () => {
 });
 
 describe("withTimeout", () => {
-  it("creates a promise that resolves if the given promise resolved before the timeout, otherwise rejects", async () => {
-    let thrown = false;
-    try {
-      await withTimeout((resolve) => {}, 10);
-    } catch {
-      thrown = true;
+  // Use thennableFactory instead of specifying thennable directly because
+  // sleepAsync's timer will start when the test case is *defined*, not when
+  // it is run.
+  parametrize(
+    "withTimeout tests",
+    [
+      {
+        thennableFactory: () => "not a thennable",
+        timeout: 5,
+        expectedThrown: true,
+      },
+      { thennableFactory: () => Promise.resolve(), timeout: 5, expectedThrown: false },
+      {
+        thennableFactory: () => sleepAsync(1),
+        timeout: 5,
+        expectedThrown: false,
+      },
+      {
+        thennableFactory: () => sleepAsync(10),
+        timeout: 5,
+        expectedThrown: true,
+      },
+    ],
+    async (testCase) => {
+      let thrown = false;
+      try {
+        await withTimeout(testCase.thennableFactory(), testCase.timeout);
+      } catch {
+        thrown = true;
+      }
+      expect(thrown).to.equal(testCase.expectedThrown);
     }
-    expect(thrown).to.be.true;
-    thrown = false;
-    try {
-      await withTimeout(Promise.resolve(), 10);
-    } catch (e) {
-      console.log(e);
-      thrown = true;
-    }
-    expect(thrown).to.be.false;
-    thrown = false;
-    try {
-      await withTimeout(new Promise((resolve) => setTimeout(resolve, 1)), 10);
-    } catch (e) {
-      console.log(e);
-      thrown = true;
-    }
-    expect(thrown).to.be.false;
-  });
+  );
 });
 
 describe("splitGlyphNameExtension", () => {
