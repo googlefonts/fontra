@@ -1,5 +1,5 @@
 import { slicePaths } from "../core/path-functions.js";
-import { zip } from "../core/utils.js";
+import { mapObjectValues, zip } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -81,11 +81,8 @@ export class KnifeTool extends BaseTool {
     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
       varGlyph.layers
     );
-    const layerPaths = Object.fromEntries(
-      Object.entries(editLayerGlyphs).map(([layerName, layerGlyph]) => [
-        layerName,
-        layerGlyph.path.copy(),
-      ])
+    const layerPaths = mapObjectValues(editLayerGlyphs, (layerGlyph) =>
+      layerGlyph.path.copy()
     );
     slicePaths(intersections, ...Object.values(layerPaths));
 
