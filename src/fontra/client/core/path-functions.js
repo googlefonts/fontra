@@ -900,6 +900,8 @@ export function slicePaths(intersections, ...paths) {
 const intersectionIdentifierKey = "fontra.knife.tmp.intersection.identifier";
 
 function sliceSinglePath(intersections, sortedIntersections, path) {
+  assert(intersections.length == sortedIntersections.length);
+
   const intersectionInfo = new Array(intersections.length);
 
   // Insert points
