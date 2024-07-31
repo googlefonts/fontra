@@ -871,6 +871,7 @@ function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
 
 export function slicePaths(intersections, ...paths) {
   assert(arePathsCompatible(paths), "paths must be compatible");
+
   intersections = intersections.map((intersection) => {
     return { ...intersection };
   });
