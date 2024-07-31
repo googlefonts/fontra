@@ -31,17 +31,16 @@ export class VarPackedPath {
   }
 
   static fromObject(obj) {
-    const path = new VarPackedPath();
-    path.coordinates = VarArray.from(obj.coordinates);
-    path.pointTypes = [...obj.pointTypes];
-    path.contourInfo = obj.contourInfo.map((item) => {
+    const coordinates = VarArray.from(obj.coordinates);
+    const pointTypes = [...obj.pointTypes];
+    const contourInfo = obj.contourInfo.map((item) => {
       return { ...item };
     });
-    path.pointAttributes =
+    const pointAttributes =
       obj.pointAttributes?.map((attrs) => {
         return copyPointAttrs(attrs);
       }) || null;
-    return path;
+    return new VarPackedPath(coordinates, pointTypes, contourInfo, pointAttributes);
   }
 
   static fromUnpackedContours(unpackedContours) {
@@ -832,10 +831,9 @@ export class VarPackedPath {
   }
 
   concat(other) {
-    const result = new VarPackedPath();
-    result.coordinates = this.coordinates.concat(other.coordinates);
-    result.pointTypes = this.pointTypes.concat(other.pointTypes);
-    result.contourInfo = this.contourInfo.concat(other.contourInfo).map((c) => {
+    const coordinates = this.coordinates.concat(other.coordinates);
+    const pointTypes = this.pointTypes.concat(other.pointTypes);
+    const contourInfo = this.contourInfo.concat(other.contourInfo).map((c) => {
       return { ...c };
     });
 
@@ -848,16 +846,16 @@ export class VarPackedPath {
         ? new Array(this.pointTypes.length).fill(null)
         : this.pointAttributes;
 
-    result.pointAttributes = copyPointAttributesArray(
+    const pointAttributes = copyPointAttributesArray(
       thisPointAttributes?.concat(otherPointAttributes)
     );
 
     const endPointOffset = this.numPoints;
-    for (let i = this.contourInfo.length; i < result.contourInfo.length; i++) {
-      result.contourInfo[i].endPoint += endPointOffset;
+    for (let i = this.contourInfo.length; i < contourInfo.length; i++) {
+      contourInfo[i].endPoint += endPointOffset;
     }
 
-    return result;
+    return new VarPackedPath(coordinates, pointTypes, contourInfo, pointAttributes);
   }
 
   _checkIntegrity() {
