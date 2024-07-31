@@ -35,6 +35,9 @@ export class VarPackedPath {
           pointAttributes.length == pointTypes.length,
           "mismatching point attributes"
         );
+        if (!pointAttributes.some((attrs) => attrs)) {
+          pointAttributes = null;
+        }
       }
 
       this.coordinates = coordinates;
