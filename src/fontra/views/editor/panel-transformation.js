@@ -13,6 +13,8 @@ import { unionPath } from "/core/server-utils.js";
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
 import {
   enumerate,
+  mapObjectValues,
+  mapObjectValuesAsync,
   parseSelection,
   range,
   readFromClipboard,
@@ -518,50 +520,41 @@ export default class TransformationPanel extends Panel {
 
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const selectedContourIndices = [
+      ...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys(),
+    ];
 
-    const selectedContourIndices = [];
-    for (const pointIndex of pointIndices) {
-      const contourIndex = positionedGlyph.glyph.path.getContourIndex(pointIndex);
-      if (!selectedContourIndices.includes(contourIndex)) {
-        selectedContourIndices.push(contourIndex);
-      }
-    }
+    const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+      positionedGlyph.varGlyph.glyph.layers
+    );
+
+    const layerPaths = mapObjectValuesAsync(editLayerGlyphs, async (layerGlyph) => {
+      const selectedContoursPath = new VarPackedPath();
+      selectedContourIndices.forEach((index) =>
+        selectedContoursPath.appendContour(layerGlyph.path.getContour(index))
+      );
+      return await unionPath(selectedContoursPath);
+    });
+
+    console.log("layerPaths: ", layerPaths);
 
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-          glyph.layers
-        );
-
-        for (const layerGlyph of Object.values(editLayerGlyphs)) {
-          this.doUnionPathLayerGlyph(layerGlyph, selectedContourIndices);
+        for (const [layerName, newPath] of Object.entries(layerPaths)) {
+          console.log("Process layerName: ", layerName);
+          const path = glyph.layers[layerName].glyph.path;
+          for (const contourIndex of reversed(selectedContourIndices)) {
+            path.deleteContour(contourIndex);
+          }
+          path.appendPath(VarPackedPath.fromObject(newPath));
         }
-        return "Remove overlap(s)";
+        return "Remove overlaps";
       },
       undefined,
       true
     );
 
-    //this.editorController.canvasController.requestUpdate();
     this.sceneController.selection = new Set(); // Clear selection
-  }
-
-  async doUnionPathLayerGlyph(layerGlyph, selectedContourIndices) {
-    const unpackedContours = [];
-    for (const contourIndex of selectedContourIndices) {
-      const unpackedContour = layerGlyph.path.getUnpackedContour(contourIndex);
-      unpackedContours.push(unpackedContour);
-    }
-
-    const path = VarPackedPath.fromUnpackedContours(unpackedContours);
-    const newPath = await unionPath(path);
-    const newPackedPath = VarPackedPath.fromObject(newPath);
-
-    layerGlyph.path.appendPath(newPackedPath);
-
-    for (const contourIndex of reversed(selectedContourIndices)) {
-      layerGlyph.path.deleteContour(contourIndex);
-    }
   }
 
   async transformSelection(transformation, undoLabel) {
