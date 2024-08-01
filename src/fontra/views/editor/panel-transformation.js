@@ -580,7 +580,6 @@ export default class TransformationPanel extends Panel {
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [layerName, layerPath] of Object.entries(layerPaths)) {
-          const newPackedPath = VarPackedPath.fromObject(layerPath);
           if (doUnion && pointIndices.length) {
             const path = glyph.layers[layerName].glyph.path;
             for (const contourIndex of reversed([
@@ -588,9 +587,9 @@ export default class TransformationPanel extends Panel {
             ])) {
               path.deleteContour(contourIndex);
             }
-            path.appendPath(newPackedPath);
+            path.appendPath(layerPath);
           } else {
-            glyph.layers[layerName].glyph.path = newPackedPath;
+            glyph.layers[layerName].glyph.path = layerPath;
           }
         }
         return undoLabel;

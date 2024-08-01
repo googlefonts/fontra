@@ -1,4 +1,5 @@
 import { memoize } from "./utils.js";
+import { VarPackedPath } from "./var-path.js";
 
 export async function callServerAPI(functionName, kwargs) {
   const response = await fetch(`/api/${functionName}`, {
@@ -26,17 +27,21 @@ export async function parseClipboard(data) {
 }
 
 export async function unionPath(path) {
-  return await callServerAPI("unionPath", { path });
+  const newPath = await callServerAPI("unionPath", { path });
+  return VarPackedPath.fromObject(newPath);
 }
 
 export async function subtractPath(pathA, pathB) {
-  return await callServerAPI("subtractPath", { pathA, pathB });
+  const newPath = await callServerAPI("subtractPath", { pathA, pathB });
+  return VarPackedPath.fromObject(newPath);
 }
 
 export async function intersectPath(pathA, pathB) {
-  return await callServerAPI("intersectPath", { pathA, pathB });
+  const newPath = await callServerAPI("intersectPath", { pathA, pathB });
+  return VarPackedPath.fromObject(newPath);
 }
 
 export async function excludePath(pathA, pathB) {
-  return await callServerAPI("excludePath", { pathA, pathB });
+  const newPath = await callServerAPI("excludePath", { pathA, pathB });
+  return VarPackedPath.fromObject(newPath);
 }
