@@ -17,11 +17,9 @@ import {
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
 import {
   enumerate,
-  mapObjectValues,
   mapObjectValuesAsync,
   parseSelection,
   range,
-  readFromClipboard,
   reversed,
   zip,
 } from "/core/utils.js";
