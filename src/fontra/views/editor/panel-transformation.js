@@ -454,7 +454,7 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "spacer" });
     formContents.push({
       type: "header",
-      label: "Path operations",
+      label: "Path Operations",
     });
 
     formContents.push({
