@@ -451,20 +451,20 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "spacer" });
     formContents.push({
       type: "header",
-      label: translate("sidebar.selection-transformation.pathOperations"),
+      label: translate("sidebar.selection-transformation.path-operations"),
     });
 
     const labelUnion = translate(
-      "sidebar.selection-transformation.pathOperations.union"
+      "sidebar.selection-transformation.path-operations.union"
     );
     const labelSubtract = translate(
-      "sidebar.selection-transformation.pathOperations.subtract"
+      "sidebar.selection-transformation.path-operations.subtract"
     );
     const labelIntersect = translate(
-      "sidebar.selection-transformation.pathOperations.intersect"
+      "sidebar.selection-transformation.path-operations.intersect"
     );
     const labelExclude = translate(
-      "sidebar.selection-transformation.pathOperations.exclude"
+      "sidebar.selection-transformation.path-operations.exclude"
     );
     formContents.push({
       type: "universal-row",
