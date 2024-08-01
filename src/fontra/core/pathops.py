@@ -27,8 +27,8 @@ def skiaPathOperations(pathA, pathB, pathOperation):
     skiaPathB = fontraPathToSkiaPath(pathB)
 
     builder = pathops.OpBuilder()
-    builder.add(skiaPathB, pathops.PathOp.UNION)
-    builder.add(skiaPathA, pathOperation)
+    builder.add(skiaPathA, pathops.PathOp.UNION)
+    builder.add(skiaPathB, pathOperation)
     skiaPath = builder.resolve()
 
     return skiaPathToFontraPath(skiaPath)
@@ -42,7 +42,7 @@ def unionPath(path):
 
 
 def subtractPath(pathA, pathB):
-    return skiaPathOperations(pathA, pathB, pathops.PathOp.REVERSE_DIFFERENCE)
+    return skiaPathOperations(pathA, pathB, pathops.PathOp.DIFFERENCE)
 
 
 def intersectPath(pathA, pathB):
