@@ -551,7 +551,6 @@ export default class TransformationPanel extends Panel {
       positionedGlyph.varGlyph.glyph.layers
     );
 
-    const contoursToBeDeleted = []; // this is only needed for doUnion
     const layerPaths = await mapObjectValuesAsync(
       editLayerGlyphs,
       async (layerGlyph) => {
@@ -562,7 +561,6 @@ export default class TransformationPanel extends Panel {
         for (const contourIndex of range(path.numContours)) {
           if (isContourSelected(contourIndex)) {
             selectedContoursPath.appendContour(path.getContour(contourIndex));
-            contoursToBeDeleted.push(contourIndex);
           } else {
             unselectedContoursPath.appendContour(path.getContour(contourIndex));
           }
@@ -578,9 +576,11 @@ export default class TransformationPanel extends Panel {
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [layerName, layerPath] of Object.entries(layerPaths)) {
-          if (doUnion) {
+          if (doUnion && pointIndices.length) {
             const path = glyph.layers[layerName].glyph.path;
-            for (const contourIndex of reversed(contoursToBeDeleted)) {
+            for (const contourIndex of reversed([
+              ...selectedContourIndicesMap.keys(),
+            ])) {
               path.deleteContour(contourIndex);
             }
             path.appendPath(VarPackedPath.fromObject(layerPath));
