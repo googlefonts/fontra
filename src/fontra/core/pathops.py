@@ -26,10 +26,14 @@ def skiaPathOperations(pathA, pathB, pathOperation):
     skiaPathA = fontraPathToSkiaPath(pathA)
     skiaPathB = fontraPathToSkiaPath(pathB)
 
-    builder = pathops.OpBuilder()
-    builder.add(skiaPathA, pathops.PathOp.UNION)
-    builder.add(skiaPathB, pathOperation)
-    skiaPath = builder.resolve()
+    skiaPath = pathops.op(
+        skiaPathA,
+        skiaPathB,
+        pathOperation,
+        fix_winding=True,
+        keep_starting_points=True,
+        clockwise=False,
+    )
 
     return skiaPathToFontraPath(skiaPath)
 
