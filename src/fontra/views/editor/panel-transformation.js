@@ -477,7 +477,7 @@ export default class TransformationPanel extends Panel {
           "src": "/tabler-icons/layers-subtract.svg",
           "onclick": (event) =>
             this.doPathOperations(subtractPath, "Subtract contours"),
-          "data-tooltip": "Subtract selected contours",
+          "data-tooltip": "Subtract contours",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
@@ -489,7 +489,7 @@ export default class TransformationPanel extends Panel {
           "src": "/tabler-icons/layers-intersect-2.svg",
           "onclick": (event) =>
             this.doPathOperations(intersectPath, "Intersect contours"),
-          "data-tooltip": "Intersect selected contours",
+          "data-tooltip": "Intersect contours",
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
@@ -504,7 +504,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
           "onclick": (event) => this.doPathOperations(excludePath, "Exclude contours"),
-          "data-tooltip": "Exclude selected contours",
+          "data-tooltip": "Exclude contours",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
