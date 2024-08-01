@@ -29,3 +29,14 @@ export async function unionPath(path) {
   return await callServerAPI("unionPath", { path });
 }
 
+export async function subtractPath(pathA, pathB) {
+  return await callServerAPI("subtractPath", { pathA, pathB });
+}
+
+export async function intersectPath(pathA, pathB) {
+  return await callServerAPI("intersectPath", { pathA, pathB });
+}
+
+export async function excludePath(pathA, pathB) {
+  return await callServerAPI("excludePath", { pathA, pathB });
+}

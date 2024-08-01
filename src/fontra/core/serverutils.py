@@ -45,3 +45,37 @@ def unionPath(path):
 
     return unstructure(pen.getPath())
 
+
+@api
+def subtractPath(pathA, pathB):
+    return skiaPathOperations(pathA, pathB, pathops.PathOp.REVERSE_DIFFERENCE)
+
+
+@api
+def intersectPath(pathA, pathB):
+    return skiaPathOperations(pathA, pathB, pathops.PathOp.INTERSECTION)
+
+
+@api
+def excludePath(pathA, pathB):
+    return skiaPathOperations(pathA, pathB, pathops.PathOp.DIFFERENCE)
+
+
+def skiaPathOperations(pathA, pathB, pathOperation):
+    fontraPathA = structure(pathA, PackedPath)
+    skiaPathA = pathops.Path()
+    fontraPathA.drawPoints(PointToSegmentPen(skiaPathA.getPen()))
+
+    fontraPathB = structure(pathB, PackedPath)
+    skiaPathB = pathops.Path()
+    fontraPathB.drawPoints(PointToSegmentPen(skiaPathB.getPen()))
+
+    builder = pathops.OpBuilder()
+    builder.add(skiaPathA, pathops.PathOp.UNION)
+    builder.add(skiaPathB, pathOperation)
+    skiaPath = builder.resolve()
+
+    pen = PackedPathPointPen()
+    skiaPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
+
+    return unstructure(pen.getPath())

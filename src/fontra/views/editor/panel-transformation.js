@@ -9,7 +9,12 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
-import { unionPath } from "/core/server-utils.js";
+import {
+  excludePath,
+  intersectPath,
+  subtractPath,
+  unionPath,
+} from "/core/server-utils.js";
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
 import {
   enumerate,
@@ -449,7 +454,7 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "spacer" });
     formContents.push({
       type: "header",
-      label: "Boolean operations",
+      label: "Path operations",
     });
 
     formContents.push({
@@ -459,7 +464,7 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doUnionPath(),
+          "onclick": (event) => this.doPathOperations(unionPath, "Remove overlaps"),
           "data-tooltip": "Remove overlaps",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -470,7 +475,8 @@ export default class TransformationPanel extends Panel {
         key: "subtractOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) => this.doNothing("Subtract selected contours"),
+          "onclick": (event) =>
+            this.doPathOperations(subtractPath, "Subtract contours"),
           "data-tooltip": "Subtract selected contours",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -481,12 +487,30 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect.svg",
-          "onclick": (event) => this.doNothing("Intersect selected contours"),
+          "onclick": (event) =>
+            this.doPathOperations(intersectPath, "Intersect contours"),
           "data-tooltip": "Intersect selected contours",
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
       },
+    });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "removeOverlaps",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-intersect-2.svg",
+          "onclick": (event) => this.doPathOperations(excludePath, "Exclude contours"),
+          "data-tooltip": "Exclude selected contours",
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {},
+      field3: {},
     });
 
     this.infoForm.setFieldDescriptions(formContents);
@@ -506,23 +530,20 @@ export default class TransformationPanel extends Panel {
     };
   }
 
-  async doNothing(someVariable) {
-    console.log("doNothing: ", someVariable);
-  }
-
-  async doUnionPath() {
+  async doPathOperations(pathOperationFunc, undoLabel) {
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 
-    if (!pointIndices.length) {
-      return;
-    }
-
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const selectedContourIndices = [
-      ...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys(),
-    ];
+
+    const selectedContourIndices = !pointIndices.length
+      ? [...range(positionedGlyph.glyph.path.numContours)]
+      : [...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys()];
+
+    if (!selectedContourIndices.length) {
+      return;
+    }
 
     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
       positionedGlyph.varGlyph.glyph.layers
@@ -531,11 +552,19 @@ export default class TransformationPanel extends Panel {
     const layerPaths = await mapObjectValuesAsync(
       editLayerGlyphs,
       async (layerGlyph) => {
+        const path = layerGlyph.path;
         const selectedContoursPath = new VarPackedPath();
-        selectedContourIndices.forEach((index) =>
-          selectedContoursPath.appendContour(layerGlyph.path.getContour(index))
-        );
-        return await unionPath(selectedContoursPath);
+        const unselectedContoursPath = new VarPackedPath();
+
+        for (const contourIndex of range(path.numContours)) {
+          if (selectedContourIndices.includes(contourIndex)) {
+            selectedContoursPath.appendContour(path.getContour(contourIndex));
+          } else {
+            unselectedContoursPath.appendContour(path.getContour(contourIndex));
+          }
+        }
+
+        return await pathOperationFunc(selectedContoursPath, unselectedContoursPath);
       }
     );
 
@@ -543,12 +572,18 @@ export default class TransformationPanel extends Panel {
       (glyph) => {
         for (const [layerName, newPath] of Object.entries(layerPaths)) {
           const path = glyph.layers[layerName].glyph.path;
-          for (const contourIndex of reversed(selectedContourIndices)) {
-            path.deleteContour(contourIndex);
+          if (undoLabel === "Remove overlaps") {
+            for (const contourIndex of reversed(selectedContourIndices)) {
+              path.deleteContour(contourIndex);
+            }
+          } else {
+            for (const contourIndex of reversed([...range(path.numContours)])) {
+              path.deleteContour(contourIndex);
+            }
           }
           path.appendPath(VarPackedPath.fromObject(newPath));
         }
-        return "Remove overlaps";
+        return undoLabel;
       },
       undefined,
       true
