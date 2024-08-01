@@ -559,6 +559,15 @@ export default class TransformationPanel extends Panel {
         ? (i) => selectedContourIndicesMap.has(i)
         : (i) => true;
 
+    if (
+      !doUnion &&
+      selectedContourIndices.length === positionedGlyph.glyph.path.numContours
+    ) {
+      // All contours are selected and we're not doing remove overlap: this will
+      // result in an empty path or in the same path depending on the operator.
+      return;
+    }
+
     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
       positionedGlyph.varGlyph.glyph.layers
     );
