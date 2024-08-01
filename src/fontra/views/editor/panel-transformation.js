@@ -553,6 +553,7 @@ export default class TransformationPanel extends Panel {
       positionedGlyph.glyph.path,
       pointIndices
     );
+    const selectedContourIndices = [...selectedContourIndicesMap.keys()];
     const isContourSelected =
       pointIndices.length || !doUnion
         ? (i) => selectedContourIndicesMap.has(i)
@@ -589,9 +590,7 @@ export default class TransformationPanel extends Panel {
         for (const [layerName, layerPath] of Object.entries(layerPaths)) {
           if (doUnion && pointIndices.length) {
             const path = glyph.layers[layerName].glyph.path;
-            for (const contourIndex of reversed([
-              ...selectedContourIndicesMap.keys(),
-            ])) {
+            for (const contourIndex of reversed(selectedContourIndices)) {
               path.deleteContour(contourIndex);
             }
             path.appendPath(layerPath);
