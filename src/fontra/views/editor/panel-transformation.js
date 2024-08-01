@@ -8,9 +8,23 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
+import {
+  excludePath,
+  intersectPath,
+  subtractPath,
+  unionPath,
+} from "/core/server-utils.js";
 import { Transform, prependTransformToDecomposed } from "/core/transform.js";
-import { enumerate, parseSelection, range, zip } from "/core/utils.js";
+import {
+  enumerate,
+  mapObjectValuesAsync,
+  parseSelection,
+  range,
+  reversed,
+  zip,
+} from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
+import { VarPackedPath } from "/core/var-path.js";
 import { Form } from "/web-components/ui-form.js";
 
 export default class TransformationPanel extends Panel {
@@ -434,6 +448,78 @@ export default class TransformationPanel extends Panel {
       },
     });
 
+    formContents.push({ type: "spacer" });
+    formContents.push({
+      type: "header",
+      label: translate("sidebar.selection-transformation.path-operations"),
+    });
+
+    const labelUnion = translate(
+      "sidebar.selection-transformation.path-operations.union"
+    );
+    const labelSubtract = translate(
+      "sidebar.selection-transformation.path-operations.subtract"
+    );
+    const labelIntersect = translate(
+      "sidebar.selection-transformation.path-operations.intersect"
+    );
+    const labelExclude = translate(
+      "sidebar.selection-transformation.path-operations.exclude"
+    );
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "removeOverlaps",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-union.svg",
+          "onclick": (event) => this.doPathOperations(unionPath, labelUnion),
+          "data-tooltip": labelUnion,
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "subtractContours",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-subtract.svg",
+          "onclick": (event) => this.doPathOperations(subtractPath, labelSubtract),
+          "data-tooltip": labelSubtract,
+          "data-tooltipposition": "top",
+          "class": "ui-form-icon",
+        }),
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "intersectContours",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-intersect-2.svg",
+          "onclick": (event) => this.doPathOperations(intersectPath, labelIntersect),
+          "data-tooltip": labelIntersect,
+          "data-tooltipposition": "top-right",
+          "class": "ui-form-icon",
+        }),
+      },
+    });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "excludeContours",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layers-difference.svg",
+          "onclick": (event) => this.doPathOperations(excludePath, labelExclude),
+          "data-tooltip": labelExclude,
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {},
+      field3: {},
+    });
+
     this.infoForm.setFieldDescriptions(formContents);
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
@@ -449,6 +535,86 @@ export default class TransformationPanel extends Panel {
         });
       }
     };
+  }
+
+  async doPathOperations(pathOperationFunc, undoLabel) {
+    const doUnion = pathOperationFunc === unionPath;
+    let { point: pointIndices } = parseSelection(this.sceneController.selection);
+    pointIndices = pointIndices || [];
+
+    if (!pointIndices.length && !doUnion) {
+      return;
+    }
+
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    const selectedContourIndicesMap = getSelectionByContour(
+      positionedGlyph.glyph.path,
+      pointIndices
+    );
+    const selectedContourIndices = [...selectedContourIndicesMap.keys()];
+
+    if (
+      !doUnion &&
+      selectedContourIndices.length === positionedGlyph.glyph.path.numContours
+    ) {
+      // All contours are selected and we're not doing remove overlap: this will
+      // result in an empty path or in the same path depending on the operator.
+      return;
+    }
+
+    const isContourSelected =
+      pointIndices.length || !doUnion
+        ? (i) => selectedContourIndicesMap.has(i)
+        : (i) => true;
+
+    const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+      positionedGlyph.varGlyph.glyph.layers
+    );
+
+    const layerPaths = await mapObjectValuesAsync(
+      editLayerGlyphs,
+      async (layerGlyph) => {
+        const path = layerGlyph.path;
+        const selectedContoursPath = new VarPackedPath();
+        const unselectedContoursPath = new VarPackedPath();
+
+        for (const contourIndex of range(path.numContours)) {
+          if (isContourSelected(contourIndex)) {
+            selectedContoursPath.appendContour(path.getContour(contourIndex));
+          } else {
+            unselectedContoursPath.appendContour(path.getContour(contourIndex));
+          }
+        }
+        if (doUnion) {
+          return await pathOperationFunc(selectedContoursPath);
+        } else {
+          return await pathOperationFunc(unselectedContoursPath, selectedContoursPath);
+        }
+      }
+    );
+
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        for (const [layerName, layerPath] of Object.entries(layerPaths)) {
+          if (doUnion && pointIndices.length) {
+            const path = glyph.layers[layerName].glyph.path;
+            for (const contourIndex of reversed(selectedContourIndices)) {
+              path.deleteContour(contourIndex);
+            }
+            path.appendPath(layerPath);
+          } else {
+            glyph.layers[layerName].glyph.path = layerPath;
+          }
+        }
+        return undoLabel.toLowerCase();
+      },
+      undefined,
+      true
+    );
+
+    this.sceneController.selection = new Set(); // Clear selection
   }
 
   async transformSelection(transformation, undoLabel) {

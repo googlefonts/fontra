@@ -48,6 +48,12 @@ export class VarPackedPath {
   }
 
   static fromObject(obj) {
+    if (!obj.coordinates) {
+      assert(!obj.pointTypes);
+      assert(!obj.pointTypes);
+      assert(!obj.contourInfo);
+      return new VarPackedPath();
+    }
     const coordinates = VarArray.from(obj.coordinates);
     const pointTypes = [...obj.pointTypes];
     const contourInfo = obj.contourInfo.map((item) => {
