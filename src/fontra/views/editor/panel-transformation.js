@@ -599,7 +599,7 @@ export default class TransformationPanel extends Panel {
             glyph.layers[layerName].glyph.path = layerPath;
           }
         }
-        return undoLabel;
+        return undoLabel.toLowerCase();
       },
       undefined,
       true
