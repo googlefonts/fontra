@@ -481,7 +481,7 @@ export default class TransformationPanel extends Panel {
       },
       field2: {
         type: "auxiliaryElement",
-        key: "subtractOverlaps",
+        key: "subtractContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
           "onclick": (event) => this.doPathOperations(subtractPath, labelSubtract),
@@ -507,7 +507,7 @@ export default class TransformationPanel extends Panel {
       type: "universal-row",
       field1: {
         type: "auxiliaryElement",
-        key: "removeOverlaps",
+        key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
           "onclick": (event) => this.doPathOperations(excludePath, labelExclude),
