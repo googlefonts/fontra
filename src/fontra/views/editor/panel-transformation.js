@@ -486,7 +486,7 @@ export default class TransformationPanel extends Panel {
         type: "auxiliaryElement",
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
-          "src": "/tabler-icons/layers-intersect.svg",
+          "src": "/tabler-icons/layers-intersect-2.svg",
           "onclick": (event) =>
             this.doPathOperations(intersectPath, "Intersect contours"),
           "data-tooltip": "Intersect selected contours",
@@ -502,7 +502,7 @@ export default class TransformationPanel extends Panel {
         type: "auxiliaryElement",
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
-          "src": "/tabler-icons/layers-intersect-2.svg",
+          "src": "/tabler-icons/layers-difference.svg",
           "onclick": (event) => this.doPathOperations(excludePath, "Exclude contours"),
           "data-tooltip": "Exclude selected contours",
           "data-tooltipposition": "top-left",
