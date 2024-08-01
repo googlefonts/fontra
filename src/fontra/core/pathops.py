@@ -8,34 +8,37 @@ from fontTools.pens.pointPen import (
 from .path import PackedPathPointPen
 
 
-def skiaPathOperations(pathA, pathB, pathOperation):
-    skiaPathA = pathops.Path()
-    pathA.drawPoints(PointToSegmentPen(skiaPathA.getPen()))
-
-    skiaPathB = pathops.Path()
-    pathB.drawPoints(PointToSegmentPen(skiaPathB.getPen()))
-
-    builder = pathops.OpBuilder()
-    builder.add(skiaPathA, pathops.PathOp.UNION)
-    builder.add(skiaPathB, pathOperation)
-    skiaPath = builder.resolve()
-
+def skiaPathToFontraPath(skiaPath):
     pen = PackedPathPointPen()
     skiaPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
 
     return pen.getPath()
 
 
-def unionPath(path):
+def fontraPathToSkiaPath(fontraPath):
     skiaPath = pathops.Path()
-    path.drawPoints(PointToSegmentPen(skiaPath.getPen()))
+    fontraPath.drawPoints(PointToSegmentPen(skiaPath.getPen()))
 
+    return skiaPath
+
+
+def skiaPathOperations(pathA, pathB, pathOperation):
+    skiaPathA = fontraPathToSkiaPath(pathA)
+    skiaPathB = fontraPathToSkiaPath(pathB)
+
+    builder = pathops.OpBuilder()
+    builder.add(skiaPathA, pathops.PathOp.UNION)
+    builder.add(skiaPathB, pathOperation)
+    skiaPath = builder.resolve()
+
+    return skiaPathToFontraPath(skiaPath)
+
+
+def unionPath(path):
+    skiaPath = fontraPathToSkiaPath(path)
     skiaPathSimplifed = pathops.simplify(skiaPath, clockwise=skiaPath.clockwise)
 
-    pen = PackedPathPointPen()
-    skiaPathSimplifed.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
-
-    return pen.getPath()
+    return skiaPathToFontraPath(skiaPathSimplifed)
 
 
 def subtractPath(pathA, pathB):
