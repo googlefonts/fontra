@@ -52,13 +52,13 @@ export class VarPackedPath {
       assert(!obj.pointTypes);
       assert(!obj.pointTypes);
       assert(!obj.contourInfo);
+      return new VarPackedPath();
     }
-    const coordinates = VarArray.from(obj.coordinates || []);
-    const pointTypes = [...(obj.pointTypes || [])];
-    const contourInfo =
-      obj.contourInfo?.map((item) => {
-        return { ...item };
-      }) || [];
+    const coordinates = VarArray.from(obj.coordinates);
+    const pointTypes = [...obj.pointTypes];
+    const contourInfo = obj.contourInfo.map((item) => {
+      return { ...item };
+    });
     const pointAttributes =
       obj.pointAttributes?.map((attrs) => {
         return copyPointAttrs(attrs);

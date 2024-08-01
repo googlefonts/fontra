@@ -1519,4 +1519,12 @@ describe("VarPackedPath Tests", () => {
       { points: [{ x: 0, y: 0, attrs: { test: 432 } }], isClosed: false },
     ]);
   });
+
+  it("test fromObject with empty object", () => {
+    const path = VarPackedPath.fromObject({});
+    expect(path.coordinates).to.deep.equal([]);
+    expect(path.pointTypes).to.deep.equal([]);
+    expect(path.contourInfo).to.deep.equal([]);
+    expect(path.pointAttributes).to.deep.equal(null);
+  });
 });
