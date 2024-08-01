@@ -190,10 +190,11 @@ class PackedPath:
                     ):
                         del points[index]
                         del pointTypes[index]
+                        del pointAttributes[index]
             if not pointTypes:
                 # Don't write empty contours
                 continue
-            assert len(points) == len(pointTypes)
+            assert len(points) == len(pointTypes) == len(pointAttributes)
             pen.beginPath()
             segmentType = (
                 _pointToSegmentType.get(pointTypes[-1], "line")
