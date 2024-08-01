@@ -27,8 +27,8 @@ def skiaPathOperations(pathA, pathB, pathOperation):
     skiaPathB = fontraPathToSkiaPath(pathB)
 
     builder = pathops.OpBuilder()
-    builder.add(skiaPathA, pathops.PathOp.UNION)
-    builder.add(skiaPathB, pathOperation)
+    builder.add(skiaPathB, pathops.PathOp.UNION)
+    builder.add(skiaPathA, pathOperation)
     skiaPath = builder.resolve()
 
     return skiaPathToFontraPath(skiaPath)

@@ -572,7 +572,7 @@ export default class TransformationPanel extends Panel {
         if (doUnion) {
           return await pathOperationFunc(selectedContoursPath);
         } else {
-          return await pathOperationFunc(selectedContoursPath, unselectedContoursPath);
+          return await pathOperationFunc(unselectedContoursPath, selectedContoursPath);
         }
       }
     );
