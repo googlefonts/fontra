@@ -531,63 +531,62 @@ export default class TransformationPanel extends Panel {
   }
 
   async doPathOperations(pathOperationFunc, undoLabel) {
+    const doUnion = pathOperationFunc === unionPath;
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
-    const allContourIndices = [...range(positionedGlyph.glyph.path.numContours)];
-    const selectedContourIndices =
-      !pointIndices.length && undoLabel === "Remove overlaps"
-        ? allContourIndices
-        : [...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys()];
-
-    if (!selectedContourIndices.length) {
-      return;
-    }
-
-    const notSelectedContourIndices = allContourIndices.filter(
-      (n) => !selectedContourIndices.includes(n)
+    const selectedContourIndicesMap = getSelectionByContour(
+      positionedGlyph.glyph.path,
+      pointIndices
     );
-    if (!notSelectedContourIndices.length && undoLabel !== "Remove overlaps") {
-      return;
-    }
+    const isContourSelected =
+      pointIndices.length || !doUnion
+        ? (i) => selectedContourIndicesMap.has(i)
+        : (i) => true;
 
     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
       positionedGlyph.varGlyph.glyph.layers
     );
 
+    const contoursToBeDeleted = []; // this is only needed for doUnion
     const layerPaths = await mapObjectValuesAsync(
       editLayerGlyphs,
       async (layerGlyph) => {
-        const path = layerGlyph.path;
+        const path = layerGlyph.path.copy();
         const selectedContoursPath = new VarPackedPath();
         const unselectedContoursPath = new VarPackedPath();
 
         for (const contourIndex of range(path.numContours)) {
-          if (selectedContourIndices.includes(contourIndex)) {
+          if (isContourSelected(contourIndex)) {
             selectedContoursPath.appendContour(path.getContour(contourIndex));
+            contoursToBeDeleted.push(contourIndex);
           } else {
             unselectedContoursPath.appendContour(path.getContour(contourIndex));
           }
         }
-
-        return await pathOperationFunc(selectedContoursPath, unselectedContoursPath);
+        if (doUnion) {
+          return await pathOperationFunc(selectedContoursPath);
+        } else {
+          return await pathOperationFunc(selectedContoursPath, unselectedContoursPath);
+        }
       }
     );
 
-    const contoursToBeDeleted =
-      undoLabel === "Remove overlaps" ? selectedContourIndices : allContourIndices;
-
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
-        for (const [layerName, newPath] of Object.entries(layerPaths)) {
-          const path = glyph.layers[layerName].glyph.path;
-          for (const contourIndex of reversed(contoursToBeDeleted)) {
-            path.deleteContour(contourIndex);
+        for (const [layerName, layerPath] of Object.entries(layerPaths)) {
+          if (doUnion) {
+            const path = glyph.layers[layerName].glyph.path;
+            for (const contourIndex of reversed(contoursToBeDeleted)) {
+              path.deleteContour(contourIndex);
+            }
+            path.appendPath(VarPackedPath.fromObject(layerPath));
+          } else {
+            glyph.layers[layerName].glyph.path = layerPath;
           }
-          path.appendPath(VarPackedPath.fromObject(newPath));
         }
         return undoLabel;
       },
