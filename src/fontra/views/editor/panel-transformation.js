@@ -537,9 +537,10 @@ export default class TransformationPanel extends Panel {
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
-    const selectedContourIndices = !pointIndices.length
-      ? [...range(positionedGlyph.glyph.path.numContours)]
-      : [...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys()];
+    const selectedContourIndices =
+      !pointIndices.length && undoLabel === "Remove overlaps"
+        ? [...range(positionedGlyph.glyph.path.numContours)]
+        : [...getSelectionByContour(positionedGlyph.glyph.path, pointIndices).keys()];
 
     if (!selectedContourIndices.length) {
       return;
