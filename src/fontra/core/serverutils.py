@@ -1,5 +1,6 @@
 from . import clipboard, glyphnames, pathops
-from .classes import unstructure
+from .classes import structure, unstructure
+from .path import PackedPath
 
 apiFunctions = {}
 
@@ -26,19 +27,25 @@ def parseClipboard(data):
 
 @api
 def unionPath(path):
-    return pathops.unionPath(path)
+    return unstructure(pathops.unionPath(structure(path, PackedPath)))
 
 
 @api
 def subtractPath(pathA, pathB):
-    return pathops.subtractPath(pathA, pathB)
+    pathA = structure(pathA, PackedPath)
+    pathB = structure(pathB, PackedPath)
+    return unstructure(pathops.subtractPath(pathA, pathB))
 
 
 @api
 def intersectPath(pathA, pathB):
-    return pathops.intersectPath(pathA, pathB)
+    pathA = structure(pathA, PackedPath)
+    pathB = structure(pathB, PackedPath)
+    return unstructure(pathops.intersectPath(pathA, pathB))
 
 
 @api
 def excludePath(pathA, pathB):
-    return pathops.excludePath(pathA, pathB)
+    pathA = structure(pathA, PackedPath)
+    pathB = structure(pathB, PackedPath)
+    return unstructure(pathops.excludePath(pathA, pathB))
