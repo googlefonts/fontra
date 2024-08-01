@@ -577,18 +577,15 @@ export default class TransformationPanel extends Panel {
       }
     );
 
+    const contoursToBeDeleted =
+      undoLabel === "Remove overlaps" ? selectedContourIndices : allContourIndices;
+
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [layerName, newPath] of Object.entries(layerPaths)) {
           const path = glyph.layers[layerName].glyph.path;
-          if (undoLabel === "Remove overlaps") {
-            for (const contourIndex of reversed(selectedContourIndices)) {
-              path.deleteContour(contourIndex);
-            }
-          } else {
-            for (const contourIndex of reversed([...range(path.numContours)])) {
-              path.deleteContour(contourIndex);
-            }
+          for (const contourIndex of reversed(contoursToBeDeleted)) {
+            path.deleteContour(contourIndex);
           }
           path.appendPath(VarPackedPath.fromObject(newPath));
         }
