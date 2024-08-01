@@ -566,7 +566,7 @@ export default class TransformationPanel extends Panel {
     const layerPaths = await mapObjectValuesAsync(
       editLayerGlyphs,
       async (layerGlyph) => {
-        const path = layerGlyph.path.copy();
+        const path = layerGlyph.path;
         const selectedContoursPath = new VarPackedPath();
         const unselectedContoursPath = new VarPackedPath();
 
