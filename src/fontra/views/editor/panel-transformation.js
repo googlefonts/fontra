@@ -528,20 +528,20 @@ export default class TransformationPanel extends Panel {
       positionedGlyph.varGlyph.glyph.layers
     );
 
-    const layerPaths = mapObjectValuesAsync(editLayerGlyphs, async (layerGlyph) => {
-      const selectedContoursPath = new VarPackedPath();
-      selectedContourIndices.forEach((index) =>
-        selectedContoursPath.appendContour(layerGlyph.path.getContour(index))
-      );
-      return await unionPath(selectedContoursPath);
-    });
-
-    console.log("layerPaths: ", layerPaths);
+    const layerPaths = await mapObjectValuesAsync(
+      editLayerGlyphs,
+      async (layerGlyph) => {
+        const selectedContoursPath = new VarPackedPath();
+        selectedContourIndices.forEach((index) =>
+          selectedContoursPath.appendContour(layerGlyph.path.getContour(index))
+        );
+        return await unionPath(selectedContoursPath);
+      }
+    );
 
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [layerName, newPath] of Object.entries(layerPaths)) {
-          console.log("Process layerName: ", layerName);
           const path = glyph.layers[layerName].glyph.path;
           for (const contourIndex of reversed(selectedContourIndices)) {
             path.deleteContour(contourIndex);
