@@ -454,9 +454,21 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "spacer" });
     formContents.push({
       type: "header",
-      label: "Path Operations",
+      label: translate("sidebar.selection-transformation.pathOperations"),
     });
 
+    const labelUnion = translate(
+      "sidebar.selection-transformation.pathOperations.union"
+    );
+    const labelSubtract = translate(
+      "sidebar.selection-transformation.pathOperations.subtract"
+    );
+    const labelIntersect = translate(
+      "sidebar.selection-transformation.pathOperations.intersect"
+    );
+    const labelExclude = translate(
+      "sidebar.selection-transformation.pathOperations.exclude"
+    );
     formContents.push({
       type: "universal-row",
       field1: {
@@ -464,8 +476,8 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doPathOperations(unionPath, "Remove overlaps"),
-          "data-tooltip": "Remove overlaps",
+          "onclick": (event) => this.doPathOperations(unionPath, labelUnion),
+          "data-tooltip": labelUnion,
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
@@ -475,9 +487,8 @@ export default class TransformationPanel extends Panel {
         key: "subtractOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) =>
-            this.doPathOperations(subtractPath, "Subtract contours"),
-          "data-tooltip": "Subtract contours",
+          "onclick": (event) => this.doPathOperations(subtractPath, labelSubtract),
+          "data-tooltip": labelSubtract,
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
@@ -487,9 +498,8 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
-          "onclick": (event) =>
-            this.doPathOperations(intersectPath, "Intersect contours"),
-          "data-tooltip": "Intersect contours",
+          "onclick": (event) => this.doPathOperations(intersectPath, labelIntersect),
+          "data-tooltip": labelIntersect,
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
@@ -503,8 +513,8 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(excludePath, "Exclude contours"),
-          "data-tooltip": "Exclude contours",
+          "onclick": (event) => this.doPathOperations(excludePath, labelExclude),
+          "data-tooltip": labelExclude,
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
