@@ -58,7 +58,7 @@ def intersectPath(pathA, pathB):
 
 @api
 def excludePath(pathA, pathB):
-    return skiaPathOperations(pathA, pathB, pathops.PathOp.DIFFERENCE)
+    return skiaPathOperations(pathA, pathB, pathops.PathOp.XOR)
 
 
 def skiaPathOperations(pathA, pathB, pathOperation):
