@@ -535,6 +535,10 @@ export default class TransformationPanel extends Panel {
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 
+    if (!pointIndices.length && !doUnion) {
+      return;
+    }
+
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
