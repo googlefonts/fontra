@@ -554,10 +554,6 @@ export default class TransformationPanel extends Panel {
       pointIndices
     );
     const selectedContourIndices = [...selectedContourIndicesMap.keys()];
-    const isContourSelected =
-      pointIndices.length || !doUnion
-        ? (i) => selectedContourIndicesMap.has(i)
-        : (i) => true;
 
     if (
       !doUnion &&
@@ -567,6 +563,11 @@ export default class TransformationPanel extends Panel {
       // result in an empty path or in the same path depending on the operator.
       return;
     }
+
+    const isContourSelected =
+      pointIndices.length || !doUnion
+        ? (i) => selectedContourIndicesMap.has(i)
+        : (i) => true;
 
     const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
       positionedGlyph.varGlyph.glyph.layers
