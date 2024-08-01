@@ -1,6 +1,7 @@
 import operator
 
 import pytest
+from fontTools.pens.recordingPen import RecordingPointPen
 
 from fontra.core.classes import structure, unstructure
 from fontra.core.path import (
@@ -428,3 +429,31 @@ def test_insertContour():
         },
     )
     assert path.pointAttributes == [None, None, None, None, None, {"test": 432}]
+
+
+def test_danglingOffCurveBug():
+    pen = PackedPathPointPen()
+    pen.beginPath()
+    pen.addPoint((0, 0), "move")
+    pen.addPoint((0, 100))
+    pen.endPath()
+    path = pen.getPath()
+    pen = RecordingPointPen()
+    path.drawPoints(pen)
+    assert pen.value == [
+        ("beginPath", (), {}),
+        (
+            "addPoint",
+            (
+                (
+                    0,
+                    0,
+                ),
+                "move",
+                False,
+                None,
+            ),
+            {},
+        ),
+        ("endPath", (), {}),
+    ]
