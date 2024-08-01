@@ -1,13 +1,5 @@
-import pathops
-from fontTools.pens.pointPen import (
-    GuessSmoothPointPen,
-    PointToSegmentPen,
-    SegmentToPointPen,
-)
-
-from . import clipboard, glyphnames
-from .classes import structure, unstructure
-from .path import PackedPath, PackedPathPointPen
+from . import clipboard, glyphnames, pathops
+from .classes import unstructure
 
 apiFunctions = {}
 
@@ -34,48 +26,19 @@ def parseClipboard(data):
 
 @api
 def unionPath(path):
-    fontraPath = structure(path, PackedPath)
-    skiaPath = pathops.Path()
-    fontraPath.drawPoints(PointToSegmentPen(skiaPath.getPen()))
-
-    skiaPathSimplifed = pathops.simplify(skiaPath, clockwise=skiaPath.clockwise)
-
-    pen = PackedPathPointPen()
-    skiaPathSimplifed.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
-
-    return unstructure(pen.getPath())
+    return pathops.unionPath(path)
 
 
 @api
 def subtractPath(pathA, pathB):
-    return skiaPathOperations(pathA, pathB, pathops.PathOp.REVERSE_DIFFERENCE)
+    return pathops.subtractPath(pathA, pathB)
 
 
 @api
 def intersectPath(pathA, pathB):
-    return skiaPathOperations(pathA, pathB, pathops.PathOp.INTERSECTION)
+    return pathops.intersectPath(pathA, pathB)
 
 
 @api
 def excludePath(pathA, pathB):
-    return skiaPathOperations(pathA, pathB, pathops.PathOp.XOR)
-
-
-def skiaPathOperations(pathA, pathB, pathOperation):
-    fontraPathA = structure(pathA, PackedPath)
-    skiaPathA = pathops.Path()
-    fontraPathA.drawPoints(PointToSegmentPen(skiaPathA.getPen()))
-
-    fontraPathB = structure(pathB, PackedPath)
-    skiaPathB = pathops.Path()
-    fontraPathB.drawPoints(PointToSegmentPen(skiaPathB.getPen()))
-
-    builder = pathops.OpBuilder()
-    builder.add(skiaPathA, pathops.PathOp.UNION)
-    builder.add(skiaPathB, pathOperation)
-    skiaPath = builder.resolve()
-
-    pen = PackedPathPointPen()
-    skiaPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
-
-    return unstructure(pen.getPath())
+    return pathops.excludePath(pathA, pathB)
