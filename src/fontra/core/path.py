@@ -144,9 +144,15 @@ class PackedPath:
     def deleteNTrailingContours(self, numContours):
         # The opposite of appendPath, more or less
         numContours = min(numContours, len(self.contourInfo))
-        # TODO: more efficient implementation
-        for _ in range(numContours):
-            self.deleteContour(-1)
+        if numContours <= 0:
+            # Nothing to do
+            return
+
+        contourIndex = len(self.contourInfo) - numContours
+        startPoint = self._getContourStartPoint(contourIndex)
+        numPoints = len(self.pointTypes) - startPoint
+        self._replacePoints(startPoint, numPoints, [], [], None)
+        del self.contourInfo[contourIndex:]
 
     def transformed(self, transform: Transform) -> PackedPath:
         coordinates = self.coordinates
