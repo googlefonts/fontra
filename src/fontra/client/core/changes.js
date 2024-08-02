@@ -251,6 +251,9 @@ const changeFunctions = {
   "appendPath": (path, itemCast, newPath) => {
     path.appendPath(newPath);
   },
+  "deleteNTrailingContours": (path, itemCast, numContours) => {
+    path.deleteNTrailingContours(numContours);
+  },
   "insertContour": (path, itemCast, contourIndex, contour) =>
     path.insertContour(contourIndex, contour),
   "deleteContour": (path, itemCast, contourIndex) => path.deleteContour(contourIndex),

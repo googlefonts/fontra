@@ -141,6 +141,20 @@ class PackedPath:
             assert pointAttributes is not None
             self.pointAttributes.extend(pointAttributes)
 
+    def deleteNTrailingContours(self, numContours):
+        # The opposite of appendPath, more or less
+        if numContours <= 0:
+            # Nothing to do
+            return
+
+        numContours = min(numContours, len(self.contourInfo))
+
+        contourIndex = len(self.contourInfo) - numContours
+        startPoint = self._getContourStartPoint(contourIndex)
+        numPoints = len(self.pointTypes) - startPoint
+        self._replacePoints(startPoint, numPoints, [], [], None)
+        del self.contourInfo[contourIndex:]
+
     def transformed(self, transform: Transform) -> PackedPath:
         coordinates = self.coordinates
         newCoordinates = []

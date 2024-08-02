@@ -60,6 +60,9 @@ changeFunctions: dict[str, Callable[..., None]] = {
     **baseChangeFunctions,
     "=xy": lambda path, pointIndex, x, y: path.setPointPosition(pointIndex, x, y),
     "appendPath": lambda path, newPath: path.appendPath(structure(newPath, PackedPath)),
+    "deleteNTrailingContours": lambda path, numContours: path.deleteNTrailingContours(
+        numContours
+    ),
     "insertContour": lambda path, contourIndex, contour: path.insertContour(
         contourIndex, contour
     ),

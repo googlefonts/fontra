@@ -267,6 +267,59 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "appendPath",
+      "inputPathName": "emptyPath",
+      "change": {
+        "f": "appendPath",
+        "a": [
+          {
+            "contourInfo": [
+              {
+                "endPoint": 0,
+                "isClosed": false
+              },
+              {
+                "endPoint": 1,
+                "isClosed": false
+              }
+            ],
+            "coordinates": [101, 201, 202, 302],
+            "pointAttributes": null,
+            "pointTypes": [0, 0]
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 101,
+              "y": 201
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [
+            {
+              "x": 202,
+              "y": 302
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "deleteNTrailingContours",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deleteNTrailingContours",
+        "a": [2]
+      },
+      "expectedPath": []
     }
   ]
 }

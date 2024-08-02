@@ -1,4 +1,5 @@
 import operator
+from copy import deepcopy
 
 import pytest
 from fontTools.pens.recordingPen import RecordingPointPen
@@ -392,6 +393,21 @@ def test_appendPath(path1, path2, expectedResult):
     path1.appendPath(path2)
     result = path1.asPath()
     assert expectedResult == result
+
+
+def test_deleteNTrailingContours():
+    path1 = pathMathPath1.asPackedPath()
+    path1.appendPath(pathMathPath2.asPackedPath())
+    referencePath = deepcopy(path1)
+
+    path1.deleteNTrailingContours(0)
+    assert path1 == referencePath
+    path1.deleteNTrailingContours(-2)
+    assert path1 == referencePath
+    path1.deleteNTrailingContours(2)
+    assert path1 == PackedPath()
+    path1.deleteNTrailingContours(2)
+    assert path1 == PackedPath()
 
 
 def test_insertPoint_deletePoint_deleteContour():
