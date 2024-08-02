@@ -1,5 +1,5 @@
-import { ChangeCollector, applyChange, consolidateChanges } from "./changes.js";
-import { range, reversed } from "./utils.js";
+import { ChangeCollector, applyChange } from "./changes.js";
+import { range } from "./utils.js";
 
 export function recordChanges(subject, func) {
   const changes = new ChangeCollector();
@@ -34,6 +34,16 @@ function getArrayProxyMethods(subject, changes) {
 
 function getVarPackedPathProxyMethods(subject, changes) {
   return {
+    appendPath(path) {
+      changes.addChange("appendPath", path);
+      const deleteIndices = [
+        ...range(subject.numContours, subject.numContours + path.numContours),
+      ].reverse();
+      deleteIndices.forEach((index) =>
+        changes.addRollbackChange("deleteContour", index)
+      );
+      subject.appendPath(path);
+    },
     insertContour(index, contour) {
       changes.addChange("insertContour", index, contour);
       changes.addRollbackChange("deleteContour", index);
