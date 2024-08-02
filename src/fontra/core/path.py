@@ -143,10 +143,11 @@ class PackedPath:
 
     def deleteNTrailingContours(self, numContours):
         # The opposite of appendPath, more or less
-        numContours = min(numContours, len(self.contourInfo))
         if numContours <= 0:
             # Nothing to do
             return
+
+        numContours = min(numContours, len(self.contourInfo))
 
         contourIndex = len(self.contourInfo) - numContours
         startPoint = self._getContourStartPoint(contourIndex)
