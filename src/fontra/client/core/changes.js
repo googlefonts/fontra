@@ -248,6 +248,9 @@ const baseChangeFunctions = {
 const changeFunctions = {
   ...baseChangeFunctions,
   "=xy": (path, itemCast, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
+  "appendPath": (path, itemCast, newPath) => {
+    path.appendPath(newPath);
+  },
   "insertContour": (path, itemCast, contourIndex, contour) =>
     path.insertContour(contourIndex, contour),
   "deleteContour": (path, itemCast, contourIndex) => path.deleteContour(contourIndex),
