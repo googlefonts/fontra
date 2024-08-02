@@ -4,6 +4,7 @@ import {
   arrayExtend,
   assert,
   enumerate,
+  isObjectEmpty,
   modulo,
   pointCompareFunc,
   range,
@@ -1150,7 +1151,7 @@ function cleanupPointAttributes(path) {
   }
   if (
     path.pointAttributes &&
-    !path.pointAttributes.some((attr) => attr && !isObjectEmpty(attrs))
+    !path.pointAttributes.some((attrs) => attrs && !isObjectEmpty(attrs))
   ) {
     path.pointAttributes = null;
   }
