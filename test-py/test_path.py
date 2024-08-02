@@ -394,6 +394,15 @@ def test_appendPath(path1, path2, expectedResult):
     assert expectedResult == result
 
 
+def test_deleteNTrailingContours():
+    path1 = pathMathPath1.asPackedPath()
+    path1.appendPath(pathMathPath2.asPackedPath())
+    path1.deleteNTrailingContours(2)
+    assert path1 == PackedPath()
+    path1.deleteNTrailingContours(2)
+    assert path1 == PackedPath()
+
+
 def test_insertPoint_deletePoint_deleteContour():
     path = pathMathPath2.asPackedPath()
     assert path.pointAttributes is None

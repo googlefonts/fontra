@@ -313,6 +313,15 @@ export class VarPackedPath {
     }
   }
 
+  deleteNTrailingContours(numContours) {
+    // The opposite of appendPath, more or less
+    numContours = Math.min(numContours, this.numContours);
+    // TODO: more efficient implementation
+    for (const _ of range(numContours)) {
+      this.deleteContour(-1);
+    }
+  }
+
   getPoint(pointIndex) {
     const point = {
       x: this.coordinates[pointIndex * 2],

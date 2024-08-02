@@ -311,6 +311,15 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "deleteNTrailingContours",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deleteNTrailingContours",
+        "a": [2]
+      },
+      "expectedPath": []
     }
   ]
 }

@@ -1285,6 +1285,16 @@ describe("VarPackedPath Tests", () => {
     ]);
   });
 
+  it("test deleteNTrailingContours", () => {
+    const p1 = simpleTestPath();
+    const p2 = simpleTestPath().transformed(new Transform(1, 0, 0, 1, 20, 50));
+    p1.appendPath(p2);
+    p1.deleteNTrailingContours(2);
+    expect(p1.unpackedContours()).to.deep.equal([]);
+    p1.deleteNTrailingContours(1);
+    expect(p1.unpackedContours()).to.deep.equal([]);
+  });
+
   it("test joinPaths", () => {
     const p1 = simpleTestPath();
     const p2 = simpleTestPath().transformed(new Transform(1, 0, 0, 1, 20, 50));
