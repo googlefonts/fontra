@@ -1,5 +1,5 @@
-import { ChangeCollector, applyChange, consolidateChanges } from "./changes.js";
-import { range, reversed } from "./utils.js";
+import { ChangeCollector, applyChange } from "./changes.js";
+import { range } from "./utils.js";
 
 export function recordChanges(subject, func) {
   const changes = new ChangeCollector();
