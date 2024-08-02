@@ -242,10 +242,8 @@ const testData = [
       ],
     },
     expectedRollbackChange: {
-      c: [
-        { f: "deleteContour", a: [1] },
-        { f: "deleteContour", a: [0] },
-      ],
+      f: "deleteNTrailingContours",
+      a: [2],
     },
   },
 ];
