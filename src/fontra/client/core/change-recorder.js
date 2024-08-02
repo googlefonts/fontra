@@ -36,12 +36,11 @@ function getVarPackedPathProxyMethods(subject, changes) {
   return {
     appendPath(path) {
       changes.addChange("appendPath", path);
-      const deleteIndices = [
-        ...range(subject.numContours, subject.numContours + path.numContours),
-      ].reverse();
-      deleteIndices.forEach((index) =>
-        changes.addRollbackChange("deleteContour", index)
-      );
+      // Ideally, for symmetry with appendPath we'd have a method to express
+      // "Delete the last N contours", say deleteTrailingContours(N).
+      for (const i of range(path.numContours)) {
+        changes.addRollbackChange("deleteContour", subject.numContours);
+      }
       subject.appendPath(path);
     },
     insertContour(index, contour) {
