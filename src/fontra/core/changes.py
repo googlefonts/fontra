@@ -41,6 +41,7 @@ def insertItems(subject, index, *items, itemCast=None):
 def spliceItems(subject, index, deleteCount, *items, itemCast=None):
     if itemCast is not None:
         items = [itemCast(item) for item in items]
+    assert subject is not None, items
     subject[index : index + deleteCount] = items
 
 

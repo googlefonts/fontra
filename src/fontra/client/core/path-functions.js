@@ -1148,4 +1148,10 @@ function cleanupPointAttributes(path) {
       path.setPoint(pointIndex, point);
     }
   }
+  if (
+    path.pointAttributes &&
+    !path.pointAttributes.some((attr) => attr && !isObjectEmpty(attrs))
+  ) {
+    path.pointAttributes = null;
+  }
 }
