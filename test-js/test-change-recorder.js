@@ -206,6 +206,48 @@ const testData = [
     expectedChange: { f: "=xy", a: [0, 101, 201] },
     expectedRollbackChange: { f: "=xy", a: [0, 100, 200] },
   },
+  {
+    testName: "path append path",
+    subject: VarPackedPath.fromUnpackedContours([]),
+    operation: (subject) => {
+      subject.appendPath(
+        VarPackedPath.fromUnpackedContours([
+          { points: [{ x: 101, y: 201 }], isClosed: false },
+          { points: [{ x: 202, y: 302 }], isClosed: false },
+        ])
+      );
+    },
+    expectedSubject: VarPackedPath.fromUnpackedContours([
+      { points: [{ x: 101, y: 201 }], isClosed: false },
+      { points: [{ x: 202, y: 302 }], isClosed: false },
+    ]),
+    expectedChange: {
+      f: "appendPath",
+      a: [
+        {
+          contourInfo: [
+            {
+              endPoint: 0,
+              isClosed: false,
+            },
+            {
+              endPoint: 1,
+              isClosed: false,
+            },
+          ],
+          coordinates: [101, 201, 202, 302],
+          pointAttributes: null,
+          pointTypes: [0, 0],
+        },
+      ],
+    },
+    expectedRollbackChange: {
+      c: [
+        { f: "deleteContour", a: [1] },
+        { f: "deleteContour", a: [0] },
+      ],
+    },
+  },
 ];
 
 describe("recordChanges tests", () => {
