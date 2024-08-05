@@ -154,6 +154,7 @@ export class ModalDialog extends SimpleElement {
       if (upInBackdrop && downInBackdrop) {
         this._dialogDone(null);
       }
+      downInBackdrop = false;
     });
     this.dialogElement.appendChild(this.dialogBox);
     this.shadowRoot.append(this.dialogElement);
