@@ -367,30 +367,92 @@ export class MenuPanel extends SimpleElement {
 
 customElements.define("menu-panel", MenuPanel);
 
-export const shortCutKeyMap = {
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  Delete: "⌫",
+// TODO: Maybe move to utils
+let userAgent = window.navigator.userAgent;
+const isMac = userAgent.indexOf("Mac") != -1;
+const isWin = userAgent.indexOf("Win") != -1;
+
+const shortCutKeyMapMac = {
+  metaKey: "⌘", // "\u2318"
+  shiftKey: "⇧", // "\u21e7"
+  ctrlKey: "⌃",
+  altKey: "⌥", // "\u2325"
 };
 
-function buildShortCutString(shortCutDefinition) {
+const shortCutKeyMapWin = {
+  metaKey: "⊞", // "\u229E"
+};
+
+// Nice reference: https://www.toptal.com/developers/keycode
+export const shortCutKeyMap = {
+  metaKey: "Meta+",
+  shiftKey: "Shift+",
+  ctrlKey: "Ctrl+",
+  altKey: "Alt+",
+  ArrowUp: "↑",
+  ArrowDown: "↓",
+  ArrowLeft: "←",
+  ArrowRight: "→",
+  Tab: "⇥",
+  Delete: "⌫",
+  Backspace: "⌫",
+  NumpadMultiply: "×",
+  NumpadDivide: "÷",
+  NumpadAdd: "+",
+  NumpadSubtract: "-",
+  Enter: "↵",
+};
+// add A-Z keys
+for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i))) {
+  shortCutKeyMap[`Key${key}`] = key;
+}
+// add 0-9 keys
+for (let i = 0; i <= 9; i++) {
+  shortCutKeyMap[`Digit${i}`] = `${i}`;
+  shortCutKeyMap[`Numpad${i}`] = `${i}`;
+}
+
+const keyMapOS = isMac ? shortCutKeyMapMac : isWin ? shortCutKeyMapWin : {};
+const keyMap = { ...shortCutKeyMap, ...keyMapOS };
+
+export function getKeyMap(key = undefined) {
+  if (key === undefined) {
+    return { ...keyMap };
+  }
+  return keyMap[key] || key;
+}
+
+const keyMapSwapped = Object.fromEntries(
+  Object.entries(keyMap).map((a) => a.reverse())
+);
+export function getKeyMapSwapped(key = undefined) {
+  if (key === undefined) {
+    return keyMapSwapped;
+  }
+  return keyMapSwapped[key] || key;
+}
+
+export function getNiceKey(key, returnKey = key) {
+  return keyMap[key] || returnKey;
+}
+
+const eventMainKeys = ["metaKey", "ctrlKey", "altKey", "shiftKey"];
+export function buildShortCutString(shortCutDefinition) {
   let shorcutCommand = "";
+  if (!shortCutDefinition) {
+    return shorcutCommand;
+  }
 
-  if (shortCutDefinition) {
-    const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
-
-    if (shortCutDefinition.shiftKey) {
-      shorcutCommand += isMac ? "\u21e7" : "Shift+"; // ⇧ or Shift
+  for (const key of eventMainKeys) {
+    if (shortCutDefinition[key]) {
+      shorcutCommand += getNiceKey(key);
     }
-    if (shortCutDefinition.metaKey) {
-      shorcutCommand += isMac ? "\u2318" : "Ctrl+"; // ⌘ or Ctrl
-    }
-    if (shortCutDefinition.keysOrCodes) {
-      // If the definition specifies multiple keys, e.g ["Delete", "Backspace"],
-      // we are taking the first key for comparison with the map
-      const key = shortCutDefinition.keysOrCodes[0];
-      shorcutCommand += shortCutKeyMap[key] || capitalizeFirstLetter(key);
-    }
+  }
+  if (shortCutDefinition.keysOrCodes) {
+    // If the definition specifies multiple keys, e.g ["Delete", "Backspace"],
+    // we are taking the first key for comparison with the map
+    const key = shortCutDefinition.keysOrCodes[0];
+    shorcutCommand += shortCutKeyMap[key] || capitalizeFirstLetter(key);
   }
 
   return shorcutCommand;

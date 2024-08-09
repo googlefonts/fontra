@@ -305,6 +305,23 @@ export class EditorController {
 
   initTopBar() {
     const menuBar = new MenuBar([
+      // TODO: The following 'menubar.fontra' is in preparation for the future.
+      // This is for testing only, will be commented out.
+      {
+        title: translate("menubar.fontra"),
+        class: "menu-item menu-item-bold",
+        getItems() {
+          return [
+            {
+              title: translate("menubar.fontra.application-settings"),
+              enabled: () => true,
+              callback: () => {
+                window.open("/applicationsettings/applicationsettings.html");
+              },
+            },
+          ];
+        },
+      },
       {
         title: translate("menubar.file"),
         getItems() {
@@ -1132,19 +1149,19 @@ export class EditorController {
     } else {
       this.basicContextMenuItems.push(
         {
-          title: "Cut",
+          title: translate("action.cut"),
           enabled: () => this.canCut(),
           callback: () => this.doCut(),
           shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
         },
         {
-          title: "Copy",
+          title: translate("action.copy"),
           enabled: () => this.canCopy(),
           callback: () => this.doCopy(),
           shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
         },
         {
-          title: "Paste",
+          title: translate("action.paste"),
           enabled: () => this.canPaste(),
           callback: () => this.doPaste(),
           shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
@@ -1199,7 +1216,7 @@ export class EditorController {
       // TODO: Font Guidelines with altKey, something like this:
       //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
       //altKey: true,
-      title: "Add Guideline",
+      title: translate("action.add-guideline"),
       enabled: () => this.canAddGuideline(),
       callback: () => this.doAddGuideline(),
       shortCut: undefined,
