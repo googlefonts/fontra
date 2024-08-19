@@ -1,3 +1,4 @@
+
 feature calt {
     sub A A' A by A.alt;
 } calt;
