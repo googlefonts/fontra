@@ -70,6 +70,7 @@ class MinimalGlyph:
     name: str
     unicodes: list[int] = field(default_factory=list)
     components: list = field(default_factory=list)
+    anchors: list = field(default_factory=list)
 
 
 @dataclass(kw_only=True)
