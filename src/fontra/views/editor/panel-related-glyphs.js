@@ -1,5 +1,6 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
 import {
   getCodePointFromGlyphName,
   getSuggestedGlyphName,
@@ -133,8 +134,8 @@ export default class RelatedGlyphPanel extends Panel {
       character && character != glyphName ? `“${character}”, ${glyphName}` : glyphName;
 
     this.relatedGlyphsHeaderElement.innerHTML = glyphName
-      ? `<b>Related glyphs & characters for ${displayGlyphString}</b>`
-      : `<b>Related glyphs & characters</b>`;
+      ? `<b>${translate("sidebar.related-glyphs.title", displayGlyphString)}</b>`
+      : `<b>${translate("sidebar.related-glyphs")}</b>`;
 
     const results = [];
 
