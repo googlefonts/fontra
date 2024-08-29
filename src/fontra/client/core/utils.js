@@ -518,7 +518,7 @@ export function loadURLFragment(fragment) {
   try {
     return JSON.parse(strFromU8(unzlibSync(base64ToBytes(fragment.slice(1)))));
   } catch {
-    return false;
+    return null;
   }
 }
 
