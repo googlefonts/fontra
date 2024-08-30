@@ -2835,7 +2835,7 @@ export class EditorController {
     if (url.hash) {
       viewInfo = loadURLFragment(url.hash);
       if (!viewInfo) {
-        message("The URL is malformed", "The UI settings could not be restored");
+        message("The URL is malformed", "The UI settings could not be restored.");
       }
     } else {
       // Legacy URL format
