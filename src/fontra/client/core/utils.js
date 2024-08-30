@@ -515,7 +515,11 @@ export function loadURLFragment(fragment) {
   if (fragment[0] != "#") {
     throw new Error("assert -- invalid fragment");
   }
-  return JSON.parse(strFromU8(unzlibSync(base64ToBytes(fragment.slice(1)))));
+  try {
+    return JSON.parse(strFromU8(unzlibSync(base64ToBytes(fragment.slice(1)))));
+  } catch {
+    return null;
+  }
 }
 
 export function dumpURLFragment(obj) {

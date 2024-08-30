@@ -2834,6 +2834,10 @@ export class EditorController {
     const url = new URL(window.location);
     if (url.hash) {
       viewInfo = loadURLFragment(url.hash);
+      if (!viewInfo) {
+        viewInfo = {};
+        message("The URL is malformed", "The UI settings could not be restored.");
+      }
     } else {
       // Legacy URL format
       viewInfo = {};
