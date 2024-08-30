@@ -1172,7 +1172,7 @@ export class EditorController {
       title: translate("action.select-all"),
       enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
       callback: () => this.doSelectAllNone(false),
-      shortCut: { keysOrCodes: "a", metaKey: true },
+      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: false },
     });
 
     this.basicContextMenuItems.push({
