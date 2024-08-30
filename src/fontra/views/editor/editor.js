@@ -1168,16 +1168,19 @@ export class EditorController {
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    for (const selectNone of [false, true]) {
-      this.basicContextMenuItems.push({
-        title: selectNone
-          ? translate("action.select-none")
-          : translate("action.select-all"),
-        enabled: () => this.canSelectAllNone(selectNone),
-        callback: () => this.doSelectAllNone(selectNone),
-        shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
-      });
-    }
+    this.basicContextMenuItems.push({
+      title: translate("action.select-all"),
+      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
+      callback: () => this.doSelectAllNone(false),
+      shortCut: { keysOrCodes: "a", metaKey: true },
+    });
+
+    this.basicContextMenuItems.push({
+      title: translate("action.select-none"),
+      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
+      callback: () => this.doSelectAllNone(true),
+      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: true },
+    });
 
     this.glyphEditContextMenuItems = [];
 
@@ -1214,22 +1217,20 @@ export class EditorController {
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
 
     this.glyphSelectedContextMenuItems = [];
-    for (const selectPrevious of [true, false]) {
-      const prevNext = selectPrevious
-        ? translate("menubar.view.select.part.previous")
-        : translate("menubar.view.select.part.next");
-      this.glyphSelectedContextMenuItems.push({
-        title: translate("menubar.view.select.part.all", prevNext),
-        enabled: () => true,
-        callback: () => this.doSelectPreviousNextSource(selectPrevious),
-        shortCut: {
-          keysOrCodes: [selectPrevious ? "ArrowUp" : "ArrowDown"],
-          metaKey: true,
-          altKey: false,
-          shiftKey: false,
-        },
-      });
-    }
+
+    this.glyphSelectedContextMenuItems.push({
+      title: translate("menubar.view.select.previous"),
+      enabled: () => true,
+      callback: () => this.doSelectPreviousNextSource(true),
+      shortCut: { keysOrCodes: ["ArrowUp"], metaKey: true },
+    });
+
+    this.glyphSelectedContextMenuItems.push({
+      title: translate("menubar.view.select.next"),
+      enabled: () => true,
+      callback: () => this.doSelectPreviousNextSource(false),
+      shortCut: { keysOrCodes: ["ArrowDown"], metaKey: true },
+    });
 
     this.glyphSelectedContextMenuItems.push({
       title: () =>
@@ -2457,10 +2458,6 @@ export class EditorController {
       ]
     );
     return { contentElement, warningElement };
-  }
-
-  canSelectAllNone(selectNone) {
-    return this.sceneSettings.selectedGlyph?.isEditing;
   }
 
   doSelectAllNone(selectNone) {
