@@ -386,6 +386,28 @@ export class EditorController {
         (event) => this.doDelete(event),
         () => this.canDelete()
       );
+
+      registerAction(
+        "action.select-all",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "a", commandKey: true }],
+        },
+        () => this.doSelectAllNone(false),
+        () => this.sceneSettings.selectedGlyph?.isEditing
+      );
+
+      registerAction(
+        "action.select-none",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "a", commandKey: true, shiftKey: true }],
+        },
+        () => this.doSelectAllNone(true),
+        () =>
+          this.sceneSettings.selectedGlyph?.isEditing &&
+          this.sceneSettings.selection.size
+      );
     }
 
     {
@@ -1321,17 +1343,11 @@ export class EditorController {
     this.basicContextMenuItems.push(MenuItemDivider);
 
     this.basicContextMenuItems.push({
-      title: translate("action.select-all"),
-      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
-      callback: () => this.doSelectAllNone(false),
-      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: false },
+      actionIdentifier: "action.select-all",
     });
 
     this.basicContextMenuItems.push({
-      title: translate("action.select-none"),
-      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
-      callback: () => this.doSelectAllNone(true),
-      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: true },
+      actionIdentifier: "action.select-none",
     });
 
     this.glyphEditContextMenuItems = [];
