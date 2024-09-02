@@ -370,6 +370,21 @@ export class EditorController {
           () => this.doPaste(),
           () => this.canPaste()
         );
+
+        registerAction(
+          "action.delete",
+          {
+            topic,
+            defaultShortCuts: [
+              { keyOrCode: "Delete" },
+              { keyOrCode: "Delete", altKey: true },
+              { keyOrCode: "Backspace" },
+              { keyOrCode: "Backspace", altKey: true },
+            ],
+          },
+          (event) => this.doDelete(event),
+          () => this.canDelete()
+        );
       }
     }
 
@@ -1300,13 +1315,7 @@ export class EditorController {
         this.sceneSettings.selectedGlyph?.isEditing
           ? translate("action.delete-selection")
           : translate("action.delete-glyph"),
-      enabled: () => this.canDelete(),
-      callback: (event) => this.doDelete(event),
-      shortCut: {
-        keysOrCodes: ["Delete", "Backspace"],
-        metaKey: false,
-        shiftKey: false,
-      },
+      actionIdentifier: "action.delete",
     });
 
     this.basicContextMenuItems.push(MenuItemDivider);
