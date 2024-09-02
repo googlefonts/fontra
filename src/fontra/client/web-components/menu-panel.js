@@ -1,4 +1,10 @@
 import { themeColorCSS } from "./theme-support.js";
+import {
+  canPerformAction,
+  doPerformAction,
+  getActionShortCutRepresentation,
+  getActionTitle,
+} from "/core/actions.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
 import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
@@ -117,8 +123,10 @@ export class MenuPanel extends SimpleElement {
     this.menuItems = menuItems;
 
     for (const [index, item] of enumerate(menuItems)) {
-      if (!("enabled" in item)) {
-        item.enabled = () => true;
+      if (!item.enabled) {
+        item.enabled = item.actionIdentifier
+          ? () => canPerformAction(item.actionIdentifier)
+          : () => true;
       }
       const hasSubMenu = typeof item.getItems === "function";
       let itemElement;
@@ -126,11 +134,7 @@ export class MenuPanel extends SimpleElement {
         itemElement = html.hr({ class: "menu-item-divider" });
       } else {
         const classNames = ["context-menu-item"];
-        if (
-          (!hasSubMenu || item.getItems().length > 0) &&
-          typeof item.enabled === "function" &&
-          item.enabled()
-        ) {
+        if ((!hasSubMenu || item.getItems().length > 0) && item.enabled()) {
           classNames.push("enabled");
         }
         if (hasSubMenu) {
@@ -139,8 +143,10 @@ export class MenuPanel extends SimpleElement {
         const itemElementContent = [
           html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
           html.div({ class: "item-content" }, [
-            typeof item.title === "function" ? item.title() : item.title,
-            html.span({}, [buildShortCutString(item.shortCut)]),
+            typeof item.title === "function"
+              ? item.title()
+              : item.title || getActionTitle(item.actionIdentifier),
+            html.span({}, [getActionShortCutRepresentation(item.actionIdentifier)]),
           ]),
         ];
         if (hasSubMenu) {
@@ -170,7 +176,11 @@ export class MenuPanel extends SimpleElement {
               event.preventDefault();
               event.stopImmediatePropagation();
               if (item.enabled()) {
-                item.callback?.(event);
+                if (item.actionIdentifier) {
+                  doPerformAction(item.actionIdentifier, event);
+                } else {
+                  item.callback?.(event);
+                }
                 this.dismiss();
                 this.onSelect?.(itemElement);
               }
@@ -366,35 +376,6 @@ export class MenuPanel extends SimpleElement {
 }
 
 customElements.define("menu-panel", MenuPanel);
-
-export const shortCutKeyMap = {
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  Delete: "⌫",
-};
-
-function buildShortCutString(shortCutDefinition) {
-  let shorcutCommand = "";
-
-  if (shortCutDefinition) {
-    const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
-
-    if (shortCutDefinition.shiftKey) {
-      shorcutCommand += isMac ? "\u21e7" : "Shift+"; // ⇧ or Shift
-    }
-    if (shortCutDefinition.metaKey) {
-      shorcutCommand += isMac ? "\u2318" : "Ctrl+"; // ⌘ or Ctrl
-    }
-    if (shortCutDefinition.keysOrCodes) {
-      // If the definition specifies multiple keys, e.g ["Delete", "Backspace"],
-      // we are taking the first key for comparison with the map
-      const key = shortCutDefinition.keysOrCodes[0];
-      shorcutCommand += shortCutKeyMap[key] || capitalizeFirstLetter(key);
-    }
-  }
-
-  return shorcutCommand;
-}
 
 window.addEventListener("mousedown", (event) => MenuPanel.closeAllMenus(event));
 window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
