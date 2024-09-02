@@ -370,22 +370,22 @@ export class EditorController {
           () => this.doPaste(),
           () => this.canPaste()
         );
-
-        registerAction(
-          "action.delete",
-          {
-            topic,
-            defaultShortCuts: [
-              { keyOrCode: "Delete" },
-              { keyOrCode: "Delete", altKey: true },
-              { keyOrCode: "Backspace" },
-              { keyOrCode: "Backspace", altKey: true },
-            ],
-          },
-          (event) => this.doDelete(event),
-          () => this.canDelete()
-        );
       }
+
+      registerAction(
+        "action.delete",
+        {
+          topic,
+          defaultShortCuts: [
+            { keyOrCode: "Delete" },
+            { keyOrCode: "Delete", altKey: true },
+            { keyOrCode: "Backspace" },
+            { keyOrCode: "Backspace", altKey: true },
+          ],
+        },
+        (event) => this.doDelete(event),
+        () => this.canDelete()
+      );
     }
 
     {
