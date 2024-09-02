@@ -165,7 +165,7 @@ function loadActionsByKeyOrCode() {
   }
   actionsByKeyOrCode = {};
   for (const [actionIdentifier, action] of Object.entries(actionInfoController.model)) {
-    for (const shortCut of action.customShortCuts || action.defaultShortCuts) {
+    for (const shortCut of action.customShortCuts || action.defaultShortCuts || []) {
       if (!actionsByKeyOrCode[shortCut.keyOrCode]) {
         actionsByKeyOrCode[shortCut.keyOrCode] = [];
       }
