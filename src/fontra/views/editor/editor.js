@@ -426,6 +426,32 @@ export class EditorController {
         }
       );
     }
+
+    {
+      const topic = "action-topics.sidebars";
+
+      const sideBarShortCuts = {
+        "glyph-search": "f",
+        "selection-info": "i",
+      };
+
+      this.sidebars
+        .map((sidebar) => sidebar.panelIdentifiers)
+        .flat()
+        .forEach((panelIdentifier) => {
+          const shortKey = sideBarShortCuts[panelIdentifier];
+
+          const defaultShortCuts = shortKey
+            ? [{ keyOrCode: shortKey, commandKey: shortKey }]
+            : [];
+
+          registerAction(
+            `action.sidebars.toggle.${panelIdentifier}`,
+            { topic, defaultShortCuts },
+            () => this.toggleSidebar(panelIdentifier)
+          );
+        });
+    }
   }
 
   initTopBar() {
@@ -1355,12 +1381,6 @@ export class EditorController {
       if (toolIndex < toolIdentifiers.length) {
         this.setSelectedTool(toolIdentifiers[toolIndex]);
       }
-    });
-    this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("glyph-search", true);
-    });
-    this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("selection-info", true);
     });
 
     for (const menuItem of [
