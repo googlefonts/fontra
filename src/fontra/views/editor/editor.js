@@ -449,7 +449,7 @@ export class EditorController {
           registerAction(
             `action.sidebars.toggle.${panelIdentifier}`,
             { topic, defaultShortCuts },
-            () => this.toggleSidebar(panelIdentifier)
+            () => this.toggleSidebar(panelIdentifier, true)
           );
         });
     }
