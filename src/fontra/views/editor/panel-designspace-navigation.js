@@ -1,3 +1,4 @@
+import { registerAction } from "/core/actions.js";
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
@@ -54,6 +55,19 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.fontController.ensureInitialized.then(() => {
       this.setup();
     });
+
+    this.initActions();
+  }
+
+  initActions() {
+    registerAction(
+      "designspace-navigation.edit-all-compatible-sources",
+      {
+        topic: `action-topics.designspace-navigation`,
+        defaultShortCuts: [{ keyOrCode: "e", commandKey: true }],
+      },
+      (event) => this.onEditHeaderClick(event)
+    );
   }
 
   getContentElement() {

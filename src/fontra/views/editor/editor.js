@@ -1,3 +1,9 @@
+import {
+  canPerformAction,
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+  registerAction,
+} from "../core/actions.js";
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { applyChange } from "../core/changes.js";
@@ -242,6 +248,7 @@ export class EditorController {
     this.contextMenuPosition = { x: 0, y: 0 };
 
     this.initSidebars();
+    this.initActions();
     this.initTopBar();
     this.initContextMenuItems();
     this.initShortCuts();
@@ -303,6 +310,124 @@ export class EditorController {
     this.updateWithDelay();
   }
 
+  initActions() {
+    {
+      const topic = "action-topics.menu.edit";
+
+      registerAction(
+        "action.undo",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: false }],
+        },
+        () => this.doUndoRedo(false),
+        () => this.canUndoRedo(false)
+      );
+
+      registerAction(
+        "action.redo",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: true }],
+        },
+        () => this.doUndoRedo(true),
+        () => this.canUndoRedo(true)
+      );
+
+      if (insecureSafariConnection()) {
+        // In Safari, the async clipboard API only works in a secure context
+        // (HTTPS). We apply a workaround using the clipboard event API, but
+        // only in Safari, and when in an HTTP context
+        this.initFallbackClipboardEventListeners();
+      } else {
+        registerAction(
+          "action.clipboard.cut",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
+          },
+          () => this.doCut(),
+          () => this.canCut()
+        );
+
+        registerAction(
+          "action.clipboard.copy",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
+          },
+          () => this.doCopy(),
+          () => this.canCopy()
+        );
+
+        registerAction(
+          "action.clipboard.paste",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
+          },
+          () => this.doPaste(),
+          () => this.canPaste()
+        );
+      }
+    }
+
+    {
+      const topic = "action-topics.menu.view";
+
+      registerAction(
+        "action.zoom-in",
+        {
+          topic,
+          titleKey: "zoom-in",
+          defaultShortCuts: [
+            { keyOrCode: "+", commandKey: true },
+            { keyOrCode: "=", commandKey: true },
+          ],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomIn()
+      );
+
+      registerAction(
+        "action.zoom-out",
+        {
+          topic,
+          titleKey: "zoom-out",
+          defaultShortCuts: [{ keyOrCode: "-", commandKey: true }],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomOut()
+      );
+
+      registerAction(
+        "action.zoom-fit-selection",
+        {
+          topic,
+          titleKey: "zoom-fit-selection",
+          defaultShortCuts: [{ keyOrCode: "0", commandKey: true }],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomFit(),
+        () => {
+          let viewBox = this.sceneController.getSelectionBox();
+          if (!viewBox) {
+            return false;
+          }
+
+          const size = rectSize(viewBox);
+          if (size.width < 4 && size.height < 4) {
+            const center = rectCenter(viewBox);
+            viewBox = centeredRect(center.x, center.y, 10, 10);
+          } else {
+            viewBox = rectAddMargin(viewBox, 0.1);
+          }
+          return !this.canvasController.isActualViewBox(viewBox);
+        }
+      );
+    }
+  }
+
   initTopBar() {
     const menuBar = new MenuBar([
       {
@@ -313,13 +438,11 @@ export class EditorController {
               title: translate("menubar.file.new"),
               enabled: () => false,
               callback: () => {},
-              shortCut: undefined,
             },
             {
               title: translate("menubar.file.open"),
               enabled: () => false,
               callback: () => {},
-              shortCut: undefined,
             },
           ];
         },
@@ -341,49 +464,22 @@ export class EditorController {
         getItems: () => {
           const items = [
             {
-              title: translate("zoom-in"),
-              enabled: () => true,
-              shortCut: { keysOrCodes: "+=", metaKey: true, globalOverride: true },
-              callback: () => {
-                this.zoomIn();
-              },
+              actionIdentifier: "action.zoom-in",
             },
             {
-              title: translate("zoom-out"),
-              shortCut: { keysOrCodes: "-", metaKey: true, globalOverride: true },
-              enabled: () => true,
-              callback: () => {
-                this.zoomOut();
-              },
+              actionIdentifier: "action.zoom-out",
             },
             {
-              title: translate("zoom-fit-selection"),
-              enabled: () => {
-                let viewBox = this.sceneController.getSelectionBox();
-                if (!viewBox) {
-                  return false;
-                }
-
-                const size = rectSize(viewBox);
-                if (size.width < 4 && size.height < 4) {
-                  const center = rectCenter(viewBox);
-                  viewBox = centeredRect(center.x, center.y, 10, 10);
-                } else {
-                  viewBox = rectAddMargin(viewBox, 0.1);
-                }
-                return !this.canvasController.isActualViewBox(viewBox);
-              },
-              shortCut: { keysOrCodes: "0", metaKey: true, globalOverride: true },
-              callback: () => {
-                this.zoomFit();
-              },
+              actionIdentifier: "action.zoom-fit-selection",
             },
           ];
+
           if (typeof this.sceneModel.selectedGlyph !== "undefined") {
             this.sceneController.updateContextMenuState();
             items.push(MenuItemDivider);
             items.push(...this.glyphSelectedContextMenuItems);
           }
+
           return items;
         },
       },
@@ -1114,17 +1210,18 @@ export class EditorController {
 
   initContextMenuItems() {
     this.basicContextMenuItems = [];
-    for (const isRedo of [false, true]) {
-      this.basicContextMenuItems.push({
-        title: () => this.getUndoRedoLabel(isRedo),
-        enabled: () => this.canUndoRedo(isRedo),
-        callback: () => this.doUndoRedo(isRedo),
-        shortCut: { keysOrCodes: "z", metaKey: true, shiftKey: isRedo },
-      });
-    }
+    this.basicContextMenuItems.push({
+      title: () => this.getUndoRedoLabel(false),
+      actionIdentifier: "action.undo",
+    });
+    this.basicContextMenuItems.push({
+      title: () => this.getUndoRedoLabel(true),
+      actionIdentifier: "action.redo",
+    });
+
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    if (window.safari !== undefined && window.location.protocol === "http:") {
+    if (insecureSafariConnection()) {
       // In Safari, the async clipboard API only works in a secure context
       // (HTTPS). We apply a workaround using the clipboard event API, but
       // only in Safari, and when in an HTTP context
@@ -1247,19 +1344,11 @@ export class EditorController {
   initShortCuts() {
     this.shortCutHandlers = {};
 
+    // TODO: how can this fit the action model? There is also spaceKeyUpHandler...
     this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
       this.spaceKeyDownHandler();
     });
 
-    this.registerShortCut("-", { metaKey: true, globalOverride: true }, () => {
-      this.zoomOut();
-    });
-    this.registerShortCut("+=", { metaKey: true, globalOverride: true }, () => {
-      this.zoomIn();
-    });
-    this.registerShortCut("0", { metaKey: true, globalOverride: true }, () => {
-      this.zoomFit();
-    });
     this.registerShortCut("123456789", { metaKey: false }, (event) => {
       const toolIndex = parseInt(event.key) - 1;
       const toolIdentifiers = Object.keys(this.topLevelTools);
@@ -1272,9 +1361,6 @@ export class EditorController {
     });
     this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
       this.toggleSidebar("selection-info", true);
-    });
-    this.registerShortCut("e", { metaKey: true, globalOverride: true }, () => {
-      this.getSidebarPanel("designspace-navigation").onEditHeaderClick();
     });
 
     for (const menuItem of [
@@ -1346,6 +1432,14 @@ export class EditorController {
   }
 
   async keyDownHandler(event) {
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
+      return;
+    }
+    // TODO: remove old code
     const { callback, enabled } = this._getShortCutCallback(event);
     if (callback !== undefined) {
       this.sceneController.updateContextMenuState(null);
@@ -3193,4 +3287,8 @@ function chunks(array, n) {
     chunked.push(array.slice(i, i + n));
   }
   return chunked;
+}
+
+function insecureSafariConnection() {
+  return window.safari !== undefined && window.location.protocol === "http:";
 }
