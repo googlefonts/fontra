@@ -248,6 +248,7 @@ export class EditorController {
     this.contextMenuPosition = { x: 0, y: 0 };
 
     this.initSidebars();
+    this.initTools();
     this.initActions();
     this.initTopBar();
     this.initContextMenuItems();
@@ -451,6 +452,32 @@ export class EditorController {
             () => this.toggleSidebar(panelIdentifier)
           );
         });
+    }
+
+    {
+      const topic = "action-topics.tools";
+
+      const defaultKeys = {};
+      for (const [i, toolIdentifier] of enumerate(Object.keys(this.topLevelTools), 1)) {
+        if (i <= 9) {
+          defaultKeys[toolIdentifier] = `${i}`;
+        }
+      }
+
+      for (const toolIdentifier of Object.keys(this.tools)) {
+        const defaultKey = defaultKeys[toolIdentifier];
+        const defaultShortCuts = defaultKey ? [{ keyOrCode: defaultKey }] : [];
+        registerAction(
+          `actions.tools.${toolIdentifier}`,
+          {
+            topic: "action-topics.tools",
+            defaultShortCuts: defaultShortCuts,
+          },
+          () => {
+            this.setSelectedTool(toolIdentifier);
+          }
+        );
+      }
     }
   }
 
@@ -680,7 +707,6 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    this.initTools();
 
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
@@ -1373,14 +1399,6 @@ export class EditorController {
     // TODO: how can this fit the action model? There is also spaceKeyUpHandler...
     this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
       this.spaceKeyDownHandler();
-    });
-
-    this.registerShortCut("123456789", { metaKey: false }, (event) => {
-      const toolIndex = parseInt(event.key) - 1;
-      const toolIdentifiers = Object.keys(this.topLevelTools);
-      if (toolIndex < toolIdentifiers.length) {
-        this.setSelectedTool(toolIdentifiers[toolIndex]);
-      }
     });
 
     for (const menuItem of [
