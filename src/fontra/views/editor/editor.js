@@ -408,6 +408,27 @@ export class EditorController {
           this.sceneSettings.selectedGlyph?.isEditing &&
           this.sceneSettings.selection.size
       );
+
+      registerAction(
+        "action.add-component",
+        {},
+        () => this.doAddComponent(),
+        () => this.canAddComponent()
+      );
+
+      registerAction(
+        "action.add-anchor",
+        {},
+        () => this.doAddAnchor(),
+        () => this.canAddAnchor()
+      );
+
+      registerAction(
+        "action.add-guideline",
+        {},
+        () => this.doAddGuideline(),
+        () => this.canAddGuideline()
+      );
     }
 
     {
@@ -1352,29 +1373,9 @@ export class EditorController {
 
     this.glyphEditContextMenuItems = [];
 
-    this.glyphEditContextMenuItems.push({
-      title: translate("action.add-component"),
-      enabled: () => this.canAddComponent(),
-      callback: () => this.doAddComponent(),
-      shortCut: undefined,
-    });
-
-    this.glyphEditContextMenuItems.push({
-      title: translate("action.add-anchor"),
-      enabled: () => this.canAddAnchor(),
-      callback: () => this.doAddAnchor(),
-      shortCut: undefined,
-    });
-
-    this.glyphEditContextMenuItems.push({
-      // TODO: Font Guidelines with altKey, something like this:
-      //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
-      //altKey: true,
-      title: "Add Guideline",
-      enabled: () => this.canAddGuideline(),
-      callback: () => this.doAddGuideline(),
-      shortCut: undefined,
-    });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-component" });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
 
     this.glyphEditContextMenuItems.push({
       title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),

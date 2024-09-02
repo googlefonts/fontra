@@ -1,6 +1,7 @@
 {
   "action.add-anchor": "添加锚点",
   "action.add-component": "添加组件",
+  "action.add-guideline": "Add Guideline",
   "action.break-contour": "断开轮廓",
   "action.close-contour": "Close %0 Contour",
   "action.close-contour.plural": "Close %0 Contours",
