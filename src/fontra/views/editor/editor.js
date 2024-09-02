@@ -429,6 +429,13 @@ export class EditorController {
         () => this.doAddGuideline(),
         () => this.canAddGuideline()
       );
+
+      registerAction(
+        "action.lock-guidelines",
+        {},
+        () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
+        () => this.canLockGuideline()
+      );
     }
 
     {
@@ -1379,8 +1386,7 @@ export class EditorController {
 
     this.glyphEditContextMenuItems.push({
       title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      enabled: () => this.canLockGuideline(),
-      callback: (event) => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
+      actionIdentifier: "action.lock-guidelines",
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
