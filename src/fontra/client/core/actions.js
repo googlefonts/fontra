@@ -134,8 +134,6 @@ export function getActionIdentifierFromKeyEvent(event) {
     actionShortCuts = actionsByKeyOrCode[event.code];
   }
 
-  console.log(event);
-
   if (!actionShortCuts) {
     return null;
   }
