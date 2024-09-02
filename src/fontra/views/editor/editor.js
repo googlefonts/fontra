@@ -1282,21 +1282,15 @@ export class EditorController {
       this.basicContextMenuItems.push(
         {
           title: "Cut",
-          enabled: () => this.canCut(),
-          callback: () => this.doCut(),
-          shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.cut",
         },
         {
           title: "Copy",
-          enabled: () => this.canCopy(),
-          callback: () => this.doCopy(),
-          shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.copy",
         },
         {
           title: "Paste",
-          enabled: () => this.canPaste(),
-          callback: () => this.doPaste(),
-          shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.paste",
         }
       );
     }
