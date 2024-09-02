@@ -491,6 +491,35 @@ export class EditorController {
           return !this.canvasController.isActualViewBox(viewBox);
         }
       );
+
+      registerAction(
+        "action.select-previous-source",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-source",
+          defaultShortCuts: [{ keyOrCode: "ArrowUp", metaKey: true }],
+        },
+        () => this.doSelectPreviousNextSource(true)
+      );
+
+      registerAction(
+        "action.select-next-source",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-source",
+          defaultShortCuts: [{ keyOrCode: "ArrowDown", metaKey: true }],
+        },
+        () => this.doSelectPreviousNextSource(true)
+      );
+
+      registerAction(
+        "action.find-glyphs-that-use",
+        {
+          topic,
+          titleKey: "menubar.view.find-glyphs-that-use",
+        },
+        () => this.doFindGlyphsThatUseGlyph()
+      );
     }
 
     {
@@ -1394,28 +1423,18 @@ export class EditorController {
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      title: translate("menubar.view.select.previous"),
-      enabled: () => true,
-      callback: () => this.doSelectPreviousNextSource(true),
-      shortCut: { keysOrCodes: ["ArrowUp"], metaKey: true },
+      actionIdentifier: "action.select-previous-source",
     });
-
     this.glyphSelectedContextMenuItems.push({
-      title: translate("menubar.view.select.next"),
-      enabled: () => true,
-      callback: () => this.doSelectPreviousNextSource(false),
-      shortCut: { keysOrCodes: ["ArrowDown"], metaKey: true },
+      actionIdentifier: "action.select-next-source",
     });
-
     this.glyphSelectedContextMenuItems.push({
       title: () =>
         translate(
           "menubar.view.find-glyphs-that-use",
           this.sceneSettings.selectedGlyphName
         ),
-      enabled: () =>
-        this.fontController.backendInfo.features["find-glyphs-that-use-glyph"],
-      callback: () => this.doFindGlyphsThatUseGlyph(),
+      actionIdentifier: "action.find-glyphs-that-use",
     });
   }
 
