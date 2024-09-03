@@ -63,7 +63,11 @@ export function getActionInfo(actionIdentifier) {
 
 export function getActionTitle(actionIdentifier) {
   const actionInfo = getActionInfo(actionIdentifier);
-  return translate(actionInfo?.titleKey || actionIdentifier);
+  let args = "";
+  if ("menubar.view.find-glyphs-that-use" === actionInfo?.titleKey) {
+    args = "XYZ";
+  }
+  return translate(actionInfo?.titleKey || actionIdentifier, args);
 }
 
 const shortCutKeyMapDefault = {
@@ -131,6 +135,11 @@ export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) 
 }
 
 export function getShortCutRepresentation(shortCutDefinition) {
+  if (!shortCutDefinition) {
+    // Shortcut definition can be undefined,
+    // if the action has no shortcut specified.
+    return "";
+  }
   let shortCutRepr = "";
 
   for (const key of ["commandKey", "metaKey", "ctrlKey", "altKey", "shiftKey"]) {

@@ -344,6 +344,7 @@ export class EditorController {
           "action.clipboard.cut",
           {
             topic,
+            titleKey: "action.cut",
             defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
           },
           () => this.doCut(),
@@ -354,6 +355,7 @@ export class EditorController {
           "action.clipboard.copy",
           {
             topic,
+            titleKey: "action.copy",
             defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
           },
           () => this.doCopy(),
@@ -364,6 +366,7 @@ export class EditorController {
           "action.clipboard.paste",
           {
             topic,
+            titleKey: "action.paste",
             defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
           },
           () => this.doPaste(),
@@ -533,6 +536,7 @@ export class EditorController {
         .map((sidebar) => sidebar.panelIdentifiers)
         .flat()
         .forEach((panelIdentifier) => {
+          const titleKey = `sidebar.${panelIdentifier}`;
           const shortKey = sideBarShortCuts[panelIdentifier];
 
           const defaultShortCuts = shortKey
@@ -541,7 +545,7 @@ export class EditorController {
 
           registerAction(
             `action.sidebars.toggle.${panelIdentifier}`,
-            { topic, defaultShortCuts, allowGlobalOverride: true },
+            { topic, titleKey, defaultShortCuts, allowGlobalOverride: true },
             () => this.toggleSidebar(panelIdentifier, true)
           );
         });
@@ -558,12 +562,14 @@ export class EditorController {
       }
 
       for (const toolIdentifier of Object.keys(this.tools)) {
+        const titleKey = `editor.${toolIdentifier}`;
         const defaultKey = defaultKeys[toolIdentifier];
         const defaultShortCuts = defaultKey ? [{ keyOrCode: defaultKey }] : [];
         registerAction(
           `actions.tools.${toolIdentifier}`,
           {
-            topic: "action-topics.tools",
+            topic,
+            titleKey,
             defaultShortCuts: defaultShortCuts,
           },
           () => {
@@ -577,6 +583,7 @@ export class EditorController {
       "action.canvas.clean-view-and-hand-tool",
       {
         topic: "action-topics.canvas",
+        titleKey: "canvas.clean-view-and-hand-tool",
         defaultShortCuts: [{ keyOrCode: "Space" }],
       },
       (event) => this.enterCleanViewAndHandTool(event)

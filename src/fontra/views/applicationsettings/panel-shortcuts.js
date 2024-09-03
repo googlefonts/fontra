@@ -5,9 +5,10 @@ import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   getActionIdentifiers,
+  getActionInfo,
   getActionTitle,
+  getShortCutRepresentation,
   getShortCutRepresentationFromActionIdentifier,
-  setCustomShortCuts,
   setCustomShortCuts,
   shortCutKeyMap,
 } from "/core/actions.js";
@@ -26,12 +27,10 @@ function getShortCut(key) {
 
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
-  console.log("getActionIdentifiers(): ", getActionIdentifiers());
   for (const actionIdentifier of getActionIdentifiers()) {
     const actionInfo = getActionInfo(actionIdentifier);
-    console.log("actionIdentifier: ", actionIdentifier);
     const topic = actionInfo.topic || "shortcuts.other";
-    if (shortCutsGrouped[topic]) {
+    if (!shortCutsGrouped[topic]) {
       shortCutsGrouped[topic] = [];
     }
     shortCutsGrouped[topic].push(actionIdentifier);
@@ -220,10 +219,6 @@ function isDifferentShortCutDefinition(a, b) {
     return defA != defB;
   }
 
-  // we ignore globalOverride for comparison, therefore delete it.
-  delete defA.globalOverride;
-  delete defB.globalOverride;
-
   if (Object.keys(defA).length !== Object.keys(defB).length) {
     return true;
   }
@@ -252,7 +247,6 @@ const shortCutDefinitionKeys = [
   "shiftKey",
   "metaKey",
   "keysOrCodes",
-  "globalOverride",
 ];
 function _shortCutDefinitionNormalized(shortCutDefinition) {
   if (shortCutDefinition === null) {
@@ -492,11 +486,6 @@ class ShortCutElement extends HTMLElement {
     this.classList.add("fontra-ui-shortcuts-panel-element");
     this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
-    // get globalOverride from data or false -> no custom settings allowed.
-    this.globalOverride =
-      this.shortCutDefinition === null
-        ? false
-        : this.shortCutDefinition.globalOverride || false;
     this.setupUI = setupUI;
     this.shorcutCommands = new Set();
     this._updateContents();
@@ -509,10 +498,9 @@ class ShortCutElement extends HTMLElement {
       // User cancelled, do nothing.
       return;
     }
-    newShortCutDefinition.globalOverride = this.globalOverride;
     if (this.saveShortCut(newShortCutDefinition)) {
       const element = document.getElementById(id);
-      element.value = buildShortCutString(newShortCutDefinition);
+      element.value = getShortCutRepresentation(newShortCutDefinition);
       element.blur(); // remove focus
     }
   }
@@ -525,7 +513,7 @@ class ShortCutElement extends HTMLElement {
     }
     if (warnings.length > 0) {
       message(
-        `Invalid ShortCut "${buildShortCutString(
+        `Invalid ShortCut "${getShortCutRepresentation(
           newShortCutDefinition
         )}" for "${translate(this.key, "")}":`,
         warnings.join("\n")
@@ -577,10 +565,9 @@ class ShortCutElement extends HTMLElement {
     // if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
       const shortCutDefinition = parseShortCutString(shorcutCommand);
-      shortCutDefinition.globalOverride = this.globalOverride;
       if (!this.saveShortCut(shortCutDefinition)) {
         // if the shortcut is invalid, reset the input field
-        element.value = buildShortCutString(this.shortCutDefinition);
+        element.value = getShortCutRepresentation(this.shortCutDefinition);
       }
       element.blur(); // remove focus
       this.shorcutCommands = new Set();
@@ -597,14 +584,16 @@ class ShortCutElement extends HTMLElement {
     element.value =
       this.getShortCutCommand() != ""
         ? this.getShortCutCommand()
-        : buildShortCutString(this.shortCutDefinition);
+        : getShortCutRepresentation(this.shortCutDefinition);
   }
 
   resetShortCut(id) {
     const defaultShortCuts = getActionInfo(this.key).defaultShortCuts;
 
     if (this.saveShortCut(defaultShortCuts)) {
-      document.getElementById(id).value = buildShortCutString(defaultShortCuts[0]);
+      document.getElementById(id).value = getShortCutRepresentation(
+        defaultShortCuts[0]
+      );
     }
   }
 
@@ -634,7 +623,7 @@ class ShortCutElement extends HTMLElement {
         "type": "text",
         "id": id,
         "class": "fontra-ui-shortcuts-panel-input",
-        "value": buildShortCutString(this.shortCutDefinition),
+        "value": getShortCutRepresentation(this.shortCutDefinition),
         "data-tooltip":
           "Click and record a shortcut OR double click and open dialog for editing",
         "data-tooltipposition": "top",
