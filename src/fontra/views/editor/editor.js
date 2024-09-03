@@ -542,7 +542,7 @@ export class EditorController {
 
           registerAction(
             `action.sidebars.toggle.${panelIdentifier}`,
-            { topic, defaultShortCuts },
+            { topic, defaultShortCuts, allowGlobalOverride: true },
             () => this.toggleSidebar(panelIdentifier, true)
           );
         });
