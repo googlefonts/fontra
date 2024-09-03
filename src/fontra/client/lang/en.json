@@ -100,6 +100,8 @@
   "menubar.view.select-next-source": "Select next source",
   "menubar.view.select-previous-source": "Select previous source",
   "selection.none": "(No selection)",
+  "server-info.title": "Server Info",
+  "shortcuts.title": "Shortcuts",
   "sidebar.designspace-navigation": "Designspace Navigation",
   "sidebar.designspace-navigation.font-axes": "Font axes",
   "sidebar.designspace-navigation.font-axes.edit": "Edit font axes",

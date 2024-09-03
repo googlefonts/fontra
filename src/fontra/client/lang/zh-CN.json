@@ -100,6 +100,8 @@
   "menubar.view.select-next-source": "选择下一个源",
   "menubar.view.select-previous-source": "选择上一个源",
   "selection.none": "（未选择）",
+  "server-info.title": "Server Info",
+  "shortcuts.title": "Shortcuts",
   "sidebar.designspace-navigation": "Designspace 导航",
   "sidebar.designspace-navigation.font-axes": "字体参数轴",
   "sidebar.designspace-navigation.font-axes.edit": "编辑字体参数轴",
