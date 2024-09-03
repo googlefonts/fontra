@@ -411,28 +411,28 @@ export class EditorController {
 
       registerAction(
         "action.add-component",
-        {},
+        { topic },
         () => this.doAddComponent(),
         () => this.canAddComponent()
       );
 
       registerAction(
         "action.add-anchor",
-        {},
+        { topic },
         () => this.doAddAnchor(),
         () => this.canAddAnchor()
       );
 
       registerAction(
         "action.add-guideline",
-        {},
+        { topic },
         () => this.doAddGuideline(),
         () => this.canAddGuideline()
       );
 
       registerAction(
         "action.lock-guidelines",
-        {},
+        { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
         () => this.canLockGuideline()
       );
