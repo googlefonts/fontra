@@ -1445,21 +1445,6 @@ export class EditorController {
     this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
       this.spaceKeyDownHandler();
     });
-
-    for (const menuItem of [
-      ...this.basicContextMenuItems,
-      ...this.glyphEditContextMenuItems,
-      ...this.glyphSelectedContextMenuItems,
-    ]) {
-      if (menuItem.shortCut) {
-        this.registerShortCut(
-          menuItem.shortCut.keysOrCodes,
-          menuItem.shortCut,
-          menuItem.callback,
-          menuItem.enabled
-        );
-      }
-    }
   }
 
   initFallbackClipboardEventListeners() {
