@@ -7,11 +7,10 @@ import {
   isActiveElementTypeable,
 } from "./utils.js";
 
+// Action Info
 // const {
 //   topic,
 //   titleKey,
-//   enabled,
-//   callback,
 //   customShortCuts,
 //   defaultShortCuts,
 //   allowGlobalOverride,  // This flag allows shortcuts to work even in a focused text box
