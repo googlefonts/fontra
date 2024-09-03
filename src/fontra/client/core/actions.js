@@ -53,6 +53,10 @@ export function setCustomShortCuts(actionIdentifier, customShortCuts) {
   actionInfoController.model[actionIdentifier] = { ...actionInfo, customShortCuts };
 }
 
+export function getActionIdentifiers() {
+  return Object.keys(actionInfoController.model);
+}
+
 export function getActionInfo(actionIdentifier) {
   return actionInfoController.model[actionIdentifier];
 }
