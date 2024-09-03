@@ -721,15 +721,9 @@ export class SceneController {
               ),
         actionIdentifier: "action.join-contours",
       },
-      {
-        actionIdentifier: "action.break-contour",
-      },
-      {
-        actionIdentifier: "action.reverse-contour",
-      },
-      {
-        actionIdentifier: "action.set-contour-start",
-      },
+      { actionIdentifier: "action.break-contour" },
+      { actionIdentifier: "action.reverse-contour" },
+      { actionIdentifier: "action.set-contour-start" },
       {
         title: () =>
           translatePlural(
