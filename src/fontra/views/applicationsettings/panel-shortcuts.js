@@ -23,15 +23,12 @@ function getShortCut(key) {
   return shortCuts[0];
 }
 
-export function getNiceKey(key, returnKey = key) {
-  return shortCutKeyMap[key] || returnKey;
-}
-
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
   console.log("getActionIdentifiers(): ", getActionIdentifiers());
   for (const actionIdentifier of getActionIdentifiers()) {
     const actionInfo = getActionInfo(actionIdentifier);
+    console.log("actionIdentifier: ", actionIdentifier);
     const topic = actionInfo.topic || "shortcuts.other";
     if (shortCutsGrouped[topic]) {
       shortCutsGrouped[topic] = [];
@@ -99,17 +96,18 @@ export class ShortCutsPanel extends BaseInfoPanel {
 
     this.panelElement.appendChild(containerButtons);
     const shortCutsGrouped = getShortCutsGrouped();
-    console.log(shortCutsGrouped);
-    for (const [categoryKey, shortCuts] of Object.entries(shortCutsGrouped)) {
+    for (const [topicKey, actionIdentifiers] of Object.entries(shortCutsGrouped)) {
       const container = html.div({ class: "fontra-ui-shortcuts-panel" }, []);
       container.appendChild(
         html.createDomElement("div", {
           class: "fontra-ui-shortcuts-panel-header",
-          innerHTML: translate(categoryKey),
+          innerHTML: translate(topicKey),
         })
       );
-      for (const key of shortCuts) {
-        container.appendChild(new ShortCutElement(key, this.setupUI.bind(this)));
+      for (const actionIdentifier of actionIdentifiers) {
+        container.appendChild(
+          new ShortCutElement(actionIdentifier, this.setupUI.bind(this))
+        );
       }
       this.panelElement.appendChild(container);
     }
@@ -175,9 +173,9 @@ function parseShortCutString(value) {
   const definition = {};
 
   function setShortCutDefinitionByKey(key, value, definition) {
-    if (value.includes(getNiceKey(key))) {
+    if (value.includes(shortCutKeyMap[key])) {
       definition[key] = true;
-      const keyStr = getNiceKey(key);
+      const keyStr = shortCutKeyMap[key];
       const index = value.indexOf(keyStr);
       value = value.slice(0, index) + value.slice(index + keyStr.length);
     }
@@ -405,13 +403,18 @@ function _shortCutPropertiesContentElement(controller) {
         id: "shortCut-text-input",
       }),
       html.div(),
-      labeledCheckbox(`Meta (${getNiceKey("metaKey")})`, controller, "metaKey", {}),
+      labeledCheckbox(`Meta (${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {}),
       html.div(),
-      labeledCheckbox(`Ctrl(${getNiceKey("ctrlKey")})`, controller, "ctrlKey", {}),
+      labeledCheckbox(`Ctrl(${shortCutKeyMap["ctrlKey"]})`, controller, "ctrlKey", {}),
       html.div(),
-      labeledCheckbox(`Shift (${getNiceKey("shiftKey")})`, controller, "shiftKey", {}),
+      labeledCheckbox(
+        `Shift (${shortCutKeyMap["shiftKey"]})`,
+        controller,
+        "shiftKey",
+        {}
+      ),
       html.div(),
-      labeledCheckbox(`Alt (${getNiceKey("altKey")})`, controller, "altKey", {}),
+      labeledCheckbox(`Alt (${shortCutKeyMap["altKey"]})`, controller, "altKey", {}),
       html.div(),
       warningElement,
     ]
@@ -527,7 +530,8 @@ class ShortCutElement extends HTMLElement {
     // collect the keys pressed in this.shorcutCommands
     if (event[mainkey]) {
       return mainkey;
-    } else if (getNiceKey(event.code, false)) {
+    } else if (shortCutKeyMap.hasOwnProperty(event.code)) {
+      // obj.hasOwnProperty("key")
       return event.code;
     } else {
       return event.key;
@@ -537,8 +541,8 @@ class ShortCutElement extends HTMLElement {
   getShortCutCommand() {
     let shorcutCommand = "";
     Array.from(this.shorcutCommands).forEach((item) => {
-      if (getNiceKey(item, false)) {
-        shorcutCommand += getNiceKey(item);
+      if (shortCutKeyMap.hasOwnProperty(item)) {
+        shorcutCommand += shortCutKeyMap[item];
       } else {
         shorcutCommand += item;
       }
