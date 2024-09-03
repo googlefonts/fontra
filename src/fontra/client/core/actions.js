@@ -66,10 +66,47 @@ export function getActionTitle(actionIdentifier) {
   return translate(actionInfo?.titleKey || actionIdentifier);
 }
 
-export const shortCutKeyMap = {
+const shortCutKeyMapDefault = {
+  commandKey: "Ctrl+", // fontra specific cross-platform key
+  metaKey: "Meta+",
+  shiftKey: "Shift+",
+  ctrlKey: "Ctrl+",
+  altKey: "Alt+",
   ArrowUp: "↑",
   ArrowDown: "↓",
+  ArrowLeft: "←",
+  ArrowRight: "→",
+  Tab: "⇥",
   Delete: "⌫",
+  Backspace: "⌫",
+  NumpadMultiply: "×",
+  NumpadDivide: "÷",
+  NumpadAdd: "+",
+  NumpadSubtract: "-",
+  Enter: "↵",
+};
+
+// add A-Z keys
+for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i))) {
+  shortCutKeyMapDefault[`Key${key}`] = key;
+}
+// add 0-9 keys
+for (let i = 0; i <= 9; i++) {
+  shortCutKeyMapDefault[`Digit${i}`] = `${i}`;
+  shortCutKeyMapDefault[`Numpad${i}`] = `${i}`;
+}
+
+const shortCutKeyMapMac = {
+  commandKey: "⌘", // fontra specific cross-platform key
+  metaKey: "⌘", // "\u2318"
+  shiftKey: "⇧", // "\u21e7"
+  ctrlKey: "⌃",
+  altKey: "⌥", // "\u2325"
+};
+
+export const shortCutKeyMap = {
+  ...shortCutKeyMapDefault,
+  ...(window.navigator.userAgent.indexOf("Mac") != -1 ? shortCutKeyMapMac : {}),
 };
 
 export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) {
@@ -96,15 +133,10 @@ export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) 
 export function getShortCutRepresentation(shortCutDefinition) {
   let shortCutRepr = "";
 
-  const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
-
-  if (shortCutDefinition.shiftKey) {
-    shortCutRepr += isMac ? "\u21e7" : "Shift+"; // ⇧ or Shift
-  }
-  if (shortCutDefinition.commandKey) {
-    shortCutRepr += isMac ? "\u2318" : "Ctrl+"; // ⌘ or Ctrl
-  } else if (shortCutDefinition.ctrlKey) {
-    //
+  for (const key of ["commandKey", "metaKey", "ctrlKey", "altKey", "shiftKey"]) {
+    if (shortCutDefinition[key]) {
+      shortCutRepr += shortCutKeyMap[key];
+    }
   }
 
   shortCutRepr +=
