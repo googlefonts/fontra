@@ -143,9 +143,23 @@ export function getActionIdentifierFromKeyEvent(event) {
     assert(actionInfo, `Undefined action: ${actionIdentifier}`);
 
     if (
+      isActiveElementTypeable() &&
+      !shortCut.commandKey &&
+      !shortCut.metaKey &&
+      !shortCut.ctrlKey
+    ) {
+      // We are in an editable text area: we will not match short cuts
+      // that don't use the meta key or the control key.
+      continue;
+    }
+
+    if (
       !actionInfo.allowGlobalOverride &&
       (isActiveElementTypeable() || window.getSelection().toString())
     ) {
+      // We are either in an editable text area, or there is non-editable text
+      // selected, and the action didn't set allowGlobalOverride. Ignore this
+      // context.
       continue;
     }
 
