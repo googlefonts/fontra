@@ -1441,10 +1441,14 @@ export class EditorController {
   initShortCuts() {
     this.shortCutHandlers = {};
 
-    // TODO: how can this fit the action model? There is also spaceKeyUpHandler...
-    this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
-      this.spaceKeyDownHandler();
-    });
+    registerAction(
+      "action.canvas.clean-view-and-hand-tool",
+      {
+        topic: "action-topics.canvas",
+        defaultShortCuts: [{ keyOrCode: "Space" }],
+      },
+      (event) => this.enterCleanViewAndHandTool(event)
+    );
   }
 
   initFallbackClipboardEventListeners() {
@@ -2863,16 +2867,13 @@ export class EditorController {
   }
 
   keyUpHandler(event) {
-    if (event.code === "Space") {
-      this.spaceKeyUpHandler();
-      return;
+    if (this._matchingKeyUpHandler && this._matchingKeyUpHandler.code == event.code) {
+      this._matchingKeyUpHandler.callback(event);
+      delete this._matchingKeyUpHandler;
     }
   }
 
-  spaceKeyDownHandler(event) {
-    if (isActiveElementTypeable()) {
-      return;
-    }
+  enterCleanViewAndHandTool(event) {
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.requestUpdate();
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
@@ -2880,9 +2881,13 @@ export class EditorController {
     }
     this.savedSelectedToolIdentifier = this.selectedToolIdentifier;
     this.setSelectedTool("hand-tool");
+    this._matchingKeyUpHandler = {
+      code: event.code,
+      callback: () => this.leaveCleanViewAndHandTool(),
+    };
   }
 
-  spaceKeyUpHandler(event) {
+  leaveCleanViewAndHandTool() {
     if (isActiveElementTypeable()) {
       return;
     }
