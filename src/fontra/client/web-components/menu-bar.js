@@ -23,6 +23,10 @@ export class MenuBar extends SimpleElement {
     background: var(--editor-top-bar-link-hover);
     border-radius: 5px;
   }
+
+  .menu-item-bold {
+    font-weight: bold;
+  }
   `;
 
   constructor(items = []) {
@@ -179,7 +183,7 @@ export class MenuBar extends SimpleElement {
       fragment.appendChild(
         html.div(
           {
-            class: "menu-item",
+            class: item.bold ? "menu-item menu-item-bold" : "menu-item",
             onmousedown: (event) => {
               const currentSelection = this.contentElement.querySelector(".current");
               if (currentSelection === event.target) {

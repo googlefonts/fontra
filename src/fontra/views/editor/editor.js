@@ -586,6 +586,21 @@ export class EditorController {
   initTopBar() {
     const menuBar = new MenuBar([
       {
+        title: "Fontra",
+        bold: true,
+        getItems() {
+          return [
+            {
+              title: translate("menubar.fontra.application-settings"),
+              enabled: () => true,
+              callback: () => {
+                window.open("/applicationsettings/applicationsettings.html");
+              },
+            },
+          ];
+        },
+      },
+      {
         title: translate("menubar.file"),
         getItems() {
           return [
