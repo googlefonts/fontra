@@ -22,7 +22,7 @@ let actionsByKeyOrCode = undefined;
 
 const actionInfoController = new ObservableController({});
 const actionCallbacks = {};
-actionInfoController.synchronizeWithLocalStorage("fontra-actions-");
+actionInfoController.synchronizeWithLocalStorage("fontra-actions-", true);
 actionInfoController.addListener((event) => {
   actionsByKeyOrCode = undefined;
 });

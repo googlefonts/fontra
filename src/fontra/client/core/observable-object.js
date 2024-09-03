@@ -1,4 +1,4 @@
-import { chain } from "./utils.js";
+import { assert, chain } from "./utils.js";
 
 export const controllerKey = Symbol("controller-key");
 
@@ -60,8 +60,12 @@ export class ObservableController {
     }
   }
 
-  synchronizeWithLocalStorage(prefix = "") {
-    this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
+  synchronizeWithLocalStorage(prefix = "", readItemsFromLocalStorage = false) {
+    this._addSynchronizedItem = synchronizeWithLocalStorage(
+      this,
+      prefix,
+      readItemsFromLocalStorage
+    );
   }
 
   waitForKeyChange(keyOrKeys, immediate = false) {
@@ -145,12 +149,32 @@ function newModelProxy(controller, model) {
   return new Proxy(model, handler);
 }
 
-function synchronizeWithLocalStorage(controller, prefix = "") {
+function synchronizeWithLocalStorage(
+  controller,
+  prefix = "",
+  readItemsFromLocalStorage = false
+) {
   const mapKeyToObject = {};
   const mapKeyToStorage = {};
   const stringKeys = {};
   for (const [key, value] of Object.entries(controller.model)) {
     addItem(key, value, false);
+  }
+
+  if (readItemsFromLocalStorage) {
+    assert(prefix.length);
+    for (const [prefixedKey, storedValue] of Object.entries(localStorage)) {
+      if (!prefixedKey.startsWith(prefix)) {
+        continue;
+      }
+      const key = prefixedKey.slice(prefix.length);
+      try {
+        const _ = JSON.parse(storedValue);
+      } catch (e) {
+        stringKeys[key] = true;
+      }
+      addItem(key, null, false);
+    }
   }
 
   function addItem(key, value, setOnModel) {
