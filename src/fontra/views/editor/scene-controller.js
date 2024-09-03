@@ -1,3 +1,4 @@
+import { registerAction } from "../core/actions.js";
 import { recordChanges } from "../core/change-recorder.js";
 import {
   ChangeCollector,
@@ -61,6 +62,7 @@ export class SceneController {
     this.setupChangeListeners();
     this.setupSettingsListeners();
     this.setupEventHandling();
+    this.setupContextMenuActions();
   }
 
   setupSceneSettings() {
@@ -388,6 +390,56 @@ export class SceneController {
     );
   }
 
+  setupContextMenuActions() {
+    const topic = "action-topics.menu.edit";
+
+    registerAction(
+      "action.join-contours",
+      { topic, defaultShortCuts: [{ keyOrCode: "j", commandKey: true }] },
+      () => {
+        if (this.contextMenuState.joinContourSelection?.length === 2) {
+          this.doJoinSelectedOpenContours();
+        } else {
+          this.doCloseSelectedOpenContours();
+        }
+      },
+      () =>
+        this.contextMenuState.joinContourSelection?.length ||
+        this.contextMenuState.openContourSelection?.length
+    );
+
+    registerAction(
+      "action.break-contour",
+      { topic },
+      () => this.doBreakSelectedContours(),
+      () => this.contextMenuState.pointSelection?.length
+    );
+
+    registerAction(
+      "action.reverse-contour",
+      { topic },
+      () => this.doReverseSelectedContours(),
+      () => this.contextMenuState.pointSelection?.length
+    );
+
+    registerAction(
+      "action.set-contour-start",
+      { topic },
+      () => this.doSetStartPoint(),
+      () => this.contextMenuState.pointSelection?.length
+    );
+
+    registerAction(
+      "action.decompose-component",
+      {
+        topic,
+        defaultShortCuts: [{ keyOrCode: "d", commandKey: true, shiftKey: true }],
+      },
+      () => this.doDecomposeSelectedComponents(),
+      () => !!this.contextMenuState?.componentSelection?.length
+    );
+  }
+
   setAutoViewBox() {
     if (!this.autoViewBox) {
       return;
@@ -667,29 +719,16 @@ export class SceneController {
                 "action.close-contour",
                 this.contextMenuState.openContourSelection?.length
               ),
-        enabled: () =>
-          this.contextMenuState.joinContourSelection?.length ||
-          this.contextMenuState.openContourSelection?.length,
-        callback: () =>
-          this.contextMenuState.joinContourSelection?.length === 2
-            ? this.doJoinSelectedOpenContours()
-            : this.doCloseSelectedOpenContours(),
-        shortCut: { keysOrCodes: "j", metaKey: true },
+        actionIdentifier: "action.join-contours",
       },
       {
-        title: translate("action.break-contour"),
-        enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.doBreakSelectedContours(),
+        actionIdentifier: "action.break-contour",
       },
       {
-        title: translate("action.reverse-contour"),
-        enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.doReverseSelectedContours(),
+        actionIdentifier: "action.reverse-contour",
       },
       {
-        title: translate("action.set-contour-start"),
-        enabled: () => this.contextMenuState.pointSelection?.length,
-        callback: () => this.doSetStartPoint(),
+        actionIdentifier: "action.set-contour-start",
       },
       {
         title: () =>
@@ -697,9 +736,7 @@ export class SceneController {
             "action.decompose-component",
             this.contextMenuState.componentSelection?.length
           ),
-        enabled: () => !!this.contextMenuState?.componentSelection?.length,
-        callback: () => this.doDecomposeSelectedComponents(),
-        shortCut: { keysOrCodes: "d", metaKey: true, shiftKey: true },
+        actionIdentifier: "action.decompose-component",
       },
     ];
     return contextMenuItems;

@@ -1517,6 +1517,7 @@ export class EditorController {
   async keyDownHandler(event) {
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
     if (actionIdentifier) {
+      this.sceneController.updateContextMenuState(null);
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
