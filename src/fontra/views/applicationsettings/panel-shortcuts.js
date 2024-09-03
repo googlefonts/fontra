@@ -8,6 +8,7 @@ import {
   getActionTitle,
   getShortCutRepresentationFromActionIdentifier,
   setCustomShortCuts,
+  setCustomShortCuts,
   shortCutKeyMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
@@ -132,6 +133,15 @@ export class ShortCutsPanel extends BaseInfoPanel {
   async exportShortCuts() {
     // Only export custom shortcuts,
     // because default shortcuts are already in the code.
+    const shortCutsDataCustom = {};
+    for (const actionIdentifier of getActionIdentifiers()) {
+      const actionInfo = getActionInfo(actionIdentifier);
+      const shortCuts = actionInfo.customShortCuts;
+      if (!shortCuts) {
+        continue;
+      }
+      shortCutsDataCustom[actionIdentifier] = shortCuts[0];
+    }
     const data = JSON.stringify(shortCutsDataCustom);
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -154,7 +164,9 @@ export class ShortCutsPanel extends BaseInfoPanel {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const data = JSON.parse(event.target.result);
-        localStorage.setItem("shortCuts-custom", JSON.stringify(data));
+        for (const actionIdentifier in data) {
+          setCustomShortCuts(actionIdentifier, data[actionIdentifier]);
+        }
         location.reload();
       };
       reader.readAsText(file);
@@ -475,10 +487,10 @@ addStyleSheet(`
 `);
 
 class ShortCutElement extends HTMLElement {
-  constructor(key, setupUI) {
+  constructor(actionIdentifier, setupUI) {
     super();
     this.classList.add("fontra-ui-shortcuts-panel-element");
-    this.key = key;
+    this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
     // get globalOverride from data or false -> no custom settings allowed.
     this.globalOverride =
@@ -505,8 +517,12 @@ class ShortCutElement extends HTMLElement {
     }
   }
 
-  saveShortCut(newShortCutDefinition) {
-    const warnings = validateShortCutDefinition(this.key, newShortCutDefinition);
+  saveShortCut(newShortCutDefinitions) {
+    const warnings = [];
+    for (const newShortCutDefinition of newShortCutDefinitions) {
+      const warns = validateShortCutDefinition(this.key, newShortCutDefinition);
+      warnings.concat(warns);
+    }
     if (warnings.length > 0) {
       message(
         `Invalid ShortCut "${buildShortCutString(
@@ -516,9 +532,7 @@ class ShortCutElement extends HTMLElement {
       );
       return false;
     }
-
-    shortCutsDataCustom[this.key] = newShortCutDefinition;
-    localStorage.setItem("shortCuts-custom", JSON.stringify(shortCutsDataCustom));
+    setCustomShortCuts(this.key, [newShortCutDefinition]);
     return true;
   }
 
@@ -531,7 +545,6 @@ class ShortCutElement extends HTMLElement {
     if (event[mainkey]) {
       return mainkey;
     } else if (shortCutKeyMap.hasOwnProperty(event.code)) {
-      // obj.hasOwnProperty("key")
       return event.code;
     } else {
       return event.key;
@@ -588,10 +601,10 @@ class ShortCutElement extends HTMLElement {
   }
 
   resetShortCut(id) {
-    const shortCutDefinition = shortCutsDataDefault[this.key];
+    const defaultShortCuts = getActionInfo(this.key).defaultShortCuts;
 
-    if (this.saveShortCut(shortCutDefinition)) {
-      document.getElementById(id).value = buildShortCutString(shortCutDefinition);
+    if (this.saveShortCut(defaultShortCuts)) {
+      document.getElementById(id).value = buildShortCutString(defaultShortCuts[0]);
     }
   }
 
@@ -603,7 +616,7 @@ class ShortCutElement extends HTMLElement {
 
   _updateContents() {
     this.innerHTML = "";
-    const labelString = translate(this.key, "");
+    const labelString = getActionTitle(this.key);
     this.append(
       html.label(
         {
