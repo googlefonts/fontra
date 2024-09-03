@@ -252,7 +252,6 @@ export class EditorController {
     this.initActions();
     this.initTopBar();
     this.initContextMenuItems();
-    this.initShortCuts();
     this.initMiniConsole();
 
     // If a stored active panel is not a plug-in, we can restore it before the plug-ins
@@ -573,6 +572,15 @@ export class EditorController {
         );
       }
     }
+
+    registerAction(
+      "action.canvas.clean-view-and-hand-tool",
+      {
+        topic: "action-topics.canvas",
+        defaultShortCuts: [{ keyOrCode: "Space" }],
+      },
+      (event) => this.enterCleanViewAndHandTool(event)
+    );
   }
 
   initTopBar() {
@@ -1438,19 +1446,6 @@ export class EditorController {
     });
   }
 
-  initShortCuts() {
-    this.shortCutHandlers = {};
-
-    registerAction(
-      "action.canvas.clean-view-and-hand-tool",
-      {
-        topic: "action-topics.canvas",
-        defaultShortCuts: [{ keyOrCode: "Space" }],
-      },
-      (event) => this.enterCleanViewAndHandTool(event)
-    );
-  }
-
   initFallbackClipboardEventListeners() {
     window.addEventListener("paste", async (event) => {
       if (document.activeElement === this.canvasController.canvas) {
@@ -1474,35 +1469,6 @@ export class EditorController {
     });
   }
 
-  registerShortCut(keysOrCodes, modifiers, callback, enabled = null) {
-    //
-    // Register a shortcut handler
-    //
-    // `keysOrCodes` is a list of event codes or a string or list of key strings.
-    // Any item in the list or string will be seen as a trigger for the handler.
-    //
-    // `modifiers` is an object that allows you to match a specific boolean event
-    // property. For example, { shiftKey: false } requires that the shift key must
-    // not be pressed. If shiftKey is undefined, the state of the shift key is not
-    // taken into account when matching the handler.
-    //
-    // `callback` is a callable that will be called with the event as its single
-    // argument.
-    //
-    // `enabled` is an optional callable that should return true if the action is
-    // enabled. If `enabled()` returns false, `callback` will not be called.
-    // If `enabled` is not given, `callback` will be called unconditionally.
-    //
-
-    for (const keyOrCode of keysOrCodes) {
-      const handlerDef = { ...modifiers, callback, enabled };
-      if (!this.shortCutHandlers[keyOrCode]) {
-        this.shortCutHandlers[keyOrCode] = [];
-      }
-      this.shortCutHandlers[keyOrCode].push(handlerDef);
-    }
-  }
-
   async keyDownHandler(event) {
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
     if (actionIdentifier) {
@@ -1512,45 +1478,6 @@ export class EditorController {
       doPerformAction(actionIdentifier, event);
       return;
     }
-    // TODO: remove old code
-    const { callback, enabled } = this._getShortCutCallback(event);
-    if (callback !== undefined) {
-      this.sceneController.updateContextMenuState(null);
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      if (!enabled || enabled()) {
-        await callback(event);
-      }
-    }
-  }
-
-  _getShortCutCallback(event) {
-    let handlerDefs = this.shortCutHandlers[event.key.toLowerCase()];
-    if (!handlerDefs) {
-      handlerDefs = this.shortCutHandlers[event.code];
-    }
-    if (!handlerDefs) {
-      return {};
-    }
-    for (const handlerDef of handlerDefs) {
-      if (
-        (isActiveElementTypeable() || window.getSelection().toString()) &&
-        !handlerDef.globalOverride
-      ) {
-        continue;
-      }
-      if (
-        handlerDef.metaKey !== undefined &&
-        handlerDef.metaKey !== event[commandKeyProperty]
-      ) {
-        continue;
-      }
-      if (!matchEvent(handlerDef, event)) {
-        continue;
-      }
-      return { callback: handlerDef.callback, enabled: handlerDef.enabled };
-    }
-    return {};
   }
 
   getUndoRedoLabel(isRedo) {
