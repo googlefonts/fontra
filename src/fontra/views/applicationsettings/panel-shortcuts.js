@@ -2,98 +2,44 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
-import { fetchJSON } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { translate } from "/core/localization.js";
 import {
-  buildShortCutString,
-  getKeyMap,
-  getKeyMapSwapped,
-  getNiceKey,
-} from "/web-components/menu-panel.js";
+  getActionIdentifiers,
+  getActionTitle,
+  getShortCutRepresentationFromActionIdentifier,
+  setCustomShortCuts,
+  shortCutKeyMap,
+} from "/core/actions.js";
+import { translate } from "/core/localization.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
-// For details please see https://tecadmin.net/javascript-detect-os/
-const isMac = window.navigator.userAgent.indexOf("Mac") != -1;
+const swappedKeyMap = Object.fromEntries(
+  Object.entries(shortCutKeyMap).map((a) => a.reverse())
+);
 
-let shortCutsDataDefault = {};
-let shortCutsDataCustom = {};
-let resolveShortCutsHasLoaded;
+function getShortCut(key) {
+  const actionInfo = getActionInfo(key);
+  const shortCuts = actionInfo.customShortCuts || actionInfo.defaultShortCuts || [];
+  return shortCuts[0];
+}
 
-export const ensureShortCutsHasLoaded = new Promise((resolve) => {
-  resolveShortCutsHasLoaded = resolve;
-});
+export function getNiceKey(key, returnKey = key) {
+  return shortCutKeyMap[key] || returnKey;
+}
 
-function createShortCutsData() {
-  fetchJSON(`/core/data/shortcuts.json`).then((data) => {
-    if (!isMac) {
-      // If not Mac (Windows or Linux) then
-      // replace metaKey with ctrlKey
-      for (const key in data) {
-        if (data[key].metaKey) {
-          data[key].ctrlKey = true;
-          delete data[key].metaKey;
-        }
-      }
+function getShortCutsGrouped() {
+  const shortCutsGrouped = {};
+  console.log("getActionIdentifiers(): ", getActionIdentifiers());
+  for (const actionIdentifier of getActionIdentifiers()) {
+    const actionInfo = getActionInfo(actionIdentifier);
+    const topic = actionInfo.topic || "shortcuts.other";
+    if (shortCutsGrouped[topic]) {
+      shortCutsGrouped[topic] = [];
     }
-
-    // TODO: Data is missing keysOrCodes and I don't know why.
-
-    const storedCustomData = localStorage.getItem("shortCuts-custom");
-    shortCutsDataCustom = storedCustomData ? JSON.parse(storedCustomData) : {};
-    shortCutsDataDefault = data;
-    resolveShortCutsHasLoaded();
-  });
+    shortCutsGrouped[topic].push(actionIdentifier);
+  }
+  return shortCutsGrouped;
 }
-
-createShortCutsData();
-
-export function getShortCut(key) {
-  return shortCutsDataCustom[key] || shortCutsDataDefault[key];
-}
-
-// With this grouping we have control over the order of the shortcuts.
-const shortCutsGrouped = {
-  "shortcuts.tools": [
-    "editor.pointer-tool",
-    "editor.pen-tool",
-    "editor.knife-tool",
-    "editor.shape-tool-rectangle",
-    "editor.shape-tool-ellipse",
-    "editor.power-ruler-tool",
-    "editor.hand-tool",
-  ],
-  "shortcuts.views": [
-    "zoom-in",
-    "zoom-out",
-    "zoom-fit-selection",
-    "menubar.view.select.part.next",
-    "menubar.view.select.part.previous",
-  ],
-  "shortcuts.panels": [
-    "sidebar.glyph-search",
-    "sidebar.selection-info",
-    "sidebar.designspace-navigation",
-  ],
-  "shortcuts.edit": [
-    "action.undo",
-    "action.redo",
-    "action.cut",
-    "action.copy",
-    "action.paste",
-    "action.select-all",
-    "action.select-none",
-    "action.delete",
-    "action.add-component",
-    "action.decompose-component",
-    "action.join-contours",
-    "action.add-anchor",
-    "action.add-guideline",
-    "action.break-contour",
-    "action.reverse-contour",
-    "action.set-contour-start",
-  ],
-};
 
 addStyleSheet(`
 .fontra-ui-shortcuts-panel {
@@ -116,8 +62,6 @@ export class ShortCutsPanel extends BaseInfoPanel {
   static id = "shortcuts-panel";
 
   async setupUI() {
-    await ensureShortCutsHasLoaded;
-
     this.panelElement.innerHTML = "";
 
     this.panelElement.style = "gap: 1em;";
@@ -154,7 +98,8 @@ export class ShortCutsPanel extends BaseInfoPanel {
     );
 
     this.panelElement.appendChild(containerButtons);
-
+    const shortCutsGrouped = getShortCutsGrouped();
+    console.log(shortCutsGrouped);
     for (const [categoryKey, shortCuts] of Object.entries(shortCutsGrouped)) {
       const container = html.div({ class: "fontra-ui-shortcuts-panel" }, []);
       container.appendChild(
@@ -220,7 +165,6 @@ export class ShortCutsPanel extends BaseInfoPanel {
   }
 }
 
-const swappedKeyMap = getKeyMapSwapped();
 function parseShortCutString(value) {
   if (value === "") {
     // Shortcut has been removed, therefore return null,
@@ -368,7 +312,7 @@ function validateShortCutDefinition(key, definition) {
   }
 
   for (const charStr of keysOrCodes) {
-    if (charStr.length > 1 && !getKeyMap()[charStr]) {
+    if (charStr.length > 1 && !shortCutKeyMap[charStr]) {
       warnings.push(`⚠️ Invalid key: ${charStr}`);
     }
   }
@@ -475,6 +419,7 @@ function _shortCutPropertiesContentElement(controller) {
   return { contentElement, warningElement };
 }
 
+const isMac = window.navigator.userAgent.indexOf("Mac") != -1;
 const shortcutsPanelInputWidth = isMac ? "6em" : "12em"; // longer on windows because no icons are shown.
 addStyleSheet(`
   .fontra-ui-shortcuts-panel-element {
