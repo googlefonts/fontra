@@ -86,6 +86,10 @@ export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) 
     return "";
   }
 
+  return getShortCutRepresentation(shortCutDefinition);
+}
+
+export function getShortCutRepresentation(shortCutDefinition) {
   let shortCutRepr = "";
 
   const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
