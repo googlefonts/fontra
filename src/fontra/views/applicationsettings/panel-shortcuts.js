@@ -295,7 +295,7 @@ function validateShortCutDefinition(key, definition) {
     if (isDifferentShortCutDefinition(getShortCut(otherKey), definition)) {
       continue;
     }
-    warnings.push("⚠️ ShortCut exists for: " + translate(otherKey, ""));
+    warnings.push("⚠️ ShortCut exists for: " + getActionTitle(otherKey));
     break;
   }
 
@@ -325,7 +325,7 @@ function validateShortCutDefinition(key, definition) {
 
 async function doEditShortCutDialog(key) {
   const shortCutDefinition = getShortCut(key);
-  const title = "Edit ShortCut: " + translate(key, "");
+  const title = "Edit ShortCut: " + getActionTitle(key);
 
   const validateInput = () => {
     const warnings = validateShortCutDefinition(
@@ -486,6 +486,7 @@ class ShortCutElement extends HTMLElement {
     this.classList.add("fontra-ui-shortcuts-panel-element");
     this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
+    this.label = getActionTitle(this.key);
     this.setupUI = setupUI;
     this.shorcutCommands = new Set();
     this._updateContents();
@@ -513,9 +514,9 @@ class ShortCutElement extends HTMLElement {
     }
     if (warnings.length > 0) {
       message(
-        `Invalid ShortCut "${getShortCutRepresentation(
-          newShortCutDefinition
-        )}" for "${translate(this.key, "")}":`,
+        `Invalid ShortCut "${getShortCutRepresentation(newShortCutDefinition)}" for "${
+          this.label
+        }":`,
         warnings.join("\n")
       );
       return false;
