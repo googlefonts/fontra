@@ -2,8 +2,8 @@ import { themeColorCSS } from "./theme-support.js";
 import {
   canPerformAction,
   doPerformAction,
-  getActionShortCutRepresentation,
   getActionTitle,
+  getShortCutRepresentationFromActionIdentifier,
 } from "/core/actions.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
@@ -146,7 +146,9 @@ export class MenuPanel extends SimpleElement {
             typeof item.title === "function"
               ? item.title()
               : item.title || getActionTitle(item.actionIdentifier),
-            html.span({}, [getActionShortCutRepresentation(item.actionIdentifier)]),
+            html.span({}, [
+              getShortCutRepresentationFromActionIdentifier(item.actionIdentifier),
+            ]),
           ]),
         ];
         if (hasSubMenu) {

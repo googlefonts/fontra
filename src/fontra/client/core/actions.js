@@ -68,7 +68,7 @@ export const shortCutKeyMap = {
   Delete: "⌫",
 };
 
-export function getActionShortCutRepresentation(actionIdentifier) {
+export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) {
   if (!actionIdentifier) {
     return "";
   }
