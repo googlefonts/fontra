@@ -113,25 +113,21 @@ export const shortCutKeyMap = {
   ...(window.navigator.userAgent.indexOf("Mac") != -1 ? shortCutKeyMapMac : {}),
 };
 
+export function getShortCuts(actionIdentifier) {
+  const actionInfo = getActionInfo(actionIdentifier);
+  return actionInfo?.customShortCuts || actionInfo?.defaultShortCuts || [];
+}
+
+export function getShortCut(actionIdentifier) {
+  const shortCuts = getShortCuts(actionIdentifier);
+  return shortCuts[0];
+}
+
 export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) {
   if (!actionIdentifier) {
     return "";
   }
-
-  const actionInfo = getActionInfo(actionIdentifier);
-
-  if (!actionInfo) {
-    return "";
-  }
-
-  const shortCuts = actionInfo.customShortCuts || actionInfo.defaultShortCuts || [];
-  const shortCutDefinition = shortCuts[0];
-
-  if (!shortCutDefinition) {
-    return "";
-  }
-
-  return getShortCutRepresentation(shortCutDefinition);
+  return getShortCutRepresentation(getShortCut(actionIdentifier));
 }
 
 export function getShortCutRepresentation(shortCutDefinition) {

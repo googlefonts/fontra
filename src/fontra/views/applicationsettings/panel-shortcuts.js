@@ -7,23 +7,20 @@ import {
   getActionIdentifiers,
   getActionInfo,
   getActionTitle,
+  getShortCut,
   getShortCutRepresentation,
-  getShortCutRepresentationFromActionIdentifier,
+  getShortCuts,
   setCustomShortCuts,
   shortCutKeyMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
+const isMac = window.navigator.userAgent.indexOf("Mac") != -1;
+
 const swappedKeyMap = Object.fromEntries(
   Object.entries(shortCutKeyMap).map((a) => a.reverse())
 );
-
-function getShortCut(key) {
-  const actionInfo = getActionInfo(key);
-  const shortCuts = actionInfo.customShortCuts || actionInfo.defaultShortCuts || [];
-  return shortCuts[0];
-}
 
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
@@ -95,8 +92,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
     );
 
     this.panelElement.appendChild(containerButtons);
-    const shortCutsGrouped = getShortCutsGrouped();
-    for (const [topicKey, actionIdentifiers] of Object.entries(shortCutsGrouped)) {
+    for (const [topicKey, actionIdentifiers] of Object.entries(getShortCutsGrouped())) {
       const container = html.div({ class: "fontra-ui-shortcuts-panel" }, []);
       container.appendChild(
         html.createDomElement("div", {
@@ -125,7 +121,9 @@ export class ShortCutsPanel extends BaseInfoPanel {
     if (!result) {
       return;
     }
-    localStorage.removeItem("shortCuts-custom");
+    for (const actionIdentifier of getActionIdentifiers()) {
+      setCustomShortCuts(actionIdentifier, null);
+    }
     location.reload();
   }
 
@@ -139,7 +137,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
       if (!shortCuts) {
         continue;
       }
-      shortCutsDataCustom[actionIdentifier] = shortCuts[0];
+      shortCutsDataCustom[actionIdentifier] = shortCuts;
     }
     const data = JSON.stringify(shortCutsDataCustom);
     const blob = new Blob([data], { type: "application/json" });
@@ -184,8 +182,14 @@ function parseShortCutString(value) {
   const definition = {};
 
   function setShortCutDefinitionByKey(key, value, definition) {
+    const modifierKey =
+      isMac && key === "metaKey"
+        ? "commandKey"
+        : !isMac && key === "ctrlKey"
+        ? "commandKey"
+        : key;
     if (value.includes(shortCutKeyMap[key])) {
-      definition[key] = true;
+      definition[modifierKey] = true;
       const keyStr = shortCutKeyMap[key];
       const index = value.indexOf(keyStr);
       value = value.slice(0, index) + value.slice(index + keyStr.length);
@@ -200,7 +204,7 @@ function parseShortCutString(value) {
   const codePoint = value.codePointAt(0);
   const isAtoZor0to9 =
     (codePoint >= 65 && codePoint <= 90) || (codePoint >= 48 && codePoint <= 57);
-  definition.keysOrCodes = isAtoZor0to9
+  definition.keyOrCode = isAtoZor0to9
     ? value.toLowerCase()
     : swappedKeyMap[value]
     ? [swappedKeyMap[value]]
@@ -224,17 +228,7 @@ function isDifferentShortCutDefinition(a, b) {
   }
 
   for (const key in defA) {
-    if (key === "keysOrCodes") {
-      // This is required, because of cases like this:
-      // ['Delete', 'Backspace'] vs 'Backspace'
-      const array1 = Array.isArray(defA[key]) ? defA[key] : [defA[key]];
-      const array2 = Array.isArray(defB[key]) ? defB[key] : [defB[key]];
-      const intersection = array1.filter(Set.prototype.has, new Set(array2));
-      if (intersection.length === 0) {
-        // No intersection: they are different.
-        return true;
-      }
-    } else if (defA[key] !== defB[key]) {
+    if (defA[key] !== defB[key]) {
       return true;
     }
   }
@@ -242,20 +236,23 @@ function isDifferentShortCutDefinition(a, b) {
 }
 
 const shortCutDefinitionKeys = [
+  "commandKey",
   "ctrlKey",
   "altKey",
   "shiftKey",
   "metaKey",
-  "keysOrCodes",
+  "keyOrCode",
 ];
 function _shortCutDefinitionNormalized(shortCutDefinition) {
+  // For example: it removes false values, like altKey: false,
+  // which is possible to be set via the double click dialog.
   if (shortCutDefinition === null) {
     return null;
   }
   if (shortCutDefinition === undefined) {
     return undefined;
   }
-  if (!shortCutDefinition["keysOrCodes"]) {
+  if (!shortCutDefinition["keyOrCode"]) {
     // No keys or codes, is not valid,
     // therefore return null.
     // INFO: This is how you can delete a shortcut.
@@ -264,16 +261,9 @@ function _shortCutDefinitionNormalized(shortCutDefinition) {
   const definition = {};
   for (const key of shortCutDefinitionKeys) {
     if (shortCutDefinition[key]) {
-      if (key === "keysOrCodes") {
+      if (key === "keyOrCode") {
         if (shortCutDefinition[key] === "") {
           return null;
-        }
-        if (
-          shortCutDefinition[key].length > 1 &&
-          shortCutDefinition[key].includes(",")
-        ) {
-          // It's a list of keys, if it contains a comma
-          shortCutDefinition[key] = shortCutDefinition[key].split(",");
         }
       }
       definition[key] = shortCutDefinition[key];
@@ -287,39 +277,23 @@ function validateShortCutDefinition(key, definition) {
     return [];
   }
   const warnings = [];
-  for (const otherKey in shortCutsDataDefault) {
+  for (const otherKey of getActionIdentifiers()) {
     if (key === otherKey) {
       // skip self
       continue;
     }
-    if (isDifferentShortCutDefinition(getShortCut(otherKey), definition)) {
-      continue;
-    }
-    warnings.push("⚠️ ShortCut exists for: " + getActionTitle(otherKey));
-    break;
-  }
-
-  let keysOrCodes = [];
-  if (Array.isArray(definition.keysOrCodes)) {
-    keysOrCodes = definition.keysOrCodes;
-  } else {
-    if (definition.keysOrCodes && definition.keysOrCodes.length > 1) {
-      if (definition.keysOrCodes.includes(",")) {
-        // collect items to be checked later if it's a valid key
-        definition.keysOrCodes.split(",").forEach((key) => {
-          keysOrCodes.push(key);
-        });
-      } else {
-        keysOrCodes.push(definition.keysOrCodes);
+    for (const otherDefinition of getShortCuts(otherKey)) {
+      if (!isDifferentShortCutDefinition(otherDefinition, definition)) {
+        warnings.push("⚠️ ShortCut exists for: " + getActionTitle(otherKey));
+        break;
       }
     }
   }
 
-  for (const charStr of keysOrCodes) {
-    if (charStr.length > 1 && !shortCutKeyMap[charStr]) {
-      warnings.push(`⚠️ Invalid key: ${charStr}`);
-    }
+  if (definition.keyOrCode.length > 1 && !shortCutKeyMap[definition.keyOrCode]) {
+    warnings.push(`⚠️ Invalid key or code: ${definition.keyOrCode}`);
   }
+
   return warnings;
 }
 
@@ -337,15 +311,28 @@ async function doEditShortCutDialog(key) {
     dialog.defaultButton.classList.toggle("disabled", warnings.length);
   };
 
-  const controller = new ObservableController({
+  const controllers = {
     ctrlKey: shortCutDefinition ? shortCutDefinition.ctrlKey : false,
     altKey: shortCutDefinition ? shortCutDefinition.altKey : false,
     shiftKey: shortCutDefinition ? shortCutDefinition.shiftKey : false,
     metaKey: shortCutDefinition ? shortCutDefinition.metaKey : false,
-    keysOrCodes: shortCutDefinition ? shortCutDefinition.keysOrCodes : "",
-  });
+    keyOrCode: shortCutDefinition ? shortCutDefinition.keyOrCode : "",
+  };
+  if (isMac) {
+    controllers.commandKey = shortCutDefinition.commandKey
+      ? shortCutDefinition.commandKey
+      : shortCutDefinition.metaKey || false;
+    delete controllers.metaKey;
+  } else {
+    controllers.commandKey = shortCutDefinition.commandKey
+      ? shortCutDefinition.commandKey
+      : shortCutDefinition.ctrlKey || false;
+    delete controllers.ctrlKey;
+  }
 
-  controller.addKeyListener("ctrlKey", (event) => {
+  const controller = new ObservableController(controllers);
+
+  controller.addKeyListener("commandKey", (event) => {
     validateInput();
   });
   controller.addKeyListener("altKey", (event) => {
@@ -354,14 +341,21 @@ async function doEditShortCutDialog(key) {
   controller.addKeyListener("shiftKey", (event) => {
     validateInput();
   });
-  controller.addKeyListener("metaKey", (event) => {
-    validateInput();
-  });
-  controller.addKeyListener("keysOrCodes", (event) => {
+  controller.addKeyListener("keyOrCode", (event) => {
     validateInput();
   });
 
-  const disable = controller.model.keysOrCodes != "" ? false : true;
+  if (isMac) {
+    controller.addKeyListener("ctrlKey", (event) => {
+      validateInput();
+    });
+  } else {
+    controller.addKeyListener("metaKey", (event) => {
+      validateInput();
+    });
+  }
+
+  const disable = controller.model.keyOrCode != "" ? false : true;
   const { contentElement, warningElement } =
     _shortCutPropertiesContentElement(controller);
   const dialog = await dialogSetup(title, null, [
@@ -392,6 +386,10 @@ function _shortCutPropertiesContentElement(controller) {
     id: "warning-text-anchor-name",
     style: `grid-column: 1 / -1; min-height: 1.5em;`,
   });
+
+  const labeledCheckBoxSpecificOS = isMac
+    ? labeledCheckbox(`Ctrl(${shortCutKeyMap["ctrlKey"]})`, controller, "ctrlKey", {})
+    : labeledCheckbox(`Ctrl(${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {});
   const contentElement = html.div(
     {
       style: `overflow: hidden;
@@ -405,13 +403,18 @@ function _shortCutPropertiesContentElement(controller) {
       `,
     },
     [
-      ...labeledTextInput("Keys or codes:", controller, "keysOrCodes", {
+      ...labeledTextInput("Key or Code:", controller, "keyOrCode", {
         id: "shortCut-text-input",
       }),
       html.div(),
-      labeledCheckbox(`Meta (${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {}),
+      labeledCheckbox(
+        `Command (${shortCutKeyMap["commandKey"]})`,
+        controller,
+        "commandKey",
+        {}
+      ),
       html.div(),
-      labeledCheckbox(`Ctrl(${shortCutKeyMap["ctrlKey"]})`, controller, "ctrlKey", {}),
+      labeledCheckBoxSpecificOS,
       html.div(),
       labeledCheckbox(
         `Shift (${shortCutKeyMap["shiftKey"]})`,
@@ -428,7 +431,6 @@ function _shortCutPropertiesContentElement(controller) {
   return { contentElement, warningElement };
 }
 
-const isMac = window.navigator.userAgent.indexOf("Mac") != -1;
 const shortcutsPanelInputWidth = isMac ? "6em" : "12em"; // longer on windows because no icons are shown.
 addStyleSheet(`
   .fontra-ui-shortcuts-panel-element {
@@ -499,29 +501,31 @@ class ShortCutElement extends HTMLElement {
       // User cancelled, do nothing.
       return;
     }
-    if (this.saveShortCut(newShortCutDefinition)) {
+    if (this.saveShortCuts([newShortCutDefinition])) {
       const element = document.getElementById(id);
       element.value = getShortCutRepresentation(newShortCutDefinition);
       element.blur(); // remove focus
     }
   }
 
-  saveShortCut(newShortCutDefinitions) {
+  saveShortCuts(newShortCutDefinitions) {
     const warnings = [];
     for (const newShortCutDefinition of newShortCutDefinitions) {
       const warns = validateShortCutDefinition(this.key, newShortCutDefinition);
-      warnings.concat(warns);
+      for (const warn of warns) {
+        warnings.push(warn);
+      }
     }
     if (warnings.length > 0) {
       message(
-        `Invalid ShortCut "${getShortCutRepresentation(newShortCutDefinition)}" for "${
-          this.label
-        }":`,
+        `Invalid ShortCut "${getShortCutRepresentation(
+          newShortCutDefinitions[0]
+        )}" for "${this.label}":`,
         warnings.join("\n")
       );
       return false;
     }
-    setCustomShortCuts(this.key, [newShortCutDefinition]);
+    setCustomShortCuts(this.key, newShortCutDefinitions);
     return true;
   }
 
@@ -566,7 +570,7 @@ class ShortCutElement extends HTMLElement {
     // if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
       const shortCutDefinition = parseShortCutString(shorcutCommand);
-      if (!this.saveShortCut(shortCutDefinition)) {
+      if (!this.saveShortCuts([shortCutDefinition])) {
         // if the shortcut is invalid, reset the input field
         element.value = getShortCutRepresentation(this.shortCutDefinition);
       }
@@ -591,7 +595,7 @@ class ShortCutElement extends HTMLElement {
   resetShortCut(id) {
     const defaultShortCuts = getActionInfo(this.key).defaultShortCuts;
 
-    if (this.saveShortCut(defaultShortCuts)) {
+    if (this.saveShortCuts(defaultShortCuts)) {
       document.getElementById(id).value = getShortCutRepresentation(
         defaultShortCuts[0]
       );
@@ -599,7 +603,7 @@ class ShortCutElement extends HTMLElement {
   }
 
   deleteShortCut(id) {
-    if (this.saveShortCut(null)) {
+    if (this.saveShortCuts([null])) {
       document.getElementById(id).value = "";
     }
   }
