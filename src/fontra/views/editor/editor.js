@@ -1,3 +1,9 @@
+import {
+  canPerformAction,
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+  registerAction,
+} from "../core/actions.js";
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { applyChange } from "../core/changes.js";
@@ -242,6 +248,8 @@ export class EditorController {
     this.contextMenuPosition = { x: 0, y: 0 };
 
     this.initSidebars();
+    this.initTools();
+    this.initActions();
     this.initTopBar();
     this.initContextMenuItems();
     this.initShortCuts();
@@ -303,6 +311,270 @@ export class EditorController {
     this.updateWithDelay();
   }
 
+  initActions() {
+    {
+      const topic = "action-topics.menu.edit";
+
+      registerAction(
+        "action.undo",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: false }],
+        },
+        () => this.doUndoRedo(false),
+        () => this.canUndoRedo(false)
+      );
+
+      registerAction(
+        "action.redo",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: true }],
+        },
+        () => this.doUndoRedo(true),
+        () => this.canUndoRedo(true)
+      );
+
+      if (insecureSafariConnection()) {
+        // In Safari, the async clipboard API only works in a secure context
+        // (HTTPS). We apply a workaround using the clipboard event API, but
+        // only in Safari, and when in an HTTP context
+        this.initFallbackClipboardEventListeners();
+      } else {
+        registerAction(
+          "action.clipboard.cut",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
+          },
+          () => this.doCut(),
+          () => this.canCut()
+        );
+
+        registerAction(
+          "action.clipboard.copy",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
+          },
+          () => this.doCopy(),
+          () => this.canCopy()
+        );
+
+        registerAction(
+          "action.clipboard.paste",
+          {
+            topic,
+            defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
+          },
+          () => this.doPaste(),
+          () => this.canPaste()
+        );
+      }
+
+      registerAction(
+        "action.delete",
+        {
+          topic,
+          defaultShortCuts: [
+            { keyOrCode: "Delete" },
+            { keyOrCode: "Delete", altKey: true },
+            { keyOrCode: "Backspace" },
+            { keyOrCode: "Backspace", altKey: true },
+          ],
+        },
+        (event) => this.doDelete(event),
+        () => this.canDelete()
+      );
+
+      registerAction(
+        "action.select-all",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "a", commandKey: true }],
+        },
+        () => this.doSelectAllNone(false),
+        () => this.sceneSettings.selectedGlyph?.isEditing
+      );
+
+      registerAction(
+        "action.select-none",
+        {
+          topic,
+          defaultShortCuts: [{ keyOrCode: "a", commandKey: true, shiftKey: true }],
+        },
+        () => this.doSelectAllNone(true),
+        () =>
+          this.sceneSettings.selectedGlyph?.isEditing &&
+          this.sceneSettings.selection.size
+      );
+
+      registerAction(
+        "action.add-component",
+        { topic },
+        () => this.doAddComponent(),
+        () => this.canAddComponent()
+      );
+
+      registerAction(
+        "action.add-anchor",
+        { topic },
+        () => this.doAddAnchor(),
+        () => this.canAddAnchor()
+      );
+
+      registerAction(
+        "action.add-guideline",
+        { topic },
+        () => this.doAddGuideline(),
+        () => this.canAddGuideline()
+      );
+
+      registerAction(
+        "action.lock-guidelines",
+        { topic },
+        () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
+        () => this.canLockGuideline()
+      );
+    }
+
+    {
+      const topic = "action-topics.menu.view";
+
+      registerAction(
+        "action.zoom-in",
+        {
+          topic,
+          titleKey: "zoom-in",
+          defaultShortCuts: [
+            { keyOrCode: "+", commandKey: true },
+            { keyOrCode: "=", commandKey: true },
+          ],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomIn()
+      );
+
+      registerAction(
+        "action.zoom-out",
+        {
+          topic,
+          titleKey: "zoom-out",
+          defaultShortCuts: [{ keyOrCode: "-", commandKey: true }],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomOut()
+      );
+
+      registerAction(
+        "action.zoom-fit-selection",
+        {
+          topic,
+          titleKey: "zoom-fit-selection",
+          defaultShortCuts: [{ keyOrCode: "0", commandKey: true }],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomFit(),
+        () => {
+          let viewBox = this.sceneController.getSelectionBox();
+          if (!viewBox) {
+            return false;
+          }
+
+          const size = rectSize(viewBox);
+          if (size.width < 4 && size.height < 4) {
+            const center = rectCenter(viewBox);
+            viewBox = centeredRect(center.x, center.y, 10, 10);
+          } else {
+            viewBox = rectAddMargin(viewBox, 0.1);
+          }
+          return !this.canvasController.isActualViewBox(viewBox);
+        }
+      );
+
+      registerAction(
+        "action.select-previous-source",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-source",
+          defaultShortCuts: [{ keyOrCode: "ArrowUp", metaKey: true }],
+        },
+        () => this.doSelectPreviousNextSource(true)
+      );
+
+      registerAction(
+        "action.select-next-source",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-source",
+          defaultShortCuts: [{ keyOrCode: "ArrowDown", metaKey: true }],
+        },
+        () => this.doSelectPreviousNextSource(true)
+      );
+
+      registerAction(
+        "action.find-glyphs-that-use",
+        {
+          topic,
+          titleKey: "menubar.view.find-glyphs-that-use",
+        },
+        () => this.doFindGlyphsThatUseGlyph()
+      );
+    }
+
+    {
+      const topic = "action-topics.sidebars";
+
+      const sideBarShortCuts = {
+        "glyph-search": "f",
+        "selection-info": "i",
+      };
+
+      this.sidebars
+        .map((sidebar) => sidebar.panelIdentifiers)
+        .flat()
+        .forEach((panelIdentifier) => {
+          const shortKey = sideBarShortCuts[panelIdentifier];
+
+          const defaultShortCuts = shortKey
+            ? [{ keyOrCode: shortKey, commandKey: shortKey }]
+            : [];
+
+          registerAction(
+            `action.sidebars.toggle.${panelIdentifier}`,
+            { topic, defaultShortCuts, allowGlobalOverride: true },
+            () => this.toggleSidebar(panelIdentifier, true)
+          );
+        });
+    }
+
+    {
+      const topic = "action-topics.tools";
+
+      const defaultKeys = {};
+      for (const [i, toolIdentifier] of enumerate(Object.keys(this.topLevelTools), 1)) {
+        if (i <= 9) {
+          defaultKeys[toolIdentifier] = `${i}`;
+        }
+      }
+
+      for (const toolIdentifier of Object.keys(this.tools)) {
+        const defaultKey = defaultKeys[toolIdentifier];
+        const defaultShortCuts = defaultKey ? [{ keyOrCode: defaultKey }] : [];
+        registerAction(
+          `actions.tools.${toolIdentifier}`,
+          {
+            topic: "action-topics.tools",
+            defaultShortCuts: defaultShortCuts,
+          },
+          () => {
+            this.setSelectedTool(toolIdentifier);
+          }
+        );
+      }
+    }
+  }
+
   initTopBar() {
     const menuBar = new MenuBar([
       {
@@ -313,13 +585,11 @@ export class EditorController {
               title: translate("menubar.file.new"),
               enabled: () => false,
               callback: () => {},
-              shortCut: undefined,
             },
             {
               title: translate("menubar.file.open"),
               enabled: () => false,
               callback: () => {},
-              shortCut: undefined,
             },
           ];
         },
@@ -341,49 +611,22 @@ export class EditorController {
         getItems: () => {
           const items = [
             {
-              title: translate("zoom-in"),
-              enabled: () => true,
-              shortCut: { keysOrCodes: "+=", metaKey: true, globalOverride: true },
-              callback: () => {
-                this.zoomIn();
-              },
+              actionIdentifier: "action.zoom-in",
             },
             {
-              title: translate("zoom-out"),
-              shortCut: { keysOrCodes: "-", metaKey: true, globalOverride: true },
-              enabled: () => true,
-              callback: () => {
-                this.zoomOut();
-              },
+              actionIdentifier: "action.zoom-out",
             },
             {
-              title: translate("zoom-fit-selection"),
-              enabled: () => {
-                let viewBox = this.sceneController.getSelectionBox();
-                if (!viewBox) {
-                  return false;
-                }
-
-                const size = rectSize(viewBox);
-                if (size.width < 4 && size.height < 4) {
-                  const center = rectCenter(viewBox);
-                  viewBox = centeredRect(center.x, center.y, 10, 10);
-                } else {
-                  viewBox = rectAddMargin(viewBox, 0.1);
-                }
-                return !this.canvasController.isActualViewBox(viewBox);
-              },
-              shortCut: { keysOrCodes: "0", metaKey: true, globalOverride: true },
-              callback: () => {
-                this.zoomFit();
-              },
+              actionIdentifier: "action.zoom-fit-selection",
             },
           ];
+
           if (typeof this.sceneModel.selectedGlyph !== "undefined") {
             this.sceneController.updateContextMenuState();
             items.push(MenuItemDivider);
             items.push(...this.glyphSelectedContextMenuItems);
           }
+
           return items;
         },
       },
@@ -558,7 +801,6 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    this.initTools();
 
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
@@ -1114,17 +1356,18 @@ export class EditorController {
 
   initContextMenuItems() {
     this.basicContextMenuItems = [];
-    for (const isRedo of [false, true]) {
-      this.basicContextMenuItems.push({
-        title: () => this.getUndoRedoLabel(isRedo),
-        enabled: () => this.canUndoRedo(isRedo),
-        callback: () => this.doUndoRedo(isRedo),
-        shortCut: { keysOrCodes: "z", metaKey: true, shiftKey: isRedo },
-      });
-    }
+    this.basicContextMenuItems.push({
+      title: () => this.getUndoRedoLabel(false),
+      actionIdentifier: "action.undo",
+    });
+    this.basicContextMenuItems.push({
+      title: () => this.getUndoRedoLabel(true),
+      actionIdentifier: "action.redo",
+    });
+
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    if (window.safari !== undefined && window.location.protocol === "http:") {
+    if (insecureSafariConnection()) {
       // In Safari, the async clipboard API only works in a secure context
       // (HTTPS). We apply a workaround using the clipboard event API, but
       // only in Safari, and when in an HTTP context
@@ -1133,21 +1376,15 @@ export class EditorController {
       this.basicContextMenuItems.push(
         {
           title: "Cut",
-          enabled: () => this.canCut(),
-          callback: () => this.doCut(),
-          shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.cut",
         },
         {
           title: "Copy",
-          enabled: () => this.canCopy(),
-          callback: () => this.doCopy(),
-          shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.copy",
         },
         {
           title: "Paste",
-          enabled: () => this.canPaste(),
-          callback: () => this.doPaste(),
-          shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
+          actionIdentifier: "action.clipboard.paste",
         }
       );
     }
@@ -1157,61 +1394,28 @@ export class EditorController {
         this.sceneSettings.selectedGlyph?.isEditing
           ? translate("action.delete-selection")
           : translate("action.delete-glyph"),
-      enabled: () => this.canDelete(),
-      callback: (event) => this.doDelete(event),
-      shortCut: {
-        keysOrCodes: ["Delete", "Backspace"],
-        metaKey: false,
-        shiftKey: false,
-      },
+      actionIdentifier: "action.delete",
     });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
     this.basicContextMenuItems.push({
-      title: translate("action.select-all"),
-      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
-      callback: () => this.doSelectAllNone(false),
-      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: false },
+      actionIdentifier: "action.select-all",
     });
 
     this.basicContextMenuItems.push({
-      title: translate("action.select-none"),
-      enabled: () => this.sceneSettings.selectedGlyph?.isEditing,
-      callback: () => this.doSelectAllNone(true),
-      shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: true },
+      actionIdentifier: "action.select-none",
     });
 
     this.glyphEditContextMenuItems = [];
 
-    this.glyphEditContextMenuItems.push({
-      title: translate("action.add-component"),
-      enabled: () => this.canAddComponent(),
-      callback: () => this.doAddComponent(),
-      shortCut: undefined,
-    });
-
-    this.glyphEditContextMenuItems.push({
-      title: translate("action.add-anchor"),
-      enabled: () => this.canAddAnchor(),
-      callback: () => this.doAddAnchor(),
-      shortCut: undefined,
-    });
-
-    this.glyphEditContextMenuItems.push({
-      // TODO: Font Guidelines with altKey, something like this:
-      //title: (event) => {return event ? `Add ${event.altKey ? "Local" : "Global"} Guideline` : "Add Guideline"},
-      //altKey: true,
-      title: "Add Guideline",
-      enabled: () => this.canAddGuideline(),
-      callback: () => this.doAddGuideline(),
-      shortCut: undefined,
-    });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-component" });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
 
     this.glyphEditContextMenuItems.push({
       title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      enabled: () => this.canLockGuideline(),
-      callback: (event) => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
+      actionIdentifier: "action.lock-guidelines",
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -1219,78 +1423,28 @@ export class EditorController {
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      title: translate("menubar.view.select.previous"),
-      enabled: () => true,
-      callback: () => this.doSelectPreviousNextSource(true),
-      shortCut: { keysOrCodes: ["ArrowUp"], metaKey: true },
+      actionIdentifier: "action.select-previous-source",
     });
-
     this.glyphSelectedContextMenuItems.push({
-      title: translate("menubar.view.select.next"),
-      enabled: () => true,
-      callback: () => this.doSelectPreviousNextSource(false),
-      shortCut: { keysOrCodes: ["ArrowDown"], metaKey: true },
+      actionIdentifier: "action.select-next-source",
     });
-
     this.glyphSelectedContextMenuItems.push({
       title: () =>
         translate(
           "menubar.view.find-glyphs-that-use",
           this.sceneSettings.selectedGlyphName
         ),
-      enabled: () =>
-        this.fontController.backendInfo.features["find-glyphs-that-use-glyph"],
-      callback: () => this.doFindGlyphsThatUseGlyph(),
+      actionIdentifier: "action.find-glyphs-that-use",
     });
   }
 
   initShortCuts() {
     this.shortCutHandlers = {};
 
+    // TODO: how can this fit the action model? There is also spaceKeyUpHandler...
     this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
       this.spaceKeyDownHandler();
     });
-
-    this.registerShortCut("-", { metaKey: true, globalOverride: true }, () => {
-      this.zoomOut();
-    });
-    this.registerShortCut("+=", { metaKey: true, globalOverride: true }, () => {
-      this.zoomIn();
-    });
-    this.registerShortCut("0", { metaKey: true, globalOverride: true }, () => {
-      this.zoomFit();
-    });
-    this.registerShortCut("123456789", { metaKey: false }, (event) => {
-      const toolIndex = parseInt(event.key) - 1;
-      const toolIdentifiers = Object.keys(this.topLevelTools);
-      if (toolIndex < toolIdentifiers.length) {
-        this.setSelectedTool(toolIdentifiers[toolIndex]);
-      }
-    });
-    this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("glyph-search", true);
-    });
-    this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("selection-info", true);
-    });
-    this.registerShortCut("e", { metaKey: true, globalOverride: true }, () => {
-      this.getSidebarPanel("designspace-navigation").onEditHeaderClick();
-    });
-
-    for (const menuItem of [
-      ...this.basicContextMenuItems,
-      ...this.glyphEditContextMenuItems,
-      ...this.glyphSelectedContextMenuItems,
-    ]) {
-      if (menuItem.shortCut) {
-        this.registerShortCut(
-          menuItem.shortCut.keysOrCodes,
-          menuItem.shortCut,
-          menuItem.callback,
-          menuItem.enabled
-        );
-      }
-    }
   }
 
   initFallbackClipboardEventListeners() {
@@ -1346,6 +1500,15 @@ export class EditorController {
   }
 
   async keyDownHandler(event) {
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      this.sceneController.updateContextMenuState(null);
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
+      return;
+    }
+    // TODO: remove old code
     const { callback, enabled } = this._getShortCutCallback(event);
     if (callback !== undefined) {
       this.sceneController.updateContextMenuState(null);
@@ -3193,4 +3356,8 @@ function chunks(array, n) {
     chunked.push(array.slice(i, i + n));
   }
   return chunked;
+}
+
+function insecureSafariConnection() {
+  return window.safari !== undefined && window.location.protocol === "http:";
 }

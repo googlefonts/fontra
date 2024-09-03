@@ -1,6 +1,7 @@
 {
   "action.add-anchor": "Add Anchor",
   "action.add-component": "Add Component",
+  "action.add-guideline": "Add Guideline",
   "action.break-contour": "Break Contour",
   "action.close-contour": "Close %0 Contour",
   "action.close-contour.plural": "Close %0 Contours",
@@ -95,8 +96,8 @@
   "menubar.help.homepage": "Homepage",
   "menubar.view": "View",
   "menubar.view.find-glyphs-that-use": "Find glyphs that use '%0'",
-  "menubar.view.select.next": "Select next source",
-  "menubar.view.select.previous": "Select previous source",
+  "menubar.view.select-next-source": "Select next source",
+  "menubar.view.select-previous-source": "Select previous source",
   "selection.none": "(No selection)",
   "sidebar.designspace-navigation": "Designspace Navigation",
   "sidebar.designspace-navigation.font-axes": "Font axes",

@@ -1,6 +1,7 @@
 {
   "action.add-anchor": "添加锚点",
   "action.add-component": "添加组件",
+  "action.add-guideline": "Add Guideline",
   "action.break-contour": "断开轮廓",
   "action.close-contour": "Close %0 Contour",
   "action.close-contour.plural": "Close %0 Contours",
@@ -95,8 +96,8 @@
   "menubar.help.homepage": "主页",
   "menubar.view": "视图",
   "menubar.view.find-glyphs-that-use": "寻找使用了 '%0' 的字符形",
-  "menubar.view.select.next": "选择下一个源",
-  "menubar.view.select.previous": "选择上一个源",
+  "menubar.view.select-next-source": "选择下一个源",
+  "menubar.view.select-previous-source": "选择上一个源",
   "selection.none": "（未选择）",
   "sidebar.designspace-navigation": "Designspace 导航",
   "sidebar.designspace-navigation.font-axes": "字体参数轴",
