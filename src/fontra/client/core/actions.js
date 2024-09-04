@@ -234,6 +234,7 @@ export function getActionIdentifierFromKeyEvent(event) {
   return null;
 }
 
+const modifierProperties = ["metaKey", "ctrlKey", "shiftKey", "altKey"];
 function getShortCutHandleKey(keyOrCode, modifiers) {
   // A unique key for the action based on the key and modifiers is required,
   // because the same keyOrCode could be used multiple times with different modifiers, eg:
@@ -242,17 +243,10 @@ function getShortCutHandleKey(keyOrCode, modifiers) {
   if (modifiers.commandKey) {
     handleKey += `+${commandKeyProperty}`;
   }
-  if (modifiers.metaKey) {
-    handleKey += "+metaKey";
-  }
-  if (modifiers.shiftKey) {
-    handleKey += "+shiftKey";
-  }
-  if (modifiers.altKey) {
-    handleKey += "+altKey";
-  }
-  if (modifiers.ctrlKey) {
-    handleKey += "+ctrlKey";
+  for (const modifierProp of modifierProperties) {
+    if (modifiers[modifierProp]) {
+      handleKey += `+${modifierProp}`;
+    }
   }
   return handleKey;
 }
@@ -277,8 +271,6 @@ function loadActionsByKeyOrCode() {
     }
   }
 }
-
-const modifierProperties = ["metaKey", "ctrlKey", "shiftKey", "altKey"];
 
 function matchEventModifiers(shortCut, event) {
   const expectedModifiers = { ...shortCut };
