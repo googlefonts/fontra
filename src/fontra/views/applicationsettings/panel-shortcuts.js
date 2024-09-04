@@ -205,7 +205,7 @@ function parseShortCutString(value) {
   definition.keyOrCode = isAtoZor0to9
     ? value.toLowerCase()
     : swappedKeyMap[value]
-    ? [swappedKeyMap[value]]
+    ? swappedKeyMap[value]
     : value;
 
   return definition;
