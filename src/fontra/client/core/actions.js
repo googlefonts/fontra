@@ -61,12 +61,8 @@ export function getActionInfo(actionIdentifier) {
   return actionInfoController.model[actionIdentifier];
 }
 
-export function getActionTitle(actionIdentifier) {
+export function getActionTitle(actionIdentifier, args = "") {
   const actionInfo = getActionInfo(actionIdentifier);
-  let args = "";
-  if ("menubar.view.find-glyphs-that-use" === actionInfo?.titleKey) {
-    args = "XYZ";
-  }
   return translate(actionInfo?.titleKey || actionIdentifier, args);
 }
 
