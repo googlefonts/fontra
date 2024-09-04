@@ -101,9 +101,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
         })
       );
       for (const actionIdentifier of actionIdentifiers) {
-        container.appendChild(
-          new ShortCutElement(actionIdentifier, this.setupUI.bind(this))
-        );
+        container.appendChild(new ShortCutElement(actionIdentifier));
       }
       this.panelElement.appendChild(container);
     }
@@ -483,13 +481,12 @@ addStyleSheet(`
 `);
 
 class ShortCutElement extends HTMLElement {
-  constructor(actionIdentifier, setupUI) {
+  constructor(actionIdentifier) {
     super();
     this.classList.add("fontra-ui-shortcuts-panel-element");
     this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
     this.label = getActionTitle(this.key);
-    this.setupUI = setupUI;
     this.shorcutCommands = new Set();
     this._updateContents();
   }
@@ -509,6 +506,9 @@ class ShortCutElement extends HTMLElement {
   }
 
   saveShortCuts(newShortCutDefinitions) {
+    if (!newShortCutDefinitions) {
+      return false;
+    }
     const warnings = [];
     for (const newShortCutDefinition of newShortCutDefinitions) {
       const warns = validateShortCutDefinition(this.key, newShortCutDefinition);
@@ -614,9 +614,7 @@ class ShortCutElement extends HTMLElement {
     this.append(
       html.label(
         {
-          "class": "fontra-ui-shortcuts-panel-label",
-          "data-tooltip": labelString,
-          "data-tooltipposition": "top",
+          class: "fontra-ui-shortcuts-panel-label",
         },
         [labelString]
       )
@@ -625,16 +623,16 @@ class ShortCutElement extends HTMLElement {
     const id = `shortcut-input-${this.key}`;
     this.append(
       html.input({
-        "type": "text",
-        "id": id,
-        "class": "fontra-ui-shortcuts-panel-input",
-        "value": getShortCutRepresentation(this.shortCutDefinition),
-        "data-tooltip":
+        type: "text",
+        id: id,
+        class: "fontra-ui-shortcuts-panel-input",
+        value: getShortCutRepresentation(this.shortCutDefinition),
+        // tooltip does not work with text input element -> use title instead.
+        title:
           "Click and record a shortcut OR double click and open dialog for editing",
-        "data-tooltipposition": "top",
-        "onkeydown": (event) => this.recordShortCut(id, event),
-        "onkeyup": (event) => this.recordShortCutKeyup(id, event),
-        "ondblclick": (event) => this.doEditShortCut(id),
+        onkeydown: (event) => this.recordShortCut(id, event),
+        onkeyup: (event) => this.recordShortCutKeyup(id, event),
+        ondblclick: (event) => this.doEditShortCut(id),
       })
     );
 
