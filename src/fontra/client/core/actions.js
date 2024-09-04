@@ -18,13 +18,13 @@ import {
 //
 // const { keyOrCode, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
 
-let actionsByKeyOrCode = undefined;
+let actionsByHandleKey = undefined;
 
 const actionInfoController = new ObservableController({});
 const actionCallbacks = {};
 actionInfoController.synchronizeWithLocalStorage("fontra-actions-", true);
 actionInfoController.addListener((event) => {
-  actionsByKeyOrCode = undefined;
+  actionsByHandleKey = undefined;
 });
 
 export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
@@ -88,6 +88,7 @@ const shortCutKeyMapDefault = {
   NumpadAdd: "+",
   NumpadSubtract: "-",
   Enter: "↵",
+  Space: "␣",
 };
 
 // add A-Z keys
@@ -165,18 +166,38 @@ export function doPerformAction(actionIdentifier, event) {
   return true;
 }
 
+function getActionShortcutsByEvent(event) {
+  // This is required because of situations like this:
+  // { keyOrCode: "b", shiftKey: true, altKey:true, metaKey: true }
+  // event.key = "‹"
+  // event.code = "KeyB"
+  // shortCutKeyMap[event.key] = undefined
+  // shortCutKeyMap[event.code] = "B"
+  // -> BUT: keyOrCode is actually "b"
+  const possibleKeys = [
+    event.key,
+    event.code,
+    shortCutKeyMap[event.key],
+    shortCutKeyMap[event.code],
+  ];
+  for (const keyOrCode of possibleKeys) {
+    if (!keyOrCode) {
+      continue;
+    }
+    const actionShortcuts = actionsByHandleKey[getShortCutHandleKey(keyOrCode, event)];
+    if (actionShortcuts) {
+      return actionShortcuts;
+    }
+  }
+}
+
 export function getActionIdentifierFromKeyEvent(event) {
   if (event.repeat) {
     return null;
   }
 
   loadActionsByKeyOrCode();
-
-  let actionShortCuts = actionsByKeyOrCode[event.key.toLowerCase()];
-
-  if (!actionShortCuts) {
-    actionShortCuts = actionsByKeyOrCode[event.code];
-  }
+  const actionShortCuts = getActionShortcutsByEvent(event);
 
   if (!actionShortCuts) {
     return null;
@@ -217,17 +238,46 @@ export function getActionIdentifierFromKeyEvent(event) {
   return null;
 }
 
+function getShortCutHandleKey(keyOrCode, modifiers) {
+  // A unique key for the action based on the key and modifiers is required,
+  // because the same keyOrCode could be used multiple times with different modifiers, eg:
+  // { keyOrCode: "p" } vs { keyOrCode: "p", commandKey: true }
+  let handleKey = keyOrCode.toLowerCase();
+  if (modifiers.commandKey) {
+    handleKey += `+${commandKeyProperty}`;
+  }
+  if (modifiers.metaKey) {
+    handleKey += "+metaKey";
+  }
+  if (modifiers.shiftKey) {
+    handleKey += "+shiftKey";
+  }
+  if (modifiers.altKey) {
+    handleKey += "+altKey";
+  }
+  if (modifiers.ctrlKey) {
+    handleKey += "+ctrlKey";
+  }
+  return handleKey;
+}
+
 function loadActionsByKeyOrCode() {
-  if (actionsByKeyOrCode) {
+  if (actionsByHandleKey) {
     return;
   }
-  actionsByKeyOrCode = {};
+  actionsByHandleKey = {};
   for (const [actionIdentifier, action] of Object.entries(actionInfoController.model)) {
     for (const shortCut of action.customShortCuts || action.defaultShortCuts || []) {
-      if (!actionsByKeyOrCode[shortCut.keyOrCode]) {
-        actionsByKeyOrCode[shortCut.keyOrCode] = [];
+      if (!shortCut) {
+        // Skip, because shortcut can be null,
+        // if the action has no shortcut.
+        continue;
       }
-      actionsByKeyOrCode[shortCut.keyOrCode].push({ actionIdentifier, shortCut });
+      const shortCutHandleKey = getShortCutHandleKey(shortCut.keyOrCode, shortCut);
+      if (!actionsByHandleKey[shortCutHandleKey]) {
+        actionsByHandleKey[shortCutHandleKey] = [];
+      }
+      actionsByHandleKey[shortCutHandleKey].push({ actionIdentifier, shortCut });
     }
   }
 }
