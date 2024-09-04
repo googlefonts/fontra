@@ -486,8 +486,8 @@ class ShortCutElement extends HTMLElement {
     this.classList.add("fontra-ui-shortcuts-panel-element");
     this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
-    this.label = getActionTitle(this.key);
-    this.shorcutCommands = new Set();
+    this.shortCutLabel = getActionTitle(this.key);
+    this.shortCutCommands = new Set();
     this._updateContents();
   }
 
@@ -520,7 +520,7 @@ class ShortCutElement extends HTMLElement {
       message(
         `Invalid ShortCut "${getShortCutRepresentation(
           newShortCutDefinitions[0]
-        )}" for "${this.label}":`,
+        )}" for "${this.shortCutLabel}":`,
         warnings.join("\n")
       );
       return false;
@@ -534,7 +534,7 @@ class ShortCutElement extends HTMLElement {
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
 
-    // collect the keys pressed in this.shorcutCommands
+    // collect the keys pressed in this.shortCutCommands
     if (event[mainkey]) {
       return mainkey;
     } else if (shortCutKeyMap.hasOwnProperty(event.code)) {
@@ -545,37 +545,37 @@ class ShortCutElement extends HTMLElement {
   }
 
   getShortCutCommand() {
-    let shorcutCommand = "";
-    Array.from(this.shorcutCommands).forEach((item) => {
+    let shortCutCommand = "";
+    Array.from(this.shortCutCommands).forEach((item) => {
       if (shortCutKeyMap.hasOwnProperty(item)) {
-        shorcutCommand += shortCutKeyMap[item];
+        shortCutCommand += shortCutKeyMap[item];
       } else {
-        shorcutCommand += item;
+        shortCutCommand += item;
       }
     });
-    return shorcutCommand;
+    return shortCutCommand;
   }
 
   recordShortCut(id, event) {
     event.preventDefault();
 
     const pressedKey = this.getPressedKey(event);
-    this.shorcutCommands.add(pressedKey);
-    const shorcutCommand = this.getShortCutCommand();
+    this.shortCutCommands.add(pressedKey);
+    const shortCutCommand = this.getShortCutCommand();
 
     // show the current shortcut immediately, no delay:
     const element = document.getElementById(id);
-    element.value = shorcutCommand;
+    element.value = shortCutCommand;
 
     // if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
-      const shortCutDefinition = parseShortCutString(shorcutCommand);
+      const shortCutDefinition = parseShortCutString(shortCutCommand);
       if (!this.saveShortCuts([shortCutDefinition])) {
         // if the shortcut is invalid, reset the input field
         element.value = getShortCutRepresentation(this.shortCutDefinition);
       }
       element.blur(); // remove focus
-      this.shorcutCommands = new Set();
+      this.shortCutCommands = new Set();
     }
   }
 
@@ -583,7 +583,7 @@ class ShortCutElement extends HTMLElement {
     const mainkey = `${
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
-    this.shorcutCommands.delete(mainkey); // remove the main key if it was pressed
+    this.shortCutCommands.delete(mainkey); // remove the main key if it was pressed
 
     const element = document.getElementById(id);
     element.value =
@@ -610,13 +610,12 @@ class ShortCutElement extends HTMLElement {
 
   _updateContents() {
     this.innerHTML = "";
-    const labelString = getActionTitle(this.key);
     this.append(
       html.label(
         {
           class: "fontra-ui-shortcuts-panel-label",
         },
-        [labelString]
+        [this.shortCutLabel]
       )
     );
 
