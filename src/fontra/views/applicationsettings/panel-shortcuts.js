@@ -593,13 +593,11 @@ class ShortCutElement extends HTMLElement {
   }
 
   resetShortCut(id) {
-    const defaultShortCuts = getActionInfo(this.key).defaultShortCuts;
+    setCustomShortCuts(this.key, null);
 
-    if (this.saveShortCuts(defaultShortCuts)) {
-      document.getElementById(id).value = getShortCutRepresentation(
-        defaultShortCuts[0]
-      );
-    }
+    document.getElementById(id).value = getShortCutRepresentation(
+      getShortCuts(this.key)[0]
+    );
   }
 
   deleteShortCut(id) {
