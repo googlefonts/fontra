@@ -15,7 +15,7 @@ import {
   shortCutModifierMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
-import { isMac } from "/core/utils.js";
+import { commandKeyProperty, isMac } from "/core/utils.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
@@ -171,45 +171,38 @@ export class ShortCutsPanel extends BaseInfoPanel {
   }
 }
 
-function parseShortCutString(value) {
-  if (value === "") {
-    // Shortcut has been removed, therefore return null,
-    // which is valid for json and different to undefined.
-    // 'null' is a valid shortcut with no keys or codes.
-    return null;
+function keyOrCodesIsEqual(a, b) {
+  if (a === b) {
+    return true;
   }
-  const definition = {};
-
-  function setShortCutDefinitionByKey(key, value, definition) {
-    const modifierKey =
-      isMac && key === "metaKey"
-        ? "commandKey"
-        : !isMac && key === "ctrlKey"
-        ? "commandKey"
-        : key;
-    if (value.includes(shortCutModifierMap[key])) {
-      definition[modifierKey] = true;
-      const keyStr = shortCutModifierMap[key];
-      const index = value.indexOf(keyStr);
-      value = value.slice(0, index) + value.slice(index + keyStr.length);
-    }
-    return value;
+  if (a.toLowerCase() === b.toLowerCase()) {
+    return true;
   }
-  value = setShortCutDefinitionByKey("metaKey", value, definition);
-  value = setShortCutDefinitionByKey("shiftKey", value, definition);
-  value = setShortCutDefinitionByKey("ctrlKey", value, definition);
-  value = setShortCutDefinitionByKey("altKey", value, definition);
-
-  const codePoint = value.codePointAt(0);
-  const isAtoZor0to9 =
-    (codePoint >= 65 && codePoint <= 90) || (codePoint >= 48 && codePoint <= 57);
-  definition.keyOrCode = isAtoZor0to9
-    ? value.toLowerCase()
-    : swappedKeyMap[value]
-    ? swappedKeyMap[value]
-    : value;
-
-  return definition;
+  if (a === b.toLowerCase()) {
+    return true;
+  }
+  if (a.toLowerCase() === b) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a] === b) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a].toLowerCase() === b) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a] === b.toLowerCase()) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b] === a) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b].toLowerCase() === a) {
+    return true;
+  }
+  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b] === a.toLowerCase()) {
+    return true;
+  }
+  return false;
 }
 
 function isDifferentShortCutDefinition(a, b) {
@@ -227,7 +220,13 @@ function isDifferentShortCutDefinition(a, b) {
   }
 
   for (const key in defA) {
-    if (defA[key] !== defB[key]) {
+    if (key === "keyOrCode") {
+      if (defA[key] !== defB[key]) {
+        if (!keyOrCodesIsEqual(defA[key], defB[key])) {
+          return true;
+        }
+      }
+    } else if (defA[key] !== defB[key]) {
       return true;
     }
   }
@@ -559,17 +558,21 @@ class ShortCutElement extends HTMLElement {
   }
 
   getShortCutCommand() {
-    let shortCutCommand = "";
+    const shortCutDefinition = {};
     Array.from(this.shortCutCommands).forEach((item) => {
       if (shortCutModifierMap.hasOwnProperty(item)) {
-        shortCutCommand += shortCutModifierMap[item];
+        if (commandKeyProperty === item) {
+          shortCutDefinition.commandKey = true;
+        } else {
+          shortCutDefinition[item] = true;
+        }
       } else if (shortCutKeyMap.hasOwnProperty(item)) {
-        shortCutCommand += shortCutKeyMap[item];
+        shortCutDefinition.keyOrCode = item;
       } else {
-        shortCutCommand += item;
+        shortCutDefinition.keyOrCode = item;
       }
     });
-    return shortCutCommand;
+    return shortCutDefinition;
   }
 
   recordShortCut(id, event) {
@@ -577,15 +580,15 @@ class ShortCutElement extends HTMLElement {
 
     const pressedKey = this.getPressedKey(event);
     this.shortCutCommands.add(pressedKey);
-    const shortCutCommand = this.getShortCutCommand();
+
+    const shortCutDefinition = this.getShortCutCommand();
 
     // show the current shortcut immediately, no delay:
     const element = document.getElementById(id);
-    element.value = shortCutCommand;
+    element.value = getShortCutRepresentation(shortCutDefinition);
 
     // if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
-      const shortCutDefinition = parseShortCutString(shortCutCommand);
       if (!this.saveShortCuts([shortCutDefinition])) {
         // if the shortcut is invalid, reset the input field
         element.value = getShortCutRepresentation(this.shortCutDefinition);
@@ -599,12 +602,15 @@ class ShortCutElement extends HTMLElement {
     const mainkey = `${
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
-    this.shortCutCommands.delete(mainkey); // remove the main key if it was pressed
+
+    // remove the main key if it is not pressed anymore
+    this.shortCutCommands.delete(mainkey);
 
     const element = document.getElementById(id);
+    const shortCutRepresentation = getShortCutRepresentation(this.getShortCutCommand());
     element.value =
-      this.getShortCutCommand() != ""
-        ? this.getShortCutCommand()
+      shortCutRepresentation != ""
+        ? shortCutRepresentation
         : getShortCutRepresentation(this.shortCutDefinition);
   }
 
