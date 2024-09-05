@@ -132,6 +132,10 @@ export function getShortCutRepresentation(shortCutDefinition) {
     }
   }
 
+  if (!shortCutDefinition.keyOrCode) {
+    // This is possible during recoding of custom shortcuts.
+    return shortCutRepr;
+  }
   shortCutRepr +=
     shortCutKeyMap[shortCutDefinition.keyOrCode] ||
     capitalizeFirstLetter(shortCutDefinition.keyOrCode);
