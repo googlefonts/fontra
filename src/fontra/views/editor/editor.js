@@ -341,10 +341,9 @@ export class EditorController {
         this.initFallbackClipboardEventListeners();
       } else {
         registerAction(
-          "action.clipboard.cut",
+          "action.cut",
           {
             topic,
-            titleKey: "action.cut",
             defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
           },
           () => this.doCut(),
@@ -352,10 +351,9 @@ export class EditorController {
         );
 
         registerAction(
-          "action.clipboard.copy",
+          "action.copy",
           {
             topic,
-            titleKey: "action.copy",
             defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
           },
           () => this.doCopy(),
@@ -363,10 +361,9 @@ export class EditorController {
         );
 
         registerAction(
-          "action.clipboard.paste",
+          "action.paste",
           {
             topic,
-            titleKey: "action.paste",
             defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
           },
           () => this.doPaste(),
