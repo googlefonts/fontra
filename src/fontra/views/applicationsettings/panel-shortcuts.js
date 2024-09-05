@@ -19,10 +19,6 @@ import { commandKeyProperty, isMac } from "/core/utils.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
-const swappedKeyMap = Object.fromEntries(
-  Object.entries(shortCutKeyMap).map((a) => a.reverse())
-);
-
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
   for (const actionIdentifier of getActionIdentifiers()) {
