@@ -142,7 +142,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "shortcuts.json";
+    a.download = "fontra-shortcuts.json";
     a.click();
     URL.revokeObjectURL(url);
   }
