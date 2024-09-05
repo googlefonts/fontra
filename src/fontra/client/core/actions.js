@@ -18,13 +18,13 @@ import {
 //
 // const { keyOrCode, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
 
-let actionsByHandleKey = undefined;
+let actionsByKeyOrCode = undefined;
 
 const actionInfoController = new ObservableController({});
 const actionCallbacks = {};
 actionInfoController.synchronizeWithLocalStorage("fontra-actions-", true);
 actionInfoController.addListener((event) => {
-  actionsByHandleKey = undefined;
+  actionsByKeyOrCode = undefined;
 });
 
 export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
@@ -162,38 +162,18 @@ export function doPerformAction(actionIdentifier, event) {
   return true;
 }
 
-function getActionShortcutsByEvent(event) {
-  // This is required because of situations like this:
-  // { keyOrCode: "b", shiftKey: true, altKey:true, metaKey: true }
-  // event.key = "‹"
-  // event.code = "KeyB"
-  // shortCutKeyMap[event.key] = undefined
-  // shortCutKeyMap[event.code] = "B"
-  // -> BUT: keyOrCode is actually "b"
-  const possibleKeys = [
-    event.key,
-    event.code,
-    shortCutKeyMap[event.key],
-    shortCutKeyMap[event.code],
-  ];
-  for (const keyOrCode of possibleKeys) {
-    if (!keyOrCode) {
-      continue;
-    }
-    const actionShortcuts = actionsByHandleKey[getShortCutHandleKey(keyOrCode, event)];
-    if (actionShortcuts) {
-      return actionShortcuts;
-    }
-  }
-}
-
 export function getActionIdentifierFromKeyEvent(event) {
   if (event.repeat) {
     return null;
   }
 
   loadActionsByKeyOrCode();
-  const actionShortCuts = getActionShortcutsByEvent(event);
+
+  let actionShortCuts = actionsByKeyOrCode[event.key.toLowerCase()];
+
+  if (!actionShortCuts) {
+    actionShortCuts = actionsByKeyOrCode[event.code];
+  }
 
   if (!actionShortCuts) {
     return null;
@@ -234,43 +214,22 @@ export function getActionIdentifierFromKeyEvent(event) {
   return null;
 }
 
-const modifierProperties = ["metaKey", "ctrlKey", "shiftKey", "altKey"];
-function getShortCutHandleKey(keyOrCode, modifiers) {
-  // A unique key for the action based on the key and modifiers is required,
-  // because the same keyOrCode could be used multiple times with different modifiers, eg:
-  // { keyOrCode: "p" } vs { keyOrCode: "p", commandKey: true }
-  let handleKey = keyOrCode.toLowerCase();
-  if (modifiers.commandKey) {
-    handleKey += `+${commandKeyProperty}`;
-  }
-  for (const modifierProp of modifierProperties) {
-    if (modifiers[modifierProp]) {
-      handleKey += `+${modifierProp}`;
-    }
-  }
-  return handleKey;
-}
-
 function loadActionsByKeyOrCode() {
-  if (actionsByHandleKey) {
+  if (actionsByKeyOrCode) {
     return;
   }
-  actionsByHandleKey = {};
+  actionsByKeyOrCode = {};
   for (const [actionIdentifier, action] of Object.entries(actionInfoController.model)) {
     for (const shortCut of action.customShortCuts || action.defaultShortCuts || []) {
-      if (!shortCut) {
-        // Skip, because shortcut can be null,
-        // if the action has no shortcut.
-        continue;
+      if (!actionsByKeyOrCode[shortCut.keyOrCode]) {
+        actionsByKeyOrCode[shortCut.keyOrCode] = [];
       }
-      const shortCutHandleKey = getShortCutHandleKey(shortCut.keyOrCode, shortCut);
-      if (!actionsByHandleKey[shortCutHandleKey]) {
-        actionsByHandleKey[shortCutHandleKey] = [];
-      }
-      actionsByHandleKey[shortCutHandleKey].push({ actionIdentifier, shortCut });
+      actionsByKeyOrCode[shortCut.keyOrCode].push({ actionIdentifier, shortCut });
     }
   }
 }
+
+const modifierProperties = ["metaKey", "ctrlKey", "shiftKey", "altKey"];
 
 function matchEventModifiers(shortCut, event) {
   const expectedModifiers = { ...shortCut };
