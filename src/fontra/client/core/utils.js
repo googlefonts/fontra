@@ -120,13 +120,13 @@ export function hyphenatedToLabel(s) {
   return capitalizeFirstLetter(s).replaceAll("-", " ");
 }
 
-// navigator.platform is deprecated, please see:
+// platform is deprecated, please see:
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform
 // export const isMac = typeof navigator !== "undefined" && navigator.platform.toLowerCase().indexOf("mac") >= 0
 
 // Therefore use window.navigator https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator
 export const isMac =
-  typeof window !== "undefined" && window.navigator.userAgent.indexOf("Mac") != -1;
+  typeof navigator !== "undefined" && navigator.userAgent.indexOf("Mac") != -1;
 
 // For several functions, we use the command key ("metaKey") on macOS,
 // and the control key ("ctrlKey") on non-macOS. For example short cuts
