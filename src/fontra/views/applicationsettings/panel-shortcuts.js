@@ -663,7 +663,7 @@ class ShortCutElement extends HTMLElement {
         "class": "fontra-ui-shortcuts-panel-icon",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteShortCut(id),
-        "data-tooltip": "Delete",
+        "data-tooltip": "Clear",
         "data-tooltipposition": "top",
       })
     );
