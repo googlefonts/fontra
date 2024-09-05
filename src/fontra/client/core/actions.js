@@ -58,7 +58,11 @@ export function setCustomShortCuts(actionIdentifier, customShortCuts) {
 }
 
 export function getActionIdentifiers() {
-  return Object.keys(actionInfoController.model);
+  const actionIdentifiers = Object.keys(actionInfoController.model);
+  actionIdentifiers.sort(
+    (a, b) => getActionInfo(a).sortIndex - getActionInfo(b).sortIndex
+  );
+  return actionIdentifiers;
 }
 
 export function getActionInfo(actionIdentifier) {
