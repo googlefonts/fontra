@@ -168,6 +168,8 @@ export class ShortCutsPanel extends BaseInfoPanel {
 }
 
 function keyOrCodesIsEqual(a, b) {
+  // This whole test is based on differences between key and code: "p" and "KeyP".
+  // But it will fail with languages specific differnces like: "KeyZ" and "y".
   if (a === b) {
     return true;
   }
@@ -497,7 +499,7 @@ class ShortCutElement extends HTMLElement {
     this.key = actionIdentifier;
     this.shortCutDefinition = getShortCut(this.key);
     this.shortCutLabel = getActionTitle(this.key);
-    this.shortCutCommands = new Set();
+    this.pressedKeys = new Set();
     this._updateContents();
   }
 
@@ -536,34 +538,37 @@ class ShortCutElement extends HTMLElement {
       return false;
     }
     setCustomShortCuts(this.key, newShortCutDefinitions);
+    this.shortCutDefinition = getShortCut(this.key);
     return true;
   }
 
   getPressedKey(event) {
+    // Get the main key, e.g. ctrlKey, altKey, shiftKey, metaKey or keyOrCode
+    // We cannot use event.key directly, because of situations like: MetaLeft or MetaRight
+    // We cannot check the modifiers like event.metaKey directly, because Keyup will be false always.
     const mainkey = `${
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
 
-    if (event[mainkey]) {
+    if (shortCutModifierMap.hasOwnProperty(mainkey)) {
       return mainkey;
-    } else if (shortCutKeyMap.hasOwnProperty(event.code)) {
-      return event.code;
-    } else {
-      return event.key;
     }
+
+    // TODO: key and code can be different for the same key, eg. "KeyZ" and "y", also ¥ vs KeyZ
+    // Which is the case for the german keyboard layout.
+    // event.keyCode might be the best compromise for now.
+    return String.fromCharCode(event.keyCode).toLowerCase();
   }
 
-  getShortCutCommand() {
+  getShortCutDefinition() {
     const shortCutDefinition = {};
-    Array.from(this.shortCutCommands).forEach((item) => {
+    Array.from(this.pressedKeys).forEach((item) => {
       if (shortCutModifierMap.hasOwnProperty(item)) {
         if (commandKeyProperty === item) {
           shortCutDefinition.commandKey = true;
         } else {
           shortCutDefinition[item] = true;
         }
-      } else if (shortCutKeyMap.hasOwnProperty(item)) {
-        shortCutDefinition.keyOrCode = item;
       } else {
         shortCutDefinition.keyOrCode = item;
       }
@@ -575,35 +580,33 @@ class ShortCutElement extends HTMLElement {
     event.preventDefault();
 
     const pressedKey = this.getPressedKey(event);
-    this.shortCutCommands.add(pressedKey);
+    this.pressedKeys.add(pressedKey);
 
-    const shortCutDefinition = this.getShortCutCommand();
+    const shortCutDefinition = this.getShortCutDefinition();
 
     // show the current shortcut immediately, no delay:
     const element = document.getElementById(id);
     element.value = getShortCutRepresentation(shortCutDefinition);
 
-    // if not alt, shift, ctrl or meta, end of recording -> save shortcut
+    //if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
       if (!this.saveShortCuts([shortCutDefinition])) {
         // if the shortcut is invalid, reset the input field
         element.value = getShortCutRepresentation(this.shortCutDefinition);
       }
       element.blur(); // remove focus
-      this.shortCutCommands = new Set();
+      this.pressedKeys = new Set();
     }
   }
 
   recordShortCutKeyup(id, event) {
-    const mainkey = `${
-      event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
-    }Key`;
-
-    // remove the main key if it is not pressed anymore
-    this.shortCutCommands.delete(mainkey);
+    // This removes the unpressed key
+    this.pressedKeys.delete(this.getPressedKey(event));
 
     const element = document.getElementById(id);
-    const shortCutRepresentation = getShortCutRepresentation(this.getShortCutCommand());
+    const shortCutRepresentation = getShortCutRepresentation(
+      this.getShortCutDefinition()
+    );
     element.value =
       shortCutRepresentation != ""
         ? shortCutRepresentation
@@ -616,6 +619,7 @@ class ShortCutElement extends HTMLElement {
     document.getElementById(id).value = getShortCutRepresentation(
       getShortCuts(this.key)[0]
     );
+    this.shortCutDefinition = getShortCut(this.key);
   }
 
   deleteShortCut(id) {
