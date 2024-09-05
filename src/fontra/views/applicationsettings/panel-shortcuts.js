@@ -14,6 +14,7 @@ import {
   shortCutKeyMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
+import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
 const isMac = window.navigator.userAgent.indexOf("Mac") != -1;
@@ -465,7 +466,6 @@ addStyleSheet(`
     cursor: pointer;
     opacity: 0;
     pointer-events: none;
-    background-color: green; /* for debugging */
   }
 
   .fontra-ui-shortcuts-panel-input:focus ~ * {
@@ -636,8 +636,7 @@ class ShortCutElement extends HTMLElement {
     this.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-shortcuts-panel-icon",
-        "src": "/tabler-icons/refresh.svg", // TODO: I don't know why the icon is not shown.
-        "value": "",
+        "src": "/tabler-icons/refresh.svg",
         "onclick": (event) => this.resetShortCut(id),
         "data-tooltip": "Reset to default",
         "data-tooltipposition": "top",
@@ -647,7 +646,7 @@ class ShortCutElement extends HTMLElement {
     this.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-shortcuts-panel-icon",
-        "src": "/tabler-icons/trash.svg", // TODO: I don't know why the icon is not shown.
+        "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteShortCut(id),
         "data-tooltip": "Delete",
         "data-tooltipposition": "top",
