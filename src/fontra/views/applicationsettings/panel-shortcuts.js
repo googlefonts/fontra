@@ -12,6 +12,7 @@ import {
   getShortCuts,
   setCustomShortCuts,
   shortCutKeyMap,
+  shortCutModifierMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
 import { isMac } from "/core/utils.js";
@@ -386,8 +387,18 @@ function _shortCutPropertiesContentElement(controller) {
   });
 
   const labeledCheckBoxSpecificOS = isMac
-    ? labeledCheckbox(`Ctrl(${shortCutKeyMap["ctrlKey"]})`, controller, "ctrlKey", {})
-    : labeledCheckbox(`Meta(${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {});
+    ? labeledCheckbox(
+        `Ctrl(${shortCutModifierMap["ctrlKey"]})`,
+        controller,
+        "ctrlKey",
+        {}
+      )
+    : labeledCheckbox(
+        `Meta(${shortCutModifierMap["metaKey"]})`,
+        controller,
+        "metaKey",
+        {}
+      );
   const contentElement = html.div(
     {
       style: `overflow: hidden;
@@ -406,7 +417,7 @@ function _shortCutPropertiesContentElement(controller) {
       }),
       html.div(),
       labeledCheckbox(
-        `Command (${shortCutKeyMap["commandKey"]})`,
+        `Command (${shortCutModifierMap["commandKey"]})`,
         controller,
         "commandKey",
         {}
@@ -415,13 +426,18 @@ function _shortCutPropertiesContentElement(controller) {
       labeledCheckBoxSpecificOS,
       html.div(),
       labeledCheckbox(
-        `Shift (${shortCutKeyMap["shiftKey"]})`,
+        `Shift (${shortCutModifierMap["shiftKey"]})`,
         controller,
         "shiftKey",
         {}
       ),
       html.div(),
-      labeledCheckbox(`Alt (${shortCutKeyMap["altKey"]})`, controller, "altKey", {}),
+      labeledCheckbox(
+        `Alt (${shortCutModifierMap["altKey"]})`,
+        controller,
+        "altKey",
+        {}
+      ),
       html.div(),
       warningElement,
     ]

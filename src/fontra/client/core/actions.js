@@ -67,12 +67,7 @@ export function getActionTitle(actionIdentifier, args = "") {
   return translate(actionInfo?.titleKey || actionIdentifier, args);
 }
 
-const shortCutKeyMapDefault = {
-  commandKey: "Ctrl+", // fontra specific cross-platform key
-  metaKey: "Meta+",
-  shiftKey: "Shift+",
-  ctrlKey: "Ctrl+",
-  altKey: "Alt+",
+export const shortCutKeyMap = {
   ArrowUp: "↑",
   ArrowDown: "↓",
   ArrowLeft: "←",
@@ -90,25 +85,20 @@ const shortCutKeyMapDefault = {
 
 // add A-Z keys
 for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i))) {
-  shortCutKeyMapDefault[`Key${key}`] = key;
+  shortCutKeyMap[`Key${key}`] = key;
 }
 // add 0-9 keys
 for (let i = 0; i <= 9; i++) {
-  shortCutKeyMapDefault[`Digit${i}`] = `${i}`;
-  shortCutKeyMapDefault[`Numpad${i}`] = `${i}`;
+  shortCutKeyMap[`Digit${i}`] = `${i}`;
+  shortCutKeyMap[`Numpad${i}`] = `${i}`;
 }
 
-const shortCutKeyMapMac = {
-  commandKey: "⌘", // fontra specific cross-platform key
-  metaKey: "⌘", // "\u2318"
-  shiftKey: "⇧", // "\u21e7"
-  ctrlKey: "⌃",
-  altKey: "⌥", // "\u2325"
-};
-
-export const shortCutKeyMap = {
-  ...shortCutKeyMapDefault,
-  ...(isMac ? shortCutKeyMapMac : {}),
+export const shortCutModifierMap = {
+  commandKey: isMac ? "⌘" : "Ctrl+", // fontra specific cross-platform key
+  metaKey: isMac ? "⌘" : "Meta+",
+  shiftKey: isMac ? "⇧" : "Shift+",
+  ctrlKey: isMac ? "⌃" : "Ctrl+",
+  altKey: isMac ? "⌥" : "Alt+",
 };
 
 export function getShortCuts(actionIdentifier) {
@@ -136,9 +126,9 @@ export function getShortCutRepresentation(shortCutDefinition) {
   }
   let shortCutRepr = "";
 
-  for (const key of ["commandKey", "metaKey", "ctrlKey", "altKey", "shiftKey"]) {
+  for (const key of Object.keys(shortCutModifierMap)) {
     if (shortCutDefinition[key]) {
-      shortCutRepr += shortCutKeyMap[key];
+      shortCutRepr += shortCutModifierMap[key];
     }
   }
 
