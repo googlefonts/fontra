@@ -169,7 +169,8 @@ export class ShortCutsPanel extends BaseInfoPanel {
 
 function keyOrCodesIsEqual(a, b) {
   // This whole test is based on differences between key and code: "p" and "KeyP".
-  // But it will fail with languages specific differnces like: "KeyZ" and "y".
+  // But it will fail with languages specific differences like:
+  // "KeyZ" and "y" (German keyboard).
   if (a === b) {
     return true;
   }
@@ -385,13 +386,13 @@ function _shortCutPropertiesContentElement(controller) {
 
   const labeledCheckBoxSpecificOS = isMac
     ? labeledCheckbox(
-        `Ctrl(${shortCutModifierMap["ctrlKey"]})`,
+        `Ctrl (${shortCutModifierMap["ctrlKey"]})`,
         controller,
         "ctrlKey",
         {}
       )
     : labeledCheckbox(
-        `Meta(${shortCutModifierMap["metaKey"]})`,
+        `Meta (${shortCutModifierMap["metaKey"]})`,
         controller,
         "metaKey",
         {}
@@ -544,8 +545,9 @@ class ShortCutElement extends HTMLElement {
 
   getPressedKey(event) {
     // Get the main key, e.g. ctrlKey, altKey, shiftKey, metaKey or keyOrCode
-    // We cannot use event.key directly, because of situations like: MetaLeft or MetaRight
-    // We cannot check the modifiers like event.metaKey directly, because Keyup will be false always.
+    // We cannot use event.key directly, because of situations like: MetaLeft or MetaRight.
+    // We cannot check the modifiers like event.metaKey directly,
+    // because Keyup modifers like event.metaKey will be false always.
     const mainkey = `${
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
