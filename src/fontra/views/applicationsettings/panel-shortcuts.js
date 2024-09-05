@@ -388,7 +388,7 @@ function _shortCutPropertiesContentElement(controller) {
 
   const labeledCheckBoxSpecificOS = isMac
     ? labeledCheckbox(`Ctrl(${shortCutKeyMap["ctrlKey"]})`, controller, "ctrlKey", {})
-    : labeledCheckbox(`Ctrl(${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {});
+    : labeledCheckbox(`Meta(${shortCutKeyMap["metaKey"]})`, controller, "metaKey", {});
   const contentElement = html.div(
     {
       style: `overflow: hidden;
