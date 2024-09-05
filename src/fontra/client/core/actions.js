@@ -5,6 +5,7 @@ import {
   capitalizeFirstLetter,
   commandKeyProperty,
   isActiveElementTypeable,
+  isMac,
 } from "./utils.js";
 
 // Action Info
@@ -107,7 +108,7 @@ const shortCutKeyMapMac = {
 
 export const shortCutKeyMap = {
   ...shortCutKeyMapDefault,
-  ...(window.navigator.userAgent.indexOf("Mac") != -1 ? shortCutKeyMapMac : {}),
+  ...(isMac ? shortCutKeyMapMac : {}),
 };
 
 export function getShortCuts(actionIdentifier) {
