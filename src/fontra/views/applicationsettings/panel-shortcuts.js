@@ -187,9 +187,9 @@ function parseShortCutString(value) {
         : !isMac && key === "ctrlKey"
         ? "commandKey"
         : key;
-    if (value.includes(shortCutKeyMap[key])) {
+    if (value.includes(shortCutModifierMap[key])) {
       definition[modifierKey] = true;
-      const keyStr = shortCutKeyMap[key];
+      const keyStr = shortCutModifierMap[key];
       const index = value.indexOf(keyStr);
       value = value.slice(0, index) + value.slice(index + keyStr.length);
     }
@@ -549,7 +549,6 @@ class ShortCutElement extends HTMLElement {
       event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
     }Key`;
 
-    // collect the keys pressed in this.shortCutCommands
     if (event[mainkey]) {
       return mainkey;
     } else if (shortCutKeyMap.hasOwnProperty(event.code)) {
@@ -562,7 +561,9 @@ class ShortCutElement extends HTMLElement {
   getShortCutCommand() {
     let shortCutCommand = "";
     Array.from(this.shortCutCommands).forEach((item) => {
-      if (shortCutKeyMap.hasOwnProperty(item)) {
+      if (shortCutModifierMap.hasOwnProperty(item)) {
+        shortCutCommand += shortCutModifierMap[item];
+      } else if (shortCutKeyMap.hasOwnProperty(item)) {
         shortCutCommand += shortCutKeyMap[item];
       } else {
         shortCutCommand += item;
