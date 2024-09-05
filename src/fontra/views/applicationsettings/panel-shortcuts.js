@@ -21,7 +21,11 @@ import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
-  for (const actionIdentifier of getActionIdentifiers()) {
+  const actionIdentifiers = getActionIdentifiers();
+  actionIdentifiers.sort(
+    (a, b) => getActionInfo(a).sortIndex - getActionInfo(b).sortIndex
+  );
+  for (const actionIdentifier of actionIdentifiers) {
     const actionInfo = getActionInfo(actionIdentifier);
     const topic = actionInfo.topic || "shortcuts.other";
     if (!shortCutsGrouped[topic]) {
