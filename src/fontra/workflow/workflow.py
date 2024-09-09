@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
 from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
+from functools import singledispatch
 from importlib.metadata import entry_points
-from typing import AsyncGenerator, ClassVar
+from typing import Any, AsyncGenerator, ClassVar
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
@@ -27,9 +29,12 @@ class WorkflowError(Exception):
 class Workflow:
     config: dict
     parentDir: os.PathLike = field(default_factory=pathlib.Path)
+    substitutions: dict[str, Any] = field(default_factory=dict)
     steps: list[ActionStep] = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        if self.substitutions:
+            self.config = substituteStrings(self.config, self.substitutions)
         self.steps = _structureSteps(self.config["steps"])
         _loadActionsEntryPoints()
 
@@ -211,3 +216,40 @@ def chdir(path):
         yield
     finally:
         os.chdir(currentDir)
+
+
+def substituteStrings(config: dict, substitutions: dict[str, Any]) -> dict:
+    return _subst(config, _FormatMapper(substitutions))
+
+
+class _FormatMapper:
+    def __init__(self, mapping):
+        self.mapping = mapping
+
+    def __getitem__(self, key):
+        key = key.strip()
+        return self.mapping[key]
+
+
+@singledispatch
+def _subst(subject, mapper):
+    return subject
+
+
+_singleKeyPat = re.compile(r"{\s*([^{]*)\s*}$")
+
+
+@_subst.register
+def _(subject: str, mapper):
+    m = _singleKeyPat.match(subject)
+    return mapper[m.group(1)] if m is not None else subject.format_map(mapper)
+
+
+@_subst.register
+def _(subject: dict, mapper):
+    return {k: _subst(v, mapper) for k, v in subject.items()}
+
+
+@_subst.register
+def _(subject: list, mapper):
+    return [_subst(v, mapper) for v in subject]
