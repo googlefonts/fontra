@@ -670,7 +670,7 @@ class ShortCutElement extends HTMLElement {
     this.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-shortcuts-panel-icon",
-        "src": "/tabler-icons/trash.svg",
+        "src": "/tabler-icons/x.svg",
         "onclick": (event) => this.deleteShortCut(id),
         "data-tooltip": "Clear",
         "data-tooltipposition": "top",
