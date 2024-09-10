@@ -7,6 +7,7 @@ import {
   getActionIdentifiers,
   getActionInfo,
   getActionTitle,
+  getBaseKeyFromKeyEvent,
   getShortCut,
   getShortCutRepresentation,
   getShortCuts,
@@ -167,43 +168,6 @@ export class ShortCutsPanel extends BaseInfoPanel {
   }
 }
 
-function keyOrCodesIsEqual(a, b) {
-  // This whole test is based on differences between key and code: "p" and "KeyP".
-  // But it will fail with languages specific differences like:
-  // "KeyZ" and "y" (German keyboard).
-  if (a === b) {
-    return true;
-  }
-  if (a.toLowerCase() === b.toLowerCase()) {
-    return true;
-  }
-  if (a === b.toLowerCase()) {
-    return true;
-  }
-  if (a.toLowerCase() === b) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a] === b) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a].toLowerCase() === b) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(a) && shortCutKeyMap[a] === b.toLowerCase()) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b] === a) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b].toLowerCase() === a) {
-    return true;
-  }
-  if (shortCutKeyMap.hasOwnProperty(b) && shortCutKeyMap[b] === a.toLowerCase()) {
-    return true;
-  }
-  return false;
-}
-
 function isDifferentShortCutDefinition(a, b) {
   // Why isDifferent and not isEqual?
   // Because it is a faster return if something is different.
@@ -219,13 +183,7 @@ function isDifferentShortCutDefinition(a, b) {
   }
 
   for (const key in defA) {
-    if (key === "keyOrCode") {
-      if (defA[key] !== defB[key]) {
-        if (!keyOrCodesIsEqual(defA[key], defB[key])) {
-          return true;
-        }
-      }
-    } else if (defA[key] !== defB[key]) {
+    if (defA[key] !== defB[key]) {
       return true;
     }
   }
@@ -544,22 +502,18 @@ class ShortCutElement extends HTMLElement {
   }
 
   getPressedKey(event) {
-    // Get the main key, e.g. ctrlKey, altKey, shiftKey, metaKey or keyOrCode
-    // We cannot use event.key directly, because of situations like: MetaLeft or MetaRight.
-    // We cannot check the modifiers like event.metaKey directly,
-    // because Keyup modifers like event.metaKey will be false always.
-    const mainkey = `${
-      event.key.toLowerCase() === "control" ? "ctrl" : event.key.toLowerCase()
-    }Key`;
-
-    if (shortCutModifierMap.hasOwnProperty(mainkey)) {
-      return mainkey;
+    const baseKey = getBaseKeyFromKeyEvent(event);
+    if (baseKey.startsWith("Meta")) {
+      return "metaKey";
+    } else if (baseKey.startsWith("Shift")) {
+      return "shiftKey";
+    } else if (baseKey.startsWith("Alt")) {
+      return "altKey";
+    } else if (baseKey.startsWith("Control")) {
+      return "ctrlKey";
     }
 
-    // TODO: key and code can be different for the same key, eg. "KeyZ" and "y", also ¥ vs KeyZ
-    // Which is the case for the german keyboard layout.
-    // event.keyCode might be the best compromise for now.
-    return String.fromCharCode(event.keyCode).toLowerCase();
+    return baseKey;
   }
 
   getShortCutDefinition() {
