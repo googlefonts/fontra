@@ -496,7 +496,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-previous-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowUp", metaKey: true }],
+          defaultShortCuts: [{ keyOrCode: "ArrowUp", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
@@ -506,7 +506,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-next-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowDown", metaKey: true }],
+          defaultShortCuts: [{ keyOrCode: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
