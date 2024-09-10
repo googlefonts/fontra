@@ -227,7 +227,7 @@ function fetchKeyboardLayout() {
 fetchKeyboardLayout();
 
 export function getBaseKeyFromKeyEvent(event) {
-  assert(event.type === "keydown");
+  assert(event.type === "keydown" || event.type === "keyup");
 
   let baseKey;
 
