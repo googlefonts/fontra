@@ -28,14 +28,13 @@ actionInfoController.addListener((event) => {
   actionsByKeyOrCode = undefined;
 });
 
-let sortIndex = 0;
 export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
-  registerActionInfo(actionIdentifier, actionInfo, sortIndex);
+  registerActionInfo(actionIdentifier, actionInfo);
   registerActionCallbacks(actionIdentifier, callback, enabled);
-  sortIndex++;
 }
 
-export function registerActionInfo(actionIdentifier, actionInfo, sortIndex) {
+let sortIndex = 0;
+export function registerActionInfo(actionIdentifier, actionInfo) {
   actionInfoController.synchronizeItemWithLocalStorage(actionIdentifier, actionInfo);
   // We only want customShortCuts to be changable, so we'll reset everything
   // except customShortCuts
@@ -43,8 +42,9 @@ export function registerActionInfo(actionIdentifier, actionInfo, sortIndex) {
   actionInfoController.model[actionIdentifier] = {
     ...actionInfo,
     customShortCuts: storedActionInfo.customShortCuts,
-    sortIndex: sortIndex,
+    sortIndex: actionInfo.sortIndex === undefined ? sortIndex : actionInfo.sortIndex,
   };
+  sortIndex++;
 }
 
 export function registerActionCallbacks(actionIdentifier, callback, enabled = null) {

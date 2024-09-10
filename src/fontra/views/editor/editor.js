@@ -410,7 +410,7 @@ export class EditorController {
 
       registerAction(
         "action.add-component",
-        { topic },
+        { topic, sortIndex: 4 },
         () => this.doAddComponent(),
         () => this.canAddComponent()
       );
