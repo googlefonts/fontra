@@ -12,7 +12,7 @@ from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
 from fontra.workflow.actions import FilterActionProtocol, getActionClass
 from fontra.workflow.actions import glyph as _  # noqa  for test_scaleAction
-from fontra.workflow.workflow import Workflow
+from fontra.workflow.workflow import Workflow, substituteStrings
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 workflowDataDir = dataDir / "workflow"
@@ -129,60 +129,66 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
 
 
 @pytest.mark.parametrize(
-    "configYAMLSources",
+    "configYAMLSources, substitutions",
     [
-        [
-            """
-            steps:
+        (
+            [
+                """
+                    steps:
 
-            - input: fontra-read
-              source: "test-py/data/mutatorsans/MutatorSans.designspace"
-              steps:
-              - filter: scale
-                scaleFactor: 0.75
-                scaleFontMetrics: false
-              - filter: subset-glyphs
-                glyphNames: ["A", "B", "Adieresis"]
+                    - input: fontra-read
+                      source: "test-py/data/mutatorsans/MutatorSans.designspace"
+                      steps:
+                      - filter: scale
+                        scaleFactor: 0.75
+                        scaleFontMetrics: false
+                      - filter: subset-glyphs
+                        glyphNames: ["A", "B", "Adieresis"]
 
-            - input: fontra-read
-              source: "test-common/fonts/MutatorSans.fontra"
-              steps:
-              - filter: subset-glyphs
-                glyphNames: ["C", "D"]
+                    - input: fontra-read
+                      source: "test-common/fonts/MutatorSans.fontra"
+                      steps:
+                      - filter: subset-glyphs
+                        glyphNames: ["C", "D"]
 
-            - output: fontra-write
-              destination: "testing.fontra"
-            """
-        ],
-        [
-            """
-            steps:
+                    - output: fontra-write
+                      destination: "testing.fontra"
+                    """
+            ],
+            {},
+        ),
+        (
+            [
+                """
+                    steps:
 
-            - input: fontra-read
-              source: "test-py/data/mutatorsans/MutatorSans.designspace"
-              steps:
-              - filter: scale
-                scaleFactor: 0.75
-                scaleFontMetrics: false
-              - filter: subset-glyphs
-                glyphNames: ["A", "B", "Adieresis"]
+                    - input: fontra-read
+                      source: "test-py/data/mutatorsans/Mutator{style}.designspace"
+                      steps:
+                      - filter: "{filtername}"
+                        scaleFactor: "{scalefactor}"
+                        scaleFontMetrics: false
+                      - filter: subset-glyphs
+                        glyphNames: ["A", "B", "Adieresis"]
 
-            - input: fontra-read
-              source: "test-common/fonts/MutatorSans.fontra"
-              steps:
-              - filter: subset-glyphs
-                glyphNames: ["C", "D"]
-            """,
-            """
-            steps:
+                    - input: fontra-read
+                      source: "test-common/fonts/MutatorSans.fontra"
+                      steps:
+                      - filter: subset-glyphs
+                        glyphNames: ["C", "D"]
+                    """,
+                """
+                    steps:
 
-            - output: fontra-write
-              destination: "testing.fontra"
-            """,
-        ],
+                    - output: fontra-write
+                      destination: "testing.fontra"
+                    """,
+            ],
+            {"style": "Sans", "filtername": "scale", "scalefactor": 0.75},
+        ),
     ],
 )
-def test_command(tmpdir, configYAMLSources):
+def test_command(tmpdir, configYAMLSources, substitutions):
     tmpdir = pathlib.Path(tmpdir)
 
     configs = [yaml.safe_load(source) for source in configYAMLSources]
@@ -197,12 +203,15 @@ def test_command(tmpdir, configYAMLSources):
 
     expectedFileNames = [p.name for p in configPaths]
 
+    substitutions = [f"--substitute={k}:{v}" for k, v in substitutions.items()]
+
     subprocess.run(
         [
             "fontra-workflow",
             *configPaths,
             "--output-dir",
             tmpdir,
+            *substitutions,
             "--continue-on-error",
         ],
         check=True,
@@ -1336,3 +1345,18 @@ async def test_workflow_actions(
 
     record_tuples = [(rec.levelno, rec.message) for rec in caplog.records]
     assert expectedLog == record_tuples
+
+
+@pytest.mark.parametrize(
+    "sourceDict, substitutions, expectedDict",
+    [
+        ({}, {}, {}),
+        ({"a": "aaa{key}ccc"}, {"key": "xxx"}, {"a": "aaaxxxccc"}),
+        ({"a": ["aaa{ key }ccc"]}, {"key": "xxx"}, {"a": ["aaaxxxccc"]}),
+        ({"a": {"z": ["aaa{ key }ccc"]}}, {"key": "xxx"}, {"a": {"z": ["aaaxxxccc"]}}),
+        ({"a": "{key}"}, {"key": 123}, {"a": 123}),
+    ],
+)
+def test_substituteStrings(sourceDict, substitutions, expectedDict):
+    d = substituteStrings(sourceDict, substitutions)
+    assert d == expectedDict

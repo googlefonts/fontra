@@ -216,6 +216,41 @@ export function getActionIdentifierFromKeyEvent(event) {
   return null;
 }
 
+let currentKeyboardLayoutMap = null;
+
+function fetchKeyboardLayout() {
+  navigator.keyboard?.getLayoutMap().then((keyboardLayoutMap) => {
+    currentKeyboardLayoutMap = keyboardLayoutMap;
+  });
+}
+
+fetchKeyboardLayout();
+
+export function getBaseKeyFromKeyEvent(event) {
+  assert(event.type === "keydown");
+
+  let baseKey;
+
+  if (navigator.keyboard) {
+    // Use Keyboard API
+    // Hmm: when the keyboard layout changes, we'll always be one event behind,
+    // since the Keyboard API is async
+    fetchKeyboardLayout();
+    baseKey = currentKeyboardLayoutMap.get(event.code);
+  } else if ([...event.key].length === 1) {
+    // Use deprecated .keyCode property: "best effort"
+    baseKey =
+      ((event.code.length == 4 && event.code.slice(0, 3) == "Key") ||
+        (event.code.length == 6 && event.code.slice(0, 5) == "Digit")) &&
+      event.keyCode >= 32 &&
+      event.keyCode <= 126
+        ? String.fromCodePoint(event.keyCode).toLowerCase()
+        : event.key;
+  }
+
+  return baseKey || event.code;
+}
+
 function loadActionsByKeyOrCode() {
   if (actionsByKeyOrCode) {
     return;

@@ -50,6 +50,11 @@ def existing_folder(path):
     return path
 
 
+def substitute_key_value(keyValue):
+    key, value = keyValue.split(":", 1)
+    return (key, value)
+
+
 async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -80,6 +85,12 @@ async def mainAsync() -> None:
         action="store_true",
         help="Continue copying if reading or processing a glyph causes an error. "
         "The error will be logged, but the glyph will not be present in the output.",
+    )
+    parser.add_argument(
+        "--substitute",
+        action="append",
+        type=substitute_key_value,
+        help="Add a key:value pair to the substitution table",
     )
     parser.add_argument(
         "config",
@@ -114,6 +125,10 @@ async def mainAsync() -> None:
         )
         rootLogger.addHandler(logFileHandler)
 
+    substitutions = (
+        {k: yaml.safe_load(v) for k, v in args.substitute} if args.substitute else {}
+    )
+
     output_dir = args.output_dir
 
     nextInput = None
@@ -121,7 +136,9 @@ async def mainAsync() -> None:
     async with AsyncExitStack() as exitStack:
         outputs = []
         for config, config_path in args.config:
-            workflow = Workflow(config=config, parentDir=config_path.parent)
+            workflow = Workflow(
+                config=config, parentDir=config_path.parent, substitutions=substitutions
+            )
             endPoints = await exitStack.enter_async_context(
                 workflow.endPoints(nextInput)
             )
