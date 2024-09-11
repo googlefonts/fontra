@@ -398,7 +398,7 @@ export class SceneController {
       {
         topic,
         sortIndex: 100,
-        defaultShortCuts: [{ keyOrCode: "j", commandKey: true }],
+        defaultShortCuts: [{ baseKey: "j", commandKey: true }],
       },
       () => {
         if (this.contextMenuState.joinContourSelection?.length === 2) {
@@ -437,7 +437,7 @@ export class SceneController {
       "action.decompose-component",
       {
         topic,
-        defaultShortCuts: [{ keyOrCode: "d", commandKey: true, shiftKey: true }],
+        defaultShortCuts: [{ baseKey: "d", commandKey: true, shiftKey: true }],
       },
       () => this.doDecomposeSelectedComponents(),
       () => !!this.contextMenuState?.componentSelection?.length

@@ -17,15 +17,15 @@ import {
 //   allowGlobalOverride,  // This flag allows shortcuts to work even in a focused text box
 // } = action;
 //
-// const { keyOrCode, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
+// const { baseKey, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
 
-let actionsByKeyOrCode = undefined;
+let actionsByBaseKey = undefined;
 
 const actionInfoController = new ObservableController({});
 const actionCallbacks = {};
 actionInfoController.synchronizeWithLocalStorage("fontra-actions-", true);
 actionInfoController.addListener((event) => {
-  actionsByKeyOrCode = undefined;
+  actionsByBaseKey = undefined;
 });
 
 export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
@@ -144,13 +144,13 @@ export function getShortCutRepresentation(shortCutDefinition) {
     }
   }
 
-  if (!shortCutDefinition.keyOrCode) {
+  if (!shortCutDefinition.baseKey) {
     // This is possible during recoding of custom shortcuts.
     return shortCutRepr;
   }
   shortCutRepr +=
-    shortCutKeyMap[shortCutDefinition.keyOrCode] ||
-    capitalizeFirstLetter(shortCutDefinition.keyOrCode);
+    shortCutKeyMap[shortCutDefinition.baseKey] ||
+    capitalizeFirstLetter(shortCutDefinition.baseKey);
 
   return shortCutRepr;
 }
@@ -174,13 +174,9 @@ export function getActionIdentifierFromKeyEvent(event) {
     return null;
   }
 
-  loadActionsByKeyOrCode();
+  loadActionsByBaseKey();
 
-  let actionShortCuts = actionsByKeyOrCode[event.key.toLowerCase()];
-
-  if (!actionShortCuts) {
-    actionShortCuts = actionsByKeyOrCode[event.code];
-  }
+  const actionShortCuts = actionsByBaseKey[getBaseKeyFromKeyEvent(event)];
 
   if (!actionShortCuts) {
     return null;
@@ -256,17 +252,17 @@ export function getBaseKeyFromKeyEvent(event) {
   return baseKey || event.code;
 }
 
-function loadActionsByKeyOrCode() {
-  if (actionsByKeyOrCode) {
+function loadActionsByBaseKey() {
+  if (actionsByBaseKey) {
     return;
   }
-  actionsByKeyOrCode = {};
+  actionsByBaseKey = {};
   for (const [actionIdentifier, action] of Object.entries(actionInfoController.model)) {
     for (const shortCut of action.customShortCuts || action.defaultShortCuts || []) {
-      if (!actionsByKeyOrCode[shortCut.keyOrCode]) {
-        actionsByKeyOrCode[shortCut.keyOrCode] = [];
+      if (!actionsByBaseKey[shortCut.baseKey]) {
+        actionsByBaseKey[shortCut.baseKey] = [];
       }
-      actionsByKeyOrCode[shortCut.keyOrCode].push({ actionIdentifier, shortCut });
+      actionsByBaseKey[shortCut.baseKey].push({ actionIdentifier, shortCut });
     }
   }
 }

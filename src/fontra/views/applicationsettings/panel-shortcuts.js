@@ -207,7 +207,7 @@ const shortCutDefinitionKeys = [
   "altKey",
   "shiftKey",
   "metaKey",
-  "keyOrCode",
+  "baseKey",
 ];
 function _shortCutDefinitionNormalized(shortCutDefinition) {
   // For example: it removes false values, like altKey: false,
@@ -218,7 +218,7 @@ function _shortCutDefinitionNormalized(shortCutDefinition) {
   if (shortCutDefinition === undefined) {
     return undefined;
   }
-  if (!shortCutDefinition["keyOrCode"]) {
+  if (!shortCutDefinition["baseKey"]) {
     // No keys or codes, is not valid,
     // therefore return null.
     // INFO: This is how you can delete a shortcut.
@@ -227,7 +227,7 @@ function _shortCutDefinitionNormalized(shortCutDefinition) {
   const definition = {};
   for (const key of shortCutDefinitionKeys) {
     if (shortCutDefinition[key]) {
-      if (key === "keyOrCode") {
+      if (key === "baseKey") {
         if (shortCutDefinition[key] === "") {
           return null;
         }
@@ -256,8 +256,8 @@ function validateShortCutDefinition(key, definition) {
     }
   }
 
-  if (definition.keyOrCode.length > 1 && !shortCutKeyMap[definition.keyOrCode]) {
-    warnings.push(`⚠️ Invalid key or code: ${definition.keyOrCode}`);
+  if (definition.baseKey.length > 1 && !shortCutKeyMap[definition.baseKey]) {
+    warnings.push(`⚠️ Invalid key or code: ${definition.baseKey}`);
   }
 
   return warnings;
@@ -282,7 +282,7 @@ async function doEditShortCutDialog(key) {
     altKey: shortCutDefinition ? shortCutDefinition.altKey : false,
     shiftKey: shortCutDefinition ? shortCutDefinition.shiftKey : false,
     metaKey: shortCutDefinition ? shortCutDefinition.metaKey : false,
-    keyOrCode: shortCutDefinition ? shortCutDefinition.keyOrCode : "",
+    baseKey: shortCutDefinition ? shortCutDefinition.baseKey : "",
   };
   if (isMac) {
     keysModel.commandKey = shortCutDefinition.commandKey
@@ -307,7 +307,7 @@ async function doEditShortCutDialog(key) {
   controller.addKeyListener("shiftKey", (event) => {
     validateInput();
   });
-  controller.addKeyListener("keyOrCode", (event) => {
+  controller.addKeyListener("baseKey", (event) => {
     validateInput();
   });
 
@@ -321,7 +321,7 @@ async function doEditShortCutDialog(key) {
     });
   }
 
-  const disable = controller.model.keyOrCode != "" ? false : true;
+  const disable = controller.model.baseKey != "" ? false : true;
   const { contentElement, warningElement } =
     _shortCutPropertiesContentElement(controller);
   const dialog = await dialogSetup(title, null, [
@@ -379,7 +379,7 @@ function _shortCutPropertiesContentElement(controller) {
       `,
     },
     [
-      ...labeledTextInput("Key or Code:", controller, "keyOrCode", {
+      ...labeledTextInput("Key or Code:", controller, "baseKey", {
         id: "shortCut-text-input",
       }),
       html.div(),
@@ -537,7 +537,7 @@ class ShortCutElement extends HTMLElement {
           shortCutDefinition[item] = true;
         }
       } else {
-        shortCutDefinition.keyOrCode = item;
+        shortCutDefinition.baseKey = item;
       }
     });
     return shortCutDefinition;

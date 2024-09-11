@@ -319,7 +319,7 @@ export class EditorController {
         {
           topic,
           sortIndex: 0,
-          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: false }],
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
         },
         () => this.doUndoRedo(false),
         () => this.canUndoRedo(false)
@@ -329,7 +329,7 @@ export class EditorController {
         "action.redo",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: true }],
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
         },
         () => this.doUndoRedo(true),
         () => this.canUndoRedo(true)
@@ -345,7 +345,7 @@ export class EditorController {
           "action.cut",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "x", commandKey: true }],
           },
           () => this.doCut(),
           () => this.canCut()
@@ -355,7 +355,7 @@ export class EditorController {
           "action.copy",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "c", commandKey: true }],
           },
           () => this.doCopy(),
           () => this.canCopy()
@@ -365,7 +365,7 @@ export class EditorController {
           "action.paste",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "v", commandKey: true }],
           },
           () => this.doPaste(),
           () => this.canPaste()
@@ -377,10 +377,10 @@ export class EditorController {
         {
           topic,
           defaultShortCuts: [
-            { keyOrCode: "Delete" },
-            { keyOrCode: "Delete", altKey: true },
-            { keyOrCode: "Backspace" },
-            { keyOrCode: "Backspace", altKey: true },
+            { baseKey: "Delete" },
+            { baseKey: "Delete", altKey: true },
+            { baseKey: "Backspace" },
+            { baseKey: "Backspace", altKey: true },
           ],
         },
         (event) => this.doDelete(event),
@@ -391,7 +391,7 @@ export class EditorController {
         "action.select-all",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "a", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "a", commandKey: true }],
         },
         () => this.doSelectAllNone(false),
         () => this.sceneSettings.selectedGlyph?.isEditing
@@ -401,7 +401,7 @@ export class EditorController {
         "action.select-none",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "a", commandKey: true, shiftKey: true }],
+          defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
         },
         () => this.doSelectAllNone(true),
         () =>
@@ -447,8 +447,8 @@ export class EditorController {
           topic,
           titleKey: "zoom-in",
           defaultShortCuts: [
-            { keyOrCode: "+", commandKey: true },
-            { keyOrCode: "=", commandKey: true },
+            { baseKey: "+", commandKey: true },
+            { baseKey: "=", commandKey: true },
           ],
           allowGlobalOverride: true,
         },
@@ -460,7 +460,7 @@ export class EditorController {
         {
           topic,
           titleKey: "zoom-out",
-          defaultShortCuts: [{ keyOrCode: "-", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
           allowGlobalOverride: true,
         },
         () => this.zoomOut()
@@ -471,7 +471,7 @@ export class EditorController {
         {
           topic,
           titleKey: "zoom-fit-selection",
-          defaultShortCuts: [{ keyOrCode: "0", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "0", commandKey: true }],
           allowGlobalOverride: true,
         },
         () => this.zoomFit(),
@@ -497,7 +497,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-previous-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowUp", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
@@ -507,7 +507,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-next-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowDown", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
@@ -538,7 +538,7 @@ export class EditorController {
           const shortKey = sideBarShortCuts[panelIdentifier];
 
           const defaultShortCuts = shortKey
-            ? [{ keyOrCode: shortKey, commandKey: shortKey }]
+            ? [{ baseKey: shortKey, commandKey: shortKey }]
             : [];
 
           registerAction(
@@ -562,7 +562,7 @@ export class EditorController {
       for (const toolIdentifier of Object.keys(this.tools)) {
         const titleKey = `editor.${toolIdentifier}`;
         const defaultKey = defaultKeys[toolIdentifier];
-        const defaultShortCuts = defaultKey ? [{ keyOrCode: defaultKey }] : [];
+        const defaultShortCuts = defaultKey ? [{ baseKey: defaultKey }] : [];
         registerAction(
           `actions.tools.${toolIdentifier}`,
           {
@@ -582,7 +582,7 @@ export class EditorController {
       {
         topic: "0020-action-topics.menu.view",
         titleKey: "canvas.clean-view-and-hand-tool",
-        defaultShortCuts: [{ keyOrCode: "Space" }],
+        defaultShortCuts: [{ baseKey: "Space" }],
       },
       (event) => this.enterCleanViewAndHandTool(event)
     );
