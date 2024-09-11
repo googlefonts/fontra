@@ -245,6 +245,7 @@ addStyleSheet(`
     padding: 0.1em 0.3em;
     font-family: "fontra-ui-regular";
     font-size: 100%;
+    height: 18px;
   }
 
   .fontra-ui-shortcuts-panel-input:focus {
