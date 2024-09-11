@@ -282,9 +282,9 @@ class ShortCutElement extends HTMLElement {
   constructor(actionIdentifier) {
     super();
     this.classList.add("fontra-ui-shortcuts-panel-element");
-    this.key = actionIdentifier;
-    this.shortCutDefinition = getShortCut(this.key);
-    this.shortCutLabel = getActionTitle(this.key);
+    this.actionIdentifier = actionIdentifier;
+    this.shortCutDefinition = getShortCut(this.actionIdentifier);
+    this.shortCutLabel = getActionTitle(this.actionIdentifier);
     this.pressedKeys = new Set();
     this._updateContents();
   }
@@ -295,7 +295,10 @@ class ShortCutElement extends HTMLElement {
     }
     const warnings = [];
     for (const newShortCutDefinition of newShortCutDefinitions) {
-      const warns = validateShortCutDefinition(this.key, newShortCutDefinition);
+      const warns = validateShortCutDefinition(
+        this.actionIdentifier,
+        newShortCutDefinition
+      );
       for (const warn of warns) {
         warnings.push(warn);
       }
@@ -309,8 +312,8 @@ class ShortCutElement extends HTMLElement {
       );
       return false;
     }
-    setCustomShortCuts(this.key, newShortCutDefinitions);
-    this.shortCutDefinition = getShortCut(this.key);
+    setCustomShortCuts(this.actionIdentifier, newShortCutDefinitions);
+    this.shortCutDefinition = getShortCut(this.actionIdentifier);
     return true;
   }
 
@@ -383,18 +386,17 @@ class ShortCutElement extends HTMLElement {
   }
 
   resetShortCut(id) {
-    setCustomShortCuts(this.key, undefined);
+    setCustomShortCuts(this.actionIdentifier, undefined);
 
     document.getElementById(id).innerHTML = getShortCutRepresentation(
-      getShortCuts(this.key)[0]
+      getShortCut(this.actionIdentifier)
     );
-    this.shortCutDefinition = getShortCut(this.key);
+    this.shortCutDefinition = getShortCut(this.actionIdentifier);
   }
 
   deleteShortCut(id) {
-    if (this.saveShortCuts([])) {
-      document.getElementById(id).innerHTML = "";
-    }
+    this.saveShortCuts([]);
+    document.getElementById(id).innerHTML = "";
   }
 
   _updateContents() {
@@ -408,7 +410,7 @@ class ShortCutElement extends HTMLElement {
       )
     );
 
-    const id = `shortcut-input-${this.key}`;
+    const id = `shortcut-input-${this.actionIdentifier}`;
     this.append(
       html.div({
         "id": id,
