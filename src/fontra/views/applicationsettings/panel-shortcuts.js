@@ -570,7 +570,7 @@ class ShortCutElement extends HTMLElement {
   }
 
   resetShortCut(id) {
-    setCustomShortCuts(this.key, null);
+    setCustomShortCuts(this.key, undefined);
 
     document.getElementById(id).value = getShortCutRepresentation(
       getShortCuts(this.key)[0]
@@ -579,7 +579,7 @@ class ShortCutElement extends HTMLElement {
   }
 
   deleteShortCut(id) {
-    if (this.saveShortCuts([null])) {
+    if (this.saveShortCuts([])) {
       document.getElementById(id).value = "";
     }
   }
