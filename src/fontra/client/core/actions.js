@@ -79,6 +79,7 @@ export function getActionTitle(actionIdentifier, args = "") {
   return translate(actionInfo?.titleKey || actionIdentifier, args);
 }
 
+// reference: https://www.toptal.com/developers/keycode/table
 export const shortCutKeyMap = {
   ArrowUp: "↑",
   ArrowDown: "↓",
@@ -91,8 +92,18 @@ export const shortCutKeyMap = {
   NumpadDivide: "÷",
   NumpadAdd: "+",
   NumpadSubtract: "-",
+  NumpadEnter: "↵",
+  NumpadDecimal: ".",
+  NumpadEqual: "=",
   Enter: "↵",
   Space: "␣",
+  Escape: "Esc",
+  Home: "⌂",
+  End: "End",
+  NumLock: "⌧",
+  PageUp: "⇞",
+  PageDown: "⇟",
+  CapsLock: "⇪",
 };
 
 // add A-Z keys
@@ -103,6 +114,10 @@ for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i
 for (let i = 0; i <= 9; i++) {
   shortCutKeyMap[`Digit${i}`] = `${i}`;
   shortCutKeyMap[`Numpad${i}`] = `${i}`;
+}
+// add F1-F32 keys
+for (let i = 1; i <= 32; i++) {
+  shortCutKeyMap[`F${i}`] = `F${i}`;
 }
 
 export const shortCutModifierMap = {
