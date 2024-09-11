@@ -277,7 +277,7 @@ async function doEditShortCutDialog(key) {
     dialog.defaultButton.classList.toggle("disabled", warnings.length);
   };
 
-  const controllers = {
+  const keysModel = {
     ctrlKey: shortCutDefinition ? shortCutDefinition.ctrlKey : false,
     altKey: shortCutDefinition ? shortCutDefinition.altKey : false,
     shiftKey: shortCutDefinition ? shortCutDefinition.shiftKey : false,
@@ -285,18 +285,18 @@ async function doEditShortCutDialog(key) {
     keyOrCode: shortCutDefinition ? shortCutDefinition.keyOrCode : "",
   };
   if (isMac) {
-    controllers.commandKey = shortCutDefinition.commandKey
+    keysModel.commandKey = shortCutDefinition.commandKey
       ? shortCutDefinition.commandKey
       : shortCutDefinition.metaKey || false;
-    delete controllers.metaKey;
+    delete keysModel.metaKey;
   } else {
-    controllers.commandKey = shortCutDefinition.commandKey
+    keysModel.commandKey = shortCutDefinition.commandKey
       ? shortCutDefinition.commandKey
       : shortCutDefinition.ctrlKey || false;
-    delete controllers.ctrlKey;
+    delete keysModel.ctrlKey;
   }
 
-  const controller = new ObservableController(controllers);
+  const controller = new ObservableController(keysModel);
 
   controller.addKeyListener("commandKey", (event) => {
     validateInput();
