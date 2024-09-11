@@ -114,10 +114,6 @@ for (let i = 0; i <= 9; i++) {
   shortCutKeyMap[`Digit${i}`] = `${i}`;
   shortCutKeyMap[`Numpad${i}`] = `${i}`;
 }
-// add F1-F32 keys
-for (let i = 1; i <= 32; i++) {
-  shortCutKeyMap[`F${i}`] = `F${i}`;
-}
 
 export const shortCutModifierMap = {
   commandKey: isMac ? "⌘" : "Ctrl+", // fontra specific cross-platform key
