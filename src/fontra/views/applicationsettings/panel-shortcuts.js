@@ -1,7 +1,5 @@
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { ObservableController } from "../core/observable-object.js";
-import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   getActionIdentifiers,
@@ -12,13 +10,12 @@ import {
   getShortCutRepresentation,
   getShortCuts,
   setCustomShortCuts,
-  shortCutKeyMap,
   shortCutModifierMap,
 } from "/core/actions.js";
 import { translate } from "/core/localization.js";
 import { commandKeyProperty, isMac } from "/core/utils.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
-import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
+import { dialog, message } from "/web-components/modal-dialog.js";
 
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};
@@ -179,63 +176,20 @@ export class ShortCutsPanel extends BaseInfoPanel {
   }
 }
 
-function isDifferentShortCutDefinition(a, b) {
-  // Why isDifferent and not isEqual?
-  // Because it is a faster return if something is different.
-  const defA = _shortCutDefinitionNormalized(a);
-  const defB = _shortCutDefinitionNormalized(b);
-
-  if (defA === null || defB === null) {
-    return defA != defB;
+function isShortCutDefinitionEqual(shortCutA, shortCutB) {
+  if (shortCutA.baseKey !== shortCutB.baseKey) {
+    return false;
   }
 
-  if (Object.keys(defA).length !== Object.keys(defB).length) {
-    return true;
-  }
+  const modifierProperties = ["commandKey", "ctrlKey", "altKey", "shiftKey", "metaKey"];
 
-  for (const key in defA) {
-    if (defA[key] !== defB[key]) {
-      return true;
+  for (const prop of modifierProperties) {
+    if (!!shortCutA[prop] !== !!shortCutB[prop]) {
+      return false;
     }
   }
-  return false;
-}
 
-const shortCutDefinitionKeys = [
-  "commandKey",
-  "ctrlKey",
-  "altKey",
-  "shiftKey",
-  "metaKey",
-  "baseKey",
-];
-function _shortCutDefinitionNormalized(shortCutDefinition) {
-  // For example: it removes false values, like altKey: false,
-  // which is possible to be set via the double click dialog.
-  if (shortCutDefinition === null) {
-    return null;
-  }
-  if (shortCutDefinition === undefined) {
-    return undefined;
-  }
-  if (!shortCutDefinition["baseKey"]) {
-    // No keys or codes, is not valid,
-    // therefore return null.
-    // INFO: This is how you can delete a shortcut.
-    return null;
-  }
-  const definition = {};
-  for (const key of shortCutDefinitionKeys) {
-    if (shortCutDefinition[key]) {
-      if (key === "baseKey") {
-        if (shortCutDefinition[key] === "") {
-          return null;
-        }
-      }
-      definition[key] = shortCutDefinition[key];
-    }
-  }
-  return definition;
+  return true;
 }
 
 function validateShortCutDefinition(key, definition) {
@@ -249,167 +203,14 @@ function validateShortCutDefinition(key, definition) {
       continue;
     }
     for (const otherDefinition of getShortCuts(otherKey)) {
-      if (!isDifferentShortCutDefinition(otherDefinition, definition)) {
-        warnings.push("⚠️ ShortCut exists for: " + getActionTitle(otherKey));
+      if (isShortCutDefinitionEqual(otherDefinition, definition)) {
+        warnings.push(`⚠️ ShortCut exists for "${getActionTitle(otherKey)}"`);
         break;
       }
     }
   }
 
-  if (definition.baseKey.length > 1 && !shortCutKeyMap[definition.baseKey]) {
-    warnings.push(`⚠️ Invalid key or code: ${definition.baseKey}`);
-  }
-
   return warnings;
-}
-
-async function doEditShortCutDialog(key) {
-  const shortCutDefinition = getShortCut(key);
-  const title = "Edit ShortCut: " + getActionTitle(key);
-
-  const validateInput = () => {
-    const warnings = validateShortCutDefinition(
-      key,
-      _shortCutDefinitionNormalized(controller.model)
-    );
-
-    warningElement.innerText = warnings.length ? warnings.join("\n") : "";
-    dialog.defaultButton.classList.toggle("disabled", warnings.length);
-  };
-
-  const keysModel = {
-    ctrlKey: shortCutDefinition ? shortCutDefinition.ctrlKey : false,
-    altKey: shortCutDefinition ? shortCutDefinition.altKey : false,
-    shiftKey: shortCutDefinition ? shortCutDefinition.shiftKey : false,
-    metaKey: shortCutDefinition ? shortCutDefinition.metaKey : false,
-    baseKey: shortCutDefinition ? shortCutDefinition.baseKey : "",
-  };
-  if (isMac) {
-    keysModel.commandKey = shortCutDefinition.commandKey
-      ? shortCutDefinition.commandKey
-      : shortCutDefinition.metaKey || false;
-    delete keysModel.metaKey;
-  } else {
-    keysModel.commandKey = shortCutDefinition.commandKey
-      ? shortCutDefinition.commandKey
-      : shortCutDefinition.ctrlKey || false;
-    delete keysModel.ctrlKey;
-  }
-
-  const controller = new ObservableController(keysModel);
-
-  controller.addKeyListener("commandKey", (event) => {
-    validateInput();
-  });
-  controller.addKeyListener("altKey", (event) => {
-    validateInput();
-  });
-  controller.addKeyListener("shiftKey", (event) => {
-    validateInput();
-  });
-  controller.addKeyListener("baseKey", (event) => {
-    validateInput();
-  });
-
-  if (isMac) {
-    controller.addKeyListener("ctrlKey", (event) => {
-      validateInput();
-    });
-  } else {
-    controller.addKeyListener("metaKey", (event) => {
-      validateInput();
-    });
-  }
-
-  const disable = controller.model.baseKey != "" ? false : true;
-  const { contentElement, warningElement } =
-    _shortCutPropertiesContentElement(controller);
-  const dialog = await dialogSetup(title, null, [
-    { title: "Cancel", isCancelButton: true },
-    { title: "Edit", isDefaultButton: true, disabled: disable },
-  ]);
-
-  dialog.setContent(contentElement);
-
-  setTimeout(() => {
-    const inputNameElement = contentElement.querySelector("#shortCut-text-input");
-    inputNameElement.focus();
-    inputNameElement.select();
-  }, 0);
-
-  validateInput();
-
-  if (!(await dialog.run())) {
-    // User cancelled
-    return undefined;
-  }
-
-  return _shortCutDefinitionNormalized(controller.model);
-}
-
-function _shortCutPropertiesContentElement(controller) {
-  const warningElement = html.div({
-    id: "warning-text-anchor-name",
-    style: `grid-column: 1 / -1; min-height: 1.5em;`,
-  });
-
-  const labeledCheckBoxSpecificOS = isMac
-    ? labeledCheckbox(
-        `Ctrl (${shortCutModifierMap["ctrlKey"]})`,
-        controller,
-        "ctrlKey",
-        {}
-      )
-    : labeledCheckbox(
-        `Meta (${shortCutModifierMap["metaKey"]})`,
-        controller,
-        "metaKey",
-        {}
-      );
-  const contentElement = html.div(
-    {
-      style: `overflow: hidden;
-        white-space: nowrap;
-        display: grid;
-        gap: 0.5em;
-        grid-template-columns: auto auto;
-        align-items: center;
-        height: 100%;
-        min-height: 0;
-      `,
-    },
-    [
-      ...labeledTextInput("Key or Code:", controller, "baseKey", {
-        id: "shortCut-text-input",
-      }),
-      html.div(),
-      labeledCheckbox(
-        `Command (${shortCutModifierMap["commandKey"]})`,
-        controller,
-        "commandKey",
-        {}
-      ),
-      html.div(),
-      labeledCheckBoxSpecificOS,
-      html.div(),
-      labeledCheckbox(
-        `Shift (${shortCutModifierMap["shiftKey"]})`,
-        controller,
-        "shiftKey",
-        {}
-      ),
-      html.div(),
-      labeledCheckbox(
-        `Alt (${shortCutModifierMap["altKey"]})`,
-        controller,
-        "altKey",
-        {}
-      ),
-      html.div(),
-      warningElement,
-    ]
-  );
-  return { contentElement, warningElement };
 }
 
 const shortcutsPanelInputWidth = isMac ? "6em" : "12em"; // longer on windows because no icons are shown.
@@ -473,20 +274,6 @@ class ShortCutElement extends HTMLElement {
     this._updateContents();
   }
 
-  async doEditShortCut(id) {
-    const shortCutDefinition = await doEditShortCutDialog(this.key);
-    const newShortCutDefinition = _shortCutDefinitionNormalized(shortCutDefinition);
-    if (newShortCutDefinition === undefined) {
-      // User cancelled, do nothing.
-      return;
-    }
-    if (this.saveShortCuts([newShortCutDefinition])) {
-      const element = document.getElementById(id);
-      element.value = getShortCutRepresentation(newShortCutDefinition);
-      element.blur(); // remove focus
-    }
-  }
-
   saveShortCuts(newShortCutDefinitions) {
     if (!newShortCutDefinitions) {
       return false;
@@ -500,7 +287,7 @@ class ShortCutElement extends HTMLElement {
     }
     if (warnings.length > 0) {
       message(
-        `Invalid ShortCut "${getShortCutRepresentation(
+        `Duplicate ShortCut "${getShortCutRepresentation(
           newShortCutDefinitions[0]
         )}" for "${this.shortCutLabel}":`,
         warnings.join("\n")
@@ -614,11 +401,9 @@ class ShortCutElement extends HTMLElement {
         class: "fontra-ui-shortcuts-panel-input",
         value: getShortCutRepresentation(this.shortCutDefinition),
         // tooltip does not work with text input element -> use title instead.
-        title:
-          "Click and record a shortcut OR double click and open dialog for editing",
+        title: "Click and record a shortcut",
         onkeydown: (event) => this.recordShortCut(id, event),
         onkeyup: (event) => this.recordShortCutKeyup(id, event),
-        ondblclick: (event) => this.doEditShortCut(id),
       })
     );
 
