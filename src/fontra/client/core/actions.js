@@ -66,8 +66,7 @@ export function setCustomShortCuts(actionIdentifier, customShortCuts) {
 }
 
 export function getActionIdentifiers() {
-  const actionIdentifiers = Object.keys(actionInfoController.model);
-  return actionIdentifiers;
+  return Object.keys(actionInfoController.model);
 }
 
 export function getActionInfo(actionIdentifier) {
