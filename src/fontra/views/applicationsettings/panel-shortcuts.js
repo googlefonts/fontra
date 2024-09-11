@@ -24,12 +24,22 @@ function getShortCutsGrouped() {
   const shortCutsGrouped = {};
   for (const actionIdentifier of getActionIdentifiers()) {
     const actionInfo = getActionInfo(actionIdentifier);
-    const topic = actionInfo.topic || "shortcuts.other";
+    const topic = actionInfo.topic || "9999-shortcuts.other";
     if (!shortCutsGrouped[topic]) {
       shortCutsGrouped[topic] = [];
     }
     shortCutsGrouped[topic].push(actionIdentifier);
   }
+
+  // sort the actions by sortIndex
+  for (const topic in shortCutsGrouped) {
+    shortCutsGrouped[topic].sort((a, b) => {
+      const actionInfoA = getActionInfo(a);
+      const actionInfoB = getActionInfo(b);
+      return actionInfoA.sortIndex - actionInfoB.sortIndex;
+    });
+  }
+
   return shortCutsGrouped;
 }
 
@@ -90,15 +100,16 @@ export class ShortCutsPanel extends BaseInfoPanel {
     );
 
     this.panelElement.appendChild(containerButtons);
-    for (const [topicKey, actionIdentifiers] of Object.entries(getShortCutsGrouped())) {
+    const shortCutsGrouped = getShortCutsGrouped();
+    for (const topic of Object.keys(shortCutsGrouped).sort()) {
       const container = html.div({ class: "fontra-ui-shortcuts-panel" }, []);
       container.appendChild(
         html.createDomElement("div", {
           class: "fontra-ui-shortcuts-panel-header",
-          innerHTML: translate(topicKey),
+          innerHTML: translate(topic.slice(5)),
         })
       );
-      for (const actionIdentifier of actionIdentifiers) {
+      for (const actionIdentifier of shortCutsGrouped[topic]) {
         container.appendChild(new ShortCutElement(actionIdentifier));
       }
       this.panelElement.appendChild(container);

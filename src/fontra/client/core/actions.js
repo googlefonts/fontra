@@ -33,18 +33,26 @@ export function registerAction(actionIdentifier, actionInfo, callback, enabled =
   registerActionCallbacks(actionIdentifier, callback, enabled);
 }
 
-let sortIndex = 0;
+const topicSortIndices = {};
+
 export function registerActionInfo(actionIdentifier, actionInfo) {
   actionInfoController.synchronizeItemWithLocalStorage(actionIdentifier, actionInfo);
   // We only want customShortCuts to be changable, so we'll reset everything
   // except customShortCuts
+  if (!topicSortIndices[actionInfo.topic]) {
+    topicSortIndices[actionInfo.topic] = 0;
+  }
+  const sortIndex =
+    actionInfo.sortIndex === undefined
+      ? topicSortIndices[actionInfo.topic]
+      : actionInfo.sortIndex;
   const storedActionInfo = getActionInfo(actionIdentifier);
   actionInfoController.model[actionIdentifier] = {
     ...actionInfo,
     customShortCuts: storedActionInfo.customShortCuts,
-    sortIndex: actionInfo.sortIndex === undefined ? sortIndex : actionInfo.sortIndex,
+    sortIndex,
   };
-  sortIndex++;
+  topicSortIndices[actionInfo.topic] = sortIndex + 1;
 }
 
 export function registerActionCallbacks(actionIdentifier, callback, enabled = null) {
@@ -59,9 +67,6 @@ export function setCustomShortCuts(actionIdentifier, customShortCuts) {
 
 export function getActionIdentifiers() {
   const actionIdentifiers = Object.keys(actionInfoController.model);
-  actionIdentifiers.sort(
-    (a, b) => getActionInfo(a).sortIndex - getActionInfo(b).sortIndex
-  );
   return actionIdentifiers;
 }
 

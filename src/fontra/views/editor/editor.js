@@ -312,12 +312,13 @@ export class EditorController {
 
   initActions() {
     {
-      const topic = "action-topics.menu.edit";
+      const topic = "0030-action-topics.menu.edit";
 
       registerAction(
         "action.undo",
         {
           topic,
+          sortIndex: 0,
           defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: false }],
         },
         () => this.doUndoRedo(false),
@@ -410,7 +411,7 @@ export class EditorController {
 
       registerAction(
         "action.add-component",
-        { topic, sortIndex: 4 },
+        { topic },
         () => this.doAddComponent(),
         () => this.canAddComponent()
       );
@@ -438,7 +439,7 @@ export class EditorController {
     }
 
     {
-      const topic = "action-topics.menu.view";
+      const topic = "0020-action-topics.menu.view";
 
       registerAction(
         "action.zoom-in",
@@ -522,7 +523,7 @@ export class EditorController {
     }
 
     {
-      const topic = "action-topics.sidebars";
+      const topic = "0040-action-topics.sidebars";
 
       const sideBarShortCuts = {
         "glyph-search": "f",
@@ -549,7 +550,7 @@ export class EditorController {
     }
 
     {
-      const topic = "action-topics.tools";
+      const topic = "0010-action-topics.tools";
 
       const defaultKeys = {};
       for (const [i, toolIdentifier] of enumerate(Object.keys(this.topLevelTools), 1)) {
@@ -579,7 +580,7 @@ export class EditorController {
     registerAction(
       "action.canvas.clean-view-and-hand-tool",
       {
-        topic: "action-topics.canvas",
+        topic: "0020-action-topics.menu.view",
         titleKey: "canvas.clean-view-and-hand-tool",
         defaultShortCuts: [{ keyOrCode: "Space" }],
       },
