@@ -560,6 +560,7 @@ export class EditorController {
       }
 
       for (const toolIdentifier of Object.keys(this.tools)) {
+        const isSubTool = !this.topLevelTools[toolIdentifier];
         const titleKey = `editor.${toolIdentifier}`;
         const defaultKey = defaultKeys[toolIdentifier];
         const defaultShortCuts = defaultKey ? [{ baseKey: defaultKey }] : [];
@@ -571,7 +572,7 @@ export class EditorController {
             defaultShortCuts: defaultShortCuts,
           },
           () => {
-            this.setSelectedTool(toolIdentifier);
+            this.setSelectedTool(toolIdentifier, isSubTool);
           }
         );
       }
@@ -1037,20 +1038,10 @@ export class EditorController {
           this.canvasController.canvas.focus();
         };
       } else {
-        function collapseSubTools(editToolsElement) {
-          // Hide sub tools
-          for (const [index, child] of enumerate(editToolsElement.children)) {
-            child.style.visibility = index ? "hidden" : "visible";
-            child.dataset.tooltipposition = index ? "right" : "bottom";
-          }
-          window.removeEventListener("mousedown", globalListener, false);
-          window.removeEventListener("keydown", globalListener, false);
-        }
-
         const globalListener = {
           handleEvent: (event) => {
             if (event.type != "keydown" || event.key == "Escape") {
-              collapseSubTools(editToolsElement);
+              this.collapseSubTools(editToolsElement);
             }
           },
         };
@@ -1080,9 +1071,11 @@ export class EditorController {
             return;
           }
 
-          collapseSubTools(editToolsElement);
+          this.collapseSubTools(editToolsElement);
           editToolsElement.prepend(toolButton);
-          collapseSubTools(editToolsElement);
+          this.collapseSubTools(editToolsElement);
+          window.removeEventListener("mousedown", globalListener, false);
+          window.removeEventListener("keydown", globalListener, false);
         };
       }
       editToolsElement.appendChild(toolButton);
@@ -1210,7 +1203,15 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier) {
+  collapseSubTools(editToolsElement) {
+    // Hide sub tools
+    for (const [index, child] of enumerate(editToolsElement.children)) {
+      child.style.visibility = index ? "hidden" : "visible";
+      child.dataset.tooltipposition = index ? "right" : "bottom";
+    }
+  }
+
+  setSelectedTool(toolIdentifier, isSubtool = false) {
     let selectedToolIdentifier = toolIdentifier;
 
     for (const editToolItem of document.querySelectorAll(
@@ -1225,6 +1226,11 @@ export class EditorController {
           for (const childToolElement of editToolItem.children) {
             if (childToolElement.dataset.tool === toolIdentifier) {
               shouldSelect = true;
+              if (isSubtool) {
+                this.collapseSubTools(editToolItem);
+                editToolItem.prepend(childToolElement);
+                this.collapseSubTools(editToolItem);
+              }
             }
           }
         }
