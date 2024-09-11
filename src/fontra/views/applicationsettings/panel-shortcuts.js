@@ -230,7 +230,15 @@ addStyleSheet(`
   .fontra-ui-shortcuts-panel-input {
     width: ${shortcutsPanelInputWidth};
     text-align: center;
-    caret-color: transparent;
+    box-sizing: border-box;
+    background-color: var(--text-input-background-color);
+    color: var(--text-input-foreground-color);
+    border-radius: 0.25em;
+    border: none;
+    outline: none;
+    padding: 0.1em 0.3em;
+    font-family: "fontra-ui-regular";
+    font-size: 100%;
   }
 
   .fontra-ui-shortcuts-panel-input:focus {
@@ -340,13 +348,13 @@ class ShortCutElement extends HTMLElement {
 
     // show the current shortcut immediately, no delay:
     const element = document.getElementById(id);
-    element.value = getShortCutRepresentation(shortCutDefinition);
+    element.innerHTML = getShortCutRepresentation(shortCutDefinition);
 
     //if not alt, shift, ctrl or meta, end of recording -> save shortcut
     if (!event[pressedKey]) {
       if (!this.saveShortCuts([shortCutDefinition])) {
         // if the shortcut is invalid, reset the input field
-        element.value = getShortCutRepresentation(this.shortCutDefinition);
+        element.innerHTML = getShortCutRepresentation(this.shortCutDefinition);
       }
       element.blur(); // remove focus
       this.pressedKeys = new Set();
@@ -361,7 +369,7 @@ class ShortCutElement extends HTMLElement {
     const shortCutRepresentation = getShortCutRepresentation(
       this.getShortCutDefinition()
     );
-    element.value =
+    element.innerHTML =
       shortCutRepresentation != ""
         ? shortCutRepresentation
         : getShortCutRepresentation(this.shortCutDefinition);
@@ -395,15 +403,15 @@ class ShortCutElement extends HTMLElement {
 
     const id = `shortcut-input-${this.key}`;
     this.append(
-      html.input({
-        type: "text",
-        id: id,
-        class: "fontra-ui-shortcuts-panel-input",
-        value: getShortCutRepresentation(this.shortCutDefinition),
-        // tooltip does not work with text input element -> use title instead.
-        title: "Click and record a shortcut",
-        onkeydown: (event) => this.recordShortCut(id, event),
-        onkeyup: (event) => this.recordShortCutKeyup(id, event),
+      html.div({
+        "id": id,
+        "tabindex": "0", // required for focus
+        "class": "fontra-ui-shortcuts-panel-input",
+        "innerHTML": getShortCutRepresentation(this.shortCutDefinition),
+        "onkeydown": (event) => this.recordShortCut(id, event),
+        "onkeyup": (event) => this.recordShortCutKeyup(id, event),
+        "data-tooltip": "Click and record a shortcut",
+        "data-tooltipposition": "top",
       })
     );
 
