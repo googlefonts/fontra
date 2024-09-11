@@ -221,10 +221,16 @@ addStyleSheet(`
     padding: 0.35rem 0 0 0;
     display: grid;
     grid-template-rows: auto auto;
-    grid-template-columns: max-content max-content max-content max-content;
+    grid-template-columns: max-content max-content max-content;
     grid-row-gap: 0.1em;
     grid-column-gap: 1em;
     height: 1.4em;
+  }
+
+  .fontra-ui-shortcuts-panel-icon-wrapper {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    grid-column-gap: 0.2em;
   }
 
   .fontra-ui-shortcuts-panel-input {
@@ -259,7 +265,7 @@ addStyleSheet(`
     pointer-events: none;
   }
 
-  .fontra-ui-shortcuts-panel-input:focus ~ * {
+  .fontra-ui-shortcuts-panel-input:focus + .fontra-ui-shortcuts-panel-icon-wrapper .fontra-ui-shortcuts-panel-icon {
     pointer-events: unset;
     opacity: unset;
   }
@@ -378,7 +384,7 @@ class ShortCutElement extends HTMLElement {
   resetShortCut(id) {
     setCustomShortCuts(this.key, undefined);
 
-    document.getElementById(id).value = getShortCutRepresentation(
+    document.getElementById(id).innerHTML = getShortCutRepresentation(
       getShortCuts(this.key)[0]
     );
     this.shortCutDefinition = getShortCut(this.key);
@@ -386,7 +392,7 @@ class ShortCutElement extends HTMLElement {
 
   deleteShortCut(id) {
     if (this.saveShortCuts([])) {
-      document.getElementById(id).value = "";
+      document.getElementById(id).innerHTML = "";
     }
   }
 
@@ -415,7 +421,11 @@ class ShortCutElement extends HTMLElement {
       })
     );
 
-    this.append(
+    const iconWrapper = html.div({
+      class: "fontra-ui-shortcuts-panel-icon-wrapper",
+    });
+
+    iconWrapper.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-shortcuts-panel-icon",
         "src": "/tabler-icons/refresh.svg",
@@ -425,7 +435,7 @@ class ShortCutElement extends HTMLElement {
       })
     );
 
-    this.append(
+    iconWrapper.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-shortcuts-panel-icon",
         "src": "/tabler-icons/x.svg",
@@ -434,6 +444,8 @@ class ShortCutElement extends HTMLElement {
         "data-tooltipposition": "top",
       })
     );
+
+    this.append(iconWrapper);
   }
 }
 
