@@ -1099,6 +1099,49 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.component.handles",
+  name: "Component handles",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
+  colors: { color: "#BBB" },
+  colorsDarkMode: { color: "#777" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    context.strokeStyle = parameters.color;
+    context.lineWidth = parameters.strokeWidth;
+    for (const [pt1, pt2] of glyph.componentsPath.iterHandles()) {
+      strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.component.nodes",
+  name: "Component Nodes",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 500,
+  screenParameters: { cornerSize: 8, smoothSize: 8, handleSize: 6.5 },
+  colors: { color: "#CCC" },
+  colorsDarkMode: { color: "#777" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    context.fillStyle = parameters.color;
+    for (const pt of glyph.componentsPath.iterPoints()) {
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.handles",
   name: "Bezier handles",
   selectionMode: "editing",
