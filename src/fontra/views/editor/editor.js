@@ -1071,7 +1071,6 @@ export class EditorController {
             return;
           }
 
-          this.collapseSubTools(editToolsElement);
           editToolsElement.prepend(toolButton);
           this.collapseSubTools(editToolsElement);
           window.removeEventListener("mousedown", globalListener, false);
@@ -1227,7 +1226,6 @@ export class EditorController {
             if (childToolElement.dataset.tool === toolIdentifier) {
               shouldSelect = true;
               if (isSubtool) {
-                this.collapseSubTools(editToolItem);
                 editToolItem.prepend(childToolElement);
                 this.collapseSubTools(editToolItem);
               }
