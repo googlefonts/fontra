@@ -5,7 +5,6 @@ import { commandKeyProperty } from "../core/utils.js";
 export class BaseInfoPanel {
   constructor(applicationSettingsController, panelElement) {
     this.applicationSettingsController = applicationSettingsController;
-    //this.fontController = applicationSettingsController.fontController;
     this.panelElement = panelElement;
   }
 
@@ -19,20 +18,6 @@ export class BaseInfoPanel {
 
   initializePanel() {
     this.undoStack = new UndoStack();
-
-    // const subscribePattern = Object.fromEntries(
-    //   this.constructor.fontAttributes.map((fontAttr) => [fontAttr, null])
-    // );
-    // this.fontController.addChangeListener(
-    //   subscribePattern,
-    //   (change, isExternalChange) => {
-    //     if (isExternalChange) {
-    //       this.setupUI();
-    //       this.undoStack.clear();
-    //     }
-    //   },
-    //   false
-    // );
     this.setupUI();
   }
 
@@ -54,16 +39,6 @@ export class BaseInfoPanel {
     if (isRedo) {
       undoRecord = reverseUndoRecord(undoRecord);
     }
-    // this.fontController.applyChange(undoRecord.rollbackChange);
-
-    // const error = await this.fontController.editFinal(
-    //   undoRecord.rollbackChange,
-    //   undoRecord.change,
-    //   undoRecord.info.label,
-    //   true
-    // );
-    // // TODO handle error
-    // this.fontController.notifyEditListeners("editFinal", this);
 
     this.setupUI();
   }
@@ -78,14 +53,5 @@ export class BaseInfoPanel {
     };
 
     this.undoStack.pushUndoRecord(undoRecord);
-
-    // const error = await this.fontController.editFinal(
-    //   change,
-    //   rollbackChange,
-    //   undoLabel,
-    //   true
-    // );
-    // // TODO handle error
-    // this.fontController.notifyEditListeners("editFinal", this);
   }
 }
