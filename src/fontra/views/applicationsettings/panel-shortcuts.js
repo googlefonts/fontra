@@ -366,7 +366,6 @@ class ShortCutElement extends HTMLElement {
         // if the shortcut is invalid, reset the input field
         element.innerHTML = getShortCutRepresentation(this.shortCutDefinition);
       }
-      element.blur(); // remove focus
       this.pressedKeys = new Set();
     }
   }
@@ -387,16 +386,17 @@ class ShortCutElement extends HTMLElement {
 
   resetShortCut(id) {
     setCustomShortCuts(this.actionIdentifier, undefined);
-
-    document.getElementById(id).innerHTML = getShortCutRepresentation(
-      getShortCut(this.actionIdentifier)
-    );
+    const element = document.getElementById(id);
+    element.innerHTML = getShortCutRepresentation(getShortCut(this.actionIdentifier));
+    element.focus();
     this.shortCutDefinition = getShortCut(this.actionIdentifier);
   }
 
   deleteShortCut(id) {
     this.saveShortCuts([]);
-    document.getElementById(id).innerHTML = "";
+    const element = document.getElementById(id);
+    element.innerHTML = "";
+    element.focus();
   }
 
   _updateContents() {
