@@ -137,9 +137,12 @@ export class VarPackedPath {
         }
         continue;
       }
+      let isFirstSegment = true;
       for (const segment of this.iterContourDecomposedSegments(i)) {
         if (!bounds) {
           bounds = rectFromPoints([segment.points[0]]);
+        } else if (isFirstSegment) {
+          bounds = updateRect(bounds, segment.points[0]);
         }
         bounds = updateRect(bounds, segment.points.at(-1));
         if (
@@ -154,6 +157,7 @@ export class VarPackedPath {
             bounds = updateRect(bounds, bez.compute(t));
           }
         }
+        isFirstSegment = false;
       }
     }
     return bounds;
