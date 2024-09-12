@@ -607,6 +607,10 @@ export class StaticGlyphController {
   }
 
   getSelectionBounds(selection) {
+    if (!selection.size) {
+      return undefined;
+    }
+
     let {
       point: pointIndices,
       component: componentIndices,
