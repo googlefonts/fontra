@@ -1099,19 +1099,19 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.component.nodes",
+  identifier: "sidebar.user-settings.component.nodes",
   name: "Component Nodes",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
-  zIndex: 500,
+  zIndex: 450,
   screenParameters: {
     cornerSize: 8,
     smoothSize: 8,
     handleSize: 6.5,
     strokeWidth: 1,
   },
-  colors: { color: "#CCC" },
+  colors: { color: "#CCC7" },
   colorsDarkMode: { color: "#666" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;

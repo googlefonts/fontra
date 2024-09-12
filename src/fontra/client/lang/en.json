@@ -171,6 +171,7 @@
   "sidebar.text-entry": "Text Entry",
   "sidebar.user-settings": "User Settings",
   "sidebar.user-settings.clipboard": "Clipboard export format",
+  "sidebar.user-settings.component.nodes": "Component nodes",
   "sidebar.user-settings.experimental": "Experimental features",
   "sidebar.user-settings.glyph": "Glyph editor appearance",
   "sidebar.user-settings.glyph.anchornames": "Anchor names",
