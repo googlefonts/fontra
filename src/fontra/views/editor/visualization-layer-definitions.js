@@ -1111,8 +1111,8 @@ registerVisualizationLayerDefinition({
     handleSize: 6.5,
     strokeWidth: 1,
   },
-  colors: { color: "#CCC7" },
-  colorsDarkMode: { color: "#666" },
+  colors: { color: "#BBB5" },
+  colorsDarkMode: { color: "#8885" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const cornerSize = parameters.cornerSize;
