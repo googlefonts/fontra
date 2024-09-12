@@ -399,6 +399,12 @@ class ShortCutElement extends HTMLElement {
     element.focus();
   }
 
+  outOfFocus(id) {
+    // This fixes the issue: pressed modifier key but clicked outside the input field
+    const element = document.getElementById(id);
+    element.innerHTML = getShortCutRepresentation(getShortCut(this.actionIdentifier));
+  }
+
   _updateContents() {
     this.innerHTML = "";
     this.append(
@@ -419,6 +425,7 @@ class ShortCutElement extends HTMLElement {
         "innerHTML": getShortCutRepresentation(this.shortCutDefinition),
         "onkeydown": (event) => this.recordShortCut(id, event),
         "onkeyup": (event) => this.recordShortCutKeyup(id, event),
+        "onblur": (event) => this.outOfFocus(id),
         "data-tooltip": "Click and record a shortcut",
         "data-tooltipposition": "top",
       })
