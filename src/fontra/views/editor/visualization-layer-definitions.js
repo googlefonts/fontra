@@ -1126,7 +1126,6 @@ registerVisualizationLayerDefinition({
     }
 
     context.fillStyle = parameters.color;
-    context.strokeStyle = parameters.strokeColor;
     for (const pt of glyph.componentsPath.iterPoints()) {
       fillNode(context, pt, cornerSize, smoothSize, handleSize);
       strokeNode(context, pt, cornerSize, smoothSize, handleSize);
