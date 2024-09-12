@@ -797,9 +797,6 @@ function getTransformHandles(transformBounds, margin) {
 }
 
 function getTransformSelectionBounds(glyph, selection) {
-  if (selection.size <= 1) {
-    return undefined;
-  }
   const selectionBounds = glyph.getSelectionBounds(selection);
   if (!selectionBounds) {
     return undefined;
