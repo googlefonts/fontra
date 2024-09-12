@@ -1099,8 +1099,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "sidebar.user-settings.component.nodes",
-  name: "Component Nodes",
+  identifier: "fontra.component.nodes",
+  name: "sidebar.user-settings.component.nodes",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
