@@ -933,6 +933,7 @@ export class EditorController {
 
     for (const zoomElement of document.querySelectorAll("#zoom-tools > .tool-button")) {
       const toolIdentifier = zoomElement.dataset.tool;
+      zoomElement.dataset.tooltip = translate(toolIdentifier);
       zoomElement.onclick = () => {
         switch (toolIdentifier) {
           case "zoom-in":
