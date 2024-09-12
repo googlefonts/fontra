@@ -44,24 +44,6 @@ To localize in JavaScript:
   console.log(translate("hello"));
   ```
 
-### HTML Localization
-
-To localize in HTML:
-
-```html
-<p data-translate-key="hello"></p>
-
-<script type="module">
-  import { localizePage } from "fontra/client/core/localization.js";
-  localizePage();
-</script>
-```
-
-**Explanation:**
-The `localizePage()` function translates any HTML element with the `data-translate-key` attribute. The attribute's value serves as the translation key, which replaces the element's innerHTML with the translated value.
-
-Elements with the `data-tool` attribute will also be localized, with the localized string inserted into the `data-tooltip` attribute. This is primarily useful for tooltips, but may change in future versions.
-
 ### String Interpolation
 
 String interpolation is supported, allowing placeholders (`%{index}` where `index` represents the argument index) for dynamic values. This feature is supported only in JavaScript files.
