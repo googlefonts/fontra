@@ -87,6 +87,14 @@ export function translatePlural(key, quantity = 0) {
 export function localizePage() {
   // Translate all elements' data-tooltip that have data-tool attribute
   document.querySelectorAll("[data-tool]").forEach((el) => {
+    if (
+      el.classList.contains("tool-button") ||
+      el.classList.contains("subtool-button")
+    ) {
+      // Skip tool buttons, because they have their own tooltips.
+      // This function causes a visual bug otherwiese.
+      return;
+    }
     const key = el.getAttribute("data-tool");
     el.setAttribute("data-tooltip", translate(key));
   });
