@@ -139,11 +139,10 @@ export class VarPackedPath {
       }
       let isFirstSegment = true;
       for (const segment of this.iterContourDecomposedSegments(i)) {
-        const firstPoint = segment.points[0];
         if (!bounds) {
-          bounds = rectFromPoints([firstPoint]);
+          bounds = rectFromPoints([segment.points[0]]);
         } else if (isFirstSegment) {
-          bounds = updateRect(bounds, firstPoint);
+          bounds = updateRect(bounds, segment.points[0]);
         }
         bounds = updateRect(bounds, segment.points.at(-1));
         if (
