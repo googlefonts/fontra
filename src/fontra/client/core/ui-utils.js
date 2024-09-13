@@ -171,6 +171,44 @@ export function labeledTextInput(label, controller, key, options) {
   return items;
 }
 
+export function popUpMenu(controller, key, menuItems, options) {
+  const popUpID = options?.id || `pop-up-${uniqueID()}-${key}`;
+
+  const selectElement = html.select(
+    {
+      id: popUpID,
+      onchange: (event) => {
+        controller.model[key] = event.target.value;
+      },
+    },
+    menuItems.map((menuItem) =>
+      html.option(
+        {
+          value: menuItem.identifier,
+        },
+        [menuItem.value]
+      )
+    )
+  );
+  selectElement.value = controller.model[key];
+
+  controller.addKeyListener(key, (event) => {
+    selectElement.value = event.newValue;
+  });
+
+  if (options?.class) {
+    selectElement.className = options.class;
+  }
+
+  return selectElement;
+}
+
+export function labeledPopUpMenu(label, controller, key, menuItems, options) {
+  const popUpMenuElement = popUpMenu(controller, key, menuItems, options);
+  const items = [labelForElement(label, popUpMenuElement), popUpMenuElement];
+  return items;
+}
+
 export const DefaultFormatter = {
   toString: (value) => (value !== undefined && value !== null ? value.toString() : ""),
   fromString: (value) => {
