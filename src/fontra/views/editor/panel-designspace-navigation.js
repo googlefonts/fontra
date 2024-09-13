@@ -4,7 +4,7 @@ import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { controllerKey, ObservableController } from "/core/observable-object.js";
-import { labeledTextInput } from "/core/ui-utils.js";
+import { labeledPopUpMenu, labeledTextInput } from "/core/ui-utils.js";
 import {
   boolInt,
   enumerate,
@@ -812,6 +812,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       ...this.sceneSettings.glyphLocation,
     });
 
+    const locationBase = undefined; // take from font source, if any
+
     const {
       location: newLocation,
       sourceName,
@@ -823,7 +825,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph,
       "",
       "",
-      location
+      location,
+      locationBase
     );
     if (!newLocation) {
       return;
@@ -875,7 +878,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph,
       source.name,
       source.layerName,
-      source.location
+      source.location,
+      source.locationBase
     );
     if (!newLocation) {
       return;
@@ -915,7 +919,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     glyph,
     sourceName,
     layerName,
-    location
+    location,
+    locationBase
   ) {
     const validateInput = () => {
       const warnings = [];
@@ -951,6 +956,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       layerName: layerName === sourceName ? "" : layerName,
       suggestedSourceName: suggestedSourceName,
       suggestedLayerName: sourceName || suggestedSourceName,
+      locationBase: locationBase || "",
     });
 
     nameController.addKeyListener("sourceName", (event) => {
@@ -960,6 +966,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     locationController.addListener((event) => {
+      nameController.model.locationBase = "";
       const suggestedSourceName = suggestedSourceNameFromLocation(
         makeSparseLocation(locationController.model, locationAxes)
       );
@@ -986,12 +993,22 @@ export default class DesignspaceNavigationPanel extends Panel {
       );
     }
 
+    const fontSourceMenuItems = [
+      { identifier: "", value: "None" },
+      ...Object.entries(this.fontController.sources).map(
+        ([sourceIdentifier, source]) => {
+          return { identifier: sourceIdentifier, value: source.name };
+        }
+      ),
+    ];
+
     const { contentElement, warningElement } = this._sourcePropertiesContentElement(
       locationAxes,
       nameController,
       locationController,
       layerNames,
-      sourceLocations
+      sourceLocations,
+      fontSourceMenuItems
     );
 
     const dialog = await dialogSetup(title, null, [
@@ -1040,7 +1057,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     nameController,
     locationController,
     layerNames,
-    sourceLocations
+    sourceLocations,
+    fontSourceMenuItems
   ) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
@@ -1055,6 +1073,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
     locationElement.axes = locationAxes;
     locationElement.controller = locationController;
+
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -1068,6 +1087,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         `,
       },
       [
+        ...labeledPopUpMenu(
+          "Location Base:",
+          nameController,
+          "locationBase",
+          fontSourceMenuItems
+        ),
         ...labeledTextInput("Source name:", nameController, "sourceName", {
           placeholderKey: "suggestedSourceName",
           id: "source-name-text-input",
