@@ -587,6 +587,28 @@ export class EditorController {
       },
       (event) => this.enterCleanViewAndHandTool(event)
     );
+
+    {
+      const topic = "0060-action-topics.glyph-editor-appearance";
+
+      const layers = this.visualizationLayers.definitions.filter(
+        (layer) => layer.userSwitchable
+      );
+
+      for (const layerDef of layers) {
+        registerAction(
+          `actions.glyph-editor-appearance.${layerDef.identifier}`,
+          {
+            topic,
+            titleKey: layerDef.name,
+          },
+          () => {
+            this.visualizationLayersSettings.model[layerDef.identifier] =
+              !this.visualizationLayersSettings.model[layerDef.identifier];
+          }
+        );
+      }
+    }
   }
 
   initTopBar() {
