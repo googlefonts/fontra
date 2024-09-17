@@ -222,9 +222,7 @@ addStyleSheet(`
     display: grid;
     grid-template-rows: auto auto;
     grid-template-columns: max-content max-content max-content;
-    grid-row-gap: 0.1em;
     grid-column-gap: 1em;
-    height: 1.4em;
   }
 
   .fontra-ui-shortcuts-panel-icon-wrapper {
@@ -245,7 +243,8 @@ addStyleSheet(`
     padding: 0.1em 0.3em;
     font-family: "fontra-ui-regular";
     font-size: 100%;
-    height: 18px;
+    min-height: 18px;
+    align-self: center;
   }
 
   .fontra-ui-shortcuts-panel-input:focus {
@@ -255,9 +254,9 @@ addStyleSheet(`
   }
 
   .fontra-ui-shortcuts-panel-label {
-    width: 14em;
-    overflow: hidden;
+    width: 18em;
     text-align: right;
+    white-space: break-spaces;
   }
 
   .fontra-ui-shortcuts-panel-icon {
