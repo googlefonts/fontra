@@ -5,19 +5,10 @@ import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
 export class ApplicationSettingsController {
-  static async fromWebSocket() {
+  async start() {
     document.title = `Fontra Application Settings`;
     await ensureLanguageHasLoaded;
 
-    const applicationSettingsController = new ApplicationSettingsController();
-    await applicationSettingsController.start();
-    return applicationSettingsController;
-  }
-
-  // constructor() {
-  // }
-
-  async start() {
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "shortcuts-panel";
 

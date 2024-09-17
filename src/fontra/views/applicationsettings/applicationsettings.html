@@ -67,7 +67,7 @@
 
     async function startApp() {
       window.applicationSettingsController =
-        await ApplicationSettingsController.fromWebSocket();
+        await new ApplicationSettingsController().start();
     }
 
     startApp();
