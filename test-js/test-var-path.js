@@ -764,6 +764,15 @@ describe("VarPackedPath Tests", () => {
       },
       { xMin: 0, yMin: 0, xMax: 10, yMax: 20 },
     ],
+    [
+      // https://github.com/googlefonts/fontra/issues/1646
+      (p) => {
+        p.moveTo(0, 0);
+        p.moveTo(100, 50);
+        p.lineTo(50, 50);
+      },
+      { xMin: 0, yMin: 0, xMax: 100, yMax: 50 },
+    ],
   ];
   parametrize("test getBounds", getBoundsTestData, ([drawFunc, expectedBounds]) => {
     const p = new VarPackedPath();

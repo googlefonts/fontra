@@ -247,7 +247,9 @@ describe("StaticGlyphController getSelectionBounds", () => {
     ],
     (testData) => {
       const [selection, result] = testData;
-      expect(staticGlyphController.getSelectionBounds(selection)).to.deep.equal(result);
+      expect(
+        staticGlyphController.getSelectionBounds(new Set(selection))
+      ).to.deep.equal(result);
     }
   );
 });

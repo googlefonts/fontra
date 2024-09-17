@@ -1099,6 +1099,40 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.component.nodes",
+  name: "sidebar.user-settings.component.nodes",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 450,
+  screenParameters: {
+    cornerSize: 8,
+    smoothSize: 8,
+    handleSize: 6.5,
+    strokeWidth: 1,
+  },
+  colors: { color: "#BBB5" },
+  colorsDarkMode: { color: "#8885" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    context.strokeStyle = parameters.color;
+    context.lineWidth = parameters.strokeWidth;
+    for (const [pt1, pt2] of glyph.componentsPath.iterHandles()) {
+      strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
+    }
+
+    context.fillStyle = parameters.color;
+    for (const pt of glyph.componentsPath.iterPoints()) {
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.handles",
   name: "Bezier handles",
   selectionMode: "editing",

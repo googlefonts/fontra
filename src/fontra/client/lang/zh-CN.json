@@ -188,6 +188,7 @@
   "sidebar.text-entry": "文本",
   "sidebar.user-settings": "用户设置",
   "sidebar.user-settings.clipboard": "剪贴板导出格式",
+  "sidebar.user-settings.component.nodes": "Component nodes and handles",
   "sidebar.user-settings.experimental": "实验性功能",
   "sidebar.user-settings.glyph": "字符形编辑器外观",
   "sidebar.user-settings.glyph.anchornames": "锚点名称",
