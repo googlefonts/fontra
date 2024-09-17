@@ -85,15 +85,15 @@ export const shortCutKeyMap = {
   ArrowLeft: "←",
   ArrowRight: "→",
   Tab: "⇥",
-  Delete: "⌫",
+  Delete: "⌦",
   Backspace: "⌫",
-  NumpadMultiply: "×",
-  NumpadDivide: "÷",
-  NumpadAdd: "+",
-  NumpadSubtract: "-",
-  NumpadEnter: "↵",
-  NumpadDecimal: ".",
-  NumpadEqual: "=",
+  NumpadMultiply: "Numpad*",
+  NumpadDivide: "Numpad/",
+  NumpadAdd: "Numpad+",
+  NumpadSubtract: "Numpad-",
+  NumpadEnter: "Numpad↵",
+  NumpadDecimal: "Numpad.",
+  NumpadEqual: "Numpad=",
   Enter: "↵",
   Space: "␣",
   Escape: "Esc",
@@ -112,7 +112,6 @@ for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i
 // add 0-9 keys
 for (let i = 0; i <= 9; i++) {
   shortCutKeyMap[`Digit${i}`] = `${i}`;
-  shortCutKeyMap[`Numpad${i}`] = `${i}`;
 }
 
 export const shortCutModifierMap = {
