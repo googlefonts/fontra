@@ -71,19 +71,6 @@ export class ApplicationSettingsController {
     const panel = this.panels[this.selectedPanel];
     panel?.handleKeyDown?.(event);
   }
-
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
-  }
-
-  handleRemoteClose(event) {
-    //
-  }
-
-  handleRemoteError(event) {
-    //
-  }
 }
 
 function setupIntersectionObserver(panelContainer, panels) {
