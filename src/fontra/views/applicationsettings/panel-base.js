@@ -20,38 +20,4 @@ export class BaseInfoPanel {
     this.undoStack = new UndoStack();
     this.setupUI();
   }
-
-  handleKeyDown(event) {
-    if (event[commandKeyProperty]) {
-      if (event.key == "z") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        this.doUndoRedo(event.shiftKey);
-      }
-    }
-  }
-
-  async doUndoRedo(isRedo) {
-    let undoRecord = this.undoStack.popUndoRedoRecord(isRedo);
-    if (!undoRecord) {
-      return;
-    }
-    if (isRedo) {
-      undoRecord = reverseUndoRecord(undoRecord);
-    }
-
-    this.setupUI();
-  }
-
-  async postChange(change, rollbackChange, undoLabel) {
-    const undoRecord = {
-      change: change,
-      rollbackChange: rollbackChange,
-      info: {
-        label: undoLabel,
-      },
-    };
-
-    this.undoStack.pushUndoRecord(undoRecord);
-  }
 }
