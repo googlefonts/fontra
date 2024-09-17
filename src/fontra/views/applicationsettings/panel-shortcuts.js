@@ -248,7 +248,7 @@ addStyleSheet(`
   }
 
   .fontra-ui-shortcuts-panel-input:focus {
-    border: 1px solid var(--background-color-dark);
+    box-shadow: inset 0px 0px 0px 1px var(--background-color-dark);
     outline: unset;
     color: #999;
   }
