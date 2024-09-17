@@ -213,7 +213,7 @@ function validateShortCutDefinition(key, definition) {
   return warnings;
 }
 
-const shortcutsPanelInputWidth = isMac ? "6em" : "12em"; // longer on windows because no icons are shown.
+const shortcutsPanelInputWidth = isMac ? "8em" : "12em"; // longer on windows because no icons are shown.
 addStyleSheet(`
   .fontra-ui-shortcuts-panel-element {
     background-color: var(--ui-element-background-color);
@@ -232,7 +232,7 @@ addStyleSheet(`
   }
 
   .fontra-ui-shortcuts-panel-input {
-    width: ${shortcutsPanelInputWidth};
+    min-width: ${shortcutsPanelInputWidth};
     text-align: center;
     box-sizing: border-box;
     background-color: var(--text-input-background-color);
