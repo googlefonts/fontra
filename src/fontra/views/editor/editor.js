@@ -1059,7 +1059,7 @@ export class EditorController {
         const globalListener = {
           handleEvent: (event) => {
             if (event.type != "keydown" || event.key == "Escape") {
-              this.collapseSubTools(editToolsElement);
+              collapseSubTools(editToolsElement);
             }
           },
         };
@@ -1090,7 +1090,7 @@ export class EditorController {
           }
 
           editToolsElement.prepend(toolButton);
-          this.collapseSubTools(editToolsElement);
+          collapseSubTools(editToolsElement);
           window.removeEventListener("mousedown", globalListener, false);
           window.removeEventListener("keydown", globalListener, false);
         };
@@ -1220,14 +1220,6 @@ export class EditorController {
     };
   }
 
-  collapseSubTools(editToolsElement) {
-    // Hide sub tools
-    for (const [index, child] of enumerate(editToolsElement.children)) {
-      child.style.visibility = index ? "hidden" : "visible";
-      child.dataset.tooltipposition = index ? "right" : "bottom";
-    }
-  }
-
   setSelectedTool(toolIdentifier, isSubtool = false) {
     let selectedToolIdentifier = toolIdentifier;
 
@@ -1245,7 +1237,7 @@ export class EditorController {
               shouldSelect = true;
               if (isSubtool) {
                 editToolItem.prepend(childToolElement);
-                this.collapseSubTools(editToolItem);
+                collapseSubTools(editToolItem);
               }
             }
           }
@@ -3331,4 +3323,12 @@ function chunks(array, n) {
 
 function insecureSafariConnection() {
   return window.safari !== undefined && window.location.protocol === "http:";
+}
+
+function collapseSubTools(editToolsElement) {
+  // Hide sub tools
+  for (const [index, child] of enumerate(editToolsElement.children)) {
+    child.style.visibility = index ? "hidden" : "visible";
+    child.dataset.tooltipposition = index ? "right" : "bottom";
+  }
 }
