@@ -177,7 +177,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
 }
 
 function isShortCutDefinitionEqual(shortCutA, shortCutB) {
-  if (shortCutA.baseKey !== shortCutB.baseKey) {
+  if (!shortCutA || !shortCutB || shortCutA.baseKey !== shortCutB.baseKey) {
     return false;
   }
 
