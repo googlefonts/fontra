@@ -365,6 +365,7 @@ class ShortCutElement extends HTMLElement {
         // if the shortcut is invalid, reset the input field
         element.innerHTML = getShortCutRepresentation(this.shortCutDefinition);
       }
+      element.blur(); // remove focus
       this.pressedKeys = new Set();
     }
   }
