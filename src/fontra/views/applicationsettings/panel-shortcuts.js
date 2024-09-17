@@ -57,7 +57,7 @@ addStyleSheet(`
 `);
 
 export class ShortCutsPanel extends BaseInfoPanel {
-  static title = "shortcuts.title";
+  static title = "application-settings.shortcuts.title";
   static id = "shortcuts-panel";
 
   async setupUI() {
