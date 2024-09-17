@@ -5,6 +5,7 @@ import {
   capitalizeFirstLetter,
   commandKeyProperty,
   isActiveElementTypeable,
+  isMac,
 } from "./utils.js";
 
 // Action Info
@@ -16,15 +17,15 @@ import {
 //   allowGlobalOverride,  // This flag allows shortcuts to work even in a focused text box
 // } = action;
 //
-// const { keyOrCode, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
+// const { baseKey, commandKey, ctrlKey, metaKey, shiftKey, altKey } = shortCut;
 
-let actionsByKeyOrCode = undefined;
+let actionsByBaseKey = undefined;
 
 const actionInfoController = new ObservableController({});
 const actionCallbacks = {};
 actionInfoController.synchronizeWithLocalStorage("fontra-actions-", true);
 actionInfoController.addListener((event) => {
-  actionsByKeyOrCode = undefined;
+  actionsByBaseKey = undefined;
 });
 
 export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
@@ -32,15 +33,26 @@ export function registerAction(actionIdentifier, actionInfo, callback, enabled =
   registerActionCallbacks(actionIdentifier, callback, enabled);
 }
 
+const topicSortIndices = {};
+
 export function registerActionInfo(actionIdentifier, actionInfo) {
   actionInfoController.synchronizeItemWithLocalStorage(actionIdentifier, actionInfo);
   // We only want customShortCuts to be changable, so we'll reset everything
   // except customShortCuts
+  if (!topicSortIndices[actionInfo.topic]) {
+    topicSortIndices[actionInfo.topic] = 0;
+  }
+  const sortIndex =
+    actionInfo.sortIndex === undefined
+      ? topicSortIndices[actionInfo.topic]
+      : actionInfo.sortIndex;
   const storedActionInfo = getActionInfo(actionIdentifier);
   actionInfoController.model[actionIdentifier] = {
     ...actionInfo,
     customShortCuts: storedActionInfo.customShortCuts,
+    sortIndex,
   };
+  topicSortIndices[actionInfo.topic] = sortIndex + 1;
 }
 
 export function registerActionCallbacks(actionIdentifier, callback, enabled = null) {
@@ -61,55 +73,93 @@ export function getActionInfo(actionIdentifier) {
   return actionInfoController.model[actionIdentifier];
 }
 
-export function getActionTitle(actionIdentifier) {
+export function getActionTitle(actionIdentifier, args = "") {
   const actionInfo = getActionInfo(actionIdentifier);
-  return translate(actionInfo?.titleKey || actionIdentifier);
+  return translate(actionInfo?.titleKey || actionIdentifier, args);
 }
 
+// reference: https://www.toptal.com/developers/keycode/table
 export const shortCutKeyMap = {
   ArrowUp: "↑",
   ArrowDown: "↓",
-  Delete: "⌫",
+  ArrowLeft: "←",
+  ArrowRight: "→",
+  Tab: "⇥",
+  Delete: "⌦",
+  Backspace: "⌫",
+  NumpadMultiply: "Numpad*",
+  NumpadDivide: "Numpad/",
+  NumpadAdd: "Numpad+",
+  NumpadSubtract: "Numpad-",
+  NumpadEnter: "Numpad↵",
+  NumpadDecimal: "Numpad.",
+  NumpadEqual: "Numpad=",
+  Enter: "↵",
+  Space: "␣",
+  Escape: "Esc",
+  Home: "⌂",
+  End: "End",
+  NumLock: "⌧",
+  PageUp: "⇞",
+  PageDown: "⇟",
+  CapsLock: "⇪",
 };
+
+// add A-Z keys
+for (const key of new Array(26).fill(1).map((_, i) => String.fromCharCode(65 + i))) {
+  shortCutKeyMap[`Key${key}`] = key;
+}
+// add 0-9 keys
+for (let i = 0; i <= 9; i++) {
+  shortCutKeyMap[`Digit${i}`] = `${i}`;
+}
+
+export const shortCutModifierMap = {
+  commandKey: isMac ? "⌘" : "Ctrl+", // fontra specific cross-platform key
+  metaKey: isMac ? "⌘" : "Meta+",
+  shiftKey: isMac ? "⇧" : "Shift+",
+  ctrlKey: isMac ? "⌃" : "Ctrl+",
+  altKey: isMac ? "⌥" : "Alt+",
+};
+
+export function getShortCuts(actionIdentifier) {
+  const actionInfo = getActionInfo(actionIdentifier);
+  return actionInfo?.customShortCuts || actionInfo?.defaultShortCuts || [];
+}
+
+export function getShortCut(actionIdentifier) {
+  const shortCuts = getShortCuts(actionIdentifier);
+  return shortCuts[0];
+}
 
 export function getShortCutRepresentationFromActionIdentifier(actionIdentifier) {
   if (!actionIdentifier) {
     return "";
   }
-
-  const actionInfo = getActionInfo(actionIdentifier);
-
-  if (!actionInfo) {
-    return "";
-  }
-
-  const shortCuts = actionInfo.customShortCuts || actionInfo.defaultShortCuts || [];
-  const shortCutDefinition = shortCuts[0];
-
-  if (!shortCutDefinition) {
-    return "";
-  }
-
-  return getShortCutRepresentation(shortCutDefinition);
+  return getShortCutRepresentation(getShortCut(actionIdentifier));
 }
 
 export function getShortCutRepresentation(shortCutDefinition) {
+  if (!shortCutDefinition) {
+    // Shortcut definition can be undefined,
+    // if the action has no shortcut specified.
+    return "";
+  }
   let shortCutRepr = "";
 
-  const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
-
-  if (shortCutDefinition.shiftKey) {
-    shortCutRepr += isMac ? "\u21e7" : "Shift+"; // ⇧ or Shift
-  }
-  if (shortCutDefinition.commandKey) {
-    shortCutRepr += isMac ? "\u2318" : "Ctrl+"; // ⌘ or Ctrl
-  } else if (shortCutDefinition.ctrlKey) {
-    //
+  for (const key of Object.keys(shortCutModifierMap)) {
+    if (shortCutDefinition[key]) {
+      shortCutRepr += shortCutModifierMap[key];
+    }
   }
 
+  if (!shortCutDefinition.baseKey) {
+    // This is possible during recoding of custom shortcuts.
+    return shortCutRepr;
+  }
   shortCutRepr +=
-    shortCutKeyMap[shortCutDefinition.keyOrCode] ||
-    capitalizeFirstLetter(shortCutDefinition.keyOrCode);
+    shortCutKeyMap[shortCutDefinition.baseKey] ||
+    capitalizeFirstLetter(shortCutDefinition.baseKey);
 
   return shortCutRepr;
 }
@@ -133,13 +183,9 @@ export function getActionIdentifierFromKeyEvent(event) {
     return null;
   }
 
-  loadActionsByKeyOrCode();
+  loadActionsByBaseKey();
 
-  let actionShortCuts = actionsByKeyOrCode[event.key.toLowerCase()];
-
-  if (!actionShortCuts) {
-    actionShortCuts = actionsByKeyOrCode[event.code];
-  }
+  const actionShortCuts = actionsByBaseKey[getBaseKeyFromKeyEvent(event)];
 
   if (!actionShortCuts) {
     return null;
@@ -180,17 +226,52 @@ export function getActionIdentifierFromKeyEvent(event) {
   return null;
 }
 
-function loadActionsByKeyOrCode() {
-  if (actionsByKeyOrCode) {
+let currentKeyboardLayoutMap = null;
+
+function fetchKeyboardLayout() {
+  navigator.keyboard?.getLayoutMap().then((keyboardLayoutMap) => {
+    currentKeyboardLayoutMap = keyboardLayoutMap;
+  });
+}
+
+fetchKeyboardLayout();
+
+export function getBaseKeyFromKeyEvent(event) {
+  assert(event.type === "keydown" || event.type === "keyup");
+
+  let baseKey;
+
+  if (navigator.keyboard) {
+    // Use Keyboard API
+    // Hmm: when the keyboard layout changes, we'll always be one event behind,
+    // since the Keyboard API is async
+    fetchKeyboardLayout();
+    baseKey = currentKeyboardLayoutMap.get(event.code);
+  } else if ([...event.key].length === 1) {
+    // Use deprecated .keyCode property: "best effort"
+    baseKey =
+      ((event.code.length == 4 && event.code.slice(0, 3) == "Key") ||
+        (event.code.length == 6 && event.code.slice(0, 5) == "Digit")) &&
+      event.keyCode >= 32 &&
+      event.keyCode <= 126
+        ? String.fromCodePoint(event.keyCode).toLowerCase()
+        : event.key;
+  }
+
+  return baseKey || event.code;
+}
+
+function loadActionsByBaseKey() {
+  if (actionsByBaseKey) {
     return;
   }
-  actionsByKeyOrCode = {};
+  actionsByBaseKey = {};
   for (const [actionIdentifier, action] of Object.entries(actionInfoController.model)) {
     for (const shortCut of action.customShortCuts || action.defaultShortCuts || []) {
-      if (!actionsByKeyOrCode[shortCut.keyOrCode]) {
-        actionsByKeyOrCode[shortCut.keyOrCode] = [];
+      if (!actionsByBaseKey[shortCut.baseKey]) {
+        actionsByBaseKey[shortCut.baseKey] = [];
       }
-      actionsByKeyOrCode[shortCut.keyOrCode].push({ actionIdentifier, shortCut });
+      actionsByBaseKey[shortCut.baseKey].push({ actionIdentifier, shortCut });
     }
   }
 }

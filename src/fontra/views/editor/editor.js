@@ -307,13 +307,14 @@ export class EditorController {
 
   initActions() {
     {
-      const topic = "action-topics.menu.edit";
+      const topic = "0030-action-topics.menu.edit";
 
       registerAction(
         "action.undo",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: false }],
+          sortIndex: 0,
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
         },
         () => this.doUndoRedo(false),
         () => this.canUndoRedo(false)
@@ -323,7 +324,7 @@ export class EditorController {
         "action.redo",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "z", commandKey: true, shiftKey: true }],
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
         },
         () => this.doUndoRedo(true),
         () => this.canUndoRedo(true)
@@ -336,30 +337,30 @@ export class EditorController {
         this.initFallbackClipboardEventListeners();
       } else {
         registerAction(
-          "action.clipboard.cut",
+          "action.cut",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "x", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "x", commandKey: true }],
           },
           () => this.doCut(),
           () => this.canCut()
         );
 
         registerAction(
-          "action.clipboard.copy",
+          "action.copy",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "c", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "c", commandKey: true }],
           },
           () => this.doCopy(),
           () => this.canCopy()
         );
 
         registerAction(
-          "action.clipboard.paste",
+          "action.paste",
           {
             topic,
-            defaultShortCuts: [{ keyOrCode: "v", commandKey: true }],
+            defaultShortCuts: [{ baseKey: "v", commandKey: true }],
           },
           () => this.doPaste(),
           () => this.canPaste()
@@ -371,10 +372,10 @@ export class EditorController {
         {
           topic,
           defaultShortCuts: [
-            { keyOrCode: "Delete" },
-            { keyOrCode: "Delete", altKey: true },
-            { keyOrCode: "Backspace" },
-            { keyOrCode: "Backspace", altKey: true },
+            { baseKey: "Delete" },
+            { baseKey: "Delete", altKey: true },
+            { baseKey: "Backspace" },
+            { baseKey: "Backspace", altKey: true },
           ],
         },
         (event) => this.doDelete(event),
@@ -385,7 +386,7 @@ export class EditorController {
         "action.select-all",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "a", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "a", commandKey: true }],
         },
         () => this.doSelectAllNone(false),
         () => this.sceneSettings.selectedGlyph?.isEditing
@@ -395,7 +396,7 @@ export class EditorController {
         "action.select-none",
         {
           topic,
-          defaultShortCuts: [{ keyOrCode: "a", commandKey: true, shiftKey: true }],
+          defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
         },
         () => this.doSelectAllNone(true),
         () =>
@@ -433,7 +434,7 @@ export class EditorController {
     }
 
     {
-      const topic = "action-topics.menu.view";
+      const topic = "0020-action-topics.menu.view";
 
       registerAction(
         "action.zoom-in",
@@ -441,8 +442,8 @@ export class EditorController {
           topic,
           titleKey: "zoom-in",
           defaultShortCuts: [
-            { keyOrCode: "+", commandKey: true },
-            { keyOrCode: "=", commandKey: true },
+            { baseKey: "+", commandKey: true },
+            { baseKey: "=", commandKey: true },
           ],
           allowGlobalOverride: true,
         },
@@ -454,7 +455,7 @@ export class EditorController {
         {
           topic,
           titleKey: "zoom-out",
-          defaultShortCuts: [{ keyOrCode: "-", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
           allowGlobalOverride: true,
         },
         () => this.zoomOut()
@@ -465,7 +466,7 @@ export class EditorController {
         {
           topic,
           titleKey: "zoom-fit-selection",
-          defaultShortCuts: [{ keyOrCode: "0", commandKey: true }],
+          defaultShortCuts: [{ baseKey: "0", commandKey: true }],
           allowGlobalOverride: true,
         },
         () => this.zoomFit(),
@@ -491,7 +492,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-previous-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowUp", metaKey: true }],
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
@@ -501,7 +502,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-next-source",
-          defaultShortCuts: [{ keyOrCode: "ArrowDown", metaKey: true }],
+          defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(true)
       );
@@ -517,7 +518,7 @@ export class EditorController {
     }
 
     {
-      const topic = "action-topics.sidebars";
+      const topic = "0040-action-topics.sidebars";
 
       const sideBarShortCuts = {
         "glyph-search": "f",
@@ -528,22 +529,23 @@ export class EditorController {
         .map((sidebar) => sidebar.panelIdentifiers)
         .flat()
         .forEach((panelIdentifier) => {
+          const titleKey = `sidebar.${panelIdentifier}`;
           const shortKey = sideBarShortCuts[panelIdentifier];
 
           const defaultShortCuts = shortKey
-            ? [{ keyOrCode: shortKey, commandKey: shortKey }]
+            ? [{ baseKey: shortKey, commandKey: shortKey }]
             : [];
 
           registerAction(
             `action.sidebars.toggle.${panelIdentifier}`,
-            { topic, defaultShortCuts, allowGlobalOverride: true },
+            { topic, titleKey, defaultShortCuts, allowGlobalOverride: true },
             () => this.toggleSidebar(panelIdentifier, true)
           );
         });
     }
 
     {
-      const topic = "action-topics.tools";
+      const topic = "0010-action-topics.tools";
 
       const defaultKeys = {};
       for (const [i, toolIdentifier] of enumerate(Object.keys(this.topLevelTools), 1)) {
@@ -553,16 +555,19 @@ export class EditorController {
       }
 
       for (const toolIdentifier of Object.keys(this.tools)) {
+        const isSubTool = !this.topLevelTools[toolIdentifier];
+        const titleKey = `editor.${toolIdentifier}`;
         const defaultKey = defaultKeys[toolIdentifier];
-        const defaultShortCuts = defaultKey ? [{ keyOrCode: defaultKey }] : [];
+        const defaultShortCuts = defaultKey ? [{ baseKey: defaultKey }] : [];
         registerAction(
           `actions.tools.${toolIdentifier}`,
           {
-            topic: "action-topics.tools",
+            topic,
+            titleKey,
             defaultShortCuts: defaultShortCuts,
           },
           () => {
-            this.setSelectedTool(toolIdentifier);
+            this.setSelectedTool(toolIdentifier, isSubTool);
           }
         );
       }
@@ -571,15 +576,53 @@ export class EditorController {
     registerAction(
       "action.canvas.clean-view-and-hand-tool",
       {
-        topic: "action-topics.canvas",
-        defaultShortCuts: [{ keyOrCode: "Space" }],
+        topic: "0020-action-topics.menu.view",
+        titleKey: "canvas.clean-view-and-hand-tool",
+        defaultShortCuts: [{ baseKey: "Space" }],
       },
       (event) => this.enterCleanViewAndHandTool(event)
     );
+
+    {
+      const topic = "0060-action-topics.glyph-editor-appearance";
+
+      const layers = this.visualizationLayers.definitions.filter(
+        (layer) => layer.userSwitchable
+      );
+
+      for (const layerDef of layers) {
+        registerAction(
+          `actions.glyph-editor-appearance.${layerDef.identifier}`,
+          {
+            topic,
+            titleKey: layerDef.name,
+          },
+          () => {
+            this.visualizationLayersSettings.model[layerDef.identifier] =
+              !this.visualizationLayersSettings.model[layerDef.identifier];
+          }
+        );
+      }
+    }
   }
 
   initTopBar() {
     const menuBar = new MenuBar([
+      {
+        title: "Fontra",
+        bold: true,
+        getItems() {
+          return [
+            {
+              title: translate("menubar.fontra.application-settings"),
+              enabled: () => true,
+              callback: () => {
+                window.open("/applicationsettings/applicationsettings.html");
+              },
+            },
+          ];
+        },
+      },
       {
         title: translate("menubar.file"),
         getItems() {
@@ -1013,16 +1056,6 @@ export class EditorController {
           this.canvasController.canvas.focus();
         };
       } else {
-        function collapseSubTools(editToolsElement) {
-          // Hide sub tools
-          for (const [index, child] of enumerate(editToolsElement.children)) {
-            child.style.visibility = index ? "hidden" : "visible";
-            child.dataset.tooltipposition = index ? "right" : "bottom";
-          }
-          window.removeEventListener("mousedown", globalListener, false);
-          window.removeEventListener("keydown", globalListener, false);
-        }
-
         const globalListener = {
           handleEvent: (event) => {
             if (event.type != "keydown" || event.key == "Escape") {
@@ -1056,9 +1089,10 @@ export class EditorController {
             return;
           }
 
-          collapseSubTools(editToolsElement);
           editToolsElement.prepend(toolButton);
           collapseSubTools(editToolsElement);
+          window.removeEventListener("mousedown", globalListener, false);
+          window.removeEventListener("keydown", globalListener, false);
         };
       }
       editToolsElement.appendChild(toolButton);
@@ -1186,7 +1220,7 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier) {
+  setSelectedTool(toolIdentifier, isSubtool = false) {
     let selectedToolIdentifier = toolIdentifier;
 
     for (const editToolItem of document.querySelectorAll(
@@ -1201,6 +1235,10 @@ export class EditorController {
           for (const childToolElement of editToolItem.children) {
             if (childToolElement.dataset.tool === toolIdentifier) {
               shouldSelect = true;
+              if (isSubtool) {
+                editToolItem.prepend(childToolElement);
+                collapseSubTools(editToolItem);
+              }
             }
           }
         }
@@ -3285,4 +3323,12 @@ function chunks(array, n) {
 
 function insecureSafariConnection() {
   return window.safari !== undefined && window.location.protocol === "http:";
+}
+
+function collapseSubTools(editToolsElement) {
+  // Hide sub tools
+  for (const [index, child] of enumerate(editToolsElement.children)) {
+    child.style.visibility = index ? "hidden" : "visible";
+    child.dataset.tooltipposition = index ? "right" : "bottom";
+  }
 }

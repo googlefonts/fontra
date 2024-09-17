@@ -391,11 +391,15 @@ export class SceneController {
   }
 
   setupContextMenuActions() {
-    const topic = "action-topics.menu.edit";
+    const topic = "0030-action-topics.menu.edit";
 
     registerAction(
       "action.join-contours",
-      { topic, defaultShortCuts: [{ keyOrCode: "j", commandKey: true }] },
+      {
+        topic,
+        sortIndex: 100,
+        defaultShortCuts: [{ baseKey: "j", commandKey: true }],
+      },
       () => {
         if (this.contextMenuState.joinContourSelection?.length === 2) {
           this.doJoinSelectedOpenContours();
@@ -433,7 +437,7 @@ export class SceneController {
       "action.decompose-component",
       {
         topic,
-        defaultShortCuts: [{ keyOrCode: "d", commandKey: true, shiftKey: true }],
+        defaultShortCuts: [{ baseKey: "d", commandKey: true, shiftKey: true }],
       },
       () => this.doDecomposeSelectedComponents(),
       () => !!this.contextMenuState?.componentSelection?.length

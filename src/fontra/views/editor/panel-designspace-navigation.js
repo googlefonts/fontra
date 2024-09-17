@@ -63,8 +63,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     registerAction(
       "designspace-navigation.edit-all-compatible-sources",
       {
-        topic: "action-topics.designspace-navigation",
-        defaultShortCuts: [{ keyOrCode: "e", commandKey: true }],
+        topic: "0050-action-topics.designspace-navigation",
+        defaultShortCuts: [{ baseKey: "e", commandKey: true }],
       },
       (event) => this.onEditHeaderClick(event)
     );
