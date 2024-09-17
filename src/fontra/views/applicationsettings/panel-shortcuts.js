@@ -370,7 +370,7 @@ class ShortCutElement extends HTMLElement {
     }
   }
 
-  recordShortCutKeyup(id, event) {
+  recordShortCutKeyUp(id, event) {
     // This removes the unpressed key
     this.pressedKeys.delete(this.getPressedKey(event));
 
@@ -424,7 +424,7 @@ class ShortCutElement extends HTMLElement {
         "class": "fontra-ui-shortcuts-panel-input",
         "innerHTML": getShortCutRepresentation(this.shortCutDefinition),
         "onkeydown": (event) => this.recordShortCut(id, event),
-        "onkeyup": (event) => this.recordShortCutKeyup(id, event),
+        "onkeyup": (event) => this.recordShortCutKeyUp(id, event),
         "onblur": (event) => this.outOfFocus(id),
         "data-tooltip": "Click and record a shortcut",
         "data-tooltipposition": "top",
