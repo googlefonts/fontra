@@ -66,8 +66,8 @@
     import { ApplicationSettingsController } from "/applicationsettings/applicationsettings.js";
 
     async function startApp() {
-      window.applicationSettingsController = await new ApplicationSettingsController();
-      window.applicationSettingsController.start();
+      window.applicationSettingsController = new ApplicationSettingsController();
+      await window.applicationSettingsController.start();
     }
 
     startApp();
