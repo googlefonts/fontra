@@ -256,7 +256,7 @@ addStyleSheet(`
   .fontra-ui-shortcuts-panel-label {
     width: 18em;
     text-align: right;
-    white-space: break-spaces;
+    white-space: normal;
   }
 
   .fontra-ui-shortcuts-panel-icon {
