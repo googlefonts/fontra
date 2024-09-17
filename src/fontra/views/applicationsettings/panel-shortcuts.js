@@ -166,7 +166,9 @@ export class ShortCutsPanel extends BaseInfoPanel {
       reader.onload = async (event) => {
         const data = JSON.parse(event.target.result);
         for (const actionIdentifier in data) {
-          setCustomShortCuts(actionIdentifier, data[actionIdentifier]);
+          if (getActionInfo(actionIdentifier)) {
+            setCustomShortCuts(actionIdentifier, data[actionIdentifier]);
+          }
         }
         location.reload();
       };
