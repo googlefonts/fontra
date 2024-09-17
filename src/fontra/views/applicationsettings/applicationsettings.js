@@ -19,8 +19,8 @@ export class ApplicationSettingsController {
 
     for (const panelClass of [
       ShortCutsPanel,
-      ServerInfoPanel,
       // TODO: Add more panels here:
+      // ServerInfoPanel,
       // EditorAppearancePanel,
       // ExtensionsPanel,
     ]) {
