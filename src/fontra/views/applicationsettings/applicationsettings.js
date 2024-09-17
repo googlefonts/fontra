@@ -6,7 +6,6 @@ import { message } from "/web-components/modal-dialog.js";
 
 export class ApplicationSettingsController {
   async start() {
-    document.title = `Fontra Application Settings`;
     await ensureLanguageHasLoaded;
 
     const url = new URL(window.location);
