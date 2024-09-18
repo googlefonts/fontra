@@ -504,7 +504,7 @@ export class EditorController {
           titleKey: "menubar.view.select-next-source",
           defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
-        () => this.doSelectPreviousNextSource(true)
+        () => this.doSelectPreviousNextSource(false)
       );
 
       registerAction(
