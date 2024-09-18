@@ -1,5 +1,5 @@
 import * as rectangle from "../core/rectangle.js";
-import { range } from "../core/utils.js";
+import { commandKeyProperty, range } from "../core/utils.js";
 import { VarPackedPath, packContour } from "../core/var-path.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
@@ -59,7 +59,7 @@ export class ShapeToolRect extends BaseTool {
       const drawPath = new Path2D();
       this.drawShapePath2D(drawPath, mouseRect, event);
       this.sceneModel.shapeToolShapePath = drawPath;
-      this.sceneModel.shapeToolShowFill = event.ctrlKey;
+      this.sceneModel.shapeToolShowFill = event[commandKeyProperty];
       this.canvasController.requestUpdate();
     }
 
@@ -74,7 +74,7 @@ export class ShapeToolRect extends BaseTool {
 
     const pathNew = this.drawShapeVarPackedPath(mouseRect, eventTemp);
     // reversed contour direction
-    if (eventTemp.ctrlKey) {
+    if (eventTemp[commandKeyProperty]) {
       this.reversePath(pathNew);
     }
     this.addShapePath(pathNew, eventTemp);
