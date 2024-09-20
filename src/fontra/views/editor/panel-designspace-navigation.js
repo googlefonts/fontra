@@ -9,6 +9,7 @@ import {
   boolInt,
   enumerate,
   escapeHTMLCharacters,
+  filterObject,
   objectsEqual,
   range,
   rgbaToCSS,
@@ -967,8 +968,36 @@ export default class DesignspaceNavigationPanel extends Panel {
       validateInput();
     });
 
+    const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
+
+    nameController.addKeyListener("locationBase", (event) => {
+      if (!event.newValue) {
+        return;
+      }
+      const fontSource = this.fontController.sources[event.newValue];
+      const sourceLocation = fontSource.location;
+      const fontLocation = filterObject(
+        sourceLocation,
+        (name, value) => !glyphAxisNames.has(name)
+      );
+      const glyphLocation = filterObject(locationController.model, (name, value) =>
+        glyphAxisNames.has(name)
+      );
+      const newLocation = {
+        ...this.fontController.fontSourcesInstancer.defaultLocation,
+        ...sourceLocation,
+        ...glyphLocation,
+      };
+      for (const [name, value] of Object.entries(newLocation)) {
+        locationController.setItem(name, value, { sentByLocationBase: true });
+      }
+      nameController.model.sourceName = fontSource.name;
+    });
+
     locationController.addListener((event) => {
-      nameController.model.locationBase = "";
+      if (!event.senderInfo?.sentByLocationBase) {
+        nameController.model.locationBase = "";
+      }
       const suggestedSourceName = suggestedSourceNameFromLocation(
         makeSparseLocation(locationController.model, locationAxes)
       );
