@@ -812,13 +812,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       ...this.sceneSettings.glyphLocation,
     });
 
-    const locationBase = undefined; // take from font source, if any
+    const suggestedLocationBase = undefined; // take from font source, if any
 
     const {
       location: newLocation,
       sourceName,
       layerName,
       layerNames,
+      locationBase,
     } = await this._sourcePropertiesRunDialog(
       "Add source",
       "Add",
@@ -826,7 +827,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       "",
       "",
       location,
-      locationBase
+      suggestedLocationBase
     );
     if (!newLocation) {
       return;
@@ -872,6 +873,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       sourceName,
       layerName,
       layerNames,
+      locationBase,
     } = await this._sourcePropertiesRunDialog(
       "Source properties",
       "Done",
@@ -1035,8 +1037,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       nameController.model.sourceName || nameController.model.suggestedSourceName;
     layerName =
       nameController.model.layerName || nameController.model.suggestedLayerName;
+    locationBase = nameController.model.locationBase || null;
 
-    return { location: newLocation, sourceName, layerName, layerNames };
+    return { location: newLocation, sourceName, layerName, layerNames, locationBase };
   }
 
   _sourcePropertiesLocationAxes(glyph) {
