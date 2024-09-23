@@ -144,6 +144,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Guidelines (local, glyph level) ✅
 - Guidelines (global, font level)
 - View background layers
+- Background image for tracing / reference
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
 - Built-in support for Non-Linear Interpolation
