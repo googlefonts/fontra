@@ -74,10 +74,6 @@ export class MenuPanel extends SimpleElement {
       color: #8080a0;
     }
 
-    .with-submenu {
-      grid-template-columns: 1em auto auto;
-    }
-
     .has-open-submenu {
       background-color: #dedede;
     }
@@ -99,8 +95,8 @@ export class MenuPanel extends SimpleElement {
     }
 
     .submenu-icon {
-      width: 10px;
-      height: 14px;
+      width: 1.1em;
+      height: 1.1em;
     }
   `;
 
@@ -146,20 +142,20 @@ export class MenuPanel extends SimpleElement {
             typeof item.title === "function"
               ? item.title()
               : item.title || getActionTitle(item.actionIdentifier),
-            html.span({}, [
-              getShortCutRepresentationFromActionIdentifier(item.actionIdentifier),
-            ]),
+            hasSubMenu
+              ? html.div(
+                  {
+                    class: "submenu-icon",
+                    style: "transform: translate(0, 0.15em)",
+                  },
+                  [new InlineSVG(`/tabler-icons/chevron-right.svg`)]
+                )
+              : html.span({}, [
+                  getShortCutRepresentationFromActionIdentifier(item.actionIdentifier),
+                ]),
           ]),
         ];
-        if (hasSubMenu) {
-          itemElementContent.push(
-            html.div({ class: "submenu-icon" }, [
-              new InlineSVG(`/tabler-icons/chevron-right.svg`, {
-                style: "margin-top: 2px",
-              }),
-            ])
-          );
-        }
+
         itemElement = html.div(
           {
             class: classNames.join(" "),
@@ -263,7 +259,7 @@ export class MenuPanel extends SimpleElement {
     if (itemElement.classList.contains("with-submenu")) {
       const { y: menuElementY } = this.getBoundingClientRect();
       const { y, width } = itemElement.getBoundingClientRect();
-      const submenu = new Menupanel(
+      const submenu = new MenuPanel(
         this.menuItems[itemElement.dataset.index].getItems(),
         {
           position: {
@@ -271,6 +267,10 @@ export class MenuPanel extends SimpleElement {
             y: 0,
           },
           childOf: this,
+          onSelect: (event) => {
+            // FIXME: this probably only works one level deep
+            this.dismiss();
+          },
         }
       );
       this.menuElement.appendChild(submenu);
