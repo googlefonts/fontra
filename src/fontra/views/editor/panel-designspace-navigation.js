@@ -888,14 +888,19 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
+    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, newLocation)) {
-        source.location = newLocation;
+      if (!objectsEqual(source.location, filteredLocation)) {
+        source.location = filteredLocation;
       }
       if (sourceName !== source.name) {
         source.name = sourceName;
       }
+
+      source.locationBase = locationBase;
+
       const oldLayerName = source.layerName;
       if (layerName !== oldLayerName) {
         source.layerName = layerName;
@@ -968,7 +973,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       validateInput();
     });
 
-    const glyphAxisNames = new Set(glyph.axes.map((axis) => axis.name));
+    const glyphAxisNames = getGlyphAxisNamesSet(glyph);
 
     nameController.addKeyListener("locationBase", (event) => {
       if (!event.newValue) {
@@ -1072,10 +1077,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _sourcePropertiesLocationAxes(glyph) {
-    const glyphAxisNames = glyph.axes.map((axis) => axis.name);
+    const glyphAxisNames = getGlyphAxisNamesSet(glyph);
     const fontAxes = mapAxesFromUserSpaceToSourceSpace(
       // Don't include font axes that also exist as glyph axes
-      this.fontController.fontAxes.filter((axis) => !glyphAxisNames.includes(axis.name))
+      this.fontController.fontAxes.filter((axis) => !glyphAxisNames.has(axis.name))
     );
     return [
       ...fontAxes,
@@ -1317,6 +1322,17 @@ function suggestedSourceNameFromLocation(location) {
       })
       .join(",") || "default"
   );
+}
+
+function getGlyphAxisNamesSet(glyph) {
+  return new Set(glyph.axes.map((axis) => axis.name));
+}
+
+function stripLocation(location, locationBase, glyph) {
+  const glyphAxisNames = getGlyphAxisNamesSet(glyph);
+  return locationBase
+    ? filterObject(location, (name, value) => !glyphAxisNames.has(name))
+    : location;
 }
 
 function makeIconCellFactory(
