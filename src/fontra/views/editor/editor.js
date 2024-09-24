@@ -611,16 +611,18 @@ export class EditorController {
       {
         title: "Fontra",
         bold: true,
-        getItems() {
-          return [
-            {
-              title: translate("menubar.fontra.application-settings"),
-              enabled: () => true,
-              callback: () => {
-                window.open("/applicationsettings/applicationsettings.html");
-              },
-            },
+        getItems: () => {
+          const menuItems = [
+            [translate("menubar.fontra.application-settings"), ""],
+            [translate("application-settings.server-info.title"), "#server-info-panel"],
           ];
+          return menuItems.map(([title, panelID]) => ({
+            title,
+            enabled: () => true,
+            callback: () => {
+              window.open(`/applicationsettings/applicationsettings.html${panelID}`);
+            },
+          }));
         },
       },
       {
