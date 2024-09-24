@@ -673,6 +673,23 @@ export class EditorController {
             items.push(...this.glyphSelectedContextMenuItems);
           }
 
+          items.push(MenuItemDivider);
+          items.push({
+            title: translate("action-topics.glyph-editor-appearance"),
+            getItems: () => {
+              const layerDefs = this.visualizationLayers.definitions.filter(
+                (layer) => layer.userSwitchable
+              );
+
+              return layerDefs.map((layerDef) => {
+                return {
+                  actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
+                  checked: this.visualizationLayersSettings.model[layerDef.identifier],
+                };
+              });
+            },
+          });
+
           return items;
         },
       },
