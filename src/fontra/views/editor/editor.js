@@ -612,17 +612,33 @@ export class EditorController {
         title: "Fontra",
         bold: true,
         getItems: () => {
-          const menuItems = [
-            [translate("menubar.fontra.application-settings"), ""],
-            [translate("application-settings.server-info.title"), "#server-info-panel"],
-          ];
-          return menuItems.map(([title, panelID]) => ({
-            title,
-            enabled: () => true,
+          const items = [];
+          items.push({
+            title: translate("menubar.fontra.application-settings"),
             callback: () => {
-              window.open(`/applicationsettings/applicationsettings.html${panelID}`);
+              window.open(`/applicationsettings/applicationsettings.html`);
             },
-          }));
+            getItems: () => {
+              const menuItems = [
+                [translate("application-settings.shortcuts.title"), "#shortcuts-panel"],
+                [
+                  translate("application-settings.server-info.title"),
+                  "#server-info-panel",
+                ],
+              ];
+              return menuItems.map(([title, panelID]) => ({
+                title,
+                enabled: () => true,
+                callback: () => {
+                  window.open(
+                    `/applicationsettings/applicationsettings.html${panelID}`
+                  );
+                },
+              }));
+            },
+          });
+
+          return items;
         },
       },
       {
