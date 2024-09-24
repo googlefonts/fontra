@@ -1426,12 +1426,12 @@ export class EditorController {
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    if (insecureSafariConnection()) {
+    if (!insecureSafariConnection()) {
       // In Safari, the async clipboard API only works in a secure context
       // (HTTPS). We apply a workaround using the clipboard event API, but
-      // only in Safari, and when in an HTTP context
-      this.initFallbackClipboardEventListeners();
-    } else {
+      // only in Safari, and when in an HTTP context.
+      // So, since the "actions" versions of cut/copy/paste won't work, we
+      // do not add their menu items.
       this.basicContextMenuItems.push(
         {
           title: "Cut",
