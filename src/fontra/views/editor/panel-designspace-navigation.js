@@ -834,6 +834,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
+    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
+
     const getGlyphFunc = this.sceneController.sceneModel.fontController.getGlyph.bind(
       this.sceneController.sceneModel.fontController
     );
@@ -849,7 +851,8 @@ export default class DesignspaceNavigationPanel extends Panel {
         GlyphSource.fromObject({
           name: sourceName,
           layerName: layerName,
-          location: newLocation,
+          location: filteredLocation,
+          locationBase: locationBase,
         })
       );
       if (layerNames.indexOf(layerName) < 0) {
