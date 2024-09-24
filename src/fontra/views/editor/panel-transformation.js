@@ -778,21 +778,21 @@ export default class TransformationPanel extends Panel {
 
     const movableObjects = [];
     for (const pointIndex of points) {
-      const individualSelection = [`point/${pointIndex}`];
+      const individualSelection = new Set([`point/${pointIndex}`]);
       movableObjects.push(new MovableObject(individualSelection));
     }
     for (const [contourIndex, pointIndices] of enumerate(contours)) {
-      const individualSelection = pointIndices.map(
-        (pointIndex) => `point/${pointIndex}`
+      const individualSelection = new Set(
+        pointIndices.map((pointIndex) => `point/${pointIndex}`)
       );
       movableObjects.push(new MovableObject(individualSelection));
     }
     for (const componentIndex of components) {
-      const individualSelection = [`component/${componentIndex}`];
+      const individualSelection = new Set([`component/${componentIndex}`]);
       movableObjects.push(new MovableObject(individualSelection));
     }
     for (const anchorIndex of anchors) {
-      const individualSelection = [`anchor/${anchorIndex}`];
+      const individualSelection = new Set([`anchor/${anchorIndex}`]);
       movableObjects.push(new MovableObject(individualSelection));
     }
 
