@@ -182,12 +182,7 @@ export function popUpMenu(controller, key, menuItems, options) {
       },
     },
     menuItems.map((menuItem) =>
-      html.option(
-        {
-          value: menuItem.identifier,
-        },
-        [menuItem.value]
-      )
+      html.option({ value: menuItem.identifier }, [menuItem.value])
     )
   );
   selectElement.value = controller.model[key];
