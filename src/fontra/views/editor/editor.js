@@ -87,6 +87,7 @@ import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
 import { clipboardFormatController } from "/core/clipboard-format.js";
+import { experimentalFeaturesController } from "/core/experimental-features.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
@@ -129,14 +130,10 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
-    this.experimentalFeaturesController = new ObservableController({
-      scalingEditBehavior: false,
-      quadPenTool: false,
-      rectSelectLiveModifiers: false,
-    });
-    this.experimentalFeaturesController.synchronizeWithLocalStorage(
-      "fontra-editor-experimental-features."
-    );
+    this.clipboardFormatController = new ObservableController({ format: "glif" });
+    this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
+
+    this.experimentalFeaturesController = experimentalFeaturesController;
 
     this.sceneController = new SceneController(
       this.fontController,
