@@ -1,5 +1,4 @@
 import * as html from "../core/html-utils.js";
-import { EditorController } from "../editor/editor.js";
 import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
 import { UserSettingsPanel } from "./panel-user-settings.js";

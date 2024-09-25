@@ -1,7 +1,6 @@
 export class BaseInfoPanel {
   constructor(applicationSettingsController, panelElement) {
     this.applicationSettingsController = applicationSettingsController;
-    // this.editorController = applicationSettingsController.editorController;
     this.panelElement = panelElement;
   }
 
