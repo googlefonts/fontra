@@ -612,15 +612,14 @@ export class EditorController {
         title: "Fontra",
         bold: true,
         getItems: () => {
-          const menuItems = [
-            [translate("application-settings.shortcuts.title"), "#shortcuts-panel"],
-            [translate("application-settings.server-info.title"), "#server-info-panel"],
-          ];
-          return menuItems.map(([title, panelID]) => ({
-            title,
+          const menuItems = ["shortcuts", "server-info"];
+          return menuItems.map((panelID) => ({
+            title: translate(`application-settings.${panelID}.title`),
             enabled: () => true,
             callback: () => {
-              window.open(`/applicationsettings/applicationsettings.html${panelID}`);
+              window.open(
+                `/applicationsettings/applicationsettings.html#${panelID}-panel`
+              );
             },
           }));
         },
