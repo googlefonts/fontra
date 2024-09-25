@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>_cursor-rotate-temp</key>
-    <string>_cursor-rotate-temp.glif</string>
     <key>_cursor-rotate-hotspot-0-0</key>
     <string>_cursor-rotate-hotspot-0-0.glif</string>
+    <key>_cursor-rotate-temp</key>
+    <string>_cursor-rotate-temp.glif</string>
     <key>_geartooth</key>
     <string>_geartooth.glif</string>
     <key>a</key>
@@ -76,6 +76,10 @@
     <string>o.glif</string>
     <key>p</key>
     <string>p.glif</string>
+    <key>pen</key>
+    <string>pen.glif</string>
+    <key>penquad</key>
+    <string>penquad.glif</string>
     <key>plus</key>
     <string>plus.glif</string>
     <key>pointer</key>
