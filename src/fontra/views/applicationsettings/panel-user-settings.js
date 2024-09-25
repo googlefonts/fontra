@@ -1,3 +1,4 @@
+import { clipboardFormatController } from "../core/clipboard-format.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { languageController, translate } from "../core/localization.js";
@@ -70,21 +71,21 @@ export class UserSettingsPanel extends BaseInfoPanel {
           },
         ],
       },
-      // {
-      //   displayName: translate("sidebar.user-settings.clipboard"),
-      //   controller: this.editorController.clipboardFormatController,
-      //   descriptions: [
-      //     {
-      //       key: "format",
-      //       ui: "radio",
-      //       options: [
-      //         { key: "glif", displayName: "GLIF (RoboFont)" },
-      //         { key: "svg", displayName: "SVG" },
-      //         { key: "fontra-json", displayName: "JSON (Fontra)" },
-      //       ],
-      //     },
-      //   ],
-      // }
+      {
+        displayName: translate("sidebar.user-settings.clipboard"),
+        controller: clipboardFormatController,
+        descriptions: [
+          {
+            key: "format",
+            ui: "radio",
+            options: [
+              { key: "glif", displayName: "GLIF (RoboFont)" },
+              { key: "svg", displayName: "SVG" },
+              { key: "fontra-json", displayName: "JSON (Fontra)" },
+            ],
+          },
+        ],
+      },
     ];
   }
 }

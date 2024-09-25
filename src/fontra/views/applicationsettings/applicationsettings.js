@@ -7,10 +7,6 @@ import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
 export class ApplicationSettingsController {
-  // constructor() {
-  //   this.editorController = new EditorController();
-  // }
-
   async start() {
     await ensureLanguageHasLoaded;
 
