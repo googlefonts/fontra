@@ -1,10 +1,16 @@
 import * as html from "../core/html-utils.js";
+import { EditorController } from "../editor/editor.js";
 import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
+import { UserSettingsPanel } from "./panel-user-settings.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
 export class ApplicationSettingsController {
+  // constructor() {
+  //   this.editorController = new EditorController();
+  // }
+
   async start() {
     await ensureLanguageHasLoaded;
 
@@ -23,6 +29,7 @@ export class ApplicationSettingsController {
       // TODO: Add more panels here:
       // EditorAppearancePanel,
       // ExtensionsPanel,
+      UserSettingsPanel,
     ]) {
       const headerElement = html.div(
         {

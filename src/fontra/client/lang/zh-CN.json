@@ -28,6 +28,7 @@
   "action.undo": "撤销",
   "application-settings.server-info.title": "服务器信息",
   "application-settings.shortcuts.title": "Shortcuts",
+  "application-settings.user-settings.title": "用户设置",
   "axes.add": "添加新参数轴",
   "axes.axis-values": "参数轴数值",
   "axes.create": "新建参数轴",
