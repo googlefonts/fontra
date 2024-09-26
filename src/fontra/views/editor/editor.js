@@ -129,8 +129,6 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
-    this.clipboardFormatController = clipboardFormatController;
-
     this.experimentalFeaturesController = new ObservableController({
       scalingEditBehavior: false,
       quadPenTool: false,
@@ -1655,7 +1653,7 @@ export class EditorController {
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
-      mapping[this.clipboardFormatController.model.format] || glifString;
+      mapping[clipboardFormatController.model.format] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);

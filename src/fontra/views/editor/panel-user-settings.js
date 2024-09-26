@@ -1,5 +1,6 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
 import Panel from "./panel.js";
+import { clipboardFormatController } from "/core/clipboard-format.js";
 import * as html from "/core/html-utils.js";
 import { languageController, translate } from "/core/localization.js";
 import { themeController } from "/core/theme-settings.js";
@@ -58,7 +59,7 @@ export default class UserSettingsPanel extends Panel {
 
     items.push({
       displayName: translate("sidebar.user-settings.clipboard"),
-      controller: this.editorController.clipboardFormatController,
+      controller: clipboardFormatController,
       descriptions: [
         {
           key: "format",
