@@ -76,28 +76,14 @@
     <string>o.glif</string>
     <key>p</key>
     <string>p.glif</string>
-    <key>pen</key>
-    <string>pen.glif</string>
-    <key>penalt</key>
-    <string>penalt.glif</string>
-    <key>penalt3</key>
-    <string>penalt3.glif</string>
-    <key>penaltalt</key>
-    <string>penaltalt.glif</string>
-    <key>penquad</key>
-    <string>penquad.glif</string>
-    <key>penquadalt</key>
-    <string>penquadalt.glif</string>
-    <key>penquadalt3</key>
-    <string>penquadalt3.glif</string>
-    <key>penquadaltalt</key>
-    <string>penquadaltalt.glif</string>
     <key>plus</key>
     <string>plus.glif</string>
     <key>pointer</key>
     <string>pointer.glif</string>
     <key>pointeradd</key>
     <string>pointeradd.glif</string>
+    <key>pointeraddquad</key>
+    <string>pointeraddquad.glif</string>
     <key>q</key>
     <string>q.glif</string>
     <key>r</key>

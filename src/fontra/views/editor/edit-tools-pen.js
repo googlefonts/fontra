@@ -256,7 +256,7 @@ export class PenToolCubic extends BaseTool {
 }
 
 export class PenToolQuad extends PenToolCubic {
-  iconPath = "/images/penquadalt3.svg";
+  iconPath = "/images/pointeraddquad.svg";
   identifier = "pen-tool-quad";
 
   get curveType() {
