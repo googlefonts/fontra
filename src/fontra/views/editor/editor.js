@@ -612,7 +612,13 @@ export class EditorController {
         title: "Fontra",
         bold: true,
         getItems: () => {
-          const menuItems = ["shortcuts", "server-info"];
+          const menuItems = [
+            "shortcuts",
+            "server-info",
+            "theme-settings",
+            "display-language",
+            "clipboard",
+          ];
           return menuItems.map((panelID) => ({
             title: translate(`application-settings.${panelID}.title`),
             enabled: () => true,
