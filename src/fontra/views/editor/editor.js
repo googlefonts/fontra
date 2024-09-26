@@ -58,7 +58,7 @@ import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { KnifeTool } from "./edit-tools-knife.js";
 import { PenTool } from "./edit-tools-pen.js";
-import { PointerTool } from "./edit-tools-pointer.js";
+import { PointerTools } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
 import { ShapeTool } from "./edit-tools-shape.js";
 import { SceneController } from "./scene-controller.js";
@@ -978,7 +978,7 @@ export class EditorController {
     this.tools = {};
     this.topLevelTools = {};
     const editToolClasses = [
-      PointerTool,
+      PointerTools,
       PenTool,
       KnifeTool,
       ShapeTool,

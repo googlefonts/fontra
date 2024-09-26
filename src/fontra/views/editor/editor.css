@@ -424,11 +424,13 @@ body {
   display: inline-grid;
 }
 
-.tool-button:first-child {
+.tool-button:first-child,
+.subtool-button:first-child {
   border-radius: 0.65em 0 0 0.65em;
 }
 
-.tool-button:last-child {
+.tool-button:last-child,
+.subtool-button:last-child {
   border-radius: 0 0.65em 0.65em 0;
 }
 
