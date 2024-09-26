@@ -14,7 +14,7 @@ export class PenTool {
 }
 
 export class PenToolCubic extends BaseTool {
-  iconPath = "/images/penalt3.svg";
+  iconPath = "/images/pointeradd.svg";
   identifier = "pen-tool-cubic";
 
   handleHover(event) {
