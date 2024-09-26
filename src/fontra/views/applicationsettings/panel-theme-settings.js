@@ -1,21 +1,20 @@
-import { clipboardFormatController } from "../core/clipboard-format.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { languageController, translate } from "../core/localization.js";
+import { translate } from "../core/localization.js";
 import { themeController } from "../core/theme-settings.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 addStyleSheet(`
-  .fontra-ui-user-settings-panel-card {
+  .fontra-ui-theme-settings-panel-card {
     background-color: var(--ui-element-background-color);
     border-radius: 0.5em;
     padding: 1em;
   }
   `);
 
-export class UserSettingsPanel extends BaseInfoPanel {
-  static title = "application-settings.user-settings.title";
-  static id = "user-settings-panel";
+export class ThemeSettingsPanel extends BaseInfoPanel {
+  static title = "application-settings.theme-settings.title";
+  static id = "theme-settings-panel";
 
   async setupUI() {
     this.panelElement.innerHTML = "";
@@ -23,9 +22,8 @@ export class UserSettingsPanel extends BaseInfoPanel {
 
     for (const cardContent of this.cards()) {
       const container = html.createDomElement("grouped-settings", {
-        id: "user-settings",
+        class: "fontra-ui-theme-settings-panel-card",
       });
-      container.className = "fontra-ui-user-settings-panel-card";
       container.items = [cardContent];
       this.panelElement.appendChild(container);
     }
@@ -57,35 +55,7 @@ export class UserSettingsPanel extends BaseInfoPanel {
           },
         ],
       },
-      {
-        displayName: "Display Language",
-        controller: languageController,
-        descriptions: [
-          {
-            key: "language",
-            ui: "radio",
-            options: [
-              { key: "en", displayName: "English" },
-              { key: "zh-CN", displayName: "Simplified Chinese" },
-            ],
-          },
-        ],
-      },
-      {
-        displayName: translate("sidebar.user-settings.clipboard"),
-        controller: clipboardFormatController,
-        descriptions: [
-          {
-            key: "format",
-            ui: "radio",
-            options: [
-              { key: "glif", displayName: "GLIF (RoboFont)" },
-              { key: "svg", displayName: "SVG" },
-              { key: "fontra-json", displayName: "JSON (Fontra)" },
-            ],
-          },
-        ],
-      },
+      // TODO: There might come more in future, like font size, colors etc.
     ];
   }
 }

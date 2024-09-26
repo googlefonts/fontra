@@ -1,7 +1,9 @@
 import * as html from "../core/html-utils.js";
+import { ClipboardPanel } from "./panel-clipboard.js";
+import { DisplayLanguagePanel } from "./panel-display-language.js";
 import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
-import { UserSettingsPanel } from "./panel-user-settings.js";
+import { ThemeSettingsPanel } from "./panel-theme-settings.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
@@ -24,7 +26,9 @@ export class ApplicationSettingsController {
       // TODO: Add more panels here:
       // EditorAppearancePanel,
       // ExtensionsPanel,
-      UserSettingsPanel,
+      ThemeSettingsPanel,
+      DisplayLanguagePanel,
+      ClipboardPanel,
     ]) {
       const headerElement = html.div(
         {
