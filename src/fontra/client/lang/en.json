@@ -73,6 +73,8 @@
   "editor.hand-tool": "Hand Tool",
   "editor.knife-tool": "Knife Tool",
   "editor.pen-tool": "Pen Tool",
+  "editor.pen-tool-cubic": "Pen Tool (cubic)",
+  "editor.pen-tool-quad": "Pen Tool (quadratic)",
   "editor.pointer-tool": "Pointer Tool",
   "editor.power-ruler-tool": "Power Ruler Tool",
   "editor.shape-tool": "Shape Tool",

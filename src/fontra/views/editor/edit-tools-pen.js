@@ -8,9 +8,14 @@ import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
-export class PenTool extends BaseTool {
-  iconPath = "/images/pointeradd.svg";
+export class PenTool {
   identifier = "pen-tool";
+  subTools = [PenToolCubic, PenToolQuad];
+}
+
+export class PenToolCubic extends BaseTool {
+  iconPath = "/images/pointeradd.svg";
+  identifier = "pen-tool-cubic";
 
   handleHover(event) {
     if (!this.sceneModel.selectedGlyph?.isEditing) {
@@ -40,7 +45,7 @@ export class PenTool extends BaseTool {
   }
 
   get curveType() {
-    return this.sceneController.experimentalFeatures.quadPenTool ? "quad" : "cubic";
+    return "cubic";
   }
 
   deactivate() {
@@ -247,6 +252,15 @@ export class PenTool extends BaseTool {
         undoLabel: primaryBehavior.undoLabel,
       };
     });
+  }
+}
+
+export class PenToolQuad extends PenToolCubic {
+  iconPath = "/images/pointeraddquad.svg";
+  identifier = "pen-tool-quad";
+
+  get curveType() {
+    return "quad";
   }
 }
 
