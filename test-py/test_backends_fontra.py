@@ -136,3 +136,24 @@ async def test_statusFieldDefinitions(writableFontraFont):
     await writableFontraFont.putCustomData(statusTestData)
 
     assert statusTestData == await writableFontraFont.getCustomData()
+
+
+async def test_findGlyphsThatUseGlyph(writableFontraFont):
+    async with aclosing(writableFontraFont):
+        assert [
+            "Aacute",
+            "Adieresis",
+            "varcotest1",
+        ] == await writableFontraFont.findGlyphsThatUseGlyph("A")
+        await writableFontraFont.deleteGlyph("Adieresis")
+        assert [
+            "Aacute",
+            "varcotest1",
+        ] == await writableFontraFont.findGlyphsThatUseGlyph("A")
+        glyph = await writableFontraFont.getGlyph("Aacute")
+        await writableFontraFont.putGlyph("B", glyph, [ord("B")])
+        assert [
+            "Aacute",
+            "B",
+            "varcotest1",
+        ] == await writableFontraFont.findGlyphsThatUseGlyph("A")
