@@ -7,9 +7,11 @@ import shutil
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Any, Callable
 
-from fontra.core.classes import (
+from ..core.async_property import async_property
+from ..core.classes import (
     Axes,
     Font,
     FontInfo,
@@ -20,9 +22,10 @@ from fontra.core.classes import (
     structure,
     unstructure,
 )
-from fontra.core.protocols import WritableFontBackend
-
-from .filenames import stringToFileName
+from ..core.glyphdependencies import GlyphDependencies
+from ..core.protocols import WritableFontBackend
+from ..core.subprocess import runInSubProcess
+from .filenames import fileNameToString, stringToFileName
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +67,10 @@ class FontraBackend:
             self._writeGlyphInfo()
             self._writeFontData()
         self._scheduler = Scheduler()
+
+        self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
+        self._glyphDependencies: GlyphDependencies | None = None
+        self._backgroundTasksTask: asyncio.Task | None = None
 
     @property
     def fontDataPath(self):
@@ -119,9 +126,13 @@ class FontraBackend:
         jsonSource = serializeGlyph(glyph, glyphName)
         filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
+
         if codePoints != self.glyphMap.get(glyphName):
             self.glyphMap[glyphName] = codePoints
             self._scheduler.schedule(self._writeGlyphInfo)
+
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
 
     async def deleteGlyph(self, glyphName: str) -> None:
         if glyphName not in self.glyphMap:
@@ -130,6 +141,8 @@ class FontraBackend:
         filePath.unlink()
         del self.glyphMap[glyphName]
         self._scheduler.schedule(self._writeGlyphInfo)
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, ())
 
     async def getFontInfo(self) -> FontInfo:
         return deepcopy(self.fontData.fontInfo)
@@ -239,6 +252,30 @@ class FontraBackend:
 
     def getGlyphFilePath(self, glyphName):
         return self.glyphsDir / (stringToFileName(glyphName) + ".json")
+
+    async def findGlyphsThatUseGlyph(self, glyphName):
+        return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
+
+    @async_property
+    async def glyphDependencies(self) -> GlyphDependencies:
+        if self._glyphDependencies is not None:
+            return self._glyphDependencies
+
+        if self._glyphDependenciesTask is None:
+            self._glyphDependenciesTask = asyncio.create_task(
+                extractGlyphDependenciesFromFontra(self.glyphsDir)
+            )
+
+            def setResult(task):
+                if not task.cancelled() and task.exception() is None:
+                    self._glyphDependencies = task.result()
+
+            self._glyphDependenciesTask.add_done_callback(setResult)
+
+        return await self._glyphDependenciesTask
+
+    def startOptionalBackgroundTasks(self) -> None:
+        self._backgroundTasksTask = asyncio.create_task(self.glyphDependencies)
 
 
 def _parseCodePoints(cell: str) -> list[int]:
@@ -421,3 +458,41 @@ class Scheduler:
         for callable in self.scheduledCallables.values():
             callable()
         self.scheduledCallables = {}
+
+
+async def extractGlyphDependenciesFromFontra(
+    glyphsDir: pathlib.Path,
+) -> GlyphDependencies:
+    componentInfo = await runInSubProcess(
+        partial(_extractComponentInfoFromUFO, glyphsDir)
+    )
+
+    dependencies = GlyphDependencies()
+    for glyphName, componentNames in componentInfo.items():
+        dependencies.update(glyphName, componentNames)
+    return dependencies
+
+
+def _extractComponentInfoFromUFO(glyphsDir: pathlib.Path) -> dict[str, set[str]]:
+    componentInfo = {}
+    for glyphPath in glyphsDir.glob("*.json"):
+        glyphName = fileNameToString(glyphPath.stem)
+        glyphData = json.loads(glyphPath.read_text(encoding="utf-8"))
+        componentInfo[glyphName] = componentNamesFromGlyphData(glyphData)
+    return componentInfo
+
+
+def componentNamesFromGlyph(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }
+
+
+def componentNamesFromGlyphData(glyphData):
+    return {
+        compoData["name"]
+        for layerData in glyphData.get("layers", {}).values()
+        for compoData in layerData["glyph"].get("components", [])
+    }
