@@ -84,6 +84,8 @@
     <string>pointeradd.glif</string>
     <key>pointeraddquad</key>
     <string>pointeraddquad.glif</string>
+    <key>pointerscale</key>
+    <string>pointerscale.glif</string>
     <key>q</key>
     <string>q.glif</string>
     <key>r</key>

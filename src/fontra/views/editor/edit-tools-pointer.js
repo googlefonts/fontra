@@ -34,6 +34,11 @@ const transformHandleMargin = 6;
 const transformHandleSize = 8;
 const rotationHandleSizeFactor = 1.2;
 
+export class PointerTools {
+  identifier = "pointer-tools";
+  subTools = [PointerTool, PointerToolScale];
+}
+
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
   identifier = "pointer-tool";
@@ -758,6 +763,20 @@ registerVisualizationLayerDefinition({
     );
   },
 });
+
+export class PointerToolScale extends PointerTool {
+  iconPath = "/images/pointerscale.svg";
+  identifier = "pointer-tool-scale";
+
+  activate() {
+    this.setCursor();
+    this.sceneController.experimentalFeatures.scalingEditBehavior = true;
+  }
+
+  deactivate() {
+    this.sceneController.experimentalFeatures.scalingEditBehavior = false;
+  }
+}
 
 function getTransformHandles(transformBounds, margin) {
   const { width, height } = rectSize(transformBounds);
