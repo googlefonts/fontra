@@ -424,6 +424,12 @@ body {
   display: inline-grid;
 }
 
+.tool-button:first-child:has(
+    .subtool-button:nth-child(2)[style*="visibility: visible;"]
+  ) {
+  border-radius: 0.65em 0 0 0;
+}
+
 .tool-button:first-child,
 .subtool-button:first-child {
   border-radius: 0.65em 0 0 0.65em;
