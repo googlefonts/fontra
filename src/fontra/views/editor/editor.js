@@ -513,6 +513,57 @@ export class EditorController {
         },
         () => this.doFindGlyphsThatUseGlyph()
       );
+
+      registerAction(
+        "action.replace-selected-glyph-on-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.replace-selected-glyph-on-canvas",
+        },
+        () =>
+          this.doCanvasInsertGlyph(
+            translate("menubar.view.replace-selected-glyph-on-canvas"),
+            translate("dialog.replace"),
+            0
+          )
+      );
+
+      registerAction(
+        "action.remove-selected-glyph-from-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.remove-selected-glyph-from-canvas",
+        },
+        () => this.insertGlyphInfos([], 0) // empty array removes the selected glyph
+      );
+
+      registerAction(
+        "action.add-glyph-before-selected-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.add-glyph-before-selected-glyph",
+        },
+        () =>
+          this.doCanvasInsertGlyph(
+            translate("menubar.view.add-glyph-before-selected-glyph"),
+            translate("dialog.add"),
+            -1
+          )
+      );
+
+      registerAction(
+        "action.add-glyph-after-selected-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.add-glyph-after-selected-glyph",
+        },
+        () =>
+          this.doCanvasInsertGlyph(
+            translate("menubar.view.add-glyph-after-selected-glyph"),
+            translate("dialog.add"),
+            1
+          )
+      );
     }
 
     {
@@ -1501,6 +1552,19 @@ export class EditorController {
         ),
       actionIdentifier: "action.find-glyphs-that-use",
     });
+    this.glyphSelectedContextMenuItems.push(MenuItemDivider);
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.replace-selected-glyph-on-canvas",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.remove-selected-glyph-from-canvas",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.add-glyph-before-selected-glyph",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.add-glyph-after-selected-glyph",
+    });
   }
 
   initFallbackClipboardEventListeners() {
@@ -2130,37 +2194,11 @@ export class EditorController {
   }
 
   async doAddComponent() {
-    const glyphsSearch = document.createElement("glyphs-search");
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
-
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
-      dialog.defaultButton.classList.toggle(
-        "disabled",
-        !glyphsSearch.getSelectedGlyphName()
-      );
-    });
-
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-      dialog.defaultButton.click();
-    });
-
-    const dialog = await dialogSetup("Add Component", null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true, resultValue: "ok", disabled: true },
-    ]);
-
-    dialog.setContent(glyphsSearch);
-
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
-
-    if (!(await dialog.run())) {
-      // User cancelled
-      return;
-    }
-
-    const glyphName = glyphsSearch.getSelectedGlyphName();
+    const glyphName = await this.runGlyphSearchDialog(
+      translate("action.add-component"),
+      translate("dialog.add")
+    );
     if (!glyphName) {
-      // Invalid selection
       return;
     }
 
@@ -2848,6 +2886,56 @@ export class EditorController {
         break;
       }
     }
+  }
+
+  async runGlyphSearchDialog(
+    titleLabel = translate("dialog.glyphs.search"),
+    okLabel = translate("dialog.add")
+  ) {
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+      dialog.defaultButton.classList.toggle(
+        "disabled",
+        !glyphsSearch.getSelectedGlyphName()
+      );
+    });
+
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      dialog.defaultButton.click();
+    });
+
+    const dialog = await dialogSetup(titleLabel, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: okLabel, isDefaultButton: true, resultValue: "ok", disabled: true },
+    ]);
+
+    dialog.setContent(glyphsSearch);
+
+    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return;
+    }
+
+    const glyphName = glyphsSearch.getSelectedGlyphName();
+    if (!glyphName) {
+      // Invalid selection
+      return;
+    }
+
+    return glyphName;
+  }
+
+  async doCanvasInsertGlyph(titleLabel, okLabel, where) {
+    const glyphName = await this.runGlyphSearchDialog(titleLabel, okLabel);
+    if (!glyphName) {
+      return;
+    }
+    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphName);
+    this.insertGlyphInfos([glyphInfo], where, true);
   }
 
   keyUpHandler(event) {
