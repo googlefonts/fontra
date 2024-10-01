@@ -543,8 +543,14 @@ export class EditorController {
         () => this.doAddGlyphBeforeSelectedGlyphOnCanvas()
       );
 
-      // TODO:
-      // Add glyph after selected glyph
+      registerAction(
+        "action.add-glyph-after-selected-glyph-on-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.add-glyph-after-selected-glyph-on-canvas",
+        },
+        () => this.doAddGlyphAfterSelectedGlyphOnCanvas()
+      );
     }
 
     {
@@ -1535,6 +1541,9 @@ export class EditorController {
     });
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.add-glyph-before-selected-glyph-on-canvas",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.add-glyph-after-selected-glyph-on-canvas",
     });
   }
 
@@ -2920,6 +2929,21 @@ export class EditorController {
     this.insertGlyphInfos(
       [this.fontController.glyphInfoFromGlyphName(glyphName)],
       -1,
+      true
+    );
+  }
+
+  async doAddGlyphAfterSelectedGlyphOnCanvas() {
+    const titleLabel = translate(
+      "menubar.view.add-glyph-after-selected-glyph-on-canvas"
+    );
+    const glyphName = await this.glyphSearchDialog(titleLabel);
+    if (!glyphName) {
+      return;
+    }
+    this.insertGlyphInfos(
+      [this.fontController.glyphInfoFromGlyphName(glyphName)],
+      1,
       true
     );
   }

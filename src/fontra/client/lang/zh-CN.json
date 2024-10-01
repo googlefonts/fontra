@@ -115,6 +115,7 @@
   "menubar.help.documentation": "文档",
   "menubar.help.homepage": "主页",
   "menubar.view": "视图",
+  "menubar.view.add-glyph-after-selected-glyph-on-canvas": "Add glyph after selected glyph on canvas",
   "menubar.view.add-glyph-before-selected-glyph-on-canvas": "Add glyph before selected glyph on canvas",
   "menubar.view.find-glyphs-that-use": "寻找使用了 '%0' 的字符形",
   "menubar.view.remove-selected-glyph-from-canvas": "Remove selected glyph from canvas",
