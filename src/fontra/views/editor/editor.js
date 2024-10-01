@@ -86,6 +86,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
+import { clipboardFormatController } from "/core/clipboard-format.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
@@ -127,9 +128,6 @@ export class EditorController {
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
-
-    this.clipboardFormatController = new ObservableController({ format: "glif" });
-    this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
 
     this.experimentalFeaturesController = new ObservableController({
       scalingEditBehavior: false,
@@ -612,7 +610,13 @@ export class EditorController {
         title: "Fontra",
         bold: true,
         getItems: () => {
-          const menuItems = ["shortcuts", "server-info"];
+          const menuItems = [
+            "shortcuts",
+            "theme-settings",
+            "display-language",
+            "clipboard",
+            "server-info",
+          ];
           return menuItems.map((panelID) => ({
             title: translate(`application-settings.${panelID}.title`),
             enabled: () => true,
@@ -1649,7 +1653,7 @@ export class EditorController {
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
-      mapping[this.clipboardFormatController.model.format] || glifString;
+      mapping[clipboardFormatController.model.format] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);
