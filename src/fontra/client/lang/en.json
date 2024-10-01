@@ -65,6 +65,7 @@
   "axes.title": "Axes",
   "canvas.clean-view-and-hand-tool": "Clean View and Hand Tool",
   "designspace-navigation.edit-all-compatible-sources": "Edit all compatible sources",
+  "dialog.add": "Add",
   "dialog.cancel": "Cancel",
   "dialog.create": "Create",
   "dialog.create-new-glyph.body": "Click \"Create\" if you want to create a new glyph named \"%0\"%1.",

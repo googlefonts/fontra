@@ -522,7 +522,12 @@ export class EditorController {
           topic,
           titleKey: "menubar.view.replace-selected-glyph-on-canvas",
         },
-        () => this.doReplaceSelectedGlyphOnCanvas()
+        () =>
+          this.doInsertGlyphToCanvas(
+            translate("menubar.view.replace-selected-glyph-on-canvas"),
+            translate("dialog.replace"),
+            0
+          )
       );
 
       registerAction(
@@ -540,7 +545,12 @@ export class EditorController {
           topic,
           titleKey: "menubar.view.add-glyph-before-selected-glyph-on-canvas",
         },
-        () => this.doAddGlyphBeforeSelectedGlyphOnCanvas()
+        () =>
+          this.doInsertGlyphToCanvas(
+            translate("menubar.view.add-glyph-before-selected-glyph-on-canvas"),
+            translate("dialog.add"),
+            -1
+          )
       );
 
       registerAction(
@@ -549,7 +559,12 @@ export class EditorController {
           topic,
           titleKey: "menubar.view.add-glyph-after-selected-glyph-on-canvas",
         },
-        () => this.doAddGlyphAfterSelectedGlyphOnCanvas()
+        () =>
+          this.doInsertGlyphToCanvas(
+            translate("menubar.view.add-glyph-after-selected-glyph-on-canvas"),
+            translate("dialog.add"),
+            1
+          )
       );
     }
 
@@ -2903,49 +2918,14 @@ export class EditorController {
     return glyphName;
   }
 
-  async doReplaceSelectedGlyphOnCanvas() {
-    const titleLabel = translate("menubar.view.replace-selected-glyph-on-canvas");
-    const okLabel = translate("dialog.replace");
+  async doInsertGlyphToCanvas(titleLabel, okLabel, where) {
     const glyphName = await this.glyphSearchDialog(titleLabel, okLabel);
     if (!glyphName) {
       return;
     }
-    this.insertGlyphInfos(
-      [this.fontController.glyphInfoFromGlyphName(glyphName)],
-      0,
-      true
-    );
+    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphName);
+    this.insertGlyphInfos([glyphInfo], where, true);
     // TODO: How do we handle the undo/redo in that case?
-  }
-
-  async doAddGlyphBeforeSelectedGlyphOnCanvas() {
-    const titleLabel = translate(
-      "menubar.view.add-glyph-before-selected-glyph-on-canvas"
-    );
-    const glyphName = await this.glyphSearchDialog(titleLabel);
-    if (!glyphName) {
-      return;
-    }
-    this.insertGlyphInfos(
-      [this.fontController.glyphInfoFromGlyphName(glyphName)],
-      -1,
-      true
-    );
-  }
-
-  async doAddGlyphAfterSelectedGlyphOnCanvas() {
-    const titleLabel = translate(
-      "menubar.view.add-glyph-after-selected-glyph-on-canvas"
-    );
-    const glyphName = await this.glyphSearchDialog(titleLabel);
-    if (!glyphName) {
-      return;
-    }
-    this.insertGlyphInfos(
-      [this.fontController.glyphInfoFromGlyphName(glyphName)],
-      1,
-      true
-    );
   }
 
   keyUpHandler(event) {
