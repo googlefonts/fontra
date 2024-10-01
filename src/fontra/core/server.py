@@ -299,7 +299,7 @@ class FontraServer:
     def _addVersionTokenToReferences(self, data: bytes, contentType: str) -> bytes:
         if self.versionToken is None:
             return data
-        jsAllowedFileExtensions = ["css", "js", "svg"]
+        jsAllowedFileExtensions = ["css", "js", "svg", "json"]
         extensionMapping = {
             "text/html": self.allowedFileExtensions,
             "text/css": ["woff2", "svg"],
