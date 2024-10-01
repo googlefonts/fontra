@@ -2883,7 +2883,10 @@ export class EditorController {
     }
   }
 
-  async glyphSearchDialog(titleLabel = "Search Glyph", okLabel = "Add") {
+  async glyphSearchDialog(
+    titleLabel = translate("dialog.glyphs.search"),
+    okLabel = translate("dialog.add")
+  ) {
     const glyphsSearch = document.createElement("glyphs-search");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 

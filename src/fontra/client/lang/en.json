@@ -71,6 +71,7 @@
   "dialog.create-new-glyph.body": "Click \"Create\" if you want to create a new glyph named \"%0\"%1.",
   "dialog.create-new-glyph.body.2": " for character \"%0\" (%1)",
   "dialog.create-new-glyph.title": "Create a new glyph \"%0\"?",
+  "dialog.glyphs.search": "Search glyphs",
   "dialog.replace": "Replace",
   "editor.hand-tool": "Hand Tool",
   "editor.knife-tool": "Knife Tool",

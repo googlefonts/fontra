@@ -70,6 +70,7 @@
   "dialog.create-new-glyph.body": "如果你想%1创建一个新的字符形\"%0\"，请点击 \"创建\"。",
   "dialog.create-new-glyph.body.2": "为字符\"%0\" (%1)",
   "dialog.create-new-glyph.title": "创建新字符形 \"%0\"？",
+  "dialog.glyphs.search": "搜索字符形",
   "dialog.replace": "Replace",
   "editor.hand-tool": "拖拽工具",
   "editor.knife-tool": "Knife Tool",
