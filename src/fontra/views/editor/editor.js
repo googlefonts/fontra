@@ -523,7 +523,7 @@ export class EditorController {
           titleKey: "menubar.view.replace-selected-glyph-on-canvas",
         },
         () =>
-          this.doInsertGlyphToCanvas(
+          this.doCanvasInsertGlyph(
             translate("menubar.view.replace-selected-glyph-on-canvas"),
             translate("dialog.replace"),
             0
@@ -546,7 +546,7 @@ export class EditorController {
           titleKey: "menubar.view.add-glyph-before-selected-glyph-on-canvas",
         },
         () =>
-          this.doInsertGlyphToCanvas(
+          this.doCanvasInsertGlyph(
             translate("menubar.view.add-glyph-before-selected-glyph-on-canvas"),
             translate("dialog.add"),
             -1
@@ -560,7 +560,7 @@ export class EditorController {
           titleKey: "menubar.view.add-glyph-after-selected-glyph-on-canvas",
         },
         () =>
-          this.doInsertGlyphToCanvas(
+          this.doCanvasInsertGlyph(
             translate("menubar.view.add-glyph-after-selected-glyph-on-canvas"),
             translate("dialog.add"),
             1
@@ -2924,7 +2924,7 @@ export class EditorController {
     return glyphName;
   }
 
-  async doInsertGlyphToCanvas(titleLabel, okLabel, where) {
+  async doCanvasInsertGlyph(titleLabel, okLabel, where) {
     const glyphName = await this.glyphSearchDialog(titleLabel, okLabel);
     if (!glyphName) {
       return;
