@@ -612,10 +612,10 @@ export class EditorController {
         getItems: () => {
           const menuItems = [
             "shortcuts",
-            "server-info",
             "theme-settings",
             "display-language",
             "clipboard",
+            "server-info",
           ];
           return menuItems.map((panelID) => ({
             title: translate(`application-settings.${panelID}.title`),

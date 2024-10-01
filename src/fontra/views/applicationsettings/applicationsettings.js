@@ -22,13 +22,13 @@ export class ApplicationSettingsController {
 
     for (const panelClass of [
       ShortCutsPanel,
-      ServerInfoPanel,
       // TODO: Add more panels here:
       // EditorAppearancePanel,
       // ExtensionsPanel,
       ThemeSettingsPanel,
       DisplayLanguagePanel,
       ClipboardPanel,
+      ServerInfoPanel,
     ]) {
       const headerElement = html.div(
         {
