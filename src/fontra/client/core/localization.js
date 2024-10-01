@@ -18,7 +18,10 @@ export const ensureLanguageHasLoaded = new Promise((resolve) => {
 });
 
 function languageChanged(locale) {
-  fetchJSON(`/lang/${locale}.json`).then((data) => {
+  // Do explicit .replace() because our cache busting mechanism is simplistic,
+  // and backtick strings don't work.
+  const translationsPath = "/lang/locale.json".replace("locale", locale);
+  fetchJSON(translationsPath).then((data) => {
     localizationData = data;
     resolveLanguageHasLoaded();
   });
