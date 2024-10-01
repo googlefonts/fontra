@@ -2931,7 +2931,6 @@ export class EditorController {
     }
     const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphName);
     this.insertGlyphInfos([glyphInfo], where, true);
-    // TODO: How do we handle the undo/redo in that case?
   }
 
   keyUpHandler(event) {
