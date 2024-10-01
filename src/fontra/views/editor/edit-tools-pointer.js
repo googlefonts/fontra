@@ -765,7 +765,7 @@ registerVisualizationLayerDefinition({
 });
 
 export class PointerToolScale extends PointerTool {
-  iconPath = "/images/pointeradd.svg"; // TODO: find/create/add proper icon
+  iconPath = "/images/pointerscale.svg";
   identifier = "pointer-tool-scale";
 
   activate() {
