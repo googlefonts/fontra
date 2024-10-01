@@ -534,8 +534,16 @@ export class EditorController {
         () => this.insertGlyphInfos([], 0) // empty array removes the selected glyph
       );
 
+      registerAction(
+        "action.add-glyph-before-selected-glyph-on-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.add-glyph-before-selected-glyph-on-canvas",
+        },
+        () => this.doAddGlyphBeforeSelectedGlyphOnCanvas()
+      );
+
       // TODO:
-      // Add glyph before selected glyph
       // Add glyph after selected glyph
     }
 
@@ -1524,6 +1532,9 @@ export class EditorController {
     });
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.remove-selected-glyph-from-canvas",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.add-glyph-before-selected-glyph-on-canvas",
     });
   }
 
@@ -2896,6 +2907,21 @@ export class EditorController {
       true
     );
     // TODO: How do we handle the undo/redo in that case?
+  }
+
+  async doAddGlyphBeforeSelectedGlyphOnCanvas() {
+    const titleLabel = translate(
+      "menubar.view.add-glyph-before-selected-glyph-on-canvas"
+    );
+    const glyphName = await this.glyphSearchDialog(titleLabel);
+    if (!glyphName) {
+      return;
+    }
+    this.insertGlyphInfos(
+      [this.fontController.glyphInfoFromGlyphName(glyphName)],
+      -1,
+      true
+    );
   }
 
   keyUpHandler(event) {
