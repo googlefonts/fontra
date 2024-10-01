@@ -92,6 +92,19 @@
       <string>alignright</string>
       <string>reference</string>
       <string>ruler</string>
+      <string>_cursor-rotate-hotspot-0-0</string>
+      <string>_cursor-rotate-temp</string>
+      <string>cursor-rotate-bottom-center</string>
+      <string>cursor-rotate-bottom-left</string>
+      <string>cursor-rotate-bottom-right</string>
+      <string>cursor-rotate-middle-left</string>
+      <string>cursor-rotate-middle-right</string>
+      <string>cursor-rotate-top-center</string>
+      <string>cursor-rotate-top-left</string>
+      <string>cursor-rotate-top-right</string>
+      <string>pointeraddquad</string>
+      <string>pointerscale</string>
+      <string>skew</string>
     </array>
   </dict>
 </plist>
