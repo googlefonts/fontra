@@ -524,6 +524,19 @@ export class EditorController {
         },
         () => this.doReplaceSelectedGlyphOnCanvas()
       );
+
+      registerAction(
+        "action.remove-selected-glyph-from-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.remove-selected-glyph-from-canvas",
+        },
+        () => this.insertGlyphInfos([], 0) // empty array removes the selected glyph
+      );
+
+      // TODO:
+      // Add glyph before selected glyph
+      // Add glyph after selected glyph
     }
 
     {
@@ -1508,6 +1521,9 @@ export class EditorController {
     this.glyphSelectedContextMenuItems.push(MenuItemDivider);
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.replace-selected-glyph-on-canvas",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.remove-selected-glyph-from-canvas",
     });
   }
 

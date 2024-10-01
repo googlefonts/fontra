@@ -116,6 +116,7 @@
   "menubar.help.homepage": "主页",
   "menubar.view": "视图",
   "menubar.view.find-glyphs-that-use": "寻找使用了 '%0' 的字符形",
+  "menubar.view.remove-selected-glyph-from-canvas": "Remove selected glyph from canvas",
   "menubar.view.replace-selected-glyph-on-canvas": "Replace selected glyph on canvas",
   "menubar.view.select-next-source": "选择下一个源",
   "menubar.view.select-previous-source": "选择上一个源",
