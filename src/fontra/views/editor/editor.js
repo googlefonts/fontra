@@ -2189,7 +2189,10 @@ export class EditorController {
   }
 
   async doAddComponent() {
-    const glyphName = await this.glyphSearchDialog("Add Component");
+    const glyphName = await this.glyphSearchDialog(
+      translate("action.add-component"),
+      translate("dialog.add")
+    );
     if (!glyphName) {
       return;
     }
