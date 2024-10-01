@@ -1,3 +1,4 @@
+import { registerAction } from "../core/actions.js";
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
@@ -410,6 +411,26 @@ export default class TransformationPanel extends Panel {
       label: translate("sidebar.selection-transformation.distribute"),
     });
 
+    const topic = "0070-action-topics.selection-transformations";
+
+    const registerActionsDistribute = [
+      ["align.left", alignLeft],
+      ["align.center", alignCenter],
+      ["align.right", alignRight],
+      ["align.top", alignTop],
+      ["align.middle", alignMiddle],
+      ["align.bottom", alignBottom],
+      ["distribute.horizontally", distributeHorizontally],
+      ["distribute.vertically", distributeVertically],
+    ];
+    for (const [keyPart, moveDescriptor] of registerActionsDistribute) {
+      registerAction(
+        `action.selection-transformation.${keyPart}`,
+        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
+        () => this.moveObjects(moveDescriptor)
+      );
+    }
+
     formContents.push({
       type: "universal-row",
       field1: {
@@ -466,6 +487,21 @@ export default class TransformationPanel extends Panel {
     const labelExclude = translate(
       "sidebar.selection-transformation.path-operations.exclude"
     );
+
+    const registerActionsPathOperations = [
+      ["path-operations.union", unionPath, labelUnion],
+      ["path-operations.subtract", subtractPath, labelSubtract],
+      ["path-operations.intersect", intersectPath, labelIntersect],
+      ["path-operations.exclude", excludePath, labelExclude],
+    ];
+    for (const [keyPart, pathOperationFunc, label] of registerActionsPathOperations) {
+      registerAction(
+        `action.selection-transformation.${keyPart}`,
+        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
+        () => this.doPathOperations(pathOperationFunc, label)
+      );
+    }
+
     formContents.push({
       type: "universal-row",
       field1: {
