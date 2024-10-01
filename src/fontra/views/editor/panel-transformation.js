@@ -413,7 +413,7 @@ export default class TransformationPanel extends Panel {
 
     const topic = "0070-action-topics.selection-transformations";
 
-    const registerActionsDistribute = [
+    const registerActions = [
       ["align.left", alignLeft],
       ["align.center", alignCenter],
       ["align.right", alignRight],
@@ -423,7 +423,7 @@ export default class TransformationPanel extends Panel {
       ["distribute.horizontally", distributeHorizontally],
       ["distribute.vertically", distributeVertically],
     ];
-    for (const [keyPart, moveDescriptor] of registerActionsDistribute) {
+    for (const [keyPart, moveDescriptor] of registerActions) {
       registerAction(
         `action.selection-transformation.${keyPart}`,
         { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
