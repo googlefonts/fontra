@@ -615,6 +615,7 @@ export class EditorController {
             "theme-settings",
             "display-language",
             "clipboard",
+            "plugins-manager",
             "server-info",
           ];
           return menuItems.map((panelID) => ({
