@@ -540,28 +540,28 @@ export class EditorController {
       );
 
       registerAction(
-        "action.add-glyph-before-selected-glyph-on-canvas",
+        "action.add-glyph-before-selected-glyph",
         {
           topic,
-          titleKey: "menubar.view.add-glyph-before-selected-glyph-on-canvas",
+          titleKey: "menubar.view.add-glyph-before-selected-glyph",
         },
         () =>
           this.doCanvasInsertGlyph(
-            translate("menubar.view.add-glyph-before-selected-glyph-on-canvas"),
+            translate("menubar.view.add-glyph-before-selected-glyph"),
             translate("dialog.add"),
             -1
           )
       );
 
       registerAction(
-        "action.add-glyph-after-selected-glyph-on-canvas",
+        "action.add-glyph-after-selected-glyph",
         {
           topic,
-          titleKey: "menubar.view.add-glyph-after-selected-glyph-on-canvas",
+          titleKey: "menubar.view.add-glyph-after-selected-glyph",
         },
         () =>
           this.doCanvasInsertGlyph(
-            translate("menubar.view.add-glyph-after-selected-glyph-on-canvas"),
+            translate("menubar.view.add-glyph-after-selected-glyph"),
             translate("dialog.add"),
             1
           )
@@ -1555,10 +1555,10 @@ export class EditorController {
       actionIdentifier: "action.remove-selected-glyph-from-canvas",
     });
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.add-glyph-before-selected-glyph-on-canvas",
+      actionIdentifier: "action.add-glyph-before-selected-glyph",
     });
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.add-glyph-after-selected-glyph-on-canvas",
+      actionIdentifier: "action.add-glyph-after-selected-glyph",
     });
   }
 
