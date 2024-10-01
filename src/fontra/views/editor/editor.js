@@ -515,6 +515,15 @@ export class EditorController {
         },
         () => this.doFindGlyphsThatUseGlyph()
       );
+
+      registerAction(
+        "action.replace-selected-glyph-on-canvas",
+        {
+          topic,
+          titleKey: "menubar.view.replace-selected-glyph-on-canvas",
+        },
+        () => this.doReplaceSelectedGlyphOnCanvas()
+      );
     }
 
     {
@@ -1496,6 +1505,10 @@ export class EditorController {
         ),
       actionIdentifier: "action.find-glyphs-that-use",
     });
+    this.glyphSelectedContextMenuItems.push(MenuItemDivider);
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.replace-selected-glyph-on-canvas",
+    });
   }
 
   initFallbackClipboardEventListeners() {
@@ -2125,37 +2138,8 @@ export class EditorController {
   }
 
   async doAddComponent() {
-    const glyphsSearch = document.createElement("glyphs-search");
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
-
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
-      dialog.defaultButton.classList.toggle(
-        "disabled",
-        !glyphsSearch.getSelectedGlyphName()
-      );
-    });
-
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-      dialog.defaultButton.click();
-    });
-
-    const dialog = await dialogSetup("Add Component", null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true, resultValue: "ok", disabled: true },
-    ]);
-
-    dialog.setContent(glyphsSearch);
-
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
-
-    if (!(await dialog.run())) {
-      // User cancelled
-      return;
-    }
-
-    const glyphName = glyphsSearch.getSelectedGlyphName();
+    const glyphName = await this.glyphSearchDialog("Add Component");
     if (!glyphName) {
-      // Invalid selection
       return;
     }
 
@@ -2843,6 +2827,59 @@ export class EditorController {
         break;
       }
     }
+  }
+
+  async glyphSearchDialog(titleLabel = "Search Glyph", okLabel = "Add") {
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+      dialog.defaultButton.classList.toggle(
+        "disabled",
+        !glyphsSearch.getSelectedGlyphName()
+      );
+    });
+
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      dialog.defaultButton.click();
+    });
+
+    const dialog = await dialogSetup(titleLabel, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: okLabel, isDefaultButton: true, resultValue: "ok", disabled: true },
+    ]);
+
+    dialog.setContent(glyphsSearch);
+
+    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return;
+    }
+
+    const glyphName = glyphsSearch.getSelectedGlyphName();
+    if (!glyphName) {
+      // Invalid selection
+      return;
+    }
+
+    return glyphName;
+  }
+
+  async doReplaceSelectedGlyphOnCanvas() {
+    const titleLabel = translate("menubar.view.replace-selected-glyph-on-canvas");
+    const okLabel = translate("dialog.replace");
+    const glyphName = await this.glyphSearchDialog(titleLabel, okLabel);
+    if (!glyphName) {
+      return;
+    }
+    this.insertGlyphInfos(
+      [this.fontController.glyphInfoFromGlyphName(glyphName)],
+      0,
+      true
+    );
+    // TODO: How do we handle the undo/redo in that case?
   }
 
   keyUpHandler(event) {
