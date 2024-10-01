@@ -130,15 +130,10 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
-    this.clipboardFormatController = new ObservableController({ format: "glif" });
-    this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
-
-    this.experimentalFeaturesController = experimentalFeaturesController;
-
     this.sceneController = new SceneController(
       this.fontController,
       canvasController,
-      this.experimentalFeaturesController
+      experimentalFeaturesController
     );
 
     this.sceneSettingsController = this.sceneController.sceneSettingsController;
@@ -663,6 +658,7 @@ export class EditorController {
             "theme-settings",
             "display-language",
             "clipboard",
+            "editor-behavior",
             "plugins-manager",
             "server-info",
           ];
