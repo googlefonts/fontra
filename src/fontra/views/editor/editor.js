@@ -2189,7 +2189,7 @@ export class EditorController {
   }
 
   async doAddComponent() {
-    const glyphName = await this.glyphSearchDialog(
+    const glyphName = await this.runGlyphSearchDialog(
       translate("action.add-component"),
       translate("dialog.add")
     );
@@ -2883,7 +2883,7 @@ export class EditorController {
     }
   }
 
-  async glyphSearchDialog(
+  async runGlyphSearchDialog(
     titleLabel = translate("dialog.glyphs.search"),
     okLabel = translate("dialog.add")
   ) {
@@ -2925,7 +2925,7 @@ export class EditorController {
   }
 
   async doCanvasInsertGlyph(titleLabel, okLabel, where) {
-    const glyphName = await this.glyphSearchDialog(titleLabel, okLabel);
+    const glyphName = await this.runGlyphSearchDialog(titleLabel, okLabel);
     if (!glyphName) {
       return;
     }
