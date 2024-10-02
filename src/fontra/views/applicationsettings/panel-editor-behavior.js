@@ -1,4 +1,4 @@
-import { experimentalFeaturesController } from "../core/experimental-features.js";
+import { applicationSettingsController } from "../core/application-settings.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { labeledCheckbox } from "../core/ui-utils.js";
@@ -25,7 +25,7 @@ export class EditorBehaviorPanel extends BaseInfoPanel {
     container.appendChild(
       labeledCheckbox(
         "Rect-select live modifier keys",
-        experimentalFeaturesController,
+        applicationSettingsController,
         "rectSelectLiveModifierKeys",
         {}
       )

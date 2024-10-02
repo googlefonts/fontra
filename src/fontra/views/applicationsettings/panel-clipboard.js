@@ -1,4 +1,4 @@
-import { clipboardFormatController } from "../core/clipboard-format.js";
+import { applicationSettingsController } from "../core/application-settings.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { translate } from "../core/localization.js";
@@ -33,10 +33,10 @@ export class ClipboardPanel extends BaseInfoPanel {
     return [
       {
         displayName: translate("sidebar.user-settings.clipboard"),
-        controller: clipboardFormatController,
+        controller: applicationSettingsController,
         descriptions: [
           {
-            key: "format",
+            key: "clipboardFormat",
             ui: "radio",
             options: [
               { key: "glif", displayName: "GLIF (RoboFont)" },

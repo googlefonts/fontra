@@ -1,7 +1,6 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
 import Panel from "./panel.js";
-import { clipboardFormatController } from "/core/clipboard-format.js";
-import { experimentalFeaturesController } from "/core/experimental-features.js";
+import { applicationSettingsController } from "/core/application-settings.js";
 import * as html from "/core/html-utils.js";
 import { languageController, translate } from "/core/localization.js";
 import { themeController } from "/core/theme-settings.js";
@@ -60,10 +59,10 @@ export default class UserSettingsPanel extends Panel {
 
     items.push({
       displayName: translate("sidebar.user-settings.clipboard"),
-      controller: clipboardFormatController,
+      controller: applicationSettingsController,
       descriptions: [
         {
-          key: "format",
+          key: "clipboardFormat",
           ui: "radio",
           options: [
             { key: "glif", displayName: "GLIF (RoboFont)" },
@@ -93,7 +92,7 @@ export default class UserSettingsPanel extends Panel {
 
     items.push({
       displayName: translate("sidebar.user-settings.experimental"),
-      controller: experimentalFeaturesController,
+      controller: applicationSettingsController,
       descriptions: [
         {
           key: "scalingEditBehavior",
