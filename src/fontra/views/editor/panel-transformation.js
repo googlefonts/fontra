@@ -641,7 +641,7 @@ export default class TransformationPanel extends Panel {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           this.sceneController.selection,
-          this.sceneController.applicationSettings.scalingEditBehavior
+          this.sceneController.selectedTool.scalingEditBehavior
         );
         return {
           layerName,
@@ -903,7 +903,7 @@ class MovableObject {
     const behaviorFactory = new EditBehaviorFactory(
       layerGlyph,
       this.selection,
-      sceneController.applicationSettings.scalingEditBehavior
+      sceneController.selectedTool.scalingEditBehavior
     );
 
     const editBehavior = behaviorFactory.getBehavior("default");

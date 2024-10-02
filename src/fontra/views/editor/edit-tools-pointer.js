@@ -333,7 +333,7 @@ export class PointerTool extends BaseTool {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           sceneController.selection,
-          sceneController.applicationSettings.scalingEditBehavior
+          this.scalingEditBehavior
         );
         return {
           layerName,
@@ -482,7 +482,7 @@ export class PointerTool extends BaseTool {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           sceneController.selection,
-          sceneController.applicationSettings.scalingEditBehavior
+          this.scalingEditBehavior
         );
         const layerBounds =
           staticGlyphControllers[layerName].getSelectionBounds(selection);
@@ -656,6 +656,7 @@ export class PointerTool extends BaseTool {
 
   activate() {
     super.activate();
+    this.scalingEditBehavior = false;
     this.sceneController.sceneModel.showTransformSelection = true;
     this.canvasController.requestUpdate();
   }
@@ -770,11 +771,11 @@ export class PointerToolScale extends PointerTool {
 
   activate() {
     this.setCursor();
-    this.sceneController.applicationSettings.scalingEditBehavior = true;
+    this.scalingEditBehavior = true;
   }
 
   deactivate() {
-    this.sceneController.applicationSettings.scalingEditBehavior = false;
+    this.scalingEditBehavior = false;
   }
 }
 

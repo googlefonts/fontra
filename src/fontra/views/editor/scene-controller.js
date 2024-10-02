@@ -598,7 +598,7 @@ export class SceneController {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           this.selection,
-          this.applicationSettings.scalingEditBehavior
+          this.selectedTool.scalingEditBehavior
         );
         return {
           layerName,
