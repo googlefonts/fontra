@@ -570,6 +570,13 @@ export default class TransformationPanel extends Panel {
   }
 
   async doPathOperations(pathOperationFunc, key) {
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    if (!positionedGlyph) {
+      return;
+    }
+
     const undoLabel = translate(
       `sidebar.selection-transformation.path-operations.${key}`
     );
@@ -578,13 +585,6 @@ export default class TransformationPanel extends Panel {
     pointIndices = pointIndices || [];
 
     if (!pointIndices.length && !doUnion) {
-      return;
-    }
-
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-
-    if (!positionedGlyph) {
       return;
     }
 
