@@ -290,7 +290,7 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const initialPoint = sceneController.localPoint(initialEvent);
     for await (const event of eventStream) {
-      const modifierEvent = sceneController.experimentalFeatures
+      const modifierEvent = sceneController.applicationSettings
         .rectSelectLiveModifierKeys
         ? event
         : initialEvent;
@@ -333,7 +333,7 @@ export class PointerTool extends BaseTool {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           sceneController.selection,
-          sceneController.experimentalFeatures.scalingEditBehavior
+          this.scalingEditBehavior
         );
         return {
           layerName,
@@ -482,7 +482,7 @@ export class PointerTool extends BaseTool {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           sceneController.selection,
-          sceneController.experimentalFeatures.scalingEditBehavior
+          this.scalingEditBehavior
         );
         const layerBounds =
           staticGlyphControllers[layerName].getSelectionBounds(selection);
@@ -654,6 +654,10 @@ export class PointerTool extends BaseTool {
     return undefined;
   }
 
+  get scalingEditBehavior() {
+    return false;
+  }
+
   activate() {
     super.activate();
     this.sceneController.sceneModel.showTransformSelection = true;
@@ -768,13 +772,8 @@ export class PointerToolScale extends PointerTool {
   iconPath = "/images/pointerscale.svg";
   identifier = "pointer-tool-scale";
 
-  activate() {
-    this.setCursor();
-    this.sceneController.experimentalFeatures.scalingEditBehavior = true;
-  }
-
-  deactivate() {
-    this.sceneController.experimentalFeatures.scalingEditBehavior = false;
+  get scalingEditBehavior() {
+    return true;
   }
 }
 

@@ -1,6 +1,7 @@
 import * as html from "../core/html-utils.js";
 import { ClipboardPanel } from "./panel-clipboard.js";
 import { DisplayLanguagePanel } from "./panel-display-language.js";
+import { EditorBehaviorPanel } from "./panel-editor-behavior.js";
 import { PluginsManagerPanel } from "./panel-plugins-manager.js";
 import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
@@ -23,12 +24,10 @@ export class ApplicationSettingsController {
 
     for (const panelClass of [
       ShortCutsPanel,
-      // TODO: Add more panels here:
-      // EditorAppearancePanel,
-      // ExtensionsPanel,
       ThemeSettingsPanel,
       DisplayLanguagePanel,
       ClipboardPanel,
+      EditorBehaviorPanel,
       PluginsManagerPanel,
       ServerInfoPanel,
     ]) {

@@ -86,7 +86,7 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
-import { clipboardFormatController } from "/core/clipboard-format.js";
+import { applicationSettingsController } from "/core/application-settings.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
@@ -129,19 +129,10 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
-    this.experimentalFeaturesController = new ObservableController({
-      scalingEditBehavior: false,
-      quadPenTool: false,
-      rectSelectLiveModifiers: false,
-    });
-    this.experimentalFeaturesController.synchronizeWithLocalStorage(
-      "fontra-editor-experimental-features."
-    );
-
     this.sceneController = new SceneController(
       this.fontController,
       canvasController,
-      this.experimentalFeaturesController
+      applicationSettingsController
     );
 
     this.sceneSettingsController = this.sceneController.sceneSettingsController;
@@ -666,6 +657,7 @@ export class EditorController {
             "theme-settings",
             "display-language",
             "clipboard",
+            "editor-behavior",
             "plugins-manager",
             "server-info",
           ];
@@ -1718,7 +1710,7 @@ export class EditorController {
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
-      mapping[clipboardFormatController.model.format] || glifString;
+      mapping[applicationSettingsController.model.clipboardFormat] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);

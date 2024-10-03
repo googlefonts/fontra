@@ -36,9 +36,9 @@ import { translate, translatePlural } from "/core/localization.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 
 export class SceneController {
-  constructor(fontController, canvasController, experimentalFeaturesController) {
+  constructor(fontController, canvasController, applicationSettingsController) {
     this.canvasController = canvasController;
-    this.experimentalFeatures = experimentalFeaturesController.model;
+    this.applicationSettings = applicationSettingsController.model;
     this.fontController = fontController;
     this.autoViewBox = true;
 
@@ -598,7 +598,7 @@ export class SceneController {
         const behaviorFactory = new EditBehaviorFactory(
           layerGlyph,
           this.selection,
-          this.experimentalFeatures.scalingEditBehavior
+          this.selectedTool.scalingEditBehavior
         );
         return {
           layerName,

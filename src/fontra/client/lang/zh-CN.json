@@ -28,6 +28,7 @@
   "action.undo": "撤销",
   "application-settings.clipboard.title": "剪贴板导出格式",
   "application-settings.display-language.title": "Display Language",
+  "application-settings.editor-behavior.title": "Editor Behavior",
   "application-settings.plugins-manager.title": "插件管理器",
   "application-settings.server-info.title": "服务器信息",
   "application-settings.shortcuts.title": "Shortcuts",
