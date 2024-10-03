@@ -527,8 +527,8 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
-          "onclick": (event) => this.doPathOperations(intersectPath, "exclude"),
-          "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
+          "onclick": (event) => this.doPathOperations(intersectPath, "intersect"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
@@ -542,8 +542,8 @@ export default class TransformationPanel extends Panel {
         key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(excludePath, "intersect"),
-          "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
+          "onclick": (event) => this.doPathOperations(excludePath, "exclude"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
