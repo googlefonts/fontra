@@ -654,9 +654,12 @@ export class PointerTool extends BaseTool {
     return undefined;
   }
 
+  get scalingEditBehavior() {
+    return false;
+  }
+
   activate() {
     super.activate();
-    this.scalingEditBehavior = false;
     this.sceneController.sceneModel.showTransformSelection = true;
     this.canvasController.requestUpdate();
   }
@@ -769,13 +772,8 @@ export class PointerToolScale extends PointerTool {
   iconPath = "/images/pointerscale.svg";
   identifier = "pointer-tool-scale";
 
-  activate() {
-    this.setCursor();
-    this.scalingEditBehavior = true;
-  }
-
-  deactivate() {
-    this.scalingEditBehavior = false;
+  get scalingEditBehavior() {
+    return true;
   }
 }
 
