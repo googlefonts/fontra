@@ -584,6 +584,10 @@ export default class TransformationPanel extends Panel {
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
+    if (!positionedGlyph) {
+      return;
+    }
+
     const selectedContourIndicesMap = getSelectionByContour(
       positionedGlyph.glyph.path,
       pointIndices
