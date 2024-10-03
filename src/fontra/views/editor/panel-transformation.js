@@ -102,6 +102,56 @@ export default class TransformationPanel extends Panel {
       skewY: 0,
       customDistributionSpacing: null,
     };
+    this.registerActions();
+  }
+
+  registerActions() {
+    const topic = "0070-action-topics.selection-transformations";
+
+    const registerActions = [
+      ["align.left", alignLeft],
+      ["align.center", alignCenter],
+      ["align.right", alignRight],
+      ["align.top", alignTop],
+      ["align.middle", alignMiddle],
+      ["align.bottom", alignBottom],
+      ["distribute.horizontally", distributeHorizontally],
+      ["distribute.vertically", distributeVertically],
+    ];
+    for (const [keyPart, moveDescriptor] of registerActions) {
+      registerAction(
+        `action.selection-transformation.${keyPart}`,
+        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
+        () => this.moveObjects(moveDescriptor)
+      );
+    }
+
+    const labelUnion = translate(
+      "sidebar.selection-transformation.path-operations.union"
+    );
+    const labelSubtract = translate(
+      "sidebar.selection-transformation.path-operations.subtract"
+    );
+    const labelIntersect = translate(
+      "sidebar.selection-transformation.path-operations.intersect"
+    );
+    const labelExclude = translate(
+      "sidebar.selection-transformation.path-operations.exclude"
+    );
+
+    const registerActionsPathOperations = [
+      ["path-operations.union", unionPath, labelUnion],
+      ["path-operations.subtract", subtractPath, labelSubtract],
+      ["path-operations.intersect", intersectPath, labelIntersect],
+      ["path-operations.exclude", excludePath, labelExclude],
+    ];
+    for (const [keyPart, pathOperationFunc, label] of registerActionsPathOperations) {
+      registerAction(
+        `action.selection-transformation.${keyPart}`,
+        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
+        () => this.doPathOperations(pathOperationFunc, label)
+      );
+    }
   }
 
   getContentElement() {
@@ -411,26 +461,6 @@ export default class TransformationPanel extends Panel {
       label: translate("sidebar.selection-transformation.distribute"),
     });
 
-    const topic = "0070-action-topics.selection-transformations";
-
-    const registerActions = [
-      ["align.left", alignLeft],
-      ["align.center", alignCenter],
-      ["align.right", alignRight],
-      ["align.top", alignTop],
-      ["align.middle", alignMiddle],
-      ["align.bottom", alignBottom],
-      ["distribute.horizontally", distributeHorizontally],
-      ["distribute.vertically", distributeVertically],
-    ];
-    for (const [keyPart, moveDescriptor] of registerActions) {
-      registerAction(
-        `action.selection-transformation.${keyPart}`,
-        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
-        () => this.moveObjects(moveDescriptor)
-      );
-    }
-
     formContents.push({
       type: "universal-row",
       field1: {
@@ -487,20 +517,6 @@ export default class TransformationPanel extends Panel {
     const labelExclude = translate(
       "sidebar.selection-transformation.path-operations.exclude"
     );
-
-    const registerActionsPathOperations = [
-      ["path-operations.union", unionPath, labelUnion],
-      ["path-operations.subtract", subtractPath, labelSubtract],
-      ["path-operations.intersect", intersectPath, labelIntersect],
-      ["path-operations.exclude", excludePath, labelExclude],
-    ];
-    for (const [keyPart, pathOperationFunc, label] of registerActionsPathOperations) {
-      registerAction(
-        `action.selection-transformation.${keyPart}`,
-        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
-        () => this.doPathOperations(pathOperationFunc, label)
-      );
-    }
 
     formContents.push({
       type: "universal-row",
