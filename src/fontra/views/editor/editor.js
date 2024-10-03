@@ -803,21 +803,6 @@ export class EditorController {
         },
       },
       {
-        title: translate("menubar.extensions"),
-        enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.extensions.plugin"),
-              enabled: () => true,
-              callback: () => {
-                window.open("/plugins/plugins.html");
-              },
-            },
-          ];
-        },
-      },
-      {
         title: translate("menubar.help"),
         enabled: () => true,
         getItems: () => {
