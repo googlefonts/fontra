@@ -179,8 +179,8 @@ registerVisualizationLayerDefinition({
   defaultOn: true,
   zIndex: 100,
   screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004", zoneColor: "#0001" },
-  colorsDarkMode: { strokeColor: "#FFF6", zoneColor: "#FFF1" },
+  colors: { strokeColor: "#0004", zoneColor: "#00BFFF26" },
+  colorsDarkMode: { strokeColor: "#FFF6", zoneColor: "#00BFFF26" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
