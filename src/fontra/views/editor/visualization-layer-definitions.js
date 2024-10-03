@@ -179,10 +179,17 @@ registerVisualizationLayerDefinition({
   defaultOn: true,
   zIndex: 100,
   screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004", zoneColor: "#0001" },
-  colorsDarkMode: { strokeColor: "#FFF6", zoneColor: "#FFF1" },
+  colors: {
+    strokeColor: "#0004",
+    zoneColor: "#00BFFF18",
+    zoneStrokeColor: "#00608018",
+  },
+  colorsDarkMode: {
+    strokeColor: "#FFF6",
+    zoneColor: "#00BFFF18",
+    zoneStrokeColor: "#80DFFF18",
+  },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
     if (!model.fontSourceInstance) {
@@ -205,12 +212,16 @@ registerVisualizationLayerDefinition({
     }
 
     // collect paths: vertical metrics and alignment zones
-    const pathZones = [];
+    const zoneFillPaths = [];
+    const zoneEndStrokes = new Path2D();
     for (const [key, metric] of Object.entries(lineMetrics)) {
       if (metric.zone) {
         const pathZone = new Path2D();
         pathZone.rect(0, metric.value, glyphWidth, metric.zone);
-        pathZones.push(pathZone);
+        zoneFillPaths.push(pathZone);
+        const zoneY = metric.value + metric.zone;
+        zoneEndStrokes.moveTo(0, zoneY);
+        zoneEndStrokes.lineTo(glyphWidth, zoneY);
       }
 
       const pathMetric = new Path2D();
@@ -221,9 +232,14 @@ registerVisualizationLayerDefinition({
 
     // draw zones (with filled path)
     context.fillStyle = parameters.zoneColor;
-    pathZones.forEach((zonePath) => context.fill(zonePath));
+    zoneFillPaths.forEach((zonePath) => context.fill(zonePath));
+
+    // draw zone top/bottom terminating stroke
+    context.strokeStyle = parameters.zoneStrokeColor;
+    context.stroke(zoneEndStrokes);
 
     // draw glyph box + vertical metrics (with stroke path)
+    context.strokeStyle = parameters.strokeColor;
     context.stroke(pathBox);
   },
 });
