@@ -570,6 +570,10 @@ export default class TransformationPanel extends Panel {
   }
 
   async doPathOperations(pathOperationFunc, key) {
+    if (!this.sceneController.sceneSettings.selectedGlyph?.isEditing) {
+      return;
+    }
+
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
