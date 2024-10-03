@@ -108,7 +108,7 @@ export default class TransformationPanel extends Panel {
   registerActions() {
     const topic = "0070-action-topics.selection-transformations";
 
-    const registerActions = [
+    const moveActions = [
       ["align.left", alignLeft],
       ["align.center", alignCenter],
       ["align.right", alignRight],
@@ -118,7 +118,7 @@ export default class TransformationPanel extends Panel {
       ["distribute.horizontally", distributeHorizontally],
       ["distribute.vertically", distributeVertically],
     ];
-    for (const [keyPart, moveDescriptor] of registerActions) {
+    for (const [keyPart, moveDescriptor] of moveActions) {
       registerAction(
         `action.selection-transformation.${keyPart}`,
         { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
@@ -126,13 +126,13 @@ export default class TransformationPanel extends Panel {
       );
     }
 
-    const registerActionsPathOperations = [
+    const pathActions = [
       ["union", unionPath],
       ["subtract", subtractPath],
       ["intersect", intersectPath],
       ["exclude", excludePath],
     ];
-    for (const [keyPart, pathOperationFunc] of registerActionsPathOperations) {
+    for (const [keyPart, pathOperationFunc] of pathActions) {
       registerAction(
         `action.selection-transformation.path-operations.${keyPart}`,
         {
