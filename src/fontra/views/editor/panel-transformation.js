@@ -126,30 +126,20 @@ export default class TransformationPanel extends Panel {
       );
     }
 
-    const labelUnion = translate(
-      "sidebar.selection-transformation.path-operations.union"
-    );
-    const labelSubtract = translate(
-      "sidebar.selection-transformation.path-operations.subtract"
-    );
-    const labelIntersect = translate(
-      "sidebar.selection-transformation.path-operations.intersect"
-    );
-    const labelExclude = translate(
-      "sidebar.selection-transformation.path-operations.exclude"
-    );
-
     const registerActionsPathOperations = [
-      ["path-operations.union", unionPath, labelUnion],
-      ["path-operations.subtract", subtractPath, labelSubtract],
-      ["path-operations.intersect", intersectPath, labelIntersect],
-      ["path-operations.exclude", excludePath, labelExclude],
+      ["union", unionPath],
+      ["subtract", subtractPath],
+      ["intersect", intersectPath],
+      ["exclude", excludePath],
     ];
-    for (const [keyPart, pathOperationFunc, label] of registerActionsPathOperations) {
+    for (const [keyPart, pathOperationFunc] of registerActionsPathOperations) {
       registerAction(
-        `action.selection-transformation.${keyPart}`,
-        { topic, titleKey: `sidebar.selection-transformation.${keyPart}` },
-        () => this.doPathOperations(pathOperationFunc, label)
+        `action.selection-transformation.path-operations.${keyPart}`,
+        {
+          topic,
+          titleKey: `sidebar.selection-transformation.path-operations.${keyPart}`,
+        },
+        () => this.doPathOperations(pathOperationFunc, keyPart)
       );
     }
   }
@@ -500,23 +490,13 @@ export default class TransformationPanel extends Panel {
     });
 
     formContents.push({ type: "spacer" });
+
+    const labelKeyPathOperations = "sidebar.selection-transformation.path-operations";
+
     formContents.push({
       type: "header",
-      label: translate("sidebar.selection-transformation.path-operations"),
+      label: translate(labelKeyPathOperations),
     });
-
-    const labelUnion = translate(
-      "sidebar.selection-transformation.path-operations.union"
-    );
-    const labelSubtract = translate(
-      "sidebar.selection-transformation.path-operations.subtract"
-    );
-    const labelIntersect = translate(
-      "sidebar.selection-transformation.path-operations.intersect"
-    );
-    const labelExclude = translate(
-      "sidebar.selection-transformation.path-operations.exclude"
-    );
 
     formContents.push({
       type: "universal-row",
@@ -525,8 +505,8 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doPathOperations(unionPath, labelUnion),
-          "data-tooltip": labelUnion,
+          "onclick": (event) => this.doPathOperations(unionPath, "union"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.union`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
@@ -536,8 +516,8 @@ export default class TransformationPanel extends Panel {
         key: "subtractContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) => this.doPathOperations(subtractPath, labelSubtract),
-          "data-tooltip": labelSubtract,
+          "onclick": (event) => this.doPathOperations(subtractPath, "subtract"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.subtract`),
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
@@ -547,8 +527,8 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
-          "onclick": (event) => this.doPathOperations(intersectPath, labelIntersect),
-          "data-tooltip": labelIntersect,
+          "onclick": (event) => this.doPathOperations(intersectPath, "exclude"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
@@ -562,8 +542,8 @@ export default class TransformationPanel extends Panel {
         key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(excludePath, labelExclude),
-          "data-tooltip": labelExclude,
+          "onclick": (event) => this.doPathOperations(excludePath, "intersect"),
+          "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
         }),
@@ -589,7 +569,10 @@ export default class TransformationPanel extends Panel {
     };
   }
 
-  async doPathOperations(pathOperationFunc, undoLabel) {
+  async doPathOperations(pathOperationFunc, key) {
+    const undoLabel = translate(
+      `sidebar.selection-transformation.path-operations.${key}`
+    );
     const doUnion = pathOperationFunc === unionPath;
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
