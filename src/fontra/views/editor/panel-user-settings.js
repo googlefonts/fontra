@@ -95,16 +95,6 @@ export default class UserSettingsPanel extends Panel {
       displayName: translate("sidebar.user-settings.experimental"),
       controller: applicationSettingsController,
       descriptions: [
-        // {
-        //   key: "scalingEditBehavior",
-        //   displayName: "Scaling edit tool behavior",
-        //   ui: "checkbox",
-        // },
-        // {
-        //   key: "quadPenTool",
-        //   displayName: "Pen tool draws quadratics",
-        //   ui: "checkbox",
-        // },
         {
           key: "rectSelectLiveModifierKeys",
           displayName: "Rect-select live modifier keys",
