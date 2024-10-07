@@ -21,7 +21,12 @@ from .changes import (
 )
 from .classes import Font, FontInfo, FontSource, VariableGlyph
 from .lrucache import LRUCache
-from .protocols import ReadableFontBackend, WatchableFontBackend, WritableFontBackend
+from .protocols import (
+    ProjectManager,
+    ReadableFontBackend,
+    WatchableFontBackend,
+    WritableFontBackend,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +46,7 @@ class FontHandler:
     readOnly: bool = False
     dummyEditor: bool = False  # allow editing in read-only mode, don't write to backend
     allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
+    projectManager: ProjectManager | None = None
 
     def __post_init__(self):
         if self.writableBackend is None:
@@ -160,7 +166,19 @@ class FontHandler:
             ("find-glyphs-that-use-glyph", "findGlyphsThatUseGlyph")
         ]:
             features[key] = hasattr(self.backend, methodName)
-        return dict(name=self.backend.__class__.__name__, features=features)
+        projectManagerFeatures = {}
+        for key, methodName in [("export-as", "exportAs")]:
+            projectManagerFeatures[key] = hasattr(self.projectManager, methodName)
+        return dict(
+            name=self.backend.__class__.__name__,
+            features=features,
+            projectManagerName=(
+                None
+                if self.projectManager is None
+                else self.projectManager.__class__.__name__
+            ),
+            projectManagerFeatures=projectManagerFeatures,
+        )
 
     @remoteMethod
     async def getGlyph(
@@ -484,6 +502,11 @@ class FontHandler:
             for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
         ]
         return patternUnion(patternA, patternB)
+
+    @remoteMethod
+    async def exportAs(self, options: dict, *, connection):
+        if self.projectManager is not None and hasattr(self.projectManager, "exportAs"):
+            return self.projectManager.exportAs(options)
 
 
 def popFirstItem(d):

@@ -645,6 +645,16 @@ export class EditorController {
     }
   }
 
+  initActionsAfterStart() {
+    if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
+      registerAction(
+        "actions.export-as",
+        { topic: "0015-action-topics.menu.file", titleKey: "menu.edit.export-as" },
+        (event) => this.fontController.exportAs({})
+      );
+    }
+  }
+
   initTopBar() {
     const menuBar = new MenuBar([
       {
@@ -673,19 +683,23 @@ export class EditorController {
       },
       {
         title: translate("menubar.file"),
-        getItems() {
-          return [
-            {
-              title: translate("menubar.file.new"),
-              enabled: () => false,
-              callback: () => {},
-            },
-            {
-              title: translate("menubar.file.open"),
-              enabled: () => false,
-              callback: () => {},
-            },
-          ];
+        getItems: () => {
+          if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
+            return [{ actionIdentifier: "actions.export-as" }];
+          } else {
+            return [
+              {
+                title: translate("menubar.file.new"),
+                enabled: () => false,
+                callback: () => {},
+              },
+              {
+                title: translate("menubar.file.open"),
+                enabled: () => false,
+                callback: () => {},
+              },
+            ];
+          }
         },
       },
       {
@@ -909,6 +923,8 @@ export class EditorController {
         this.canvasController.requestUpdate();
       }
     );
+
+    this.initActionsAfterStart();
 
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
