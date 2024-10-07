@@ -47,6 +47,7 @@ class FontHandler:
     dummyEditor: bool = False  # allow editing in read-only mode, don't write to backend
     allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
     projectManager: ProjectManager | None = None
+    projectIdentifier: str | None = None
 
     def __post_init__(self):
         if self.writableBackend is None:
@@ -506,7 +507,7 @@ class FontHandler:
     @remoteMethod
     async def exportAs(self, options: dict, *, connection):
         if self.projectManager is not None and hasattr(self.projectManager, "exportAs"):
-            return self.projectManager.exportAs(options)
+            return await self.projectManager.exportAs(self, options)
 
 
 def popFirstItem(d):
