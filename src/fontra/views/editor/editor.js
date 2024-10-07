@@ -93,6 +93,8 @@ const MIN_CANVAS_SPACE = 200;
 const PASTE_BEHAVIOR_REPLACE = "replace";
 const PASTE_BEHAVIOR_ADD = "add";
 
+const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
+
 export class EditorController {
   static async fromWebSocket() {
     const pathItems = window.location.pathname.split("/").slice(3);
@@ -647,11 +649,15 @@ export class EditorController {
 
   initActionsAfterStart() {
     if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-      registerAction(
-        "actions.export-as",
-        { topic: "0015-action-topics.menu.file", titleKey: "menu.edit.export-as" },
-        (event) => this.fontController.exportAs({})
-      );
+      for (const format of EXPORT_FORMATS) {
+        registerAction(
+          `action.export-as.${format}`,
+          {
+            topic: "0035-action-topics.export-as",
+          },
+          (event) => this.fontController.exportAs({ format })
+        );
+      }
     }
   }
 
@@ -685,7 +691,15 @@ export class EditorController {
         title: translate("menubar.file"),
         getItems: () => {
           if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-            return [{ actionIdentifier: "actions.export-as" }];
+            return [
+              {
+                title: translate("menubar.file.export-as"),
+                getItems: () =>
+                  EXPORT_FORMATS.map((format) => ({
+                    actionIdentifier: `action.export-as.${format}`,
+                  })),
+              },
+            ];
           } else {
             return [
               {
