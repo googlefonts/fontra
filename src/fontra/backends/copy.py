@@ -110,7 +110,7 @@ async def copyGlyphs(
             continue
 
         if glyph is None:
-            logger.warn(f"glyph {glyphName} not found")
+            logger.warning(f"glyph {glyphName} not found")
             continue
 
         logger.debug(f"writing {glyphName}")
