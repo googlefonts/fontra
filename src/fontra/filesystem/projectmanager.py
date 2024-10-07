@@ -112,6 +112,7 @@ class FileSystemProjectManager:
                 readOnly=self.readOnly,
                 allConnectionsClosedCallback=closeFontHandler,
                 projectManager=self,
+                projectIdentifier=projectPath,
             )
             await fontHandler.startTasks()
             self.fontHandlers[path] = fontHandler
