@@ -93,6 +93,8 @@ const MIN_CANVAS_SPACE = 200;
 const PASTE_BEHAVIOR_REPLACE = "replace";
 const PASTE_BEHAVIOR_ADD = "add";
 
+const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
+
 export class EditorController {
   static async fromWebSocket() {
     const pathItems = window.location.pathname.split("/").slice(3);
@@ -645,6 +647,20 @@ export class EditorController {
     }
   }
 
+  initActionsAfterStart() {
+    if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
+      for (const format of EXPORT_FORMATS) {
+        registerAction(
+          `action.export-as.${format}`,
+          {
+            topic: "0035-action-topics.export-as",
+          },
+          (event) => this.fontController.exportAs({ format })
+        );
+      }
+    }
+  }
+
   initTopBar() {
     const menuBar = new MenuBar([
       {
@@ -673,19 +689,31 @@ export class EditorController {
       },
       {
         title: translate("menubar.file"),
-        getItems() {
-          return [
-            {
-              title: translate("menubar.file.new"),
-              enabled: () => false,
-              callback: () => {},
-            },
-            {
-              title: translate("menubar.file.open"),
-              enabled: () => false,
-              callback: () => {},
-            },
-          ];
+        getItems: () => {
+          if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
+            return [
+              {
+                title: translate("menubar.file.export-as"),
+                getItems: () =>
+                  EXPORT_FORMATS.map((format) => ({
+                    actionIdentifier: `action.export-as.${format}`,
+                  })),
+              },
+            ];
+          } else {
+            return [
+              {
+                title: translate("menubar.file.new"),
+                enabled: () => false,
+                callback: () => {},
+              },
+              {
+                title: translate("menubar.file.open"),
+                enabled: () => false,
+                callback: () => {},
+              },
+            ];
+          }
         },
       },
       {
@@ -909,6 +937,8 @@ export class EditorController {
         this.canvasController.requestUpdate();
       }
     );
+
+    this.initActionsAfterStart();
 
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox

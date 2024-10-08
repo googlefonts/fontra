@@ -773,6 +773,10 @@ export class FontController {
   mapMappedSourceLocationToSourceLocation(mappedSourceLocation) {
     return { ...this.crossAxisMapping.unmapLocation(mappedSourceLocation) };
   }
+
+  async exportAs(options) {
+    return await this.font.exportAs(options);
+  }
 }
 
 export function reverseUndoRecord(undoRecord) {

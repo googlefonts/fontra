@@ -188,8 +188,9 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 ### Export
 
-- FontMake/Fontations integration
-- Incremental compilation using Fontations
+- FontMake integration (in Fontra Pak)
+- `fontc` integration
+- Incremental compilation using `fontc`
 - Experimental [`glyf1`](https://github.com/harfbuzz/boring-expansion-spec/blob/main/glyf1-varComposites.md) export ✅ (Via [fontra-compile](https://github.com/googlefonts/fontra-compile))
 
 ### Collaborative features
