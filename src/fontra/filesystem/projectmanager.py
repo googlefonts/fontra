@@ -3,7 +3,7 @@ import logging
 import pathlib
 from importlib import resources
 from importlib.metadata import entry_points
-from os import PathLike
+from os import PathLike, fspath
 from types import SimpleNamespace
 from typing import Callable
 
@@ -112,7 +112,7 @@ class FileSystemProjectManager:
                 readOnly=self.readOnly,
                 allConnectionsClosedCallback=closeFontHandler,
                 projectManager=self,
-                projectIdentifier=projectPath,
+                projectIdentifier=fspath(projectPath),
             )
             await fontHandler.startTasks()
             self.fontHandlers[path] = fontHandler
