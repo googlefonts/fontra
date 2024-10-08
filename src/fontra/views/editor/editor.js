@@ -84,7 +84,6 @@ import RelatedGlyphsPanel from "./panel-related-glyphs.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
-import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
 import { applicationSettingsController } from "/core/application-settings.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
@@ -1156,7 +1155,6 @@ export class EditorController {
     this.addSidebarPanel(new TextEntryPanel(this), "left");
     this.addSidebarPanel(new GlyphSearchPanel(this), "left");
     this.addSidebarPanel(new DesignspaceNavigationPanel(this), "left");
-    this.addSidebarPanel(new UserSettingsPanel(this), "left");
     this.addSidebarPanel(new ReferenceFontPanel(this), "left");
     this.addSidebarPanel(new SelectionInfoPanel(this), "right");
     this.addSidebarPanel(new TransformationPanel(this), "right");
