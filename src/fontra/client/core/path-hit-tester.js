@@ -62,7 +62,7 @@ export class PathHitTester {
       }
     }
 
-    results = results.filter((hit) => hit.t != 0 && hit.t != 1);
+    // results = results.filter((hit) => hit.t != 0 && hit.t != 1);
     results.sort((a, b) => a.d - b.d);
     return results[0];
   }
