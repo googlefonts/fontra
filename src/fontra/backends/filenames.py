@@ -55,6 +55,10 @@ def stringToFileName(string: str) -> str:
     )
     if fileName[0] == ".":
         fileName = "%2E" + fileName[1:]
+    elif "." in fileName:
+        base, rest = fileName.split(".", 1)
+        if base.lower() in reservedFileNames:
+            fileName = base + "%2E" + rest
     if not codeDigits and fileName.lower() in reservedFileNames:
         codeDigits = [0]
     if codeDigits:
