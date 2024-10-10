@@ -189,7 +189,7 @@ class FontraBackend:
         self._scheduler.schedule(self._writeFontData)
 
     def _readGlyphInfo(self) -> None:
-        with self.glyphInfoPath.open("r", encoding="utf-8") as file:
+        with self.glyphInfoPath.open("r", encoding="utf-8", newline="") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
             assert header[:2] == ["glyph name", "code points"]
@@ -202,7 +202,7 @@ class FontraBackend:
                 self.glyphMap[glyphName] = codePoints
 
     def _writeGlyphInfo(self) -> None:
-        with self.glyphInfoPath.open("w", encoding="utf-8") as file:
+        with self.glyphInfoPath.open("w", encoding="utf-8", newline="") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
@@ -312,7 +312,7 @@ def serialize(data: list | dict) -> str:
 
 
 def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
-    with path.open("w", encoding="utf-8") as file:
+    with path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file, delimiter=";")
 
         isFirst = True
@@ -346,7 +346,7 @@ class KerningParseError(Exception):
 def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
     kerning = {}
 
-    with path.open("r", encoding="utf-8") as file:
+    with path.open("r", encoding="utf-8", newline="") as file:
         reader = csv.reader(file, delimiter=";")
         rowIter = iter(enumerate(reader, 1))
 
