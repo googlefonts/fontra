@@ -19,6 +19,7 @@ export default class GlyphSearchPanel extends Panel {
   constructor(editorController) {
     super(editorController);
     const glyphsSearch = this.contentElement.querySelector("#glyphs-search");
+    editorController.glyphsSearch = glyphsSearch;
     glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
@@ -26,7 +27,6 @@ export default class GlyphSearchPanel extends Panel {
       glyphsSearch.updateGlyphNamesListContent();
     });
     this.editorController.fontController.ensureInitialized.then(() => {
-      this.editorController.fontController.glyphsSearch = glyphsSearch;
       glyphsSearch.glyphMap = this.editorController.fontController.glyphMap;
     });
   }
