@@ -76,7 +76,7 @@ def writableTestFontSingleUFO(tmpdir):
 def readGLIFData(glyphName, ufoLayers):
     glyphSets = {layer.fontraLayerName: layer.glyphSet for layer in ufoLayers}
     return {
-        layerName: glyphSet.getGLIF(glyphName).decode("utf-8")
+        layerName: glyphSet.getGLIF(glyphName).decode("utf-8").replace("\r\n", "\n")
         for layerName, glyphSet in glyphSets.items()
         if glyphName in glyphSet
     }
