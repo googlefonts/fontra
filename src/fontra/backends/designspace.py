@@ -724,7 +724,8 @@ class DesignspaceBackend:
             if value is not None:
                 setattr(info, infoAttr, value)
         reader.writeInfo(info)
-        _ = reader.getGlyphSet()  # this creates the default layer
+        glyphSet = reader.getGlyphSet()  # this creates the default layer
+        glyphSet.writeContents()
         reader.writeLayerContents()
         ufoLayerName = reader.getDefaultLayerName()
         assert os.path.isdir(ufoPath)
@@ -755,6 +756,8 @@ class DesignspaceBackend:
 
         if ufoLayerName not in existingLayerNames:
             reader.writeLayerContents()
+            glyphSet = self.ufoManager.getGlyphSet(ufoPath, ufoLayerName)
+            glyphSet.writeContents()
 
         ufoLayer = UFOLayer(
             manager=self.ufoManager,
@@ -1370,7 +1373,8 @@ def createDSDocFromUFOPath(ufoPath, styleName):
     info = UFOFontInfo()
     _updateFontInfoFromDict(info, defaultUFOInfoAttrs)
     writer.writeInfo(info)
-    _ = writer.getGlyphSet()  # this creates the default layer
+    glyphSet = writer.getGlyphSet()  # this creates the default layer
+    glyphSet.writeContents()
     writer.writeLayerContents()
     assert os.path.isdir(ufoPath)
 

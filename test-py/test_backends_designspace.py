@@ -921,6 +921,21 @@ async def test_null_output(tmpdir, suffix):
         await copyFont(inputBackend, outBackend)
 
 
+@pytest.mark.parametrize("suffix", [".ufo", ".designspace"])
+async def test_empty_layers_have_contents_plist(tmpdir, suffix, testFont):
+    tmpdir = pathlib.Path(tmpdir)
+    outPath = tmpdir / ("test" + suffix)
+
+    sources = await testFont.getSources()
+
+    outBackend = newFileSystemBackend(outPath)
+    await outBackend.putSources(sources)
+
+    for ufoPath in tmpdir.glob("*.ufo"):
+        for glyphsDir in ufoPath.glob("glyphs*"):
+            assert (glyphsDir / "contents.plist").exists()
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
