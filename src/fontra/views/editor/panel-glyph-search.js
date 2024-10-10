@@ -26,6 +26,7 @@ export default class GlyphSearchPanel extends Panel {
       glyphsSearch.updateGlyphNamesListContent();
     });
     this.editorController.fontController.ensureInitialized.then(() => {
+      this.editorController.fontController.glyphsSearch = glyphsSearch;
       glyphsSearch.glyphMap = this.editorController.fontController.glyphMap;
     });
   }

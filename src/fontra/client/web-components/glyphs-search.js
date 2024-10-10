@@ -151,6 +151,7 @@ export class GlyphsSearch extends UnlitElement {
     const filteredGlyphItems = this.glyphsListItems.filter(
       this._glyphNamesListFilterFunc
     );
+    this.filteredGlyphItems = filteredGlyphItems;
     this.glyphNamesList.setItems(filteredGlyphItems);
   }
 }
