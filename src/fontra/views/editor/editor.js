@@ -2845,7 +2845,7 @@ export class EditorController {
   }
 
   async doSelectPreviousNextGlyph(selectPrevious) {
-    const filteredGlyphItems = this.fontController.glyphsSearch.filteredGlyphItems;
+    const filteredGlyphItems = this.glyphsSearch.filteredGlyphItems;
     const glyphNames = filteredGlyphItems.map((x) => x.glyphName);
 
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
