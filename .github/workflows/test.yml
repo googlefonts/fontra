@@ -8,6 +8,15 @@ on:
     branches: [main]
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files --verbose --show-diff-on-failure
+
   build:
     runs-on: ${{ matrix.os }}
 
@@ -45,11 +54,6 @@ jobs:
       # - name: Install Node dependencies
       #   run: |
       #     npm install
-
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
-        with:
-          extra_args: --all-files --verbose --show-diff-on-failure
 
       - name: Run Python tests with pytest
         run: |
