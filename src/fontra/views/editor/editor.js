@@ -2850,7 +2850,7 @@ export class EditorController {
     if (!glyphNames.length) {
       return;
     }
-    
+
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
     if (!selectedGlyphName) {
       return;
