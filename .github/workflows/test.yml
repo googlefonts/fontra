@@ -9,12 +9,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [windows-latest, ubuntu-latest]
         python-version: ["3.10", "3.12"]
         node-version: [19.x]
+        exclude:
+          - os: windows-latest
+            python-version: "3.10"
 
     steps:
       - uses: actions/checkout@v4
