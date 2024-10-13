@@ -1,4 +1,4 @@
-{
+export const strings = {
   "action-topics.designspace-navigation": "Designspace 导航",
   "action-topics.export-as": "Export as",
   "action-topics.glyph-editor-appearance": "字符形编辑器外观",
@@ -80,9 +80,9 @@
   "dialog.add": "Add",
   "dialog.cancel": "取消",
   "dialog.create": "创建",
-  "dialog.create-new-glyph.body": "如果你想%1创建一个新的字符形\"%0\"，请点击 \"创建\"。",
-  "dialog.create-new-glyph.body.2": "为字符\"%0\" (%1)",
-  "dialog.create-new-glyph.title": "创建新字符形 \"%0\"？",
+  "dialog.create-new-glyph.body": '如果你想%1创建一个新的字符形"%0"，请点击 "创建"。',
+  "dialog.create-new-glyph.body.2": '为字符"%0" (%1)',
+  "dialog.create-new-glyph.title": '创建新字符形 "%0"？',
   "dialog.glyphs.search": "搜索字符形",
   "dialog.replace": "Replace",
   "editor.hand-tool": "拖拽工具",
@@ -155,7 +155,8 @@
   "sidebar.reference-font": "参考字体",
   "sidebar.referencefont": "参考字体",
   "sidebar.referencefont.customcharacter": "自定义字符",
-  "sidebar.referencefont.info": "将一个或多个.ttf、.otf、.woff或.woff2字体文件拖放到下面的方框内",
+  "sidebar.referencefont.info":
+    "将一个或多个.ttf、.otf、.woff或.woff2字体文件拖放到下面的方框内",
   "sidebar.referencefont.language": "语言",
   "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.related-glyphs.title": "Related Glyphs & Characters for %0",
@@ -239,5 +240,5 @@
   "toggle-fullscreen": "切换全屏",
   "zoom-fit-selection": "缩放到选区",
   "zoom-in": "放大",
-  "zoom-out": "缩小"
-}
+  "zoom-out": "缩小",
+};

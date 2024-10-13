@@ -1,4 +1,4 @@
-{
+export const strings = {
   "action-topics.designspace-navigation": "Designspace Navigation",
   "action-topics.export-as": "Export as",
   "action-topics.glyph-editor-appearance": "Glyph editor appearance",
@@ -81,9 +81,10 @@
   "dialog.add": "Add",
   "dialog.cancel": "Cancel",
   "dialog.create": "Create",
-  "dialog.create-new-glyph.body": "Click \"Create\" if you want to create a new glyph named \"%0\"%1.",
-  "dialog.create-new-glyph.body.2": " for character \"%0\" (%1)",
-  "dialog.create-new-glyph.title": "Create a new glyph \"%0\"?",
+  "dialog.create-new-glyph.body":
+    'Click "Create" if you want to create a new glyph named "%0"%1.',
+  "dialog.create-new-glyph.body.2": ' for character "%0" (%1)',
+  "dialog.create-new-glyph.title": 'Create a new glyph "%0"?',
   "dialog.glyphs.search": "Search glyphs",
   "dialog.replace": "Replace",
   "editor.hand-tool": "Hand Tool",
@@ -155,7 +156,8 @@
   "sidebar.reference-font": "Reference Font",
   "sidebar.referencefont": "Reference font",
   "sidebar.referencefont.customcharacter": "Custom character",
-  "sidebar.referencefont.info": "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below",
+  "sidebar.referencefont.info":
+    "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below",
   "sidebar.referencefont.language": "Language",
   "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.related-glyphs.title": "Related Glyphs & Characters for %0",
@@ -239,5 +241,5 @@
   "toggle-fullscreen": "Toggle Fullscreen",
   "zoom-fit-selection": "Zoom To Fit Selection",
   "zoom-in": "Zoom In",
-  "zoom-out": "Zoom Out"
-}
+  "zoom-out": "Zoom Out",
+};
