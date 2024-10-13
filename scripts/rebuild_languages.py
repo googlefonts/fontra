@@ -83,6 +83,8 @@ for columnIndex in range(startColumn, len(headers[1])):
 
     for row in rows:
         key = row[1]
+        if not key.strip():
+            continue
         string = row[columnIndex]
         if not string or string == "-":
             string = languageStrings["en"].get(key, "!missing!")
