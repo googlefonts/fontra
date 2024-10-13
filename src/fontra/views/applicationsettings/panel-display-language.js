@@ -1,6 +1,6 @@
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
-import { languageController } from "../core/localization.js";
+import { languageController, languages, translate } from "../core/localization.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 addStyleSheet(`
@@ -29,6 +29,19 @@ export class DisplayLanguagePanel extends BaseInfoPanel {
   }
 
   cards() {
+    const languageOptions = languages.map((lang) => {
+      let displayName = `${lang.langLang} / ${lang.langEn}`;
+      if (lang.status != "done") {
+        const statusString = translate(
+          `application-settings.display-language.status.${lang.status}`
+        );
+        displayName += ` (${statusString})`;
+      }
+      return {
+        key: lang.code,
+        displayName: displayName,
+      };
+    });
     return [
       {
         displayName: "Display Language",
@@ -37,10 +50,7 @@ export class DisplayLanguagePanel extends BaseInfoPanel {
           {
             key: "language",
             ui: "radio",
-            options: [
-              { key: "en", displayName: "English" },
-              { key: "zh-CN", displayName: "Simplified Chinese" },
-            ],
+            options: languageOptions,
           },
         ],
       },
