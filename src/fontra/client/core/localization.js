@@ -2,9 +2,9 @@ import { ObservableController } from "./observable-object.js";
 
 // Don't edit this block, see scripts/rebuild_languages.py
 export const languages = [
-  ["en", "English", "English", "done"],
-  ["zh-CN", "Simplified Chinese", "简体中文", "beta"],
-  ["nl", "Dutch", "Nederlands", "wip"],
+  { code: "en", langEn: "English", langLang: "English", status: "done" },
+  { code: "zh-CN", langEn: "Simplified Chinese", langLang: "简体中文", status: "beta" },
+  { code: "nl", langEn: "Dutch", langLang: "Nederlands", status: "wip" },
 ];
 
 const debugTranslation = false;
