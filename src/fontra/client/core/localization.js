@@ -1,5 +1,11 @@
 import { ObservableController } from "./observable-object.js";
-import { fetchJSON } from "./utils.js";
+
+// Don't edit this block, see scripts/rebuild_languages.py
+export const languages = [
+  { code: "en", langEn: "English", langLang: "English", status: "done" },
+  { code: "zh-CN", langEn: "Simplified Chinese", langLang: "简体中文", status: "beta" },
+  { code: "nl", langEn: "Dutch", langLang: "Nederlands", status: "wip" },
+];
 
 const debugTranslation = false;
 let localizationData = {};
@@ -20,9 +26,9 @@ export const ensureLanguageHasLoaded = new Promise((resolve) => {
 function languageChanged(locale) {
   // Do explicit .replace() because our cache busting mechanism is simplistic,
   // and backtick strings don't work.
-  const translationsPath = "/lang/locale.json".replace("locale", locale);
-  fetchJSON(translationsPath).then((data) => {
-    localizationData = data;
+  const translationsPath = "/lang/locale.js".replace("locale", locale);
+  import(translationsPath).then((mod) => {
+    localizationData = mod.strings;
     resolveLanguageHasLoaded();
   });
 }

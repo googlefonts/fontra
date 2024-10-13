@@ -214,3 +214,10 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 - Serverless Fontra
 - Peer-to-peer collaboration
+
+## Translations
+
+We are maintaining various language translations of the UI in a spreadsheet. Please contact us if you'd like to contribute (to) a translation.
+
+- [Translation Documentation](https://docs.google.com/spreadsheets/d/1woTU8dZCHJh7yvdk-N1kgQBUj4Sn3SdRsbKgn6ltJQs/edit?gid=1731105247#gid=1731105247)
+- [Fontra UI Strings spreadsheet](https://docs.google.com/spreadsheets/d/1woTU8dZCHJh7yvdk-N1kgQBUj4Sn3SdRsbKgn6ltJQs/edit?usp=sharing)
