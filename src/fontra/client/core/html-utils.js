@@ -152,6 +152,7 @@ export function addStyleSheet(cssText, element = null) {
 }
 
 // Convenience shortcuts
+export const a = createDomElement.bind(null, "a");
 export const br = createDomElement.bind(null, "br");
 export const button = createDomElement.bind(null, "button");
 export const div = createDomElement.bind(null, "div");
