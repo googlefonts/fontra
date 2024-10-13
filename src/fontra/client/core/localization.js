@@ -1,5 +1,12 @@
 import { ObservableController } from "./observable-object.js";
 
+// Don't edit this block, see scripts/rebuild_languages.py
+export const languages = [
+  ["en", "English", "English", "done"],
+  ["zh-CN", "Simplified Chinese", "简体中文", "beta"],
+  ["nl", "Dutch", "Nederlands", "wip"],
+];
+
 const debugTranslation = false;
 let localizationData = {};
 
