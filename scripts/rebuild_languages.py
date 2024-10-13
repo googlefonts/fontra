@@ -31,14 +31,6 @@ def downloadSheet(url):
     return list(reader)
 
 
-sheetIdentifiers = {
-    "han": "1908952904",
-    "kana": "717448230",
-    "hangul": "1165022990",
-    "misc": "1731365720",
-    "latin": "60035727",
-}
-
 languageSpreadsheetURL = (
     "https://docs.google.com/"
     "spreadsheets/d/1woTU8dZCHJh7yvdk-N1kgQBUj4Sn3SdRsbKgn6ltJQs/"
