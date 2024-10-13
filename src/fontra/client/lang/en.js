@@ -37,6 +37,8 @@ export const strings = {
   "action.set-contour-start": "Set Start Point",
   "action.undo": "Undo",
   "application-settings.clipboard.title": "Clipboard",
+  "application-settings.display-language.status.beta": "beta",
+  "application-settings.display-language.status.wip": "work in progress",
   "application-settings.display-language.title": "Display Language",
   "application-settings.editor-behavior.title": "Editor Behavior",
   "application-settings.plugins-manager.title": "Plugin Manager",

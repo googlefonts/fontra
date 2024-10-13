@@ -37,6 +37,8 @@ export const strings = {
   "action.set-contour-start": "设置起点",
   "action.undo": "撤销",
   "application-settings.clipboard.title": "剪贴板导出格式",
+  "application-settings.display-language.status.beta": "beta",
+  "application-settings.display-language.status.wip": "work in progress",
   "application-settings.display-language.title": "Display Language",
   "application-settings.editor-behavior.title": "Editor Behavior",
   "application-settings.plugins-manager.title": "插件管理器",
