@@ -1,5 +1,4 @@
 import { ObservableController } from "./observable-object.js";
-import { fetchJSON } from "./utils.js";
 
 const debugTranslation = false;
 let localizationData = {};
@@ -20,9 +19,9 @@ export const ensureLanguageHasLoaded = new Promise((resolve) => {
 function languageChanged(locale) {
   // Do explicit .replace() because our cache busting mechanism is simplistic,
   // and backtick strings don't work.
-  const translationsPath = "/lang/locale.json".replace("locale", locale);
-  fetchJSON(translationsPath).then((data) => {
-    localizationData = data;
+  const translationsPath = "/lang/locale.js".replace("locale", locale);
+  import(translationsPath).then((mod) => {
+    localizationData = mod.strings;
     resolveLanguageHasLoaded();
   });
 }
