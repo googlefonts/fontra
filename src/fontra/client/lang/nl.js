@@ -64,7 +64,7 @@ export const strings = {
   "axes.names.name": "Naam",
   "axes.names.ot-tag": "OT tag",
   "axes.names.ui-name": "UI name",
-  "axes.new": "Niewe as...",
+  "axes.new": "Nieuwe as...",
   "axes.preset": "Standaard assen",
   "axes.preset.italic": "Cursief",
   "axes.preset.optical-size": "Optische grootte",
