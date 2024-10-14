@@ -476,3 +476,39 @@ class SetVerticalGlyphMetrics(BaseFilter):
             for layerName, layer in glyph.layers.items()
         }
         return replace(glyph, layers=newLayers)
+
+
+@registerFilterAction("set-vertical-glyph-metrics-from-anchors")
+@dataclass(kw_only=True)
+class SetVerticalGlyphMetricsFromAnchors(BaseFilter):
+    tsbAnchorName: str = "TSB_DEFAULT"
+    bsbAnchorName: str = "BSB_DEFAULT"
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        def metricsFromAnchors(anchors):
+            top = None
+            bottom = None
+            for anchor in anchors:
+                if anchor.name == self.tsbAnchorName:
+                    top = anchor.y
+                elif anchor.name == self.bsbAnchorName:
+                    bottom = anchor.y
+            if top is not None and bottom is not None:
+                return (top, top - bottom)
+            return None, None
+
+        newLayers = {}
+        for layerName, layer in glyph.layers.items():
+            verticalOrigin, yAdvance = metricsFromAnchors(layer.glyph.anchors)
+            if verticalOrigin is not None:
+                assert yAdvance is not None
+                newLayers[layerName] = replace(
+                    layer,
+                    glyph=replace(
+                        layer.glyph, verticalOrigin=verticalOrigin, yAdvance=yAdvance
+                    ),
+                )
+        if newLayers:
+            glyph = replace(glyph, layers=glyph.layers | newLayers)
+
+        return glyph

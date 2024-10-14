@@ -1218,6 +1218,22 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             [],
         ),
         (
+            "set-vertical-glyph-metrics-from-anchors",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-set-vertical-glyph-metrics.fontra"
+            - filter: set-vertical-glyph-metrics
+              verticalOrigin: 880
+              yAdvance: 1000
+            - filter: set-vertical-glyph-metrics-from-anchors
+            - output: fontra-write
+              destination: "output-set-vertical-glyph-metrics-from-anchors.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "drop-font-sources-and-kerning",
             """
             steps:
