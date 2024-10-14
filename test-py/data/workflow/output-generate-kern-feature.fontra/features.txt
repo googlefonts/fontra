@@ -1,0 +1,4 @@
+
+feature kern {
+    pos A B (wdth=0,wght=100:-10 wdth=0,wght=900:-20 wdth=1000,wght=100:-15 wdth=1000,wght=900:-25);
+} kern;
