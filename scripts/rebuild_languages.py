@@ -40,7 +40,7 @@ rows = downloadSheet(languageSpreadsheetURL + "export?format=csv")
 
 numHeaders = 5
 headers = rows[:numHeaders]
-assert headers[0][0] == "Documentation", headers[0][0]
+assert headers[0][0] == "Go to Documentation", headers[0][0]
 assert headers[1][2] == "English", headers[1][2]
 assert headers[2][2] == "English", headers[2][2]
 assert headers[3][2] == "en", headers[3][2]
