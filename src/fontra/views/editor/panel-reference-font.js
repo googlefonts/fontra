@@ -681,7 +681,7 @@ export default class ReferenceFontPanel extends Panel {
               [
                 label(
                   { for: "char-override" },
-                  translate("sidebar.reference-font.customcharacter")
+                  translate("sidebar.reference-font.custom-character")
                 ),
                 input({
                   type: "text",
