@@ -1245,6 +1245,22 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             [],
         ),
         (
+            "generate-kern-feature",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: subset-axes
+              dropAxisNames: ["italic"]
+            - filter: generate-kern-feature
+              dropKern: true
+            - output: fontra-write
+              destination: "output-generate-kern-feature.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "instantiate-location-base",
             """
             steps:

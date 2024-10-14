@@ -185,22 +185,18 @@ class AddFeatures(BaseFilter):
         return OpenTypeFeatures(text=featureText)
 
 
-vkrnTopPrefix = "kern.top."
-vkrnBottomPrefix = "kern.bottom."
+class BaseGenerateKerningFeature(BaseFilter):
+    _kernFeatureTag = "kern"
+    _kern1Prefix = "public.kern1."
+    _kern2Prefix = "public.kern2."
+    _dropKernAttrName = "dropKern"
 
-
-def _kernKeySortFunc(item):
-    key, _ = item
-    return key.startswith(vkrnTopPrefix) or key.startswith(vkrnBottomPrefix)
-
-
-@registerFilterAction("generate-vkrn-feature")
-@dataclass(kw_only=True)
-class GenerateVkrnFeature(BaseFilter):
-    dropVkrn: bool = True
+    def _kernKeySortFunc(self, item):
+        key, _ = item
+        return key.startswith(self._kern1Prefix) or key.startswith(self._kern2Prefix)
 
     async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
-        verticalKerning = (await self.inputKerning).get("vkrn")
+        verticalKerning = (await self.inputKerning).get(self._kernFeatureTag)
         if verticalKerning is None:
             return features
 
@@ -226,16 +222,16 @@ class GenerateVkrnFeature(BaseFilter):
         for groupName, group in sorted(verticalKerning.groups.items()):
             w.addGroup(groupName, group)
 
-        fea = w.addFeature("vkrn")
+        fea = w.addFeature(self._kernFeatureTag)
 
         for left, rightDict in sorted(
-            verticalKerning.values.items(), key=_kernKeySortFunc
+            verticalKerning.values.items(), key=self._kernKeySortFunc
         ):
-            if left.startswith(vkrnTopPrefix):
+            if left.startswith(self._kern1Prefix):
                 left = "@" + left
 
-            for right, values in sorted(rightDict.items(), key=_kernKeySortFunc):
-                if right.startswith(vkrnBottomPrefix):
+            for right, values in sorted(rightDict.items(), key=self._kernKeySortFunc):
+                if right.startswith(self._kern2Prefix):
                     right = "@" + right
 
                 values = [0 if v is None else round(v) for v in values]
@@ -264,10 +260,27 @@ class GenerateVkrnFeature(BaseFilter):
         kerning = await self.inputKerning
         return (
             kerning
-            if not self.dropVkrn
+            if not getattr(self, self._dropKernAttrName)
             else {
                 kernType: kernTable
                 for kernType, kernTable in kerning.items()
-                if kernType != "vkrn"
+                if kernType != self._kernFeatureTag
             }
         )
+
+
+@registerFilterAction("generate-kern-feature")
+@dataclass(kw_only=True)
+class GenerateKernFeature(BaseGenerateKerningFeature):
+    dropKern: bool = True
+
+
+@registerFilterAction("generate-vkrn-feature")
+@dataclass(kw_only=True)
+class GenerateVkrnFeature(BaseGenerateKerningFeature):
+    dropVkrn: bool = True
+
+    _kernFeatureTag = "vkrn"
+    _kern1Prefix = "kern.top."
+    _kern2Prefix = "kern.bottom."
+    _dropKernAttrName = "dropVkrn"
