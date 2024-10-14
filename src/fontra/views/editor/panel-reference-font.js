@@ -666,8 +666,8 @@ export default class ReferenceFontPanel extends Panel {
             id: "reference-font",
           },
           [
-            div({ class: "title" }, [translate("sidebar.referencefont")]),
-            div({}, [translate("sidebar.referencefont.info")]),
+            div({ class: "title" }, [translate("sidebar.reference-font")]),
+            div({}, [translate("sidebar.reference-font.info")]),
             this.filesUIList,
             div(
               {
@@ -681,7 +681,7 @@ export default class ReferenceFontPanel extends Panel {
               [
                 label(
                   { for: "char-override" },
-                  translate("sidebar.referencefont.customcharacter")
+                  translate("sidebar.reference-font.customcharacter")
                 ),
                 input({
                   type: "text",
@@ -691,7 +691,7 @@ export default class ReferenceFontPanel extends Panel {
                 }),
                 label(
                   { for: "language-code" },
-                  translate("sidebar.referencefont.language")
+                  translate("sidebar.reference-font.language")
                 ),
                 this.languageCodeInput,
               ]
