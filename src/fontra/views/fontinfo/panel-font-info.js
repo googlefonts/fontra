@@ -15,7 +15,7 @@ const fontInfoFields = [
   ["designer", "font-info.designer", "edit-text"],
   ["designerURL", "font-info.designer.url", "edit-text"],
   ["manufacturer", "font-info.manufacturer", "edit-text"],
-  ["manufacturerURL", "font-infomanufacturer.url", "edit-text"],
+  ["manufacturerURL", "font-info.manufacturer.url", "edit-text"],
   ["licenseDescription", "font-info.licensedescription", "edit-text"],
   ["licenseInfoURL", "font-info.licenseinfo.url", "edit-text"],
   ["vendorID", "font-info.vendorid", "edit-text"],
