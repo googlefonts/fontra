@@ -156,11 +156,10 @@ export const strings = {
   "sidebar.glyph-search": "字符形搜索",
   "sidebar.glyphs.search": "搜索字符形",
   "sidebar.reference-font": "参考字体",
-  "sidebar.referencefont": "参考字体",
-  "sidebar.referencefont.customcharacter": "自定义字符",
-  "sidebar.referencefont.info":
+  "sidebar.reference-font.custom-character": "自定义字符",
+  "sidebar.reference-font.info":
     "将一个或多个.ttf、.otf、.woff或.woff2字体文件拖放到下面的方框内",
-  "sidebar.referencefont.language": "语言",
+  "sidebar.reference-font.language": "语言",
   "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.related-glyphs.title": "Related Glyphs & Characters for %0",
   "sidebar.selection-info": "选区信息",

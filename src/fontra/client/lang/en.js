@@ -157,11 +157,10 @@ export const strings = {
   "sidebar.glyph-search": "Glyph Search",
   "sidebar.glyphs.search": "Search glyphs",
   "sidebar.reference-font": "Reference Font",
-  "sidebar.referencefont": "Reference font",
-  "sidebar.referencefont.customcharacter": "Custom character",
-  "sidebar.referencefont.info":
+  "sidebar.reference-font.custom-character": "Custom character",
+  "sidebar.reference-font.info":
     "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below",
-  "sidebar.referencefont.language": "Language",
+  "sidebar.reference-font.language": "Language",
   "sidebar.related-glyphs": "Related Glyphs & Characters",
   "sidebar.related-glyphs.title": "Related Glyphs & Characters for %0",
   "sidebar.selection-info": "Selection Info",
