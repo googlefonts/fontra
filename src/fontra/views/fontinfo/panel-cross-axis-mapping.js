@@ -82,24 +82,9 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
   }
 
   async newCrossAxisMapping() {
-    console.log(
-      "newCrossAxisMapping works, but after adding a mapping an error accurs."
-    );
-    // Error console:
-    // observable-object.82ea619d.js:149 Uncaught (in promise) TypeError: Cannot create proxy with a non-object as target or handler
-    // at newModelProxy (observable-object.82ea619d.js:149:10)
-    // at new ObservableController (observable-object.82ea619d.js:10:18)
-    // at CrossAxisMappingBox._updateContents (panel-cross-axis-mapping.82ea619d.js:240:31)
-    // at new CrossAxisMappingBox (panel-cross-axis-mapping.82ea619d.js:187:10)
-    // at CrossAxisMappingPanel.setupUI (panel-cross-axis-mapping.82ea619d.js:56:9)
-    // at CrossAxisMappingPanel.newCrossAxisMapping (panel-cross-axis-mapping.82ea619d.js:105:12)
-    // at HTMLInputElement.onclick (panel-cross-axis-mapping.82ea619d.js:78:34)
-
-    // for me it looks like it has issue with a default mapping
-
     //new empty mapping
     const newMapping = {
-      // description: "Unnamed", // The error above occurs when this line is uncommented
+      description: "Unnamed",
       groupDescription: null,
       inputLocation: {},
       outputLocation: {},
@@ -203,8 +188,8 @@ class CrossAxisMappingBox extends HTMLElement {
   _getModels() {
     const mapping = this.mapping;
     return {
-      description: mapping.description || "",
-      groupDescription: mapping.groupDescription || "",
+      description: { description: mapping.description || "" },
+      groupDescription: { groupDescription: mapping.groupDescription || "" },
       inputLocation: { ...mapping.inputLocation },
       outputLocation: { ...mapping.outputLocation },
     };
