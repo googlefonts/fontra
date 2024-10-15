@@ -81,6 +81,8 @@ export const strings = {
   "axes.range.values": "Values",
   "axes.title": "Axes",
   "canvas.clean-view-and-hand-tool": "Clean View and Hand Tool",
+  "cross-axis-mapping.new": "New cross-axis mapping",
+  "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources": "Edit all compatible sources",
   "dialog.add": "Add",
   "dialog.cancel": "Cancel",

@@ -81,6 +81,8 @@ export const strings = {
   "axes.range.values": "Valeurs",
   "axes.title": "Axes",
   "canvas.clean-view-and-hand-tool": "Prévisualisation et outil de déplacement",
+  "cross-axis-mapping.new": "New cross-axis mapping",
+  "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Éditer toutes les sources compatibles",
   "dialog.add": "Ajouter",
@@ -88,7 +90,7 @@ export const strings = {
   "dialog.create": "Créer",
   "dialog.create-new-glyph.body":
     'Cliquez "Créer" si vous voulez créer un nouveau glyphe nommé  "%0"%1.',
-  "dialog.create-new-glyph.body.2": 'Pour le caractère "%0" (%1)',
+  "dialog.create-new-glyph.body.2": ' pour le caractère "%0" (%1)',
   "dialog.create-new-glyph.title": 'Créer un nouveau glyphe "%0"?',
   "dialog.glyphs.search": "Chercher des glyphes",
   "dialog.replace": "Remplacer",

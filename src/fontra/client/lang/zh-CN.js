@@ -81,6 +81,8 @@ export const strings = {
   "axes.range.values": "可选值",
   "axes.title": "参数轴",
   "canvas.clean-view-and-hand-tool": "Clean View and Hand Tool",
+  "cross-axis-mapping.new": "New cross-axis mapping",
+  "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources": "编辑所有匹配的图层",
   "dialog.add": "添加",
   "dialog.cancel": "取消",
