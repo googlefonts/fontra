@@ -5,7 +5,7 @@ export const strings = {
   "action-topics.export-as": "Exporter sous",
   "action-topics.glyph-editor-appearance": "Glyphe édition apparence",
   "action-topics.menu.edit": "Édition",
-  "action-topics.menu.view": "Vue",
+  "action-topics.menu.view": "Affichage",
   "action-topics.selection-transformations": "Transformation de la sélection",
   "action-topics.sidebars": "Barres latérales",
   "action-topics.tools": "Outils",
@@ -135,7 +135,7 @@ export const strings = {
   "menubar.help": "Aide",
   "menubar.help.documentation": "Documentation",
   "menubar.help.homepage": "Page d'accueil",
-  "menubar.view": "Vue",
+  "menubar.view": "Affichage",
   "menubar.view.add-glyph-after-selected-glyph":
     "Ajouter un glyphe après le glyphe sélectionné",
   "menubar.view.add-glyph-before-selected-glyph":
@@ -145,8 +145,8 @@ export const strings = {
     "Retirer le glyphe sélectionné du canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Remplacer le glyphe sélectionné du canvas",
-  "menubar.view.select-next-source": "Sélectionner la prochaine source",
-  "menubar.view.select-previous-source": "Sélectionner la précédente source",
+  "menubar.view.select-next-source": "Sélectionner la source suivante ",
+  "menubar.view.select-previous-source": "Sélectionner la source précédente",
   "selection.none": "(Pas de sélection)",
   "sidebar.designspace-navigation": "Navigation du designspace",
   "sidebar.designspace-navigation.font-axes": "Axes de la fonte",
