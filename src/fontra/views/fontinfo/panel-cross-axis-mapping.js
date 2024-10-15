@@ -6,6 +6,7 @@ import {
   OptionalNumberFormatter,
   labelForElement,
   labeledCheckbox,
+  // checkboxWithoutLabel,
   labeledTextInput,
   setupSortableList,
   textInput,
@@ -21,6 +22,7 @@ import {
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
+// keep the dialog imports for now, because we may need them for check infos.
 
 export class CrossAxisMappingPanel extends BaseInfoPanel {
   static title = "cross-axis-mapping.title";
@@ -205,12 +207,19 @@ class CrossAxisMappingBox extends HTMLElement {
 
   _getModels() {
     const mapping = this.mapping;
-    return {
+    const model = {
       description: { description: mapping.description || "" },
       groupDescription: { groupDescription: mapping.groupDescription || "" },
       inputLocation: { ...mapping.inputLocation },
       outputLocation: { ...mapping.outputLocation },
     };
+
+    // add checkboxes for each axis
+    // for (const axis of this.fontAxesSourceSpace) {
+    //   items.push(axis.tag);
+    // }
+
+    return model;
   }
 
   editCrossAxisMapping(editFunc, undoLabel) {
@@ -416,6 +425,46 @@ function buildElementLocationsLabel(fontAxes) {
       .flat()
   );
 }
+
+// function buildElementLocationsCheckboxes(fontAxes) {
+//   let items = [];
+//   for (const axis of fontAxes) {
+//     items.push(axis.tag);
+//   }
+
+//   return html.div(
+//     {
+//       class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location-checkboxes min-height",
+//     },
+//     items
+//       .map((labelName) => {
+//         return html.label({ style: "text-align: right;" }, [labelName]);
+//       })
+//       .flat()
+//   );
+// }
+
+// function buildElement(controller) {
+//   let items = [];
+//   for (const key in controller.model) {
+//     items.push([getLabelFromKey(key), key, controller.model[key]]);
+//   }
+
+//   return html.div(
+//     { class: "fontra-ui-font-info-sources-panel-column min-height" },
+//     items
+//       .map(([labelName, keyName, value]) => {
+//         if (typeof value === "boolean") {
+//           return [html.div(), labeledCheckbox(labelName, controller, keyName, {})];
+//         } else {
+//           return labeledTextInput(labelName, controller, keyName, {
+//             continuous: false,
+//           });
+//         }
+//       })
+//       .flat()
+//   );
+// }
 
 function getLabelFromKey(key) {
   const keyLabelMap = {
