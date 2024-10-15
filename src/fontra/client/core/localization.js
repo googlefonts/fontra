@@ -5,7 +5,7 @@ export const languages = [
   { code: "en", langEn: "English", langLang: "English", status: "done" },
   { code: "zh-CN", langEn: "Simplified Chinese", langLang: "简体中文", status: "beta" },
   { code: "fr", langEn: "French", langLang: "Français", status: "beta" },
-  { code: "nl", langEn: "Dutch", langLang: "Nederlands", status: "wip" },
+  { code: "nl", langEn: "Dutch", langLang: "Nederlands", status: "beta" },
 ];
 
 const debugTranslation = false;
