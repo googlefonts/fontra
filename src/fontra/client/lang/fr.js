@@ -140,7 +140,7 @@ export const strings = {
     "Ajouter un glyphe après le glyphe sélectionné",
   "menubar.view.add-glyph-before-selected-glyph":
     "Ajouter un glyphe avant le glyphe sélectionné",
-  "menubar.view.find-glyphs-that-use": "Trouver le glyphe qui utilise '%0'",
+  "menubar.view.find-glyphs-that-use": "Trouver les glyphes qui utilisent '%0'",
   "menubar.view.remove-selected-glyph-from-canvas":
     "Retirer le glyphe sélectionné du canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
