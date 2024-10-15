@@ -10,9 +10,8 @@ import {
   setupSortableList,
   textInput,
 } from "../core/ui-utils.js";
-import { round } from "../core/utils.js";
+import { range, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { CrossAxisMapping } from "/core/cross-axis-mapping.js";
 import { translate } from "/core/localization.js";
 import {
   locationToString,
@@ -41,26 +40,23 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
   }
 
   async setupUI() {
-    const sources = await this.fontController.getSources();
     const mappings = this.fontController.axes.mappings;
-    console.log("mappings", mappings);
 
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
     );
 
-    //const axisNames = this.fontAxesSourceSpace.map((axis) => axis.name);
-
     const container = html.div({
       style: "display: grid; gap: 0.5em;",
     });
 
-    for (const mapping of mappings) {
-      console.log("cross-axis-mapping:", mapping);
+    for (const index of range(mappings.length)) {
       container.appendChild(
         new CrossAxisMappingBox(
+          this.fontController,
           this.fontAxesSourceSpace,
-          mapping,
+          mappings,
+          index,
           this.postChange.bind(this),
           this.setupUI.bind(this)
         )
@@ -86,200 +82,43 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
   }
 
   async newCrossAxisMapping() {
-    console.log("newCrossAxisMapping");
-    //const mam = new CrossAxisMapping(axes, mappings);
+    console.log(
+      "newCrossAxisMapping works, but after adding a mapping an error accurs."
+    );
+    // Error console:
+    // observable-object.82ea619d.js:149 Uncaught (in promise) TypeError: Cannot create proxy with a non-object as target or handler
+    // at newModelProxy (observable-object.82ea619d.js:149:10)
+    // at new ObservableController (observable-object.82ea619d.js:10:18)
+    // at CrossAxisMappingBox._updateContents (panel-cross-axis-mapping.82ea619d.js:240:31)
+    // at new CrossAxisMappingBox (panel-cross-axis-mapping.82ea619d.js:187:10)
+    // at CrossAxisMappingPanel.setupUI (panel-cross-axis-mapping.82ea619d.js:56:9)
+    // at CrossAxisMappingPanel.newCrossAxisMapping (panel-cross-axis-mapping.82ea619d.js:105:12)
+    // at HTMLInputElement.onclick (panel-cross-axis-mapping.82ea619d.js:78:34)
 
-    // const newCrossAxisMapping = await this._sourcePropertiesRunDialog();
-    // if (!newCrossAxisMapping) {
-    //   return;
-    // }
+    // for me it looks like it has issue with a default mapping
 
-    // const undoLabel = translate(`add cross axis mapping %0`, newCrossAxisMapping.name);// key: cross-axis-mapping.add;
+    //new empty mapping
+    const newMapping = {
+      // description: "Unnamed", // The error above occurs when this line is uncommented
+      groupDescription: null,
+      inputLocation: {},
+      outputLocation: {},
+    };
 
-    // let sourceIdentifier;
-    // do {
-    //   sourceIdentifier = crypto.randomUUID().slice(0, 8);
-    // } while (sourceIdentifier in this.fontController.sources);
+    const undoLabel = translate(`add cross axis mapping`); // key: cross-axis-mapping.add;
 
-    // const root = { sources: this.fontController.sources };
-    // const changes = recordChanges(root, (root) => {
-    //   root.sources[sourceIdentifier] = newCrossAxisMapping;
-    // });
-    // if (changes.hasChange) {
-    //   this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    //   this.setupUI();
-    // }
+    const root = { axes: this.fontController.axes };
+    const changes = recordChanges(root, (root) => {
+      root.axes.mappings.push(newMapping);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
   }
-
-  // async _sourcePropertiesRunDialog() {
-  //   const sources = await this.fontController.getSources();
-  //   const locationAxes = this.fontAxesSourceSpace;
-  //   const validateInput = () => {
-  //     const warnings = [];
-  //     const editedSourceName = nameController.model.sourceName;
-  //     if (!editedSourceName.length || !editedSourceName.trim()) {
-  //       warnings.push("⚠️ The source name must not be empty");
-  //     }
-  //     if (
-  //       Object.keys(sources)
-  //         .map((sourceIdentifier) => {
-  //           if (sources[sourceIdentifier].name === editedSourceName.trim()) {
-  //             return true;
-  //           }
-  //         })
-  //         .includes(true)
-  //     ) {
-  //       warnings.push("⚠️ The source name should be unique");
-  //     }
-  //     const locStr = locationToString(
-  //       makeSparseLocation(locationController.model, locationAxes)
-  //     );
-  //     if (sourceLocations.has(locStr)) {
-  //       warnings.push("⚠️ The source location must be unique");
-  //     }
-  //     warningElement.innerText = warnings.length ? warnings.join("\n") : "";
-  //     dialog.defaultButton.classList.toggle("disabled", warnings.length);
-  //   };
-
-  //   const nameController = new ObservableController({
-  //     sourceName: this.getSourceName(sources),
-  //   });
-
-  //   nameController.addKeyListener("sourceName", (event) => {
-  //     validateInput();
-  //   });
-
-  //   const sourceLocations = new Set(
-  //     Object.keys(sources).map((sourceIdentifier) => {
-  //       return locationToString(
-  //         makeSparseLocation(sources[sourceIdentifier].location, locationAxes)
-  //       );
-  //     })
-  //   );
-
-  //   const locationController = new ObservableController({});
-  //   locationController.addListener((event) => {
-  //     validateInput();
-  //   });
-
-  //   const { contentElement, warningElement } = this._sourcePropertiesContentElement(
-  //     locationAxes,
-  //     nameController,
-  //     locationController
-  //   );
-
-  //   const disable = nameController.model.sourceName ? false : true;
-
-  //   const dialog = await dialogSetup("Add font source", null, [
-  //     { title: "Cancel", isCancelButton: true },
-  //     { title: "Add", isDefaultButton: true, disabled: disable },
-  //   ]);
-  //   dialog.setContent(contentElement);
-
-  //   setTimeout(
-  //     () => contentElement.querySelector("#font-source-name-text-input")?.focus(),
-  //     0
-  //   );
-
-  //   validateInput();
-
-  //   if (!(await dialog.run())) {
-  //     // User cancelled
-  //     return;
-  //   }
-
-  //   let newLocation = makeSparseLocation(locationController.model, locationAxes);
-  //   for (const axis of locationAxes) {
-  //     if (!(axis.name in newLocation)) {
-  //       newLocation[axis.name] = axis.defaultValue;
-  //     }
-  //   }
-
-  //   const interpolatedSource = getInterpolatedSourceData(
-  //     this.fontController,
-  //     newLocation
-  //   );
-
-  //   const newCrossAxisMapping = {
-  //     name: nameController.model.sourceName.trim(),
-  //     location: newLocation,
-  //   };
-
-  //   if (interpolatedSource.lineMetricsHorizontalLayout) {
-  //     newCrossAxisMapping.lineMetricsHorizontalLayout = getLineMetricsHorRounded(
-  //       interpolatedSource.lineMetricsHorizontalLayout
-  //     );
-  //   }
-
-  //   return {
-  //     lineMetricsHorizontalLayout: getDefaultLineMetricsHor(
-  //       this.fontController.unitsPerEm
-  //     ),
-  //     ...interpolatedSource,
-  //     ...newCrossAxisMapping,
-  //   };
-  // }
-
-  // getSourceName(sources) {
-  //   const sourceNames = Object.keys(sources).map((sourceIdentifier) => {
-  //     return sources[sourceIdentifier].name;
-  //   });
-  //   let sourceName = "Untitled source";
-  //   let i = 1;
-  //   while (sourceNames.includes(sourceName)) {
-  //     sourceName = `Untitled source ${i}`;
-  //     i++;
-  //   }
-  //   return sourceName;
-  // }
-
-  // _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
-  //   const locationElement = html.createDomElement("designspace-location", {
-  //     style: `grid-column: 1 / -1;
-  //       min-height: 0;
-  //       overflow: auto;
-  //       height: 100%;
-  //     `,
-  //   });
-  //   locationElement.axes = locationAxes;
-  //   locationElement.controller = locationController;
-
-  //   const containerContent = [
-  //     ...labeledTextInput("Source name:", nameController, "sourceName", {}),
-  //     html.br(),
-  //     locationElement,
-  //   ];
-
-  //   const warningElement = html.div({
-  //     id: "warning-text",
-  //     style: `grid-column: 1 / -1; min-height: 1.5em;`,
-  //   });
-  //   containerContent.push(warningElement);
-
-  //   const contentElement = html.div(
-  //     {
-  //       style: `overflow: hidden;
-  //         white-space: nowrap;
-  //         display: grid;
-  //         gap: 0.5em;
-  //         grid-template-columns: max-content auto;
-  //         align-items: center;
-  //         height: 100%;
-  //         min-height: 0;
-  //       `,
-  //     },
-  //     containerContent
-  //   );
-
-  //   return { contentElement, warningElement };
-  // }
 }
 
 addStyleSheet(`
-:root {
-  --fontra-ui-font-info-cross-axis-mapping-panel-max-list-height: 12em;
-}
-
 .fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
@@ -299,19 +138,19 @@ addStyleSheet(`
   align-items: start;
   align-content: start;
   overflow: scroll;
+  margin-bottom: 0.5em;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-column-location {
   display: grid;
-  grid-template-columns: max-content;
+  grid-template-columns: auto;
   gap: 0.5em;
   overflow: hidden;
 }
 
-fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
-.fontra-ui-font-info-cross-axis-mapping-panel-column.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
 .fontra-ui-font-info-cross-axis-mapping-panel-column-location.min-height {
-  height: 45px;
+  height: 0px;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
@@ -336,14 +175,24 @@ fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
 `);
 
 class CrossAxisMappingBox extends HTMLElement {
-  constructor(fontAxesSourceSpace, mapping, postChange, setupUI) {
+  constructor(
+    fontController,
+    fontAxesSourceSpace,
+    mappings,
+    mappingIndex,
+    postChange,
+    setupUI
+  ) {
     super();
     this.classList.add(
       "fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box"
     );
     this.draggable = true;
+    this.fontController = fontController;
     this.fontAxesSourceSpace = fontAxesSourceSpace;
-    this.mapping = mapping;
+    this.mappings = mappings;
+    this.mapping = mappings[mappingIndex];
+    this.mappingIndex = mappingIndex;
     this.postChange = postChange;
     this.setupUI = setupUI;
     this.controllers = {};
@@ -354,39 +203,40 @@ class CrossAxisMappingBox extends HTMLElement {
   _getModels() {
     const mapping = this.mapping;
     return {
-      general: {
-        description: mapping.description || "",
-        groupDescription: mapping.groupDescription || "",
-      },
+      description: mapping.description || "",
+      groupDescription: mapping.groupDescription || "",
       inputLocation: { ...mapping.inputLocation },
       outputLocation: { ...mapping.outputLocation },
     };
   }
 
   editCrossAxisMapping(editFunc, undoLabel) {
-    console.log("editCrossAxisMapping");
+    console.log(
+      "editCrossAxisMapping works, but after a change the cards get folded – which is not nice."
+    );
 
-    // const root = { mappings: this.mappings };
-    // const changes = recordChanges(root, (root) => {
-    //   editFunc(root.mappings[this.mappingIdentifier]);
-    // });
-    // if (changes.hasChange) {
-    //   this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    // }
+    const root = { axes: this.fontController.axes };
+    const changes = recordChanges(root, (root) => {
+      editFunc(root.axes.mappings[this.mappingIndex]);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+    }
   }
 
   deleteCrossAxisMapping() {
-    console.log("deleteCrossAxisMapping");
-
-    // const undoLabel = `delete mapping '${this.mapping.description || "unnamed"}'`;
-    // const root = { mappings: this.mappings };
-    // const changes = recordChanges(root, (root) => {
-    //   delete root.mappings[this.mappingIdentifier];
-    // });
-    // if (changes.hasChange) {
-    //   this.postChange(changes.change, changes.rollbackChange, undoLabel);
-    //   this.setupUI();
-    // }
+    const undoLabel = translate(
+      "delete cross axis mapping %0",
+      this.mapping.description || this.mappingIndex
+    ); // key: cross-axis-mapping.delete;
+    const root = { axes: this.fontController.axes };
+    const changes = recordChanges(root, (root) => {
+      root.axes.mappings.splice(this.mappingIndex, 1);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
   }
 
   toggleShowHide() {
@@ -407,40 +257,36 @@ class CrossAxisMappingBox extends HTMLElement {
     }
 
     // create listeners
-    this.controllers.general.addListener((event) => {
-      if (event.key == "description" || event.key == "groupDescription") {
-        if (typeof event.newValue != "string") {
-          // TODO: check if this is correct, must be string
-          return;
-        }
-        // if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
-        //   return;
-        // }
-      }
+    this.controllers.description.addListener((event) => {
+      // TODO: Maybe add check of value, if unique?
+      this.editCrossAxisMapping((mapping) => {
+        // TODO: There seems to be somethign wring with description and groupDescription.
+        // After changing them the above mentioned error accures.
+        mapping[event.key] = event.newValue.trim();
+      }, `edit input description ${event.key}`);
+    });
+
+    this.controllers.groupDescription.addListener((event) => {
+      // TODO: Maybe add check of value.
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
-      }, `edit cross-axis-mapping general ${event.key}`);
+      }, `edit input groupDescription ${event.key}`);
     });
 
     this.controllers.inputLocation.addListener((event) => {
-      // if (!this.checkSourceLocation(event.key, event.newValue)) {
-      //   return;
-      // }
       this.editCrossAxisMapping((mapping) => {
         mapping.inputLocation[event.key] = event.newValue;
       }, `edit input location ${event.key}`);
     });
 
     this.controllers.outputLocation.addListener((event) => {
-      // if (!this.checkSourceLocation(event.key, event.newValue)) {
-      //   return;
-      // }
       this.editCrossAxisMapping((mapping) => {
         mapping.outputLocation[event.key] = event.newValue;
       }, `edit output location ${event.key}`);
     });
 
     this.innerHTML = "";
+    // row 1 // mailnly for icon
     this.append(
       html.createDomElement("icon-button", {
         class:
@@ -452,7 +298,70 @@ class CrossAxisMappingBox extends HTMLElement {
       })
     );
 
-    for (const key of ["general", "", "inputLocation", "outputLocation"]) {
+    // for (const key of ["", "", "", ""]) {
+    //   this.append(
+    //     html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-header" }, [
+    //       getLabelFromKey(key),
+    //     ])
+    //   );
+    // }
+    this.append(html.div()); // empty cell for grid with arrow
+    this.append(
+      html.div(
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+        labeledTextInput(
+          getLabelFromKey("description"),
+          this.controllers.description,
+          "description",
+          { continuous: false }
+        )
+      )
+    );
+    this.append(
+      html.div(
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+        labeledTextInput(
+          getLabelFromKey("groupDescription"),
+          this.controllers.groupDescription,
+          "groupDescription",
+          { continuous: false }
+        )
+      )
+    );
+    this.append(html.div()); // empty cell for grid with arrow
+
+    this.append(
+      html.createDomElement("icon-button", {
+        "class": "fontra-ui-font-info-cross-axis-mapping-panel-icon",
+        "src": "/tabler-icons/trash.svg",
+        "onclick": (event) => this.deleteCrossAxisMapping(),
+        "data-tooltip": translate("Delete mapping"), // key: cross-axis-mapping.delete
+        "data-tooltipposition": "left",
+      })
+    );
+
+    // // row 2 // descriptions
+    // this.append(html.div()); // empty cell for grid with arrow
+    // this.append(html.div()); // empty cell for grid with arrow
+    // this.append(html.div()); // empty cell for grid with arrow
+    // this.append(html.div()); // empty cell for grid with arrow
+    // // this.append(
+    // //   html.div(
+    // //     { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+    // //     labeledTextInput(getLabelFromKey("description"), this.controllers.description, "description", {continuous: false, })
+    // //   )
+    // // );
+    // // this.append(
+    // //   html.div(
+    // //     { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+    // //     labeledTextInput(getLabelFromKey("groupDescription"), this.controllers.groupDescription, "groupDescription", {continuous: false, })
+    // //   )
+    // // );
+    // this.append(html.div()); // empty cell for grid with arrow
+    // this.append(html.div()); // empty cell for grid with arrow
+
+    // row 3 // locations headlines
+    for (const key of ["", "", "inputLocation", "outputLocation", "", ""]) {
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-header" }, [
           getLabelFromKey(key),
@@ -460,19 +369,8 @@ class CrossAxisMappingBox extends HTMLElement {
       );
     }
 
-    this.append(
-      html.createDomElement("icon-button", {
-        "class": "fontra-ui-font-info-cross-axis-mapping-panel-icon",
-        "src": "/tabler-icons/trash.svg",
-        "onclick": (event) => this.deleteCrossAxisMapping(),
-        "data-tooltip": "Delete source",
-        "data-tooltipposition": "left",
-      })
-    );
-
+    // row 4 // locations
     this.append(html.div()); // empty cell for grid with arrow
-
-    this.append(buildElement(this.controllers.general));
     this.append(buildElementLocationsLabel(this.fontAxesSourceSpace));
     this.append(
       buildElementLocations(this.controllers.inputLocation, this.fontAxesSourceSpace)
@@ -480,32 +378,12 @@ class CrossAxisMappingBox extends HTMLElement {
     this.append(
       buildElementLocations(this.controllers.outputLocation, this.fontAxesSourceSpace)
     );
+    this.append(html.div()); // This will be checkboxs for "this axis participates in the mapping"
+    this.append(html.div()); // empty cell for grid with arrow
   }
 }
 
 customElements.define("cross-axis-mapping-box", CrossAxisMappingBox);
-
-function buildElement(controller) {
-  let items = [];
-  for (const key in controller.model) {
-    items.push([getLabelFromKey(key), key, controller.model[key]]);
-  }
-
-  return html.div(
-    { class: "fontra-ui-font-info-cross-axis-mapping-panel-column min-height" },
-    items
-      .map(([labelName, keyName, value]) => {
-        if (typeof value === "boolean") {
-          return [html.div(), labeledCheckbox(labelName, controller, keyName, {})];
-        } else {
-          return labeledTextInput(labelName, controller, keyName, {
-            continuous: false,
-          });
-        }
-      })
-      .flat()
-  );
-}
 
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
@@ -539,7 +417,9 @@ function buildElementLocationsLabel(fontAxes) {
 function getLabelFromKey(key) {
   const keyLabelMap = {
     description: translate("Description"), // key: cross-axis-mapping.description
-    groupDescription: translate("Group Description"), // key: cross-axis-mapping.groupDescription
+    groupDescription: translate("Group description"), // key: cross-axis-mapping.groupDescription
+    inputLocation: translate("Input Location"), // key: cross-axis-mapping.inputLocation
+    outputLocation: translate("Output Location"), // key: cross-axis-mapping.outputLocation
   };
   return keyLabelMap[key] || key;
 }
