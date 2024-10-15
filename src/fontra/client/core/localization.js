@@ -28,10 +28,22 @@ function languageChanged(locale) {
   // Do explicit .replace() because our cache busting mechanism is simplistic,
   // and backtick strings don't work.
   const translationsPath = "/lang/locale.js".replace("locale", locale);
-  import(translationsPath).then((mod) => {
-    localizationData = mod.strings;
-    resolveLanguageHasLoaded();
-  });
+
+  import(translationsPath)
+    .then((mod) => {
+      localizationData = mod.strings;
+      resolveLanguageHasLoaded();
+    })
+    .catch((e) => {
+      if (locale !== "en") {
+        console.log(`ERROR: could not load language strings for locale "${locale}"`);
+        // Fall back to english
+        languageChanged("en");
+      } else {
+        // Couldn't load English locale strings, fall back to keys
+        resolveLanguageHasLoaded();
+      }
+    });
 }
 
 languageController.addKeyListener("language", (event) => {
