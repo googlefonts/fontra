@@ -10,7 +10,7 @@ import {
   setupSortableList,
   textInput,
 } from "../core/ui-utils.js";
-import { range, round } from "../core/utils.js";
+import { enumerate, range, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
 import {
@@ -65,6 +65,16 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
 
     setupSortableList(container);
 
+    container.addEventListener("reordered", (event) => {
+      const reordered = [];
+      for (const [index, crossAxisMappingBox] of enumerate(container.children)) {
+        reordered.push(crossAxisMappingBox.mapping);
+        crossAxisMappingBox.mappingIndex = index;
+      }
+      const undoLabel = translate(`Reorder cross axis mapping`); // key: cross-axis-mapping.reorder;
+      this.replaceMappings(reordered, undoLabel);
+    });
+
     this.panelElement.innerHTML = "";
     this.panelElement.style = `
     gap: 1em;
@@ -100,6 +110,14 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
       this.setupUI();
     }
+  }
+
+  async replaceMappings(updatedMappings, undoLabel) {
+    const root = { axes: this.fontController.axes };
+    const changes = recordChanges(root, (root) => {
+      root.axes.mappings.splice(0, root.axes.mappings.length, ...updatedMappings);
+    });
+    await this.postChange(changes.change, changes.rollbackChange, undoLabel);
   }
 }
 
