@@ -82,6 +82,22 @@ export const strings = {
   "axes.range.values": "Valeurs",
   "axes.title": "Axes",
   "canvas.clean-view-and-hand-tool": "Prévisualisation et outil de déplacement",
+  "cross-axis-mapping.delete": "Delete cross-axis mapping",
+  "cross-axis-mapping.description": "Description",
+  "cross-axis-mapping.groupDescription": "Group description",
+  "cross-axis-mapping.header.checkboxes": "incl.",
+  "cross-axis-mapping.header.checkboxes.tooltip": "Axes participating in mapping",
+  "cross-axis-mapping.header.inputLocation": "Input Location",
+  "cross-axis-mapping.header.inputLocation.tooltip":
+    "Specify axes and its value for input",
+  "cross-axis-mapping.header.outputLocation": "Output Location",
+  "cross-axis-mapping.header.outputLocation.tooltip":
+    "Specifiy axes and its value for output",
+  "cross-axis-mapping.new": "New cross-axis mapping",
+  "cross-axis-mapping.title": "Cross-axis mapping",
+  "cross-axis-mapping.undo.add": "add cross-axis mapping",
+  "cross-axis-mapping.undo.delete": "delete cross-axis mapping %0",
+  "cross-axis-mapping.undo.reorder": "reorder cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Éditer toutes les sources compatibles",
   "development-status-definitions.title": "Définition des statuts",
