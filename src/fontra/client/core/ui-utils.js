@@ -94,9 +94,9 @@ function didReorder(a, b) {
   return false;
 }
 
-// export function checkboxWithoutLabel(controller, key, options) {
-//   return labeledCheckbox(false, controller, key, options);
-// }
+export function checkboxWithoutLabel(controller, key, options) {
+  return labeledCheckbox(false, controller, key, options);
+}
 
 export function labeledCheckbox(label, controller, key, options) {
   const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
@@ -104,10 +104,9 @@ export function labeledCheckbox(label, controller, key, options) {
   const inputElement = html.input({ type: "checkbox", id: checkboxID });
   inputElement.checked = controller.model[key];
   inputWrapper.appendChild(inputElement);
-  inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
-  // if (label) {
-  //   inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
-  // }
+  if (label) {
+    inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
+  }
 
   inputElement.onchange = () => {
     controller.model[key] = inputElement.checked;
