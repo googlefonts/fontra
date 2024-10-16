@@ -774,10 +774,14 @@ export class EditorController {
         enabled: () => true,
         getItems: () => {
           const menuItems = [
-            ["Font Info", "#font-info-panel", true],
-            ["Axes", "#axes-panel", true],
-            ["Sources", "#sources-panel", true],
-            ["Status definitions", "#development-status-definitions-panel", true],
+            [translate("font-info.title"), "#font-info-panel", true],
+            [translate("axes.title"), "#axes-panel", true],
+            [translate("sources.title"), "#sources-panel", true],
+            [
+              translate("development-status-definitions.title"),
+              "#development-status-definitions-panel",
+              true,
+            ],
           ];
           return menuItems.map(([title, panelID, enabled]) => ({
             title,

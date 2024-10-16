@@ -84,6 +84,7 @@ export const strings = {
   "cross-axis-mapping.new": "New cross-axis mapping",
   "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources": "Edit all compatible sources",
+  "development-status-definitions.title": "Status definitions",
   "dialog.add": "Add",
   "dialog.cancel": "Cancel",
   "dialog.create": "Create",

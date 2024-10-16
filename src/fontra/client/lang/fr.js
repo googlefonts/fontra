@@ -85,12 +85,13 @@ export const strings = {
   "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Éditer toutes les sources compatibles",
+  "development-status-definitions.title": "Status definitions",
   "dialog.add": "Ajouter",
   "dialog.cancel": "Annuler",
   "dialog.create": "Créer",
   "dialog.create-new-glyph.body":
     'Cliquez "Créer" si vous voulez créer un nouveau glyphe nommé  "%0"%1.',
-  "dialog.create-new-glyph.body.2": ' pour le caractère "%0" (%1)',
+  "dialog.create-new-glyph.body.2": 'Pour le caractère "%0" (%1)',
   "dialog.create-new-glyph.title": 'Créer un nouveau glyphe "%0"?',
   "dialog.glyphs.search": "Chercher des glyphes",
   "dialog.replace": "Remplacer",
