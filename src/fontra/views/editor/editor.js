@@ -776,6 +776,7 @@ export class EditorController {
           const menuItems = [
             [translate("font-info.title"), "#font-info-panel", true],
             [translate("axes.title"), "#axes-panel", true],
+            [translate("cross-axis-mapping.title"), "#cross-axis-mapping-panel", true],
             [translate("sources.title"), "#sources-panel", true],
             [
               translate("development-status-definitions.title"),
