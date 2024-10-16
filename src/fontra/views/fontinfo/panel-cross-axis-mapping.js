@@ -65,7 +65,7 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
         reordered.push(crossAxisMappingBox.mapping);
         crossAxisMappingBox.mappingIndex = index;
       }
-      const undoLabel = translate("cross-axis-mapping.reorder");
+      const undoLabel = translate("cross-axis-mapping.undo.reorder");
       this.replaceMappings(reordered, undoLabel);
     });
 
