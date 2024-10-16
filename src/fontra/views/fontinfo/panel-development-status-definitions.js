@@ -45,7 +45,7 @@ addStyleSheet(`
 `);
 
 export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
-  static title = "Status definitions";
+  static title = "development-status-definitions.title";
   static id = "development-status-definitions-panel";
   static fontAttributes = ["customData"];
 

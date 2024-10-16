@@ -84,6 +84,7 @@ export const strings = {
   "cross-axis-mapping.new": "New cross-axis mapping",
   "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources": "编辑所有匹配的图层",
+  "development-status-definitions.title": "Status definitions",
   "dialog.add": "添加",
   "dialog.cancel": "取消",
   "dialog.create": "创建",

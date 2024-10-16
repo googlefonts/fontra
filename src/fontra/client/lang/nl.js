@@ -45,7 +45,7 @@ export const strings = {
   "application-settings.plugins-manager.title": "Plugin Manager",
   "application-settings.server-info.title": "Server info",
   "application-settings.shortcuts.title": "Snelkoppelingen",
-  "application-settings.theme-settings.title": "Thema instellingen",
+  "application-settings.theme-settings.title": "Thema-instellingen",
   "axes.add": "Voeg nieuwe as toe",
   "axes.axis-values": "As waarden",
   "axes.create": "Nieuwe as",
@@ -85,6 +85,7 @@ export const strings = {
   "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Wijzig alle compatibele sources",
+  "development-status-definitions.title": "Status definitions",
   "dialog.add": "Voeg toe",
   "dialog.cancel": "Annuleren",
   "dialog.create": "Creëer",
