@@ -258,17 +258,27 @@ class CrossAxisMappingBox extends HTMLElement {
   }
 
   toggleShowHide(event) {
-    const elements = !event.altKey
+    const cardElements = !event.altKey
       ? [this]
       : document.querySelectorAll(
           ".fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box"
         );
 
-    for (const element of elements) {
-      const elementIcon = element.querySelector("#open-close-icon");
-      elementIcon.classList.toggle("item-closed");
-      for (const child of element.children) {
-        child.classList.toggle("min-height");
+    const thisIconElement = this.querySelector("#open-close-icon");
+    const isClosed = thisIconElement.classList.contains("item-closed");
+
+    for (const cardElement of cardElements) {
+      const elementIcon = cardElement.querySelector("#open-close-icon");
+      if (isClosed) {
+        elementIcon.classList.remove("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.remove("min-height");
+        }
+      } else {
+        elementIcon.classList.add("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.add("min-height");
+        }
       }
     }
   }
