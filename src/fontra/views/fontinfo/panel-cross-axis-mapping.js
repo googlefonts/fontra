@@ -65,7 +65,7 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
         reordered.push(crossAxisMappingBox.mapping);
         crossAxisMappingBox.mappingIndex = index;
       }
-      const undoLabel = translate(`Reorder cross axis mapping`); // key: cross-axis-mapping.reorder;
+      const undoLabel = translate("Reorder cross-axis mapping"); // key: cross-axis-mapping.reorder;
       this.replaceMappings(reordered, undoLabel);
     });
 
@@ -94,7 +94,7 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
       outputLocation: {},
     };
 
-    const undoLabel = translate(`add cross axis mapping`); // key: cross-axis-mapping.add;
+    const undoLabel = translate("add cross-axis mapping"); // key: cross-axis-mapping.undo.add;
 
     const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
@@ -244,9 +244,9 @@ class CrossAxisMappingBox extends HTMLElement {
 
   deleteCrossAxisMapping() {
     const undoLabel = translate(
-      "delete cross axis mapping %0",
+      "delete cross-axis mapping %0",
       this.mapping.description || this.mappingIndex
-    ); // key: cross-axis-mapping.delete;
+    ); // key: cross-axis-mapping.undo.delete;
     const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
       root.axes.mappings.splice(this.mappingIndex, 1);
@@ -348,7 +348,7 @@ class CrossAxisMappingBox extends HTMLElement {
       html.div(
         { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
         labeledTextInput(
-          getLabelFromKey("description"),
+          translate("Description"), // key: cross-axis-mapping.description
           this.controllers.description,
           "description",
           { continuous: false }
@@ -360,7 +360,7 @@ class CrossAxisMappingBox extends HTMLElement {
       html.div(
         { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
         labeledTextInput(
-          getLabelFromKey("groupDescription"),
+          translate("Group description"), // key: cross-axis-mapping.groupDescription
           this.controllers.groupDescription,
           "groupDescription",
           { continuous: false }
@@ -374,55 +374,49 @@ class CrossAxisMappingBox extends HTMLElement {
         "class": "fontra-ui-font-info-cross-axis-mapping-panel-icon",
         "src": "/tabler-icons/trash.svg",
         "onclick": (event) => this.deleteCrossAxisMapping(),
-        "data-tooltip": translate("Delete mapping"), // key: cross-axis-mapping.delete
+        "data-tooltip": translate("Delete cross-axis mapping"), // key: cross-axis-mapping.delete
         "data-tooltipposition": "left",
       })
     );
 
     const checkboxesHeaderElement = html.div(
       { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
-      [getLabelFromKey("headerJoin")]
+      [translate("incl.")] // key: cross-axis-mapping.header.checkboxes
     );
     checkboxesHeaderElement.setAttribute(
       "data-tooltip",
       translate("Axis participating in mapping")
-    ); // key: cross-axis-mapping.axis-participates
+    ); // key: cross-axis-mapping.header.checkboxes.tooltip
     checkboxesHeaderElement.setAttribute("data-tooltipposition", "top");
 
     const inputHeaderElement = html.div(
       { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
-      [getLabelFromKey("inputLocation")]
+      [translate("Input Location")] // key: cross-axis-mapping.header.inputLocation
     );
     inputHeaderElement.setAttribute(
       "data-tooltip",
-      getLabelFromKey("headerInputTooltip")
+      translate("Specifiy axes and its value for input") // key: cross-axis-mapping.header.inputLocation.tooltip
     );
     inputHeaderElement.setAttribute("data-tooltipposition", "left");
 
     const outputHeaderElement = html.div(
       { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
-      [getLabelFromKey("outputLocation")]
+      [translate("Output Location")] // key: cross-axis-mapping.header.outputLocation
     );
     outputHeaderElement.setAttribute(
       "data-tooltip",
-      getLabelFromKey("headerOutputTooltip")
+      translate("Specifiy axes and its value for output") // key: cross-axis-mapping.header.outputLocation.tooltip
     );
     outputHeaderElement.setAttribute("data-tooltipposition", "left");
 
     // Row 2 locations headlines
-    this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-header" }, [""])
-    ); // empty cell for grid
-    this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-header" }, [""])
-    ); // empty cell for grid
+    this.append(html.div()); // empty cell for grid
+    this.append(html.div()); // empty cell for grid
     this.append(inputHeaderElement);
     this.append(checkboxesHeaderElement);
     this.append(outputHeaderElement);
     this.append(checkboxesHeaderElement.cloneNode(true));
-    this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-header" }, [""])
-    ); // empty cell for grid
+    this.append(html.div()); // empty cell for grid
 
     // row 3 locations
     this.append(html.div()); // empty cell for grid
@@ -484,13 +478,13 @@ function buildElementLocationsLabel(fontAxes) {
 function buildElementLocationsCheckboxes(controller) {
   let items = [];
   for (const key in controller.model) {
-    items.push([getLabelFromKey(key), key, controller.model[key]]);
+    items.push([key]);
   }
 
   return html.div(
     { class: "fontra-ui-font-info-sources-panel-column-checkboxes" },
     items
-      .map(([labelName, keyName, value]) => {
+      .map(([keyName]) => {
         const element = checkboxWithoutLabel(controller, keyName);
         // element.setAttribute("data-tooltip", translate("this axis participates in the mapping")); // key: cross-axis-mapping.axis-participates
         // element.setAttribute("data-tooltip-position", "top");
@@ -498,17 +492,4 @@ function buildElementLocationsCheckboxes(controller) {
       })
       .flat()
   );
-}
-
-function getLabelFromKey(key) {
-  const keyLabelMap = {
-    description: translate("Description"), // key: cross-axis-mapping.description
-    groupDescription: translate("Group description"), // key: cross-axis-mapping.groupDescription
-    inputLocation: translate("Input Location"), // key: cross-axis-mapping.inputLocation
-    outputLocation: translate("Output Location"), // key: cross-axis-mapping.outputLocation
-    headerJoin: translate("Join"), // key: cross-axis-mapping.header.join
-    headerInputTooltip: translate("Specifiy axes and its value for input"), // key: cross-axis-mapping.header.input.tooltip
-    headerOutputTooltip: translate("Specifiy axes and its value for input"), // key: cross-axis-mapping.header.input.tooltip
-  };
-  return keyLabelMap[key] || key;
 }
