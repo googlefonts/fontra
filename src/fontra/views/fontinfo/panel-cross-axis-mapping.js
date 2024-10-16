@@ -19,7 +19,7 @@ import { dialogSetup, message } from "/web-components/modal-dialog.js";
 export class CrossAxisMappingPanel extends BaseInfoPanel {
   static title = "cross-axis-mapping.title";
   static id = "cross-axis-mapping-panel";
-  static fontAttributes = ["axes", "sources"];
+  static fontAttributes = ["axes"];
 
   initializePanel() {
     super.initializePanel();
@@ -144,7 +144,7 @@ addStyleSheet(`
   gap: 0.5em;
 }
 
-.fontra-ui-font-info-sources-panel-column-checkboxes {
+.fontra-ui-font-info-cross-axis-panel-column-checkboxes {
   display: grid;
   grid-template-columns: auto;
   gap: 0.5em;
@@ -152,7 +152,7 @@ addStyleSheet(`
 
 .fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
 .fontra-ui-font-info-cross-axis-mapping-panel-column-location.min-height,
-.fontra-ui-font-info-sources-panel-column-checkboxes.min-height,
+.fontra-ui-font-info-cross-axis-panel-column-checkboxes.min-height,
 .fontra-ui-font-info-cross-axis-mapping-panel-header.min-height {
   overflow: hidden;
   height: 0px;
@@ -492,7 +492,7 @@ function buildElementLocationsCheckboxes(controller) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-sources-panel-column-checkboxes" },
+    { class: "fontra-ui-font-info-cross-axis-panel-column-checkboxes" },
     items
       .map(([keyName]) => {
         const element = checkboxWithoutLabel(controller, keyName);
