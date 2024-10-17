@@ -207,8 +207,16 @@ class CrossAxisMappingBox extends HTMLElement {
     const inputLocationCheckboxes = {};
     const outputLocationCheckboxes = {};
     for (const axis of this.fontAxesSourceSpace) {
-      inputLocationCheckboxes[axis.name] = mapping.inputLocation[axis.name] || false;
-      outputLocationCheckboxes[axis.name] = mapping.outputLocation[axis.name] || false;
+      inputLocationCheckboxes[axis.name] = mapping.inputLocation.hasOwnProperty(
+        axis.name
+      )
+        ? true
+        : false;
+      outputLocationCheckboxes[axis.name] = mapping.outputLocation.hasOwnProperty(
+        axis.name
+      )
+        ? true
+        : false;
     }
 
     const model = {
@@ -224,10 +232,6 @@ class CrossAxisMappingBox extends HTMLElement {
   }
 
   editCrossAxisMapping(editFunc, undoLabel) {
-    console.log(
-      "editCrossAxisMapping works, but after a change the cards get folded – which is not nice."
-    );
-
     const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
       editFunc(root.axes.mappings[this.mappingIndex]);
@@ -311,6 +315,7 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.inputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.inputLocation[event.key] = event.newValue;
+        this.controllers.inputLocationCheckboxes.setItem(event.key, true);
       }, `edit input location ${event.key}`);
     });
 
@@ -319,8 +324,12 @@ class CrossAxisMappingBox extends HTMLElement {
         if (!event.newValue) {
           delete mapping.inputLocation[event.key];
         } else {
-          // Do nothing, because the value must be different from default. Otherwise it will not be used.
-          // It will be checked anyway, if the user changes the slider.
+          const defaultValue = this.fontAxesSourceSpace.find(
+            (axis) => axis.name === event.key
+          ).defaultValue;
+          mapping.inputLocation[event.key] = defaultValue;
+          // TODO: I would expect, that the following would set the slider back to the default value. But it does not.
+          this.controllers.inputLocation.setItem(event.key, defaultValue);
         }
       }, `edit input location ${event.key}`);
     });
@@ -328,17 +337,22 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.outputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.outputLocation[event.key] = event.newValue;
+        this.controllers.outputLocationCheckboxes.setItem(event.key, true);
       }, `edit output location ${event.key}`);
     });
 
     this.controllers.outputLocationCheckboxes.addListener((event) => {
+      const defaultValue = this.fontAxesSourceSpace.find(
+        (axis) => axis.name === event.key
+      ).defaultValue;
       this.editCrossAxisMapping((mapping) => {
         if (!event.newValue) {
           delete mapping.outputLocation[event.key];
+          this.controllers.outputLocation.setItem(event.key, defaultValue);
         } else {
-          // Do nothing, because the value must be different from default. Otherwise it will not be used.
-          // It will be checked anyway, if the user changes the slider.
-          return;
+          mapping.outputLocation[event.key] = defaultValue;
+          // TODO: I would expect, that the following would set the slider back to the default value. But it does not.
+          this.controllers.outputLocation.setItem(event.key, defaultValue);
         }
       }, `edit output location ${event.key}`);
     });
@@ -459,7 +473,7 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
     value: modelValue !== undefined ? modelValue : axis.defaultValue,
     onChangeCallback: (event) => {
       if (continuous || !event.isDragging) {
-        controller.setItem(axis.name, event.value, this);
+        controller.setItem(axis.name, event.value);
       }
     },
   };
