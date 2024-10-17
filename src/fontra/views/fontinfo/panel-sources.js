@@ -291,9 +291,11 @@ addStyleSheet(`
   overflow: scroll;
 }
 
-fontra-ui-font-info-sources-panel-source-box.min-height,
+.fontra-ui-font-info-sources-panel-header.min-height,
+.fontra-ui-font-info-sources-panel-source-box.min-height,
 .fontra-ui-font-info-sources-panel-column.min-height {
-  height: 45px;
+  height: 0px;
+  display: none;
 }
 
 .fontra-ui-font-info-sources-panel-line-metrics-hor {
@@ -317,6 +319,14 @@ fontra-ui-font-info-sources-panel-source-box.min-height,
 
 .fontra-ui-font-info-sources-panel-icon.open-close-icon.item-closed {
   transform: rotate(180deg);
+}
+
+.temporary-source-info {
+  font-weight: bold;
+}
+
+.fontra-ui-font-info-sources-panel-temp {
+  // maybe useful later
 }
 
 `);
@@ -436,21 +446,65 @@ class SourceBox extends HTMLElement {
     const thisIconElement = this.querySelector("#open-close-icon");
     const isClosed = thisIconElement.classList.contains("item-closed");
 
-    const parentElement = thisIconElement.parentElement;
     if (isClosed) {
-      parentElement.classList.remove("item-closed");
+      this.classList.remove("item-closed");
     } else {
-      parentElement.classList.add("item-closed");
+      this.classList.add("item-closed");
     }
 
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
+        cardElement.removeChild(
+          document.getElementById(`${cardElement.sourceIdentifier}-temporary-1`)
+        );
+        cardElement.removeChild(
+          document.getElementById(`${cardElement.sourceIdentifier}-temporary-2`)
+        );
+        cardElement.removeChild(
+          document.getElementById(`${cardElement.sourceIdentifier}-temporary-3`)
+        );
+
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
           child.classList.remove("min-height");
         }
       } else {
+        const locationString = locationToString(
+          makeSparseLocation(
+            cardElement.source.location,
+            cardElement.fontAxesSourceSpace
+          )
+        );
+        const temporaryElement1 = html.div(
+          {
+            class: "fontra-ui-font-info-sources-panel-temp temporary-source-info",
+            id: `${cardElement.sourceIdentifier}-temporary-1`,
+          },
+          [`Name: ${cardElement.source.name}`]
+        );
+        const temporaryElement2 = html.div(
+          {
+            class: "fontra-ui-font-info-sources-panel-temp",
+            id: `${cardElement.sourceIdentifier}-temporary-2`,
+          },
+          [`Location: ${locationString}`]
+        );
+        const temporaryElement3 = html.div(
+          {
+            class: "fontra-ui-font-info-sources-panel-temp",
+            id: `${cardElement.sourceIdentifier}-temporary-3`,
+          },
+          [
+            `Italic Angle: ${
+              cardElement.source.italicAngle ? cardElement.source.italicAngle : 0
+            }`,
+          ]
+        );
+        cardElement.insertBefore(temporaryElement3, cardElement.childNodes[1]);
+        cardElement.insertBefore(temporaryElement2, cardElement.childNodes[1]);
+        cardElement.insertBefore(temporaryElement1, cardElement.childNodes[1]);
+
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
           child.classList.add("min-height");
