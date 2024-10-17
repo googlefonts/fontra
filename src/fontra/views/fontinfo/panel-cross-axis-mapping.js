@@ -180,6 +180,9 @@ addStyleSheet(`
   transform: rotate(180deg);
 }
 
+.cross-axis-papping-slider-group {
+}
+
 `);
 
 class CrossAxisMappingBox extends HTMLElement {
@@ -442,15 +445,40 @@ class CrossAxisMappingBox extends HTMLElement {
 
 customElements.define("cross-axis-mapping-box", CrossAxisMappingBox);
 
+function _createSlider(controller, axis, modelValue, continuous = false) {
+  const parms = {
+    defaultValue: axis.defaultValue,
+    value: modelValue !== undefined ? modelValue : axis.defaultValue,
+    onChangeCallback: (event) => {
+      if (continuous || !event.isDragging) {
+        controller.setItem(axis.name, event.value, this);
+      }
+    },
+  };
+  if (axis.values) {
+    // Discrete axis
+    parms.values = axis.values;
+  } else {
+    // Continuous axis
+    parms.minValue = axis.minValue;
+    parms.maxValue = axis.maxValue;
+  }
+  return html.createDomElement("range-slider", parms);
+}
+
 function buildElementLocations(controller, fontAxes) {
-  const locationElement = html.createDomElement("designspace-location", {
-    continuous: false,
-    labels: false,
-    class: `fontra-ui-font-info-cross-axis-mapping-panel-column-location`,
-  });
-  locationElement.axes = fontAxes;
-  locationElement.controller = controller;
-  return locationElement;
+  const elements = [];
+  for (const axis of fontAxes) {
+    const modelValue = controller.model[axis.name];
+    const slider = _createSlider(controller, axis, modelValue);
+    elements.push(html.div({ class: "cross-axis-papping-slider-group" }, [slider]));
+  }
+  return html.div(
+    {
+      class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location",
+    },
+    elements
+  );
 }
 
 function buildElementLocationsLabel(fontAxes) {
