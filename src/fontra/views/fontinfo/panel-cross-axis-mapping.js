@@ -138,26 +138,18 @@ addStyleSheet(`
   margin-bottom: 0.5em;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column-location {
-  display: grid;
-  grid-template-columns: auto;
-  gap: 0.5em;
-}
-
-.fontra-ui-font-info-cross-axis-panel-column-checkboxes {
-  display: grid;
-  grid-template-columns: auto;
-  gap: 0.5em;
-  margin-left: -10px;
-}
-
-.fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-column-empty.min-height,
 .fontra-ui-font-info-cross-axis-mapping-panel-column-location.min-height,
-.fontra-ui-font-info-cross-axis-panel-column-checkboxes.min-height,
-.fontra-ui-font-info-cross-axis-mapping-panel-header.min-height {
+.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-header.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-column-location-label.min-height {
   overflow: hidden;
   height: 0px;
   padding-bottom: 0px;
+}
+
+.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes {
+  margin-left: -10px;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
@@ -415,31 +407,43 @@ class CrossAxisMappingBox extends HTMLElement {
     );
     outputHeaderElement.setAttribute("data-tooltipposition", "left");
 
-    // Row 2 locations headlines
-    this.append(html.div()); // empty cell for grid
-    this.append(html.div()); // empty cell for grid
+    // Row 2 Locations headlines
+    this.append(
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+    );
+    this.append(
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+    );
     this.append(inputHeaderElement);
-    this.append(html.div()); // empty cell for grid
+    this.append(
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+    );
     this.append(outputHeaderElement);
-    this.append(html.div()); // empty cell for grid
-    this.append(html.div()); // empty cell for grid
+    this.append(
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+    );
+    this.append(
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+    );
 
-    // row 3 locations
-    this.append(html.div()); // empty cell for grid
-    this.append(buildElementLocationsLabel(this.fontAxesSourceSpace));
-    this.append(
-      buildElementLocations(this.controllers.inputLocation, this.fontAxesSourceSpace)
-    );
-    this.append(
-      buildElementLocationsCheckboxes(this.controllers.inputLocationCheckboxes)
-    );
-    this.append(
-      buildElementLocations(this.controllers.outputLocation, this.fontAxesSourceSpace)
-    );
-    this.append(
-      buildElementLocationsCheckboxes(this.controllers.outputLocationCheckboxes)
-    );
-    this.append(html.div()); // empty cell for grid
+    // Axis for input and output
+    for (const axis of this.fontAxesSourceSpace) {
+      this.append(
+        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      );
+      this.append(buildElementLocationsLabel(axis));
+      this.append(buildElementLocations(axis, this.controllers.inputLocation));
+      this.append(
+        buildElementLocationsCheckboxes(axis, this.controllers.inputLocationCheckboxes)
+      );
+      this.append(buildElementLocations(axis, this.controllers.outputLocation));
+      this.append(
+        buildElementLocationsCheckboxes(axis, this.controllers.outputLocationCheckboxes)
+      );
+      this.append(
+        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      );
+    }
   }
 }
 
@@ -466,62 +470,32 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
   return html.createDomElement("range-slider", parms);
 }
 
-function buildElementLocations(controller, fontAxes) {
-  const elements = [];
-  for (const axis of fontAxes) {
-    const modelValue = controller.model[axis.name];
-    const slider = _createSlider(controller, axis, modelValue);
-    elements.push(html.div({ class: "cross-axis-papping-slider-group" }, [slider]));
-  }
+function buildElementLocations(axis, controller) {
+  const modelValue = controller.model[axis.name];
+  const slider = _createSlider(controller, axis, modelValue);
   return html.div(
-    {
-      class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location",
-    },
-    elements
+    { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location" },
+    [slider]
   );
 }
 
-function buildElementLocationsLabel(fontAxes) {
-  let items = [];
-  for (const axis of fontAxes) {
-    items.push([axis.name]);
-  }
-
-  return html.div(
-    {
-      class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location",
-    },
-    items
-      .map(([labelName]) => {
-        return html.label(
-          {
-            style: "text-align: right;",
-          },
-          [labelName]
-        );
-      })
-      .flat()
+function buildElementLocationsLabel(axis) {
+  return html.label(
+    { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location-label" },
+    [axis.name]
   );
 }
 
-function buildElementLocationsCheckboxes(controller) {
-  let items = [];
-  for (const key in controller.model) {
-    items.push([key]);
-  }
-
-  return html.div(
-    { class: "fontra-ui-font-info-cross-axis-panel-column-checkboxes" },
-    items
-      .map(([keyName]) => {
-        const element = checkboxWithoutLabel(controller, keyName);
-        element.setAttribute(
-          "data-tooltip",
-          translate("cross-axis-mapping.axis-participates")
-        );
-        element.setAttribute("data-tooltip-position", "right");
-        return element;
-      })
-      .flat()
+function buildElementLocationsCheckboxes(axis, controller) {
+  const element = checkboxWithoutLabel(controller, axis.name);
+  element.setAttribute(
+    "class",
+    "fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes"
   );
+  element.setAttribute(
+    "data-tooltip",
+    translate("cross-axis-mapping.axis-participates")
+  );
+  element.setAttribute("data-tooltip-position", "right");
+  return element;
 }
