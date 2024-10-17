@@ -82,11 +82,10 @@ export const strings = {
   "axes.range.values": "Werte",
   "axes.title": "Achsen",
   "canvas.clean-view-and-hand-tool": "Ungehinderte Sicht und Hand Werkzeug",
+  "cross-axis-mapping.axis-participates": "Diese Achse beteiligt sich am Mapping",
   "cross-axis-mapping.delete": "Achsübergreifendes Mapping entfernen",
   "cross-axis-mapping.description": "Bezeichnung",
   "cross-axis-mapping.groupDescription": "Gruppen Bezeichnung",
-  "cross-axis-mapping.header.checkboxes": "inkl.",
-  "cross-axis-mapping.header.checkboxes.tooltip": "beteiligte Achsen im Mapping",
   "cross-axis-mapping.header.inputLocation": "Input Location",
   "cross-axis-mapping.header.inputLocation.tooltip":
     "Achsen und ihren Wert für 'Input' definieren",

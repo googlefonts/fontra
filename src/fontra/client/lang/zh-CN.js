@@ -82,11 +82,10 @@ export const strings = {
   "axes.range.values": "可选值",
   "axes.title": "参数轴",
   "canvas.clean-view-and-hand-tool": "Clean View and Hand Tool",
+  "cross-axis-mapping.axis-participates": "This axis participates in the mapping",
   "cross-axis-mapping.delete": "Delete cross-axis mapping",
   "cross-axis-mapping.description": "Description",
   "cross-axis-mapping.groupDescription": "Group description",
-  "cross-axis-mapping.header.checkboxes": "incl.",
-  "cross-axis-mapping.header.checkboxes.tooltip": "Axes participating in mapping",
   "cross-axis-mapping.header.inputLocation": "Input Location",
   "cross-axis-mapping.header.inputLocation.tooltip":
     "Specify axes and its value for input",
