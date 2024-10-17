@@ -128,6 +128,11 @@ addStyleSheet(`
   grid-column-gap: 1em;
 }
 
+.fontra-ui-font-info-cross-axis-mapping-panel-column {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5em;
+}
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
   font-weight: bold;
