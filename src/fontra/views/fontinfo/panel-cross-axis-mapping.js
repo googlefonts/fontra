@@ -454,7 +454,7 @@ function buildElementLocations(controller, fontAxes) {
 function buildElementLocationsLabel(fontAxes) {
   let items = [];
   for (const axis of fontAxes) {
-    items.push([axis.tag, axis.name]);
+    items.push([axis.name]);
   }
 
   return html.div(
@@ -462,12 +462,10 @@ function buildElementLocationsLabel(fontAxes) {
       class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location",
     },
     items
-      .map(([labelName, dataTooltip]) => {
+      .map(([labelName]) => {
         return html.label(
           {
-            "style": "text-align: right;",
-            "data-tooltip": dataTooltip,
-            "data-tooltipposition": "left",
+            style: "text-align: right;",
           },
           [labelName]
         );
