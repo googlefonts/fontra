@@ -322,14 +322,15 @@ class CrossAxisMappingBox extends HTMLElement {
 
     this.controllers.inputLocationCheckboxes.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
+        const defaultValue = this.fontAxesSourceSpace.find(
+          (axis) => axis.name === event.key
+        ).defaultValue;
         if (!event.newValue) {
           delete mapping.inputLocation[event.key];
-          // TODO: The following line prevents the checkbox to be unchecked and I don't know why.
-          document.getElementById(`${this.mappingIndex}-${event.key}-input`).reset();
+          document.getElementById(`${this.mappingIndex}-${event.key}-input`).value =
+            defaultValue;
+          input;
         } else {
-          const defaultValue = this.fontAxesSourceSpace.find(
-            (axis) => axis.name === event.key
-          ).defaultValue;
           mapping.inputLocation[event.key] = defaultValue;
         }
       }, `edit input location ${event.key}`);
@@ -344,14 +345,14 @@ class CrossAxisMappingBox extends HTMLElement {
 
     this.controllers.outputLocationCheckboxes.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
+        const defaultValue = this.fontAxesSourceSpace.find(
+          (axis) => axis.name === event.key
+        ).defaultValue;
         if (!event.newValue) {
           delete mapping.outputLocation[event.key];
-          // TODO: The following line prevents the checkbox to be unchecked and I don't know why.
-          document.getElementById(`${this.mappingIndex}-${event.key}-output`).reset();
+          document.getElementById(`${this.mappingIndex}-${event.key}-output`).value =
+            defaultValue;
         } else {
-          const defaultValue = this.fontAxesSourceSpace.find(
-            (axis) => axis.name === event.key
-          ).defaultValue;
           mapping.outputLocation[event.key] = defaultValue;
         }
       }, `edit output location ${event.key}`);
