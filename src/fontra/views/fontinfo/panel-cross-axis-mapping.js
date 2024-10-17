@@ -329,7 +329,6 @@ class CrossAxisMappingBox extends HTMLElement {
           delete mapping.inputLocation[event.key];
           document.getElementById(`${this.mappingIndex}-${event.key}-input`).value =
             defaultValue;
-          input;
         } else {
           mapping.inputLocation[event.key] = defaultValue;
         }
