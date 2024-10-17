@@ -88,8 +88,6 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
   async newCrossAxisMapping() {
     //new empty mapping
     const newMapping = {
-      description: "Unnamed",
-      groupDescription: null,
       inputLocation: {},
       outputLocation: {},
     };
