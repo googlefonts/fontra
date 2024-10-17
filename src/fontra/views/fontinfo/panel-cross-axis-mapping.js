@@ -211,6 +211,7 @@ class CrossAxisMappingBox extends HTMLElement {
     //add checkboxes for each axis
     const inputLocationCheckboxes = {};
     const outputLocationCheckboxes = {};
+
     for (const axis of this.fontAxesSourceSpace) {
       inputLocationCheckboxes[axis.name] = mapping.inputLocation.hasOwnProperty(
         axis.name
@@ -403,24 +404,22 @@ class CrossAxisMappingBox extends HTMLElement {
     );
 
     const inputHeaderElement = html.div(
-      { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
+      {
+        "class": "fontra-ui-font-info-cross-axis-mapping-panel-header",
+        "data-tooltip": translate("cross-axis-mapping.header.inputLocation.tooltip"),
+        "data-tooltipposition": "left",
+      },
       [translate("cross-axis-mapping.header.inputLocation")]
     );
-    inputHeaderElement.setAttribute(
-      "data-tooltip",
-      translate("cross-axis-mapping.header.inputLocation.tooltip")
-    );
-    inputHeaderElement.setAttribute("data-tooltipposition", "left");
 
     const outputHeaderElement = html.div(
-      { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
+      {
+        "class": "fontra-ui-font-info-cross-axis-mapping-panel-header",
+        "data-tooltip": translate("cross-axis-mapping.header.outputLocation.tooltip"),
+        "data-tooltipposition": "left",
+      },
       [translate("cross-axis-mapping.header.outputLocation")]
     );
-    outputHeaderElement.setAttribute(
-      "data-tooltip",
-      translate("cross-axis-mapping.header.outputLocation.tooltip")
-    );
-    outputHeaderElement.setAttribute("data-tooltipposition", "left");
 
     // Row 2 Locations headlines
     this.append(
@@ -490,12 +489,8 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
 }
 
 function buildElementLocations(axis, controller) {
-  const modelValue = controller.model[axis.name];
-  const slider = _createSlider(controller, axis, modelValue);
-  slider.setAttribute(
-    "class",
-    "fontra-ui-font-info-cross-axis-mapping-panel-column-location"
-  );
+  const slider = _createSlider(controller, axis, controller.model[axis.name]);
+  slider.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-location";
   return slider;
 }
 
@@ -508,10 +503,7 @@ function buildElementLocationsLabel(axis) {
 
 function buildElementLocationsCheckboxes(axis, controller) {
   const element = checkboxWithoutLabel(controller, axis.name);
-  element.setAttribute(
-    "class",
-    "fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes"
-  );
+  element.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes";
   element.setAttribute(
     "data-tooltip",
     translate("cross-axis-mapping.axis-participates")
