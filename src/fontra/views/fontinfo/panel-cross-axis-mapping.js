@@ -519,6 +519,6 @@ function buildElementLocationsCheckboxes(axis, controller) {
     "data-tooltip",
     translate("cross-axis-mapping.axis-participates")
   );
-  element.setAttribute("data-tooltip-position", "right");
+  element.setAttribute("data-tooltipposition", "right");
   return element;
 }
