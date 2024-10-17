@@ -148,6 +148,7 @@ addStyleSheet(`
   display: grid;
   grid-template-columns: auto;
   gap: 0.5em;
+  margin-left: -10px;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.min-height,
