@@ -63,7 +63,6 @@ export class DesignspaceLocation extends UnlitElement {
   constructor() {
     super();
     this.continuous = true;
-    this.labels = true;
   }
 
   static properties = {
@@ -166,37 +165,33 @@ export class DesignspaceLocation extends UnlitElement {
     const modelValue = this.values[axis.name];
     const phantomModelValue = phantomAxis ? this.phantomValues[axis.name] : undefined;
 
-    let infoBox;
-    if (this.labels) {
-      infoBox = htmlToElement(
-        `<div class="info-box">
-          ${
-            axis.values && axis.values.length > 0
-              ? `
-          <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
-          <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
-            ", "
-          )}</strong></span>
-          `
-              : `
-          <span>Min: <strong>${axis.minValue}</strong></span>&nbsp; |
-          <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
-          <span>Max: <strong>${axis.maxValue}</strong></span>
-          `
-          }
-        </div>`
-      );
-      elements.push(
-        html.div(
-          {
-            class: "slider-label",
-            onclick: (event) => this._toggleInfoBox(infoBox, event),
-          },
-          [axis.name]
-        )
-      );
-    }
-
+    const infoBox = htmlToElement(
+      `<div class="info-box">
+        ${
+          axis.values && axis.values.length > 0
+            ? `
+        <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
+        <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
+          ", "
+        )}</strong></span>
+        `
+            : `
+        <span>Min: <strong>${axis.minValue}</strong></span>&nbsp; |
+        <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
+        <span>Max: <strong>${axis.maxValue}</strong></span>
+        `
+        }
+      </div>`
+    );
+    elements.push(
+      html.div(
+        {
+          class: "slider-label",
+          onclick: (event) => this._toggleInfoBox(infoBox, event),
+        },
+        [axis.name]
+      )
+    );
     const slider = this._createSlider(axis, modelValue);
     this._sliders[axis.name] = slider;
     const sliderGroupContents = [slider];
@@ -206,9 +201,7 @@ export class DesignspaceLocation extends UnlitElement {
       sliderGroupContents.push(phantomSlider);
     }
     elements.push(html.div({ class: "slider-group" }, sliderGroupContents));
-    if (this.labels) {
-      elements.push(infoBox);
-    }
+    elements.push(infoBox);
   }
 
   _createSlider(axis, modelValue, sliderDisabled = false) {
