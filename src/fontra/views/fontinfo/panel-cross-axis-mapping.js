@@ -389,16 +389,6 @@ class CrossAxisMappingBox extends HTMLElement {
       })
     );
 
-    const checkboxesHeaderElement = html.div(
-      { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
-      [translate("cross-axis-mapping.header.checkboxes")]
-    );
-    checkboxesHeaderElement.setAttribute(
-      "data-tooltip",
-      translate("cross-axis-mapping.header.checkboxes.tooltip")
-    );
-    checkboxesHeaderElement.setAttribute("data-tooltipposition", "top");
-
     const inputHeaderElement = html.div(
       { class: "fontra-ui-font-info-cross-axis-mapping-panel-header" },
       [translate("cross-axis-mapping.header.inputLocation")]
@@ -423,9 +413,9 @@ class CrossAxisMappingBox extends HTMLElement {
     this.append(html.div()); // empty cell for grid
     this.append(html.div()); // empty cell for grid
     this.append(inputHeaderElement);
-    this.append(checkboxesHeaderElement);
+    this.append(html.div()); // empty cell for grid
     this.append(outputHeaderElement);
-    this.append(checkboxesHeaderElement.cloneNode(true));
+    this.append(html.div()); // empty cell for grid
     this.append(html.div()); // empty cell for grid
 
     // row 3 locations
@@ -496,8 +486,11 @@ function buildElementLocationsCheckboxes(controller) {
     items
       .map(([keyName]) => {
         const element = checkboxWithoutLabel(controller, keyName);
-        // element.setAttribute("data-tooltip", translate("this axis participates in the mapping")); // key: cross-axis-mapping.axis-participates
-        // element.setAttribute("data-tooltip-position", "top");
+        element.setAttribute(
+          "data-tooltip",
+          translate("cross-axis-mapping.axis-participates")
+        );
+        element.setAttribute("data-tooltip-position", "right");
         return element;
       })
       .flat()
