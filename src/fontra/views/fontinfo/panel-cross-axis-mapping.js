@@ -128,14 +128,18 @@ addStyleSheet(`
   grid-column-gap: 1em;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column {
-  display: grid;
-  grid-template-columns: minmax(4.5em, max-content) max-content;
-  gap: 0.5em;
-  align-items: start;
-  align-content: start;
-  overflow: scroll;
-  margin-bottom: 0.5em;
+
+.fontra-ui-font-info-cross-axis-mapping-panel-header {
+  font-weight: bold;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+.fontra-ui-font-info-cross-axis-mapping-panel-column-location-label {
+  text-align: right;
+}
+
+.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes {
+  margin-left: -10px;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-column-empty.min-height,
@@ -145,16 +149,8 @@ addStyleSheet(`
 .fontra-ui-font-info-cross-axis-mapping-panel-column-location-label.min-height {
   overflow: hidden;
   height: 0px;
+  padding-top: 0px;
   padding-bottom: 0px;
-}
-
-.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes {
-  margin-left: -10px;
-}
-
-.fontra-ui-font-info-cross-axis-mapping-panel-header {
-  font-weight: bold;
-  padding-bottom: 0.5em;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-icon {
@@ -172,7 +168,8 @@ addStyleSheet(`
   transform: rotate(180deg);
 }
 
-.cross-axis-papping-slider-group {
+.fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box.item-closed {
+  grid-row-gap: 0em;
 }
 
 `);
@@ -264,6 +261,13 @@ class CrossAxisMappingBox extends HTMLElement {
 
     const thisIconElement = this.querySelector("#open-close-icon");
     const isClosed = thisIconElement.classList.contains("item-closed");
+
+    const parentElement = thisIconElement.parentElement;
+    if (isClosed) {
+      parentElement.classList.remove("item-closed");
+    } else {
+      parentElement.classList.add("item-closed");
+    }
 
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
