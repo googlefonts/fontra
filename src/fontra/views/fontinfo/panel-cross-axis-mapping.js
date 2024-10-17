@@ -160,6 +160,7 @@ addStyleSheet(`
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
   font-weight: bold;
+  padding-bottom: 0.5em;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-icon {
