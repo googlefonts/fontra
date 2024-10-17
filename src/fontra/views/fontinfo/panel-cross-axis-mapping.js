@@ -157,6 +157,7 @@ addStyleSheet(`
 .fontra-ui-font-info-cross-axis-mapping-panel-header.min-height {
   overflow: hidden;
   height: 0px;
+  padding-bottom: 0px;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
