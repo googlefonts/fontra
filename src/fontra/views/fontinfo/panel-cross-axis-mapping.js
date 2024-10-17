@@ -21,17 +21,19 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
   static id = "cross-axis-mapping-panel";
   static fontAttributes = ["axes"];
 
-  // initializePanel() {
-  //   super.initializePanel();
-  //   this.fontController.addChangeListener(
-  //     { axes: null },
-  //     (change, isExternalChange) => {
-  //       this.setupUI();
-  //       this.undoStack.clear();
-  //     },
-  //     false
-  //   );
-  // }
+  initializePanel() {
+    super.initializePanel();
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        if (isExternalChange) {
+          this.setupUI();
+          this.undoStack.clear();
+        }
+      },
+      false
+    );
+  }
 
   async setupUI() {
     const mappings = this.fontController.axes.mappings;
