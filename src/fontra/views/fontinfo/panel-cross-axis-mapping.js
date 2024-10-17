@@ -209,14 +209,10 @@ class CrossAxisMappingBox extends HTMLElement {
     for (const axis of this.fontAxesSourceSpace) {
       inputLocationCheckboxes[axis.name] = mapping.inputLocation.hasOwnProperty(
         axis.name
-      )
-        ? true
-        : false;
+      );
       outputLocationCheckboxes[axis.name] = mapping.outputLocation.hasOwnProperty(
         axis.name
-      )
-        ? true
-        : false;
+      );
     }
 
     const model = {
@@ -323,13 +319,13 @@ class CrossAxisMappingBox extends HTMLElement {
       this.editCrossAxisMapping((mapping) => {
         if (!event.newValue) {
           delete mapping.inputLocation[event.key];
+          // TODO: The following line prevents the checkbox to be unchecked and I don't know why.
+          document.getElementById(`${this.mappingIndex}-${event.key}-input`).reset();
         } else {
           const defaultValue = this.fontAxesSourceSpace.find(
             (axis) => axis.name === event.key
           ).defaultValue;
           mapping.inputLocation[event.key] = defaultValue;
-          // TODO: I would expect, that the following would set the slider back to the default value. But it does not.
-          this.controllers.inputLocation.setItem(event.key, defaultValue);
         }
       }, `edit input location ${event.key}`);
     });
@@ -342,17 +338,16 @@ class CrossAxisMappingBox extends HTMLElement {
     });
 
     this.controllers.outputLocationCheckboxes.addListener((event) => {
-      const defaultValue = this.fontAxesSourceSpace.find(
-        (axis) => axis.name === event.key
-      ).defaultValue;
       this.editCrossAxisMapping((mapping) => {
         if (!event.newValue) {
           delete mapping.outputLocation[event.key];
-          this.controllers.outputLocation.setItem(event.key, defaultValue);
+          // TODO: The following line prevents the checkbox to be unchecked and I don't know why.
+          document.getElementById(`${this.mappingIndex}-${event.key}-output`).reset();
         } else {
+          const defaultValue = this.fontAxesSourceSpace.find(
+            (axis) => axis.name === event.key
+          ).defaultValue;
           mapping.outputLocation[event.key] = defaultValue;
-          // TODO: I would expect, that the following would set the slider back to the default value. But it does not.
-          this.controllers.outputLocation.setItem(event.key, defaultValue);
         }
       }, `edit output location ${event.key}`);
     });
@@ -450,11 +445,15 @@ class CrossAxisMappingBox extends HTMLElement {
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
       );
       this.append(buildElementLocationsLabel(axis));
-      this.append(buildElementLocations(axis, this.controllers.inputLocation));
+      const input = buildElementLocations(axis, this.controllers.inputLocation);
+      input.id = `${this.mappingIndex}-${axis.name}-input`;
+      this.append(input);
       this.append(
         buildElementLocationsCheckboxes(axis, this.controllers.inputLocationCheckboxes)
       );
-      this.append(buildElementLocations(axis, this.controllers.outputLocation));
+      const output = buildElementLocations(axis, this.controllers.outputLocation);
+      output.id = `${this.mappingIndex}-${axis.name}-output`;
+      this.append(output);
       this.append(
         buildElementLocationsCheckboxes(axis, this.controllers.outputLocationCheckboxes)
       );
@@ -491,10 +490,11 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
 function buildElementLocations(axis, controller) {
   const modelValue = controller.model[axis.name];
   const slider = _createSlider(controller, axis, modelValue);
-  return html.div(
-    { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location" },
-    [slider]
+  slider.setAttribute(
+    "class",
+    "fontra-ui-font-info-cross-axis-mapping-panel-column-location"
   );
+  return slider;
 }
 
 function buildElementLocationsLabel(axis) {
