@@ -428,12 +428,34 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  toggleShowHide() {
-    const element = this.querySelector("#open-close-icon");
-    element.classList.toggle("item-closed");
+  toggleShowHide(event) {
+    const cardElements = !event.altKey
+      ? [this]
+      : document.querySelectorAll(".fontra-ui-font-info-sources-panel-source-box");
 
-    for (const child of this.children) {
-      child.classList.toggle("min-height");
+    const thisIconElement = this.querySelector("#open-close-icon");
+    const isClosed = thisIconElement.classList.contains("item-closed");
+
+    const parentElement = thisIconElement.parentElement;
+    if (isClosed) {
+      parentElement.classList.remove("item-closed");
+    } else {
+      parentElement.classList.add("item-closed");
+    }
+
+    for (const cardElement of cardElements) {
+      const elementIcon = cardElement.querySelector("#open-close-icon");
+      if (isClosed) {
+        elementIcon.classList.remove("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.remove("min-height");
+        }
+      } else {
+        elementIcon.classList.add("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.add("min-height");
+        }
+      }
     }
   }
 
@@ -483,11 +505,11 @@ class SourceBox extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html.createDomElement("icon-button", {
-        class: "fontra-ui-font-info-sources-panel-icon open-close-icon item-closed",
+        class: "fontra-ui-font-info-sources-panel-icon open-close-icon",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         open: false,
-        onclick: (event) => this.toggleShowHide(),
+        onclick: (event) => this.toggleShowHide(event),
       })
     );
 
@@ -545,7 +567,7 @@ function buildElement(controller) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-sources-panel-column min-height" },
+    { class: "fontra-ui-font-info-sources-panel-column" },
     items
       .map(([labelName, keyName, value]) => {
         if (typeof value === "boolean") {
@@ -572,7 +594,7 @@ function buildElementLineMetricsHor(controller) {
   return html.div(
     {
       class:
-        "fontra-ui-font-info-sources-panel-column min-height fontra-ui-font-info-sources-panel-line-metrics-hor",
+        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-line-metrics-hor",
     },
     items
       .map(([labelName, keyName]) => {
@@ -588,7 +610,7 @@ function buildElementLineMetricsHor(controller) {
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
     continuous: false,
-    class: `fontra-ui-font-info-sources-panel-column min-height`,
+    class: `fontra-ui-font-info-sources-panel-column`,
   });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
