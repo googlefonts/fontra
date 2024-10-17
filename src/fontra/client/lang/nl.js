@@ -95,7 +95,7 @@ export const strings = {
   "cross-axis-mapping.new": "New cross-axis mapping",
   "cross-axis-mapping.title": "Cross-axis mapping",
   "cross-axis-mapping.undo.add": "add cross-axis mapping",
-  "cross-axis-mapping.undo.delete": "delete cross-axis mapping %0",
+  "cross-axis-mapping.undo.delete": "delete cross-axis mapping",
   "cross-axis-mapping.undo.reorder": "reorder cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Wijzig alle compatibele sources",

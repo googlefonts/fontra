@@ -243,10 +243,7 @@ class CrossAxisMappingBox extends HTMLElement {
   }
 
   deleteCrossAxisMapping() {
-    const undoLabel = translate(
-      "cross-axis-mapping.undo.delete",
-      this.mapping.description || this.mappingIndex
-    );
+    const undoLabel = translate("cross-axis-mapping.undo.delete");
     const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
       root.axes.mappings.splice(this.mappingIndex, 1);
