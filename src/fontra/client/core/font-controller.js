@@ -932,6 +932,7 @@ function ensureDenseSources(sources) {
   return mapObjectValues(sources, (source) => {
     return {
       ...source,
+      location: source.location || {},
       lineMetricsHorizontalLayout: mapObjectValues(
         source.lineMetricsHorizontalLayout || {},
         (metric) => {
