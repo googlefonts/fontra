@@ -188,6 +188,24 @@ export default class DesignspaceNavigationPanel extends Panel {
           ]
         ),
       },
+      {
+        id: "glyph-layers-accordion-item",
+        label: "Glyph layers", // XXXX TODO add translate strings
+        open: true,
+        content: html.div(
+          {
+            style:
+              "display: grid; grid-template-rows: 1fr auto; height: 100%; box-sizing: border-box;",
+          },
+          [
+            html.createDomElement("ui-list", { id: "layers-list" }),
+            html.createDomElement("add-remove-buttons", {
+              style: "padding: 0.5em 0 0 0;",
+              id: "glyph-layers-add-remove-buttons",
+            }),
+          ]
+        ),
+      },
     ];
 
     return accordion;
@@ -207,6 +225,10 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   get glyphSourcesAccordionItem() {
     return this.contentElement.querySelector("#glyph-sources-accordion-item");
+  }
+
+  get glyphLayersAccordionItem() {
+    return this.contentElement.querySelector("#glyph-layers-accordion-item");
   }
 
   setup() {
@@ -375,6 +397,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
       this.editSourceProperties(sourceIndex);
     });
+
+    this.layersList = this.contentElement.querySelector("#layers-list");
+    this.layersList.setItems(["foreground"]);
 
     this.fontController.addChangeListener(
       { axes: null },
@@ -751,6 +776,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
+    this.glyphLayersAccordionItem.hidden = !varGlyphController;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
