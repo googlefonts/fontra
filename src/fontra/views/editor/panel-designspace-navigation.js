@@ -264,11 +264,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       })
     );
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-      this._updateAxes();
-      this._updateSources();
-      this._updateInterpolationErrorInfo();
-    });
+    this.sceneSettingsController.addKeyListener(
+      ["selectedGlyphName", "selectedGlyph"],
+      (event) => {
+        this._updateAxes();
+        this._updateSources();
+        this._updateInterpolationErrorInfo();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener(
       [
@@ -776,7 +779,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
-    this.glyphLayersAccordionItem.hidden = !varGlyphController;
+    this.glyphLayersAccordionItem.hidden = !this.sceneModel.selectedGlyph?.isEditing;
 
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
