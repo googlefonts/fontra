@@ -406,7 +406,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.layersList = this.contentElement.querySelector("#layers-list");
-    this.layersList.setItems(["foreground"]);
 
     this.fontController.addChangeListener(
       { axes: null },
@@ -789,10 +788,23 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateEditingStatus();
   }
 
-  _updateGlyphLayersList() {
-    this.glyphLayersAccordionItem.hidden = !(
-      this.sceneModel.selectedGlyph?.isEditing &&
-      this.sceneModel.sceneSettings.selectedSourceIndex != undefined
+  async _updateGlyphLayersList() {
+    const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
+    const haveLayers =
+      this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
+    this.glyphLayersAccordionItem.hidden = !haveLayers;
+
+    if (!haveLayers) {
+      this.layersList.setItems([]);
+      return;
+    }
+
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    const layerNames = varGlyphController.getLayerNamesForSourceIndex(sourceIndex);
+    this.layersList.setItems(
+      ["foreground"].concat(layerNames.map(([layerNameFull, layerName]) => layerName))
     );
   }
 
