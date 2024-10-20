@@ -483,6 +483,14 @@ export class VariableGlyphController {
     return sourceIndexMapping[nearestIndex];
   }
 
+  getLayerNamesForSourceIndex(sourceIndex) {
+    const source = this.glyph.sources[sourceIndex];
+    const layerNamePrefix = source.layerName + ".";
+    return Object.keys(this.glyph.layers)
+      .filter((layerName) => layerName.startsWith(layerNamePrefix))
+      .map((layerName) => [layerName, layerName.slice(layerNamePrefix.length)]);
+  }
+
   expandNLIAxes(sourceLocation) {
     return mapLocationExpandNLI(sourceLocation, this.axes);
   }
