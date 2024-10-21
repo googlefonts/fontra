@@ -406,6 +406,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.layersList = this.contentElement.querySelector("#layers-list");
+    this.layersList.columnDescriptions = [{ key: "layerName" }];
+    this.layersList.addEventListener("listSelectionChanged", (event) => {
+      const layerItem = this.layersList.getSelectedItem();
+      if (layerItem) {
+        this.sceneSettings.editLayerName = layerItem.layerNameFull;
+      }
+    });
 
     this.fontController.addChangeListener(
       { axes: null },
@@ -802,9 +809,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
 
+    const source = varGlyphController.glyph.sources[sourceIndex];
     const layerNames = varGlyphController.getLayerNamesForSourceIndex(sourceIndex);
     this.layersList.setItems(
-      ["foreground"].concat(layerNames.map(([layerNameFull, layerName]) => layerName))
+      [{ layerName: "foreground", layerNameFull: source.layerName }].concat(
+        layerNames.map(([layerNameFull, layerName]) => ({ layerName, layerNameFull }))
+      )
     );
   }
 
