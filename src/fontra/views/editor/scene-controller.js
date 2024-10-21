@@ -907,8 +907,8 @@ export class SceneController {
     return this.sceneModel.editingLayers || {};
   }
 
-  set editingLayers(layerNames) {
-    this.sceneModel.editingLayers = layerNames;
+  set editingLayers(layers) {
+    this.sceneModel.editingLayers = layers;
     this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
