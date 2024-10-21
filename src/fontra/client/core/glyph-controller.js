@@ -493,7 +493,7 @@ export class VariableGlyphController {
       for (const i of range(this.sources.length)) {
         const names = this.getBackgroundLayerNamesForSourceIndex(i);
         const layerNames = names.map(([layerName, layerNameShort]) => layerName);
-        if (layerNames.contains(layerName)) {
+        if (layerNames.includes(layerName)) {
           sourceIndex = i;
           break;
         }
