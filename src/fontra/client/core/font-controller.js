@@ -500,7 +500,7 @@ export class FontController {
       return;
     }
     const getGlyphFunc = this.getGlyph.bind(this);
-    return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+    return await varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
   requestGlyphInstance(glyphName, sourceLocation) {
