@@ -265,7 +265,7 @@ export class SceneModel {
       if (layerName in skipLayers) {
         continue;
       }
-      let sourceIndex = varGlyph.getSourceIndexFromName(sourceName) || 0;
+      let sourceIndex = varGlyph.getSourceIndexForSourceName(sourceName) || 0;
       const layerGlyph = await this.fontController.getLayerGlyphController(
         glyphName,
         layerName,

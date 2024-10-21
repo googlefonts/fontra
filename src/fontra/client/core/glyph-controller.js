@@ -159,7 +159,7 @@ export class VariableGlyphController {
     return undefined;
   }
 
-  getSourceIndexFromName(sourceName) {
+  getSourceIndexForSourceName(sourceName) {
     for (const [sourceIndex, source] of enumerate(this.sources)) {
       if (source.name === sourceName) {
         return sourceIndex;
