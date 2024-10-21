@@ -52,6 +52,8 @@ export class VariableGlyphController {
     this._fontSources = fontSources;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
+    this._layerNameToSourceIndex = {};
+    this._sourceIndexToBackgroundLayerNames = new Map();
   }
 
   get name() {
@@ -196,6 +198,8 @@ export class VariableGlyphController {
     delete this._fontAxesSourceSpace;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
+    this._layerNameToSourceIndex = {};
+    this._sourceIndexToBackgroundLayerNames = new Map();
   }
 
   get model() {
@@ -483,12 +487,43 @@ export class VariableGlyphController {
     return sourceIndexMapping[nearestIndex];
   }
 
+  getSourceIndexForLayerName(layerName) {
+    let sourceIndex = this._layerNameToSourceIndex[layerName];
+    if (sourceIndex === undefined) {
+      for (const i of range(this.sources.length)) {
+        const names = this.getBackgroundLayerNamesForSourceIndex(i);
+        const layerNames = names.map(([layerName, layerNameShort]) => layerName);
+        if (layerNames.contains(layerName)) {
+          sourceIndex = i;
+          break;
+        }
+      }
+    }
+    return sourceIndex;
+  }
+
   getBackgroundLayerNamesForSourceIndex(sourceIndex) {
-    const source = this.sources[sourceIndex];
-    const layerNamePrefix = source.layerName + ".";
-    return Object.keys(this.glyph.layers)
-      .filter((layerName) => layerName.startsWith(layerNamePrefix))
-      .map((layerName) => [layerName, layerName.slice(layerNamePrefix.length)]);
+    let backgroundLayerNames = this._sourceIndexToBackgroundLayerNames.get(sourceIndex);
+
+    if (!backgroundLayerNames) {
+      const source = this.sources[sourceIndex];
+      this._layerNameToSourceIndex[source.layerName] = sourceIndex;
+
+      const layerNamePrefix = source.layerName + ".";
+      const layerNames = Object.keys(this.glyph.layers).filter((layerName) =>
+        layerName.startsWith(layerNamePrefix)
+      );
+      layerNames.forEach((layerName) => {
+        this._layerNameToSourceIndex[layerName] = sourceIndex;
+      });
+      backgroundLayerNames = layerNames.map((layerName) => [
+        layerName,
+        layerName.slice(layerNamePrefix.length),
+      ]);
+      this._sourceIndexToBackgroundLayerNames.set(sourceIndex, backgroundLayerNames);
+    }
+
+    return backgroundLayerNames;
   }
 
   expandNLIAxes(sourceLocation) {

@@ -639,10 +639,6 @@ export default class SelectionInfoPanel extends Panel {
 
   async _setupSelectionInfoHandlers(glyphName) {
     const varGlyph = await this.fontController.getGlyph(glyphName);
-    const sourceIndices = {};
-    for (const [i, source] of enumerate(varGlyph.sources)) {
-      sourceIndices[source.layerName] = i;
-    }
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       const changePath = JSON.parse(fieldItem.key);
@@ -661,7 +657,7 @@ export default class SelectionInfoPanel extends Panel {
             await this.fontController.getLayerGlyphController(
               glyphName,
               layerName,
-              sourceIndices[layerName]
+              varGlyph.getSourceIndexForLayerName(layerName)
             );
           layerInfo.push({
             layerName,
