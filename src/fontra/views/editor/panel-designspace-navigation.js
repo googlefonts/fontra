@@ -273,7 +273,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener(
       ["selectedGlyph", "selectedSourceIndex"],
       (event) => {
-        this._updateGlyphLayersList();
+        this._updateBackgroundLayersList();
       }
     );
 
@@ -405,10 +405,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.editSourceProperties(sourceIndex);
     });
 
-    this.layersList = this.contentElement.querySelector("#layers-list");
-    this.layersList.columnDescriptions = [{ key: "layerName" }];
-    this.layersList.addEventListener("listSelectionChanged", (event) => {
-      const layerItem = this.layersList.getSelectedItem();
+    this.backgroundLayersList = this.contentElement.querySelector("#layers-list");
+    this.backgroundLayersList.columnDescriptions = [{ key: "layerName" }];
+    this.backgroundLayersList.addEventListener("listSelectionChanged", (event) => {
+      const layerItem = this.backgroundLayersList.getSelectedItem();
       if (layerItem) {
         this.sceneSettings.editLayerName = layerItem.layerNameFull;
         this.sceneController.editingLayers = { [layerItem.layerNameFull]: "---" };
@@ -791,19 +791,19 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
-    this._updateGlyphLayersList();
+    this._updateBackgroundLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
   }
 
-  async _updateGlyphLayersList() {
+  async _updateBackgroundLayersList() {
     const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
     const haveLayers =
       this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
     this.glyphLayersAccordionItem.hidden = !haveLayers;
 
     if (!haveLayers) {
-      this.layersList.setItems([]);
+      this.backgroundLayersList.setItems([]);
       return;
     }
 
@@ -813,7 +813,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const source = varGlyphController.glyph.sources[sourceIndex];
     const layerNames =
       varGlyphController.getBackgroundLayerNamesForSourceIndex(sourceIndex);
-    this.layersList.setItems(
+    this.backgroundLayersList.setItems(
       [{ layerName: "foreground", layerNameFull: source.layerName }].concat(
         layerNames.map(([layerNameFull, layerName]) => ({ layerName, layerNameFull }))
       )
