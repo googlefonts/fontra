@@ -411,6 +411,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       const layerItem = this.layersList.getSelectedItem();
       if (layerItem) {
         this.sceneSettings.editLayerName = layerItem.layerNameFull;
+        this.sceneController.editingLayers = { [layerItem.layerNameFull]: "---" };
       }
     });
 
