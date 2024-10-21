@@ -89,7 +89,6 @@ class GeneratePaltVpalFeature(BaseFilter):
                 )
                 continue
 
-            glyph = await self.getGlyph(glyphName)
             hAdjustments = []
             vAdjustments = []
             for source in getActiveSources(glyph.sources):
