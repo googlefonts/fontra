@@ -811,7 +811,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       await this.sceneModel.getSelectedVariableGlyphController();
 
     const source = varGlyphController.glyph.sources[sourceIndex];
-    const layerNames = varGlyphController.getLayerNamesForSourceIndex(sourceIndex);
+    const layerNames =
+      varGlyphController.getBackgroundLayerNamesForSourceIndex(sourceIndex);
     this.layersList.setItems(
       [{ layerName: "foreground", layerNameFull: source.layerName }].concat(
         layerNames.map(([layerNameFull, layerName]) => ({ layerName, layerNameFull }))

@@ -483,7 +483,7 @@ export class VariableGlyphController {
     return sourceIndexMapping[nearestIndex];
   }
 
-  getLayerNamesForSourceIndex(sourceIndex) {
+  getBackgroundLayerNamesForSourceIndex(sourceIndex) {
     const source = this.sources[sourceIndex];
     const layerNamePrefix = source.layerName + ".";
     return Object.keys(this.glyph.layers)
