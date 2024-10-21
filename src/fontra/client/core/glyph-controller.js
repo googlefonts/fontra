@@ -159,14 +159,6 @@ export class VariableGlyphController {
     return undefined;
   }
 
-  getSourceIndexForSourceName(sourceName) {
-    for (const [sourceIndex, source] of enumerate(this.sources)) {
-      if (source.name === sourceName) {
-        return sourceIndex;
-      }
-    }
-  }
-
   getAllComponentNames() {
     // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
@@ -485,6 +477,14 @@ export class VariableGlyphController {
 
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
     return sourceIndexMapping[nearestIndex];
+  }
+
+  getSourceIndexForSourceName(sourceName) {
+    for (const [sourceIndex, source] of enumerate(this.sources)) {
+      if (source.name === sourceName) {
+        return sourceIndex;
+      }
+    }
   }
 
   getSourceIndexForLayerName(layerName) {
