@@ -484,7 +484,7 @@ export class VariableGlyphController {
   }
 
   getLayerNamesForSourceIndex(sourceIndex) {
-    const source = this.glyph.sources[sourceIndex];
+    const source = this.sources[sourceIndex];
     const layerNamePrefix = source.layerName + ".";
     return Object.keys(this.glyph.layers)
       .filter((layerName) => layerName.startsWith(layerNamePrefix))
