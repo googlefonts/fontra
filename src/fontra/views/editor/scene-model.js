@@ -45,7 +45,7 @@ export class SceneModel {
     this.updateSceneCancelSignal = {};
 
     this.sceneSettingsController.addKeyListener(
-      ["glyphLines", "align", "selectedGlyph"],
+      ["glyphLines", "align", "selectedGlyph", "editLayerName"],
       (event) => {
         this.updateScene();
       }
