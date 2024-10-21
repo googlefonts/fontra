@@ -455,7 +455,7 @@ export class VariableGlyphController {
     return { ...defaultLocation, ...sourceLocation };
   }
 
-  findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
+  findNearestSourceForSourceLocation(sourceLocation, skipInactive = false) {
     sourceLocation = this.expandNLIAxes(sourceLocation);
 
     // Ensure locations are *not* sparse
