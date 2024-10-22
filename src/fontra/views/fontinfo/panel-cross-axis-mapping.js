@@ -456,8 +456,8 @@ class CrossAxisMappingBox extends HTMLElement {
       const inputCheckbox = buildElementLocationsCheckboxes(
         axis,
         this.controllers.inputLocationCheckboxes
-      ).firstChild;
-      inputCheckbox.id = `${this.mappingIndex}-${axis.name}-inputCheckbox`;
+      );
+      inputCheckbox.firstChild.id = `${this.mappingIndex}-${axis.name}-inputCheckbox`;
       this.append(inputCheckbox);
       const output = buildElementLocations(axis, this.controllers.outputLocation);
       output.id = `${this.mappingIndex}-${axis.name}-output`;
@@ -465,8 +465,8 @@ class CrossAxisMappingBox extends HTMLElement {
       const outputCheckbox = buildElementLocationsCheckboxes(
         axis,
         this.controllers.outputLocationCheckboxes
-      ).firstChild;
-      outputCheckbox.id = `${this.mappingIndex}-${axis.name}-outputCheckbox`;
+      );
+      outputCheckbox.firstChild.id = `${this.mappingIndex}-${axis.name}-outputCheckbox`;
       this.append(outputCheckbox);
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
