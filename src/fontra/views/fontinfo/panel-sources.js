@@ -321,15 +321,19 @@ addStyleSheet(`
   transform: rotate(180deg);
 }
 
-.fontra-ui-font-info-sources-panel-temp > .bold {
+.fontra-ui-font-info-sources-panel-oneliner > .bold {
   font-weight: bold;
 }
 
-.fontra-ui-font-info-sources-panel-temp {
+.fontra-ui-font-info-sources-panel-oneliner > .default {
+  color: grey;
+}
+
+.fontra-ui-font-info-sources-panel-oneliner {
   display: none;
 }
 
-.fontra-ui-font-info-sources-panel-temp.min-height {
+.fontra-ui-font-info-sources-panel-oneliner.min-height {
   display: block;
   align-content: center;
   grid-column-start: span 3;
@@ -474,13 +478,31 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  getFormattedLocationString() {
-    return (
-      " " + // add space to separate from the name
-      Object.entries(this.source.location)
-        .map(([axisName, value]) => `${axisName}=${value}`)
-        .join(", ")
-    );
+  getOneliner() {
+    const onelinerElement = html.div({
+      class: "fontra-ui-font-info-sources-panel-oneliner",
+    });
+    onelinerElement.appendChild(html.span({ class: "bold" }, [this.source.name] + " "));
+
+    for (const axis of this.fontAxesSourceSpace) {
+      const axisElement = document.createElement("span");
+      const sourceLocationValue = this.source.location[axis.name];
+      axisElement.innerText = `${axis.name}=${sourceLocationValue}, `;
+
+      if (axis.defaultValue == sourceLocationValue) {
+        axisElement.classList.add("default");
+      }
+      onelinerElement.appendChild(axisElement);
+    }
+
+    if (onelinerElement.lastChild.innerText.endsWith(", ")) {
+      onelinerElement.lastChild.innerText = onelinerElement.lastChild.innerText.slice(
+        0,
+        -2
+      );
+    }
+
+    return onelinerElement;
   }
 
   _updateContents() {
@@ -537,11 +559,8 @@ class SourceBox extends HTMLElement {
       })
     );
 
-    // This is the one-liner for the folded card –> only visible when folded.
-    const tempElement = html.div({ class: "fontra-ui-font-info-sources-panel-temp" });
-    tempElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
-    tempElement.appendChild(html.span({}, [this.getFormattedLocationString()]));
-    this.append(tempElement);
+    // This is the oneliner for the folded card –> only visible when folded.
+    this.append(this.getOneliner());
 
     for (const key in models) {
       this.append(
