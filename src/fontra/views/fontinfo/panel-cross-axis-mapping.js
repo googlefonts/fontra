@@ -123,7 +123,7 @@ addStyleSheet(`
   cursor: pointer;
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: max-content max-content max-content max-content max-content max-content auto;
+  grid-template-columns: max-content max-content minmax(200px, 300px) max-content minmax(200px, 300px) max-content auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
 }
