@@ -128,10 +128,20 @@ addStyleSheet(`
   grid-column-gap: 1em;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column {
+.fontra-ui-font-info-cross-axis-mapping-panel-column-group {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: min-content auto;
   gap: 0.5em;
+  grid-column-start: 3;
+  grid-column-end: 5;
+}
+
+.fontra-ui-font-info-cross-axis-mapping-panel-column-description {
+  display: grid;
+  grid-template-columns: min-content auto;
+  gap: 0.5em;
+  grid-column-start: 5;
+  grid-column-end: 7;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
@@ -372,7 +382,7 @@ class CrossAxisMappingBox extends HTMLElement {
     this.append(html.div()); // empty cell for grid
     this.append(
       html.div(
-        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-group" },
         labeledTextInput(
           translate("cross-axis-mapping.groupDescription"),
           this.controllers.groupDescription,
@@ -384,7 +394,7 @@ class CrossAxisMappingBox extends HTMLElement {
     this.append(html.div()); // empty cell for grid
     this.append(
       html.div(
-        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-description" },
         labeledTextInput(
           translate("cross-axis-mapping.description"),
           this.controllers.description,
