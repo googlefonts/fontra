@@ -252,7 +252,7 @@ addStyleSheet(`
   display: grid;
   grid-template-columns: minmax(4.5em, max-content) max-content;
   gap: 0.5em;
-  align-items: start;
+  align-items: center;
   align-content: start;
 }
 
