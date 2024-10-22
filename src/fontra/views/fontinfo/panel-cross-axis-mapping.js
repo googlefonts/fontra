@@ -419,18 +419,14 @@ class CrossAxisMappingBox extends HTMLElement {
 
     const inputHeaderElement = html.div(
       {
-        "class": "fontra-ui-font-info-cross-axis-mapping-panel-header",
-        "data-tooltip": translate("cross-axis-mapping.header.inputLocation.tooltip"),
-        "data-tooltipposition": "left",
+        class: "fontra-ui-font-info-cross-axis-mapping-panel-header",
       },
       [translate("cross-axis-mapping.header.inputLocation")]
     );
 
     const outputHeaderElement = html.div(
       {
-        "class": "fontra-ui-font-info-cross-axis-mapping-panel-header",
-        "data-tooltip": translate("cross-axis-mapping.header.outputLocation.tooltip"),
-        "data-tooltipposition": "left",
+        class: "fontra-ui-font-info-cross-axis-mapping-panel-header",
       },
       [translate("cross-axis-mapping.header.outputLocation")]
     );
