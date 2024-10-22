@@ -314,7 +314,9 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.inputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.inputLocation[event.key] = event.newValue;
-        this.controllers.inputLocationCheckboxes.setItem(event.key, true);
+        document.getElementById(
+          `${this.mappingIndex}-${event.key}-inputCheckbox`
+        ).checked = true;
       }, `edit input location ${event.key}`);
     });
 
@@ -336,7 +338,9 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.outputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.outputLocation[event.key] = event.newValue;
-        this.controllers.outputLocationCheckboxes.setItem(event.key, true);
+        document.getElementById(
+          `${this.mappingIndex}-${event.key}-outputCheckbox`
+        ).checked = true;
       }, `edit output location ${event.key}`);
     });
 
@@ -449,15 +453,21 @@ class CrossAxisMappingBox extends HTMLElement {
       const input = buildElementLocations(axis, this.controllers.inputLocation);
       input.id = `${this.mappingIndex}-${axis.name}-input`;
       this.append(input);
-      this.append(
-        buildElementLocationsCheckboxes(axis, this.controllers.inputLocationCheckboxes)
-      );
+      const inputCheckbox = buildElementLocationsCheckboxes(
+        axis,
+        this.controllers.inputLocationCheckboxes
+      ).firstChild;
+      inputCheckbox.id = `${this.mappingIndex}-${axis.name}-inputCheckbox`;
+      this.append(inputCheckbox);
       const output = buildElementLocations(axis, this.controllers.outputLocation);
       output.id = `${this.mappingIndex}-${axis.name}-output`;
       this.append(output);
-      this.append(
-        buildElementLocationsCheckboxes(axis, this.controllers.outputLocationCheckboxes)
-      );
+      const outputCheckbox = buildElementLocationsCheckboxes(
+        axis,
+        this.controllers.outputLocationCheckboxes
+      ).firstChild;
+      outputCheckbox.id = `${this.mappingIndex}-${axis.name}-outputCheckbox`;
+      this.append(outputCheckbox);
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
       );
