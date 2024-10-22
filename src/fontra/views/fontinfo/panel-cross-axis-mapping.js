@@ -7,14 +7,12 @@ import {
   labeledTextInput,
   setupSortableList,
 } from "../core/ui-utils.js";
-import { enumerate, range, round } from "../core/utils.js";
+import { enumerate, range } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import { translate } from "/core/localization.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
-import { dialogSetup, message } from "/web-components/modal-dialog.js";
-// keep the dialog imports for now, because we may need them for check infos.
 
 export class CrossAxisMappingPanel extends BaseInfoPanel {
   static title = "cross-axis-mapping.title";
@@ -123,12 +121,12 @@ addStyleSheet(`
   cursor: pointer;
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: max-content max-content minmax(200px, 300px) max-content minmax(200px, 300px) max-content auto;
+  grid-template-columns: max-content max-content minmax(17em, 25em) 1.5em minmax(17em, 25em) 1.5em auto;
   grid-row-gap: 0.1em;
   grid-column-gap: 1em;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column-group {
+.fontra-ui-font-info-cross-axis-mapping-panel-group {
   display: grid;
   grid-template-columns: min-content auto;
   gap: 0.5em;
@@ -136,7 +134,7 @@ addStyleSheet(`
   grid-column-end: 5;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column-description {
+.fontra-ui-font-info-cross-axis-mapping-panel-description {
   display: grid;
   grid-template-columns: min-content auto;
   gap: 0.5em;
@@ -149,23 +147,24 @@ addStyleSheet(`
   padding-top: 0.5em;
   padding-bottom: 0.5em;
 }
-.fontra-ui-font-info-cross-axis-mapping-panel-column-location-label {
+
+.fontra-ui-font-info-cross-axis-mapping-panel-location{
+  margin-right: -0.5em;
+}
+
+.fontra-ui-font-info-cross-axis-mapping-panel-location-label {
   text-align: right;
 }
 
-.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes {
-  margin-left: -10px;
-}
-
-.fontra-ui-font-info-cross-axis-mapping-panel-column-empty.min-height,
-.fontra-ui-font-info-cross-axis-mapping-panel-column-location.min-height,
-.fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-empty.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-location.min-height,
+.fontra-ui-font-info-cross-axis-mapping-panel-checkboxes.min-height,
 .fontra-ui-font-info-cross-axis-mapping-panel-header.min-height,
-.fontra-ui-font-info-cross-axis-mapping-panel-column-location-label.min-height {
+.fontra-ui-font-info-cross-axis-mapping-panel-location-label.min-height {
   overflow: hidden;
-  height: 0px;
-  padding-top: 0px;
-  padding-bottom: 0px;
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-icon {
@@ -307,14 +306,12 @@ class CrossAxisMappingBox extends HTMLElement {
 
     // create listeners
     this.controllers.groupDescription.addListener((event) => {
-      // TODO: Maybe add check of value.
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
       }, `edit input groupDescription ${event.key}`);
     });
 
     this.controllers.description.addListener((event) => {
-      // TODO: Maybe add check of value, if unique?
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
       }, `edit input description ${event.key}`);
@@ -382,7 +379,7 @@ class CrossAxisMappingBox extends HTMLElement {
     this.append(html.div()); // empty cell for grid
     this.append(
       html.div(
-        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-group" },
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-group" },
         labeledTextInput(
           translate("cross-axis-mapping.groupDescription"),
           this.controllers.groupDescription,
@@ -391,10 +388,9 @@ class CrossAxisMappingBox extends HTMLElement {
         )
       )
     );
-    this.append(html.div()); // empty cell for grid
     this.append(
       html.div(
-        { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-description" },
+        { class: "fontra-ui-font-info-cross-axis-mapping-panel-description" },
         labeledTextInput(
           translate("cross-axis-mapping.description"),
           this.controllers.description,
@@ -403,7 +399,6 @@ class CrossAxisMappingBox extends HTMLElement {
         )
       )
     );
-    this.append(html.div()); // empty cell for grid
     this.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-font-info-cross-axis-mapping-panel-icon",
@@ -434,27 +429,27 @@ class CrossAxisMappingBox extends HTMLElement {
 
     // Row 2 Locations headlines
     this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
     );
     this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
     );
     this.append(inputHeaderElement);
     this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
     );
     this.append(outputHeaderElement);
     this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
     );
     this.append(
-      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+      html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
     );
 
     // Other rows: axis for input and output
     for (const axis of this.fontAxesSourceSpace) {
       this.append(
-        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
       );
       this.append(buildElementLocationsLabel(axis));
       this.append(
@@ -486,7 +481,7 @@ class CrossAxisMappingBox extends HTMLElement {
         )
       );
       this.append(
-        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
+        html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
       );
     }
   }
@@ -517,21 +512,21 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
 
 function buildElementLocations(axis, controller, sliderId) {
   const slider = _createSlider(controller, axis, controller.model[axis.name]);
-  slider.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-location";
+  slider.className = "fontra-ui-font-info-cross-axis-mapping-panel-location";
   slider.id = sliderId;
   return slider;
 }
 
 function buildElementLocationsLabel(axis) {
   return html.label(
-    { class: "fontra-ui-font-info-cross-axis-mapping-panel-column-location-label" },
+    { class: "fontra-ui-font-info-cross-axis-mapping-panel-location-label" },
     [axis.name]
   );
 }
 
 function buildElementLocationsCheckboxes(axis, controller, checkboxId) {
   const element = checkboxWithoutLabel(controller, axis.name);
-  element.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes";
+  element.className = "fontra-ui-font-info-cross-axis-mapping-panel-checkboxes";
   element.setAttribute(
     "data-tooltip",
     translate("cross-axis-mapping.axis-participates")
