@@ -326,7 +326,7 @@ addStyleSheet(`
 }
 
 .fontra-ui-font-info-sources-panel-oneliner > .default {
-  color: grey;
+  color: #888;
 }
 
 .fontra-ui-font-info-sources-panel-oneliner {
