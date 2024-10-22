@@ -222,8 +222,8 @@ class CrossAxisMappingBox extends HTMLElement {
     }
 
     const model = {
-      description: { description: mapping.description || "" },
       groupDescription: { groupDescription: mapping.groupDescription || "" },
+      description: { description: mapping.description || "" },
       inputLocation: { ...mapping.inputLocation },
       inputLocationCheckboxes: { ...inputLocationCheckboxes },
       outputLocation: { ...mapping.outputLocation },
@@ -297,18 +297,18 @@ class CrossAxisMappingBox extends HTMLElement {
     }
 
     // create listeners
-    this.controllers.description.addListener((event) => {
-      // TODO: Maybe add check of value, if unique?
-      this.editCrossAxisMapping((mapping) => {
-        mapping[event.key] = event.newValue.trim();
-      }, `edit input description ${event.key}`);
-    });
-
     this.controllers.groupDescription.addListener((event) => {
       // TODO: Maybe add check of value.
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
       }, `edit input groupDescription ${event.key}`);
+    });
+
+    this.controllers.description.addListener((event) => {
+      // TODO: Maybe add check of value, if unique?
+      this.editCrossAxisMapping((mapping) => {
+        mapping[event.key] = event.newValue.trim();
+      }, `edit input description ${event.key}`);
     });
 
     this.controllers.inputLocation.addListener((event) => {
@@ -372,9 +372,9 @@ class CrossAxisMappingBox extends HTMLElement {
       html.div(
         { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
         labeledTextInput(
-          translate("cross-axis-mapping.description"),
-          this.controllers.description,
-          "description",
+          translate("cross-axis-mapping.groupDescription"),
+          this.controllers.groupDescription,
+          "groupDescription",
           { continuous: false }
         )
       )
@@ -384,9 +384,9 @@ class CrossAxisMappingBox extends HTMLElement {
       html.div(
         { class: "fontra-ui-font-info-cross-axis-mapping-panel-column" },
         labeledTextInput(
-          translate("cross-axis-mapping.groupDescription"),
-          this.controllers.groupDescription,
-          "groupDescription",
+          translate("cross-axis-mapping.description"),
+          this.controllers.description,
+          "description",
           { continuous: false }
         )
       )
