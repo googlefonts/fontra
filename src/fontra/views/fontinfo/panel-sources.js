@@ -321,12 +321,18 @@ addStyleSheet(`
   transform: rotate(180deg);
 }
 
-.temporary-source-info {
+.fontra-ui-font-info-sources-panel-temp > .bold {
   font-weight: bold;
 }
 
 .fontra-ui-font-info-sources-panel-temp {
-  // maybe useful later
+  display: none;
+}
+
+.fontra-ui-font-info-sources-panel-temp.min-height {
+  display: block;
+  align-content: center;
+  grid-column-start: span 3;
 }
 
 `);
@@ -455,62 +461,26 @@ class SourceBox extends HTMLElement {
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
-        cardElement.removeChild(
-          document.getElementById(`${cardElement.sourceIdentifier}-temporary-1`)
-        );
-        cardElement.removeChild(
-          document.getElementById(`${cardElement.sourceIdentifier}-temporary-2`)
-        );
-        cardElement.removeChild(
-          document.getElementById(`${cardElement.sourceIdentifier}-temporary-3`)
-        );
-
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
           child.classList.remove("min-height");
         }
       } else {
-        const locationString = locationToString(
-          makeSparseLocation(
-            cardElement.source.location,
-            cardElement.fontAxesSourceSpace
-          )
-        );
-        const temporaryElement1 = html.div(
-          {
-            class: "fontra-ui-font-info-sources-panel-temp temporary-source-info",
-            id: `${cardElement.sourceIdentifier}-temporary-1`,
-          },
-          [`Name: ${cardElement.source.name}`]
-        );
-        const temporaryElement2 = html.div(
-          {
-            class: "fontra-ui-font-info-sources-panel-temp",
-            id: `${cardElement.sourceIdentifier}-temporary-2`,
-          },
-          [`Location: ${locationString}`]
-        );
-        const temporaryElement3 = html.div(
-          {
-            class: "fontra-ui-font-info-sources-panel-temp",
-            id: `${cardElement.sourceIdentifier}-temporary-3`,
-          },
-          [
-            `Italic Angle: ${
-              cardElement.source.italicAngle ? cardElement.source.italicAngle : 0
-            }`,
-          ]
-        );
-        cardElement.insertBefore(temporaryElement3, cardElement.childNodes[1]);
-        cardElement.insertBefore(temporaryElement2, cardElement.childNodes[1]);
-        cardElement.insertBefore(temporaryElement1, cardElement.childNodes[1]);
-
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
           child.classList.add("min-height");
         }
       }
     }
+  }
+
+  getNiceLocationString() {
+    return (
+      " " +
+      locationToString(
+        makeSparseLocation(this.source.location, this.fontAxesSourceSpace)
+      )
+    );
   }
 
   _updateContents() {
@@ -566,6 +536,12 @@ class SourceBox extends HTMLElement {
         onclick: (event) => this.toggleShowHide(event),
       })
     );
+
+    // This is the one-liner for the folded card –> only visible when folded.
+    const tempElement = html.div({ class: "fontra-ui-font-info-sources-panel-temp" });
+    tempElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
+    tempElement.appendChild(html.span({}, [this.getNiceLocationString()]));
+    this.append(tempElement);
 
     for (const key in models) {
       this.append(
