@@ -310,13 +310,13 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.groupDescription.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
-      }, `edit input groupDescription ${event.key}`);
+      }, `edit groupDescription ${event.key}`);
     });
 
     this.controllers.description.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping[event.key] = event.newValue.trim();
-      }, `edit input description ${event.key}`);
+      }, `edit description ${event.key}`);
     });
 
     for (const prop of ["input", "output"]) {
