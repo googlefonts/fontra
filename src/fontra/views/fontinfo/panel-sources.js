@@ -473,12 +473,12 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  getNiceLocationString() {
+  getFormattedLocationString() {
     return (
-      " " +
-      locationToString(
-        makeSparseLocation(this.source.location, this.fontAxesSourceSpace)
-      )
+      " " + // add space to separate from the name
+      Object.entries(this.source.location)
+        .map(([axisName, value]) => `${axisName}=${value}`)
+        .join(", ")
     );
   }
 
@@ -539,7 +539,7 @@ class SourceBox extends HTMLElement {
     // This is the one-liner for the folded card –> only visible when folded.
     const tempElement = html.div({ class: "fontra-ui-font-info-sources-panel-temp" });
     tempElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
-    tempElement.appendChild(html.span({}, [this.getNiceLocationString()]));
+    tempElement.appendChild(html.span({}, [this.getFormattedLocationString()]));
     this.append(tempElement);
 
     for (const key in models) {
