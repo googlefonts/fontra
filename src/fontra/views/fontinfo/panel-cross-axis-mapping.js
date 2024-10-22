@@ -265,11 +265,10 @@ class CrossAxisMappingBox extends HTMLElement {
     const thisIconElement = this.querySelector("#open-close-icon");
     const isClosed = thisIconElement.classList.contains("item-closed");
 
-    const parentElement = thisIconElement.parentElement;
     if (isClosed) {
-      parentElement.classList.remove("item-closed");
+      this.classList.remove("item-closed");
     } else {
-      parentElement.classList.add("item-closed");
+      this.classList.add("item-closed");
     }
 
     for (const cardElement of cardElements) {
