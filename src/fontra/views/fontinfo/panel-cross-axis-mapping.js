@@ -132,6 +132,8 @@ addStyleSheet(`
   gap: 0.5em;
   grid-column-start: 3;
   grid-column-end: 5;
+  align-items: start;
+  align-content: start;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-description {
@@ -140,6 +142,8 @@ addStyleSheet(`
   gap: 0.5em;
   grid-column-start: 5;
   grid-column-end: 7;
+  align-items: start;
+  align-content: start;
 }
 
 .fontra-ui-font-info-cross-axis-mapping-panel-header {
