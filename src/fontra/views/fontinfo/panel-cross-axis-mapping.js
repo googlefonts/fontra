@@ -359,7 +359,7 @@ class CrossAxisMappingBox extends HTMLElement {
     });
 
     this.innerHTML = "";
-    // row 1 mailnly for icon
+    // Row 1 Icons and Descriptions
     this.append(
       html.createDomElement("icon-button", {
         class: "fontra-ui-font-info-cross-axis-mapping-panel-icon open-close-icon",
@@ -369,7 +369,6 @@ class CrossAxisMappingBox extends HTMLElement {
         onclick: (event) => this.toggleShowHide(event),
       })
     );
-
     this.append(html.div()); // empty cell for grid
     this.append(
       html.div(
@@ -395,7 +394,6 @@ class CrossAxisMappingBox extends HTMLElement {
       )
     );
     this.append(html.div()); // empty cell for grid
-
     this.append(
       html.createDomElement("icon-button", {
         "class": "fontra-ui-font-info-cross-axis-mapping-panel-icon",
@@ -443,30 +441,40 @@ class CrossAxisMappingBox extends HTMLElement {
       html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
     );
 
-    // Axis for input and output
+    // Other rows: axis for input and output
     for (const axis of this.fontAxesSourceSpace) {
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
       );
       this.append(buildElementLocationsLabel(axis));
-      const input = buildElementLocations(axis, this.controllers.inputLocation);
-      input.id = `${this.mappingIndex}-${axis.name}-input`;
-      this.append(input);
-      const inputCheckbox = buildElementLocationsCheckboxes(
-        axis,
-        this.controllers.inputLocationCheckboxes
+      this.append(
+        buildElementLocations(
+          axis,
+          this.controllers.inputLocation,
+          `${this.mappingIndex}-${axis.name}-input`
+        )
       );
-      inputCheckbox.firstChild.id = `${this.mappingIndex}-${axis.name}-inputCheckbox`;
-      this.append(inputCheckbox);
-      const output = buildElementLocations(axis, this.controllers.outputLocation);
-      output.id = `${this.mappingIndex}-${axis.name}-output`;
-      this.append(output);
-      const outputCheckbox = buildElementLocationsCheckboxes(
-        axis,
-        this.controllers.outputLocationCheckboxes
+      this.append(
+        buildElementLocationsCheckboxes(
+          axis,
+          this.controllers.inputLocationCheckboxes,
+          `${this.mappingIndex}-${axis.name}-inputCheckbox`
+        )
       );
-      outputCheckbox.firstChild.id = `${this.mappingIndex}-${axis.name}-outputCheckbox`;
-      this.append(outputCheckbox);
+      this.append(
+        buildElementLocations(
+          axis,
+          this.controllers.outputLocation,
+          `${this.mappingIndex}-${axis.name}-output`
+        )
+      );
+      this.append(
+        buildElementLocationsCheckboxes(
+          axis,
+          this.controllers.outputLocationCheckboxes,
+          `${this.mappingIndex}-${axis.name}-outputCheckbox`
+        )
+      );
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-column-empty" })
       );
@@ -497,9 +505,10 @@ function _createSlider(controller, axis, modelValue, continuous = false) {
   return html.createDomElement("range-slider", parms);
 }
 
-function buildElementLocations(axis, controller) {
+function buildElementLocations(axis, controller, sliderId) {
   const slider = _createSlider(controller, axis, controller.model[axis.name]);
   slider.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-location";
+  slider.id = sliderId;
   return slider;
 }
 
@@ -510,7 +519,7 @@ function buildElementLocationsLabel(axis) {
   );
 }
 
-function buildElementLocationsCheckboxes(axis, controller) {
+function buildElementLocationsCheckboxes(axis, controller, checkboxId) {
   const element = checkboxWithoutLabel(controller, axis.name);
   element.className = "fontra-ui-font-info-cross-axis-mapping-panel-column-checkboxes";
   element.setAttribute(
@@ -518,5 +527,6 @@ function buildElementLocationsCheckboxes(axis, controller) {
     translate("cross-axis-mapping.axis-participates")
   );
   element.setAttribute("data-tooltipposition", "right");
+  element.firstChild.id = checkboxId;
   return element;
 }
