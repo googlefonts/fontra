@@ -320,13 +320,17 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.inputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.inputLocation[event.key] = event.newValue;
-        document.getElementById(
-          `${this.mappingIndex}-${event.key}-inputCheckbox`
-        ).checked = true;
+        this.controllers.inputLocationCheckboxes.setItem(event.key, event);
       }, `edit input location ${event.key}`);
     });
 
     this.controllers.inputLocationCheckboxes.addListener((event) => {
+      if (event.newValue) {
+        document.getElementById(
+          `${this.mappingIndex}-${event.key}-inputCheckbox`
+        ).checked = true;
+        return;
+      }
       this.editCrossAxisMapping((mapping) => {
         const defaultValue = this.fontAxesSourceSpace.find(
           (axis) => axis.name === event.key
@@ -344,13 +348,17 @@ class CrossAxisMappingBox extends HTMLElement {
     this.controllers.outputLocation.addListener((event) => {
       this.editCrossAxisMapping((mapping) => {
         mapping.outputLocation[event.key] = event.newValue;
-        document.getElementById(
-          `${this.mappingIndex}-${event.key}-outputCheckbox`
-        ).checked = true;
+        this.controllers.outputLocationCheckboxes.setItem(event.key, event);
       }, `edit output location ${event.key}`);
     });
 
     this.controllers.outputLocationCheckboxes.addListener((event) => {
+      if (event.newValue) {
+        document.getElementById(
+          `${this.mappingIndex}-${event.key}-outputCheckbox`
+        ).checked = true;
+        return;
+      }
       this.editCrossAxisMapping((mapping) => {
         const defaultValue = this.fontAxesSourceSpace.find(
           (axis) => axis.name === event.key
