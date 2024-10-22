@@ -319,61 +319,38 @@ class CrossAxisMappingBox extends HTMLElement {
       }, `edit input description ${event.key}`);
     });
 
-    this.controllers.inputLocation.addListener((event) => {
-      this.editCrossAxisMapping((mapping) => {
-        mapping.inputLocation[event.key] = event.newValue;
-        this.controllers.inputLocationCheckboxes.setItem(event.key, event.newValue);
-      }, `edit input location ${event.key}`);
-    });
+    for (const prop of ["input", "output"]) {
+      const locationController = this.controllers[`${prop}Location`];
+      const checkboxController = this.controllers[`${prop}LocationCheckboxes`];
 
-    this.controllers.inputLocationCheckboxes.addListener((event) => {
-      if (typeof event.newValue === "number") {
-        document.getElementById(
-          `${this.mappingIndex}-${event.key}-inputCheckbox`
-        ).checked = true;
-        return;
-      }
-      this.editCrossAxisMapping((mapping) => {
-        const defaultValue = this.fontAxesSourceSpace.find(
-          (axis) => axis.name === event.key
-        ).defaultValue;
-        if (!event.newValue) {
-          delete mapping.inputLocation[event.key];
-          document.getElementById(`${this.mappingIndex}-${event.key}-input`).value =
-            defaultValue;
-        } else {
-          mapping.inputLocation[event.key] = defaultValue;
+      locationController.addListener((event) => {
+        this.editCrossAxisMapping((mapping) => {
+          mapping[`${prop}Location`][event.key] = event.newValue;
+          checkboxController.setItem(event.key, true, { sentBySlider: true });
+        }, `edit ${prop} location ${event.key}`);
+      });
+
+      checkboxController.addListener((event) => {
+        if (event.senderInfo?.sentBySlider) {
+          document.getElementById(
+            `${this.mappingIndex}-${event.key}-${prop}Checkbox`
+          ).checked = true;
+          return;
         }
-      }, `edit input location ${event.key}`);
-    });
-
-    this.controllers.outputLocation.addListener((event) => {
-      this.editCrossAxisMapping((mapping) => {
-        mapping.outputLocation[event.key] = event.newValue;
-        this.controllers.outputLocationCheckboxes.setItem(event.key, event.newValue);
-      }, `edit output location ${event.key}`);
-    });
-
-    this.controllers.outputLocationCheckboxes.addListener((event) => {
-      if (typeof event.newValue === "number") {
-        document.getElementById(
-          `${this.mappingIndex}-${event.key}-outputCheckbox`
-        ).checked = true;
-        return;
-      }
-      this.editCrossAxisMapping((mapping) => {
-        const defaultValue = this.fontAxesSourceSpace.find(
-          (axis) => axis.name === event.key
-        ).defaultValue;
-        if (!event.newValue) {
-          delete mapping.outputLocation[event.key];
-          document.getElementById(`${this.mappingIndex}-${event.key}-output`).value =
-            defaultValue;
-        } else {
-          mapping.outputLocation[event.key] = defaultValue;
-        }
-      }, `edit output location ${event.key}`);
-    });
+        this.editCrossAxisMapping((mapping) => {
+          const defaultValue = this.fontAxesSourceSpace.find(
+            (axis) => axis.name === event.key
+          ).defaultValue;
+          if (!event.newValue) {
+            delete mapping[`${prop}Location`][event.key];
+            document.getElementById(`${this.mappingIndex}-${event.key}-${prop}`).value =
+              defaultValue;
+          } else {
+            mapping[`${prop}Location`][event.key] = defaultValue;
+          }
+        }, `edit ${prop} location ${event.key}`);
+      });
+    }
 
     this.innerHTML = "";
     // Row 1 Icons and Descriptions
