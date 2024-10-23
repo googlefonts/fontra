@@ -32,7 +32,6 @@ export const strings = {{
 
 
 def prettier(path):
-
     subprocess.run(
         [
             os.fspath(repoDir / "node_modules" / ".bin" / "prettier"),
