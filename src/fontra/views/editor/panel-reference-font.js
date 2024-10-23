@@ -333,7 +333,7 @@ export default class ReferenceFontPanel extends Panel {
       "action.select-previous-reference-font",
       {
         topic,
-        titleKey: "menubar.view.select-previous-reference-font",
+        titleKey: "reference-font.select-previous-reference-font",
         defaultShortCuts: [],
       },
       () => this.doSelectPreviousNextReferenceFont(true)
@@ -343,7 +343,7 @@ export default class ReferenceFontPanel extends Panel {
       "action.select-next-reference-font",
       {
         topic,
-        titleKey: "menubar.view.select-next-reference-font",
+        titleKey: "reference-font.select-next-reference-font",
         defaultShortCuts: [],
       },
       () => this.doSelectPreviousNextReferenceFont(false)
