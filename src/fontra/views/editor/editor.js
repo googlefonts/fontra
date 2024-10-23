@@ -556,26 +556,6 @@ export class EditorController {
             1
           )
       );
-
-      registerAction(
-        "action.select-previous-reference-font",
-        {
-          topic,
-          titleKey: "menubar.view.select-previous-reference-font",
-          defaultShortCuts: [],
-        },
-        () => this.doSelectPreviousNextReferenceFont(true)
-      );
-
-      registerAction(
-        "action.select-next-reference-font",
-        {
-          topic,
-          titleKey: "menubar.view.select-next-reference-font",
-          defaultShortCuts: [],
-        },
-        () => this.doSelectPreviousNextReferenceFont(false)
-      );
     }
 
     {
@@ -1593,13 +1573,6 @@ export class EditorController {
     });
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.add-glyph-after-selected-glyph",
-    });
-    this.glyphSelectedContextMenuItems.push(MenuItemDivider);
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-reference-font",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-reference-font",
     });
   }
 
@@ -2833,27 +2806,6 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
-  }
-
-  async doSelectPreviousNextReferenceFont(selectPrevious) {
-    const panel = this.getSidebarPanel("reference-font");
-    const listLength = panel.filesUIList.items.length;
-    if (!listLength) {
-      return;
-    }
-
-    const index = panel.filesUIList.getSelectedItemIndex();
-
-    const newIndex = isNaN(index)
-      ? 0
-      : selectPrevious
-      ? index - 1 < 0
-        ? listLength - 1
-        : index - 1
-      : index + 1 >= listLength
-      ? 0
-      : index + 1;
-    panel.filesUIList.setSelectedItemIndex(newIndex, true);
   }
 
   async doFindGlyphsThatUseGlyph() {

@@ -1,3 +1,4 @@
+import { registerAction } from "../core/actions.js";
 import Panel from "./panel.js";
 
 import { getSelectedGlyphInfo } from "./scene-model.js";
@@ -322,6 +323,51 @@ export default class ReferenceFontPanel extends Panel {
         cssString;
       this.editorController.canvasController.requestUpdate();
     });
+
+    this.initActions();
+  }
+
+  initActions() {
+    const topic = "0020-action-topics.menu.view";
+    registerAction(
+      "action.select-previous-reference-font",
+      {
+        topic,
+        titleKey: "menubar.view.select-previous-reference-font",
+        defaultShortCuts: [],
+      },
+      () => this.doSelectPreviousNextReferenceFont(true)
+    );
+
+    registerAction(
+      "action.select-next-reference-font",
+      {
+        topic,
+        titleKey: "menubar.view.select-next-reference-font",
+        defaultShortCuts: [],
+      },
+      () => this.doSelectPreviousNextReferenceFont(false)
+    );
+  }
+
+  async doSelectPreviousNextReferenceFont(selectPrevious) {
+    const listLength = this.filesUIList.items.length;
+    if (!listLength) {
+      return;
+    }
+
+    const index = this.filesUIList.getSelectedItemIndex();
+
+    const newIndex = isNaN(index)
+      ? 0
+      : selectPrevious
+      ? index - 1 < 0
+        ? listLength - 1
+        : index - 1
+      : index + 1 >= listLength
+      ? 0
+      : index + 1;
+    this.filesUIList.setSelectedItemIndex(newIndex, true);
   }
 
   async requestReferenceFontsPreview() {
