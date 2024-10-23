@@ -10,9 +10,6 @@
     <script type="module" src="/web-components/plugin-manager.js"></script>
     <script type="module" src="/core/theme-settings.js"></script>
     <style>
-      :root {
-        --width-navi: 12em;
-      }
       body {
         overflow: scroll;
       }
@@ -29,11 +26,6 @@
         align-content: start;
         gap: 1em;
         padding: 2em 1em 2em 2em;
-        position: absolute;
-        height: 100%;
-        background: var(--background-color);
-        z-index: 1;
-        width: var(--width-navi);
       }
 
       .header {
@@ -62,9 +54,7 @@
       }
 
       #panel-container {
-        position: relative;
-        left: calc(var(--width-navi) + 2em);
-        width: calc(100vw - var(--width-navi) - 2em);
+        /* overflow: scroll; */
       }
     </style>
   </head>

@@ -294,7 +294,7 @@ addStyleSheet(`
 .fontra-ui-font-info-sources-panel-header.min-height,
 .fontra-ui-font-info-sources-panel-source-box.min-height,
 .fontra-ui-font-info-sources-panel-column.min-height {
-  height: 0;
+  height: 0px;
   display: none;
 }
 
