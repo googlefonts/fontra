@@ -831,6 +831,15 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
+  get magicSelectionHit() {
+    return this.sceneModel.magicSelectionHit;
+  }
+
+  set magicSelectionHit(magicSelHit) {
+    this.sceneModel.magicSelectionHit = magicSelHit;
+    this.canvasController.requestUpdate();
+  }
+
   get backgroundLayers() {
     return this.sceneModel.backgroundLayers || [];
   }
