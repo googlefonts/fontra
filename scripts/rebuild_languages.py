@@ -56,7 +56,17 @@ def downloadSheet(url):
     return list(reader)
 
 
-def main(wip):
+def main():
+    parser = argparse.ArgumentParser(
+        description="Script to rebuild the language files from the Google Sheet"
+    )
+    parser.add_argument(
+        "--include-wip",
+        action="store_true",
+        help="Include work-in-progress strings, as marked with 'WIP' in the the first column.",
+    )
+    args = parser.parse_args()
+    includeWorkInProgress = args.include_wip
     languageSpreadsheetURL = (
         "https://docs.google.com/"
         "spreadsheets/d/1woTU8dZCHJh7yvdk-N1kgQBUj4Sn3SdRsbKgn6ltJQs/"
@@ -99,7 +109,7 @@ def main(wip):
         languageStrings[languageCode] = strings = {}
 
         for row in rows:
-            if wip or "WIP" not in row[0]:
+            if not includeWorkInProgress and "WIP" in row[0]:
                 # Skip rows marked as work in progress
                 continue
 
@@ -145,11 +155,4 @@ def main(wip):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Script to rebuild the language files from the Google Sheet"
-    )
-    parser.add_argument(
-        "--wip", action="store_true", required=False, help="Flag include WIP rows"
-    )
-    args = parser.parse_args()
-    main(args.wip)
+    main()
