@@ -328,7 +328,7 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   initActions() {
-    const topic = "0020-action-topics.menu.view";
+    const topic = "0200-action-topics.reference-font";
     registerAction(
       "action.select-previous-reference-font",
       {
