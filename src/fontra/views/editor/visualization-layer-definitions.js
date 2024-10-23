@@ -408,6 +408,46 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.background.image",
+  name: "Background image",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 100,
+  screenParameters: {
+    strokeWidth: 1,
+    originMarkerRadius: 4,
+  },
+  colors: { strokeColor: "#0006" },
+  colorsDarkMode: { strokeColor: "#FFF8" },
+
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const url = new URL(window.location);
+    console.log("url: ", url);
+    const image = positionedGlyph.glyph.image;
+    if (!image) {
+      return;
+    }
+    const sx = image.xOffset ? image.xOffset : 0;
+    const sy = image.yOffset ? image.yOffset : 0;
+    const xScale = image.xScale ? image.xScale : 1;
+    const yScale = image.yScale ? image.yScale : 1;
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+    // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+    const img = new Image();
+    img.type = "file";
+    img.src = `http://localhost:8000/MutatorSansLightCondensed.ufo/images/${image.fileName}`;
+    context.drawImage(img, sx, sy, img.width * xScale, img.height * yScale);
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeRect(sx, sy, img.width * xScale, img.height * yScale);
+
+    console.log("image: ", image);
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.guidelines",
   name: "Guidelines",
   selectionMode: "editing",
