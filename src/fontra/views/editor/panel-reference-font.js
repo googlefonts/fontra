@@ -356,7 +356,7 @@ export default class ReferenceFontPanel extends Panel {
       return;
     }
 
-    const index = this.filesUIList.getSelectedItemIndex();
+    const index = this.filesUIList.getSelectedItemIndex() || 0;
 
     const newIndex = isNaN(index)
       ? 0
