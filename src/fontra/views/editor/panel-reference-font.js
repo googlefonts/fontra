@@ -352,7 +352,7 @@ export default class ReferenceFontPanel extends Panel {
 
   async doSelectPreviousNextReferenceFont(selectPrevious) {
     const listLength = this.filesUIList.items.length;
-    if (!listLength) {
+    if (listLength < 2) {
       return;
     }
 
