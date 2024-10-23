@@ -2837,12 +2837,16 @@ export class EditorController {
 
   async doSelectPreviousNextReferenceFont(selectPrevious) {
     const panel = this.getSidebarPanel("reference-font");
-    const index = panel.filesUIList.getSelectedItemIndex();
     const listLength = panel.filesUIList.items.length;
-    if (index === undefined || listLength === 1) {
+    if (!listLength) {
       return;
     }
-    const newIndex = selectPrevious
+
+    const index = panel.filesUIList.getSelectedItemIndex();
+
+    const newIndex = isNaN(index)
+      ? 0
+      : selectPrevious
       ? index - 1 < 0
         ? listLength - 1
         : index - 1
