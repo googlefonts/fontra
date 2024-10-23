@@ -3,6 +3,7 @@ import * as html from "../core/html-utils.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
+import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
@@ -48,6 +49,7 @@ export class FontInfoController {
     for (const panelClass of [
       FontInfoPanel,
       AxesPanel,
+      CrossAxisMappingPanel,
       SourcesPanel,
       DevelopmentStatusDefinitionsPanel,
     ]) {

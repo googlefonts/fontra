@@ -82,6 +82,18 @@ export const strings = {
   "axes.range.values": "Waarden",
   "axes.title": "Assen",
   "canvas.clean-view-and-hand-tool": "Schone weergave en Hand gereedschap",
+  "cross-axis-mapping.axis-participates":
+    "When checked, this axis participates in the mapping",
+  "cross-axis-mapping.delete": "Delete cross-axis mapping",
+  "cross-axis-mapping.description": "Description",
+  "cross-axis-mapping.groupDescription": "Group description",
+  "cross-axis-mapping.header.inputLocation": "Input Location",
+  "cross-axis-mapping.header.outputLocation": "Output Location",
+  "cross-axis-mapping.new": "New cross-axis mapping",
+  "cross-axis-mapping.title": "Cross-axis mapping",
+  "cross-axis-mapping.undo.add": "add cross-axis mapping",
+  "cross-axis-mapping.undo.delete": "delete cross-axis mapping",
+  "cross-axis-mapping.undo.reorder": "reorder cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Wijzig alle compatibele sources",
   "development-status-definitions.title": "Statusdefinities",

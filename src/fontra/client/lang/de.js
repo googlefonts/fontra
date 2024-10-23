@@ -82,6 +82,18 @@ export const strings = {
   "axes.range.values": "Werte",
   "axes.title": "Achsen",
   "canvas.clean-view-and-hand-tool": "Ungehinderte Sicht und Hand Werkzeug",
+  "cross-axis-mapping.axis-participates":
+    "Wenn markiert, dann ist diese Achse teil des Mappings",
+  "cross-axis-mapping.delete": "Achsübergreifendes Mapping entfernen",
+  "cross-axis-mapping.description": "Bezeichnung",
+  "cross-axis-mapping.groupDescription": "Gruppen Bezeichnung",
+  "cross-axis-mapping.header.inputLocation": "Input Location",
+  "cross-axis-mapping.header.outputLocation": "Output Location",
+  "cross-axis-mapping.new": "Neues achsübergreifendes Mapping erstellen",
+  "cross-axis-mapping.title": "Achsübergreifendes Mapping",
+  "cross-axis-mapping.undo.add": "achsübergreifendes Mapping hinzufügen",
+  "cross-axis-mapping.undo.delete": "achsübergreifendes Mapping entfernen",
+  "cross-axis-mapping.undo.reorder": "achsübergreifendes Mapping umsortieren",
   "designspace-navigation.edit-all-compatible-sources":
     "Bearbeite alle kompatiblen Sourcen",
   "development-status-definitions.title": "Status Definitionen",
