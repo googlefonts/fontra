@@ -78,7 +78,7 @@ def main(wip):
         languageStrings[languageCode] = strings = {}
 
         for row in rows:
-            if wip and row[0] == "WIP":
+            if not wip and row[0] == "WIP":
                 # Skip rows marked as work in progress
                 continue
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         description="Script to rebuild the language files from the Google Sheet"
     )
     parser.add_argument(
-        "--wip", action="store_true", required=False, help="Flag to skip WIP rows"
+        "--wip", action="store_true", required=False, help="Flag include WIP rows"
     )
     args = parser.parse_args()
     main(args.wip)
