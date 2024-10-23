@@ -42,6 +42,7 @@ import {
   isObjectEmpty,
   loadURLFragment,
   makeUPlusStringFromCodePoint,
+  modulo,
   parseSelection,
   range,
   readFromClipboard,
@@ -2801,9 +2802,10 @@ export class EditorController {
         ...this.sceneSettings.glyphLocation,
       });
     } else {
-      const numSources = varGlyphController.sources.length;
-      newSourceIndex =
-        (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
+      newSourceIndex = modulo(
+        sourceIndex + (selectPrevious ? -1 : 1),
+        varGlyphController.sources.length
+      );
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
