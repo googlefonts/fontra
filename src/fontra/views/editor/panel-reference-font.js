@@ -12,7 +12,7 @@ import {
   span,
 } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
-import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
+import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
@@ -357,16 +357,8 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     const index = this.filesUIList.getSelectedItemIndex() || 0;
+    const newIndex = modulo(index + (selectPrevious ? -1 : 1), listLength);
 
-    const newIndex = isNaN(index)
-      ? 0
-      : selectPrevious
-      ? index - 1 < 0
-        ? listLength - 1
-        : index - 1
-      : index + 1 >= listLength
-      ? 0
-      : index + 1;
     this.filesUIList.setSelectedItemIndex(newIndex, true);
   }
 
