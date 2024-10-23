@@ -8,18 +8,12 @@
     <script type="module" src="/web-components/modal-dialog.js"></script>
     <script type="module" src="/core/theme-settings.js"></script>
     <style>
-      :root {
-        --width-navi: 12em;
-      }
       body {
         overflow: scroll;
       }
       .main-container {
-        display: grid;
-        grid-template-columns: 13em auto;
-        padding: 0em;
-        box-sizing: border-box;
-        gap: 0em;
+        display: flex;
+        height: 100vh;
       }
 
       #header-container {
@@ -31,7 +25,6 @@
         height: 100%;
         background: var(--background-color);
         z-index: 1;
-        width: var(--width-navi);
       }
 
       .header {
@@ -60,9 +53,7 @@
       }
 
       #panel-container {
-        position: relative;
-        left: calc(var(--width-navi) + 2em);
-        width: calc(100vw - var(--width-navi) - 2em);
+        width: 100%;
       }
     </style>
   </head>
@@ -81,5 +72,14 @@
     }
 
     startApp();
+
+    function adjustContentMargin() {
+      const nav = document.getElementById("header-container");
+      const content = document.getElementById("panel-container");
+      content.style.marginLeft = `${nav.offsetWidth}px`;
+    }
+    // The following setTimeout is a hack to execute the function after everything is rendered,
+    // this is important because of different languages.
+    setTimeout(adjustContentMargin, 10);
   </script>
 </html>
