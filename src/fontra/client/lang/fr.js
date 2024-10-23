@@ -81,11 +81,9 @@ export const strings = {
   "axes.range.values": "Valeurs",
   "axes.title": "Axes",
   "canvas.clean-view-and-hand-tool": "Prévisualisation et outil de déplacement",
-  "cross-axis-mapping.new": "New cross-axis mapping",
-  "cross-axis-mapping.title": "Cross-axis mapping",
   "designspace-navigation.edit-all-compatible-sources":
     "Éditer toutes les sources compatibles",
-  "development-status-definitions.title": "Status definitions",
+  "development-status-definitions.title": "Définition des statuts",
   "dialog.add": "Ajouter",
   "dialog.cancel": "Annuler",
   "dialog.create": "Créer",
@@ -148,7 +146,9 @@ export const strings = {
     "Retirer le glyphe sélectionné du canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Remplacer le glyphe sélectionné du canvas",
+  "menubar.view.select-next-reference-font": "Select previous reference font",
   "menubar.view.select-next-source": "Sélectionner la source suivante ",
+  "menubar.view.select-previous-reference-font": "Select next reference font",
   "menubar.view.select-previous-source": "Sélectionner la source précédente",
   "selection.none": "(Pas de sélection)",
   "sidebar.designspace-navigation": "Navigation du designspace",
