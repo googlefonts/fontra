@@ -109,7 +109,7 @@ def main():
         languageStrings[languageCode] = strings = {}
 
         for row in rows:
-            if not includeWorkInProgress and "WIP" in row[0]:
+            if "WIP" in row[0] and not includeWorkInProgress:
                 # Skip rows marked as work in progress
                 continue
 
