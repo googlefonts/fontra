@@ -6,6 +6,7 @@ export const strings = {
   "action-topics.glyph-editor-appearance": "Glyphe édition apparence",
   "action-topics.menu.edit": "Édition",
   "action-topics.menu.view": "Affichage",
+  "action-topics.reference-font": "Fonte de référence",
   "action-topics.selection-transformations": "Transformation de la sélection",
   "action-topics.sidebars": "Barres latérales",
   "action-topics.tools": "Outils",

@@ -6,6 +6,7 @@ export const strings = {
   "action-topics.glyph-editor-appearance": "Glyph editor uiterlijk",
   "action-topics.menu.edit": "Wijzig",
   "action-topics.menu.view": "Weergave",
+  "action-topics.reference-font": "Referentiefont",
   "action-topics.selection-transformations": "Selectie transformaties ",
   "action-topics.sidebars": "Zijbalken",
   "action-topics.tools": "Gereedschappen",

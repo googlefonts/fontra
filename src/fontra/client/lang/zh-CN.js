@@ -6,6 +6,7 @@ export const strings = {
   "action-topics.glyph-editor-appearance": "字符形编辑器外观",
   "action-topics.menu.edit": "编辑",
   "action-topics.menu.view": "视图",
+  "action-topics.reference-font": "参考字体",
   "action-topics.selection-transformations": "Selection Transformations",
   "action-topics.sidebars": "Sidebars",
   "action-topics.tools": "工具",
