@@ -3,7 +3,7 @@ import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
-  checkboxWithoutLabel,
+  labeledCheckbox,
   labeledTextInput,
   setupSortableList,
 } from "../core/ui-utils.js";
@@ -508,7 +508,7 @@ function buildElementLocationsLabel(axis) {
 }
 
 function buildElementLocationsCheckboxes(axis, controller, checkboxId) {
-  const element = checkboxWithoutLabel(controller, axis.name);
+  const element = labeledCheckbox(null, controller, axis.name);
   element.className = "fontra-ui-font-info-cross-axis-mapping-panel-checkboxes";
   element.setAttribute(
     "data-tooltip",

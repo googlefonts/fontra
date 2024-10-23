@@ -94,10 +94,6 @@ function didReorder(a, b) {
   return false;
 }
 
-export function checkboxWithoutLabel(controller, key, options) {
-  return labeledCheckbox(false, controller, key, options);
-}
-
 export function labeledCheckbox(label, controller, key, options) {
   const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
   const inputWrapper = html.div();
