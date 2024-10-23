@@ -145,10 +145,10 @@ export const strings = {
     "Entferne ausgewählten Glyphen von der Zeichenfläche",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Ersetze ausgewählten Glyphen auf der Zeichenfläche",
-  "menubar.view.select-next-reference-font": "Vorheriger Referenz-Font",
   "menubar.view.select-next-source": "Nächste Source",
-  "menubar.view.select-previous-reference-font": "Nächster Referenz-Font",
   "menubar.view.select-previous-source": "Vorherige Source",
+  "reference-font.select-next-reference-font": "Vorheriger Referenz-Font",
+  "reference-font.select-previous-reference-font": "Nächster Referenz-Font",
   "selection.none": "(Keine Auswahl)",
   "sidebar.designspace-navigation": "Designspace Navigation",
   "sidebar.designspace-navigation.font-axes": "Font-Achsen",
