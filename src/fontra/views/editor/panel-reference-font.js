@@ -1,3 +1,4 @@
+import { registerAction } from "../core/actions.js";
 import Panel from "./panel.js";
 
 import { getSelectedGlyphInfo } from "./scene-model.js";
@@ -11,7 +12,7 @@ import {
   span,
 } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
-import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
+import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
@@ -322,6 +323,43 @@ export default class ReferenceFontPanel extends Panel {
         cssString;
       this.editorController.canvasController.requestUpdate();
     });
+
+    this.initActions();
+  }
+
+  initActions() {
+    const topic = "0200-action-topics.reference-font";
+    registerAction(
+      "action.select-previous-reference-font",
+      {
+        topic,
+        titleKey: "reference-font.select-previous-reference-font",
+        defaultShortCuts: [],
+      },
+      () => this.doSelectPreviousNextReferenceFont(true)
+    );
+
+    registerAction(
+      "action.select-next-reference-font",
+      {
+        topic,
+        titleKey: "reference-font.select-next-reference-font",
+        defaultShortCuts: [],
+      },
+      () => this.doSelectPreviousNextReferenceFont(false)
+    );
+  }
+
+  async doSelectPreviousNextReferenceFont(selectPrevious) {
+    const listLength = this.filesUIList.items.length;
+    if (listLength < 2) {
+      return;
+    }
+
+    const index = this.filesUIList.getSelectedItemIndex() || 0;
+    const newIndex = modulo(index + (selectPrevious ? -1 : 1), listLength);
+
+    this.filesUIList.setSelectedItemIndex(newIndex, true);
   }
 
   async requestReferenceFontsPreview() {
