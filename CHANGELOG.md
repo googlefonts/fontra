@@ -11,7 +11,7 @@
 
 ## 2024-10-16
 
-- Pew pen tool icon [PR 1726](https://github.com/googlefonts/fontra/pull/1726)
+- New pen tool icon [PR 1726](https://github.com/googlefonts/fontra/pull/1726)
 
 ## 2024-10-14
 
