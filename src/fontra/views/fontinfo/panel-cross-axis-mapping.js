@@ -14,6 +14,8 @@ import { mapAxesFromUserSpaceToSourceSpace } from "/core/var-model.js";
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 
+const cardsInfos = {};
+
 export class CrossAxisMappingPanel extends BaseInfoPanel {
   static title = "cross-axis-mapping.title";
   static id = "cross-axis-mapping-panel";
@@ -45,6 +47,9 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
     });
 
     for (const index of range(mappings.length)) {
+      if (!cardsInfos[index]) {
+        cardsInfos[index] = {};
+      }
       container.appendChild(
         new CrossAxisMappingBox(
           this.fontController,
@@ -266,8 +271,8 @@ class CrossAxisMappingBox extends HTMLElement {
     }
   }
 
-  toggleShowHide(event) {
-    const cardElements = !event.altKey
+  toggleShowHide(altKey) {
+    const cardElements = !altKey
       ? [this]
       : document.querySelectorAll(
           ".fontra-ui-font-info-cross-axis-mapping-panel-cross-axis-mapping-box"
@@ -279,12 +284,14 @@ class CrossAxisMappingBox extends HTMLElement {
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
+        cardsInfos[cardElement.mappingIndex].isClosed = false;
         cardElement.classList.remove("item-closed");
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
           child.classList.remove("min-height");
         }
       } else {
+        cardsInfos[cardElement.mappingIndex].isClosed = true;
         cardElement.classList.add("item-closed");
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
@@ -356,7 +363,7 @@ class CrossAxisMappingBox extends HTMLElement {
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         open: false,
-        onclick: (event) => this.toggleShowHide(event),
+        onclick: (event) => this.toggleShowHide(event.altKey),
       })
     );
     this.append(html.div()); // empty cell for grid
@@ -462,6 +469,11 @@ class CrossAxisMappingBox extends HTMLElement {
       this.append(
         html.div({ class: "fontra-ui-font-info-cross-axis-mapping-panel-empty" })
       );
+    }
+
+    const isClosed = !!cardsInfos[this.mappingIndex].isClosed;
+    if (isClosed) {
+      this.toggleShowHide(false);
     }
   }
 }
