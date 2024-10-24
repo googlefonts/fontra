@@ -20,6 +20,8 @@ import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
+const cardsInfos = {};
+
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
   static id = "sources-panel";
@@ -51,6 +53,9 @@ export class SourcesPanel extends BaseInfoPanel {
       sources,
       this.fontAxesSourceSpace
     )) {
+      if (!cardsInfos[identifier]) {
+        cardsInfos[identifier] = {};
+      }
       container.appendChild(
         new SourceBox(
           this.fontAxesSourceSpace,
@@ -447,8 +452,8 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  toggleShowHide(event) {
-    const cardElements = !event.altKey
+  toggleShowHide(altKey) {
+    const cardElements = !altKey
       ? [this]
       : document.querySelectorAll(".fontra-ui-font-info-sources-panel-source-box");
 
@@ -458,12 +463,14 @@ class SourceBox extends HTMLElement {
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
+        cardsInfos[cardElement.sourceIdentifier]["isClosed"] = false;
         cardElement.classList.remove("item-closed");
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
           child.classList.remove("min-height");
         }
       } else {
+        cardsInfos[cardElement.sourceIdentifier]["isClosed"] = true;
         cardElement.classList.add("item-closed");
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
@@ -550,7 +557,7 @@ class SourceBox extends HTMLElement {
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         open: false,
-        onclick: (event) => this.toggleShowHide(event),
+        onclick: (event) => this.toggleShowHide(event.altKey),
       })
     );
 
@@ -584,6 +591,11 @@ class SourceBox extends HTMLElement {
     this.append(
       buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
     );
+
+    const isClosed = cardsInfos[this.sourceIdentifier]["isClosed"] || false;
+    if (isClosed) {
+      this.toggleShowHide(false);
+    }
   }
 }
 
