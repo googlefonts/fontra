@@ -9,7 +9,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import { round } from "../core/utils.js";
+import { enumerate, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -19,6 +19,8 @@ import {
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
+
+const cardsInfos = {};
 
 export class SourcesPanel extends BaseInfoPanel {
   static title = "sources.title";
@@ -51,6 +53,9 @@ export class SourcesPanel extends BaseInfoPanel {
       sources,
       this.fontAxesSourceSpace
     )) {
+      if (!cardsInfos[identifier]) {
+        cardsInfos[identifier] = {};
+      }
       container.appendChild(
         new SourceBox(
           this.fontAxesSourceSpace,
@@ -291,9 +296,11 @@ addStyleSheet(`
   overflow: scroll;
 }
 
-fontra-ui-font-info-sources-panel-source-box.min-height,
+.fontra-ui-font-info-sources-panel-header.min-height,
+.fontra-ui-font-info-sources-panel-source-box.min-height,
 .fontra-ui-font-info-sources-panel-column.min-height {
-  height: 45px;
+  height: 0;
+  display: none;
 }
 
 .fontra-ui-font-info-sources-panel-line-metrics-hor {
@@ -317,6 +324,25 @@ fontra-ui-font-info-sources-panel-source-box.min-height,
 
 .fontra-ui-font-info-sources-panel-icon.open-close-icon.item-closed {
   transform: rotate(180deg);
+}
+
+.fontra-ui-font-info-sources-panel-oneliner > .source-name {
+  font-weight: bold;
+  margin-right: 1em;
+}
+
+.fontra-ui-font-info-sources-panel-oneliner > .axis-is-at-default {
+    color: #999;
+}
+
+.fontra-ui-font-info-sources-panel-oneliner {
+  display: none;
+}
+
+.fontra-ui-font-info-sources-panel-oneliner.min-height {
+  display: block;
+  align-content: center;
+  grid-column-start: span 3;
 }
 
 `);
@@ -400,7 +426,6 @@ class SourceBox extends HTMLElement {
 
     if (errorMessage) {
       message(`Can’t edit font source`, errorMessage);
-      this.setupUI();
       return false;
     }
     return true;
@@ -428,13 +453,63 @@ class SourceBox extends HTMLElement {
     }
   }
 
-  toggleShowHide() {
-    const element = this.querySelector("#open-close-icon");
-    element.classList.toggle("item-closed");
+  toggleShowHide(altKey) {
+    const cardElements = !altKey
+      ? [this]
+      : document.querySelectorAll(".fontra-ui-font-info-sources-panel-source-box");
 
-    for (const child of this.children) {
-      child.classList.toggle("min-height");
+    const thisIconElement = this.querySelector("#open-close-icon");
+    const isClosed = thisIconElement.classList.contains("item-closed");
+
+    for (const cardElement of cardElements) {
+      const elementIcon = cardElement.querySelector("#open-close-icon");
+      if (isClosed) {
+        cardsInfos[cardElement.sourceIdentifier].isClosed = false;
+        cardElement.classList.remove("item-closed");
+        elementIcon.classList.remove("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.remove("min-height");
+        }
+      } else {
+        cardsInfos[cardElement.sourceIdentifier].isClosed = true;
+        cardElement.classList.add("item-closed");
+        elementIcon.classList.add("item-closed");
+        for (const child of cardElement.children) {
+          child.classList.add("min-height");
+        }
+      }
     }
+  }
+
+  getOneliner() {
+    const onelinerElement = html.div({
+      class: "fontra-ui-font-info-sources-panel-oneliner",
+    });
+    onelinerElement.appendChild(
+      html.span({ class: "source-name" }, [this.source.name])
+    );
+
+    const lastItem = this.fontAxesSourceSpace.length - 1;
+    for (const [i, axis] of enumerate(this.fontAxesSourceSpace)) {
+      const axisElement = document.createElement("span");
+      const sourceLocationValue = round(
+        this.source.location.hasOwnProperty(axis.name)
+          ? this.source.location[axis.name]
+          : axis.defaultValue,
+        2
+      );
+
+      axisElement.innerText = `${axis.name}=${sourceLocationValue}${
+        i == lastItem ? "" : ", "
+      }`;
+
+      if (axis.defaultValue == sourceLocationValue) {
+        axisElement.classList.add("axis-is-at-default");
+      }
+      onelinerElement.appendChild(axisElement);
+    }
+
+    return onelinerElement;
   }
 
   _updateContents() {
@@ -449,6 +524,7 @@ class SourceBox extends HTMLElement {
     this.controllers.general.addListener((event) => {
       if (event.key == "name") {
         if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
+          this.controllers.general.model.name = this.source.name;
           return;
         }
       }
@@ -463,6 +539,7 @@ class SourceBox extends HTMLElement {
 
     this.controllers.location.addListener((event) => {
       if (!this.checkSourceLocation(event.key, event.newValue)) {
+        this.controllers.location.model[event.key] = this.source.location[event.key];
         return;
       }
       this.editSource((source) => {
@@ -483,13 +560,16 @@ class SourceBox extends HTMLElement {
     this.innerHTML = "";
     this.append(
       html.createDomElement("icon-button", {
-        class: "fontra-ui-font-info-sources-panel-icon open-close-icon item-closed",
+        class: "fontra-ui-font-info-sources-panel-icon open-close-icon",
         id: "open-close-icon",
         src: "/tabler-icons/chevron-up.svg",
         open: false,
-        onclick: (event) => this.toggleShowHide(),
+        onclick: (event) => this.toggleShowHide(event.altKey),
       })
     );
+
+    // This is the oneliner for the folded card –> only visible when folded.
+    this.append(this.getOneliner());
 
     for (const key in models) {
       this.append(
@@ -518,6 +598,11 @@ class SourceBox extends HTMLElement {
     this.append(
       buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
     );
+
+    const isClosed = !!cardsInfos[this.sourceIdentifier].isClosed;
+    if (isClosed) {
+      this.toggleShowHide(false);
+    }
   }
 }
 
@@ -545,7 +630,7 @@ function buildElement(controller) {
   }
 
   return html.div(
-    { class: "fontra-ui-font-info-sources-panel-column min-height" },
+    { class: "fontra-ui-font-info-sources-panel-column" },
     items
       .map(([labelName, keyName, value]) => {
         if (typeof value === "boolean") {
@@ -572,7 +657,7 @@ function buildElementLineMetricsHor(controller) {
   return html.div(
     {
       class:
-        "fontra-ui-font-info-sources-panel-column min-height fontra-ui-font-info-sources-panel-line-metrics-hor",
+        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-line-metrics-hor",
     },
     items
       .map(([labelName, keyName]) => {
@@ -588,7 +673,7 @@ function buildElementLineMetricsHor(controller) {
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
     continuous: false,
-    class: `fontra-ui-font-info-sources-panel-column min-height`,
+    class: `fontra-ui-font-info-sources-panel-column`,
   });
   locationElement.axes = fontAxes;
   locationElement.controller = controller;
