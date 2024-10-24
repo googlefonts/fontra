@@ -592,7 +592,7 @@ class SourceBox extends HTMLElement {
       buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
     );
 
-    const isClosed = cardsInfos[this.sourceIdentifier]["isClosed"] || false;
+    const isClosed = !!cardsInfos[this.sourceIdentifier].isClosed;
     if (isClosed) {
       this.toggleShowHide(false);
     }
