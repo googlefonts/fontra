@@ -190,7 +190,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       {
         id: "glyph-layers-accordion-item",
-        label: "Glyph layers", // XXXX TODO add translate strings
+        label: "Source layers", // XXXX TODO add translate strings
         open: true,
         content: html.div(
           {
@@ -828,6 +828,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   async _updateEditingStatus() {
     const selectedItem = this.sourcesList.getSelectedItem();
     if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
+      // TODO: take background layers into account
       this.sourcesList.items.forEach((item) => {
         item.editing = item === selectedItem;
       });
