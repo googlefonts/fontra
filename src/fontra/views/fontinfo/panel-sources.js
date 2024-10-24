@@ -327,17 +327,15 @@ addStyleSheet(`
 }
 
 .fontra-ui-font-info-sources-panel-oneliner > .source-name {
-  color: var(--foreground-color);
   font-weight: bold;
   margin-right: 1em;
 }
 
-.fontra-ui-font-info-sources-panel-oneliner > .not-default {
-    color: var(--foreground-color);
+.fontra-ui-font-info-sources-panel-oneliner > .axis-is-at-default {
+    color: #999;
 }
 
 .fontra-ui-font-info-sources-panel-oneliner {
-  color: #888;
   display: none;
 }
 
@@ -491,10 +489,8 @@ class SourceBox extends HTMLElement {
       html.span({ class: "source-name" }, [this.source.name])
     );
 
+    const lastItem = this.fontAxesSourceSpace.length - 1;
     for (const [i, axis] of enumerate(this.fontAxesSourceSpace)) {
-      if (i > 0) {
-        onelinerElement.append(", ");
-      }
       const axisElement = document.createElement("span");
       const sourceLocationValue = round(
         this.source.location.hasOwnProperty(axis.name)
@@ -502,10 +498,13 @@ class SourceBox extends HTMLElement {
           : axis.defaultValue,
         2
       );
-      axisElement.innerText = `${axis.name}=${sourceLocationValue}`;
 
-      if (axis.defaultValue != sourceLocationValue) {
-        axisElement.classList.add("not-default");
+      axisElement.innerText = `${axis.name}=${sourceLocationValue}${
+        i == lastItem ? "" : ", "
+      }`;
+
+      if (axis.defaultValue == sourceLocationValue) {
+        axisElement.classList.add("axis-is-at-default");
       }
       onelinerElement.appendChild(axisElement);
     }
