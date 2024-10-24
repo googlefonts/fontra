@@ -494,7 +494,7 @@ class SourceBox extends HTMLElement {
         onelinerElement.append(", ");
       }
       const axisElement = document.createElement("span");
-      const sourceLocationValue = round(this.source.location[axis.name], 2);
+      const sourceLocationValue = round(this.source.location.hasOwnProperty(axis.name) ? this.source.location[axis.name] : axis.defaultValue, 2);
       axisElement.innerText = `${axis.name}=${sourceLocationValue}`;
 
       if (axis.defaultValue != sourceLocationValue) {
