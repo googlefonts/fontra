@@ -326,10 +326,10 @@ addStyleSheet(`
   transform: rotate(180deg);
 }
 
-.fontra-ui-font-info-sources-panel-oneliner > .bold {
+.fontra-ui-font-info-sources-panel-oneliner > .source-name {
   color: var(--foreground-color);
   font-weight: bold;
-  margin-right: 0.5em;
+  margin-right: 1em;
 }
 
 .fontra-ui-font-info-sources-panel-oneliner > .not-default {
@@ -487,14 +487,21 @@ class SourceBox extends HTMLElement {
     const onelinerElement = html.div({
       class: "fontra-ui-font-info-sources-panel-oneliner",
     });
-    onelinerElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
+    onelinerElement.appendChild(
+      html.span({ class: "source-name" }, [this.source.name])
+    );
 
     for (const [i, axis] of enumerate(this.fontAxesSourceSpace)) {
       if (i > 0) {
         onelinerElement.append(", ");
       }
       const axisElement = document.createElement("span");
-      const sourceLocationValue = round(this.source.location.hasOwnProperty(axis.name) ? this.source.location[axis.name] : axis.defaultValue, 2);
+      const sourceLocationValue = round(
+        this.source.location.hasOwnProperty(axis.name)
+          ? this.source.location[axis.name]
+          : axis.defaultValue,
+        2
+      );
       axisElement.innerText = `${axis.name}=${sourceLocationValue}`;
 
       if (axis.defaultValue != sourceLocationValue) {
