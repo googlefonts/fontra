@@ -9,7 +9,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import { round } from "../core/utils.js";
+import { enumerate, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -327,15 +327,17 @@ addStyleSheet(`
 }
 
 .fontra-ui-font-info-sources-panel-oneliner > .bold {
+  color: var(--foreground-color);
   font-weight: bold;
   margin-right: 0.5em;
 }
 
-.fontra-ui-font-info-sources-panel-oneliner > .default {
-  color: #888;
+.fontra-ui-font-info-sources-panel-oneliner > .not-default {
+    color: var(--foreground-color);
 }
 
 .fontra-ui-font-info-sources-panel-oneliner {
+  color: #888;
   display: none;
 }
 
@@ -487,20 +489,18 @@ class SourceBox extends HTMLElement {
     });
     onelinerElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
 
-    for (const axis of this.fontAxesSourceSpace) {
+    for (const [i, axis] of enumerate(this.fontAxesSourceSpace)) {
+      if (i > 0) {
+        onelinerElement.append(", ");
+      }
       const axisElement = document.createElement("span");
       const sourceLocationValue = round(this.source.location[axis.name], 2);
-      axisElement.innerText = `${axis.name}=${sourceLocationValue}, `;
+      axisElement.innerText = `${axis.name}=${sourceLocationValue}`;
 
-      if (axis.defaultValue == sourceLocationValue) {
-        axisElement.classList.add("default");
+      if (axis.defaultValue != sourceLocationValue) {
+        axisElement.classList.add("not-default");
       }
       onelinerElement.appendChild(axisElement);
-    }
-
-    const lastChild = onelinerElement.lastChild;
-    if (lastChild.innerText.endsWith(", ")) {
-      lastChild.innerText = lastChild.innerText.slice(0, -2);
     }
 
     return onelinerElement;
