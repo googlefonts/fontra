@@ -481,7 +481,7 @@ class SourceBox extends HTMLElement {
 
     for (const axis of this.fontAxesSourceSpace) {
       const axisElement = document.createElement("span");
-      const sourceLocationValue = this.source.location[axis.name];
+      const sourceLocationValue = round(this.source.location[axis.name], 2);
       axisElement.innerText = `${axis.name}=${sourceLocationValue}, `;
 
       if (axis.defaultValue == sourceLocationValue) {
