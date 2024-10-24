@@ -466,7 +466,7 @@ class SourceBox extends HTMLElement {
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
-        cardsInfos[cardElement.sourceIdentifier]["isClosed"] = false;
+        cardsInfos[cardElement.sourceIdentifier].isClosed = false;
         cardElement.classList.remove("item-closed");
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
