@@ -2,12 +2,13 @@
 
 ## 2024-10-24
 
-- Add changelog file (CHANGELOG.md)
+- Various improvements to the font sources panel [PR 1739](https://github.com/googlefonts/fontra/pull/1739)
+- Add changelog file [PR 1749](https://github.com/googlefonts/fontra/pull/1749)
 
 ## 2024-10-23
 
 - New cross-axis mapping page for avar2 mappings [PR 1729](https://github.com/googlefonts/fontra/pull/1729)
-- Previous/next reference fonts can have custom shortcuts [PR 1742](https://github.com/googlefonts/fontra/pull/1742)
+- Allow custom shortcuts for selecting previous/next reference font [PR 1742](https://github.com/googlefonts/fontra/pull/1742)
 
 ## 2024-10-16
 
