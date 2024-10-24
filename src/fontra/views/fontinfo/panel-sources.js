@@ -294,7 +294,7 @@ addStyleSheet(`
 .fontra-ui-font-info-sources-panel-header.min-height,
 .fontra-ui-font-info-sources-panel-source-box.min-height,
 .fontra-ui-font-info-sources-panel-column.min-height {
-  height: 0px;
+  height: 0;
   display: none;
 }
 
@@ -420,7 +420,6 @@ class SourceBox extends HTMLElement {
 
     if (errorMessage) {
       message(`Can’t edit font source`, errorMessage);
-      this.setupUI();
       return false;
     }
     return true;
@@ -491,11 +490,9 @@ class SourceBox extends HTMLElement {
       onelinerElement.appendChild(axisElement);
     }
 
-    if (onelinerElement.lastChild.innerText.endsWith(", ")) {
-      onelinerElement.lastChild.innerText = onelinerElement.lastChild.innerText.slice(
-        0,
-        -2
-      );
+    const lastChild = onelinerElement.lastChild;
+    if (lastChild.innerText.endsWith(", ")) {
+      lastChild.innerText = lastChild.innerText.slice(0, -2);
     }
 
     return onelinerElement;
@@ -513,6 +510,7 @@ class SourceBox extends HTMLElement {
     this.controllers.general.addListener((event) => {
       if (event.key == "name") {
         if (!this.checkSourceEntry("name", undefined, event.newValue.trim())) {
+          this.controllers.general.model.name = this.source.name;
           return;
         }
       }
@@ -527,6 +525,7 @@ class SourceBox extends HTMLElement {
 
     this.controllers.location.addListener((event) => {
       if (!this.checkSourceLocation(event.key, event.newValue)) {
+        this.controllers.location.model[event.key] = this.source.location[event.key];
         return;
       }
       this.editSource((source) => {
