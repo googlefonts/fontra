@@ -374,11 +374,12 @@ class SourceBox extends HTMLElement {
 
       let existsAlready = false;
       let sourceValue;
+      let thisSourceValue = value;
 
       if (valueKey == undefined) {
         if (key == "location") {
           sourceValue = locationToString(source[key]);
-          value = locationToString(value);
+          thisSourceValue = locationToString(value);
         } else {
           sourceValue = source[key];
         }
@@ -386,12 +387,12 @@ class SourceBox extends HTMLElement {
         sourceValue = source[key][valueKey];
       }
 
-      if (sourceValue == value) {
+      if (sourceValue == thisSourceValue) {
         existsAlready = true;
       }
 
       if (existsAlready) {
-        errorMessage = `${key}${valueKey ? " " + valueKey : ""}: “${value}”
+        errorMessage = `${key}${valueKey ? " " + valueKey : ""}: “${thisSourceValue}”
           exists already, please use a different value.`;
         break;
       }
