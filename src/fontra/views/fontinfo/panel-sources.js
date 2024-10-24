@@ -456,20 +456,16 @@ class SourceBox extends HTMLElement {
     const thisIconElement = this.querySelector("#open-close-icon");
     const isClosed = thisIconElement.classList.contains("item-closed");
 
-    if (isClosed) {
-      this.classList.remove("item-closed");
-    } else {
-      this.classList.add("item-closed");
-    }
-
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
+        cardElement.classList.remove("item-closed");
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
           child.classList.remove("min-height");
         }
       } else {
+        cardElement.classList.add("item-closed");
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
           child.classList.add("min-height");
