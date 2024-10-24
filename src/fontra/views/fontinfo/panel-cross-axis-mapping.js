@@ -291,7 +291,7 @@ class CrossAxisMappingBox extends HTMLElement {
           child.classList.remove("min-height");
         }
       } else {
-        cardsInfos[cardElement.mappingIndex]["isClosed"] = true;
+        cardsInfos[cardElement.mappingIndex].isClosed = true;
         cardElement.classList.add("item-closed");
         elementIcon.classList.add("item-closed");
         for (const child of cardElement.children) {
