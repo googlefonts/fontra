@@ -19,7 +19,7 @@
 
 ## 2024-10-13
 
-Fontra Pak: build macOS application as "Universal2" binary, so it runs natively on all processor types [Fontra Pak PR 108](https://github.com/googlefonts/fontra-pak/pull/108)
+- Fontra Pak: build macOS application as "Universal2" binary, so it runs natively on all processor types [Fontra Pak PR 108](https://github.com/googlefonts/fontra-pak/pull/108)
 
 ## 2024-10-12
 
@@ -27,7 +27,7 @@ Fontra Pak: build macOS application as "Universal2" binary, so it runs natively 
 
 ## 2024-10-10
 
-Fontra Pak: added "Export as..." functionality [Fontra Pak PR 133](https://github.com/googlefonts/fontra-pak/pull/133)
+- Fontra Pak: added "Export as..." functionality [Fontra Pak PR 133](https://github.com/googlefonts/fontra-pak/pull/133)
 
 ## 2024-09-27
 
