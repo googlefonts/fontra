@@ -284,7 +284,7 @@ class CrossAxisMappingBox extends HTMLElement {
     for (const cardElement of cardElements) {
       const elementIcon = cardElement.querySelector("#open-close-icon");
       if (isClosed) {
-        cardsInfos[cardElement.mappingIndex]["isClosed"] = false;
+        cardsInfos[cardElement.mappingIndex].isClosed = false;
         cardElement.classList.remove("item-closed");
         elementIcon.classList.remove("item-closed");
         for (const child of cardElement.children) {
