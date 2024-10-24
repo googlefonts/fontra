@@ -2,31 +2,39 @@
 
 ## 2024-10-24
 
-- Add change log file
+- Add changelog file (CHANGELOG.md)
 
 ## 2024-10-23
 
-- new cross-axis mapping page for avar2 mappings
-- previous/next reference fonts can have custom shortcuts
+- New cross-axis mapping page for avar2 mappings [PR 1729](https://github.com/googlefonts/fontra/pull/1729)
+- Previous/next reference fonts can have custom shortcuts [PR 1742](https://github.com/googlefonts/fontra/pull/1742)
 
 ## 2024-10-16
 
-- new pen tool icon
+- Pew pen tool icon [PR 1726](https://github.com/googlefonts/fontra/pull/1726)
 
 ## 2024-10-14
 
 - New languages: French, Dutch, German
 
+## 2024-10-13
+
+Fontra Pak: build macOS application as "Universal2" binary, so it runs natively on all processor types [Fontra Pak PR 108](https://github.com/googlefonts/fontra-pak/pull/108)
+
 ## 2024-10-12
 
-- delete gear panel (move to difference locations, for example: View -> Glyph editor apperance)
+- Delete gear panel (move to difference locations, for example: View -> Glyph editor apperance) [PR 1701](https://github.com/googlefonts/fontra/pull/1701)
+
+## 2024-10-10
+
+Fontra Pak: added "Export as..." functionality [Fontra Pak PR 133](https://github.com/googlefonts/fontra-pak/pull/133)
 
 ## 2024-09-27
 
 - Shape tool (rectangle, ellipse)
 - Knife tool
 
-New editor features:
+### New editor features
 
 - Interactive transformation (scale, rotate)
 - Glyph level guidelines
@@ -34,13 +42,13 @@ New editor features:
 - Anchors
 - Glyph locking
 
-New panels:
+### New panels
 
 - Development status definitions panel (colors)
 - Sources panel (Global sources editor)
 - Shortcuts panel
 
-New sidebars:
+### New sidebars
 
 - Selection Transformation
   - transform objects (move, scale, rotate, skew)
@@ -49,7 +57,7 @@ New sidebars:
 - Glyph Notes
 - Related Glyphs & Characters
 
-New visualizations:
+### New visualizations
 
 - Line metrics
 - Development status color
@@ -63,9 +71,9 @@ New visualizations:
 - Point indices
 - Glyph lock icon for non-editing glyphs
 
-Misc:
+### Misc
 
-- Translation (Chinese and English)
+- UI Translation (Chinese and English)
 
 ## 2024-03-01
 
