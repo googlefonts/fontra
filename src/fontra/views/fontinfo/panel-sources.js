@@ -328,6 +328,7 @@ addStyleSheet(`
 
 .fontra-ui-font-info-sources-panel-oneliner > .bold {
   font-weight: bold;
+  margin-right: 0.5em;
 }
 
 .fontra-ui-font-info-sources-panel-oneliner > .default {
@@ -484,7 +485,7 @@ class SourceBox extends HTMLElement {
     const onelinerElement = html.div({
       class: "fontra-ui-font-info-sources-panel-oneliner",
     });
-    onelinerElement.appendChild(html.span({ class: "bold" }, [this.source.name] + " "));
+    onelinerElement.appendChild(html.span({ class: "bold" }, [this.source.name]));
 
     for (const axis of this.fontAxesSourceSpace) {
       const axisElement = document.createElement("span");
