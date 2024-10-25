@@ -1503,15 +1503,15 @@ export class EditorController {
       this.basicContextMenuItems.push(
         {
           title: "Cut",
-          actionIdentifier: "action.clipboard.cut",
+          actionIdentifier: "action.cut",
         },
         {
           title: "Copy",
-          actionIdentifier: "action.clipboard.copy",
+          actionIdentifier: "action.copy",
         },
         {
           title: "Paste",
-          actionIdentifier: "action.clipboard.paste",
+          actionIdentifier: "action.paste",
         }
       );
     }
