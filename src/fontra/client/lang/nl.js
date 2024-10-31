@@ -146,7 +146,7 @@ export const strings = {
   "menubar.glyph.delete": "Verwijder source...",
   "menubar.glyph.edit-axes": "Wijzig glyph assen...",
   "menubar.help": "Help",
-  "menubar.help.changelog": "Update Notes",
+  "menubar.help.changelog": "Latest changes",
   "menubar.help.documentation": "Documentatie",
   "menubar.help.homepage": "Thuispagina",
   "menubar.view": "Weergave",

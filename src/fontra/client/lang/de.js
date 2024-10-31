@@ -147,7 +147,7 @@ export const strings = {
   "menubar.glyph.delete": "Source entfernen...",
   "menubar.glyph.edit-axes": "Glyph-Achse bearbeiten...",
   "menubar.help": "Hilfe",
-  "menubar.help.changelog": "Update Notes",
+  "menubar.help.changelog": "Letzte Änderungen",
   "menubar.help.documentation": "Dokumentation",
   "menubar.help.homepage": "Homepage",
   "menubar.view": "Ansicht",
