@@ -9,10 +9,10 @@
     "@rollup/plugin-node-resolve": "^15.3.0",
     "chai": "^5.1.2",
     "chai-almost": "^1.0.1",
-    "mocha": "^10.7.3",
+    "mocha": "^10.8.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-sort-json": "^4.0.0",
-    "rollup": "^4.24.0"
+    "rollup": "^4.24.3"
   },
   "dependencies": {
     "bezier-js": "^6.1.4",
