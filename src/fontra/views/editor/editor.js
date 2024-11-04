@@ -855,6 +855,13 @@ export class EditorController {
               },
             },
             {
+              title: translate("menubar.help.changelog"),
+              enabled: () => true,
+              callback: () => {
+                window.open("https://fontra.xyz/changelog.html");
+              },
+            },
+            {
               title: "GitHub",
               enabled: () => true,
               callback: () => {

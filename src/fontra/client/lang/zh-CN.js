@@ -145,6 +145,7 @@ export const strings = {
   "menubar.glyph.delete": "删除图层……",
   "menubar.glyph.edit-axes": "编辑字形参数轴……",
   "menubar.help": "帮助",
+  "menubar.help.changelog": "Latest changes",
   "menubar.help.documentation": "文档",
   "menubar.help.homepage": "主页",
   "menubar.view": "视图",
