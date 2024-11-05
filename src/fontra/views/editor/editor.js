@@ -2846,8 +2846,10 @@ export class EditorController {
 
   async doSelectPreviousNextGlyph(selectPrevious) {
     const panel = this.getSidebarPanel("glyph-search");
-    const filteredGlyphItems = panel.glyphsSearch.filteredGlyphItems;
-    const glyphNames = filteredGlyphItems.map((x) => x.glyphName);
+    const glyphNames = panel.glyphsSearch.getFilteredGlyphNames();
+    if (!glyphNames.length) {
+      return;
+    }
 
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
     if (!selectedGlyphName) {

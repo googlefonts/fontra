@@ -123,6 +123,10 @@ export class GlyphsSearch extends UnlitElement {
     return this.glyphNamesList.items[this.glyphNamesList.selectedItemIndex]?.glyphName;
   }
 
+  getFilteredGlyphNames() {
+    return this.glyphNamesList.items.map((item) => item.glyphName);
+  }
+
   updateGlyphNamesListContent() {
     const glyphMap = this.glyphMap;
     this.glyphsListItems = [];
@@ -151,7 +155,6 @@ export class GlyphsSearch extends UnlitElement {
     const filteredGlyphItems = this.glyphsListItems.filter(
       this._glyphNamesListFilterFunc
     );
-    this.filteredGlyphItems = filteredGlyphItems;
     this.glyphNamesList.setItems(filteredGlyphItems);
   }
 }
