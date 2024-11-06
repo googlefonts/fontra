@@ -21,11 +21,17 @@ import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 
 export class SceneModel {
-  constructor(fontController, sceneSettingsController, isPointInPath) {
+  constructor(
+    fontController,
+    sceneSettingsController,
+    isPointInPath,
+    editorController
+  ) {
     this.fontController = fontController;
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
+    this.editorController = editorController;
     this.hoveredGlyph = undefined;
     this._glyphLocations = {}; // glyph name -> glyph location
     this.longestLineLength = 0;
@@ -681,6 +687,10 @@ export class SceneModel {
   }
 
   guidelineSelectionAtPoint(point, size, parsedCurrentSelection) {
+    if (!this.editorController.visualizationLayersSettings.model["fontra.guidelines"]) {
+      // If guidelines are hidden, don't allow selection
+      return new Set();
+    }
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
