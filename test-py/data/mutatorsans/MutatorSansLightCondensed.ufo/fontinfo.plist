@@ -55,6 +55,10 @@
     <integer>0</integer>
     <key>openTypeNameLicense</key>
     <string>License same as MutatorMath. BSD 3-clause. [test-token: C]</string>
+    <key>openTypeOS2TypoAscender</key>
+    <integer>700</integer>
+    <key>openTypeOS2TypoDescender</key>
+    <integer>-200</integer>
     <key>openTypeOS2VendorID</key>
     <string>LTTR</string>
     <key>postscriptBlueValues</key>
