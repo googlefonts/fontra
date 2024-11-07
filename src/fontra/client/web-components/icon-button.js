@@ -12,21 +12,28 @@ export class IconButton extends UnlitElement {
       color: var(--foreground-color);
       width: 100%;
       height: 100%;
-      transition: 150ms;
       cursor: pointer;
-      will-change: transform;
+      contain: content;
     }
 
-    button:hover {
+    button svg {
+      will-change: transform;
+      transition: 150ms;
+    }
+
+    button:hover svg {
       transform: scale(1.1, 1.1);
     }
 
-    button:active {
+    button:active svg {
       transform: scale(1.2, 1.2);
     }
 
     button:disabled {
       opacity: 35%;
+    }
+
+    button:disabled svg {
       transform: none;
     }
 
