@@ -131,6 +131,7 @@ class FontBackendMerger:
                     | sourceB.lineMetricsHorizontalLayout,
                     lineMetricsVerticalLayout=sourceA.lineMetricsVerticalLayout
                     | sourceB.lineMetricsVerticalLayout,
+                    customData=sourceA.customData | sourceB.customData,
                 )
 
         return MergedSourcesInfo(
