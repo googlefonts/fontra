@@ -1422,6 +1422,7 @@ class UFOManager:
 ufoInfoAttributesToRoundTrip = [
     "openTypeOS2TypoAscender",
     "openTypeOS2TypoDescender",
+    "openTypeOS2TypoLineGap",
     "openTypeOS2WinAscent",
     "openTypeOS2WinDescent",
 ]
