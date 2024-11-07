@@ -61,38 +61,6 @@
     <integer>-200</integer>
     <key>openTypeOS2VendorID</key>
     <string>LTTR</string>
-    <key>postscriptBlueValues</key>
-    <array>
-      <integer>-16</integer>
-      <integer>0</integer>
-      <integer>500</integer>
-      <integer>516</integer>
-      <integer>700</integer>
-      <integer>716</integer>
-    </array>
-    <key>postscriptDefaultWidthX</key>
-    <integer>500</integer>
-    <key>postscriptFamilyBlues</key>
-    <array/>
-    <key>postscriptFamilyOtherBlues</key>
-    <array/>
-    <key>postscriptFontName</key>
-    <string>MutatorMathTest-LightCondensed</string>
-    <key>postscriptFullName</key>
-    <string>MutatorMathTest LightCondensed</string>
-    <key>postscriptOtherBlues</key>
-    <array>
-      <integer>-216</integer>
-      <integer>-200</integer>
-    </array>
-    <key>postscriptSlantAngle</key>
-    <integer>0</integer>
-    <key>postscriptStemSnapH</key>
-    <array/>
-    <key>postscriptStemSnapV</key>
-    <array/>
-    <key>postscriptWindowsCharacterSet</key>
-    <integer>1</integer>
     <key>styleMapFamilyName</key>
     <string></string>
     <key>styleMapStyleName</key>
