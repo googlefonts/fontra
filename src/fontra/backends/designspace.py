@@ -93,7 +93,7 @@ lineMetricsVerMapping = {
     # Fontra / UFO
     "ascender": "openTypeVheaVertTypoAscender",
     "descender": "openTypeVheaVertTypoDescender",
-    "lineGap": "openTypeVheaVertTypoLineGap",
+    "lineGap": "openTypeVheaVertTypoLineGap",  # TODO: this doesn't really belong here
     # ("slopeRise", "openTypeVheaCaretSlopeRise"),
     # ("slopeRun", "openTypeVheaCaretSlopeRun"),
     # ("caretOffset", "openTypeVheaCaretOffset"),
