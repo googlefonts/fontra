@@ -119,6 +119,9 @@ fontInfoNameMapping = [
 ]
 
 
+ufoInfoPrefix = "ufo.info."
+
+
 class DesignspaceBackend:
     @classmethod
     def fromPath(cls, path: PathLike) -> WritableFontBackend:
@@ -1416,6 +1419,14 @@ class UFOManager:
         return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
 
 
+ufoInfoAttributesToRoundTrip = [
+    "openTypeOS2TypoAscender",
+    "openTypeOS2TypoDescender",
+    "openTypeOS2WinAscent",
+    "openTypeOS2WinDescent",
+]
+
+
 @dataclass(kw_only=True, frozen=True)
 class DSSource:
     identifier: str
@@ -1429,6 +1440,7 @@ class DSSource:
         return locationToTuple(self.location)
 
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
+        customData = {}
         if self.isSparse:
             lineMetricsHorizontalLayout: dict[str, LineMetric] = {}
             lineMetricsVerticalLayout: dict[str, LineMetric] = {}
@@ -1459,6 +1471,11 @@ class DSSource:
             guidelines = unpackGuidelines(fontInfo.guidelines)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
 
+            for infoAttr in ufoInfoAttributesToRoundTrip:
+                value = getattr(fontInfo, infoAttr, None)
+                if value is not None:
+                    customData[f"{ufoInfoPrefix}{infoAttr}"] = value
+
         return FontSource(
             name=self.name,
             location=self.location,
@@ -1467,6 +1484,7 @@ class DSSource:
             lineMetricsVerticalLayout=lineMetricsVerticalLayout,
             guidelines=guidelines,
             isSparse=self.isSparse,
+            customData=customData,
         )
 
     def asFontraGlyphSource(self, localDefaultOverride=None):
@@ -1913,6 +1931,11 @@ def updateFontInfoFromFontSource(reader, fontSource):
             setattr(fontInfo, ufoName, round(metric.value))
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
+
+    for key, value in fontSource.customData.items():
+        if key.startswith(ufoInfoPrefix):
+            infoAttr = key[len(ufoInfoPrefix) :]
+            setattr(fontInfo, infoAttr, value)
 
     reader.writeInfo(fontInfo)
 
