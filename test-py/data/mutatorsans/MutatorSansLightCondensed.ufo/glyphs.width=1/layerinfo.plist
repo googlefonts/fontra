@@ -2,11 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>guidelines</key>
-    <array/>
-    <key>unitsPerEm</key>
-    <integer>1000</integer>
-    <key>versionMajor</key>
-    <integer>1</integer>
+    <key>color</key>
+    <string>0.5,1,0,0.7</string>
   </dict>
 </plist>

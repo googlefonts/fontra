@@ -93,7 +93,7 @@ lineMetricsVerMapping = {
     # Fontra / UFO
     "ascender": "openTypeVheaVertTypoAscender",
     "descender": "openTypeVheaVertTypoDescender",
-    "lineGap": "openTypeVheaVertTypoLineGap",
+    "lineGap": "openTypeVheaVertTypoLineGap",  # TODO: this doesn't really belong here
     # ("slopeRise", "openTypeVheaCaretSlopeRise"),
     # ("slopeRun", "openTypeVheaCaretSlopeRun"),
     # ("caretOffset", "openTypeVheaCaretOffset"),
@@ -115,7 +115,79 @@ fontInfoNameMapping = [
     ("manufacturerURL", "openTypeNameManufacturerURL"),
     ("licenseDescription", "openTypeNameLicense"),
     ("licenseInfoURL", "openTypeNameLicenseURL"),
-    ("vendorID", "vendorID"),
+    ("vendorID", "openTypeOS2VendorID"),
+]
+
+
+ufoInfoPrefix = "ufo.info."
+
+
+ufoInfoAttributesToRoundTrip = [
+    "openTypeGaspRangeRecords",
+    "openTypeHeadCreated",
+    "openTypeHeadFlags",
+    "openTypeHeadLowestRecPPEM",
+    "openTypeHheaAscender",
+    "openTypeHheaCaretOffset",
+    "openTypeHheaCaretSlopeRise",
+    "openTypeHheaCaretSlopeRun",
+    "openTypeHheaDescender",
+    "openTypeHheaLineGap",
+    "openTypeNameCompatibleFullName",
+    "openTypeNamePreferredFamilyName",
+    "openTypeNamePreferredSubfamilyName",
+    "openTypeNameRecords",
+    "openTypeNameUniqueID",
+    "openTypeNameVersion",
+    "openTypeNameWWSFamilyName",
+    "openTypeNameWWSSubfamilyName",
+    "openTypeOS2CodePageRanges",
+    "openTypeOS2FamilyClass",
+    "openTypeOS2Panose",
+    "openTypeOS2Selection",
+    "openTypeOS2StrikeoutPosition",
+    "openTypeOS2StrikeoutSize",
+    "openTypeOS2SubscriptXOffset",
+    "openTypeOS2SubscriptXSize",
+    "openTypeOS2SubscriptYOffset",
+    "openTypeOS2SubscriptYSize",
+    "openTypeOS2SuperscriptXOffset",
+    "openTypeOS2SuperscriptXSize",
+    "openTypeOS2SuperscriptYOffset",
+    "openTypeOS2SuperscriptYSize",
+    "openTypeOS2Type",
+    "openTypeOS2TypoAscender",
+    "openTypeOS2TypoDescender",
+    "openTypeOS2TypoLineGap",
+    "openTypeOS2UnicodeRanges",
+    "openTypeOS2WeightClass",
+    "openTypeOS2WidthClass",
+    "openTypeOS2WinAscent",
+    "openTypeOS2WinDescent",
+    "openTypeVheaCaretOffset",
+    "openTypeVheaCaretSlopeRise",
+    "openTypeVheaCaretSlopeRun",
+    "openTypeVheaVertTypoLineGap",
+    "postscriptBlueFuzz",
+    "postscriptBlueScale",
+    "postscriptBlueShift",
+    "postscriptBlueValues",
+    "postscriptDefaultCharacter",
+    "postscriptDefaultWidthX",
+    "postscriptFamilyBlues",
+    "postscriptFamilyOtherBlues",
+    "postscriptForceBold",
+    "postscriptIsFixedPitch",
+    "postscriptNominalWidthX",
+    "postscriptOtherBlues",
+    "postscriptSlantAngle",
+    "postscriptStemSnapH",
+    "postscriptStemSnapV",
+    "postscriptUnderlinePosition",
+    "postscriptUnderlineThickness",
+    "postscriptUniqueID",
+    "postscriptWeightName",
+    "postscriptWindowsCharacterSet",
 ]
 
 
@@ -1429,6 +1501,7 @@ class DSSource:
         return locationToTuple(self.location)
 
     def asFontraFontSource(self, unitsPerEm: int) -> FontSource:
+        customData = {}
         if self.isSparse:
             lineMetricsHorizontalLayout: dict[str, LineMetric] = {}
             lineMetricsVerticalLayout: dict[str, LineMetric] = {}
@@ -1459,6 +1532,11 @@ class DSSource:
             guidelines = unpackGuidelines(fontInfo.guidelines)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
 
+            for infoAttr in ufoInfoAttributesToRoundTrip:
+                value = getattr(fontInfo, infoAttr, None)
+                if value is not None:
+                    customData[f"{ufoInfoPrefix}{infoAttr}"] = value
+
         return FontSource(
             name=self.name,
             location=self.location,
@@ -1467,6 +1545,7 @@ class DSSource:
             lineMetricsVerticalLayout=lineMetricsVerticalLayout,
             guidelines=guidelines,
             isSparse=self.isSparse,
+            customData=customData,
         )
 
     def asFontraGlyphSource(self, localDefaultOverride=None):
@@ -1913,6 +1992,11 @@ def updateFontInfoFromFontSource(reader, fontSource):
             setattr(fontInfo, ufoName, round(metric.value))
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
+
+    for key, value in fontSource.customData.items():
+        if key.startswith(ufoInfoPrefix):
+            infoAttr = key[len(ufoInfoPrefix) :]
+            setattr(fontInfo, infoAttr, value)
 
     reader.writeInfo(fontInfo)
 

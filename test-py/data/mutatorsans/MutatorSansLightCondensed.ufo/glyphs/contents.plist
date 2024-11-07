@@ -88,6 +88,8 @@
     <string>dot.glif</string>
     <key>em</key>
     <string>em.glif</string>
+    <key>nestedcomponents</key>
+    <string>nestedcomponents.glif</string>
     <key>nlitest</key>
     <string>nlitest.glif</string>
     <key>period</key>
@@ -108,7 +110,5 @@
     <string>varcotest1.glif</string>
     <key>varcotest2</key>
     <string>varcotest2.glif</string>
-    <key>nestedcomponents</key>
-    <string>nestedcomponents.glif</string>
   </dict>
 </plist>

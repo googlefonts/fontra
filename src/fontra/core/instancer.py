@@ -515,9 +515,9 @@ class FontSourcesInstancer:
 
     @cached_property
     def deltas(self):
-        guidelinesAreCompatible = areGuidelinesCompatible(
-            list(self.fontSourcesDense.values())
-        )
+        fontSourcesList = list(self.fontSourcesDense.values())
+        guidelinesAreCompatible = areGuidelinesCompatible(fontSourcesList)
+        customDatasAreCompatible = areCustomDatasCompatible(fontSourcesList)
 
         fixedSourceValues = [
             MathWrapper(
@@ -526,6 +526,7 @@ class FontSourcesInstancer:
                     location={},
                     name="",
                     guidelines=source.guidelines if guidelinesAreCompatible else [],
+                    customData=source.customData if customDatasAreCompatible else {},
                 )
             )
             for source in self.fontSourcesDense.values()
@@ -571,6 +572,19 @@ def areGuidelinesCompatible(parents):
         for guideline, reference in zip(parent.guidelines, referenceGuidelines):
             if guideline.name != reference.name:
                 return False
+
+    return True
+
+
+def areCustomDatasCompatible(parents):
+    if not parents:
+        return True  # or False, doesn't matter
+
+    referenceKeys = parents[0].customData.keys()
+
+    for parent in parents[1:]:
+        if parent.customData.keys() != referenceKeys:
+            return False
 
     return True
 

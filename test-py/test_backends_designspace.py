@@ -545,6 +545,10 @@ getSourcesTestData = [
             {"name": "Guideline Left", "x": 60, "angle": 90},
             {"name": "Guideline Baseline Overshoot", "y": -10},
         ],
+        "customData": {
+            "ufo.info.openTypeOS2TypoAscender": 700,
+            "ufo.info.openTypeOS2TypoDescender": -200,
+        },
     },
     {
         "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},

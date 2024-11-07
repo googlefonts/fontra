@@ -14,24 +14,28 @@ describe("FontSourcesInstancer Tests", () => {
       location: { Weight: 400, Width: 50 },
       verticalMetrics: { ascender: { value: 800 } },
       guidelines: [{ name: "guide", x: 100, y: 200, angle: 0 }],
+      customData: {},
     },
     source2: {
       name: "Bold",
       location: { Weight: 900, Width: 50 },
       verticalMetrics: { ascender: { value: 900 } },
       guidelines: [],
+      customData: {},
     },
     source3: {
       name: "Light Wide",
       location: { Weight: 400, Width: 100 },
       verticalMetrics: { ascender: { value: 850 } },
       guidelines: [],
+      customData: {},
     },
     source4: {
       name: "Bold Wide",
       location: { Weight: 900, Width: 100 },
       verticalMetrics: { ascender: { value: 950 } },
       guidelines: [],
+      customData: {},
     },
   };
 
@@ -43,6 +47,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: { Weight: 400, Width: 50 },
         verticalMetrics: { ascender: { value: 800 } },
         guidelines: [{ name: "guide", x: 100, y: 200, angle: 0 }],
+        customData: {},
       },
     },
     {
@@ -52,6 +57,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: { Weight: 400, Width: 50 },
         verticalMetrics: { ascender: { value: 800 } },
         guidelines: [{ name: "guide", x: 100, y: 200, angle: 0 }],
+        customData: {},
       },
     },
     {
@@ -61,6 +67,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: { Weight: 900, Width: 50 },
         verticalMetrics: { ascender: { value: 900 } },
         guidelines: [],
+        customData: {},
       },
     },
     {
@@ -70,6 +77,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: null,
         verticalMetrics: { ascender: { value: 850 } },
         guidelines: [],
+        customData: {},
       },
     },
     {
@@ -79,6 +87,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: null,
         verticalMetrics: { ascender: { value: 825 } },
         guidelines: [],
+        customData: {},
       },
     },
     {
@@ -88,6 +97,7 @@ describe("FontSourcesInstancer Tests", () => {
         location: null,
         verticalMetrics: { ascender: { value: 875 } },
         guidelines: [],
+        customData: {},
       },
     },
   ];
