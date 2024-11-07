@@ -1,6 +1,10 @@
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
 import { LRUCache } from "./lru-cache.js";
-import { areGuidelinesCompatible, normalizeGuidelines } from "./utils.js";
+import {
+  areCustomDatasCompatible,
+  areGuidelinesCompatible,
+  normalizeGuidelines,
+} from "./utils.js";
 import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
 
 export class FontSourcesInstancer {
@@ -37,6 +41,7 @@ export class FontSourcesInstancer {
 
   get deltas() {
     const guidelinesAreCompatible = areGuidelinesCompatible(this.fontSourcesList);
+    const customDatasAreCompatible = areCustomDatasCompatible(this.fontSourcesList);
 
     const fixedSourceValues = this.fontSourcesList.map((source) => {
       return {
@@ -46,6 +51,7 @@ export class FontSourcesInstancer {
         guidelines: guidelinesAreCompatible
           ? normalizeGuidelines(source.guidelines, true)
           : [],
+        customData: customDatasAreCompatible ? source.customData : {},
       };
     });
     return this.model.getDeltas(fixedSourceValues);

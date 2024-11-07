@@ -552,6 +552,27 @@ export function areGuidelinesCompatible(parents) {
   return true;
 }
 
+export function areCustomDatasCompatible(parents) {
+  const referenceCustomData = parents[0].customData;
+  if (!referenceCustomData) {
+    return false;
+  }
+  const referenceKeys = Object.keys(referenceCustomData).sort();
+
+  for (const parent of parents.slice(1)) {
+    const keys = Object.keys(parent.customData).sort();
+    if (keys.length !== referenceKeys.length) {
+      return false;
+    }
+    for (const [kA, kB] of zip(keys, referenceKeys)) {
+      if (kA != kB) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 const identityGuideline = { x: 0, y: 0, angle: 0 };
 
 export function normalizeGuidelines(guidelines, resetLocked = false) {

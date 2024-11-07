@@ -945,6 +945,7 @@ function ensureDenseSources(sources) {
           return { value: metric.value, zone: metric.zone || 0 };
         }
       ),
+      customData: source.customData || {},
     };
   });
 }
