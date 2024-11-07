@@ -677,6 +677,9 @@
       <string>em</string>
       <string>varcotest1</string>
       <string>varcotest2</string>
+      <string>R.alt</string>
+      <string>nestedcomponents</string>
+      <string>nlitest</string>
     </array>
     <key>testLibItemKey</key>
     <array>
