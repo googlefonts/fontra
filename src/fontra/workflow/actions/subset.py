@@ -104,7 +104,7 @@ def subsetKerning(kerning, glyphNames):
     newKerning = {}
     for kernType, kernTable in kerning.items():
         newKernTable = subsetKernTable(kernTable, glyphNames)
-        if newKernTable.groups or newKernTable.values:
+        if newKernTable.values:
             newKerning[kernType] = newKernTable
     return newKerning
 
