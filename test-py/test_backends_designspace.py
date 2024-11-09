@@ -375,6 +375,21 @@ async def test_addLocalAxisAndSource(writableTestFont):
     assert asdict(glyph) == asdict(savedGlyph)
 
 
+async def test_getBackgroundImage(testFont):
+    glyphName = "C"
+    glyph = await testFont.getGlyph(glyphName)
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    imageData = await testFont.getBackgroundImage(
+        glyphName, layerName, bgImage.identifier
+    )
+    assert len(imageData.data) == 60979
+    assert imageData.data[:4] == b"\x89PNG"
+
+
 async def test_putAxes(writableTestFont):
     axes = await writableTestFont.getAxes()
     axes.axes.append(

@@ -25,7 +25,7 @@ from fontTools.designspaceLib import (
 from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.pens.pointPen import AbstractPointPen
 from fontTools.pens.recordingPen import RecordingPointPen
-from fontTools.ufoLib import UFOReaderWriter
+from fontTools.ufoLib import UFOLibError, UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.async_property import async_property
@@ -43,6 +43,8 @@ from ..core.classes import (
     GlyphAxis,
     GlyphSource,
     Guideline,
+    ImageData,
+    ImageType,
     Kerning,
     Layer,
     LineMetric,
@@ -1140,6 +1142,29 @@ class DesignspaceBackend:
             # featureText = features.text if path == defaultPath else ""
             featureText = features.text
             writer.writeFeatures(featureText)
+
+    async def getBackgroundImage(
+        self, glyphName: str, layerName: str, imageIdentifier: str
+    ) -> ImageData | None:
+        if glyphName not in self.glyphMap:
+            return None
+
+        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
+            self.defaultUFOLayer.glyphSet, glyphName
+        )
+
+        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
+        layerName = revLayerNameMapping.get(layerName, layerName)
+        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+
+        try:
+            data = ufoLayer.reader.readImage(imageIdentifier, validate=True)
+        except UFOLibError as e:
+            logger.warning(str(e))
+            return None
+
+        return ImageData(type=ImageType.PNG, data=data)
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
