@@ -406,23 +406,23 @@ class DesignspaceBackend:
         localSources = []
         layers = {}
 
-        defaultStaticGlyph, defaultUfoGlyph = ufoLayerToStaticGlyph(
+        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
             self.defaultUFOLayer.glyphSet, glyphName
         )
 
-        localDS = defaultUfoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
+        localDS = defaultUFOGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
         if localDS is not None:
             axes, localSources = self._unpackLocalDesignSpace(
                 localDS, self.defaultUFOLayer.name
             )
-        sourceNameMapping = defaultUfoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
-        layerNameMapping = defaultUfoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+        sourceNameMapping = defaultUFOGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
+        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
 
         # global per glyph custom data, eg. glyph locking
-        customData = defaultUfoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
+        customData = defaultUFOGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
 
-        if defaultUfoGlyph.note:
-            customData[GLYPH_NOTE_LIB_KEY] = defaultUfoGlyph.note
+        if defaultUFOGlyph.note:
+            customData[GLYPH_NOTE_LIB_KEY] = defaultUFOGlyph.note
 
         # per glyph source custom data, eg. status color code
         sourcesCustomData = {}
@@ -432,7 +432,7 @@ class DesignspaceBackend:
                 continue
 
             staticGlyph, ufoGlyph = (
-                (defaultStaticGlyph, defaultUfoGlyph)
+                (defaultStaticGlyph, defaultUFOGlyph)
                 if ufoLayer == self.defaultUFOLayer
                 else ufoLayerToStaticGlyph(ufoLayer.glyphSet, glyphName)
             )
