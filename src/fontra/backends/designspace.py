@@ -405,10 +405,25 @@ class DesignspaceBackend:
         sources = []
         localSources = []
         layers = {}
-        sourceNameMapping = {}
-        layerNameMapping = {}
+
+        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
+            self.defaultUFOLayer.glyphSet, glyphName
+        )
+
+        localDS = defaultUFOGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
+        if localDS is not None:
+            axes, localSources = self._unpackLocalDesignSpace(
+                localDS, self.defaultUFOLayer.name
+            )
+        sourceNameMapping = defaultUFOGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
+        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+
         # global per glyph custom data, eg. glyph locking
-        customData = {}
+        customData = defaultUFOGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
+
+        if defaultUFOGlyph.note:
+            customData[GLYPH_NOTE_LIB_KEY] = defaultUFOGlyph.note
+
         # per glyph source custom data, eg. status color code
         sourcesCustomData = {}
 
@@ -416,18 +431,11 @@ class DesignspaceBackend:
             if glyphName not in ufoLayer.glyphSet:
                 continue
 
-            staticGlyph, ufoGlyph = ufoLayerToStaticGlyph(ufoLayer.glyphSet, glyphName)
-            if ufoLayer == self.defaultUFOLayer:
-                localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
-                if localDS is not None:
-                    axes, localSources = self._unpackLocalDesignSpace(
-                        localDS, ufoLayer.name
-                    )
-                sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
-                layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-                customData = ufoGlyph.lib.get(GLYPH_CUSTOM_DATA_LIB_KEY, {})
-                if ufoGlyph.note:
-                    customData[GLYPH_NOTE_LIB_KEY] = ufoGlyph.note
+            staticGlyph, ufoGlyph = (
+                (defaultStaticGlyph, defaultUFOGlyph)
+                if ufoLayer == self.defaultUFOLayer
+                else ufoLayerToStaticGlyph(ufoLayer.glyphSet, glyphName)
+            )
 
             layerName = layerNameMapping.get(
                 ufoLayer.fontraLayerName, ufoLayer.fontraLayerName
