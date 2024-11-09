@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field, is_dataclass, replace
-from enum import StrEnum
+from enum import Enum
 from functools import partial
 from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
@@ -217,7 +217,8 @@ class BackgroundImage:
 # But are used in the backend protocol.
 
 
-class ImageType(StrEnum):
+class ImageType(str, Enum):
+    # TODO: use StrEnum once we drop support for Python 3.10
     PNG = "png"
     JPG = "jpg"
 
