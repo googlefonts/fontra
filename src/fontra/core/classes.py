@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field, is_dataclass, replace
+from enum import StrEnum
 from functools import partial
 from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
@@ -196,6 +197,37 @@ class Layer:
     customData: CustomData = field(default_factory=dict)
 
 
+@dataclass
+class RGBAColor:
+    red: float
+    green: float
+    blue: float
+    alpha: float = 0
+
+
+@dataclass(kw_only=True)
+class BackgroundImage:
+    identifier: str
+    transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
+    color: Optional[RGBAColor] = None
+    customData: CustomData = field(default_factory=dict)
+
+
+# The ImageType and ImageData classes aren't part of the Font data structure,
+# But are used in the backend protocol.
+
+
+class ImageType(StrEnum):
+    PNG = "png"
+    JPG = "jpg"
+
+
+@dataclass(kw_only=True)
+class ImageData:
+    type: ImageType
+    data: bytes
+
+
 @dataclass(kw_only=True)
 class StaticGlyph:
     path: Union[PackedPath, Path] = field(default_factory=PackedPath)
@@ -205,6 +237,7 @@ class StaticGlyph:
     verticalOrigin: Optional[float] = None
     anchors: list[Anchor] = field(default_factory=list)
     guidelines: list[Guideline] = field(default_factory=list)
+    backgroundImage: Optional[BackgroundImage] = None
 
     def convertToPackedPaths(self):
         return replace(self, path=self.path.asPackedPath())
@@ -410,6 +443,10 @@ registerHook(
 registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(Anchor, customData=_unstructureDictSortedRecursively)
 registerHook(Guideline, customData=_unstructureDictSortedRecursively)
+registerHook(
+    BackgroundImage,
+    customData=_unstructureDictSortedRecursively,
+)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
     GlyphSource,

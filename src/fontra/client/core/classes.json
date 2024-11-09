@@ -193,6 +193,10 @@
     "guidelines": {
       "type": "list",
       "subtype": "Guideline"
+    },
+    "backgroundImage": {
+      "type": "BackgroundImage",
+      "optional": true
     }
   },
   "PackedPath": {
@@ -298,6 +302,36 @@
     "customData": {
       "type": "dict",
       "subtype": "Any"
+    }
+  },
+  "BackgroundImage": {
+    "identifier": {
+      "type": "str"
+    },
+    "transformation": {
+      "type": "DecomposedTransform"
+    },
+    "color": {
+      "type": "RGBAColor",
+      "optional": true
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "RGBAColor": {
+    "red": {
+      "type": "float"
+    },
+    "green": {
+      "type": "float"
+    },
+    "blue": {
+      "type": "float"
+    },
+    "alpha": {
+      "type": "float"
     }
   },
   "Axes": {
