@@ -8,7 +8,7 @@ import secrets
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
@@ -1498,15 +1498,16 @@ def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
             setattr(fontInfo, infoAttr, value)
 
 
+@dataclass(kw_only=True)
 class UFOGlyph:
-    unicodes: list = []
+    unicodes: list = field(default_factory=list)
     width: float | None = 0
     height: float | None = None
-    anchors: list = []
-    guidelines: list = []
+    anchors: list = field(default_factory=list)
+    guidelines: list = field(default_factory=list)
     image: dict | None = None
     note: str | None = None
-    lib: dict
+    lib: dict = field(default_factory=dict)
 
 
 class UFOFontInfo:
@@ -1683,7 +1684,6 @@ class ItemList:
 
 def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyph = UFOGlyph()
-    glyph.lib = {}
     pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
@@ -1780,7 +1780,6 @@ def readGlyphOrCreate(
     codePoints: list[int],
 ) -> UFOGlyph:
     layerGlyph = UFOGlyph()
-    layerGlyph.lib = {}
     if glyphName in glyphSet:
         # We read the existing glyph so we don't lose any data that
         # Fontra doesn't understand
