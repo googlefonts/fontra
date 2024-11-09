@@ -97,7 +97,7 @@ class WatchableFontBackend(Protocol):
 class ReadBackGroundImage(Protocol):
     async def getBackgroundImage(
         self, glyphName: str, layerName: str, imageIdentifier: str
-    ) -> ImageData:
+    ) -> ImageData | None:
         pass
 
 
