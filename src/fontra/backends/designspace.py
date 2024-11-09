@@ -22,7 +22,7 @@ from fontTools.designspaceLib import (
     DiscreteAxisDescriptor,
     SourceDescriptor,
 )
-from fontTools.misc.transform import DecomposedTransform
+from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.pens.pointPen import AbstractPointPen
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
@@ -33,6 +33,7 @@ from ..core.classes import (
     Anchor,
     Axes,
     AxisValueLabel,
+    BackgroundImage,
     Component,
     CrossAxisMapping,
     DiscreteFontAxis,
@@ -46,6 +47,7 @@ from ..core.classes import (
     Layer,
     LineMetric,
     OpenTypeFeatures,
+    RGBAColor,
     StaticGlyph,
     VariableGlyph,
 )
@@ -1477,6 +1479,7 @@ class UFOGlyph:
     height: float | None = None
     anchors: list = []
     guidelines: list = []
+    image: dict | None = None
     note: str | None = None
     lib: dict
 
@@ -1670,6 +1673,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         verticalOrigin=verticalOrigin,
         anchors=unpackAnchors(glyph.anchors),
         guidelines=unpackGuidelines(glyph.guidelines),
+        backgroundImage=unpackBackgroundImage(glyph.image),
     )
 
     return staticGlyph, glyph
@@ -1706,6 +1710,30 @@ def unpackGuidelines(guidelines):
         )
         for g in guidelines
     ]
+
+
+imageTransformFields = [
+    ("xScale", 1),
+    ("xyScale", 0),
+    ("yxScale", 0),
+    ("yScale", 1),
+    ("xOffset", 0),
+    ("yOffset", 0),
+]
+
+
+def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
+    if imageDict is None:
+        return None
+
+    t = Transform(*(imageDict.get(k, dv) for k, dv in imageTransformFields))
+    colorChannels = [float(ch.strip()) for ch in imageDict.get("color", "").split(",")]
+
+    return BackgroundImage(
+        identifier=imageDict["fileName"],
+        transformation=DecomposedTransform.fromTransform(t),
+        color=RGBAColor(*colorChannels) if len(colorChannels) == 4 else None,
+    )
 
 
 def packGuidelines(guidelines):
