@@ -237,11 +237,17 @@
 },
 {
 "x": 60,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 200,
-"y": 700
+"y": 700,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 165,
