@@ -108,9 +108,7 @@ class WriteBackGroundImage(Protocol):
 
     # TODO: since the image data does not itself participate in change messages,
     # we may depend on the backend itself to purge unused images.
-    # async def deleteBackgroundImage(
-    #     self, glyphName: str, layerName: str, imageIdentifier: str
-    # ) -> None:
+    # async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
     #     pass
 
 
