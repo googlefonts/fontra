@@ -383,9 +383,7 @@ async def test_getBackgroundImage(testFont):
         if bgImage is not None:
             break
 
-    imageData = await testFont.getBackgroundImage(
-        glyphName, layerName, bgImage.identifier
-    )
+    imageData = await testFont.getBackgroundImage(bgImage.identifier)
     assert len(imageData.data) == 60979
     assert imageData.data[:4] == b"\x89PNG"
 

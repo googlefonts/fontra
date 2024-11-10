@@ -95,16 +95,14 @@ class WatchableFontBackend(Protocol):
 
 @runtime_checkable
 class ReadBackGroundImage(Protocol):
-    async def getBackgroundImage(
-        self, glyphName: str, layerName: str, imageIdentifier: str
-    ) -> ImageData | None:
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
         pass
 
 
 @runtime_checkable
 class WriteBackGroundImage(Protocol):
     async def putBackgroundImage(
-        self, glyphName: str, layerName: str, imageIdentifier: str, data: ImageData
+        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
     ) -> None:
         pass
 

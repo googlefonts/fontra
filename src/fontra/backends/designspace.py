@@ -6,6 +6,7 @@ import os
 import pathlib
 import secrets
 import shutil
+import uuid
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, replace
@@ -212,6 +213,7 @@ class DesignspaceBackend:
         self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._glyphDependencies: GlyphDependencies | None = None
         self._backgroundTasksTask: asyncio.Task | None = None
+        self._imageMapping = DoubleDict()
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
@@ -447,6 +449,11 @@ class DesignspaceBackend:
             sourcesCustomData[layerName] = ufoGlyph.lib.get(
                 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY, {}
             )
+
+            if staticGlyph.backgroundImage is not None:
+                staticGlyph.backgroundImage.identifier = self._getImageIdentifier(
+                    ufoLayer.path, staticGlyph.backgroundImage.identifier
+                )
 
             layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
 
@@ -1143,28 +1150,37 @@ class DesignspaceBackend:
             featureText = features.text
             writer.writeFeatures(featureText)
 
-    async def getBackgroundImage(
-        self, glyphName: str, layerName: str, imageIdentifier: str
-    ) -> ImageData | None:
-        if glyphName not in self.glyphMap:
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        imageInfo = self._imageMapping.reverse.get(imageIdentifier)
+        if imageInfo is None:
             return None
 
-        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
-            self.defaultUFOLayer.glyphSet, glyphName
-        )
-
-        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
-        layerName = revLayerNameMapping.get(layerName, layerName)
-        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+        ufoPath, imageFileName = imageInfo
+        reader = self.ufoManager.getReader(ufoPath)
 
         try:
-            data = ufoLayer.reader.readImage(imageIdentifier, validate=True)
+            data = reader.readImage(imageFileName, validate=True)
         except UFOLibError as e:
             logger.warning(str(e))
             return None
 
         return ImageData(type=ImageType.PNG, data=data)
+
+    def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
+        key = (ufoPath, imageFileName)
+        imageIdentifier = self._imageMapping.get(key)
+
+        if imageIdentifier is None:
+            ufoFileName = os.path.basename(ufoPath)
+            imageIdentifier = str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"https://fontra.xyz/image-ids/{ufoFileName}/{imageFileName}",
+                )
+            )
+            self._imageMapping[key] = imageIdentifier
+
+        return imageIdentifier
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
@@ -1680,6 +1696,24 @@ class ItemList:
     def iterAttrs(self, attrName):
         for item in self:
             yield getattr(item, attrName)
+
+
+class DoubleDict(dict):
+    def __init__(self):
+        self.reverse = {}
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        self.reverse[value] = key
+
+    def __delitem__(self, key):
+        raise NotImplementedError()
+
+    def pop(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def setdefault(self, *args, **kwargs):
+        raise NotImplementedError()
 
 
 def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
