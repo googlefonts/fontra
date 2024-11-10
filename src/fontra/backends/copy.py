@@ -89,7 +89,7 @@ async def _copyFont(
     if isinstance(destBackend, WriteBackgroundImage):
         backgroundImageInfos = [info for t in done for info in t.result()]
         if backgroundImageInfos:
-            assert isinstance(sourceBackend, ReadBackgroundImage)
+            assert isinstance(sourceBackend, ReadBackgroundImage), type(sourceBackend)
             for glyphName, layerName, imageIdentifier in backgroundImageInfos:
                 imageData = await sourceBackend.getBackgroundImage(imageIdentifier)
                 if imageData is not None:
