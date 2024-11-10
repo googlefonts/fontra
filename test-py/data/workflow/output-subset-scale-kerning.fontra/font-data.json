@@ -4,7 +4,8 @@
 "versionMajor": 1,
 "versionMinor": 2,
 "copyright": "License same as MutatorMath. BSD 3-clause. [test-token: C]",
-"licenseDescription": "License same as MutatorMath. BSD 3-clause. [test-token: C]"
+"licenseDescription": "License same as MutatorMath. BSD 3-clause. [test-token: C]",
+"vendorID": "LTTR"
 },
 "axes": {
 "axes": [
@@ -162,7 +163,11 @@
 "name": "Guideline Baseline Overshoot",
 "y": -10
 }
-]
+],
+"customData": {
+"ufo.info.openTypeOS2TypoAscender": 700,
+"ufo.info.openTypeOS2TypoDescender": -200
+}
 },
 "light-condensed-italic": {
 "name": "LightCondensedItalic",

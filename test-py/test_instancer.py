@@ -354,13 +354,13 @@ penTestData = [
             ),
             (
                 "addPoint",
-                ((41.45254750580243, -23.029210874345203), "line", False, None),
+                ((41.45254750580243, -23.029210874345203), "line", False, "test-name"),
                 {},
             ),
             (
                 "addPoint",
                 ((300.87265092867585, 711.0926834687576), "line", False, None),
-                {},
+                {"identifier": "test-identifier"},
             ),
             (
                 "addPoint",
@@ -502,13 +502,13 @@ penTestData = [
             ),
             (
                 "addPoint",
-                ((2.02188947796526, 114.44248589396727), "line", False, None),
+                ((2.02188947796526, 114.44248589396727), "line", False, "test-name"),
                 {},
             ),
             (
                 "addPoint",
                 ((298.9376689130037, 475.11570144436826), "line", False, None),
-                {},
+                {"identifier": "test-identifier"},
             ),
             (
                 "addPoint",

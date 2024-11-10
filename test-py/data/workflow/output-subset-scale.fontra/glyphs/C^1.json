@@ -515,7 +515,20 @@
 }
 ]
 },
-"xAdvance": 499
+"xAdvance": 499,
+"backgroundImage": {
+"identifier": "b8b092b7-55fd-5b3e-a404-97c44b9d79a7",
+"transformation": {
+"translateX": -100,
+"translateY": -300
+},
+"color": {
+"red": 0.84399,
+"green": 0.80767,
+"blue": 0.37093,
+"alpha": 0.684
+}
+}
 }
 },
 "MutatorSansLightWide/foreground": {

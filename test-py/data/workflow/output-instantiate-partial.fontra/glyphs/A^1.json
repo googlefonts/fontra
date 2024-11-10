@@ -29,11 +29,17 @@
 },
 {
 "x": 75,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 365,
-"y": 700
+"y": 700,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 327,
@@ -122,11 +128,17 @@
 },
 {
 "x": 290,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 456,
-"y": 800
+"y": 800,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 206,
