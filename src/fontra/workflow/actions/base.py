@@ -174,6 +174,7 @@ class BaseFilter:
         return await self.processUnitsPerEm(unitsPerEm)
 
     async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        assert hasattr(self.validatedInput, "getBackgroundImage")
         imageData = await self.validatedInput.getBackgroundImage(imageIdentifier)
         return await self.processBackgroundImage(imageData)
 

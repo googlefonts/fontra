@@ -7,6 +7,7 @@ from contextlib import aclosing, asynccontextmanager
 
 from ..core.protocols import (
     ReadableFontBackend,
+    ReadBackgroundImage,
     WritableFontBackend,
     WriteBackgroundImage,
 )
@@ -87,11 +88,14 @@ async def _copyFont(
 
     if isinstance(destBackend, WriteBackgroundImage):
         backgroundImageInfos = [info for t in done for info in t.result()]
-        for glyphName, layerName, imageIdentifier in backgroundImageInfos:
-            imageData = await sourceBackend.getBackgroundImage(imageIdentifier)
-            await destBackend.putBackgroundImage(
-                imageIdentifier, glyphName, layerName, imageData
-            )
+        if backgroundImageInfos:
+            assert isinstance(sourceBackend, ReadBackgroundImage)
+            for glyphName, layerName, imageIdentifier in backgroundImageInfos:
+                imageData = await sourceBackend.getBackgroundImage(imageIdentifier)
+                if imageData is not None:
+                    await destBackend.putBackgroundImage(
+                        imageIdentifier, glyphName, layerName, imageData
+                    )
 
     await destBackend.putKerning(await sourceBackend.getKerning())
     await destBackend.putFeatures(await sourceBackend.getFeatures())
@@ -105,7 +109,7 @@ async def copyGlyphs(
     glyphNamesCopied: set[str],
     progressInterval: int,
     continueOnError: bool,
-) -> None:
+) -> list:
     backgroundImageInfos = []
 
     while glyphNamesToCopy:
