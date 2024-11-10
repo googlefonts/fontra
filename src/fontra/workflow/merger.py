@@ -11,6 +11,7 @@ from ..core.classes import (
     Axes,
     FontInfo,
     FontSource,
+    ImageData,
     Kerning,
     OpenTypeFeatures,
     VariableGlyph,
@@ -213,6 +214,15 @@ class FontBackendMerger:
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
+
+    async def getBackgroundImage(self, imageIdentifier) -> ImageData | None:
+        for inp in [self.inputB, self.inputA]:
+            if hasattr(inp, "getBackgroundImage"):
+                imageData = await inp.getBackgroundImage(imageIdentifier)
+                if imageData is not None:
+                    return imageData
+
+        return None  # Image not found
 
 
 @dataclass(kw_only=True)
