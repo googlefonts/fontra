@@ -1,5 +1,8 @@
+import hashlib
 import os
 import pathlib
+
+binarySuffixes = {".png", ".jpg"}
 
 
 def directoryTreeToList(path):
@@ -12,8 +15,13 @@ def directoryTreeToList(path):
     for path in paths:
         lines.append(os.fspath(path)[prefixLength:])
         if not path.is_dir():
-            for line in path.read_text().splitlines():
-                lines.append(line)
+            if path.suffix in binarySuffixes:
+                h = hashlib.sha1()
+                h.update(path.read_bytes())
+                lines.append(f"SHA-1: {h.hexdigest()}")
+            else:
+                for line in path.read_text().splitlines():
+                    lines.append(line)
 
     return lines
 
