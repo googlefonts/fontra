@@ -5,7 +5,11 @@ import pathlib
 import shutil
 from contextlib import aclosing, asynccontextmanager
 
-from ..core.protocols import ReadableFontBackend, WritableFontBackend
+from ..core.protocols import (
+    ReadableFontBackend,
+    WritableFontBackend,
+    WriteBackgroundImage,
+)
 from . import getFileSystemBackend, newFileSystemBackend
 
 logger = logging.getLogger(__name__)
@@ -81,6 +85,14 @@ async def _copyFont(
         assert e is not None
         raise e
 
+    if isinstance(destBackend, WriteBackgroundImage):
+        backgroundImageInfos = [info for t in done for info in t.result()]
+        for glyphName, layerName, imageIdentifier in backgroundImageInfos:
+            imageData = await sourceBackend.getBackgroundImage(imageIdentifier)
+            await destBackend.putBackgroundImage(
+                imageIdentifier, glyphName, layerName, imageData
+            )
+
     await destBackend.putKerning(await sourceBackend.getKerning())
     await destBackend.putFeatures(await sourceBackend.getFeatures())
 
@@ -94,6 +106,8 @@ async def copyGlyphs(
     progressInterval: int,
     continueOnError: bool,
 ) -> None:
+    backgroundImageInfos = []
+
     while glyphNamesToCopy:
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
             logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
@@ -122,7 +136,15 @@ async def copyGlyphs(
         }
         glyphNamesToCopy.extend(sorted(componentNames - glyphNamesCopied))
 
+        for layerName, layer in glyph.layers.items():
+            if layer.glyph.backgroundImage is not None:
+                backgroundImageInfos.append(
+                    (glyphName, layerName, layer.glyph.backgroundImage.identifier)
+                )
+
         await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    return backgroundImageInfos
 
 
 async def mainAsync() -> None:
