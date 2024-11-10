@@ -285,7 +285,7 @@ export class VariableGlyphController {
       if (source.layerName in layerGlyphs) {
         continue;
       }
-      layerGlyphs[source.layerName] = stripGuidelinesAndComponentLocations(
+      layerGlyphs[source.layerName] = stripNonInterpolatables(
         this.layers[source.layerName].glyph
       );
     }
@@ -1090,14 +1090,15 @@ function ensureGlyphCompatibility(layerGlyphs, glyphDependencies) {
         guidelines: guidelinesAreCompatible
           ? normalizeGuidelines(glyph.guidelines, true)
           : [],
+        backgroundImage: undefined, // The background image isn't meant to interpolate
       },
       true // noCopy
     )
   );
 }
 
-function stripGuidelinesAndComponentLocations(glyph) {
-  if (!glyph.components.length && !glyph.guidelines.length) {
+function stripNonInterpolatables(glyph) {
+  if (!glyph.components.length && !glyph.guidelines.length && !glyph.backgroundImage) {
     return glyph;
   }
   return StaticGlyph.fromObject(
@@ -1110,6 +1111,7 @@ function stripGuidelinesAndComponentLocations(glyph) {
         };
       }),
       guidelines: [],
+      backgroundImage: undefined,
     },
     true // noCopy
   );
