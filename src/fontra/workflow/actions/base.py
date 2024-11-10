@@ -19,6 +19,7 @@ from ...core.classes import (
     Axes,
     FontInfo,
     FontSource,
+    ImageData,
     Kerning,
     OpenTypeFeatures,
     VariableGlyph,
@@ -172,6 +173,10 @@ class BaseFilter:
         unitsPerEm = await self.validatedInput.getUnitsPerEm()
         return await self.processUnitsPerEm(unitsPerEm)
 
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        imageData = await self.validatedInput.getBackgroundImage(imageIdentifier)
+        return await self.processBackgroundImage(imageData)
+
     # Default no-op process methods, to be overridden.
 
     # These methods should *not* modify the objects, but return modified *copies*
@@ -206,6 +211,11 @@ class BaseFilter:
 
     async def processUnitsPerEm(self, unitsPerEm: int) -> int:
         return unitsPerEm
+
+    async def processBackgroundImage(
+        self, imageData: ImageData | None
+    ) -> ImageData | None:
+        return imageData
 
 
 @registerFilterAction("memory-cache")
