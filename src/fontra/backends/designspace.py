@@ -1166,6 +1166,31 @@ class DesignspaceBackend:
 
         return ImageData(type=ImageType.PNG, data=data)
 
+    async def putBackgroundImage(
+        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
+    ) -> None:
+        if glyphName not in self.glyphMap:
+            raise KeyError(glyphName)
+
+        if data.type != ImageType.PNG:
+            raise NotImplementedError("convert image to PNG")
+
+        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
+            self.defaultUFOLayer.glyphSet, glyphName
+        )
+
+        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
+        layerName = revLayerNameMapping.get(layerName, layerName)
+        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+
+        imageFileName = f"{imageIdentifier}.{data.type.lower()}"
+
+        ufoLayer.reader.writeImage(imageFileName, data.data, validate=True)
+
+        key = (ufoLayer.path, imageFileName)
+        self._imageMapping[key] = imageIdentifier
+
     def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
         key = (ufoPath, imageFileName)
         imageIdentifier = self._imageMapping.get(key)

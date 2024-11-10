@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+import uuid
 from contextlib import aclosing
 from copy import deepcopy
 from dataclasses import asdict
@@ -386,6 +387,28 @@ async def test_getBackgroundImage(testFont):
     imageData = await testFont.getBackgroundImage(bgImage.identifier)
     assert len(imageData.data) == 60979
     assert imageData.data[:4] == b"\x89PNG"
+
+
+async def test_putBackgroundImage(writableTestFont):
+    glyph = await writableTestFont.getGlyph("C")
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    imageData = await writableTestFont.getBackgroundImage(bgImage.identifier)
+    assert len(imageData.data) == 60979
+    assert imageData.data[:4] == b"\x89PNG"
+
+    glyphName = "D"
+    imageIdentifier = str(uuid.uuid4())
+    await writableTestFont.putBackgroundImage(
+        imageIdentifier, glyphName, layerName, imageData
+    )
+
+    imageData2 = await writableTestFont.getBackgroundImage(imageIdentifier)
+
+    assert imageData2 == imageData
 
 
 async def test_putAxes(writableTestFont):
