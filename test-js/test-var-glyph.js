@@ -39,6 +39,7 @@ function makeTestGlyphObject() {
           ],
           anchors: [],
           guidelines: [],
+          backgroundImage: null,
         },
         customData: {},
       },
@@ -82,6 +83,7 @@ describe("var-glyph Tests", () => {
       yAdvance: undefined,
       anchors: [],
       guidelines: [],
+      backgroundImage: null,
     };
     const glyph = StaticGlyph.fromObject(sparseObject);
     expect(glyph).to.deep.equal(denseObject);
