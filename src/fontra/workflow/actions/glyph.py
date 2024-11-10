@@ -504,14 +504,8 @@ class SetVerticalGlyphMetricsFromAnchors(BaseFilter):
                 assert yAdvance is not None
                 newLayers[layerName] = replace(
                     layer,
-                    glyph=(
-                        replace(
-                            layer.glyph,
-                            verticalOrigin=verticalOrigin,
-                            yAdvance=yAdvance,
-                        )
-                        if layer.glyph.backgroundImage is not None
-                        else layer
+                    glyph=replace(
+                        layer.glyph, verticalOrigin=verticalOrigin, yAdvance=yAdvance
                     ),
                 )
         if newLayers:
@@ -530,8 +524,10 @@ class DropBackgroundImages(BaseFilter):
             glyph = replace(
                 glyph,
                 layers={
-                    layerName: replace(
-                        layer, glyph=replace(layer.glyph, backgroundImage=None)
+                    layerName: (
+                        replace(layer, glyph=replace(layer.glyph, backgroundImage=None))
+                        if layer.glyph.backgroundImage is not None
+                        else layer
                     )
                     for layerName, layer in glyph.layers.items()
                 },
