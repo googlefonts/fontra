@@ -79,7 +79,7 @@ export function copyComponent(component) {
 
 function copyBackgroundImage(image) {
   if (!image) {
-    return null;
+    return undefined;
   }
   return {
     identifier: image.identifier,
