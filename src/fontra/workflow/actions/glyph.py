@@ -504,11 +504,36 @@ class SetVerticalGlyphMetricsFromAnchors(BaseFilter):
                 assert yAdvance is not None
                 newLayers[layerName] = replace(
                     layer,
-                    glyph=replace(
-                        layer.glyph, verticalOrigin=verticalOrigin, yAdvance=yAdvance
+                    glyph=(
+                        replace(
+                            layer.glyph,
+                            verticalOrigin=verticalOrigin,
+                            yAdvance=yAdvance,
+                        )
+                        if layer.glyph.backgroundImage is not None
+                        else layer
                     ),
                 )
         if newLayers:
             glyph = replace(glyph, layers=glyph.layers | newLayers)
 
+        return glyph
+
+
+@registerFilterAction("drop-background-images")
+@dataclass(kw_only=True)
+class DropBackgroundImages(BaseFilter):
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        if any(
+            layer.glyph.backgroundImage is not None for layer in glyph.layers.values()
+        ):
+            glyph = replace(
+                glyph,
+                layers={
+                    layerName: replace(
+                        layer, glyph=replace(layer.glyph, backgroundImage=None)
+                    )
+                    for layerName, layer in glyph.layers.items()
+                },
+            )
         return glyph
