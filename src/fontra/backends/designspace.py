@@ -649,7 +649,13 @@ class DesignspaceBackend:
                     layer.glyph.backgroundImage.identifier
                 )
                 if imageInfo is not None:
-                    ufoPath, imageFileName = imageInfo
+                    _, imageFileName = imageInfo
+                else:
+                    imageFileName = f"{layer.glyph.backgroundImage.identifier}.png"
+                    imageInfo = (ufoLayer.path, imageFileName)
+                    self._imageMapping[imageInfo] = (
+                        layer.glyph.backgroundImage.identifier
+                    )
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph,

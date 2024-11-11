@@ -411,6 +411,25 @@ async def test_putBackgroundImage(writableTestFont):
     assert imageData2 == imageData
 
 
+async def test_putBackgroundImage_new_font(testFont, tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
+
+    await newFont.putAxes(await testFont.getAxes())
+
+    glyph = await testFont.getGlyph("C")
+
+    await newFont.putGlyph("C", glyph, [ord("C")])
+    glyph2 = await newFont.getGlyph("C")
+    assert glyph == glyph2
+    for layer in glyph2.layers.values():
+        if layer.glyph.backgroundImage is not None:
+            assert layer.glyph.backgroundImage.color.red == 0.84399
+            break
+    else:
+        assert 0, "expected backgroundImage"
+
+
 async def test_putAxes(writableTestFont):
     axes = await writableTestFont.getAxes()
     axes.axes.append(
