@@ -131,12 +131,22 @@ export class FontController {
   }
 
   getBackgroundImage(imageIdentifier) {
-    let imagePromise = this._backgroundImageCache.get(imageIdentifier);
-    if (!imagePromise) {
-      imagePromise = this._getBackgroundImage(imageIdentifier);
-      this._backgroundImageCache.put(imageIdentifier, imagePromise);
+    let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
+    if (!cacheEntry) {
+      const imagePromise = this._getBackgroundImage(imageIdentifier);
+      cacheEntry = { imagePromise, image: null };
+      this._backgroundImageCache.put(imageIdentifier, cacheEntry);
+      imagePromise.then((image) => (cacheEntry.image = image));
     }
-    return imagePromise;
+    return cacheEntry.imagePromise;
+  }
+
+  getBackgroundImageCached(imageIdentifier, requestUpdateFunc) {
+    const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
+    if (!cacheEntry) {
+      this.getBackgroundImage(imageIdentifier).then((image) => requestUpdateFunc());
+    }
+    return cacheEntry?.image;
   }
 
   async _getBackgroundImage(imageIdentifier) {
