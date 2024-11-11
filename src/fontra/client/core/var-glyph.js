@@ -84,6 +84,7 @@ function copyBackgroundImage(image) {
   return {
     identifier: image.identifier,
     transformation: { ...getDecomposedIdentity(), ...image.transformation },
+    color: image.color ? { ...image.color } : undefined,
     customData: copyCustomData(image.customData || {}),
   };
 }
