@@ -144,7 +144,7 @@ export class FontController {
   getBackgroundImageCached(imageIdentifier, requestUpdateFunc) {
     const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
-      this.getBackgroundImage(imageIdentifier).then((image) => requestUpdateFunc());
+      this.getBackgroundImage(imageIdentifier).then((image) => requestUpdateFunc?.());
     }
     return cacheEntry?.image;
   }
