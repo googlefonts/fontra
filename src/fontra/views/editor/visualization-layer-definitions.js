@@ -408,6 +408,52 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.background-image",
+  name: "Background image",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 50,
+
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const backgroundImage = positionedGlyph.glyph.backgroundImage;
+    if (!backgroundImage) {
+      return;
+    }
+
+    const image = model.fontController.getBackgroundImageCached(
+      backgroundImage.identifier,
+      () => controller.requestUpdate()
+    );
+
+    if (!image) {
+      return;
+    }
+
+    const affine = decomposedToTransform(backgroundImage.transformation)
+      .translate(0, image.height)
+      .scale(1, -1);
+
+    withSavedState(context, () => {
+      context.transform(
+        affine.xx,
+        affine.xy,
+        affine.yx,
+        affine.yy,
+        affine.dx,
+        affine.dy
+      );
+      if (backgroundImage.color) {
+        // TODO: solve colorizing with backgroundImage.color
+        // For now: apply alpha
+        context.globalAlpha = backgroundImage.color.alpha;
+      }
+      context.drawImage(image, 0, 0, image.width, image.height);
+    });
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.guidelines",
   name: "Guidelines",
   selectionMode: "editing",
