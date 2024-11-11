@@ -38,7 +38,7 @@ class FontraBackend:
     kerningFileName = "kerning.csv"
     featureTextFileName = "features.txt"
     glyphsDirName = "glyphs"
-    backgroundImagesDirName = "backgroundImages"
+    backgroundImagesDirName = "background-images"
 
     @classmethod
     def fromPath(cls, path) -> WritableFontBackend:
