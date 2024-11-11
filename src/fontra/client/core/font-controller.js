@@ -131,6 +131,7 @@ export class FontController {
   }
 
   getBackgroundImage(imageIdentifier) {
+    // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
       const imagePromise = this._getBackgroundImage(imageIdentifier);
@@ -141,10 +142,18 @@ export class FontController {
     return cacheEntry.imagePromise;
   }
 
-  getBackgroundImageCached(imageIdentifier, requestUpdateFunc) {
+  getBackgroundImageCached(imageIdentifier, onLoad = null) {
+    /*
+     * Return the requested image if it is available in cache, else return
+     * `undefined`.
+     *
+     * If the image is not available in cache, and the `onLoad` callback argument
+     * is given, the image is requested, and `onLoad` will be called when it is
+     * available, with the image as argument.
+     */
     const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
-    if (!cacheEntry) {
-      this.getBackgroundImage(imageIdentifier).then((image) => requestUpdateFunc?.());
+    if (!cacheEntry && onLoad) {
+      this.getBackgroundImage(imageIdentifier).then((image) => onLoad(image));
     }
     return cacheEntry?.image;
   }
