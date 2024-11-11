@@ -214,7 +214,7 @@ class BackgroundImage:
 
 
 # The ImageType and ImageData classes aren't part of the Font data structure,
-# But are used in the backend protocol.
+# but are used in the backend protocol.
 
 
 class ImageType(str, Enum):
