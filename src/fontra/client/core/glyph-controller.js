@@ -562,6 +562,10 @@ export class StaticGlyphController {
     return this.instance.path;
   }
 
+  get backgroundImage() {
+    return this.instance.backgroundImage;
+  }
+
   get flattenedPath() {
     return getRepresentation(this, "flattenedPath");
   }
