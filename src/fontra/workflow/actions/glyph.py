@@ -512,3 +512,24 @@ class SetVerticalGlyphMetricsFromAnchors(BaseFilter):
             glyph = replace(glyph, layers=glyph.layers | newLayers)
 
         return glyph
+
+
+@registerFilterAction("drop-background-images")
+@dataclass(kw_only=True)
+class DropBackgroundImages(BaseFilter):
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        if any(
+            layer.glyph.backgroundImage is not None for layer in glyph.layers.values()
+        ):
+            glyph = replace(
+                glyph,
+                layers={
+                    layerName: (
+                        replace(layer, glyph=replace(layer.glyph, backgroundImage=None))
+                        if layer.glyph.backgroundImage is not None
+                        else layer
+                    )
+                    for layerName, layer in glyph.layers.items()
+                },
+            )
+        return glyph

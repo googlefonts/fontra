@@ -19,11 +19,17 @@
 },
 {
 "x": 129,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 388,
-"y": 725
+"y": 725,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 297,

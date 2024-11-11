@@ -10,6 +10,7 @@ from .classes import (
     Axes,
     FontInfo,
     FontSource,
+    ImageData,
     Kerning,
     OpenTypeFeatures,
     VariableGlyph,
@@ -90,6 +91,25 @@ class WatchableFontBackend(Protocol):
         self, callback: Callable[[Any], Awaitable[None]]
     ) -> None:
         pass
+
+
+@runtime_checkable
+class ReadBackgroundImage(Protocol):
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        pass
+
+
+@runtime_checkable
+class WriteBackgroundImage(Protocol):
+    async def putBackgroundImage(
+        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
+    ) -> None:
+        pass
+
+    # TODO: since the image data does not itself participate in change messages,
+    # we may depend on the backend itself to purge unused images.
+    # async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
+    #     pass
 
 
 @runtime_checkable

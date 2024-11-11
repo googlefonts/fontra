@@ -16,6 +16,8 @@ from ..core.classes import (
     Font,
     FontInfo,
     FontSource,
+    ImageData,
+    ImageType,
     Kerning,
     OpenTypeFeatures,
     VariableGlyph,
@@ -36,6 +38,7 @@ class FontraBackend:
     kerningFileName = "kerning.csv"
     featureTextFileName = "features.txt"
     glyphsDirName = "glyphs"
+    backgroundImagesDirName = "background-images"
 
     @classmethod
     def fromPath(cls, path) -> WritableFontBackend:
@@ -91,6 +94,10 @@ class FontraBackend:
     @property
     def glyphsDir(self):
         return self.path / self.glyphsDirName
+
+    @property
+    def backgroundImagesDir(self):
+        return self.path / self.backgroundImagesDirName
 
     async def aclose(self):
         self.flush()
@@ -180,6 +187,23 @@ class FontraBackend:
         assert isinstance(features, OpenTypeFeatures)
         self.fontData.features = deepcopy(features)
         self._scheduler.schedule(self._writeFontData)
+
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        for imageType in [ImageType.PNG, ImageType.JPEG]:
+            fileName = f"{imageIdentifier}.{imageType.lower()}"
+            path = self.backgroundImagesDir / fileName
+            if path.is_file():
+                return ImageData(type=imageType, data=path.read_bytes())
+
+        return None  # Image not found
+
+    async def putBackgroundImage(
+        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
+    ) -> None:
+        fileName = f"{imageIdentifier}.{data.type.lower()}"
+        self.backgroundImagesDir.mkdir(exist_ok=True)
+        path = self.backgroundImagesDir / fileName
+        path.write_bytes(data.data)
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)

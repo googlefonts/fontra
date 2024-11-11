@@ -314,6 +314,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
               steps:
               - filter: subset-glyphs
                 glyphNames: ["C", "D"]
+              - filter: drop-background-images
 
             - output: fontra-write
               destination: "output-subset-scale.fontra"

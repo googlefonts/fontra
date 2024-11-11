@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import functools
 import logging
 import traceback
@@ -267,6 +268,19 @@ class FontHandler:
     @remoteMethod
     async def getCustomData(self, *, connection):
         return await self.getData("customData")
+
+    @remoteMethod
+    async def getBackgroundImage(
+        self, imageIdentifier: str, *, connection=None
+    ) -> dict | None:
+        if not hasattr(self.backend, "getBackgroundImage"):
+            return None
+        imageData = await self.backend.getBackgroundImage(imageIdentifier)
+        if imageData is None:
+            return None
+        return dict(
+            type=imageData.type, data=base64.b64encode(imageData.data).decode("ascii")
+        )
 
     def _getClientData(self, connection, key, default=None):
         return self.clientData[connection.clientUUID].get(key, default)

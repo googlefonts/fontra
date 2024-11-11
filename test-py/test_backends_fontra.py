@@ -7,7 +7,7 @@ import pytest
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
-from fontra.core.classes import OpenTypeFeatures
+from fontra.core.classes import ImageType, OpenTypeFeatures
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -157,3 +157,17 @@ async def test_findGlyphsThatUseGlyph(writableFontraFont):
             "B",
             "varcotest1",
         ] == await writableFontraFont.findGlyphsThatUseGlyph("A")
+
+
+async def test_getBackgroundImage(testFontraFont):
+    glyph = await testFontraFont.getGlyph("C")
+    bgImage = None
+    for layer in glyph.layers.values():
+        if layer.glyph.backgroundImage is not None:
+            bgImage = layer.glyph.backgroundImage
+            break
+    assert bgImage is not None
+
+    imageData = await testFontraFont.getBackgroundImage(bgImage.identifier)
+    assert imageData.type == ImageType.PNG
+    assert len(imageData.data) == 60979

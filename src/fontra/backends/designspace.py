@@ -6,9 +6,10 @@ import os
 import pathlib
 import secrets
 import shutil
+import uuid
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
@@ -22,10 +23,10 @@ from fontTools.designspaceLib import (
     DiscreteAxisDescriptor,
     SourceDescriptor,
 )
-from fontTools.misc.transform import DecomposedTransform
+from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.pens.pointPen import AbstractPointPen
 from fontTools.pens.recordingPen import RecordingPointPen
-from fontTools.ufoLib import UFOReaderWriter
+from fontTools.ufoLib import UFOLibError, UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.async_property import async_property
@@ -33,6 +34,7 @@ from ..core.classes import (
     Anchor,
     Axes,
     AxisValueLabel,
+    BackgroundImage,
     Component,
     CrossAxisMapping,
     DiscreteFontAxis,
@@ -42,10 +44,13 @@ from ..core.classes import (
     GlyphAxis,
     GlyphSource,
     Guideline,
+    ImageData,
+    ImageType,
     Kerning,
     Layer,
     LineMetric,
     OpenTypeFeatures,
+    RGBAColor,
     StaticGlyph,
     VariableGlyph,
 )
@@ -208,6 +213,7 @@ class DesignspaceBackend:
         self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._glyphDependencies: GlyphDependencies | None = None
         self._backgroundTasksTask: asyncio.Task | None = None
+        self._imageMapping = DoubleDict()
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
@@ -444,6 +450,11 @@ class DesignspaceBackend:
                 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY, {}
             )
 
+            if staticGlyph.backgroundImage is not None:
+                staticGlyph.backgroundImage.identifier = self._getImageIdentifier(
+                    ufoLayer.path, staticGlyph.backgroundImage.identifier
+                )
+
             layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
 
         # When a glyph has axes with names that also exist as global axes, we need
@@ -632,8 +643,25 @@ class DesignspaceBackend:
             if self.setOverlapSimpleFlag:
                 layerGlyph.lib["public.truetype.overlap"] = True
 
+            imageFileName = None
+            if layer.glyph.backgroundImage is not None:
+                imageInfo = self._imageMapping.reverse.get(
+                    layer.glyph.backgroundImage.identifier
+                )
+                if imageInfo is not None:
+                    _, imageFileName = imageInfo
+                else:
+                    imageFileName = f"{layer.glyph.backgroundImage.identifier}.png"
+                    imageInfo = (ufoLayer.path, imageFileName)
+                    self._imageMapping[imageInfo] = (
+                        layer.glyph.backgroundImage.identifier
+                    )
+
             drawPointsFunc = populateUFOLayerGlyph(
-                layerGlyph, layer.glyph, hasVariableComponents
+                layerGlyph,
+                layer.glyph,
+                hasVariableComponents,
+                imageFileName=imageFileName,
             )
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
@@ -1139,6 +1167,63 @@ class DesignspaceBackend:
             featureText = features.text
             writer.writeFeatures(featureText)
 
+    async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
+        imageInfo = self._imageMapping.reverse.get(imageIdentifier)
+        if imageInfo is None:
+            return None
+
+        ufoPath, imageFileName = imageInfo
+        reader = self.ufoManager.getReader(ufoPath)
+
+        try:
+            data = reader.readImage(imageFileName, validate=True)
+        except UFOLibError as e:
+            logger.warning(str(e))
+            return None
+
+        return ImageData(type=ImageType.PNG, data=data)
+
+    async def putBackgroundImage(
+        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
+    ) -> None:
+        if glyphName not in self.glyphMap:
+            raise KeyError(glyphName)
+
+        if data.type != ImageType.PNG:
+            raise NotImplementedError("convert image to PNG")
+
+        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
+            self.defaultUFOLayer.glyphSet, glyphName
+        )
+
+        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
+        layerName = revLayerNameMapping.get(layerName, layerName)
+        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+
+        imageFileName = f"{imageIdentifier}.{data.type.lower()}"
+
+        ufoLayer.reader.writeImage(imageFileName, data.data, validate=True)
+
+        key = (ufoLayer.path, imageFileName)
+        self._imageMapping[key] = imageIdentifier
+
+    def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
+        key = (ufoPath, imageFileName)
+        imageIdentifier = self._imageMapping.get(key)
+
+        if imageIdentifier is None:
+            ufoFileName = os.path.basename(ufoPath)
+            imageIdentifier = str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"https://fontra.xyz/image-ids/{ufoFileName}/{imageFileName}",
+                )
+            )
+            self._imageMapping[key] = imageIdentifier
+
+        return imageIdentifier
+
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
 
@@ -1471,14 +1556,16 @@ def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
             setattr(fontInfo, infoAttr, value)
 
 
+@dataclass(kw_only=True)
 class UFOGlyph:
-    unicodes: list = []
+    unicodes: list = field(default_factory=list)
     width: float | None = 0
     height: float | None = None
-    anchors: list = []
-    guidelines: list = []
+    anchors: list = field(default_factory=list)
+    guidelines: list = field(default_factory=list)
+    image: dict | None = None
     note: str | None = None
-    lib: dict
+    lib: dict = field(default_factory=dict)
 
 
 class UFOFontInfo:
@@ -1653,9 +1740,26 @@ class ItemList:
             yield getattr(item, attrName)
 
 
+class DoubleDict(dict):
+    def __init__(self):
+        self.reverse = {}
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        self.reverse[value] = key
+
+    def __delitem__(self, key):
+        raise NotImplementedError()
+
+    def pop(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def setdefault(self, *args, **kwargs):
+        raise NotImplementedError()
+
+
 def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyph = UFOGlyph()
-    glyph.lib = {}
     pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
@@ -1670,6 +1774,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         verticalOrigin=verticalOrigin,
         anchors=unpackAnchors(glyph.anchors),
         guidelines=unpackGuidelines(glyph.guidelines),
+        backgroundImage=unpackBackgroundImage(glyph.image),
     )
 
     return staticGlyph, glyph
@@ -1708,6 +1813,54 @@ def unpackGuidelines(guidelines):
     ]
 
 
+imageTransformFields = [
+    ("xScale", 1),
+    ("xyScale", 0),
+    ("yxScale", 0),
+    ("yScale", 1),
+    ("xOffset", 0),
+    ("yOffset", 0),
+]
+
+
+def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
+    if imageDict is None:
+        return None
+
+    t = Transform(*(imageDict.get(k, dv) for k, dv in imageTransformFields))
+    colorChannels = [float(ch.strip()) for ch in imageDict.get("color", "").split(",")]
+
+    return BackgroundImage(
+        identifier=imageDict["fileName"],
+        transformation=DecomposedTransform.fromTransform(t),
+        color=RGBAColor(*colorChannels) if len(colorChannels) == 4 else None,
+    )
+
+
+def packBackgroundImage(backgroundImage, imageFileName) -> dict:
+    imageDict = {"fileName": imageFileName}
+
+    t = backgroundImage.transformation.toTransform()
+    for (fieldName, default), value in zip(imageTransformFields, t):
+        if value != default:
+            imageDict[fieldName] = value
+
+    if backgroundImage.color is not None:
+        c = backgroundImage.color
+        imageDict["color"] = ",".join(
+            _formatChannelValue(ch) for ch in [c.red, c.green, c.blue, c.alpha]
+        )
+
+    return imageDict
+
+
+def _formatChannelValue(ch):
+    s = f"{ch:0.5f}"
+    s = s.rstrip("0")
+    s = s.rstrip(".")
+    return s
+
+
 def packGuidelines(guidelines):
     packedGuidelines = []
     for g in guidelines:
@@ -1727,7 +1880,6 @@ def readGlyphOrCreate(
     codePoints: list[int],
 ) -> UFOGlyph:
     layerGlyph = UFOGlyph()
-    layerGlyph.lib = {}
     if glyphName in glyphSet:
         # We read the existing glyph so we don't lose any data that
         # Fontra doesn't understand
@@ -1740,6 +1892,7 @@ def populateUFOLayerGlyph(
     layerGlyph: UFOGlyph,
     staticGlyph: StaticGlyph,
     forceVariableComponents: bool = False,
+    imageFileName: str | None = None,
 ) -> Callable[[AbstractPointPen], None]:
     pen = RecordingPointPen()
 
@@ -1758,6 +1911,11 @@ def populateUFOLayerGlyph(
         {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
         for g in staticGlyph.guidelines
     ]
+    if staticGlyph.backgroundImage is not None and imageFileName is not None:
+        layerGlyph.image = packBackgroundImage(
+            staticGlyph.backgroundImage, imageFileName
+        )
+
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
             # Store as a variable component

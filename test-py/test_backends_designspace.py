@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+import uuid
 from contextlib import aclosing
 from copy import deepcopy
 from dataclasses import asdict
@@ -83,7 +84,7 @@ def readGLIFData(glyphName, ufoLayers):
 
 
 @pytest.mark.parametrize(
-    "glyphName", ["A", "B", "Q", "R.alt", "varcotest1", "varcotest2"]
+    "glyphName", ["A", "B", "C", "Q", "R.alt", "varcotest1", "varcotest2"]
 )
 async def test_roundTripGlyph(writableTestFont, glyphName):
     existingData = readGLIFData(glyphName, writableTestFont.ufoLayers)
@@ -373,6 +374,60 @@ async def test_addLocalAxisAndSource(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_getBackgroundImage(testFont):
+    glyphName = "C"
+    glyph = await testFont.getGlyph(glyphName)
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    imageData = await testFont.getBackgroundImage(bgImage.identifier)
+    assert len(imageData.data) == 60979
+    assert imageData.data[:4] == b"\x89PNG"
+
+
+async def test_putBackgroundImage(writableTestFont):
+    glyph = await writableTestFont.getGlyph("C")
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    imageData = await writableTestFont.getBackgroundImage(bgImage.identifier)
+    assert len(imageData.data) == 60979
+    assert imageData.data[:4] == b"\x89PNG"
+
+    glyphName = "D"
+    imageIdentifier = str(uuid.uuid4())
+    await writableTestFont.putBackgroundImage(
+        imageIdentifier, glyphName, layerName, imageData
+    )
+
+    imageData2 = await writableTestFont.getBackgroundImage(imageIdentifier)
+
+    assert imageData2 == imageData
+
+
+async def test_putBackgroundImage_new_font(testFont, tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
+
+    await newFont.putAxes(await testFont.getAxes())
+
+    glyph = await testFont.getGlyph("C")
+
+    await newFont.putGlyph("C", glyph, [ord("C")])
+    glyph2 = await newFont.getGlyph("C")
+    assert glyph == glyph2
+    for layer in glyph2.layers.values():
+        if layer.glyph.backgroundImage is not None:
+            assert layer.glyph.backgroundImage.color.red == 0.84399
+            break
+    else:
+        assert 0, "expected backgroundImage"
 
 
 async def test_putAxes(writableTestFont):

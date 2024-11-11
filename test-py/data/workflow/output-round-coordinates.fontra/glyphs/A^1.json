@@ -36,11 +36,17 @@
 },
 {
 "x": 89,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 221,
-"y": 715
+"y": 715,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 156,
@@ -129,11 +135,17 @@
 },
 {
 "x": 139,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 255,
-"y": 741
+"y": 741,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 140,
@@ -222,11 +234,17 @@
 },
 {
 "x": 211,
-"y": 0
+"y": 0,
+"attrs": {
+"name": "test-name"
+}
 },
 {
 "x": 306,
-"y": 779
+"y": 779,
+"attrs": {
+"identifier": "test-identifier"
+}
 },
 {
 "x": 117,

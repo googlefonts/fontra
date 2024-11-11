@@ -60,6 +60,7 @@ export class StaticGlyph {
     source.guidelines = noCopy
       ? obj.guidelines || []
       : normalizeGuidelines(obj.guidelines || []);
+    source.backgroundImage = copyBackgroundImage(obj.backgroundImage);
     return source;
   }
 
@@ -73,6 +74,18 @@ export function copyComponent(component) {
     name: component.name,
     transformation: { ...getDecomposedIdentity(), ...component.transformation },
     location: { ...component.location },
+  };
+}
+
+function copyBackgroundImage(image) {
+  if (!image) {
+    return undefined;
+  }
+  return {
+    identifier: image.identifier,
+    transformation: { ...getDecomposedIdentity(), ...image.transformation },
+    color: image.color ? { ...image.color } : undefined,
+    customData: copyCustomData(image.customData || {}),
   };
 }
 

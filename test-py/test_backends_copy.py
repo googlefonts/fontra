@@ -15,7 +15,7 @@ mutatorDSPath = (
 )
 
 
-@pytest.mark.parametrize("glyphNames", [None, ["A", "period"]])
+@pytest.mark.parametrize("glyphNames", [None, ["A", "C", "period"]])
 async def test_copyFont(tmpdir, glyphNames):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "MutatorCopy.designspace"

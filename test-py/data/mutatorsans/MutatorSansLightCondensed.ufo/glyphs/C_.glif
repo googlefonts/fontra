@@ -3,7 +3,7 @@
   <advance width="499"/>
   <unicode hex="0043"/>
   <unicode hex="0063"/>
-  <image fileName="image000000000000001" xOffset="-100.0" yOffset="-300.0"/>
+  <image fileName="image000000000000001" xOffset="-100.0" yOffset="-300.0" color="0.84399,0.80767,0.37093,0.684"/>
   <outline>
     <contour>
       <point x="410" y="264" type="line"/>
@@ -38,4 +38,16 @@
       <point x="449" y="258" type="curve"/>
     </contour>
   </outline>
+  <lib>
+    <dict>
+      <key>com.typemytype.robofont.Image.Brightness</key>
+      <real>0.0</real>
+      <key>com.typemytype.robofont.Image.Contrast</key>
+      <real>1.0</real>
+      <key>com.typemytype.robofont.Image.Saturation</key>
+      <real>1.0</real>
+      <key>com.typemytype.robofont.Image.Sharpness</key>
+      <real>0.0</real>
+    </dict>
+  </lib>
 </glyph>
