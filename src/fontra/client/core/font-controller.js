@@ -24,6 +24,7 @@ import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString, mapBackward, mapForward } from "./var-model.js";
 
 const GLYPH_CACHE_SIZE = 2000;
+const BACKGROUND_IMAGE_CACHE_SIZE = 100;
 const NUM_TASKS = 12;
 
 export class FontController {
@@ -44,6 +45,7 @@ export class FontController {
     this.undoStacks = {}; // glyph name -> undo stack
     this.readOnly = true;
     this._instanceRequestQueue = new InstanceRequestQueue(this);
+    this._backgroundImageCache = new LRUCache(BACKGROUND_IMAGE_CACHE_SIZE);
   }
 
   async initialize(initListener = true) {
@@ -65,6 +67,7 @@ export class FontController {
         (change, isExternalChange) => this._purgeCachesRelatedToAxesAndSourcesChanges()
       );
     }
+
     this._resolveInitialized();
   }
 
@@ -125,6 +128,30 @@ export class FontController {
   async getSources() {
     // backwards compat, this.sources is the same
     return this._rootObject.sources;
+  }
+
+  getBackgroundImage(imageIdentifier) {
+    let imagePromise = this._backgroundImageCache.get(imageIdentifier);
+    if (!imagePromise) {
+      imagePromise = this._getBackgroundImage(imageIdentifier);
+      this._backgroundImageCache.put(imageIdentifier, imagePromise);
+    }
+    return imagePromise;
+  }
+
+  async _getBackgroundImage(imageIdentifier) {
+    const imageData = await this.font.getBackgroundImage(imageIdentifier);
+    if (!imageData) {
+      return null;
+    }
+
+    const image = new Image();
+    const imagePromise = new Promise((resolve, reject) => {
+      image.onload = (event) => resolve(image);
+    });
+    image.src = `data:image/${imageData.type};base64,${imageData.data}`;
+
+    return await imagePromise;
   }
 
   getCachedGlyphNames() {
