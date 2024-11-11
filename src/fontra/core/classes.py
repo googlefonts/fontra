@@ -220,7 +220,7 @@ class BackgroundImage:
 class ImageType(str, Enum):
     # TODO: use StrEnum once we drop support for Python 3.10
     PNG = "png"
-    JPG = "jpg"
+    JPEG = "jpeg"
 
 
 @dataclass(kw_only=True)

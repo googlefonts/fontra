@@ -2,7 +2,7 @@ import hashlib
 import os
 import pathlib
 
-binarySuffixes = {".png", ".jpg"}
+binarySuffixes = {".png", ".jpg", ".jpeg"}
 
 
 def directoryTreeToList(path):

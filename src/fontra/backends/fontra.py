@@ -189,7 +189,7 @@ class FontraBackend:
         self._scheduler.schedule(self._writeFontData)
 
     async def getBackgroundImage(self, imageIdentifier: str) -> ImageData | None:
-        for imageType in [ImageType.PNG, ImageType.JPG]:
+        for imageType in [ImageType.PNG, ImageType.JPEG]:
             fileName = f"{imageIdentifier}.{imageType.lower()}"
             path = self.backgroundImagesDir / fileName
             if path.is_file():
