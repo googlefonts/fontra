@@ -282,5 +282,20 @@ async def test_fontHandler_new_glyph(testFontHandler):
         assert glifPath.exists()
 
 
+async def test_getBackgroundImage(testFontHandler):
+    glyph = await testFontHandler.getGlyph("C")
+    bgImage = None
+    for layer in glyph.layers.values():
+        if layer.glyph.backgroundImage is not None:
+            bgImage = layer.glyph.backgroundImage
+    assert bgImage is not None
+
+    imageData = await testFontHandler.getBackgroundImage(bgImage.identifier)
+
+    assert imageData["type"] == "png"
+    assert len(imageData["data"]) == 81308
+    assert isinstance(imageData["data"], str)
+
+
 def firstLayerItem(glyph):
     return next(iter(glyph.layers.items()))
