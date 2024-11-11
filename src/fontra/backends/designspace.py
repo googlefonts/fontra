@@ -643,8 +643,19 @@ class DesignspaceBackend:
             if self.setOverlapSimpleFlag:
                 layerGlyph.lib["public.truetype.overlap"] = True
 
+            imageFileName = None
+            if layer.glyph.backgroundImage is not None:
+                imageInfo = self._imageMapping.reverse.get(
+                    layer.glyph.backgroundImage.identifier
+                )
+                if imageInfo is not None:
+                    ufoPath, imageFileName = imageInfo
+
             drawPointsFunc = populateUFOLayerGlyph(
-                layerGlyph, layer.glyph, hasVariableComponents
+                layerGlyph,
+                layer.glyph,
+                hasVariableComponents,
+                imageFileName=imageFileName,
             )
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
@@ -1820,6 +1831,30 @@ def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
     )
 
 
+def packBackgroundImage(backgroundImage, imageFileName) -> dict:
+    imageDict = {"fileName": imageFileName}
+
+    t = backgroundImage.transformation.toTransform()
+    for (fieldName, default), value in zip(imageTransformFields, t):
+        if value != default:
+            imageDict[fieldName] = value
+
+    if backgroundImage.color is not None:
+        c = backgroundImage.color
+        imageDict["color"] = ",".join(
+            _formatChannelValue(ch) for ch in [c.red, c.green, c.blue, c.alpha]
+        )
+
+    return imageDict
+
+
+def _formatChannelValue(ch):
+    s = f"{ch:0.5f}"
+    s = s.rstrip("0")
+    s = s.rstrip(".")
+    return s
+
+
 def packGuidelines(guidelines):
     packedGuidelines = []
     for g in guidelines:
@@ -1851,6 +1886,7 @@ def populateUFOLayerGlyph(
     layerGlyph: UFOGlyph,
     staticGlyph: StaticGlyph,
     forceVariableComponents: bool = False,
+    imageFileName: str | None = None,
 ) -> Callable[[AbstractPointPen], None]:
     pen = RecordingPointPen()
 
@@ -1869,6 +1905,11 @@ def populateUFOLayerGlyph(
         {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
         for g in staticGlyph.guidelines
     ]
+    if staticGlyph.backgroundImage is not None and imageFileName is not None:
+        layerGlyph.image = packBackgroundImage(
+            staticGlyph.backgroundImage, imageFileName
+        )
+
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
             # Store as a variable component

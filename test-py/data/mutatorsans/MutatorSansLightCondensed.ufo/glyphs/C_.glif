@@ -3,7 +3,7 @@
   <advance width="499"/>
   <unicode hex="0043"/>
   <unicode hex="0063"/>
-  <image fileName="image000000000000001" xOffset="-100.0" yOffset="-300.0" color="0.84399,0.80767,0.37093,0.68400"/>
+  <image fileName="image000000000000001" xOffset="-100.0" yOffset="-300.0" color="0.84399,0.80767,0.37093,0.684"/>
   <outline>
     <contour>
       <point x="410" y="264" type="line"/>
