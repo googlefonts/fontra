@@ -25,13 +25,13 @@ export class SceneModel {
     fontController,
     sceneSettingsController,
     isPointInPath,
-    editorController
+    visualizationLayersSettings
   ) {
     this.fontController = fontController;
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
-    this.editorController = editorController;
+    this.visualizationLayersSettings = visualizationLayersSettings;
     this.hoveredGlyph = undefined;
     this._glyphLocations = {}; // glyph name -> glyph location
     this.longestLineLength = 0;
@@ -687,7 +687,7 @@ export class SceneModel {
   }
 
   guidelineSelectionAtPoint(point, size, parsedCurrentSelection) {
-    if (!this.editorController.visualizationLayersSettings.model["fontra.guidelines"]) {
+    if (!this.visualizationLayersSettings.model["fontra.guidelines"]) {
       // If guidelines are hidden, don't allow selection
       return new Set();
     }

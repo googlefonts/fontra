@@ -40,7 +40,7 @@ export class SceneController {
     fontController,
     canvasController,
     applicationSettingsController,
-    editorController
+    visualizationLayersSettings
   ) {
     this.canvasController = canvasController;
     this.applicationSettings = applicationSettingsController.model;
@@ -59,7 +59,7 @@ export class SceneController {
       fontController,
       this.sceneSettingsController,
       isPointInPath,
-      editorController
+      visualizationLayersSettings
     );
 
     this.selectedTool = undefined;
