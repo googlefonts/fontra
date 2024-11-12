@@ -22,21 +22,21 @@ export class FontSourcesInstancer {
     this.defaultLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );
-    this._sourceIdentifiersByLocationString = Object.fromEntries(
+    this._sourceIdsByLocationString = Object.fromEntries(
       Object.entries(this.fontSources).map(([sourceIdentifier, source]) => [
         locationToString({ ...this.defaultLocation, ...source.location }),
         sourceIdentifier,
       ])
     );
     this.defaultSourceIdentifier =
-      this._sourceIdentifiersByLocationString[locationToString(this.defaultLocation)];
+      this._sourceIdsByLocationString[locationToString(this.defaultLocation)];
 
     this._instanceCache = new LRUCache(50);
   }
 
   getLocationIdentifierForLocation(location) {
     location = { ...this.defaultLocation, ...location };
-    return this._sourceIdentifiersByLocationString[locationToString(location)];
+    return this._sourceIdsByLocationString[locationToString(location)];
   }
 
   get model() {
@@ -72,7 +72,7 @@ export class FontSourcesInstancer {
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 
-    const sourceIdentifier = this._sourceIdentifiersByLocationString[locationString];
+    const sourceIdentifier = this._sourceIdsByLocationString[locationString];
     let sourceInstance = sourceIdentifier
       ? this.fontSources[sourceIdentifier]
       : undefined;
