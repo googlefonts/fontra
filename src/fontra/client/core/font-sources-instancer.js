@@ -19,12 +19,12 @@ export class FontSourcesInstancer {
       (source) => !source.isSparse
     );
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
-    this.defaultSourceLocation = Object.fromEntries(
+    this.defaultLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );
     this.sourcesByLocationString = Object.fromEntries(
       this.fontSourcesList.map((source) => [
-        locationToString({ ...this.defaultSourceLocation, ...source.location }),
+        locationToString({ ...this.defaultLocation, ...source.location }),
         source,
       ])
     );
@@ -61,7 +61,7 @@ export class FontSourcesInstancer {
     if (!this.fontSourcesList.length) {
       return undefined;
     }
-    sourceLocation = { ...this.defaultSourceLocation, ...sourceLocation };
+    sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 
     if (locationString in this.sourcesByLocationString) {
