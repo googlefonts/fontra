@@ -34,6 +34,11 @@ export class FontSourcesInstancer {
     this._instanceCache = new LRUCache(50);
   }
 
+  getLocationIdentifierForLocation(location) {
+    location = { ...this.defaultLocation, ...location };
+    return this._sourceIdentifiersByLocationString[locationToString(location)];
+  }
+
   get model() {
     if (!this._model) {
       const locations = this._fontSourcesList.map((source) => source.location);
