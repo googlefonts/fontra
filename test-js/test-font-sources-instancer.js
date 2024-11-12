@@ -109,9 +109,17 @@ describe("FontSourcesInstancer Tests", () => {
     expect(sourceInstance).to.deep.equal(testItem.expectedSource);
   });
 
+  it("Default location identifier", () => {
+    const fsi = new FontSourcesInstancer(testAxes, testSources);
+    expect(fsi.defaultSourceIdentifier).to.equal("source1");
+    expect(fsi.defaultLocation).to.deep.equal({ Weight: 400, Width: 50 });
+  });
+
   it("Empty sources list", () => {
     const fsi = new FontSourcesInstancer([], {});
     const sourceInstance = fsi.instantiate({});
     expect(sourceInstance).to.deep.equal(undefined);
+    expect(fsi.defaultSourceIdentifier).to.equal(undefined);
+    expect(fsi.defaultLocation).to.deep.equal({});
   });
 });

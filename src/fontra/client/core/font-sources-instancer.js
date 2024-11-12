@@ -28,6 +28,9 @@ export class FontSourcesInstancer {
         sourceIdentifier,
       ])
     );
+    this.defaultSourceIdentifier =
+      this._sourceIdentifiersByLocationString[locationToString(this.defaultLocation)];
+
     this._instanceCache = new LRUCache(50);
   }
 
