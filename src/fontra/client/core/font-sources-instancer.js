@@ -64,11 +64,12 @@ export class FontSourcesInstancer {
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 
-    if (locationString in this.sourcesByLocationString) {
+    let sourceInstance = this.sourcesByLocationString[locationString];
+    if (sourceInstance && !sourceInstance.isSparse) {
       return this.sourcesByLocationString[locationString];
     }
 
-    let sourceInstance = this._instanceCache.get(locationString);
+    sourceInstance = this._instanceCache.get(locationString);
 
     if (!sourceInstance) {
       const deltas = this.deltas;
