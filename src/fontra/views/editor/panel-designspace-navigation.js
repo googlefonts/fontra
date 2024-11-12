@@ -813,7 +813,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       ...this.sceneSettings.glyphLocation,
     });
 
-    const suggestedLocationBase = undefined; // take from font source, if any
+    const suggestedLocationBase =
+      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+        this.sceneSettings.fontLocationSourceMapped
+      );
 
     const {
       location: newLocation,
