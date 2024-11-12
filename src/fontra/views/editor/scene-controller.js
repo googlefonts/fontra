@@ -897,8 +897,8 @@ export class SceneController {
     return this.sceneModel.backgroundLayers || [];
   }
 
-  set backgroundLayers(layerNames) {
-    this.sceneModel.backgroundLayers = layerNames;
+  set backgroundLayers(layers) {
+    this.sceneModel.backgroundLayers = layers;
     this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
