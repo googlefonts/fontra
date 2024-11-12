@@ -127,6 +127,10 @@ describe("FontSourcesInstancer Tests", () => {
       { location: { Width: 100 }, locationIdentifier: "source3" },
       { location: { Weight: 900, Width: 100 }, locationIdentifier: "source4" },
       { location: { Weight: 800, Width: 100 }, locationIdentifier: undefined },
+      {
+        location: { Weight: 900, Width: 100, UnknownAxis: 120 },
+        locationIdentifier: undefined,
+      },
     ],
     (testItem) => {
       const fsi = new FontSourcesInstancer(testAxes, testSources);
