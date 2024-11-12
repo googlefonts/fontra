@@ -15,15 +15,15 @@ export class FontSourcesInstancer {
   }
 
   _setup() {
-    this.fontSourcesList = Object.values(this.fontSources).filter(
+    this._fontSourcesList = Object.values(this.fontSources).filter(
       (source) => !source.isSparse
     );
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     this.defaultLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );
-    this.sourcesByLocationString = Object.fromEntries(
-      this.fontSourcesList.map((source) => [
+    this._sourcesByLocationString = Object.fromEntries(
+      this._fontSourcesList.map((source) => [
         locationToString({ ...this.defaultLocation, ...source.location }),
         source,
       ])
@@ -33,17 +33,17 @@ export class FontSourcesInstancer {
 
   get model() {
     if (!this._model) {
-      const locations = this.fontSourcesList.map((source) => source.location);
+      const locations = this._fontSourcesList.map((source) => source.location);
       this._model = new DiscreteVariationModel(locations, this.fontAxesSourceSpace);
     }
     return this._model;
   }
 
   get deltas() {
-    const guidelinesAreCompatible = areGuidelinesCompatible(this.fontSourcesList);
-    const customDatasAreCompatible = areCustomDatasCompatible(this.fontSourcesList);
+    const guidelinesAreCompatible = areGuidelinesCompatible(this._fontSourcesList);
+    const customDatasAreCompatible = areCustomDatasCompatible(this._fontSourcesList);
 
-    const fixedSourceValues = this.fontSourcesList.map((source) => {
+    const fixedSourceValues = this._fontSourcesList.map((source) => {
       return {
         ...source,
         location: null,
@@ -58,15 +58,15 @@ export class FontSourcesInstancer {
   }
 
   instantiate(sourceLocation) {
-    if (!this.fontSourcesList.length) {
+    if (!this._fontSourcesList.length) {
       return undefined;
     }
     sourceLocation = { ...this.defaultLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 
-    let sourceInstance = this.sourcesByLocationString[locationString];
+    let sourceInstance = this._sourcesByLocationString[locationString];
     if (sourceInstance && !sourceInstance.isSparse) {
-      return this.sourcesByLocationString[locationString];
+      return this._sourcesByLocationString[locationString];
     }
 
     sourceInstance = this._instanceCache.get(locationString);
