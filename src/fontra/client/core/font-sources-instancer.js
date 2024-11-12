@@ -15,35 +15,43 @@ export class FontSourcesInstancer {
   }
 
   _setup() {
-    this.fontSourcesList = Object.values(this.fontSources).filter(
+    this._fontSourcesList = Object.values(this.fontSources).filter(
       (source) => !source.isSparse
     );
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
-    this.defaultLocation = Object.fromEntries(
+    this.defaultSourceLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );
-    this.sourcesByLocationString = Object.fromEntries(
-      this.fontSourcesList.map((source) => [
-        locationToString({ ...this.defaultLocation, ...source.location }),
-        source,
+    this._sourceIdsByLocationString = Object.fromEntries(
+      Object.entries(this.fontSources).map(([sourceIdentifier, source]) => [
+        locationToString({ ...this.defaultSourceLocation, ...source.location }),
+        sourceIdentifier,
       ])
     );
+    this.defaultSourceIdentifier =
+      this._sourceIdsByLocationString[locationToString(this.defaultSourceLocation)];
+
     this._instanceCache = new LRUCache(50);
+  }
+
+  getLocationIdentifierForLocation(location) {
+    location = { ...this.defaultSourceLocation, ...location };
+    return this._sourceIdsByLocationString[locationToString(location)];
   }
 
   get model() {
     if (!this._model) {
-      const locations = this.fontSourcesList.map((source) => source.location);
+      const locations = this._fontSourcesList.map((source) => source.location);
       this._model = new DiscreteVariationModel(locations, this.fontAxesSourceSpace);
     }
     return this._model;
   }
 
   get deltas() {
-    const guidelinesAreCompatible = areGuidelinesCompatible(this.fontSourcesList);
-    const customDatasAreCompatible = areCustomDatasCompatible(this.fontSourcesList);
+    const guidelinesAreCompatible = areGuidelinesCompatible(this._fontSourcesList);
+    const customDatasAreCompatible = areCustomDatasCompatible(this._fontSourcesList);
 
-    const fixedSourceValues = this.fontSourcesList.map((source) => {
+    const fixedSourceValues = this._fontSourcesList.map((source) => {
       return {
         ...source,
         location: null,
@@ -58,17 +66,22 @@ export class FontSourcesInstancer {
   }
 
   instantiate(sourceLocation) {
-    if (!this.fontSourcesList.length) {
+    if (!this._fontSourcesList.length) {
       return undefined;
     }
-    sourceLocation = { ...this.defaultLocation, ...sourceLocation };
+    sourceLocation = { ...this.defaultSourceLocation, ...sourceLocation };
     const locationString = locationToString(sourceLocation);
 
-    if (locationString in this.sourcesByLocationString) {
-      return this.sourcesByLocationString[locationString];
+    const sourceIdentifier = this._sourceIdsByLocationString[locationString];
+    let sourceInstance = sourceIdentifier
+      ? this.fontSources[sourceIdentifier]
+      : undefined;
+
+    if (sourceInstance && !sourceInstance.isSparse) {
+      return sourceInstance;
     }
 
-    let sourceInstance = this._instanceCache.get(locationString);
+    sourceInstance = this._instanceCache.get(locationString);
 
     if (!sourceInstance) {
       const deltas = this.deltas;
