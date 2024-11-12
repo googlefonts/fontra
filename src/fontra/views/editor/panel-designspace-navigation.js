@@ -797,6 +797,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateBackgroundLayersList() {
+    // TODO: the background layers feature is not yet functional, disable for now
+    this.glyphLayersAccordionItem.hidden = true;
+    return;
+
     const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
     const haveLayers =
       this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
