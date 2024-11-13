@@ -141,11 +141,13 @@ async function saveGlyphNote(glyphName, sceneController, newNote) {
   await sceneController.editNamedGlyphAndRecordChanges(glyphName, (glyph) => {
     const oldNote = glyph.customData["fontra.glyph.note"];
     glyph.customData["fontra.glyph.note"] = newNote;
-    return oldNote
-      ? newNote
-        ? translate("sidebar.glyph-note.undo.edit")
-        : translate("sidebar.glyph-note.undo.delete")
-      : translate("sidebar.glyph-note.undo.add");
+    return translate(
+      oldNote
+        ? newNote
+          ? "sidebar.glyph-note.undo.edit"
+          : "sidebar.glyph-note.undo.delete"
+        : "sidebar.glyph-note.undo.add"
+    );
   });
 }
 
