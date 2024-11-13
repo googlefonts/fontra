@@ -1,5 +1,14 @@
 # Changelog for Fontra
 
+## 2024-11-13
+
+- Improved UI translations [PR 1764](https://github.com/googlefonts/fontra/pull/1764)
+- Added "Selecte previous/next glyph" menu items [PR 1706](https://github.com/googlefonts/fontra/pull/1706)
+- Partial support for background images (more to come) [PR 1775](https://github.com/googlefonts/fontra/pull/1775)
+- Add support for many UFO font info fields, so they won't get lost during round-tripping [PR 1770](https://github.com/googlefonts/fontra/pull/1770)
+- Fixed cosmetic issue with scrollbars on Windows [PR 1767](https://github.com/googlefonts/fontra/pull/1767)
+- Fixed bug with Copy/Paste menu items [PR 1756](https://github.com/googlefonts/fontra/pull/1756)
+
 ## 2024-10-24
 
 - Various improvements to the font sources panel [PR 1739](https://github.com/googlefonts/fontra/pull/1739)
