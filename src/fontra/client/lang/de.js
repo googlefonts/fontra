@@ -121,8 +121,6 @@ export const strings = {
   "development-status-definitions.tooltip.is-default":
     "Wenn ausgewählt, wird diese Status-Definition als Default benutzt",
   "development-status-definitions.undo.change": "Wert ändern von Status-Definition",
-  "development-status-definitions.undo.change-color":
-    "Farbe ändern von Status-Definition",
   "development-status-definitions.undo.change-is-default":
     "Ist Default' ändern von Status-Definition",
   "development-status-definitions.undo.delete": "Status-Definition %0 entfernen",

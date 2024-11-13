@@ -118,7 +118,6 @@ export const strings = {
   "development-status-definitions.tooltip.is-default":
     "选中后，未设定开发状态的源会默认使用该标签",
   "development-status-definitions.undo.change": "更改标签数值",
-  "development-status-definitions.undo.change-color": "更改标签颜色",
   "development-status-definitions.undo.change-is-default": "更改状态标签默认设定",
   "development-status-definitions.undo.delete": "删除状态标签 %0",
   "development-status-definitions.warning.positive-number": "数值必须为正数。",

@@ -212,7 +212,7 @@ class StatusDefinitionBox extends HTMLElement {
   }
 
   replaceStatusDef(newStatusDef) {
-    const undoLabel = translate("development-status-definitions.undo.change-color");
+    const undoLabel = translate("development-status-definitions.undo.change");
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {
       root.customData["fontra.sourceStatusFieldDefinitions"][this.statusIndex] =
