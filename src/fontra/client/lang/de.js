@@ -231,9 +231,9 @@ export const strings = {
   "message.cancel-editing": "Jemand anderes hat vor dir etwas geändert.",
   "message.edit-has-been-reverted": "Die Änderung wurde rückgängig gemacht.",
   "message.glyph-could-not-be-saved": "Glyph konnte nicht gespeichert werden.",
-  "plugin-manager.dialog.label.path": "Plugin Pfad:",
-  "plugin-manager.dialog.title": "Plugin hinzufügen",
-  "plugin-manager.dialog.warning.title": "Fehlermeldung",
+  "plugin-manager.add-plugin-dialog.label.path": "Plugin Pfad:",
+  "plugin-manager.add-plugin-dialog.title": "Plugin hinzufügen",
+  "plugin-manager.add-plugin-dialog.warning.title": "Fehlermeldung",
   "plugin-manager.title": "Fontra Plugins:",
   "plugin-manager.warning.fetching-error":
     "Ein Fehler trat auf beim laden des Plugins.",

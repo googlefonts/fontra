@@ -52,7 +52,7 @@ export class PluginManager extends SimpleElement {
 
   async promptAddPlugin(text = "") {
     const newPluginPrompt = await dialogSetup(
-      translate("plugin-manager.dialog.title"),
+      translate("plugin-manager.add-plugin-dialog.title"),
       "",
       [
         { title: translate("dialog.cancel"), resultValue: "no", isCancelButton: true },
@@ -73,7 +73,7 @@ export class PluginManager extends SimpleElement {
       [
         html.label(
           { for: `plugin-path` },
-          translate("plugin-manager.dialog.label.path")
+          translate("plugin-manager.add-plugin-dialog.label.path")
         ),
         html.input({
           id: "plugin-path",
@@ -108,7 +108,10 @@ export class PluginManager extends SimpleElement {
         ]);
         this.renderPlugins();
       } else {
-        await message(translate("plugin-manager.dialog.warning.title"), errorMessage);
+        await message(
+          translate("plugin-manager.add-plugin-dialog.warning.title"),
+          errorMessage
+        );
         return this.promptAddPlugin(address);
       }
     }
