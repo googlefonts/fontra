@@ -173,7 +173,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.lineMetrics",
-  name: "Line metrics",
+  name: "sidebar.user-settings.line-metrics",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
@@ -455,7 +455,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.guidelines",
-  name: "Guidelines",
+  name: "sidebar.user-settings.guidelines",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,

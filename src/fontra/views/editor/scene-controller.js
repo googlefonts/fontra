@@ -658,7 +658,7 @@ export class SceneController {
 
       return {
         changes: changes,
-        undoLabel: "nudge selection",
+        undoLabel: translate("action.nudge-selection"),
         broadcast: true,
       };
     });
@@ -1113,8 +1113,10 @@ export class SceneController {
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
         message(
-          "The glyph could not be saved.",
-          `The edit has been reverted.\n\n${this._cancelGlyphEditing}`
+          translate("message.glyph-could-not-be-saved"),
+          `${translate("message.edit-has-been-reverted")}\n\n${
+            this._cancelGlyphEditing
+          }`
         );
       }
     } else {
@@ -1179,7 +1181,7 @@ export class SceneController {
         }
       }
       this.selection = selection;
-      return "Reverse Contour Direction";
+      return translate("action.reverse-contour");
     });
   }
 
@@ -1220,7 +1222,7 @@ export class SceneController {
       }
 
       this.selection = newSelection;
-      return "Set Start Point";
+      return translate("action.set-contour-start");
     });
   }
 
@@ -1267,7 +1269,7 @@ export class SceneController {
         numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
       }
       this.selection = new Set();
-      return "Break Contour" + (numSplits > 1 ? "s" : "");
+      return translatePlural("action.break-contour", numSplits);
     });
   }
 
@@ -1331,7 +1333,7 @@ export class SceneController {
         }
       }
       this.selection = new Set();
-      return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
+      return translatePlural("action.decompose-component", componentSelection?.length);
     });
   }
 

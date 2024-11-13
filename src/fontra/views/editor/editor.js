@@ -87,7 +87,11 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import Panel from "./panel.js";
 import { applicationSettingsController } from "/core/application-settings.js";
-import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
+import {
+  ensureLanguageHasLoaded,
+  translate,
+  translatePlural,
+} from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -418,7 +422,7 @@ export class EditorController {
       );
 
       registerAction(
-        "action.lock-guidelines",
+        "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
         () => this.canLockGuideline()
@@ -1026,26 +1030,39 @@ export class EditorController {
   async showDialogGlyphEditCannotEditReadOnly(create = false) {
     const glyphName = this.sceneSettings.selectedGlyphName;
     await message(
-      `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
-      "The font is read-only."
+      translate(
+        create ? "dialog.cant-create-glyph.title" : "dialog.cant-edit-glyph.title",
+        glyphName
+      ),
+      translate("dialog.cant-edit-glyph.content")
     );
   }
 
   async showDialogGlyphEditCannotEditLocked() {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    await message(`Can’t edit glyph “${glyphName}”`, "The glyph is locked.");
+    await message(
+      translate("dialog.cant-edit-glyph.title", glyphName),
+      translate("dialog.cant-edit-glyph.content.locked-glyph")
+    );
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
-      `Can’t edit glyph “${glyphName}”`,
-      "The location is not at a source.",
+      translate("dialog.cant-edit-glyph.title", glyphName),
+      translate("dialog.cant-edit-glyph.content.location-not-at-source"),
       [
-        { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-        { title: "New source", resultValue: "createNewSource" },
         {
-          title: "Go to nearest source",
+          title: translate("dialog.cancel"),
+          resultValue: "cancel",
+          isCancelButton: true,
+        },
+        {
+          title: translate("sources.button.new-glyph-source"),
+          resultValue: "createNewSource",
+        },
+        {
+          title: translate("sources.button.go-to-nearest-source"),
           resultValue: "goToNearestSource",
           isDefaultButton: true,
         },
@@ -1472,7 +1489,7 @@ export class EditorController {
         };
       }
       this.sceneController.selection = new Set([`anchor/${anchorIndex}`]);
-      return "Edit Anchor";
+      return translate("action.edit-anchor");
     });
   }
 
@@ -1505,7 +1522,7 @@ export class EditorController {
         };
       }
       this.sceneController.selection = new Set([`guideline/${guidelineIndex}`]);
-      return "Edit Guideline";
+      return translate("action.edit-guideline");
     });
   }
 
@@ -1530,15 +1547,15 @@ export class EditorController {
       // do not add their menu items.
       this.basicContextMenuItems.push(
         {
-          title: "Cut",
+          title: translate("action.cut"),
           actionIdentifier: "action.cut",
         },
         {
-          title: "Copy",
+          title: translate("action.copy"),
           actionIdentifier: "action.copy",
         },
         {
-          title: "Paste",
+          title: translate("action.paste"),
           actionIdentifier: "action.paste",
         }
       );
@@ -1570,7 +1587,7 @@ export class EditorController {
 
     this.glyphEditContextMenuItems.push({
       title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      actionIdentifier: "action.lock-guidelines",
+      actionIdentifier: "action.lock-guideline",
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -1703,7 +1720,7 @@ export class EditorController {
       (glyph) => {
         copyResult = this._prepareCopyOrCutLayers(glyph, true);
         this.sceneController.selection = new Set();
-        return "Cut Selection";
+        return "Cut Selection"; // TODO: translation translate("action.edit-guideline");
       },
       undefined,
       true
@@ -2170,14 +2187,14 @@ export class EditorController {
 
   async _deleteCurrentGlyph(event) {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const result = await dialog(
-      `Are you sure you want to delete glyph "${glyphName}" from the font project?`,
-      "",
-      [
-        { title: "Cancel", isCancelButton: true },
-        { title: "Delete glyph", isDefaultButton: true, resultValue: "ok" },
-      ]
-    );
+    const result = await dialog(translate("dialog.delete-current-glyph.title"), "", [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      {
+        title: translate("action.delete-glyph"),
+        isDefaultButton: true,
+        resultValue: "ok",
+      },
+    ]);
     if (!result) {
       return;
     }
@@ -2230,7 +2247,7 @@ export class EditorController {
         }
       }
       this.sceneController.selection = new Set();
-      return "Delete Selection";
+      return translate("action.delete-selection");
     });
   }
 
@@ -2267,7 +2284,7 @@ export class EditorController {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newComponentIndex = instance.components.length - 1;
       this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
-      return "Add Component";
+      return translate("action.add-component");
     });
   }
 
@@ -2299,12 +2316,13 @@ export class EditorController {
       }
       const newAnchorIndex = instance.anchors.length - 1;
       this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
-      return "Add Anchor";
+      return translate("action.add-anchor");
     });
   }
 
   async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
-    const titlePrefix = anchor ? "Edit" : "Add";
+    const titleDialog = translate(anchor ? "action.edit-anchor" : "action.add-anchor");
+    const defaultButton = translate(anchor ? "dialog.edit" : "dialog.add");
     if (!anchor && !point) {
       // Need at least one of the two
       return {};
@@ -2317,7 +2335,7 @@ export class EditorController {
       const editedAnchorName =
         nameController.model.anchorName || nameController.model.suggestedAnchorName;
       if (!editedAnchorName.length) {
-        warnings.push("⚠️ The name must not be empty");
+        warnings.push(`⚠️ ${translate("warning.name-must-not-be-empty")}`);
       }
       if (
         !(
@@ -2332,7 +2350,7 @@ export class EditorController {
         const value = nameController.model[`anchor${n}`];
         if (isNaN(value)) {
           if (value !== undefined) {
-            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+            warnings.push(`⚠️ ${translate("warning.must-be-number", n.toLowerCase())}`);
           }
         }
       }
@@ -2340,7 +2358,7 @@ export class EditorController {
         editedAnchorName !== anchor?.name &&
         instance.anchors.some((anchor) => anchor.name === editedAnchorName)
       ) {
-        warnings.push("⚠️ The anchor name should be unique");
+        warnings.push(`⚠️ ${translate("warning.name-must-be-unique")}`);
       }
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
@@ -2374,9 +2392,10 @@ export class EditorController {
         : true;
     const { contentElement, warningElement } =
       this._anchorPropertiesContentElement(nameController);
-    const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: titlePrefix, isDefaultButton: true, disabled: disable },
+
+    const dialog = await dialogSetup(titleDialog, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: defaultButton, isDefaultButton: true, disabled: disable },
     ]);
 
     dialog.setContent(contentElement);
@@ -2421,14 +2440,14 @@ export class EditorController {
         `,
       },
       [
-        ...labeledTextInput("Name:", controller, "anchorName", {
+        ...labeledTextInput(translate("anchor.labels.name"), controller, "anchorName", {
           placeholderKey: "suggestedAnchorName",
           id: "anchor-name-text-input",
         }),
-        ...labeledTextInput("x:", controller, "anchorX", {
+        ...labeledTextInput("x", controller, "anchorX", {
           placeholderKey: "suggestedAnchorX",
         }),
-        ...labeledTextInput("y:", controller, "anchorY", {
+        ...labeledTextInput("y", controller, "anchorY", {
           placeholderKey: "suggestedAnchorY",
         }),
         html.br(),
@@ -2463,8 +2482,10 @@ export class EditorController {
     const numGuidelines = guidelineSelection?.length || 0;
     // + (fontGuidelineSelection?.length || 0);
 
-    const s = numGuidelines > 1 ? "s" : "";
-    return `${hasLockedGuidelines ? "Unlock" : "Lock"} Guideline${s}`;
+    return translatePlural(
+      hasLockedGuidelines ? "action.unlock-guideline" : "action.lock-guideline",
+      numGuidelines
+    );
   }
 
   canLockGuideline() {
@@ -2486,7 +2507,6 @@ export class EditorController {
       guideline: guidelineSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
-    const identifier = locking ? "Unlock" : "Lock";
 
     // Lock glyph guidelines
     if (guidelineSelection) {
@@ -2500,7 +2520,10 @@ export class EditorController {
             guideline.locked = locking;
           }
         }
-        return `${identifier} Guideline(s)`;
+        return translatePlural(
+          locking ? "action.unlock-guideline" : "action.lock-guideline",
+          guidelineSelection.length
+        );
       });
     }
     // TODO: Font Guidelines locking
@@ -2547,7 +2570,7 @@ export class EditorController {
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
         this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
-        return "Add Guideline";
+        return translate("action.add-guideline");
       });
     }
     // TODO: Font Guidelines
@@ -2558,7 +2581,10 @@ export class EditorController {
     point = undefined,
     global = false
   ) {
-    const titlePrefix = guideline ? "Edit" : "Add";
+    const titleDialog = translate(
+      guideline ? "action.edit-guideline" : "action.add-guideline"
+    );
+    const defaultButton = translate(guideline ? "dialog.edit" : "dialog.add");
     if (!guideline && !point) {
       // Need at least one of the two
       return {};
@@ -2575,7 +2601,7 @@ export class EditorController {
         const value = nameController.model[`guideline${n}`];
         if (isNaN(value)) {
           if (value !== undefined) {
-            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+            warnings.push(`⚠️ ${translate("warning.must-be-number", n.toLowerCase())}`);
           }
         }
       }
@@ -2586,7 +2612,7 @@ export class EditorController {
           (guideline) => guideline.name === editedGuidelineName.trim()
         )
       ) {
-        warnings.push("⚠️ The guideline name should be unique");
+        warnings.push(`⚠️ ${translate("warning.name-must-be-unique")}`);
       }
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
@@ -2625,14 +2651,10 @@ export class EditorController {
         : true;
     const { contentElement, warningElement } =
       this._guidelinePropertiesContentElement(nameController);
-    const dialog = await dialogSetup(
-      `${titlePrefix} ${global ? "Font " : ""}Guideline`,
-      null,
-      [
-        { title: "Cancel", isCancelButton: true },
-        { title: titlePrefix, isDefaultButton: true, disabled: disable },
-      ]
-    );
+    const dialog = await dialogSetup(titleDialog, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: defaultButton, isDefaultButton: true, disabled: disable },
+    ]);
 
     dialog.setContent(contentElement);
 
@@ -2679,14 +2701,29 @@ export class EditorController {
         `,
       },
       [
-        ...labeledTextInput("Name:", controller, "guidelineName", {
-          id: "guideline-name-text-input",
-        }),
-        ...labeledTextInput("x:", controller, "guidelineX", {}),
-        ...labeledTextInput("y:", controller, "guidelineY", {}),
-        ...labeledTextInput("angle:", controller, "guidelineAngle", {}),
+        ...labeledTextInput(
+          translate("guideline.labels.name"),
+          controller,
+          "guidelineName",
+          {
+            id: "guideline-name-text-input",
+          }
+        ),
+        ...labeledTextInput("x", controller, "guidelineX", {}),
+        ...labeledTextInput("y", controller, "guidelineY", {}),
+        ...labeledTextInput(
+          translate("guideline.labels.angle"),
+          controller,
+          "guidelineAngle",
+          {}
+        ),
         html.div(),
-        labeledCheckbox("locked", controller, "guidelineLocked", {}),
+        labeledCheckbox(
+          translate("guideline.labels.locked"),
+          controller,
+          "guidelineLocked",
+          {}
+        ),
         html.br(),
         warningElement,
       ]
@@ -2900,13 +2937,16 @@ export class EditorController {
     });
 
     const theDialog = await dialogSetup(
-      `Glyphs that use glyph '${glyphName}' as a component`,
+      translate("dialog.find-glyphs-that-use.title", glyphName),
       null,
       [
-        { title: "Cancel", isCancelButton: true },
-        { title: "Copy names", resultValue: "copy" },
+        { title: translate("dialog.cancel"), isCancelButton: true },
         {
-          title: "Add to text",
+          title: translate("dialog.find-glyphs-that-use.button.copy-names"),
+          resultValue: "copy",
+        },
+        {
+          title: translate("dialog.find-glyphs-that-use.button.add-to-text"),
           isDefaultButton: true,
           resultValue: "add",
         },
@@ -3115,9 +3155,7 @@ export class EditorController {
       // cancel the edit, but wait for the cancellation to be completed,
       // or else the reload and edit can get mixed up and the glyph data
       // will be out of sync.
-      await this.sceneController.cancelEditing(
-        "Someone else made an edit just before you."
-      );
+      await this.sceneController.cancelEditing(translate("message.cancel-editing"));
     }
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
@@ -3142,7 +3180,7 @@ export class EditorController {
       viewInfo = loadURLFragment(url.hash);
       if (!viewInfo) {
         viewInfo = {};
-        message("The URL is malformed", "The UI settings could not be restored.");
+        message("The URL is malformed", "The UI settings could not be restored."); // TODO: translation
       }
     } else {
       // Legacy URL format
@@ -3366,7 +3404,7 @@ export class EditorController {
 
   async handleRemoteClose(event) {
     this._reconnectDialog = await dialogSetup(
-      "Connection closed",
+      "Connection closed", // TODO: translation
       "The connection to the server closed unexpectedly.",
       [{ title: "Reconnect", resultValue: "ok" }]
     );
@@ -3405,7 +3443,7 @@ export class EditorController {
   async handleRemoteError(event) {
     console.log("remote error", event);
     await dialog(
-      "Connection problem",
+      "Connection problem", // TODO: translation
       `There was a problem with the connection to the server.
       See the JavaScript Console for details.`,
       [{ title: "Reconnect", resultValue: "ok" }]
@@ -3461,19 +3499,19 @@ async function runDialogWholeGlyphPaste() {
     controller.model.behavior = PASTE_BEHAVIOR_REPLACE;
   }
 
-  const dialog = await dialogSetup("You are about to paste an entire glyph", null, [
-    { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-    { title: "Okay", resultValue: "ok", isDefaultButton: true },
+  const dialog = await dialogSetup(translate("dialog.paste-whole-glyph.title"), null, [
+    { title: translate("dialog.cancel"), resultValue: "cancel", isCancelButton: true },
+    { title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true },
   ]);
 
   const radioGroup = [
-    html.div({}, "What would you like to do with the glyph on the clipboard?"),
+    html.div({}, translate("dialog.paste-whole-glyph.content.question")),
     html.br(),
   ];
 
   for (const [label, value] of [
-    ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
-    ["Add to the current glyph (match layers)", PASTE_BEHAVIOR_ADD],
+    [translate("dialog.paste-whole-glyph.content.replace"), PASTE_BEHAVIOR_REPLACE],
+    [translate("dialog.paste-whole-glyph.content.add"), PASTE_BEHAVIOR_ADD],
   ]) {
     radioGroup.push(
       html.input({

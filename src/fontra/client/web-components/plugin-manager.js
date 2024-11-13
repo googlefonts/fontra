@@ -1,5 +1,6 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement, createDomElement } from "../core/html-utils.js";
+import { translate } from "../core/localization.js";
 import { ObservableController } from "../core/observable-object.js";
 import "/web-components/add-remove-buttons.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
@@ -50,10 +51,19 @@ export class PluginManager extends SimpleElement {
   }
 
   async promptAddPlugin(text = "") {
-    const newPluginPrompt = await dialogSetup("Add plugin", "", [
-      { title: "Cancel", resultValue: "no", isCancelButton: true },
-      { title: "Create", resultValue: "ok", isDefaultButton: true, disabled: true },
-    ]);
+    const newPluginPrompt = await dialogSetup(
+      translate("plugin-manager.add-plugin-dialog.title"),
+      "",
+      [
+        { title: translate("dialog.cancel"), resultValue: "no", isCancelButton: true },
+        {
+          title: translate("dialog.create"),
+          resultValue: "ok",
+          isDefaultButton: true,
+          disabled: true,
+        },
+      ]
+    );
     let address = text;
     const pluginContent = html.div(
       {
@@ -61,7 +71,10 @@ export class PluginManager extends SimpleElement {
           "display: grid; grid-template-columns: auto 1fr; grid-gap: 1rem; align-items: center;",
       },
       [
-        html.label({ for: `plugin-path` }, "Plugin path:"),
+        html.label(
+          { for: `plugin-path` },
+          translate("plugin-manager.add-plugin-dialog.label.path")
+        ),
         html.input({
           id: "plugin-path",
           autofocus: true,
@@ -95,7 +108,10 @@ export class PluginManager extends SimpleElement {
         ]);
         this.renderPlugins();
       } else {
-        await message("Error", errorMessage);
+        await message(
+          translate("plugin-manager.add-plugin-dialog.warning.title"),
+          errorMessage
+        );
         return this.promptAddPlugin(address);
       }
     }
@@ -107,16 +123,16 @@ export class PluginManager extends SimpleElement {
         ({ address }) => parsePluginBasePath(address) === pluginPath
       )
     ) {
-      return [false, "Plugin exists."];
+      return [false, translate("plugin-manager.warning.plugin-exists")];
     }
     let response;
     try {
       response = await fetch(`${pluginPath}/plugin.json`);
     } catch (e) {
-      return [false, "An error occured when fetching the plugin."];
+      return [false, translate("plugin-manager.warning.fetching-error")];
     }
     if (response.status === 404) {
-      return [false, "Plugin not found."];
+      return [false, translate("plugin-manager.warning.not-found")];
     }
     return [true];
   }
@@ -128,7 +144,7 @@ export class PluginManager extends SimpleElement {
 
   render() {
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(html.div({}, ["Fontra plugins:"]));
+    fragment.appendChild(html.div({}, [translate("plugin-manager.title")]));
     fragment.appendChild(this.pluginList);
     fragment.appendChild(
       (this.addRemoveButton = createDomElement("add-remove-buttons", {

@@ -176,11 +176,13 @@ export default class SelectionInfoPanel extends Panel {
               ? "/tabler-icons/lock.svg"
               : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
-          "data-tooltip": this.fontController.readOnly
-            ? "Glyph is read-only"
-            : glyphLocked
-            ? "Unlock glyph"
-            : "Lock glyph",
+          "data-tooltip": translate(
+            this.fontController.readOnly
+              ? "sidebar.selection-info.glyph-locking.tooltip.read-only"
+              : glyphLocked
+              ? "sidebar.selection-info.glyph-locking.tooltip.unlock"
+              : "sidebar.selection-info.glyph-locking.tooltip.lock"
+          ),
           "data-tooltipposition": "left",
         }),
       });
@@ -193,14 +195,14 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         key: "unicodes",
         type: "text",
-        label: "Unicode",
+        label: translate("sidebar.selection-info.unicode"),
         value: codePointsStr,
       });
       if (baseCodePointsStr) {
         formContents.push({
           key: "baseUnicodes",
           type: "text",
-          label: "Base unicode",
+          label: translate("sidebar.selection-info.base-unicode"),
           value: baseCodePointsStr,
         });
       }
@@ -290,7 +292,9 @@ export default class SelectionInfoPanel extends Panel {
           "style": `width: 1.3em;`,
           "src": "/tabler-icons/refresh.svg",
           "onclick": (event) => this._resetTransformationForComponent(index),
-          "data-tooltip": "Reset transformation",
+          "data-tooltip": translate(
+            "sidebar.selection-info.component.reset-transformation"
+          ),
           "data-tooltipposition": "left",
         }),
       });
@@ -407,7 +411,9 @@ export default class SelectionInfoPanel extends Panel {
               "style": `width: 1.3em;`,
               "src": "/tabler-icons/refresh.svg",
               "onclick": (event) => this._resetAxisValuesForComponent(index),
-              "data-tooltip": "Reset axis values",
+              "data-tooltip": translate(
+                "sidebar.selection-info.component.reset-axis-values"
+              ),
               "data-tooltipposition": "left",
             }),
           });
@@ -441,11 +447,11 @@ export default class SelectionInfoPanel extends Panel {
   async _toggleGlyphLock(varGlyph) {
     if (varGlyph.customData["fontra.glyph.locked"]) {
       const result = await dialog(
-        `Are you sure you want to unlock glyph ${varGlyph.name}?`,
+        translate("sidebar.selection-info.dialog.unlock-glyph.title", varGlyph.name),
         "",
         [
-          { title: "Cancel", isCancelButton: true },
-          { title: "Yes", isDefaultButton: true, resultValue: "ok" },
+          { title: translate("dialog.cancel"), isCancelButton: true },
+          { title: translate("dialog.yes"), isDefaultButton: true, resultValue: "ok" },
         ]
       );
 
@@ -467,7 +473,9 @@ export default class SelectionInfoPanel extends Panel {
         } else {
           glyph.customData["fontra.glyph.locked"] = true;
         }
-        return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
+        return glyph.customData["fontra.glyph.locked"]
+          ? translate("sidebar.selection-info.glyph-locking.tooltip.lock")
+          : translate("sidebar.selection-info.glyph-locking.tooltip.unlock");
       },
       undefined,
       undefined,
@@ -484,7 +492,7 @@ export default class SelectionInfoPanel extends Panel {
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
         layerGlyph.components[componentIndex].transformation = getDecomposedIdentity();
       }
-      return "reset transformation";
+      return translate("sidebar.selection-info.component.reset-transformation");
     });
   }
 
@@ -515,7 +523,7 @@ export default class SelectionInfoPanel extends Panel {
           }
         }
       }
-      return "reset axis values";
+      return translate("sidebar.selection-info.component.reset-axis-values");
     });
   }
 
