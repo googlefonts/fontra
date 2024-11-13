@@ -2455,9 +2455,10 @@ export class EditorController {
     const numGuidelines = guidelineSelection?.length || 0;
     // + (fontGuidelineSelection?.length || 0);
 
-    return hasLockedGuidelines
-      ? translatePlural("action.unlock-guideline", numGuidelines)
-      : translatePlural("action.lock-guideline", numGuidelines);
+    return translatePlural(
+      hasLockedGuidelines ? "action.unlock-guideline" : "action.lock-guideline",
+      numGuidelines
+    );
   }
 
   canLockGuideline() {
@@ -2492,9 +2493,10 @@ export class EditorController {
             guideline.locked = locking;
           }
         }
-        return locking
-          ? translatePlural("action.unlock-guideline", guidelineSelection.length)
-          : translatePlural("action.lock-guideline", guidelineSelection.length);
+        return translatePlural(
+          locking ? "action.unlock-guideline" : "action.lock-guideline",
+          guidelineSelection.length
+        );
       });
     }
     // TODO: Font Guidelines locking
@@ -2552,12 +2554,10 @@ export class EditorController {
     point = undefined,
     global = false
   ) {
-    const titleDialog = guideline
-      ? translate("action.edit-guideline")
-      : translate("action.add-guideline");
-    const defaultButton = guideline
-      ? translate("dialog.edit")
-      : translate("dialog.add");
+    const titleDialog = translate(
+      guideline ? "action.edit-guideline" : "action.add-guideline"
+    );
+    const defaultButton = translate(guideline ? "dialog.edit" : "dialog.add");
     if (!guideline && !point) {
       // Need at least one of the two
       return {};
