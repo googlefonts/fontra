@@ -135,10 +135,24 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
+    this.visualizationLayers = new VisualizationLayers(
+      visualizationLayerDefinitions,
+      this.isThemeDark
+    );
+
+    this.visualizationLayersSettings = newVisualizationLayersSettings(
+      this.visualizationLayers
+    );
+    this.visualizationLayersSettings.addListener((event) => {
+      this.visualizationLayers.toggle(event.key, event.newValue);
+      this.canvasController.requestUpdate();
+    }, true);
+
     this.sceneController = new SceneController(
       this.fontController,
       canvasController,
-      applicationSettingsController
+      applicationSettingsController,
+      this.visualizationLayersSettings
     );
 
     this.sceneSettingsController = this.sceneController.sceneSettingsController;
@@ -167,19 +181,6 @@ export class EditorController {
     );
 
     this.cjkDesignFrame = new CJKDesignFrame(this);
-
-    this.visualizationLayers = new VisualizationLayers(
-      visualizationLayerDefinitions,
-      this.isThemeDark
-    );
-
-    this.visualizationLayersSettings = newVisualizationLayersSettings(
-      this.visualizationLayers
-    );
-    this.visualizationLayersSettings.addListener((event) => {
-      this.visualizationLayers.toggle(event.key, event.newValue);
-      this.canvasController.requestUpdate();
-    }, true);
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
@@ -500,6 +501,26 @@ export class EditorController {
           defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(false)
+      );
+
+      registerAction(
+        "action.select-previous-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-glyph",
+          defaultShortCuts: [{ baseKey: "ArrowLeft", commandKey: true }],
+        },
+        () => this.doSelectPreviousNextGlyph(true)
+      );
+
+      registerAction(
+        "action.select-next-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-glyph",
+          defaultShortCuts: [{ baseKey: "ArrowRight", commandKey: true }],
+        },
+        () => this.doSelectPreviousNextGlyph(false)
       );
 
       registerAction(
@@ -1578,6 +1599,12 @@ export class EditorController {
     });
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.select-next-source",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.select-previous-glyph",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.select-next-glyph",
     });
     this.glyphSelectedContextMenuItems.push({
       title: () =>
@@ -2819,7 +2846,10 @@ export class EditorController {
       }
     }
 
-    if (selectGuidelines) {
+    if (
+      selectGuidelines &&
+      this.visualizationLayersSettings.model["fontra.guidelines"]
+    ) {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
         const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
         if (!guideline.locked) {
@@ -2853,6 +2883,29 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
+  async doSelectPreviousNextGlyph(selectPrevious) {
+    const panel = this.getSidebarPanel("glyph-search");
+    const glyphNames = panel.glyphsSearch.getFilteredGlyphNames();
+    if (!glyphNames.length) {
+      return;
+    }
+
+    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
+    if (!selectedGlyphName) {
+      return;
+    }
+    const index = glyphNames.indexOf(selectedGlyphName);
+    const newIndex =
+      index == -1
+        ? selectPrevious
+          ? glyphNames.length - 1
+          : 0
+        : modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
+
+    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphNames[newIndex]);
+    this.insertGlyphInfos([glyphInfo], 0, true);
   }
 
   async doFindGlyphsThatUseGlyph() {

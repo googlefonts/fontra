@@ -225,7 +225,9 @@ export const strings = {
     "Retirer le glyphe sélectionné du canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Remplacer le glyphe sélectionné du canvas",
+  "menubar.view.select-next-glyph": "Select next glyph",
   "menubar.view.select-next-source": "Sélectionner la source suivante ",
+  "menubar.view.select-previous-glyph": "Select previous glyph",
   "menubar.view.select-previous-source": "Sélectionner la source précédente",
   "message.cancel-editing": "Someone else made an edit just before you.",
   "message.edit-has-been-reverted": "The edit has been reverted.",
