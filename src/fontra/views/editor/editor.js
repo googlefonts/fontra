@@ -2856,7 +2856,12 @@ export class EditorController {
       return;
     }
     const index = glyphNames.indexOf(selectedGlyphName);
-    const newIndex = modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
+    const newIndex =
+      index == -1
+        ? selectPrevious
+          ? glyphNames.length - 1
+          : 0
+        : modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
 
     const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphNames[newIndex]);
     this.insertGlyphInfos([glyphInfo], 0, true);
