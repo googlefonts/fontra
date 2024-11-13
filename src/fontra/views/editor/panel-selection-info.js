@@ -176,12 +176,13 @@ export default class SelectionInfoPanel extends Panel {
               ? "/tabler-icons/lock.svg"
               : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
-          "data-tooltip": this.fontController.readOnly
-            ? translate("sidebar.selection-info.glyph-locking.tooltip.read-only")
-            : glyphLocked
-            ? translate("sidebar.selection-info.glyph-locking.tooltip.unlock")
-            : translate("sidebar.selection-info.glyph-locking.tooltip.lock"),
-
+          "data-tooltip": translate(
+            this.fontController.readOnly
+              ? "sidebar.selection-info.glyph-locking.tooltip.read-only"
+              : glyphLocked
+              ? "sidebar.selection-info.glyph-locking.tooltip.unlock"
+              : "sidebar.selection-info.glyph-locking.tooltip.lock"
+          ),
           "data-tooltipposition": "left",
         }),
       });

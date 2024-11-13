@@ -153,11 +153,11 @@ export default class RelatedGlyphPanel extends Panel {
           if (!results.some((hasResult) => hasResult)) {
             this.relatedGlyphsHeaderElement.appendChild(
               html.div({ class: "no-related-glyphs" }, [
-                glyphName
-                  ? translate(
-                      "sidebar.related-glyphs.no-related-glyphs-or-characters-were-found"
-                    )
-                  : translate("sidebar.related-glyphs.no-glyph-selected"),
+                translate(
+                  glyphName
+                    ? "sidebar.related-glyphs.no-related-glyphs-or-characters-were-found"
+                    : "sidebar.related-glyphs.no-glyph-selected"
+                ),
               ])
             );
           }

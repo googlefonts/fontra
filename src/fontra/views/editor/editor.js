@@ -2294,10 +2294,8 @@ export class EditorController {
   }
 
   async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
-    const titleDialog = anchor
-      ? translate("action.edit-anchor")
-      : translate("action.add-anchor");
-    const defaultButton = anchor ? translate("dialog.edit") : translate("dialog.add");
+    const titleDialog = translate(anchor ? "action.edit-anchor" : "action.add-anchor");
+    const defaultButton = translate(anchor ? "dialog.edit" : "dialog.add");
     if (!anchor && !point) {
       // Need at least one of the two
       return {};
