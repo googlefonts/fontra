@@ -131,10 +131,24 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
+    this.visualizationLayers = new VisualizationLayers(
+      visualizationLayerDefinitions,
+      this.isThemeDark
+    );
+
+    this.visualizationLayersSettings = newVisualizationLayersSettings(
+      this.visualizationLayers
+    );
+    this.visualizationLayersSettings.addListener((event) => {
+      this.visualizationLayers.toggle(event.key, event.newValue);
+      this.canvasController.requestUpdate();
+    }, true);
+
     this.sceneController = new SceneController(
       this.fontController,
       canvasController,
-      applicationSettingsController
+      applicationSettingsController,
+      this.visualizationLayersSettings
     );
 
     this.sceneSettingsController = this.sceneController.sceneSettingsController;
@@ -163,19 +177,6 @@ export class EditorController {
     );
 
     this.cjkDesignFrame = new CJKDesignFrame(this);
-
-    this.visualizationLayers = new VisualizationLayers(
-      visualizationLayerDefinitions,
-      this.isThemeDark
-    );
-
-    this.visualizationLayersSettings = newVisualizationLayersSettings(
-      this.visualizationLayers
-    );
-    this.visualizationLayersSettings.addListener((event) => {
-      this.visualizationLayers.toggle(event.key, event.newValue);
-      this.canvasController.requestUpdate();
-    }, true);
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
@@ -2782,7 +2783,10 @@ export class EditorController {
       }
     }
 
-    if (selectGuidelines) {
+    if (
+      selectGuidelines &&
+      this.visualizationLayersSettings.model["fontra.guidelines"]
+    ) {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
         const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
         if (!guideline.locked) {
