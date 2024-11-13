@@ -276,7 +276,7 @@ export const strings = {
   "sidebar.designspace-navigation.source-properties.undo": "edit source properties",
   "sidebar.designspace-navigation.source.activate": "activate %0",
   "sidebar.designspace-navigation.source.deactivate": "deactivate %0",
-  "sidebar.designspace-navigation.undo.and-layer": "and layer",
+  "sidebar.designspace-navigation.undo.and-layer": " and layer",
   "sidebar.designspace-navigation.undo.delete-source": "delete source%0",
   "sidebar.designspace-navigation.warning.delete-associated-layer":
     "Also delete associated layer %0",

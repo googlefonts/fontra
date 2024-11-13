@@ -265,8 +265,8 @@ export const strings = {
   "sidebar.designspace-navigation.source-properties.undo": "编辑源属性",
   "sidebar.designspace-navigation.source.activate": "启用 %0",
   "sidebar.designspace-navigation.source.deactivate": "禁用 %0",
-  "sidebar.designspace-navigation.undo.and-layer": "与图层",
-  "sidebar.designspace-navigation.undo.delete-source": "删除源 %0",
+  "sidebar.designspace-navigation.undo.and-layer": " 与图层",
+  "sidebar.designspace-navigation.undo.delete-source": "删除源%0",
   "sidebar.designspace-navigation.warning.delete-associated-layer":
     "并删除关联的图层 %0",
   "sidebar.designspace-navigation.warning.delete-source": "你确定要删除源 “%0” 吗？",

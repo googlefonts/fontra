@@ -821,7 +821,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       let layerMessage = "";
       if (layer !== undefined && deleteLayerCheckBox.checked) {
         delete glyph.layers[source.layerName];
-        layerMessage = ` ${translate("sidebar.designspace-navigation.undo.and-layer")}`;
+        layerMessage = translate("sidebar.designspace-navigation.undo.and-layer");
       }
       return translate(
         "sidebar.designspace-navigation.undo.delete-source",

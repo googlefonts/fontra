@@ -284,7 +284,7 @@ export const strings = {
     "Source Eigenschaften bearbeiten",
   "sidebar.designspace-navigation.source.activate": "aktiviere %0",
   "sidebar.designspace-navigation.source.deactivate": "deaktivere %0",
-  "sidebar.designspace-navigation.undo.and-layer": "und Layer",
+  "sidebar.designspace-navigation.undo.and-layer": " und Layer",
   "sidebar.designspace-navigation.undo.delete-source": "entferne Source%0",
   "sidebar.designspace-navigation.warning.delete-associated-layer":
     "Auch den dazugehörigen Layer %0 entfernen",
