@@ -681,12 +681,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       sourceController.addKeyListener("active", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
           glyph.sources[index].inactive = !event.newValue;
-          return event.newValue
-            ? translate("sidebar.designspace-navigation.source.activate", source.name)
-            : translate(
-                "sidebar.designspace-navigation.source.deactivate",
-                source.name
-              );
+          return translate(
+            event.newValue
+              ? "sidebar.designspace-navigation.source.activate"
+              : "sidebar.designspace-navigation.source.deactivate",
+            source.name
+          );
         });
       });
       sourceController.addKeyListener("visible", async (event) => {
