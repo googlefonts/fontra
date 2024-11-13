@@ -164,8 +164,9 @@ export const strings = {
   "edit-tools-pen.undo.insert-handles": "Griffe einfügen",
   "edit-tools-pen.undo.insert-point": "Punkt einfügen",
   "edit-tools-pointer.transform.selection": "Auswahl transformieren",
-  "edit-tools-pointer.undo.and-connect-contours": "und Konturen verbinden",
-  "edit-tools-pointer.undo.drag-selection": "Auswahl bewegen%0",
+  "edit-tools-pointer.undo.drag-selection": "Auswahl bewegen",
+  "edit-tools-pointer.undo.drag-selection-and-connect-contours":
+    "Auswahl bewegen und Konturen verbinden",
   "edit-tools-pointer.undo.resize-selection": "Auswahl skalieren",
   "edit-tools-pointer.undo.rotate-selection": "Auswahl drehen",
   "edit-tools-pointer.undo.toggle-smooth": '"smooth" umschalten',

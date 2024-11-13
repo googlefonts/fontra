@@ -420,12 +420,9 @@ export class PointerTool extends BaseTool {
         }
       }
       return {
-        undoLabel: translate(
-          "edit-tools-pointer.undo.drag-selection",
-          shouldConnect
-            ? " " + translate("edit-tools-pointer.undo.and-connect-contours")
-            : ""
-        ),
+        undoLabel: shouldConnect
+          ? translate("edit-tools-pointer.undo.drag-selection-and-connect-contours")
+          : translate("edit-tools-pointer.undo.drag-selection"),
         changes: changes,
         broadcast: true,
       };
