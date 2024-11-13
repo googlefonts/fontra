@@ -293,7 +293,7 @@ export default class SelectionInfoPanel extends Panel {
           "src": "/tabler-icons/refresh.svg",
           "onclick": (event) => this._resetTransformationForComponent(index),
           "data-tooltip": translate(
-            "sidebar.selection-info.component.transformation.tooltip"
+            "sidebar.selection-info.component.reset-transformation"
           ),
           "data-tooltipposition": "left",
         }),
@@ -412,7 +412,7 @@ export default class SelectionInfoPanel extends Panel {
               "src": "/tabler-icons/refresh.svg",
               "onclick": (event) => this._resetAxisValuesForComponent(index),
               "data-tooltip": translate(
-                "sidebar.selection-info.component.reset-axis-values.tooltip"
+                "sidebar.selection-info.component.reset-axis-values"
               ),
               "data-tooltipposition": "left",
             }),
@@ -492,7 +492,7 @@ export default class SelectionInfoPanel extends Panel {
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
         layerGlyph.components[componentIndex].transformation = getDecomposedIdentity();
       }
-      return translate("sidebar.selection-info.component.transformation.tooltip");
+      return translate("sidebar.selection-info.component.reset-transformation");
     });
   }
 
@@ -523,7 +523,7 @@ export default class SelectionInfoPanel extends Panel {
           }
         }
       }
-      return translate("sidebar.selection-info.component.reset-axis-values.tooltip");
+      return translate("sidebar.selection-info.component.reset-axis-values");
     });
   }
 

@@ -342,14 +342,13 @@ export const strings = {
   "sidebar.selection-info.component": "Komponente #%0",
   "sidebar.selection-info.component.base-glyph": "Basis-Glyph",
   "sidebar.selection-info.component.center": "Zentrum",
-  "sidebar.selection-info.component.reset-axis-values.tooltip":
-    "Achsen-Werte zurücksetzen",
+  "sidebar.selection-info.component.reset-axis-values": "Achsen-Werte zurücksetzen",
+  "sidebar.selection-info.component.reset-transformation":
+    "Transformation zurücksetzen",
   "sidebar.selection-info.component.rotation": "Rotation",
   "sidebar.selection-info.component.scale": "Skalieren",
   "sidebar.selection-info.component.skew": "Neigung",
   "sidebar.selection-info.component.transformation": "Transformation",
-  "sidebar.selection-info.component.transformation.tooltip":
-    "Transformation zurücksetzen",
   "sidebar.selection-info.component.translate": "Verschiebung",
   "sidebar.selection-info.dialog.unlock-glyph.title":
     "Bist du sicher, dass du den Glyphen %0 entsperren willst?",
