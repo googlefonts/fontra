@@ -1009,9 +1009,10 @@ export class EditorController {
   async showDialogGlyphEditCannotEditReadOnly(create = false) {
     const glyphName = this.sceneSettings.selectedGlyphName;
     await message(
-      create
-        ? translate("dialog.cant-create-glyph.title", glyphName)
-        : translate("dialog.cant-edit-glyph.title", glyphName),
+      translate(
+        create ? "dialog.cant-create-glyph.title" : "dialog.cant-edit-glyph.title",
+        glyphName
+      ),
       translate("dialog.cant-edit-glyph.content")
     );
   }
