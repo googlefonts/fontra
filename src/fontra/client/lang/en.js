@@ -119,7 +119,7 @@ export const strings = {
   "development-status-definitions.tooltip.delete": "Delete status definition",
   "development-status-definitions.tooltip.is-default":
     "If checked, this status will be used as a fallback when a source status is not set",
-  "development-status-definitions.undo.change": "change status definition value",
+  "development-status-definitions.undo.change": "change status definition",
   "development-status-definitions.undo.change-is-default":
     "change status definition isDefault",
   "development-status-definitions.undo.delete": "delete status definition %0",

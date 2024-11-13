@@ -120,7 +120,7 @@ export const strings = {
   "development-status-definitions.tooltip.delete": "Status-Definition entfernen",
   "development-status-definitions.tooltip.is-default":
     "Wenn ausgewählt, wird diese Status-Definition als Default benutzt",
-  "development-status-definitions.undo.change": "Wert ändern von Status-Definition",
+  "development-status-definitions.undo.change": "Status-Definition ändern",
   "development-status-definitions.undo.change-is-default":
     "Ist Default' ändern von Status-Definition",
   "development-status-definitions.undo.delete": "Status-Definition %0 entfernen",
