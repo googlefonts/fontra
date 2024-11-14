@@ -49,11 +49,7 @@ export class EditBehaviorFactory {
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(
-    behaviorName,
-    fullComponentTransform = false,
-    fullBackgroundImageTransform = false
-  ) {
+  getBehavior(behaviorName, doFullTransform = false) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -73,8 +69,7 @@ export class EditBehaviorFactory {
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
-        fullComponentTransform,
-        fullBackgroundImageTransform
+        doFullTransform
       );
       this.behaviors[behaviorName] = behavior;
     }
@@ -92,11 +87,9 @@ class EditBehavior {
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
-    fullComponentTransform,
-    fullBackgroundImageTransform
+    doFullTransform
   ) {
-    this.fullComponentTransform = fullComponentTransform;
-    this.fullBackgroundImageTransform = fullBackgroundImageTransform;
+    this.doFullTransform = doFullTransform;
     this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
@@ -108,7 +101,7 @@ class EditBehavior {
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
 
-    const makeCompoEditFunc = fullComponentTransform
+    const makeCompoEditFunc = doFullTransform
       ? makeComponentTransformationEditFunc
       : makeComponentOriginEditFunc;
 
@@ -122,7 +115,7 @@ class EditBehavior {
       componentRollbackChanges.push(compoRollback);
     }
 
-    if (!fullComponentTransform) {
+    if (!doFullTransform) {
       for (const componentIndex of componentTCenterIndices) {
         const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
           components[componentIndex],
@@ -167,7 +160,7 @@ class EditBehavior {
     const backgroundImageRollbackChanges = [];
     this.backgroundImageEditFuncs = [];
 
-    const makeBackgroundImageEditFunc = fullBackgroundImageTransform
+    const makeBackgroundImageEditFunc = doFullTransform
       ? makeBackgroundImageTransformationEditFunc
       : makeBackgroundImageOriginEditFunc;
 
@@ -212,14 +205,14 @@ class EditBehavior {
     transformComponentFunc = null,
     transformBackgroundImageFunc = null
   ) {
-    if (this.fullComponentTransform && !transformComponentFunc) {
+    if (this.doFullTransform && !transformComponentFunc) {
       throw Error(
-        "assert -- must pass transformComponentFunc when doing fullComponentTransform"
+        "assert -- must pass transformComponentFunc when doing doFullTransform"
       );
     }
-    if (this.fullBackgroundImageTransform && !transformBackgroundImageFunc) {
+    if (this.doFullTransform && !transformBackgroundImageFunc) {
       throw Error(
-        "assert -- must pass transformBackgroundImageFunc when doing fullBackgroundImageTransform"
+        "assert -- must pass transformBackgroundImageFunc when doing doFullTransform"
       );
     }
     const transform = {

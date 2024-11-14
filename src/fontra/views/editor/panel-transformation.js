@@ -699,7 +699,7 @@ export default class TransformationPanel extends Panel {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default", true, true),
+          editBehavior: behaviorFactory.getBehavior("default", true),
         };
       });
 
