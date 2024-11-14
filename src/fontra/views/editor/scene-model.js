@@ -763,17 +763,12 @@ export class SceneModel {
       .translate(0, image.height)
       .scale(1, -1);
 
-    const p1 = affine.transformPoint(0, 0);
-    const p2 = affine.transformPoint(image.width, 0);
-    const p3 = affine.transformPoint(image.width, image.height);
-    const p4 = affine.transformPoint(0, image.height);
+    const pt1 = affine.transformPointObject({ x: 0, y: 0 });
+    const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
+    const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
+    const pt4 = affine.transformPointObject({ x: 0, y: image.height });
 
-    const backgroundImagebounds = rectFromPoints([
-      { x: p1[0], y: p1[1] },
-      { x: p2[0], y: p2[1] },
-      { x: p3[0], y: p3[1] },
-      { x: p4[0], y: p4[1] },
-    ]);
+    const backgroundImagebounds = rectFromPoints([pt1, pt2, pt3, pt4]);
 
     if (sectRect(selRect, backgroundImagebounds)) {
       return new Set([`backgroundImage/0`]);
