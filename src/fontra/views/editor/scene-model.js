@@ -548,7 +548,7 @@ export class SceneModel {
     //   return { selection: fontGuidelineSelection };
     // }
 
-    const backgroundImageSelection = this.backgroundImageSelectionAtPointRect(point);
+    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
     if (backgroundImageSelection.size) {
       return { selection: backgroundImageSelection };
     }
@@ -724,7 +724,15 @@ export class SceneModel {
   //fontGuidelineSelectionAtPoint(point, size) {
   // }
 
-  backgroundImageSelectionAtPointRect(point = undefined, selRect = undefined) {
+  backgroundImageSelectionAtPoint(point) {
+    return this._backgroundImageSelectionAtPointRect(point);
+  }
+
+  backgroundImageSelectionAtRect(selRect) {
+    return this._backgroundImageSelectionAtPointRect(undefined, selRect);
+  }
+
+  _backgroundImageSelectionAtPointRect(point = undefined, selRect = undefined) {
     if (!this.visualizationLayersSettings.model["fontra.background-image"]) {
       // If background images are hidden, don't allow selection
       return new Set();
@@ -798,10 +806,7 @@ export class SceneModel {
       }
     }
 
-    const backgroundImageSelection = this.backgroundImageSelectionAtPointRect(
-      undefined,
-      selRect
-    );
+    const backgroundImageSelection = this.backgroundImageSelectionAtRect(selRect);
     if (backgroundImageSelection.size) {
       // As long as we don't have multiple background images,
       // we can just add a single selection
