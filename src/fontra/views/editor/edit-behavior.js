@@ -374,27 +374,8 @@ function makeBackgroundImageTransformationEditFunc(image) {
   ];
 }
 
-// The following causes an error:
-// Uncaught (in promise) RemoteError: TypeError("unhashable type: 'dict'")
-// function makeBackgroundImageChange(image) {
-//   return { f: "=", a: [image] };
-// }
-
 function makeBackgroundImageChange(image) {
-  return {
-    p: ["transformation"],
-    c: [
-      { f: "=", a: ["translateX", image.transformation.translateX] },
-      { f: "=", a: ["translateY", image.transformation.translateY] },
-      { f: "=", a: ["tCenterX", image.transformation.tCenterX] },
-      { f: "=", a: ["tCenterY", image.transformation.tCenterY] },
-      { f: "=", a: ["scaleX", image.transformation.scaleX] },
-      { f: "=", a: ["scaleY", image.transformation.scaleY] },
-      { f: "=", a: ["skewX", image.transformation.skewX] },
-      { f: "=", a: ["skewY", image.transformation.skewY] },
-      { f: "=", a: ["rotation", image.transformation.rotation] },
-    ],
-  };
+  return { f: "=", a: ["transformation", image.transformation] };
 }
 
 function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
