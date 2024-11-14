@@ -435,10 +435,6 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    const { backgroundImage: backgroundImageSelection } = parseSelection(
-      model.selection
-    );
-
     const affine = decomposedToTransform(backgroundImage.transformation)
       .translate(0, image.height)
       .scale(1, -1);
@@ -458,14 +454,19 @@ registerVisualizationLayerDefinition({
         context.globalAlpha = backgroundImage.color.alpha;
       }
       context.drawImage(image, 0, 0, image.width, image.height);
-
-      if (backgroundImageSelection) {
-        context.globalAlpha = 1.0; // undo alpha for selection border
-        context.strokeStyle = parameters.strokeColor;
-        context.lineWidth = parameters.strokeWidth;
-        context.strokeRect(0, 0, image.width, image.height);
-      }
     });
+
+    const pt1 = affine.transformPointObject({ x: 0, y: 0 });
+    const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
+    const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
+    const pt4 = affine.transformPointObject({ x: 0, y: image.height });
+
+    if (model.selection.has("backgroundImage/0")) {
+      context.strokeStyle = parameters.strokeColor;
+      context.lineWidth = parameters.strokeWidth;
+      context.lineJoin = "round";
+      strokePolygon(context, [pt1, pt2, pt3, pt4]);
+    }
   },
 });
 
@@ -1727,6 +1728,19 @@ function strokeLineDashed(context, x1, y1, x2, y2, pattern = [5, 5]) {
 function strokeCircle(context, cx, cy, radius) {
   context.beginPath();
   context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+  context.stroke();
+}
+
+function strokePolygon(context, points) {
+  context.beginPath();
+  for (const [i, pt] of enumerate(points)) {
+    if (i === 0) {
+      context.moveTo(pt.x, pt.y);
+    } else {
+      context.lineTo(pt.x, pt.y);
+    }
+  }
+  context.closePath();
   context.stroke();
 }
 
