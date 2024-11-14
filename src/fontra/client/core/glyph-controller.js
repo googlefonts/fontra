@@ -655,17 +655,18 @@ export class StaticGlyphController {
       }
     }
 
-    if (backgroundImageIndices.length) {
+    for (const imageIndex of backgroundImageIndices) {
+      assert(imageIndex == 0, "we currently only support a single bg image");
       const backgroundImage = this.instance.backgroundImage;
       if (!backgroundImage) {
-        return unionRect(...selectionRects);
+        continue;
       }
       if (!fontController) {
-        return unionRect(...selectionRects);
+        continue;
       }
       const image = fontController.getBackgroundImageCached(backgroundImage.identifier);
       if (!image) {
-        return unionRect(...selectionRects);
+        continue;
       }
 
       const affine = decomposedToTransform(backgroundImage.transformation)
