@@ -10,7 +10,7 @@ import {
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { centeredRect, sectRect, unionRect } from "./rectangle.js";
+import { centeredRect, rectFromPoints, sectRect, unionRect } from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -610,7 +610,9 @@ export class StaticGlyphController {
     return getRepresentation(this, "flattenedPathHitTester");
   }
 
-  getSelectionBounds(selection) {
+  // TODO: Question: It does not feel right to have fontController as an argument here.
+  // But it is needed to get the backgroundImage. Is there a better way?
+  getSelectionBounds(selection, fontController = undefined) {
     if (!selection.size) {
       return undefined;
     }
@@ -619,11 +621,13 @@ export class StaticGlyphController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
+    backgroundImageIndices = backgroundImageIndices || [];
 
     const selectionRects = [];
     if (pointIndices.length) {
@@ -649,6 +653,33 @@ export class StaticGlyphController {
       if (anchor) {
         selectionRects.push(centeredRect(anchor.x, anchor.y, 0));
       }
+    }
+
+    if (backgroundImageIndices) {
+      const backgroundImage = this.instance.backgroundImage;
+      if (!backgroundImage) {
+        return unionRect(...selectionRects);
+      }
+      if (!fontController) {
+        return unionRect(...selectionRects);
+      }
+      const image = fontController.getBackgroundImageCached(backgroundImage.identifier);
+      if (!image) {
+        return unionRect(...selectionRects);
+      }
+
+      const affine = decomposedToTransform(backgroundImage.transformation)
+        .translate(0, image.height)
+        .scale(1, -1);
+
+      const pt1 = affine.transformPointObject({ x: 0, y: 0 });
+      const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
+      const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
+      const pt4 = affine.transformPointObject({ x: 0, y: image.height });
+
+      const backgroundImagebounds = rectFromPoints([pt1, pt2, pt3, pt4]);
+
+      selectionRects.push(backgroundImagebounds);
     }
 
     return unionRect(...selectionRects);

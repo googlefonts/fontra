@@ -24,7 +24,7 @@ import {
   reversed,
   zip,
 } from "/core/utils.js";
-import { copyComponent } from "/core/var-glyph.js";
+import { copyBackgroundImage, copyComponent } from "/core/var-glyph.js";
 import { VarPackedPath } from "/core/var-path.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -667,12 +667,19 @@ export default class TransformationPanel extends Panel {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
+    backgroundImageIndices = backgroundImageIndices || [];
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      !anchorIndices.length &&
+      !backgroundImageIndices.length
+    ) {
       return;
     }
 
@@ -692,7 +699,7 @@ export default class TransformationPanel extends Panel {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default", true),
+          editBehavior: behaviorFactory.getBehavior("default", true, true),
         };
       });
 
@@ -701,7 +708,10 @@ export default class TransformationPanel extends Panel {
       for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
         const layerGlyph = layerGlyphController.instance;
         const pinPoint = getPinPoint(
-          layerGlyphController.getSelectionBounds(this.sceneController.selection),
+          layerGlyphController.getSelectionBounds(
+            this.sceneController.selection,
+            this.fontController
+          ),
           this.transformParameters.originX,
           this.transformParameters.originY
         );
@@ -722,10 +732,20 @@ export default class TransformationPanel extends Panel {
           return component;
         };
 
+        const backgroundImageTransformFunction = (backgroundImage) => {
+          backgroundImage = copyBackgroundImage(backgroundImage);
+          backgroundImage.transformation = prependTransformToDecomposed(
+            t,
+            backgroundImage.transformation
+          );
+          return backgroundImage;
+        };
+
         const editChange = editBehavior.makeChangeForTransformFunc(
           pointTransformFunction,
           null,
-          componentTransformFunction
+          componentTransformFunction,
+          backgroundImageTransformFunction
         );
         applyChange(layerGlyph, editChange);
         editChanges.push(consolidateChanges(editChange, changePath));
@@ -936,12 +956,16 @@ export function getPinPoint(bounds, originX, originY) {
 
 // Define MovableObject classes
 class MovableObject {
-  constructor(selection) {
+  constructor(selection, fontController) {
     this.selection = selection;
+    this.fontController = fontController;
   }
 
   computeBounds(staticGlyphController) {
-    return staticGlyphController.getSelectionBounds(this.selection);
+    return staticGlyphController.getSelectionBounds(
+      this.selection,
+      this.fontController
+    );
   }
 
   makeChangesForDelta(delta, layerGlyph, sceneController) {

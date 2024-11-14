@@ -2,7 +2,7 @@ import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { Transform, decomposedToTransform } from "../core/transform.js";
 import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
-import { copyComponent } from "../core/var-glyph.js";
+import { copyBackgroundImage, copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
   ANY,
@@ -49,7 +49,11 @@ export class EditBehaviorFactory {
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(behaviorName, fullComponentTransform = false) {
+  getBehavior(
+    behaviorName,
+    fullComponentTransform = false,
+    fullBackgroundImageTransform = false
+  ) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -69,7 +73,8 @@ export class EditBehaviorFactory {
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
-        fullComponentTransform
+        fullComponentTransform,
+        fullBackgroundImageTransform
       );
       this.behaviors[behaviorName] = behavior;
     }
@@ -87,9 +92,11 @@ class EditBehavior {
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
-    fullComponentTransform
+    fullComponentTransform,
+    fullBackgroundImageTransform
   ) {
     this.fullComponentTransform = fullComponentTransform;
+    this.fullBackgroundImageTransform = fullBackgroundImageTransform;
     this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
@@ -160,10 +167,9 @@ class EditBehavior {
     const backgroundImageRollbackChanges = [];
     this.backgroundImageEditFuncs = [];
 
-    const makeBackgroundImageEditFunc = makeBackgroundImageOriginEditFunc;
-    // const makeBackgroundImageEditFunc = fullBackgroundImageTransform
-    // ? makeBackgroundImageTransformationEditFunc
-    // : makeBackgroundImageOriginEditFunc;
+    const makeBackgroundImageEditFunc = fullBackgroundImageTransform
+      ? makeBackgroundImageTransformationEditFunc
+      : makeBackgroundImageOriginEditFunc;
 
     if (backgroundImage) {
       const [editFunc, backgroundImageRollback] = makeBackgroundImageEditFunc(
@@ -203,11 +209,17 @@ class EditBehavior {
   makeChangeForTransformFunc(
     transformFunc,
     freeTransformFunc = null,
-    transformComponentFunc = null
+    transformComponentFunc = null,
+    transformBackgroundImageFunc = null
   ) {
     if (this.fullComponentTransform && !transformComponentFunc) {
       throw Error(
         "assert -- must pass transformComponentFunc when doing fullComponentTransform"
+      );
+    }
+    if (this.fullBackgroundImageTransform && !transformBackgroundImageFunc) {
+      throw Error(
+        "assert -- must pass transformBackgroundImageFunc when doing fullBackgroundImageTransform"
       );
     }
     const transform = {
@@ -215,6 +227,7 @@ class EditBehavior {
       free: freeTransformFunc || transformFunc,
       constrainDelta: this.constrainDelta,
       transformComponent: transformComponentFunc,
+      transformBackgroundImage: transformBackgroundImageFunc,
     };
     const pathChanges = this.pointEditFuncs
       ?.map((editFunc) => {
@@ -348,6 +361,40 @@ function makeBackgroundImageOriginEditFunc(image, roundFunc) {
     },
     makeBackgroundImageOriginChange(origin.x, origin.y),
   ];
+}
+
+function makeBackgroundImageTransformationEditFunc(image) {
+  const oldBackgroundImage = copyBackgroundImage(image);
+  return [
+    (transform) => {
+      const newBackgroundImage = transform.transformBackgroundImage(image);
+      return makeBackgroundImageChange(newBackgroundImage);
+    },
+    makeBackgroundImageChange(oldBackgroundImage),
+  ];
+}
+
+// The following causes an error:
+// Uncaught (in promise) RemoteError: TypeError("unhashable type: 'dict'")
+// function makeBackgroundImageChange(image) {
+//   return { f: "=", a: [image] };
+// }
+
+function makeBackgroundImageChange(image) {
+  return {
+    p: ["transformation"],
+    c: [
+      { f: "=", a: ["translateX", image.transformation.translateX] },
+      { f: "=", a: ["translateY", image.transformation.translateY] },
+      { f: "=", a: ["tCenterX", image.transformation.tCenterX] },
+      { f: "=", a: ["tCenterY", image.transformation.tCenterY] },
+      { f: "=", a: ["scaleX", image.transformation.scaleX] },
+      { f: "=", a: ["scaleY", image.transformation.scaleY] },
+      { f: "=", a: ["skewX", image.transformation.skewX] },
+      { f: "=", a: ["skewY", image.transformation.skewY] },
+      { f: "=", a: ["rotation", image.transformation.rotation] },
+    ],
+  };
 }
 
 function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
