@@ -655,7 +655,7 @@ export class StaticGlyphController {
       }
     }
 
-    if (backgroundImageIndices) {
+    if (backgroundImageIndices.length) {
       const backgroundImage = this.instance.backgroundImage;
       if (!backgroundImage) {
         return unionRect(...selectionRects);
