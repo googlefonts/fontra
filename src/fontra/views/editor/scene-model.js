@@ -6,6 +6,7 @@ import {
   normalizeRect,
   offsetRect,
   pointInRect,
+  rectFromPoints,
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
@@ -547,7 +548,7 @@ export class SceneModel {
     //   return { selection: fontGuidelineSelection };
     // }
 
-    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
+    const backgroundImageSelection = this.backgroundImageSelectionAtPointRect(point);
     if (backgroundImageSelection.size) {
       return { selection: backgroundImageSelection };
     }
@@ -723,18 +724,25 @@ export class SceneModel {
   //fontGuidelineSelectionAtPoint(point, size) {
   // }
 
-  backgroundImageSelectionAtPoint(point) {
-    // TODO: If backgroundImages are locked or hidden don't allow selection
-    // if (
-    //   !this.editorController.visualizationLayersSettings.model[
-    //     "fontra.background.image"
-    //   ]
-    // ) {
-    //   return new Set();
-    // }
+  backgroundImageSelectionAtPointRect(point = undefined, selRect = undefined) {
+    if (!this.visualizationLayersSettings.model["fontra.background-image"]) {
+      // If background images are hidden, don't allow selection
+      return new Set();
+    }
+    // TODO: If background images are locked don't allow selection
 
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
+      return new Set();
+    }
+
+    if (point) {
+      const x = point.x - positionedGlyph.x;
+      const y = point.y - positionedGlyph.y;
+      selRect = centeredRect(x, y, 0);
+    }
+
+    if (!selRect) {
       return new Set();
     }
 
@@ -751,9 +759,6 @@ export class SceneModel {
       return new Set();
     }
 
-    const x = point.x - positionedGlyph.x;
-    const y = point.y - positionedGlyph.y;
-
     const affine = decomposedToTransform(backgroundImage.transformation)
       .translate(0, image.height)
       .scale(1, -1);
@@ -763,14 +768,14 @@ export class SceneModel {
     const p3 = affine.transformPoint(image.width, image.height);
     const p4 = affine.transformPoint(0, image.height);
 
-    const imageHull = convexHull([
+    const backgroundImagebounds = rectFromPoints([
       { x: p1[0], y: p1[1] },
       { x: p2[0], y: p2[1] },
       { x: p3[0], y: p3[1] },
       { x: p4[0], y: p4[1] },
     ]);
 
-    if (pointInConvexPolygon(x, y, imageHull)) {
+    if (sectRect(selRect, backgroundImagebounds)) {
       return new Set([`backgroundImage/0`]);
     }
     return new Set([]);
@@ -797,6 +802,17 @@ export class SceneModel {
         selection.add(`component/${i}`);
       }
     }
+
+    const backgroundImageSelection = this.backgroundImageSelectionAtPointRect(
+      undefined,
+      selRect
+    );
+    if (backgroundImageSelection.size) {
+      // As long as we don't have multiple background images,
+      // we can just add a single selection
+      selection.add(`backgroundImage/0`);
+    }
+
     return selection;
   }
 
