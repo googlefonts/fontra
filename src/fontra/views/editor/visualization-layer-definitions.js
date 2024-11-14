@@ -409,7 +409,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.background-image",
-  name: "Background image",
+  name: "sidebar.user-settings.glyph.background-image",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
