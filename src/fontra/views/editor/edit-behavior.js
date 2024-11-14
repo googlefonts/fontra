@@ -41,7 +41,7 @@ export class EditBehaviorFactory {
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
     this.guidelines = unpackGuidelines(instance.guidelines, guidelineSelection || []);
     this.backgroundImage = backgroundImageSelection
-      ? instance.backgroundImage
+      ? copyBackgroundImage(instance.backgroundImage)
       : undefined;
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
