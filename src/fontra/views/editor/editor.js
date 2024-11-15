@@ -1883,11 +1883,13 @@ export class EditorController {
       component: componentIndices,
       anchor: anchorIndices,
       guideline: guidelineIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
     let anchors;
     let guidelines;
+    let backgroundImage;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1920,12 +1922,21 @@ export class EditorController {
         }
       }
     }
+    if (backgroundImageIndices) {
+      backgroundImage = editInstance.backgroundImage;
+      if (doCut) {
+        // TODO: don't delete if bg images are locked
+        // (even though we shouldn't be able to select them)
+        editInstance.backgroundImage = undefined;
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
       path: path,
       components: components,
       anchors: anchors,
       guidelines: guidelines,
+      backgroundImage,
     });
     return {
       instance: instance,
@@ -2248,7 +2259,7 @@ export class EditorController {
           if (backgroundImageSelection) {
             // TODO: don't delete if bg images are locked
             // (even though we shouldn't be able to select them)
-            layerGlyph.backgroundImage = null;
+            layerGlyph.backgroundImage = undefined;
           }
         }
       }
