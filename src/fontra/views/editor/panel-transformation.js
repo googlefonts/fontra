@@ -780,6 +780,7 @@ export default class TransformationPanel extends Panel {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(selection);
     pointIndices = pointIndices || [];
 
@@ -787,9 +788,10 @@ export default class TransformationPanel extends Panel {
     const contours = [];
     const components = componentIndices || [];
     const anchors = anchorIndices || [];
+    const backgroundImages = backgroundImageIndices || [];
 
     if (!pointIndices.length) {
-      return { points, contours, components, anchors };
+      return { points, contours, components, anchors, backgroundImages };
     }
 
     const path = layerGlyphController.instance.path;
@@ -832,14 +834,12 @@ export default class TransformationPanel extends Panel {
       }
     }
 
-    return { points, contours, components, anchors };
+    return { points, contours, components, anchors, backgroundImages };
   }
 
   _collectMovableObjects(moveDescriptor, controller) {
-    const { points, contours, components, anchors } = this._splitSelection(
-      controller,
-      this.sceneController.selection
-    );
+    const { points, contours, components, anchors, backgroundImages } =
+      this._splitSelection(controller, this.sceneController.selection);
 
     const movableObjects = [];
     for (const pointIndex of points) {
@@ -860,9 +860,20 @@ export default class TransformationPanel extends Panel {
       const individualSelection = new Set([`anchor/${anchorIndex}`]);
       movableObjects.push(new MovableObject(individualSelection));
     }
+    for (const backgroundImageIndex of backgroundImages) {
+      const individualSelection = new Set([`backgroundImage/${backgroundImageIndex}`]);
+      movableObjects.push(new MovableObject(individualSelection));
+    }
 
     if (moveDescriptor.compareObjects) {
-      movableObjects.sort((a, b) => moveDescriptor.compareObjects(a, b, controller));
+      movableObjects.sort((a, b) =>
+        moveDescriptor.compareObjects(
+          a,
+          b,
+          controller,
+          this.fontController.getBackgroundImageBoundsFunc
+        )
+      );
     }
 
     return movableObjects;
@@ -890,7 +901,10 @@ export default class TransformationPanel extends Panel {
         const controller = staticGlyphControllers[layerName];
 
         const boundingBoxes = movableObjects.map((obj) =>
-          obj.computeBounds(controller)
+          obj.computeBounds(
+            controller,
+            this.fontController.getBackgroundImageBoundsFunc
+          )
         );
         const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(
           boundingBoxes,
@@ -956,15 +970,14 @@ export function getPinPoint(bounds, originX, originY) {
 
 // Define MovableObject classes
 class MovableObject {
-  constructor(selection, fontController) {
+  constructor(selection) {
     this.selection = selection;
-    this.fontController = fontController;
   }
 
-  computeBounds(staticGlyphController) {
+  computeBounds(staticGlyphController, getBackgroundImageBoundsFunc) {
     return staticGlyphController.getSelectionBounds(
       this.selection,
-      this.fontController.getBackgroundImageBoundsFunc
+      getBackgroundImageBoundsFunc
     );
   }
 
@@ -1093,10 +1106,14 @@ class DistributeObjectsDescriptor {
     return deltas;
   }
 
-  compareObjects(a, b, controller) {
+  compareObjects(a, b, glyphController, getBackgroundImageBoundsFunc) {
     return (
-      rectCenter(a.computeBounds(controller))[this.deltaProperty] -
-      rectCenter(b.computeBounds(controller))[this.deltaProperty]
+      rectCenter(a.computeBounds(glyphController, getBackgroundImageBoundsFunc))[
+        this.deltaProperty
+      ] -
+      rectCenter(b.computeBounds(glyphController, getBackgroundImageBoundsFunc))[
+        this.deltaProperty
+      ]
     );
   }
 }
