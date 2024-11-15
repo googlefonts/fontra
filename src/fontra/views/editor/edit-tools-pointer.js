@@ -574,8 +574,6 @@ export class PointerTool extends BaseTool {
             return component;
           };
 
-          // TODO: the interactive transformation seems to add a translation ofer and ofer, so it's exponentially growing.
-          // I don't know how to fix it.
           const backgroundImageTransformFunction = (backgroundImage) => {
             backgroundImage = copyBackgroundImage(backgroundImage);
             backgroundImage.transformation = prependTransformToDecomposed(
