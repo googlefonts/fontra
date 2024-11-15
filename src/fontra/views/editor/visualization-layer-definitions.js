@@ -457,9 +457,13 @@ registerVisualizationLayerDefinition({
       context.drawImage(image, 0, 0, image.width, image.height);
     });
 
-    const rectPoly = rectToPoints(
-      model.fontController.getBackgroundImageBounds(backgroundImage.identifier)
-    );
+    const backgroundImageBounds = {
+      xMin: 0,
+      yMin: 0,
+      xMax: image.width,
+      yMax: image.height,
+    };
+    const rectPoly = rectToPoints(backgroundImageBounds);
     const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
     if (model.selection.has("backgroundImage/0")) {
