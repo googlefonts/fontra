@@ -641,7 +641,7 @@ export class PointerTool extends BaseTool {
     const bounds = getTransformSelectionBounds(
       glyph,
       selection,
-      this.editor.fontController
+      this.editor.fontController.getBackgroundImageBoundsFunc
     );
     // bounds can be undefined if for example only one point is selected
     if (!bounds) {
@@ -750,7 +750,7 @@ registerVisualizationLayerDefinition({
     const transformBounds = getTransformSelectionBounds(
       positionedGlyph.glyph,
       model.selection,
-      model.fontController
+      model.fontController.getBackgroundImageBoundsFunc
     );
     if (!transformBounds) {
       return;
@@ -842,10 +842,10 @@ function getTransformHandles(transformBounds, margin) {
   return handles;
 }
 
-function getTransformSelectionBounds(glyph, selection, fontController) {
+function getTransformSelectionBounds(glyph, selection, getBackgroundImageBoundsFunc) {
   const selectionBounds = glyph.getSelectionBounds(
     selection,
-    fontController.getBackgroundImageBoundsFunc
+    getBackgroundImageBoundsFunc
   );
   if (!selectionBounds) {
     return undefined;
