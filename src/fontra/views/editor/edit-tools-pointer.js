@@ -469,7 +469,7 @@ export class PointerTool extends BaseTool {
         await sceneController.sceneModel.getSelectedStaticGlyphController();
       const selectedLayerBounds = glyphController.getSelectionBounds(
         selection,
-        this.editor.fontController
+        this.editor.fontController.getBackgroundImageBoundsFunc
       );
       regularPinPointSelectedLayer = getPinPoint(
         selectedLayerBounds,
@@ -493,7 +493,7 @@ export class PointerTool extends BaseTool {
         );
         const layerBounds = staticGlyphControllers[layerName].getSelectionBounds(
           selection,
-          this.editor.fontController
+          this.editor.fontController.getBackgroundImageBoundsFunc
         );
 
         return {
@@ -843,7 +843,10 @@ function getTransformHandles(transformBounds, margin) {
 }
 
 function getTransformSelectionBounds(glyph, selection, fontController) {
-  const selectionBounds = glyph.getSelectionBounds(selection, fontController);
+  const selectionBounds = glyph.getSelectionBounds(
+    selection,
+    fontController.getBackgroundImageBoundsFunc
+  );
   if (!selectionBounds) {
     return undefined;
   }

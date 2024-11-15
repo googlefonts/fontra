@@ -173,6 +173,18 @@ export class FontController {
     return await imagePromise;
   }
 
+  get getBackgroundImageBoundsFunc() {
+    return this.getBackgroundImageBounds.bind(this);
+  }
+
+  getBackgroundImageBounds(imageIdentifier) {
+    const image = this.getBackgroundImageCached(imageIdentifier);
+    if (!image) {
+      return undefined;
+    }
+    return { xMin: 0, yMin: 0, xMax: image.width, yMax: image.height };
+  }
+
   getCachedGlyphNames() {
     return this._glyphsPromiseCache.keys();
   }

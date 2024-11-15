@@ -1,6 +1,7 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
 import { translate } from "/core/localization.js";
+import { rectToPoints } from "/core/rectangle.js";
 import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
@@ -456,16 +457,16 @@ registerVisualizationLayerDefinition({
       context.drawImage(image, 0, 0, image.width, image.height);
     });
 
-    const pt1 = affine.transformPointObject({ x: 0, y: 0 });
-    const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
-    const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
-    const pt4 = affine.transformPointObject({ x: 0, y: image.height });
+    const rectPoly = rectToPoints(
+      model.fontController.getBackgroundImageBounds(backgroundImage.identifier)
+    );
+    const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
     if (model.selection.has("backgroundImage/0")) {
       context.strokeStyle = parameters.strokeColor;
       context.lineWidth = parameters.strokeWidth;
       context.lineJoin = "round";
-      strokePolygon(context, [pt1, pt2, pt3, pt4]);
+      strokePolygon(context, polygon);
     }
   },
 });

@@ -7,6 +7,7 @@ import {
   offsetRect,
   pointInRect,
   rectFromPoints,
+  rectToPoints,
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
@@ -759,26 +760,13 @@ export class SceneModel {
       return new Set();
     }
 
-    const image = this.fontController.getBackgroundImageCached(
-      backgroundImage.identifier
+    const affine = decomposedToTransform(backgroundImage.transformation);
+    const rectPoly = rectToPoints(
+      this.fontController.getBackgroundImageBounds(backgroundImage.identifier)
     );
+    const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
-    if (!image) {
-      return new Set();
-    }
-
-    const affine = decomposedToTransform(backgroundImage.transformation)
-      .translate(0, image.height)
-      .scale(1, -1);
-
-    const pt1 = affine.transformPointObject({ x: 0, y: 0 });
-    const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
-    const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
-    const pt4 = affine.transformPointObject({ x: 0, y: image.height });
-
-    const backgroundImagebounds = rectFromPoints([pt1, pt2, pt3, pt4]);
-
-    if (sectRect(selRect, backgroundImagebounds)) {
+    if (sectRect(selRect, rectFromPoints(polygon))) {
       return new Set([`backgroundImage/0`]);
     }
     return new Set([]);

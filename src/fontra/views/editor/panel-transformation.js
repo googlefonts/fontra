@@ -710,7 +710,7 @@ export default class TransformationPanel extends Panel {
         const pinPoint = getPinPoint(
           layerGlyphController.getSelectionBounds(
             this.sceneController.selection,
-            this.fontController
+            this.fontController.getBackgroundImageBoundsFunc
           ),
           this.transformParameters.originX,
           this.transformParameters.originY
@@ -964,7 +964,7 @@ class MovableObject {
   computeBounds(staticGlyphController) {
     return staticGlyphController.getSelectionBounds(
       this.selection,
-      this.fontController
+      this.fontController.getBackgroundImageBoundsFunc
     );
   }
 

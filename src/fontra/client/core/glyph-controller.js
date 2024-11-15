@@ -10,7 +10,13 @@ import {
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { centeredRect, rectFromPoints, sectRect, unionRect } from "./rectangle.js";
+import {
+  centeredRect,
+  rectFromPoints,
+  rectToPoints,
+  sectRect,
+  unionRect,
+} from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -23,6 +29,7 @@ import {
 } from "./transform.js";
 import {
   areGuidelinesCompatible,
+  assert,
   enumerate,
   normalizeGuidelines,
   parseSelection,
@@ -612,7 +619,7 @@ export class StaticGlyphController {
 
   // TODO: Question: It does not feel right to have fontController as an argument here.
   // But it is needed to get the backgroundImage. Is there a better way?
-  getSelectionBounds(selection, fontController = undefined) {
+  getSelectionBounds(selection, getBackgroundImageBoundsFunc = undefined) {
     if (!selection.size) {
       return undefined;
     }
@@ -661,26 +668,21 @@ export class StaticGlyphController {
       if (!backgroundImage) {
         continue;
       }
-      if (!fontController) {
+      if (!getBackgroundImageBoundsFunc) {
         continue;
       }
-      const image = fontController.getBackgroundImageCached(backgroundImage.identifier);
-      if (!image) {
+      const backgroundImageBounds = getBackgroundImageBoundsFunc(
+        backgroundImage.identifier
+      );
+      if (!backgroundImageBounds) {
+        // might be undefined if the image is not loaded yet
         continue;
       }
+      const rectPoly = rectToPoints(backgroundImageBounds);
+      const affine = decomposedToTransform(backgroundImage.transformation);
+      const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
-      const affine = decomposedToTransform(backgroundImage.transformation)
-        .translate(0, image.height)
-        .scale(1, -1);
-
-      const pt1 = affine.transformPointObject({ x: 0, y: 0 });
-      const pt2 = affine.transformPointObject({ x: image.width, y: 0 });
-      const pt3 = affine.transformPointObject({ x: image.width, y: image.height });
-      const pt4 = affine.transformPointObject({ x: 0, y: image.height });
-
-      const backgroundImagebounds = rectFromPoints([pt1, pt2, pt3, pt4]);
-
-      selectionRects.push(backgroundImagebounds);
+      selectionRects.push(rectFromPoints(polygon));
     }
 
     return unionRect(...selectionRects);
