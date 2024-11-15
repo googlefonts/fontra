@@ -1932,10 +1932,10 @@ export class EditorController {
     }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
-      path: path,
-      components: components,
-      anchors: anchors,
-      guidelines: guidelines,
+      path,
+      components,
+      anchors,
+      guidelines,
       backgroundImage,
     });
     return {
