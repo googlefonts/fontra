@@ -1738,12 +1738,9 @@ function strokeCircle(context, cx, cy, radius) {
 
 function strokePolygon(context, points) {
   context.beginPath();
-  for (const [i, pt] of enumerate(points)) {
-    if (i === 0) {
-      context.moveTo(pt.x, pt.y);
-    } else {
-      context.lineTo(pt.x, pt.y);
-    }
+  context.moveTo(points[0].x, points[0].y);
+  for (const pt of points.slice(1)) {
+    context.lineTo(pt.x, pt.y);
   }
   context.closePath();
   context.stroke();
