@@ -617,8 +617,6 @@ export class StaticGlyphController {
     return getRepresentation(this, "flattenedPathHitTester");
   }
 
-  // TODO: Question: It does not feel right to have fontController as an argument here.
-  // But it is needed to get the backgroundImage. Is there a better way?
   getSelectionBounds(selection, getBackgroundImageBoundsFunc = undefined) {
     if (!selection.size) {
       return undefined;
