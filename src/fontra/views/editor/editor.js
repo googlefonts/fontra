@@ -2207,6 +2207,7 @@ export class EditorController {
       component: componentSelection,
       anchor: anchorSelection,
       guideline: guidelineSelection,
+      backgroundImage: backgroundImageSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     // TODO: Font Guidelines
@@ -2243,6 +2244,11 @@ export class EditorController {
               }
               layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
+          }
+          if (backgroundImageSelection) {
+            // TODO: don't delete if bg images are locked
+            // (even though we shouldn't be able to select them)
+            layerGlyph.backgroundImage = null;
           }
         }
       }
