@@ -2159,6 +2159,10 @@ export class EditorController {
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
           layerGlyph.anchors.push(...pasteGlyph.anchors);
           layerGlyph.guidelines.push(...pasteGlyph.guidelines);
+          if (pasteGlyph.backgroundImage) {
+            layerGlyph.backgroundImage = pasteGlyph.backgroundImage;
+            selection.add("backgroundImage/0");
+          }
         }
         this.sceneController.selection = selection;
         return "Paste";
