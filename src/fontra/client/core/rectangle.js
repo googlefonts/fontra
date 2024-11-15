@@ -153,6 +153,15 @@ export function rectFromPoints(points) {
   return { xMin, yMin, xMax, yMax };
 }
 
+export function rectToPoints(rect) {
+  return [
+    { x: rect.xMin, y: rect.yMin },
+    { x: rect.xMax, y: rect.yMin },
+    { x: rect.xMax, y: rect.yMax },
+    { x: rect.xMin, y: rect.yMax },
+  ];
+}
+
 export function updateRect(rect, point) {
   // Return the smallest rect that includes the original rect and the given point
   return {

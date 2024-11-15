@@ -1,6 +1,7 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
 import { translate } from "/core/localization.js";
+import { rectToPoints } from "/core/rectangle.js";
 import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
@@ -409,11 +410,16 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.background-image",
-  name: "Background image",
+  name: "sidebar.user-settings.glyph.background-image",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
   zIndex: 50,
+  screenParameters: {
+    strokeWidth: 2,
+  },
+  colors: { strokeColor: "#888" },
+  colorsDarkMode: { strokeColor: "#FFF" },
 
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const backgroundImage = positionedGlyph.glyph.backgroundImage;
@@ -450,6 +456,22 @@ registerVisualizationLayerDefinition({
       }
       context.drawImage(image, 0, 0, image.width, image.height);
     });
+
+    const backgroundImageBounds = {
+      xMin: 0,
+      yMin: 0,
+      xMax: image.width,
+      yMax: image.height,
+    };
+    const rectPoly = rectToPoints(backgroundImageBounds);
+    const polygon = rectPoly.map((point) => affine.transformPointObject(point));
+
+    if (model.selection.has("backgroundImage/0")) {
+      context.strokeStyle = parameters.strokeColor;
+      context.lineWidth = parameters.strokeWidth;
+      context.lineJoin = "round";
+      strokePolygon(context, polygon);
+    }
   },
 });
 
@@ -1711,6 +1733,16 @@ function strokeLineDashed(context, x1, y1, x2, y2, pattern = [5, 5]) {
 function strokeCircle(context, cx, cy, radius) {
   context.beginPath();
   context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+  context.stroke();
+}
+
+function strokePolygon(context, points) {
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  for (const pt of points.slice(1)) {
+    context.lineTo(pt.x, pt.y);
+  }
+  context.closePath();
   context.stroke();
 }
 

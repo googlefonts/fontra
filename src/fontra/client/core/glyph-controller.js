@@ -10,7 +10,13 @@ import {
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { centeredRect, sectRect, unionRect } from "./rectangle.js";
+import {
+  centeredRect,
+  rectFromPoints,
+  rectToPoints,
+  sectRect,
+  unionRect,
+} from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -23,6 +29,7 @@ import {
 } from "./transform.js";
 import {
   areGuidelinesCompatible,
+  assert,
   enumerate,
   normalizeGuidelines,
   parseSelection,
@@ -610,7 +617,7 @@ export class StaticGlyphController {
     return getRepresentation(this, "flattenedPathHitTester");
   }
 
-  getSelectionBounds(selection) {
+  getSelectionBounds(selection, getBackgroundImageBoundsFunc = undefined) {
     if (!selection.size) {
       return undefined;
     }
@@ -619,11 +626,13 @@ export class StaticGlyphController {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
+    backgroundImageIndices = backgroundImageIndices || [];
 
     const selectionRects = [];
     if (pointIndices.length) {
@@ -649,6 +658,29 @@ export class StaticGlyphController {
       if (anchor) {
         selectionRects.push(centeredRect(anchor.x, anchor.y, 0));
       }
+    }
+
+    for (const imageIndex of backgroundImageIndices) {
+      assert(imageIndex == 0, "we currently only support a single bg image");
+      const backgroundImage = this.instance.backgroundImage;
+      if (!backgroundImage) {
+        continue;
+      }
+      if (!getBackgroundImageBoundsFunc) {
+        continue;
+      }
+      const backgroundImageBounds = getBackgroundImageBoundsFunc(
+        backgroundImage.identifier
+      );
+      if (!backgroundImageBounds) {
+        // might be undefined if the image is not loaded yet
+        continue;
+      }
+      const rectPoly = rectToPoints(backgroundImageBounds);
+      const affine = decomposedToTransform(backgroundImage.transformation);
+      const polygon = rectPoly.map((point) => affine.transformPointObject(point));
+
+      selectionRects.push(rectFromPoints(polygon));
     }
 
     return unionRect(...selectionRects);

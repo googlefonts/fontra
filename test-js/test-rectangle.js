@@ -16,6 +16,7 @@ import {
   rectScaleAroundCenter,
   rectSize,
   rectToArray,
+  rectToPoints,
   scaleRect,
   sectRect,
   unionRect,
@@ -422,6 +423,47 @@ describe("rectFromPoints", () => {
     testData,
     ([rectangle, acceptance, testDescription]) => {
       const result = rectFromPoints(rectangle);
+      expect(result).deep.equals(acceptance, testDescription);
+    }
+  );
+});
+
+describe("rectToPoints", () => {
+  const testData = [
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: 0, y: 10 },
+      ],
+    ],
+    [
+      {
+        xMin: -20,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      [
+        { x: -20, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 },
+        { x: -20, y: 10 },
+      ],
+    ],
+  ];
+  parametrize(
+    "Creates an array of four corner points from given rectangle",
+    testData,
+    ([rectangle, acceptance, testDescription]) => {
+      const result = rectToPoints(rectangle);
       expect(result).deep.equals(acceptance, testDescription);
     }
   );

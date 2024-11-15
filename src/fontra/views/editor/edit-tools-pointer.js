@@ -29,7 +29,7 @@ import {
   strokeSquareNode,
 } from "./visualization-layer-definitions.js";
 import { translate } from "/core/localization.js";
-import { copyComponent } from "/core/var-glyph.js";
+import { copyBackgroundImage, copyComponent } from "/core/var-glyph.js";
 
 const transformHandleMargin = 6;
 const transformHandleSize = 8;
@@ -467,7 +467,10 @@ export class PointerTool extends BaseTool {
     if (rotation) {
       const glyphController =
         await sceneController.sceneModel.getSelectedStaticGlyphController();
-      const selectedLayerBounds = glyphController.getSelectionBounds(selection);
+      const selectedLayerBounds = glyphController.getSelectionBounds(
+        selection,
+        this.editor.fontController.getBackgroundImageBoundsFunc
+      );
       regularPinPointSelectedLayer = getPinPoint(
         selectedLayerBounds,
         origin.x,
@@ -488,8 +491,10 @@ export class PointerTool extends BaseTool {
           sceneController.selection,
           this.scalingEditBehavior
         );
-        const layerBounds =
-          staticGlyphControllers[layerName].getSelectionBounds(selection);
+        const layerBounds = staticGlyphControllers[layerName].getSelectionBounds(
+          selection,
+          this.editor.fontController.getBackgroundImageBoundsFunc
+        );
 
         return {
           layerName,
@@ -569,10 +574,20 @@ export class PointerTool extends BaseTool {
             return component;
           };
 
+          const backgroundImageTransformFunction = (backgroundImage) => {
+            backgroundImage = copyBackgroundImage(backgroundImage);
+            backgroundImage.transformation = prependTransformToDecomposed(
+              t,
+              backgroundImage.transformation
+            );
+            return backgroundImage;
+          };
+
           const editChange = layer.editBehavior.makeChangeForTransformFunc(
             pointTransformFunction,
             null,
-            componentTransformFunction
+            componentTransformFunction,
+            backgroundImageTransformFunction
           );
 
           applyChange(layerGlyph, editChange);
@@ -621,7 +636,11 @@ export class PointerTool extends BaseTool {
     if (!glyph) {
       return undefined;
     }
-    const bounds = getTransformSelectionBounds(glyph, selection);
+    const bounds = getTransformSelectionBounds(
+      glyph,
+      selection,
+      this.editor.fontController.getBackgroundImageBoundsFunc
+    );
     // bounds can be undefined if for example only one point is selected
     if (!bounds) {
       return undefined;
@@ -728,7 +747,8 @@ registerVisualizationLayerDefinition({
     }
     const transformBounds = getTransformSelectionBounds(
       positionedGlyph.glyph,
-      model.selection
+      model.selection,
+      model.fontController.getBackgroundImageBoundsFunc
     );
     if (!transformBounds) {
       return;
@@ -820,8 +840,11 @@ function getTransformHandles(transformBounds, margin) {
   return handles;
 }
 
-function getTransformSelectionBounds(glyph, selection) {
-  const selectionBounds = glyph.getSelectionBounds(selection);
+function getTransformSelectionBounds(glyph, selection, getBackgroundImageBoundsFunc) {
+  const selectionBounds = glyph.getSelectionBounds(
+    selection,
+    getBackgroundImageBoundsFunc
+  );
   if (!selectionBounds) {
     return undefined;
   }

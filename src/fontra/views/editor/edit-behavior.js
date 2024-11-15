@@ -2,7 +2,7 @@ import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { Transform, decomposedToTransform } from "../core/transform.js";
 import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
-import { copyComponent } from "../core/var-glyph.js";
+import { copyBackgroundImage, copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
   ANY,
@@ -25,6 +25,7 @@ export class EditBehaviorFactory {
       guideline: guidelineSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
+      backgroundImage: backgroundImageSelection,
     } = parseSelection(selection);
     const componentOriginIndices = unionIndexSets(
       componentSelection,
@@ -39,13 +40,16 @@ export class EditBehaviorFactory {
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
     this.guidelines = unpackGuidelines(instance.guidelines, guidelineSelection || []);
+    this.backgroundImage = backgroundImageSelection
+      ? copyBackgroundImage(instance.backgroundImage)
+      : undefined;
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(behaviorName, fullComponentTransform = false) {
+  getBehavior(behaviorName, doFullTransform = false) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -61,10 +65,11 @@ export class EditBehaviorFactory {
         this.components,
         this.anchors,
         this.guidelines,
+        this.backgroundImage,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
-        fullComponentTransform
+        doFullTransform
       );
       this.behaviors[behaviorName] = behavior;
     }
@@ -78,12 +83,13 @@ class EditBehavior {
     components,
     anchors,
     guidelines,
+    backgroundImage,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
-    fullComponentTransform
+    doFullTransform
   ) {
-    this.fullComponentTransform = fullComponentTransform;
+    this.doFullTransform = doFullTransform;
     this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
@@ -95,7 +101,7 @@ class EditBehavior {
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
 
-    const makeCompoEditFunc = fullComponentTransform
+    const makeCompoEditFunc = doFullTransform
       ? makeComponentTransformationEditFunc
       : makeComponentOriginEditFunc;
 
@@ -109,7 +115,7 @@ class EditBehavior {
       componentRollbackChanges.push(compoRollback);
     }
 
-    if (!fullComponentTransform) {
+    if (!doFullTransform) {
       for (const componentIndex of componentTCenterIndices) {
         const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
           components[componentIndex],
@@ -151,12 +157,29 @@ class EditBehavior {
       guidelineRollbackChanges.push(guidelineRollback);
     }
 
+    const backgroundImageRollbackChanges = [];
+    this.backgroundImageEditFuncs = [];
+
+    const makeBackgroundImageEditFunc = doFullTransform
+      ? makeBackgroundImageTransformationEditFunc
+      : makeBackgroundImageOriginEditFunc;
+
+    if (backgroundImage) {
+      const [editFunc, backgroundImageRollback] = makeBackgroundImageEditFunc(
+        backgroundImage,
+        this.roundFunc
+      );
+      this.backgroundImageEditFuncs.push(editFunc);
+      backgroundImageRollbackChanges.push(backgroundImageRollback);
+    }
+
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
       componentRollbackChanges,
       anchorRollbackChanges,
-      guidelineRollbackChanges
+      guidelineRollbackChanges,
+      backgroundImageRollbackChanges
     );
   }
 
@@ -179,11 +202,17 @@ class EditBehavior {
   makeChangeForTransformFunc(
     transformFunc,
     freeTransformFunc = null,
-    transformComponentFunc = null
+    transformComponentFunc = null,
+    transformBackgroundImageFunc = null
   ) {
-    if (this.fullComponentTransform && !transformComponentFunc) {
+    if (this.doFullTransform && !transformComponentFunc) {
       throw Error(
-        "assert -- must pass transformComponentFunc when doing fullComponentTransform"
+        "assert -- must pass transformComponentFunc when doing doFullTransform"
+      );
+    }
+    if (this.doFullTransform && !transformBackgroundImageFunc) {
+      throw Error(
+        "assert -- must pass transformBackgroundImageFunc when doing doFullTransform"
       );
     }
     const transform = {
@@ -191,6 +220,7 @@ class EditBehavior {
       free: freeTransformFunc || transformFunc,
       constrainDelta: this.constrainDelta,
       transformComponent: transformComponentFunc,
+      transformBackgroundImage: transformBackgroundImageFunc,
     };
     const pathChanges = this.pointEditFuncs
       ?.map((editFunc) => {
@@ -210,6 +240,9 @@ class EditBehavior {
     const guidelineChanges = this.guidelineEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
+    const backgroundImageChanges = this.backgroundImageEditFuncs?.map((editFunc) => {
+      return editFunc(transform);
+    });
     const changes = [];
     if (pathChanges && pathChanges.length) {
       changes.push(consolidateChanges(pathChanges, ["path"]));
@@ -223,6 +256,9 @@ class EditBehavior {
     if (guidelineChanges && guidelineChanges.length) {
       changes.push(consolidateChanges(guidelineChanges, ["guidelines"]));
     }
+    if (backgroundImageChanges && backgroundImageChanges.length) {
+      changes.push(consolidateChanges(backgroundImageChanges, ["backgroundImage"]));
+    }
     return consolidateChanges(changes);
   }
 }
@@ -232,7 +268,8 @@ function makeRollbackChange(
   participatingPointIndices,
   componentRollback,
   anchorRollback,
-  guidelineRollback
+  guidelineRollback,
+  backgroundImageRollback
 ) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
@@ -262,6 +299,9 @@ function makeRollbackChange(
   }
   if (guidelineRollback.length) {
     changes.push(consolidateChanges(guidelineRollback, ["guidelines"]));
+  }
+  if (backgroundImageRollback.length) {
+    changes.push(consolidateChanges(backgroundImageRollback, ["backgroundImage"]));
   }
   return consolidateChanges(changes);
 }
@@ -297,6 +337,38 @@ function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
     },
     makeComponentOriginChange(componentIndex, origin.x, origin.y),
   ];
+}
+
+function makeBackgroundImageOriginEditFunc(image, roundFunc) {
+  const origin = {
+    x: image.transformation.translateX,
+    y: image.transformation.translateY,
+  };
+  return [
+    (transform) => {
+      const editedOrigin = transform.constrained(origin);
+      return makeBackgroundImageOriginChange(
+        roundFunc(editedOrigin.x),
+        roundFunc(editedOrigin.y)
+      );
+    },
+    makeBackgroundImageOriginChange(origin.x, origin.y),
+  ];
+}
+
+function makeBackgroundImageTransformationEditFunc(image) {
+  const oldBackgroundImage = copyBackgroundImage(image);
+  return [
+    (transform) => {
+      const newBackgroundImage = transform.transformBackgroundImage(image);
+      return makeBackgroundImageChange(newBackgroundImage);
+    },
+    makeBackgroundImageChange(oldBackgroundImage),
+  ];
+}
+
+function makeBackgroundImageChange(image) {
+  return { f: "=", a: ["transformation", image.transformation] };
 }
 
 function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
@@ -424,6 +496,16 @@ function makeGuidelineChange(guidelineIndex, x, y, angle, roundFunc) {
 function makeComponentOriginChange(componentIndex, x, y) {
   return {
     p: [componentIndex, "transformation"],
+    c: [
+      { f: "=", a: ["translateX", x] },
+      { f: "=", a: ["translateY", y] },
+    ],
+  };
+}
+
+function makeBackgroundImageOriginChange(x, y) {
+  return {
+    p: ["transformation"],
     c: [
       { f: "=", a: ["translateX", x] },
       { f: "=", a: ["translateY", y] },

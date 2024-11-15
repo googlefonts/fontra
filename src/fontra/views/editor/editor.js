@@ -2838,6 +2838,11 @@ export class EditorController {
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
       }
+      for (const backgroundImageIndex of positionedGlyph.glyph.backgroundImage
+        ? [0]
+        : []) {
+        newSelection.add(`backgroundImage/${backgroundImageIndex}`);
+      }
     }
 
     if (selectAnchors) {

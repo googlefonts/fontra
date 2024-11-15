@@ -6,6 +6,8 @@ import {
   normalizeRect,
   offsetRect,
   pointInRect,
+  rectFromPoints,
+  rectToPoints,
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
@@ -19,6 +21,7 @@ import {
 } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
+import { decomposedToTransform } from "/core/transform.js";
 
 export class SceneModel {
   constructor(
@@ -497,14 +500,20 @@ export class SceneModel {
       return selection;
     }
 
-    // Lastly, look for components (ditto)
+    // Then, look for components (ditto)
     const componentSelection = this.componentSelectionAtPoint(
       point,
       size,
       currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
       preferTCenter
     );
-    return { selection: componentSelection };
+    if (componentSelection.size) {
+      return { selection: componentSelection };
+    }
+
+    // Lastly, look for background images
+    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
+    return { selection: backgroundImageSelection };
   }
 
   _selectionAtPoint(point, size, currentSelection) {
@@ -716,6 +725,61 @@ export class SceneModel {
   //fontGuidelineSelectionAtPoint(point, size) {
   // }
 
+  backgroundImageSelectionAtPoint(point) {
+    return this._backgroundImageSelectionAtPointOrRect(point);
+  }
+
+  backgroundImageSelectionAtRect(selRect) {
+    return this._backgroundImageSelectionAtPointOrRect(undefined, selRect);
+  }
+
+  _backgroundImageSelectionAtPointOrRect(point = undefined, selRect = undefined) {
+    if (!this.visualizationLayersSettings.model["fontra.background-image"]) {
+      // If background images are hidden, don't allow selection
+      return new Set();
+    }
+    // TODO: If background images are locked don't allow selection
+
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    if (point) {
+      const x = point.x - positionedGlyph.x;
+      const y = point.y - positionedGlyph.y;
+      selRect = centeredRect(x, y, 0);
+    }
+
+    if (!selRect) {
+      return new Set();
+    }
+
+    const backgroundImage = positionedGlyph.glyph.backgroundImage;
+    if (!backgroundImage) {
+      return new Set();
+    }
+
+    const affine = decomposedToTransform(backgroundImage.transformation);
+    const backgroundImageBounds = this.fontController.getBackgroundImageBounds(
+      backgroundImage.identifier
+    );
+    if (!backgroundImageBounds) {
+      return new Set();
+    }
+    const rectPoly = rectToPoints(backgroundImageBounds);
+    const polygon = rectPoly.map((point) => affine.transformPointObject(point));
+
+    if (
+      pointInConvexPolygon(selRect.xMin, selRect.yMin, polygon) ||
+      rectIntersectsPolygon(selRect, polygon)
+    ) {
+      return new Set([`backgroundImage/0`]);
+    }
+
+    return new Set();
+  }
+
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();
     if (!this.selectedGlyph?.isEditing) {
@@ -737,6 +801,14 @@ export class SceneModel {
         selection.add(`component/${i}`);
       }
     }
+
+    const backgroundImageSelection = this.backgroundImageSelectionAtRect(selRect);
+    if (backgroundImageSelection.size) {
+      // As long as we don't have multiple background images,
+      // we can just add a single selection
+      selection.add(`backgroundImage/0`);
+    }
+
     return selection;
   }
 
