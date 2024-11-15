@@ -20,7 +20,6 @@ import {
   reversed,
 } from "../core/utils.js";
 import * as vector from "../core/vector.js";
-import { convexHull } from "/core/convex-hull.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { decomposedToTransform } from "/core/transform.js";
 
