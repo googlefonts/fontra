@@ -761,9 +761,13 @@ export class SceneModel {
     }
 
     const affine = decomposedToTransform(backgroundImage.transformation);
-    const rectPoly = rectToPoints(
-      this.fontController.getBackgroundImageBounds(backgroundImage.identifier)
+    const backgroundImageBounds = this.fontController.getBackgroundImageBounds(
+      backgroundImage.identifier
     );
+    if (!backgroundImageBounds) {
+      return new Set();
+    }
+    const rectPoly = rectToPoints(backgroundImageBounds);
     const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
     if (
@@ -773,7 +777,7 @@ export class SceneModel {
       return new Set([`backgroundImage/0`]);
     }
 
-    return new Set([]);
+    return new Set();
   }
 
   selectionAtRect(selRect, pointFilterFunc) {
