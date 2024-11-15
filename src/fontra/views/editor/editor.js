@@ -1883,11 +1883,13 @@ export class EditorController {
       component: componentIndices,
       anchor: anchorIndices,
       guideline: guidelineIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
     let anchors;
     let guidelines;
+    let backgroundImage;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1920,12 +1922,21 @@ export class EditorController {
         }
       }
     }
+    if (backgroundImageIndices) {
+      backgroundImage = editInstance.backgroundImage;
+      if (doCut) {
+        // TODO: don't delete if bg images are locked
+        // (even though we shouldn't be able to select them)
+        editInstance.backgroundImage = undefined;
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
-      path: path,
-      components: components,
-      anchors: anchors,
-      guidelines: guidelines,
+      path,
+      components,
+      anchors,
+      guidelines,
+      backgroundImage,
     });
     return {
       instance: instance,
@@ -2148,6 +2159,10 @@ export class EditorController {
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
           layerGlyph.anchors.push(...pasteGlyph.anchors);
           layerGlyph.guidelines.push(...pasteGlyph.guidelines);
+          if (pasteGlyph.backgroundImage) {
+            layerGlyph.backgroundImage = pasteGlyph.backgroundImage;
+            selection.add("backgroundImage/0");
+          }
         }
         this.sceneController.selection = selection;
         return "Paste";
@@ -2207,6 +2222,7 @@ export class EditorController {
       component: componentSelection,
       anchor: anchorSelection,
       guideline: guidelineSelection,
+      backgroundImage: backgroundImageSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     // TODO: Font Guidelines
@@ -2243,6 +2259,11 @@ export class EditorController {
               }
               layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
+          }
+          if (backgroundImageSelection) {
+            // TODO: don't delete if bg images are locked
+            // (even though we shouldn't be able to select them)
+            layerGlyph.backgroundImage = undefined;
           }
         }
       }

@@ -1915,6 +1915,8 @@ def populateUFOLayerGlyph(
         layerGlyph.image = packBackgroundImage(
             staticGlyph.backgroundImage, imageFileName
         )
+    else:
+        layerGlyph.image = None
 
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
