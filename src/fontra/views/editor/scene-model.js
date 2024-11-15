@@ -726,14 +726,14 @@ export class SceneModel {
   // }
 
   backgroundImageSelectionAtPoint(point) {
-    return this._backgroundImageSelectionAtPointRect(point);
+    return this._backgroundImageSelectionAtPointOrRect(point);
   }
 
   backgroundImageSelectionAtRect(selRect) {
-    return this._backgroundImageSelectionAtPointRect(undefined, selRect);
+    return this._backgroundImageSelectionAtPointOrRect(undefined, selRect);
   }
 
-  _backgroundImageSelectionAtPointRect(point = undefined, selRect = undefined) {
+  _backgroundImageSelectionAtPointOrRect(point = undefined, selRect = undefined) {
     if (!this.visualizationLayersSettings.model["fontra.background-image"]) {
       // If background images are hidden, don't allow selection
       return new Set();
