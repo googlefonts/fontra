@@ -501,14 +501,20 @@ export class SceneModel {
       return selection;
     }
 
-    // Lastly, look for components (ditto)
+    // Then, look for components (ditto)
     const componentSelection = this.componentSelectionAtPoint(
       point,
       size,
       currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
       preferTCenter
     );
-    return { selection: componentSelection };
+    if (componentSelection.size) {
+      return { selection: componentSelection };
+    }
+
+    // Lastly, look for background images
+    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
+    return { selection: backgroundImageSelection };
   }
 
   _selectionAtPoint(point, size, currentSelection) {
@@ -548,11 +554,6 @@ export class SceneModel {
     // if (fontGuidelineSelection.size) {
     //   return { selection: fontGuidelineSelection };
     // }
-
-    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
-    if (backgroundImageSelection.size) {
-      return { selection: backgroundImageSelection };
-    }
 
     return {};
   }
