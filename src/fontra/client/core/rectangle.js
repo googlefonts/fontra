@@ -154,9 +154,6 @@ export function rectFromPoints(points) {
 }
 
 export function rectToPoints(rect) {
-  if (!rect) {
-    return undefined;
-  }
   return [
     { x: rect.xMin, y: rect.yMin },
     { x: rect.xMax, y: rect.yMin },

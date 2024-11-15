@@ -430,7 +430,6 @@ describe("rectFromPoints", () => {
 
 describe("rectToPoints", () => {
   const testData = [
-    [undefined, undefined],
     [
       {
         xMin: 0,
