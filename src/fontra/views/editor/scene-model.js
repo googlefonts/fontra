@@ -766,9 +766,13 @@ export class SceneModel {
     );
     const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
-    if (sectRect(selRect, rectFromPoints(polygon))) {
+    if (
+      pointInConvexPolygon(selRect.xMin, selRect.yMin, polygon) ||
+      rectIntersectsPolygon(selRect, polygon)
+    ) {
       return new Set([`backgroundImage/0`]);
     }
+
     return new Set([]);
   }
 
