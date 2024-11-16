@@ -184,7 +184,7 @@ export class FontController {
       });
     });
 
-    const cacheEntry = { imagePromise };
+    const cacheEntry = { imagePromise, image: null };
 
     this._backgroundImageCache.put(imageIdentifier, cacheEntry);
 
