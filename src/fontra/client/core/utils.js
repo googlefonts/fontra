@@ -252,9 +252,13 @@ export async function writeToClipboard(clipboardObject) {
 
   const clipboardItemObject = {};
   for (const [key, value] of Object.entries(clipboardObject)) {
-    clipboardItemObject[key] = new Blob([value], {
-      type: key,
-    });
+    if (value instanceof Blob)
+      clipboardItemObject[key] =
+        value instanceof Blob
+          ? value
+          : new Blob([value], {
+              type: key,
+            });
   }
 
   try {
