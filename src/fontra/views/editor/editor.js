@@ -2178,7 +2178,10 @@ export class EditorController {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
+      const glyph = await this.parseClipboard(plainText);
+      if (glyph) {
+        pasteLayerGlyphs = [{ glyph }];
+      }
     }
     return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
   }
