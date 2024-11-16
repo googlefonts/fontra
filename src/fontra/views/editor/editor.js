@@ -2071,8 +2071,17 @@ export class EditorController {
       };
       this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
+      this._remapBackgroundImageIdentifiers(
+        pasteLayerGlyphs.map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
+
+    await this._writeBackgroundImageData(
+      backgroundImageData,
+      backgroundImageIdentifierMapping
+    );
   }
 
   _makeBackgroundImageIdentifierMapping(backgroundImageData) {
@@ -2085,6 +2094,23 @@ export class EditorController {
       mapping[originalImageIdentifier] = newImageIdentifier;
     }
     return mapping;
+  }
+
+  _remapBackgroundImageIdentifiers(glyphs, identifierMapping) {
+    for (const glyph of glyphs) {
+      if (glyph.backgroundImage) {
+        glyph.backgroundImage.identifier =
+          identifierMapping[glyph.backgroundImage.identifier] ||
+          glyph.backgroundImage.identifier;
+      }
+    }
+  }
+
+  async _writeBackgroundImageData(backgroundImageData, identifierMapping) {
+    for (const [imageIdentifier, imageData] of Object.entries(backgroundImageData)) {
+      const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
+      await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
+    }
   }
 
   async _unpackClipboard() {
