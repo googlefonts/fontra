@@ -165,7 +165,8 @@ class FontHandler:
     async def getBackEndInfo(self, *, connection=None) -> dict:
         features = {}
         for key, methodName in [
-            ("find-glyphs-that-use-glyph", "findGlyphsThatUseGlyph")
+            ("find-glyphs-that-use-glyph", "findGlyphsThatUseGlyph"),
+            ("background-image", "putBackgroundImage"),
         ]:
             features[key] = hasattr(self.backend, methodName)
         projectManagerFeatures = {}
