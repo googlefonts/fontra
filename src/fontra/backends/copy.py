@@ -87,15 +87,13 @@ async def _copyFont(
         raise e
 
     if isinstance(destBackend, WriteBackgroundImage):
-        backgroundImageInfos = [info for t in done for info in t.result()]
-        if backgroundImageInfos:
+        backgroundImageIdentifiers = [info for t in done for info in t.result()]
+        if backgroundImageIdentifiers:
             assert isinstance(sourceBackend, ReadBackgroundImage), type(sourceBackend)
-            for glyphName, layerName, imageIdentifier in backgroundImageInfos:
+            for imageIdentifier in backgroundImageIdentifiers:
                 imageData = await sourceBackend.getBackgroundImage(imageIdentifier)
                 if imageData is not None:
-                    await destBackend.putBackgroundImage(
-                        imageIdentifier, glyphName, layerName, imageData
-                    )
+                    await destBackend.putBackgroundImage(imageIdentifier, imageData)
 
     await destBackend.putKerning(await sourceBackend.getKerning())
     await destBackend.putFeatures(await sourceBackend.getFeatures())
@@ -110,7 +108,7 @@ async def copyGlyphs(
     progressInterval: int,
     continueOnError: bool,
 ) -> list:
-    backgroundImageInfos = []
+    backgroundImageIdentifiers = []
 
     while glyphNamesToCopy:
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
@@ -140,15 +138,15 @@ async def copyGlyphs(
         }
         glyphNamesToCopy.extend(sorted(componentNames - glyphNamesCopied))
 
-        for layerName, layer in glyph.layers.items():
+        for layer in glyph.layers.values():
             if layer.glyph.backgroundImage is not None:
-                backgroundImageInfos.append(
-                    (glyphName, layerName, layer.glyph.backgroundImage.identifier)
+                backgroundImageIdentifiers.append(
+                    layer.glyph.backgroundImage.identifier
                 )
 
         await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
-    return backgroundImageInfos
+    return backgroundImageIdentifiers
 
 
 async def mainAsync() -> None:

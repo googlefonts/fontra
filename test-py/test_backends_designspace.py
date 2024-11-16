@@ -402,16 +402,17 @@ async def test_putBackgroundImage(writableTestFont):
 
     glyphName = "D"
     imageIdentifier = str(uuid.uuid4())
-    await writableTestFont.putBackgroundImage(
-        imageIdentifier, glyphName, layerName, imageData
-    )
+    await writableTestFont.putBackgroundImage(imageIdentifier, imageData)
+    glyph2 = deepcopy(glyph)
+    glyph2.layers[layerName].glyph.backgroundImage.identifier = imageIdentifier
+    await writableTestFont.putGlyph(glyphName, glyph2, [ord("D")])
 
     imageData2 = await writableTestFont.getBackgroundImage(imageIdentifier)
 
     assert imageData2 == imageData
 
 
-async def test_putBackgroundImage_new_font(testFont, tmpdir):
+async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
     tmpdir = pathlib.Path(tmpdir)
     newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
 

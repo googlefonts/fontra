@@ -101,9 +101,7 @@ class ReadBackgroundImage(Protocol):
 
 @runtime_checkable
 class WriteBackgroundImage(Protocol):
-    async def putBackgroundImage(
-        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
-    ) -> None:
+    async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         pass
 
     # TODO: since the image data does not itself participate in change messages,
