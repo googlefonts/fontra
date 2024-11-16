@@ -159,12 +159,11 @@ export class FontController {
   _cacheBackgroundImageFromIdentifier(imageIdentifier) {
     return this._cacheBackgroundImageFromDataURLFunc(
       imageIdentifier,
-      this._loadBackgroundImage(imageIdentifier)
+      this._loadBackgroundImageData(imageIdentifier)
     );
   }
 
-  async _loadBackgroundImage(imageIdentifier) {
-    console.log("loading", imageIdentifier);
+  async _loadBackgroundImageData(imageIdentifier) {
     const imageData = await this.font.getBackgroundImage(imageIdentifier);
     return imageData ? `data:image/${imageData.type};base64,${imageData.data}` : null;
   }
@@ -176,10 +175,13 @@ export class FontController {
         resolve(image);
         cacheEntry.image = image;
       };
-    });
-
-    imageDataURLPromise.then((imageDataURL) => {
-      image.src = imageDataURL;
+      imageDataURLPromise.then((imageDataURL) => {
+        if (imageDataURL) {
+          image.src = imageDataURL;
+        } else {
+          resolve(null);
+        }
+      });
     });
 
     const cacheEntry = { imagePromise };
