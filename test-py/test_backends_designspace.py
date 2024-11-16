@@ -412,7 +412,7 @@ async def test_putBackgroundImage(writableTestFont):
     assert imageData2 == imageData
 
 
-async def test_putBackgroundImage_new_font(testFont, tmpdir):
+async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
     tmpdir = pathlib.Path(tmpdir)
     newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
 
