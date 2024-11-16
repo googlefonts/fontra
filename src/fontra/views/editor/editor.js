@@ -1713,7 +1713,7 @@ export class EditorController {
         undefined,
         false
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
@@ -1727,7 +1727,7 @@ export class EditorController {
     );
     if (copyResult && !event) {
       const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null);
     }
   }
 
@@ -1745,7 +1745,7 @@ export class EditorController {
         undefined,
         false
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null, event);
     } else {
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       const varGlyph = positionedGlyph.varGlyph.glyph;
@@ -1754,12 +1754,19 @@ export class EditorController {
         varGlyph,
         [{ glyph: glyphController.instance }],
         glyphController.flattenedPath,
+        null,
         event
       );
     }
   }
 
-  async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
+  async _writeLayersToClipboard(
+    varGlyph,
+    layerGlyphs,
+    flattenedPath,
+    backgroundImageData,
+    event
+  ) {
     if (!layerGlyphs?.length) {
       // nothing to do
       return;
