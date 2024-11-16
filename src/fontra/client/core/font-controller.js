@@ -210,6 +210,11 @@ export class FontController {
     const imageType = match[1];
     assert(imageType === "png" || imageType === "jpeg");
 
+    this._cacheBackgroundImageFromDataURLFunc(
+      imageIdentifier,
+      Promise.resolve(imageDataURL)
+    );
+
     await this.font.putBackgroundImage(imageIdentifier, {
       type: imageType,
       data: imageData,
