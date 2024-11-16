@@ -402,9 +402,10 @@ async def test_putBackgroundImage(writableTestFont):
 
     glyphName = "D"
     imageIdentifier = str(uuid.uuid4())
-    await writableTestFont.putBackgroundImage(
-        imageIdentifier, glyphName, layerName, imageData
-    )
+    await writableTestFont.putBackgroundImage(imageIdentifier, imageData)
+    glyph2 = deepcopy(glyph)
+    glyph2.layers[layerName].glyph.backgroundImage.identifier = imageIdentifier
+    await writableTestFont.putGlyph(glyphName, glyph2, [ord("D")])
 
     imageData2 = await writableTestFont.getBackgroundImage(imageIdentifier)
 

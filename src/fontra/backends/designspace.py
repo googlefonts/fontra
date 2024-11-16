@@ -214,6 +214,7 @@ class DesignspaceBackend:
         self._glyphDependencies: GlyphDependencies | None = None
         self._backgroundTasksTask: asyncio.Task | None = None
         self._imageMapping = DoubleDict()
+        self._imageDataToWrite: dict[str, ImageData] = {}
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
@@ -651,11 +652,13 @@ class DesignspaceBackend:
                 if imageInfo is not None:
                     _, imageFileName = imageInfo
                 else:
-                    imageFileName = f"{layer.glyph.backgroundImage.identifier}.png"
+                    imageIdentifier = layer.glyph.backgroundImage.identifier
+                    imageFileName = f"{imageIdentifier}.png"
                     imageInfo = (ufoLayer.path, imageFileName)
-                    self._imageMapping[imageInfo] = (
-                        layer.glyph.backgroundImage.identifier
-                    )
+                    self._imageMapping[imageInfo] = imageIdentifier
+                    imageData = self._imageDataToWrite.pop(imageIdentifier, None)
+                    if imageData is not None:
+                        await self.putBackgroundImage(imageIdentifier, imageData)
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph,
@@ -1183,30 +1186,19 @@ class DesignspaceBackend:
 
         return ImageData(type=ImageType.PNG, data=data)
 
-    async def putBackgroundImage(
-        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
-    ) -> None:
-        if glyphName not in self.glyphMap:
-            raise KeyError(glyphName)
-
+    async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         if data.type != ImageType.PNG:
             raise NotImplementedError("convert image to PNG")
 
-        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
-            self.defaultUFOLayer.glyphSet, glyphName
-        )
-
-        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
-        layerName = revLayerNameMapping.get(layerName, layerName)
-        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
-
-        imageFileName = f"{imageIdentifier}.{data.type.lower()}"
-
-        ufoLayer.reader.writeImage(imageFileName, data.data, validate=True)
-
-        key = (ufoLayer.path, imageFileName)
-        self._imageMapping[key] = imageIdentifier
+        imageInfo = self._imageMapping.reverse.get(imageIdentifier)
+        if imageInfo is None:
+            # We don't yet know in which layer to write this image, let's postpone
+            # until putGlyph() comes across it.
+            self._imageDataToWrite[imageIdentifier] = data
+        else:
+            ufoPath, imageFileName = self._imageMapping.reverse[imageIdentifier]
+            reader = self.ufoManager.getReader(ufoPath)
+            reader.writeImage(imageFileName, data.data, validate=True)
 
     def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
         key = (ufoPath, imageFileName)
