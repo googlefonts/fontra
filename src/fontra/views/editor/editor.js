@@ -1861,6 +1861,8 @@ export class EditorController {
 
     const layerGlyphs = [];
     let flattenedPath;
+    const backgroundImageData = {};
+
     for (const [layerName, layerGlyph] of Object.entries(
       this.sceneController.getEditingLayerFromGlyphLayers(varGlyph.layers)
     )) {
@@ -1876,6 +1878,13 @@ export class EditorController {
         location: layerLocations[layerName],
         glyph: copyResult.instance,
       });
+      if (copyResult.instance.backgroundImage) {
+        const imageIdentifier = copyResult.instance.backgroundImage.identifier;
+        const bgImage = this.fontController.getBackgroundImageCached(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
     }
     if (!layerGlyphs.length && !doCut) {
       const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
@@ -1889,7 +1898,7 @@ export class EditorController {
       }
       layerGlyphs.push({ glyph: instance });
     }
-    return { layerGlyphs, flattenedPath };
+    return { layerGlyphs, flattenedPath, backgroundImageData };
   }
 
   _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
