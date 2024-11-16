@@ -1709,11 +1709,15 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
@@ -1726,8 +1730,13 @@ export class EditorController {
       true
     );
     if (copyResult && !event) {
-      const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath);
+      const { layerGlyphs, flattenedPath, backgroundImageData } = copyResult;
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData
+      );
     }
   }
 
@@ -1741,25 +1750,51 @@ export class EditorController {
     }
 
     if (this.sceneSettings.selectedGlyph.isEditing) {
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     } else {
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       const varGlyph = positionedGlyph.varGlyph.glyph;
+      const backgroundImageData = await this._collectBackgroundImageData(varGlyph);
       const glyphController = positionedGlyph.glyph;
       await this._writeLayersToClipboard(
         varGlyph,
         [{ glyph: glyphController.instance }],
         glyphController.flattenedPath,
+        backgroundImageData,
         event
       );
     }
   }
 
-  async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
+  async _collectBackgroundImageData(varGlyph) {
+    const backgroundImageData = {};
+    for (const layer of Object.values(varGlyph.layers)) {
+      if (layer.glyph.backgroundImage) {
+        const imageIdentifier = layer.glyph.backgroundImage.identifier;
+        const bgImage = await this.fontController.getBackgroundImage(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
+    }
+    return backgroundImageData;
+  }
+
+  async _writeLayersToClipboard(
+    varGlyph,
+    layerGlyphs,
+    flattenedPath,
+    backgroundImageData,
+    event
+  ) {
     if (!layerGlyphs?.length) {
       // nothing to do
       return;
@@ -1774,9 +1809,11 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const codePoints = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, codePoints);
-    const jsonString = JSON.stringify(
-      varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs: layerGlyphs }
-    );
+    const jsonObject = varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs };
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
+      jsonObject.backgroundImageData = backgroundImageData;
+    }
+    const jsonString = JSON.stringify(jsonObject);
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -1824,6 +1861,8 @@ export class EditorController {
 
     const layerGlyphs = [];
     let flattenedPath;
+    const backgroundImageData = {};
+
     for (const [layerName, layerGlyph] of Object.entries(
       this.sceneController.getEditingLayerFromGlyphLayers(varGlyph.layers)
     )) {
@@ -1839,6 +1878,13 @@ export class EditorController {
         location: layerLocations[layerName],
         glyph: copyResult.instance,
       });
+      if (copyResult.instance.backgroundImage) {
+        const imageIdentifier = copyResult.instance.backgroundImage.identifier;
+        const bgImage = this.fontController.getBackgroundImageCached(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
     }
     if (!layerGlyphs.length && !doCut) {
       const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
@@ -1852,7 +1898,7 @@ export class EditorController {
       }
       layerGlyphs.push({ glyph: instance });
     }
-    return { layerGlyphs, flattenedPath };
+    return { layerGlyphs, flattenedPath, backgroundImageData };
   }
 
   _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
@@ -1952,10 +1998,14 @@ export class EditorController {
   }
 
   async doPaste() {
-    let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    let { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData } =
+      await this._unpackClipboard();
     if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
       return;
     }
+
+    const backgroundImageIdentifierMapping =
+      this._makeBackgroundImageIdentifierMapping(backgroundImageData);
 
     if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
       const result = await runDialogWholeGlyphPaste();
@@ -2003,6 +2053,10 @@ export class EditorController {
     }
 
     if (pasteVarGlyph) {
+      this._remapBackgroundImageIdentifiers(
+        Object.values(pasteVarGlyph.layers).map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph.isUndefined) {
         await this.newGlyph(
@@ -2021,7 +2075,45 @@ export class EditorController {
       };
       this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
+      this._remapBackgroundImageIdentifiers(
+        pasteLayerGlyphs.map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
+    }
+
+    await this._writeBackgroundImageData(
+      backgroundImageData,
+      backgroundImageIdentifierMapping
+    );
+  }
+
+  _makeBackgroundImageIdentifierMapping(backgroundImageData) {
+    if (!backgroundImageData || isObjectEmpty(backgroundImageData)) {
+      return null;
+    }
+    const mapping = {};
+    for (const originalImageIdentifier of Object.keys(backgroundImageData)) {
+      const newImageIdentifier = crypto.randomUUID();
+      mapping[originalImageIdentifier] = newImageIdentifier;
+    }
+    return mapping;
+  }
+
+  _remapBackgroundImageIdentifiers(glyphs, identifierMapping) {
+    for (const glyph of glyphs) {
+      if (glyph.backgroundImage) {
+        glyph.backgroundImage.identifier =
+          identifierMapping[glyph.backgroundImage.identifier] ||
+          glyph.backgroundImage.identifier;
+      }
+    }
+  }
+
+  async _writeBackgroundImageData(backgroundImageData, identifierMapping) {
+    for (const [imageIdentifier, imageData] of Object.entries(backgroundImageData)) {
+      const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
+      await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
     }
   }
 
@@ -2050,6 +2142,7 @@ export class EditorController {
 
     let pasteLayerGlyphs;
     let pasteVarGlyph;
+    let backgroundImageData;
 
     if (customJSON) {
       try {
@@ -2064,13 +2157,14 @@ export class EditorController {
         if (clipboardObject.variableGlyph) {
           pasteVarGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
         }
+        backgroundImageData = clipboardObject.backgroundImageData;
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
-    return { pasteVarGlyph, pasteLayerGlyphs };
+    return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
   }
 
   async _pasteReplaceGlyph(varGlyph) {

@@ -14,6 +14,7 @@ import { LRUCache } from "./lru-cache.js";
 import { setPopFirst } from "./set-ops.js";
 import { TaskPool } from "./task-pool.js";
 import {
+  assert,
   chain,
   getCharFromCodePoint,
   mapObjectValues,
@@ -134,10 +135,7 @@ export class FontController {
     // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
-      const imagePromise = this._getBackgroundImage(imageIdentifier);
-      cacheEntry = { imagePromise, image: null };
-      this._backgroundImageCache.put(imageIdentifier, cacheEntry);
-      imagePromise.then((image) => (cacheEntry.image = image));
+      cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
     return cacheEntry.imagePromise;
   }
@@ -158,19 +156,39 @@ export class FontController {
     return cacheEntry?.image;
   }
 
-  async _getBackgroundImage(imageIdentifier) {
+  _cacheBackgroundImageFromIdentifier(imageIdentifier) {
+    return this._cacheBackgroundImageFromDataURLPromise(
+      imageIdentifier,
+      this._loadBackgroundImageData(imageIdentifier)
+    );
+  }
+
+  async _loadBackgroundImageData(imageIdentifier) {
     const imageData = await this.font.getBackgroundImage(imageIdentifier);
-    if (!imageData) {
-      return null;
-    }
+    return imageData ? `data:image/${imageData.type};base64,${imageData.data}` : null;
+  }
 
-    const image = new Image();
+  _cacheBackgroundImageFromDataURLPromise(imageIdentifier, imageDataURLPromise) {
     const imagePromise = new Promise((resolve, reject) => {
-      image.onload = (event) => resolve(image);
+      const image = new Image();
+      image.onload = (event) => {
+        cacheEntry.image = image;
+        resolve(image);
+      };
+      imageDataURLPromise.then((imageDataURL) => {
+        if (imageDataURL) {
+          image.src = imageDataURL;
+        } else {
+          resolve(null);
+        }
+      });
     });
-    image.src = `data:image/${imageData.type};base64,${imageData.data}`;
 
-    return await imagePromise;
+    const cacheEntry = { imagePromise, image: null };
+
+    this._backgroundImageCache.put(imageIdentifier, cacheEntry);
+
+    return cacheEntry;
   }
 
   getBackgroundImageBounds(imageIdentifier) {
@@ -183,6 +201,24 @@ export class FontController {
 
   get getBackgroundImageBoundsFunc() {
     return this.getBackgroundImageBounds.bind(this);
+  }
+
+  async putBackgroundImageData(imageIdentifier, imageDataURL) {
+    const [header, imageData] = imageDataURL.split(",");
+    const imageTypeRegex = /data:image\/(.+?);/g;
+    const match = imageTypeRegex.exec(header);
+    const imageType = match[1];
+    assert(imageType === "png" || imageType === "jpeg");
+
+    this._cacheBackgroundImageFromDataURLPromise(
+      imageIdentifier,
+      Promise.resolve(imageDataURL)
+    );
+
+    await this.font.putBackgroundImage(imageIdentifier, {
+      type: imageType,
+      data: imageData,
+    });
   }
 
   getCachedGlyphNames() {
