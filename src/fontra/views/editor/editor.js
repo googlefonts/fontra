@@ -1998,10 +1998,14 @@ export class EditorController {
   }
 
   async doPaste() {
-    let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    let { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData } =
+      await this._unpackClipboard();
     if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
       return;
     }
+
+    const backgroundImageIdentifierMapping =
+      this._makeBackgroundImageIdentifierMapping(backgroundImageData);
 
     if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
       const result = await runDialogWholeGlyphPaste();
@@ -2071,6 +2075,18 @@ export class EditorController {
     }
   }
 
+  _makeBackgroundImageIdentifierMapping(backgroundImageData) {
+    if (!backgroundImageData || isObjectEmpty(backgroundImageData)) {
+      return null;
+    }
+    const mapping = {};
+    for (const originalImageIdentifier of Object.keys(backgroundImageData)) {
+      const newImageIdentifier = crypto.randomUUID();
+      mapping[originalImageIdentifier] = newImageIdentifier;
+    }
+    return mapping;
+  }
+
   async _unpackClipboard() {
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
@@ -2096,6 +2112,7 @@ export class EditorController {
 
     let pasteLayerGlyphs;
     let pasteVarGlyph;
+    let backgroundImageData;
 
     if (customJSON) {
       try {
@@ -2110,13 +2127,14 @@ export class EditorController {
         if (clipboardObject.variableGlyph) {
           pasteVarGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
         }
+        backgroundImageData = clipboardObject.backgroundImageData;
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
-    return { pasteVarGlyph, pasteLayerGlyphs };
+    return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
   }
 
   async _pasteReplaceGlyph(varGlyph) {
