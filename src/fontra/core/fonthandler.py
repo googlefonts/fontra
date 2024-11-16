@@ -20,7 +20,7 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font, FontInfo, FontSource, VariableGlyph
+from .classes import Font, FontInfo, FontSource, ImageData, VariableGlyph
 from .lrucache import LRUCache
 from .protocols import (
     ProjectManager,
@@ -288,6 +288,16 @@ class FontHandler:
 
     def _setClientData(self, connection, key, value):
         self.clientData[connection.clientUUID][key] = value
+
+    @remoteMethod
+    async def putBackgroundImage(self, imageIdentifier: str, data: dict) -> None:
+        if not hasattr(self.backend, "putBackgroundImage"):
+            logger.warning("Backend doesn't support writing of background images")
+            return
+        await self.backend.putBackgroundImage(
+            imageIdentifier,
+            ImageData(type=data["type"], data=base64.b64decode(data["data"])),
+        )
 
     @remoteMethod
     async def findGlyphsThatUseGlyph(self, glyphName: str, *, connection) -> list[str]:
