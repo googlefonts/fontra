@@ -157,7 +157,7 @@ export class FontController {
   }
 
   _cacheBackgroundImageFromIdentifier(imageIdentifier) {
-    return this._cacheBackgroundImageFromDataURLFunc(
+    return this._cacheBackgroundImageFromDataURLPromise(
       imageIdentifier,
       this._loadBackgroundImageData(imageIdentifier)
     );
@@ -168,7 +168,7 @@ export class FontController {
     return imageData ? `data:image/${imageData.type};base64,${imageData.data}` : null;
   }
 
-  _cacheBackgroundImageFromDataURLFunc(imageIdentifier, imageDataURLPromise) {
+  _cacheBackgroundImageFromDataURLPromise(imageIdentifier, imageDataURLPromise) {
     const image = new Image();
     const imagePromise = new Promise((resolve, reject) => {
       image.onload = (event) => {
@@ -210,7 +210,7 @@ export class FontController {
     const imageType = match[1];
     assert(imageType === "png" || imageType === "jpeg");
 
-    this._cacheBackgroundImageFromDataURLFunc(
+    this._cacheBackgroundImageFromDataURLPromise(
       imageIdentifier,
       Promise.resolve(imageDataURL)
     );
