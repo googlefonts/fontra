@@ -169,8 +169,8 @@ export class FontController {
   }
 
   _cacheBackgroundImageFromDataURLPromise(imageIdentifier, imageDataURLPromise) {
-    const image = new Image();
     const imagePromise = new Promise((resolve, reject) => {
+      const image = new Image();
       image.onload = (event) => {
         resolve(image);
         cacheEntry.image = image;
