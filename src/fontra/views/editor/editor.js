@@ -2188,8 +2188,11 @@ export class EditorController {
   }
 
   async _pasteClipboardImage() {
-    const pngBlob = await readFromClipboard("image/png", false);
-    if (!pngBlob) {
+    const imageBlob =
+      (await readFromClipboard("image/png", false)) ||
+      (await readFromClipboard("image/jpeg", false));
+
+    if (!imageBlob) {
       return;
     }
 
@@ -2199,7 +2202,7 @@ export class EditorController {
       reader.onerror = reject;
     });
 
-    reader.readAsDataURL(pngBlob);
+    reader.readAsDataURL(imageBlob);
 
     const dataURL = await resultPromise;
     if (!dataURL) {
