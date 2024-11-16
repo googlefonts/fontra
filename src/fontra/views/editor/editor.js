@@ -1833,7 +1833,23 @@ export class EditorController {
         "web image/svg+xml": svgString,
         "web fontra/static-glyph": jsonString,
       };
+
+      await this._addBackgroundImageToClipboard(clipboardObject, backgroundImageData);
+
       await writeToClipboard(clipboardObject);
+    }
+  }
+
+  async _addBackgroundImageToClipboard(clipboardObject, backgroundImageData) {
+    if (
+      this.sceneController.selection.size == 1 &&
+      this.sceneController.selection.has("backgroundImage/0") &&
+      backgroundImageData &&
+      Object.keys(backgroundImageData).length == 1
+    ) {
+      const res = await fetch(Object.values(backgroundImageData)[0]);
+      const blob = await res.blob();
+      clipboardObject[blob.type] = blob;
     }
   }
 
