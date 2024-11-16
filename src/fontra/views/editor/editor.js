@@ -2188,6 +2188,10 @@ export class EditorController {
   }
 
   async _pasteClipboardImage() {
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+      return;
+    }
+
     const imageBlob =
       (await readFromClipboard("image/png", false)) ||
       (await readFromClipboard("image/jpeg", false));
