@@ -2017,6 +2017,7 @@ export class EditorController {
     let { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData } =
       await this._unpackClipboard();
     if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
+      await this._pasteClipboardImage();
       return;
     }
 
@@ -2184,6 +2185,45 @@ export class EditorController {
       }
     }
     return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
+  }
+
+  async _pasteClipboardImage() {
+    const pngBlob = await readFromClipboard("image/png", false);
+    if (!pngBlob) {
+      return;
+    }
+
+    const reader = new FileReader();
+    const resultPromise = new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
+    reader.readAsDataURL(pngBlob);
+
+    const dataURL = await resultPromise;
+    if (!dataURL) {
+      return;
+    }
+
+    const imageIdentifiers = [];
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const imageIdentifier = crypto.randomUUID();
+        layerGlyph.backgroundImage = {
+          identifier: imageIdentifier,
+          transformation: getDecomposedIdentity(),
+        };
+        imageIdentifiers.push(imageIdentifier);
+      }
+      this.sceneController.selection = new Set(["backgroundImage/0"]);
+      return "paste background image"; // TODO: translate
+    });
+
+    for (const imageIdentifier of imageIdentifiers) {
+      await this.fontController.putBackgroundImageData(imageIdentifier, dataURL);
+    }
   }
 
   async _pasteReplaceGlyph(varGlyph) {
