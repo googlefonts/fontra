@@ -290,7 +290,9 @@ class FontHandler:
         self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
-    async def putBackgroundImage(self, imageIdentifier: str, data: dict) -> None:
+    async def putBackgroundImage(
+        self, imageIdentifier: str, data: dict, *, connection
+    ) -> None:
         if not hasattr(self.backend, "putBackgroundImage"):
             logger.warning("Backend doesn't support writing of background images")
             return
