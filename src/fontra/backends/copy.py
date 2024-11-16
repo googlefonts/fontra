@@ -138,7 +138,7 @@ async def copyGlyphs(
         }
         glyphNamesToCopy.extend(sorted(componentNames - glyphNamesCopied))
 
-        for layerName, layer in glyph.layers.items():
+        for layer in glyph.layers.values():
             if layer.glyph.backgroundImage is not None:
                 backgroundImageIdentifiers.append(
                     layer.glyph.backgroundImage.identifier
