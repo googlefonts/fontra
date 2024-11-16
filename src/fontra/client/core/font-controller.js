@@ -172,8 +172,8 @@ export class FontController {
     const imagePromise = new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = (event) => {
-        resolve(image);
         cacheEntry.image = image;
+        resolve(image);
       };
       imageDataURLPromise.then((imageDataURL) => {
         if (imageDataURL) {
