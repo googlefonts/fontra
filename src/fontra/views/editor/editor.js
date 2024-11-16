@@ -2107,7 +2107,7 @@ export class EditorController {
 
   _makeBackgroundImageIdentifierMapping(backgroundImageData) {
     if (!backgroundImageData || isObjectEmpty(backgroundImageData)) {
-      return null;
+      return {};
     }
     const mapping = {};
     for (const originalImageIdentifier of Object.keys(backgroundImageData)) {
@@ -2128,6 +2128,9 @@ export class EditorController {
   }
 
   async _writeBackgroundImageData(backgroundImageData, identifierMapping) {
+    if (!backgroundImageData) {
+      return;
+    }
     for (const [imageIdentifier, imageData] of Object.entries(backgroundImageData)) {
       const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
       await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
