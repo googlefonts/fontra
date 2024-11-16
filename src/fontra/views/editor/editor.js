@@ -1782,6 +1782,9 @@ export class EditorController {
     const codePoints = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, codePoints);
     const jsonObject = varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs };
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
+      jsonObject.backgroundImageData = backgroundImageData;
+    }
     const jsonString = JSON.stringify(jsonObject);
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
