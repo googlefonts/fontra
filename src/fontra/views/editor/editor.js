@@ -2053,6 +2053,10 @@ export class EditorController {
     }
 
     if (pasteVarGlyph) {
+      this._remapBackgroundImageIdentifiers(
+        Object.values(pasteVarGlyph.layers).map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph.isUndefined) {
         await this.newGlyph(
