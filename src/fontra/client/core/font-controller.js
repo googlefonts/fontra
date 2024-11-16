@@ -14,6 +14,7 @@ import { LRUCache } from "./lru-cache.js";
 import { setPopFirst } from "./set-ops.js";
 import { TaskPool } from "./task-pool.js";
 import {
+  assert,
   chain,
   getCharFromCodePoint,
   mapObjectValues,
@@ -130,16 +131,13 @@ export class FontController {
     return this._rootObject.sources;
   }
 
-  getBackgroundImage(imageIdentifier) {
+  async getBackgroundImage(imageIdentifier) {
     // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
-      const imagePromise = this._getBackgroundImage(imageIdentifier);
-      cacheEntry = { imagePromise, image: null };
-      this._backgroundImageCache.put(imageIdentifier, cacheEntry);
-      imagePromise.then((image) => (cacheEntry.image = image));
+      cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
-    return cacheEntry.imagePromise;
+    return await cacheEntry.imagePromise;
   }
 
   getBackgroundImageCached(imageIdentifier, onLoad = null) {
@@ -158,19 +156,36 @@ export class FontController {
     return cacheEntry?.image;
   }
 
-  async _getBackgroundImage(imageIdentifier) {
+  async _cacheBackgroundImageFromIdentifier(imageIdentifier) {
     const imageData = await this.font.getBackgroundImage(imageIdentifier);
-    if (!imageData) {
-      return null;
+    const imageDataURL = imageData
+      ? `data:image/${imageData.type};base64,${imageData.data}`
+      : null;
+    return await this._cacheBackgroundImageFromDataURL(imageIdentifier, imageDataURL);
+  }
+
+  async _cacheBackgroundImageFromDataURL(imageIdentifier, imageDataURL) {
+    let cacheEntry;
+
+    if (!imageDataURL) {
+      // Do cache a not-found image so we won't needlessly try again and again
+      cacheEntry = { imagePromise: Promise.resolve(null), image: null };
+    } else {
+      const image = new Image();
+      cacheEntry = {};
+      cacheEntry.imagePromise = new Promise((resolve, reject) => {
+        image.onload = (event) => {
+          resolve(image);
+          cacheEntry.image = image;
+        };
+      });
+      image.src = imageDataURL;
     }
 
-    const image = new Image();
-    const imagePromise = new Promise((resolve, reject) => {
-      image.onload = (event) => resolve(image);
-    });
-    image.src = `data:image/${imageData.type};base64,${imageData.data}`;
+    assert(cacheEntry.imagePromise);
+    this._backgroundImageCache.put(imageIdentifier, cacheEntry);
 
-    return await imagePromise;
+    return cacheEntry;
   }
 
   getBackgroundImageBounds(imageIdentifier) {
