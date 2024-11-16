@@ -1709,11 +1709,15 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
@@ -1726,8 +1730,13 @@ export class EditorController {
       true
     );
     if (copyResult && !event) {
-      const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null);
+      const { layerGlyphs, flattenedPath, backgroundImageData } = copyResult;
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData
+      );
     }
   }
 
@@ -1741,23 +1750,42 @@ export class EditorController {
     }
 
     if (this.sceneSettings.selectedGlyph.isEditing) {
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, null, event);
     } else {
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       const varGlyph = positionedGlyph.varGlyph.glyph;
+      const backgroundImageData = await this._collectBackgroundImageData(varGlyph);
       const glyphController = positionedGlyph.glyph;
       await this._writeLayersToClipboard(
         varGlyph,
         [{ glyph: glyphController.instance }],
         glyphController.flattenedPath,
-        null,
+        backgroundImageData,
         event
       );
     }
+  }
+
+  async _collectBackgroundImageData(varGlyph) {
+    const backgroundImageData = {};
+    for (const layer of Object.values(varGlyph.layers)) {
+      if (layer.glyph.backgroundImage) {
+        const imageIdentifier = layer.glyph.backgroundImage.identifier;
+        const bgImage = await this.fontController.getBackgroundImage(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
+    }
+    return backgroundImageData;
   }
 
   async _writeLayersToClipboard(
