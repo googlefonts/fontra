@@ -2017,6 +2017,7 @@ export class EditorController {
     let { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData } =
       await this._unpackClipboard();
     if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
+      await this._pasteClipboardImage();
       return;
     }
 
@@ -2106,7 +2107,7 @@ export class EditorController {
 
   _makeBackgroundImageIdentifierMapping(backgroundImageData) {
     if (!backgroundImageData || isObjectEmpty(backgroundImageData)) {
-      return null;
+      return {};
     }
     const mapping = {};
     for (const originalImageIdentifier of Object.keys(backgroundImageData)) {
@@ -2127,6 +2128,9 @@ export class EditorController {
   }
 
   async _writeBackgroundImageData(backgroundImageData, identifierMapping) {
+    if (!backgroundImageData) {
+      return;
+    }
     for (const [imageIdentifier, imageData] of Object.entries(backgroundImageData)) {
       const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
       await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
@@ -2178,9 +2182,58 @@ export class EditorController {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
+      const glyph = await this.parseClipboard(plainText);
+      if (glyph) {
+        pasteLayerGlyphs = [{ glyph }];
+      }
     }
     return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
+  }
+
+  async _pasteClipboardImage() {
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+      return;
+    }
+
+    const imageBlob =
+      (await readFromClipboard("image/png", false)) ||
+      (await readFromClipboard("image/jpeg", false));
+
+    if (!imageBlob) {
+      return;
+    }
+
+    const reader = new FileReader();
+    const resultPromise = new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
+    reader.readAsDataURL(imageBlob);
+
+    const dataURL = await resultPromise;
+    if (!dataURL) {
+      return;
+    }
+
+    const imageIdentifiers = [];
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const imageIdentifier = crypto.randomUUID();
+        layerGlyph.backgroundImage = {
+          identifier: imageIdentifier,
+          transformation: getDecomposedIdentity(),
+        };
+        imageIdentifiers.push(imageIdentifier);
+      }
+      this.sceneController.selection = new Set(["backgroundImage/0"]);
+      return "paste background image"; // TODO: translate
+    });
+
+    for (const imageIdentifier of imageIdentifiers) {
+      await this.fontController.putBackgroundImageData(imageIdentifier, dataURL);
+    }
   }
 
   async _pasteReplaceGlyph(varGlyph) {
