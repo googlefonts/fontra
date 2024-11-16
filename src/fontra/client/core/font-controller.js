@@ -131,13 +131,13 @@ export class FontController {
     return this._rootObject.sources;
   }
 
-  async getBackgroundImage(imageIdentifier) {
+  getBackgroundImage(imageIdentifier) {
     // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
       cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
-    return await cacheEntry.imagePromise;
+    return cacheEntry.imagePromise;
   }
 
   getBackgroundImageCached(imageIdentifier, onLoad = null) {
@@ -156,33 +156,34 @@ export class FontController {
     return cacheEntry?.image;
   }
 
-  async _cacheBackgroundImageFromIdentifier(imageIdentifier) {
-    const imageData = await this.font.getBackgroundImage(imageIdentifier);
-    const imageDataURL = imageData
-      ? `data:image/${imageData.type};base64,${imageData.data}`
-      : null;
-    return await this._cacheBackgroundImageFromDataURL(imageIdentifier, imageDataURL);
+  _cacheBackgroundImageFromIdentifier(imageIdentifier) {
+    return this._cacheBackgroundImageFromDataURLFunc(
+      imageIdentifier,
+      this._loadBackgroundImage(imageIdentifier)
+    );
   }
 
-  async _cacheBackgroundImageFromDataURL(imageIdentifier, imageDataURL) {
-    let cacheEntry;
+  async _loadBackgroundImage(imageIdentifier) {
+    console.log("loading", imageIdentifier);
+    const imageData = await this.font.getBackgroundImage(imageIdentifier);
+    return imageData ? `data:image/${imageData.type};base64,${imageData.data}` : null;
+  }
 
-    if (!imageDataURL) {
-      // Do cache a not-found image so we won't needlessly try again and again
-      cacheEntry = { imagePromise: Promise.resolve(null), image: null };
-    } else {
-      const image = new Image();
-      cacheEntry = {};
-      cacheEntry.imagePromise = new Promise((resolve, reject) => {
-        image.onload = (event) => {
-          resolve(image);
-          cacheEntry.image = image;
-        };
-      });
+  _cacheBackgroundImageFromDataURLFunc(imageIdentifier, imageDataURLPromise) {
+    const image = new Image();
+    const imagePromise = new Promise((resolve, reject) => {
+      image.onload = (event) => {
+        resolve(image);
+        cacheEntry.image = image;
+      };
+    });
+
+    imageDataURLPromise.then((imageDataURL) => {
       image.src = imageDataURL;
-    }
+    });
 
-    assert(cacheEntry.imagePromise);
+    const cacheEntry = { imagePromise };
+
     this._backgroundImageCache.put(imageIdentifier, cacheEntry);
 
     return cacheEntry;
@@ -198,6 +199,19 @@ export class FontController {
 
   get getBackgroundImageBoundsFunc() {
     return this.getBackgroundImageBounds.bind(this);
+  }
+
+  async putBackgroundImageData(imageIdentifier, imageDataURL) {
+    const [header, imageData] = imageDataURL.split(",");
+    const imageTypeRegex = /data:image\/(.+?);/g;
+    const match = imageTypeRegex.exec(header);
+    const imageType = match[1];
+    assert(imageType === "png" || imageType === "jpeg");
+
+    await this.font.putBackgroundImage(imageIdentifier, {
+      type: imageType,
+      data: imageData,
+    });
   }
 
   getCachedGlyphNames() {
