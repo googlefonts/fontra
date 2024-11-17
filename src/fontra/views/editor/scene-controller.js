@@ -347,7 +347,6 @@ export class SceneController {
       this.sceneSettings.selection = difference(this.sceneSettings.selection, [
         "backgroundImage/0",
       ]);
-      console.log("did something");
     }
   }
 
