@@ -397,7 +397,6 @@ export const strings = {
   "sidebar.user-settings.experimental": "Experimentele features",
   "sidebar.user-settings.glyph": "Glyph editor uiterlijk",
   "sidebar.user-settings.glyph.anchornames": "Ankernamen",
-  "sidebar.user-settings.glyph.background-image": "Background image",
   "sidebar.user-settings.glyph.baseline": "Basislijn",
   "sidebar.user-settings.glyph.cjkframe": "CJK Design Frame",
   "sidebar.user-settings.glyph.component": "Component namen en indexen",

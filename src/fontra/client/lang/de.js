@@ -404,7 +404,6 @@ export const strings = {
   "sidebar.user-settings.experimental": "Experimentelle Funktionen",
   "sidebar.user-settings.glyph": "Glyph-Editor Ansicht",
   "sidebar.user-settings.glyph.anchornames": "Anker Namen",
-  "sidebar.user-settings.glyph.background-image": "Hintergrund-Bild",
   "sidebar.user-settings.glyph.baseline": "Grundlinie",
   "sidebar.user-settings.glyph.cjkframe": "CJK Design Rahmen",
   "sidebar.user-settings.glyph.component": "Komponenten-Namen und -Indexe",
