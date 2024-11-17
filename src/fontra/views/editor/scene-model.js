@@ -734,8 +734,11 @@ export class SceneModel {
   }
 
   _backgroundImageSelectionAtPointOrRect(point = undefined, selRect = undefined) {
-    if (!this.visualizationLayersSettings.model["fontra.background-image"]) {
-      // If background images are hidden, don't allow selection
+    if (
+      !this.visualizationLayersSettings.model["fontra.background-image"] ||
+      this.sceneSettings.backgroundImagesAreLocked
+    ) {
+      // If background images are hidden or locked, don't allow selection
       return new Set();
     }
     // TODO: If background images are locked don't allow selection
@@ -774,7 +777,7 @@ export class SceneModel {
       pointInConvexPolygon(selRect.xMin, selRect.yMin, polygon) ||
       rectIntersectsPolygon(selRect, polygon)
     ) {
-      return new Set([`backgroundImage/0`]);
+      return new Set(["backgroundImage/0"]);
     }
 
     return new Set();
@@ -806,7 +809,7 @@ export class SceneModel {
     if (backgroundImageSelection.size) {
       // As long as we don't have multiple background images,
       // we can just add a single selection
-      selection.add(`backgroundImage/0`);
+      selection.add("backgroundImage/0");
     }
 
     return selection;

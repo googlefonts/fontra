@@ -2024,6 +2024,12 @@ export class EditorController {
     const backgroundImageIdentifierMapping =
       this._makeBackgroundImageIdentifierMapping(backgroundImageData);
 
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
+      // Ensure background images are visible and not locked
+      this.visualizationLayersSettings.model["fontra.background-image"] = true;
+      this.sceneSettings.backgroundImagesAreLocked = false;
+    }
+
     if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
       const result = await runDialogWholeGlyphPaste();
       if (!result) {
@@ -2216,6 +2222,10 @@ export class EditorController {
       return;
     }
 
+    // Ensure background images are visible and not locked
+    this.visualizationLayersSettings.model["fontra.background-image"] = true;
+    this.sceneSettings.backgroundImagesAreLocked = false;
+
     const imageIdentifiers = [];
 
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
@@ -2324,7 +2334,9 @@ export class EditorController {
           layerGlyph.guidelines.push(...pasteGlyph.guidelines);
           if (pasteGlyph.backgroundImage) {
             layerGlyph.backgroundImage = pasteGlyph.backgroundImage;
-            selection.add("backgroundImage/0");
+            if (!this.sceneSettings.backgroundImagesAreLocked) {
+              selection.add("backgroundImage/0");
+            }
           }
         }
         this.sceneController.selection = selection;
@@ -3022,10 +3034,12 @@ export class EditorController {
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
       }
-      for (const backgroundImageIndex of positionedGlyph.glyph.backgroundImage
-        ? [0]
-        : []) {
-        newSelection.add(`backgroundImage/${backgroundImageIndex}`);
+      if (!this.sceneSettings.backgroundImagesAreLocked) {
+        for (const backgroundImageIndex of positionedGlyph.glyph.backgroundImage
+          ? [0]
+          : []) {
+          newSelection.add(`backgroundImage/${backgroundImageIndex}`);
+        }
       }
     }
 

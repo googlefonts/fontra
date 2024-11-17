@@ -16,7 +16,7 @@ import {
   splitPathAtPointIndices,
 } from "../core/path-functions.js";
 import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
-import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
+import { difference, isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   assert,
@@ -93,6 +93,7 @@ export class SceneController {
       combinedSelection: new Set(), // dynamic: selection | hoverSelection
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
+      backgroundImagesAreLocked: true,
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -377,6 +378,16 @@ export class SceneController {
       },
       true
     );
+
+    this.sceneSettingsController.addKeyListener(
+      "backgroundImagesAreLocked",
+      (event) => {
+        if (!event.value && this.selection.has("backgroundImage/0")) {
+          this.selection = difference(this.selection, ["backgroundImage/0"]);
+        }
+      },
+      true
+    );
   }
 
   setupEventHandling() {
@@ -447,6 +458,14 @@ export class SceneController {
       },
       () => this.doDecomposeSelectedComponents(),
       () => !!this.contextMenuState?.componentSelection?.length
+    );
+
+    registerAction(
+      "action.lock-background-images",
+      { topic },
+      () =>
+        (this.sceneSettings.backgroundImagesAreLocked =
+          !this.sceneSettings.backgroundImagesAreLocked)
     );
   }
 
@@ -741,6 +760,13 @@ export class SceneController {
             this.contextMenuState.componentSelection?.length
           ),
         actionIdentifier: "action.decompose-component",
+      },
+      {
+        title: () =>
+          this.sceneSettings.backgroundImagesAreLocked
+            ? "action.unlock-background-images"
+            : "action.lock-background-images",
+        actionIdentifier: "action.lock-background-images",
       },
     ];
     return contextMenuItems;
