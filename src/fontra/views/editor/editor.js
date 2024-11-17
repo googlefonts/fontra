@@ -2024,7 +2024,7 @@ export class EditorController {
     const backgroundImageIdentifierMapping =
       this._makeBackgroundImageIdentifierMapping(backgroundImageData);
 
-    if (backgroundImageIdentifierMapping) {
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
       // Ensure background images are visible and not locked
       this.visualizationLayersSettings.model["fontra.background-image"] = true;
       this.sceneSettings.backgroundImagesAreLocked = false;
