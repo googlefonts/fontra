@@ -295,6 +295,9 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       ["selection", "hoverSelection"],
       (event) => {
+        if (event.key === "selection") {
+          this._checkSelectionForLockedItems();
+        }
         this.sceneSettings.combinedSelection = union(
           this.sceneSettings.selection,
           this.sceneSettings.hoverSelection
@@ -334,6 +337,18 @@ export class SceneController {
         { senderID: this }
       );
     });
+  }
+
+  _checkSelectionForLockedItems() {
+    if (
+      this.sceneSettings.backgroundImagesAreLocked &&
+      this.sceneSettings.selection.has("backgroundImage/0")
+    ) {
+      this.sceneSettings.selection = difference(this.sceneSettings.selection, [
+        "backgroundImage/0",
+      ]);
+      console.log("did something");
+    }
   }
 
   setupChangeListeners() {
