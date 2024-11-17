@@ -281,6 +281,15 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         type: "header",
         label: translate("sidebar.user-settings.glyph.background-image"),
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/refresh.svg",
+          "onclick": (event) => this._resetTransformationForBackgroundImage(),
+          "data-tooltip": translate(
+            "sidebar.selection-info.component.reset-transformation"
+          ),
+          "data-tooltipposition": "left",
+        }),
       });
 
       formContents.push({
@@ -473,6 +482,21 @@ export default class SelectionInfoPanel extends Panel {
 
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
         layerGlyph.components[componentIndex].transformation = getDecomposedIdentity();
+      }
+      return translate("sidebar.selection-info.component.reset-transformation");
+    });
+  }
+
+  async _resetTransformationForBackgroundImage() {
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        if (layerGlyph.backgroundImage) {
+          layerGlyph.backgroundImage.transformation = getDecomposedIdentity();
+        }
       }
       return translate("sidebar.selection-info.component.reset-transformation");
     });
