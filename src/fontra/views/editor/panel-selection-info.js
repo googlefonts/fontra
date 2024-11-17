@@ -293,6 +293,8 @@ export default class SelectionInfoPanel extends Panel {
         maxValue: 1.0,
       });
 
+      formContents.push({ type: "line-spacer" });
+
       addTransformationItems(
         formContents,
         backgroundImageKey,
