@@ -1820,7 +1820,9 @@ def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
         return None
 
     t = Transform(*(imageDict.get(k, dv) for k, dv in imageTransformFields))
-    colorChannels = [float(ch.strip()) for ch in imageDict.get("color", "").split(",")]
+    colorChannels = [
+        float(ch.strip()) for ch in imageDict.get("color", "-1").split(",")
+    ]
 
     return BackgroundImage(
         identifier=imageDict["fileName"],
