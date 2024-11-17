@@ -5,6 +5,7 @@ import { translate } from "/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
+  assert,
   enumerate,
   getCharFromCodePoint,
   makeUPlusStringFromCodePoint,
@@ -114,9 +115,10 @@ export default class SelectionInfoPanel extends Panel {
   async update(senderInfo) {
     if (
       senderInfo?.senderID === this &&
-      senderInfo?.fieldKeyPath?.length !== 3 &&
-      senderInfo?.fieldKeyPath?.[0] !== "component" &&
-      senderInfo?.fieldKeyPath?.[2] !== "name"
+      ((senderInfo?.fieldKeyPath?.length !== 3 &&
+        senderInfo?.fieldKeyPath?.[0] !== "component" &&
+        senderInfo?.fieldKeyPath?.[2] !== "name") ||
+        senderInfo?.fieldKeyPath?.[0] === "backgroundImage")
     ) {
       // Don't rebuild, just update the Dimensions field
       await this.updateDimensions();
@@ -255,11 +257,33 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    const { pointIndices, componentIndices } = this._getSelection();
+    const { pointIndices, componentIndices, backgroundImageIndices } =
+      this._getSelection();
 
     if (glyphController) {
       formContents.push(
         ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+      );
+    }
+
+    for (const index of backgroundImageIndices) {
+      assert(index === 0, "only a single bg image is supported");
+      if (!instance.backgroundImage) {
+        continue;
+      }
+      const backgroundImageKey = (...path) =>
+        JSON.stringify(["backgroundImage", ...path]);
+
+      formContents.push({ type: "divider" });
+      formContents.push({
+        type: "header",
+        label: translate("sidebar.user-settings.glyph.background-image"),
+      });
+
+      addTransformationItems(
+        formContents,
+        backgroundImageKey,
+        instance.backgroundImage.transformation
       );
     }
 
@@ -504,9 +528,8 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   _getSelection() {
-    const { point, component, componentOrigin, componentTCenter } = parseSelection(
-      this.sceneController.selection
-    );
+    const { point, component, componentOrigin, componentTCenter, backgroundImage } =
+      parseSelection(this.sceneController.selection);
 
     const componentIndices = [
       ...new Set([
@@ -515,7 +538,11 @@ export default class SelectionInfoPanel extends Panel {
         ...(componentTCenter || []),
       ]),
     ].sort((a, b) => a - b);
-    return { pointIndices: point || [], componentIndices };
+    return {
+      pointIndices: point || [],
+      componentIndices,
+      backgroundImageIndices: backgroundImage || [],
+    };
   }
 
   _getDimensionsString(glyphController, pointIndices, componentIndices) {
