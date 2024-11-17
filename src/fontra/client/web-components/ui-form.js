@@ -43,6 +43,11 @@ export class Form extends SimpleElement {
       grid-column: 1 / span 2;
     }
 
+    .ui-form-line-spacer {
+      grid-column: 1 / span 2;
+      height: 0.2em;
+    }
+
     .ui-form-label.header {
       overflow-x: unset;
       font-weight: bold;
@@ -138,6 +143,10 @@ export class Form extends SimpleElement {
     for (const fieldItem of fieldDescriptions) {
       if (fieldItem.type === "divider") {
         this.contentElement.appendChild(html.hr());
+        continue;
+      }
+      if (fieldItem.type === "line-spacer") {
+        this.contentElement.appendChild(html.div({ class: "ui-form-line-spacer" }));
         continue;
       }
       if (fieldItem.type === "spacer") {
