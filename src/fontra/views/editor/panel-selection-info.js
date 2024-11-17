@@ -5,6 +5,7 @@ import { translate } from "/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
+  assert,
   enumerate,
   getCharFromCodePoint,
   makeUPlusStringFromCodePoint,
@@ -114,9 +115,10 @@ export default class SelectionInfoPanel extends Panel {
   async update(senderInfo) {
     if (
       senderInfo?.senderID === this &&
-      senderInfo?.fieldKeyPath?.length !== 3 &&
-      senderInfo?.fieldKeyPath?.[0] !== "component" &&
-      senderInfo?.fieldKeyPath?.[2] !== "name"
+      ((senderInfo?.fieldKeyPath?.length !== 3 &&
+        senderInfo?.fieldKeyPath?.[0] !== "component" &&
+        senderInfo?.fieldKeyPath?.[2] !== "name") ||
+        senderInfo?.fieldKeyPath?.[0] === "backgroundImage")
     ) {
       // Don't rebuild, just update the Dimensions field
       await this.updateDimensions();
@@ -255,11 +257,48 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    const { pointIndices, componentIndices } = this._getSelection();
+    const { pointIndices, componentIndices, backgroundImageIndices } =
+      this._getSelection();
 
     if (glyphController) {
       formContents.push(
         ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+      );
+    }
+
+    for (const index of backgroundImageIndices) {
+      assert(index === 0, "only a single bg image is supported");
+
+      const backgroundImage = instance?.backgroundImage;
+      if (!backgroundImage) {
+        continue;
+      }
+
+      const backgroundImageKey = (...path) =>
+        JSON.stringify(["backgroundImage", ...path]);
+
+      formContents.push({ type: "divider" });
+      formContents.push({
+        type: "header",
+        label: translate("sidebar.user-settings.glyph.background-image"),
+      });
+
+      formContents.push({
+        type: "edit-number-slider",
+        key: backgroundImageKey("opacity"),
+        label: translate("background-image.labels.opacity"),
+        value: backgroundImage.opacity,
+        minValue: 0,
+        defaultValue: 1.0,
+        maxValue: 1.0,
+      });
+
+      formContents.push({ type: "line-spacer" });
+
+      addTransformationItems(
+        formContents,
+        backgroundImageKey,
+        backgroundImage.transformation
       );
     }
 
@@ -299,64 +338,7 @@ export default class SelectionInfoPanel extends Panel {
         }),
       });
 
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.translate"),
-        fieldX: {
-          key: componentKey("transformation", "translateX"),
-          value: component.transformation.translateX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "translateY"),
-          value: component.transformation.translateY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-angle",
-        key: componentKey("transformation", "rotation"),
-        label: translate("sidebar.selection-info.component.rotation"),
-        value: component.transformation.rotation,
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.scale"),
-        fieldX: {
-          key: componentKey("transformation", "scaleX"),
-          value: component.transformation.scaleX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "scaleY"),
-          value: component.transformation.scaleY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.skew"),
-        fieldX: {
-          key: componentKey("transformation", "skewX"),
-          value: component.transformation.skewX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "skewY"),
-          value: component.transformation.skewY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.center"),
-        fieldX: {
-          key: componentKey("transformation", "tCenterX"),
-          value: component.transformation.tCenterX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "tCenterY"),
-          value: component.transformation.tCenterY,
-        },
-      });
+      addTransformationItems(formContents, componentKey, component.transformation);
 
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
@@ -561,9 +543,8 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   _getSelection() {
-    const { point, component, componentOrigin, componentTCenter } = parseSelection(
-      this.sceneController.selection
-    );
+    const { point, component, componentOrigin, componentTCenter, backgroundImage } =
+      parseSelection(this.sceneController.selection);
 
     const componentIndices = [
       ...new Set([
@@ -572,7 +553,11 @@ export default class SelectionInfoPanel extends Panel {
         ...(componentTCenter || []),
       ]),
     ].sort((a, b) => a - b);
-    return { pointIndices: point || [], componentIndices };
+    return {
+      pointIndices: point || [],
+      componentIndices,
+      backgroundImageIndices: backgroundImage || [],
+    };
   }
 
   _getDimensionsString(glyphController, pointIndices, componentIndices) {
@@ -703,6 +688,67 @@ export default class SelectionInfoPanel extends Panel {
     const fieldKey = JSON.stringify([keyToUpdata]);
     this.infoForm.setValue(fieldKey, glyphController[keyToUpdata]);
   }
+}
+
+function addTransformationItems(formContents, keyFunc, transformation) {
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.translate"),
+    fieldX: {
+      key: keyFunc("transformation", "translateX"),
+      value: transformation.translateX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "translateY"),
+      value: transformation.translateY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-angle",
+    key: keyFunc("transformation", "rotation"),
+    label: translate("sidebar.selection-info.component.rotation"),
+    value: transformation.rotation,
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.scale"),
+    fieldX: {
+      key: keyFunc("transformation", "scaleX"),
+      value: transformation.scaleX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "scaleY"),
+      value: transformation.scaleY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.skew"),
+    fieldX: {
+      key: keyFunc("transformation", "skewX"),
+      value: transformation.skewX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "skewY"),
+      value: transformation.skewY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.center"),
+    fieldX: {
+      key: keyFunc("transformation", "tCenterX"),
+      value: transformation.tCenterX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "tCenterY"),
+      value: transformation.tCenterY,
+    },
+  });
 }
 
 function defaultGetFieldValue(glyph, glyphController, fieldItem) {

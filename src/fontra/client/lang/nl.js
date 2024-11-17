@@ -96,6 +96,7 @@ export const strings = {
   "axes.undo.add": "add axis %0",
   "axes.undo.delete": "delete axis %0",
   "axes.undo.edit": "edit axis %0",
+  "background-image.labels.opacity": "Opacity",
   "canvas.clean-view-and-hand-tool": "Schone weergave en Hand gereedschap",
   "cross-axis-mapping.axis-participates":
     "When checked, this axis participates in the mapping",

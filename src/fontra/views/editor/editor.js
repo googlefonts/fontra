@@ -2234,6 +2234,7 @@ export class EditorController {
         layerGlyph.backgroundImage = {
           identifier: imageIdentifier,
           transformation: getDecomposedIdentity(),
+          opacity: 1.0,
         };
         imageIdentifiers.push(imageIdentifier);
       }

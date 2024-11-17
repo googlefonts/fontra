@@ -449,11 +449,10 @@ registerVisualizationLayerDefinition({
         affine.dx,
         affine.dy
       );
-      if (backgroundImage.color) {
-        // TODO: solve colorizing with backgroundImage.color
-        // For now: apply alpha
-        context.globalAlpha = backgroundImage.color.alpha;
-      }
+      // if (backgroundImage.color) {
+      //   // TODO: solve colorizing with backgroundImage.color
+      // }
+      context.globalAlpha = backgroundImage.opacity;
       context.drawImage(image, 0, 0, image.width, image.height);
     });
 

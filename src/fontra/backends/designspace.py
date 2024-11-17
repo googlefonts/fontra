@@ -1820,14 +1820,29 @@ def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
         return None
 
     t = Transform(*(imageDict.get(k, dv) for k, dv in imageTransformFields))
-    colorChannels = [
-        float(ch.strip()) for ch in imageDict.get("color", "-1").split(",")
-    ]
+    colorChannels = (
+        [float(ch.strip()) for ch in imageDict["color"].split(",")]
+        if "color" in imageDict
+        else None
+    )
+
+    opacity = 1.0
+
+    if colorChannels:
+        if len(colorChannels) == 4:
+            opacity = colorChannels[3]
+            if colorChannels[:3] != [0, 0, 0]:
+                colorChannels[3] = 1.0
+            else:
+                colorChannels = None
+        else:
+            colorChannels = None
 
     return BackgroundImage(
         identifier=imageDict["fileName"],
         transformation=DecomposedTransform.fromTransform(t),
-        color=RGBAColor(*colorChannels) if len(colorChannels) == 4 else None,
+        opacity=opacity,
+        color=RGBAColor(*colorChannels) if colorChannels else None,
     )
 
 
@@ -1842,8 +1857,11 @@ def packBackgroundImage(backgroundImage, imageFileName) -> dict:
     if backgroundImage.color is not None:
         c = backgroundImage.color
         imageDict["color"] = ",".join(
-            _formatChannelValue(ch) for ch in [c.red, c.green, c.blue, c.alpha]
+            _formatChannelValue(ch)
+            for ch in [c.red, c.green, c.blue, backgroundImage.opacity]
         )
+    elif backgroundImage.opacity != 1.0:
+        imageDict["color"] = f"0,0,0,{_formatChannelValue(backgroundImage.opacity)}"
 
     return imageDict
 
