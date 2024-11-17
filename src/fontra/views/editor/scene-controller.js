@@ -763,9 +763,11 @@ export class SceneController {
       },
       {
         title: () =>
-          this.sceneSettings.backgroundImagesAreLocked
-            ? "action.unlock-background-images"
-            : "action.lock-background-images",
+          translate(
+            this.sceneSettings.backgroundImagesAreLocked
+              ? "action.unlock-background-images"
+              : "action.lock-background-images"
+          ),
         actionIdentifier: "action.lock-background-images",
       },
     ];
