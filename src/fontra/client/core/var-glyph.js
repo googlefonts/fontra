@@ -84,6 +84,7 @@ export function copyBackgroundImage(image) {
   return {
     identifier: image.identifier,
     transformation: { ...getDecomposedIdentity(), ...image.transformation },
+    opacity: image.opacity !== undefined ? image.opacity : 1.0,
     color: image.color ? { ...image.color } : undefined,
     customData: copyCustomData(image.customData || {}),
   };

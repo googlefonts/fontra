@@ -311,6 +311,9 @@
     "transformation": {
       "type": "DecomposedTransform"
     },
+    "opacity": {
+      "type": "float"
+    },
     "color": {
       "type": "RGBAColor",
       "optional": true

@@ -209,6 +209,7 @@ class RGBAColor:
 class BackgroundImage:
     identifier: str
     transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
+    opacity: float = 1.0
     color: Optional[RGBAColor] = None
     customData: CustomData = field(default_factory=dict)
 
