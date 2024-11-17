@@ -418,8 +418,8 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 2,
   },
-  colors: { strokeColor: "#888" },
-  colorsDarkMode: { strokeColor: "#FFF" },
+  colors: { strokeColor: "#888", hoverStrokeColor: "#8885" },
+  colorsDarkMode: { strokeColor: "#FFF", hoverStrokeColor: "#FFF5" },
 
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const backgroundImage = positionedGlyph.glyph.backgroundImage;
@@ -466,8 +466,12 @@ registerVisualizationLayerDefinition({
     const rectPoly = rectToPoints(backgroundImageBounds);
     const polygon = rectPoly.map((point) => affine.transformPointObject(point));
 
-    if (model.selection.has("backgroundImage/0")) {
-      context.strokeStyle = parameters.strokeColor;
+    const isSelected = model.selection.has("backgroundImage/0");
+    const isHovered = model.hoverSelection.has("backgroundImage/0");
+
+    if (isSelected || isHovered) {
+      context.strokeStyle =
+        isHovered && !isSelected ? parameters.hoverStrokeColor : parameters.strokeColor;
       context.lineWidth = parameters.strokeWidth;
       context.lineJoin = "round";
       strokePolygon(context, polygon);
