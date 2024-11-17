@@ -1831,7 +1831,10 @@ def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
     if colorChannels:
         if len(colorChannels) == 4:
             opacity = colorChannels[3]
-            colorChannels[3] = 1.0
+            if colorChannels[:3] != [0, 0, 0]:
+                colorChannels[3] = 1.0
+            else:
+                colorChannels = None
         else:
             colorChannels = None
 
