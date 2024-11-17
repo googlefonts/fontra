@@ -286,7 +286,7 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         type: "edit-number-slider",
         key: backgroundImageKey("color", "alpha"),
-        label: "backgroundImage.labels.opacity",
+        label: translate("background-image.labels.opacity"),
         value: backgroundImage.color.alpha,
         minValue: 0,
         defaultValue: 1.0,

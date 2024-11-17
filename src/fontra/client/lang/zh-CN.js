@@ -96,7 +96,7 @@ export const strings = {
   "axes.undo.add": "添加参数轴 %0",
   "axes.undo.delete": "删除参数轴 %0",
   "axes.undo.edit": "编辑参数轴 %0",
-  "backgroundImage.labels.opacity": "透明度",
+  "background-image.labels.opacity": "透明度",
   "canvas.clean-view-and-hand-tool": "预览与拖拽工具",
   "cross-axis-mapping.axis-participates": "选中后，该参数轴参与映射",
   "cross-axis-mapping.delete": "删除跨轴映射",
