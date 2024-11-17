@@ -96,6 +96,7 @@ export const strings = {
   "axes.undo.add": "Achse %0 hinzufügen",
   "axes.undo.delete": "Achse %0 entfernen",
   "axes.undo.edit": "Achse %0 bearbeiten",
+  "backgroundImage.labels.opacity": "Transparenz",
   "canvas.clean-view-and-hand-tool": "Ungehinderte Sicht und Hand Werkzeug",
   "cross-axis-mapping.axis-participates":
     "Wenn markiert, dann ist diese Achse teil des Mappings",

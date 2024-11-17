@@ -96,6 +96,7 @@ export const strings = {
   "axes.undo.add": "補完軸%0を追加",
   "axes.undo.delete": "補完軸%0を削除",
   "axes.undo.edit": "補完軸%0を編集",
+  "backgroundImage.labels.opacity": "Opacity",
   "canvas.clean-view-and-hand-tool": "塗りのプレビューと手のひらツール",
   "cross-axis-mapping.axis-participates":
     "チェックすると、この補完軸がマッピング内で有効になります",
