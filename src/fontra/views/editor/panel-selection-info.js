@@ -268,9 +268,12 @@ export default class SelectionInfoPanel extends Panel {
 
     for (const index of backgroundImageIndices) {
       assert(index === 0, "only a single bg image is supported");
-      if (!instance.backgroundImage) {
+
+      const backgroundImage = instance?.backgroundImage;
+      if (!backgroundImage) {
         continue;
       }
+
       const backgroundImageKey = (...path) =>
         JSON.stringify(["backgroundImage", ...path]);
 
@@ -280,10 +283,20 @@ export default class SelectionInfoPanel extends Panel {
         label: translate("sidebar.user-settings.glyph.background-image"),
       });
 
+      formContents.push({
+        type: "edit-number-slider",
+        key: backgroundImageKey("color", "alpha"),
+        label: "backgroundImage.labels.opacity",
+        value: backgroundImage.color.alpha,
+        minValue: 0,
+        defaultValue: 1.0,
+        maxValue: 1.0,
+      });
+
       addTransformationItems(
         formContents,
         backgroundImageKey,
-        instance.backgroundImage.transformation
+        backgroundImage.transformation
       );
     }
 
