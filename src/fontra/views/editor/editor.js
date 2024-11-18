@@ -2204,7 +2204,7 @@ export class EditorController {
   }
 
   async _pasteClipboardImage() {
-    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
 
@@ -3660,7 +3660,7 @@ export class EditorController {
     location.reload();
   }
 
-  canDropBackgroundImage() {
+  canPlaceBackgroundImage() {
     return (
       this.fontController.backendInfo.features["background-image"] &&
       this.canEditGlyph()
@@ -3681,7 +3681,7 @@ export class EditorController {
 
   _onDragEnter(event) {
     event.preventDefault();
-    if (!this.canDropBackgroundImage()) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.add("dropping-files");
@@ -3689,7 +3689,7 @@ export class EditorController {
 
   _onDragOver(event) {
     event.preventDefault();
-    if (!this.canDropBackgroundImage()) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.add("dropping-files");
@@ -3697,7 +3697,7 @@ export class EditorController {
 
   _onDragLeave(event) {
     event.preventDefault();
-    if (!this.canDropBackgroundImage()) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.remove("dropping-files");
@@ -3705,7 +3705,7 @@ export class EditorController {
 
   _onDrop(event) {
     event.preventDefault();
-    if (!this.canDropBackgroundImage()) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.remove("dropping-files");
