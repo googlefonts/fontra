@@ -410,6 +410,11 @@ export class SceneController {
       },
       true
     );
+
+    this.visualizationLayersSettings.addKeyListener(
+      "fontra.background-image",
+      (event) => this._deselectBackroundImage()
+    );
   }
 
   setupEventHandling() {
