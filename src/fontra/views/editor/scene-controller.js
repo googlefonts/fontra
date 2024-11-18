@@ -303,6 +303,7 @@ export class SceneController {
           this.sceneSettings.selection,
           this.sceneSettings.hoverSelection
         );
+        this.canvasController.requestUpdate();
       },
       true
     );
@@ -342,9 +343,15 @@ export class SceneController {
 
   _checkSelectionForLockedItems() {
     if (
-      this.sceneSettings.backgroundImagesAreLocked &&
-      this.sceneSettings.selection.has("backgroundImage/0")
+      this.sceneSettings.backgroundImagesAreLocked ||
+      !this.visualizationLayersSettings.model["fontra.background-image"]
     ) {
+      this._deselectBackroundImage();
+    }
+  }
+
+  _deselectBackroundImage() {
+    if (this.sceneSettings.selection.has("backgroundImage/0")) {
       this.sceneSettings.selection = difference(this.sceneSettings.selection, [
         "backgroundImage/0",
       ]);
@@ -397,8 +404,8 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "backgroundImagesAreLocked",
       (event) => {
-        if (!event.value && this.selection.has("backgroundImage/0")) {
-          this.selection = difference(this.selection, ["backgroundImage/0"]);
+        if (!event.value) {
+          this._deselectBackroundImage();
         }
       },
       true
@@ -842,11 +849,6 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection || new Set();
       this.sceneModel.hoverSelection = new Set();
-      this.canvasController.requestUpdate();
-      // Delay the notification by a tiny amount, to work around
-      // an ordering problem: sometimes the selection is set to
-      // something that will be valid soon but isn't right now.
-      setTimeout(() => this._dispatchEvent("selectionChanged"), 20);
     }
   }
 
