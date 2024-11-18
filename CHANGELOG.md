@@ -22,6 +22,8 @@ Selected background images can be moved around by dragging, and they participate
 
 The Selection Info panel shows the settings for a selected background image: the Opacity can be edited there and the Transformation settings can be edited numerically there.
 
+Caveat: support for background images is limited to the `.designspace`/`.ufo` and `.fontra` backends. It is currently not supported in the `rcjk` backend.
+
 [Issue 1660](https://github.com/googlefonts/fontra/issues/1660), [Issue 1777](https://github.com/googlefonts/fontra/issues/1777) (There were too many PRs to mention individually here.)
 
 ## 2024-11-13
