@@ -30,7 +30,7 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
-import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -45,6 +45,7 @@ import {
   modulo,
   parseSelection,
   range,
+  readFileOrBlobAsDataURL,
   readFromClipboard,
   reversed,
   scheduleCalls,
@@ -472,7 +473,7 @@ export class EditorController {
         },
         () => this.zoomFit(),
         () => {
-          let viewBox = this.sceneController.getSelectionBox();
+          let viewBox = this.sceneController.getSelectionBounds();
           if (!viewBox) {
             return false;
           }
@@ -586,6 +587,16 @@ export class EditorController {
             translate("dialog.add"),
             1
           )
+      );
+    }
+
+    {
+      const topic = "0035-action-topics.menu.glyph";
+      registerAction(
+        "action.glyph.add-background-image",
+        { topic },
+        () => this.addBackgroundImageFromFileSystem(),
+        () => this.canPlaceBackgroundImage()
       );
     }
 
@@ -830,40 +841,13 @@ export class EditorController {
       {
         title: translate("menubar.glyph"),
         enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.glyph.add"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").addSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.delete"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                const designspaceNavigationPanel = this.getSidebarPanel(
-                  "designspace-navigation"
-                );
-                designspaceNavigationPanel.removeSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.edit-axes"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
-              },
-            },
-          ];
-        },
+        getItems: () => [
+          { actionIdentifier: "action.glyph.add-source" },
+          { actionIdentifier: "action.glyph.delete-source" },
+          { actionIdentifier: "action.glyph.edit-glyph-axes" },
+          MenuItemDivider,
+          { actionIdentifier: "action.glyph.add-background-image" },
+        ],
       },
       {
         title: translate("menubar.help"),
@@ -2218,20 +2202,7 @@ export class EditorController {
       return;
     }
 
-    const reader = new FileReader();
-    const resultPromise = new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-
-    reader.readAsDataURL(imageBlob);
-
-    const dataURL = await resultPromise;
-    if (!dataURL) {
-      return;
-    }
-
-    await this._placeBackgroundImage(dataURL);
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(imageBlob));
   }
 
   async _placeBackgroundImage(dataURL) {
@@ -2260,6 +2231,16 @@ export class EditorController {
     }
     // Writing the background image data does not cause a refresh
     this.canvasController.requestUpdate();
+  }
+
+  async addBackgroundImageFromFileSystem() {
+    const file = await pickFile([".png", ".jpeg", ".jpg"]);
+    if (!file) {
+      // User cancelled
+      return;
+    }
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(file));
   }
 
   async _pasteReplaceGlyph(varGlyph) {
@@ -3515,7 +3496,7 @@ export class EditorController {
 
   _zoom(factor) {
     let viewBox = this.sceneSettings.viewBox;
-    const selBox = this.sceneController.getSelectionBox();
+    const selBox = this.sceneController.getSelectionBounds();
     const center = rectCenter(selBox || viewBox);
     viewBox = rectScaleAroundCenter(viewBox, factor, center);
 
@@ -3535,7 +3516,7 @@ export class EditorController {
   }
 
   zoomFit() {
-    let viewBox = this.sceneController.getSelectionBox();
+    let viewBox = this.sceneController.getSelectionBounds();
     if (viewBox) {
       let size = rectSize(viewBox);
       if (size.width < 4 && size.height < 4) {
@@ -3705,7 +3686,7 @@ export class EditorController {
     this.canvasController.canvas.classList.remove("dropping-files");
   }
 
-  _onDrop(event) {
+  async _onDrop(event) {
     event.preventDefault();
     if (!this.canPlaceBackgroundImage()) {
       return;
@@ -3722,17 +3703,15 @@ export class EditorController {
     }
 
     if (items.length != 1) {
-      /* no real need for await */ dialog(
+      await dialog(
         "Can't drop files",
         "Please drop a single .png, .jpg or .jpeg file",
         [{ title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true }]
       );
       return;
     }
-    const item = items[0];
-    const reader = new FileReader();
-    reader.onload = (event) => this._placeBackgroundImage(reader.result);
-    reader.readAsDataURL(item);
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(items[0]));
   }
 }
 

@@ -68,6 +68,31 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       (event) => this.onEditHeaderClick(event)
     );
+
+    {
+      const topic = "0035-action-topics.menu.glyph";
+
+      registerAction(
+        "action.glyph.add-source",
+        { topic },
+        () => this.addSource(),
+        () => !!this.sceneModel.selectedGlyph
+      );
+
+      registerAction(
+        "action.glyph.delete-source",
+        { topic },
+        () => this.removeSource(),
+        () => this.sourcesList.getSelectedItemIndex() !== undefined
+      );
+
+      registerAction(
+        "action.glyph.edit-glyph-axes",
+        { topic },
+        () => this.editGlyphAxes(),
+        () => !!this.sceneModel.selectedGlyph
+      );
+    }
   }
 
   getContentElement() {

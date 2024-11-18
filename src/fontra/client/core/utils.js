@@ -626,3 +626,12 @@ export function pointCompareFunc(pointA, pointB) {
 export function sleepAsync(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export function readFileOrBlobAsDataURL(fileOrBlob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(fileOrBlob);
+  });
+}

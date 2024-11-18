@@ -222,3 +222,47 @@ export function checkboxListCell(item, colDesc) {
     },
   });
 }
+
+export function pickFile(fileTypes) {
+  /*
+   * Returns a promise for a file object or null. If `fileTypes` is given, it should
+   * be an array of file suffixes (ingluding dot, for example [".png"]), which
+   * will be used to filter the selectable results. If `fileTypes` is not given,
+   * all file types can be selected.
+   */
+
+  // Adapted from https://stackoverflow.com/questions/8385758/file-dialog-from-javascript-without-input
+
+  const inputElement = document.createElement("input");
+  inputElement.style.display = "none";
+  inputElement.type = "file";
+  if (fileTypes && fileTypes.length) {
+    inputElement.accept = fileTypes.join(",");
+  }
+
+  const resultPromise = new Promise((resolve, reject) => {
+    inputElement.addEventListener("change", () => {
+      if (inputElement.files) {
+        resolve(inputElement.files[0]);
+      } else {
+        resolve(null);
+      }
+    });
+    inputElement.addEventListener("cancel", () => {
+      resolve(null);
+    });
+  });
+
+  const teardown = () => {
+    document.body.removeEventListener("focus", teardown, true);
+    setTimeout(() => {
+      document.body.removeChild(inputElement);
+    }, 500);
+  };
+  document.body.addEventListener("focus", teardown, true);
+
+  document.body.appendChild(inputElement);
+  inputElement.click();
+
+  return resultPromise;
+}
