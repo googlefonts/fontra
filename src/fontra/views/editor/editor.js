@@ -125,6 +125,11 @@ export class EditorController {
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
+    canvas.ondragenter = (event) => this._onDragEnter(event);
+    canvas.ondragover = (event) => this._onDragOver(event);
+    canvas.ondragleave = (event) => this._onDragLeave(event);
+    canvas.ondrop = (event) => this._onDrop(event);
+
     const canvasController = new CanvasController(canvas, (magnification) =>
       this.canvasMagnificationChanged(magnification)
     );
@@ -2222,6 +2227,10 @@ export class EditorController {
       return;
     }
 
+    await this._placeBackgroundImage(dataURL);
+  }
+
+  async _placeBackgroundImage(dataURL) {
     // Ensure background images are visible and not locked
     this.visualizationLayersSettings.model["fontra.background-image"] = true;
     this.sceneSettings.backgroundImagesAreLocked = false;
@@ -2239,7 +2248,7 @@ export class EditorController {
         imageIdentifiers.push(imageIdentifier);
       }
       this.sceneController.selection = new Set(["backgroundImage/0"]);
-      return "paste background image"; // TODO: translate
+      return "place background image"; // TODO: translate
     });
 
     for (const imageIdentifier of imageIdentifiers) {
@@ -3655,6 +3664,62 @@ export class EditorController {
       !this.sceneModel.isSelectedGlyphLocked() &&
       positionedGlyph.glyph.canEdit
     );
+  }
+
+  // Drop files onto canvas
+
+  _onDragEnter(event) {
+    event.preventDefault();
+    if (!this.canEditGlyph()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragOver(event) {
+    event.preventDefault();
+    if (!this.canEditGlyph()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragLeave(event) {
+    event.preventDefault();
+    if (!this.canEditGlyph()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+  }
+
+  _onDrop(event) {
+    event.preventDefault();
+    if (!this.canEditGlyph()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+
+    const items = [];
+
+    for (const item of event.dataTransfer?.files || []) {
+      const suffix = item.name.split(".").at(-1);
+      if (suffix === "png" || suffix === "jpg" || suffix === "jpeg") {
+        items.push(item);
+      }
+    }
+
+    if (items.length != 1) {
+      /* no real need for await */ dialog(
+        "Can't drop files",
+        "Please drop a single .png, .jpg or .jpeg file",
+        [{ title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true }]
+      );
+      return;
+    }
+    const item = items[0];
+    const reader = new FileReader();
+    reader.onload = (event) => this._placeBackgroundImage(reader.result);
+    reader.readAsDataURL(item);
   }
 }
 
