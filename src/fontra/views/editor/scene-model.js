@@ -924,8 +924,11 @@ export class SceneModel {
       const instance = this._getSelectedStaticGlyphController();
       const boundses = [];
 
-      const { point: selectedPointIndices, component: selectedComponentIndices } =
-        parseSelection(this.selection);
+      const {
+        point: selectedPointIndices,
+        component: selectedComponentIndices,
+        backgroundImage: backgroundImageIndices,
+      } = parseSelection(this.selection);
 
       selectedPointIndices?.forEach((pointIndex) => {
         const pt = instance.path.getPoint(pointIndex);
@@ -941,6 +944,16 @@ export class SceneModel {
           offsetRect(instance.components[componentIndex].controlBounds, x, y)
         );
       });
+
+      if (backgroundImageIndices?.length) {
+        const bgImageBounds = instance.getSelectionBounds(
+          new Set(["backgroundImage/0"]),
+          this.fontController.getBackgroundImageBoundsFunc
+        );
+        if (bgImageBounds) {
+          boundses.push(bgImageBounds);
+        }
+      }
 
       if (boundses.length) {
         bounds = unionRect(...boundses);
