@@ -591,6 +591,16 @@ export class EditorController {
     }
 
     {
+      const topic = "0035-action-topics.menu.glyph";
+      registerAction(
+        "action.glyph.add-background-image",
+        { topic },
+        () => this.addBackgroundImageFromFileSystem(),
+        () => this.canPlaceBackgroundImage()
+      );
+    }
+
+    {
       const topic = "0040-action-topics.sidebars";
 
       const sideBarShortCuts = {
@@ -831,46 +841,13 @@ export class EditorController {
       {
         title: translate("menubar.glyph"),
         enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.glyph.add"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").addSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.delete"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                const designspaceNavigationPanel = this.getSidebarPanel(
-                  "designspace-navigation"
-                );
-                designspaceNavigationPanel.removeSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.edit-axes"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
-              },
-            },
-            MenuItemDivider,
-            {
-              title: translate("menubar.glyph.add-background-image"),
-              enabled: () => this.canPlaceBackgroundImage(),
-              callback: () => this.addBackgroundImageFromFileSystem(),
-            },
-          ];
-        },
+        getItems: () => [
+          { actionIdentifier: "action.glyph.add-source" },
+          { actionIdentifier: "action.glyph.delete-source" },
+          { actionIdentifier: "action.glyph.edit-glyph-axes" },
+          MenuItemDivider,
+          { actionIdentifier: "action.glyph.add-background-image" },
+        ],
       },
       {
         title: translate("menubar.help"),
