@@ -473,7 +473,7 @@ export class EditorController {
         },
         () => this.zoomFit(),
         () => {
-          let viewBox = this.sceneController.getSelectionBox();
+          let viewBox = this.sceneController.getSelectionBounds();
           if (!viewBox) {
             return false;
           }
@@ -3496,7 +3496,7 @@ export class EditorController {
 
   _zoom(factor) {
     let viewBox = this.sceneSettings.viewBox;
-    const selBox = this.sceneController.getSelectionBox();
+    const selBox = this.sceneController.getSelectionBounds();
     const center = rectCenter(selBox || viewBox);
     viewBox = rectScaleAroundCenter(viewBox, factor, center);
 
@@ -3516,7 +3516,7 @@ export class EditorController {
   }
 
   zoomFit() {
-    let viewBox = this.sceneController.getSelectionBox();
+    let viewBox = this.sceneController.getSelectionBounds();
     if (viewBox) {
       let size = rectSize(viewBox);
       if (size.width < 4 && size.height < 4) {

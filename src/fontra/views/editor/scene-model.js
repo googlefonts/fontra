@@ -913,7 +913,7 @@ export class SceneModel {
     return bounds;
   }
 
-  getSelectionBox() {
+  getSelectionBounds() {
     if (!this.selectedGlyph) {
       return this.getSceneBounds();
     }

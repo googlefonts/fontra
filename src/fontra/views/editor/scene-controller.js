@@ -1180,8 +1180,8 @@ export class SceneController {
     }
   }
 
-  getSelectionBox() {
-    return this.sceneModel.getSelectionBox();
+  getSelectionBounds() {
+    return this.sceneModel.getSelectionBounds();
   }
 
   getUndoRedoInfo(isRedo) {
