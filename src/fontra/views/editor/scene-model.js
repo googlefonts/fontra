@@ -917,55 +917,32 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return this.getSceneBounds();
     }
+
     let bounds;
+
     if (this.selectedGlyph?.isEditing && this.selection.size) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const [x, y] = [positionedGlyph.x, positionedGlyph.y];
       const instance = this._getSelectedStaticGlyphController();
-      const boundses = [];
 
-      const {
-        point: selectedPointIndices,
-        component: selectedComponentIndices,
-        backgroundImage: backgroundImageIndices,
-      } = parseSelection(this.selection);
-
-      selectedPointIndices?.forEach((pointIndex) => {
-        const pt = instance.path.getPoint(pointIndex);
-        boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
-      });
-
-      selectedComponentIndices?.forEach((componentIndex) => {
-        if (!instance.components[componentIndex]) {
-          // Invalid selection
-          return;
-        }
-        boundses.push(
-          offsetRect(instance.components[componentIndex].controlBounds, x, y)
-        );
-      });
-
-      if (backgroundImageIndices?.length) {
-        const bgImageBounds = instance.getSelectionBounds(
-          new Set(["backgroundImage/0"]),
-          this.fontController.getBackgroundImageBoundsFunc
-        );
-        if (bgImageBounds) {
-          boundses.push(bgImageBounds);
-        }
-      }
-
-      if (boundses.length) {
-        bounds = unionRect(...boundses);
+      bounds = instance.getSelectionBounds(
+        this.selection,
+        this.fontController.getBackgroundImageBoundsFunc
+      );
+      if (bounds) {
+        bounds = offsetRect(bounds, x, y);
       }
     }
+
     if (!bounds) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       bounds = positionedGlyph.bounds;
     }
+
     if (!bounds) {
       bounds = this.getSceneBounds();
     }
+
     return bounds;
   }
 }
