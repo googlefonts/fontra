@@ -49,6 +49,7 @@ export class SceneController {
 
     this.setupSceneSettings();
     this.sceneSettings = this.sceneSettingsController.model;
+    this.visualizationLayersSettings = visualizationLayersSettings;
 
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
@@ -474,13 +475,14 @@ export class SceneController {
       () => !!this.contextMenuState?.componentSelection?.length
     );
 
-    registerAction(
-      "action.lock-background-images",
-      { topic },
-      () =>
-        (this.sceneSettings.backgroundImagesAreLocked =
-          !this.sceneSettings.backgroundImagesAreLocked)
-    );
+    registerAction("action.lock-background-images", { topic }, () => {
+      this.sceneSettings.backgroundImagesAreLocked =
+        !this.sceneSettings.backgroundImagesAreLocked;
+      if (!this.sceneSettings.backgroundImagesAreLocked) {
+        // If background images are hidden, show them
+        this.visualizationLayersSettings.model["fontra.background-image"] = true;
+      }
+    });
   }
 
   setAutoViewBox() {
