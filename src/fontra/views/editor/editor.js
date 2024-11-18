@@ -30,7 +30,7 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
-import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -861,6 +861,12 @@ export class EditorController {
               callback: () => {
                 this.getSidebarPanel("designspace-navigation").editGlyphAxes();
               },
+            },
+            MenuItemDivider,
+            {
+              title: translate("menubar.glyph.add-background-image"),
+              enabled: () => this.canPlaceBackgroundImage(),
+              callback: () => this.addBackgroundImageFromFileSystem(),
             },
           ];
         },
@@ -2260,6 +2266,17 @@ export class EditorController {
     }
     // Writing the background image data does not cause a refresh
     this.canvasController.requestUpdate();
+  }
+
+  async addBackgroundImageFromFileSystem() {
+    const file = await pickFile([".png", ".jpeg", ".jpg"]);
+    if (!file) {
+      // User cancelled
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => this._placeBackgroundImage(reader.result);
+    reader.readAsDataURL(file);
   }
 
   async _pasteReplaceGlyph(varGlyph) {
