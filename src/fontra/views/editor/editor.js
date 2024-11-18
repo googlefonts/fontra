@@ -2110,10 +2110,12 @@ export class EditorController {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
 
-    await this._writeBackgroundImageData(
-      backgroundImageData,
-      backgroundImageIdentifierMapping
-    );
+    if (this.fontController.backendInfo.features["background-image"]) {
+      await this._writeBackgroundImageData(
+        backgroundImageData,
+        backgroundImageIdentifierMapping
+      );
+    }
   }
 
   _makeBackgroundImageIdentifierMapping(backgroundImageData) {
