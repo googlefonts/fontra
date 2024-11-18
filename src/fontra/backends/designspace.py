@@ -1188,7 +1188,7 @@ class DesignspaceBackend:
 
     async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         if data.type != ImageType.PNG:
-            raise NotImplementedError("convert image to PNG")
+            data = convertImageData(data, ImageType.PNG)
 
         imageInfo = self._imageMapping.reverse.get(imageIdentifier)
         if imageInfo is None:
@@ -2240,3 +2240,14 @@ def mergeKernGroups(
                 mergedGroups[groupName] = gA + [n for n in gB if n not in gASet]
 
     return mergedGroups
+
+
+def convertImageData(data, type):
+    import io
+
+    from PIL import Image
+
+    image = Image.open(io.BytesIO(data.data))
+    outFile = io.BytesIO()
+    image.save(outFile, type)
+    return ImageData(type=type, data=outFile.getvalue())
