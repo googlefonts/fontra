@@ -1134,9 +1134,12 @@ function ensureGlyphCompatibility(layerGlyphs, glyphDependencies) {
 }
 
 function stripNonInterpolatables(glyph) {
-  if (!glyph.components.length && !glyph.guidelines.length && !glyph.backgroundImage) {
-    return glyph;
-  }
+  // Hm, the following optimization oddly causes a false positive when undoing a bg img
+  // placement. TODO: figure out what's going on.
+  // if (!glyph.components.length && !glyph.guidelines.length && !glyph.backgroundImage) {
+  //   console.log("have bg img?", !!glyph.backgroundImage);
+  //   return glyph;
+  // }
   return StaticGlyph.fromObject(
     {
       ...glyph,
