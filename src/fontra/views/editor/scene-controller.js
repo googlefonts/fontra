@@ -49,6 +49,7 @@ export class SceneController {
 
     this.setupSceneSettings();
     this.sceneSettings = this.sceneSettingsController.model;
+    this.visualizationLayersSettings = visualizationLayersSettings;
 
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
@@ -302,6 +303,7 @@ export class SceneController {
           this.sceneSettings.selection,
           this.sceneSettings.hoverSelection
         );
+        this.canvasController.requestUpdate();
       },
       true
     );
@@ -341,9 +343,15 @@ export class SceneController {
 
   _checkSelectionForLockedItems() {
     if (
-      this.sceneSettings.backgroundImagesAreLocked &&
-      this.sceneSettings.selection.has("backgroundImage/0")
+      this.sceneSettings.backgroundImagesAreLocked ||
+      !this.visualizationLayersSettings.model["fontra.background-image"]
     ) {
+      this._deselectBackroundImage();
+    }
+  }
+
+  _deselectBackroundImage() {
+    if (this.sceneSettings.selection.has("backgroundImage/0")) {
       this.sceneSettings.selection = difference(this.sceneSettings.selection, [
         "backgroundImage/0",
       ]);
@@ -396,11 +404,20 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "backgroundImagesAreLocked",
       (event) => {
-        if (!event.value && this.selection.has("backgroundImage/0")) {
-          this.selection = difference(this.selection, ["backgroundImage/0"]);
+        if (event.newValue) {
+          this._deselectBackroundImage();
         }
       },
       true
+    );
+
+    this.visualizationLayersSettings.addKeyListener(
+      "fontra.background-image",
+      (event) => {
+        if (!event.newValue) {
+          this._deselectBackroundImage();
+        }
+      }
     );
   }
 
@@ -474,13 +491,14 @@ export class SceneController {
       () => !!this.contextMenuState?.componentSelection?.length
     );
 
-    registerAction(
-      "action.lock-background-images",
-      { topic },
-      () =>
-        (this.sceneSettings.backgroundImagesAreLocked =
-          !this.sceneSettings.backgroundImagesAreLocked)
-    );
+    registerAction("action.lock-background-images", { topic }, () => {
+      this.sceneSettings.backgroundImagesAreLocked =
+        !this.sceneSettings.backgroundImagesAreLocked;
+      if (!this.sceneSettings.backgroundImagesAreLocked) {
+        // If background images are hidden, show them
+        this.visualizationLayersSettings.model["fontra.background-image"] = true;
+      }
+    });
   }
 
   setAutoViewBox() {
@@ -840,11 +858,6 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection || new Set();
       this.sceneModel.hoverSelection = new Set();
-      this.canvasController.requestUpdate();
-      // Delay the notification by a tiny amount, to work around
-      // an ordering problem: sometimes the selection is set to
-      // something that will be valid soon but isn't right now.
-      setTimeout(() => this._dispatchEvent("selectionChanged"), 20);
     }
   }
 
