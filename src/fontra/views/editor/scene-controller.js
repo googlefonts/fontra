@@ -404,7 +404,7 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "backgroundImagesAreLocked",
       (event) => {
-        if (!event.value) {
+        if (event.newValue) {
           this._deselectBackroundImage();
         }
       },
@@ -413,7 +413,11 @@ export class SceneController {
 
     this.visualizationLayersSettings.addKeyListener(
       "fontra.background-image",
-      (event) => this._deselectBackroundImage()
+      (event) => {
+        if (!event.newValue) {
+          this._deselectBackroundImage();
+        }
+      }
     );
   }
 
