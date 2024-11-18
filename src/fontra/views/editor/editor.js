@@ -3660,6 +3660,13 @@ export class EditorController {
     location.reload();
   }
 
+  canDropBackgroundImage() {
+    return (
+      this.fontController.backendInfo.features["background-image"] &&
+      this.canEditGlyph()
+    );
+  }
+
   canEditGlyph() {
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     return !!(
@@ -3674,7 +3681,7 @@ export class EditorController {
 
   _onDragEnter(event) {
     event.preventDefault();
-    if (!this.canEditGlyph()) {
+    if (!this.canDropBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.add("dropping-files");
@@ -3682,7 +3689,7 @@ export class EditorController {
 
   _onDragOver(event) {
     event.preventDefault();
-    if (!this.canEditGlyph()) {
+    if (!this.canDropBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.add("dropping-files");
@@ -3690,7 +3697,7 @@ export class EditorController {
 
   _onDragLeave(event) {
     event.preventDefault();
-    if (!this.canEditGlyph()) {
+    if (!this.canDropBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.remove("dropping-files");
@@ -3698,7 +3705,7 @@ export class EditorController {
 
   _onDrop(event) {
     event.preventDefault();
-    if (!this.canEditGlyph()) {
+    if (!this.canDropBackgroundImage()) {
       return;
     }
     this.canvasController.canvas.classList.remove("dropping-files");
