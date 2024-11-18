@@ -1188,7 +1188,7 @@ class DesignspaceBackend:
 
     async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         if data.type != ImageType.PNG:
-            raise NotImplementedError("convert image to PNG")
+            data = convertImageData(data, ImageType.PNG)
 
         imageInfo = self._imageMapping.reverse.get(imageIdentifier)
         if imageInfo is None:
@@ -2240,3 +2240,21 @@ def mergeKernGroups(
                 mergedGroups[groupName] = gA + [n for n in gB if n not in gASet]
 
     return mergedGroups
+
+
+def convertImageData(data, type):
+    import io
+
+    from PIL import Image
+
+    image = Image.open(io.BytesIO(data.data))
+    if image.mode == "RGBA" and type == ImageType.JPEG:
+        # from https://stackoverflow.com/questions/9166400/convert-rgba-png-to-rgb-with-pil
+        image.load()  # required for image.split()
+        imageJPEG = Image.new("RGB", image.size, (255, 255, 255))
+        imageJPEG.paste(image, mask=image.split()[3])  # 3 is the alpha channel
+        image = imageJPEG
+
+    outFile = io.BytesIO()
+    image.save(outFile, type)
+    return ImageData(type=type, data=outFile.getvalue())

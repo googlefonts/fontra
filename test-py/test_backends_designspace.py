@@ -10,11 +10,12 @@ from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
-from fontra.backends.designspace import DesignspaceBackend, UFOBackend
+from fontra.backends.designspace import DesignspaceBackend, UFOBackend, convertImageData
 from fontra.backends.null import NullBackend
 from fontra.core.classes import (
     Anchor,
     Axes,
+    BackgroundImage,
     CrossAxisMapping,
     FontAxis,
     FontInfo,
@@ -22,6 +23,7 @@ from fontra.core.classes import (
     GlyphAxis,
     GlyphSource,
     Guideline,
+    ImageType,
     Layer,
     LineMetric,
     OpenTypeFeatures,
@@ -429,6 +431,33 @@ async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
             break
     else:
         assert 0, "expected backgroundImage"
+
+
+async def test_putBackgroundImage_JPEG(writableTestFont):
+    glyph = await writableTestFont.getGlyph("C")
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    imageDataPNG = await writableTestFont.getBackgroundImage(bgImage.identifier)
+    imageDataJPEG = convertImageData(imageDataPNG, ImageType.JPEG)
+    assert imageDataJPEG.type == ImageType.JPEG
+
+    glyphName = "D"
+    imageIdentifier = str(uuid.uuid4())
+    bgImage = BackgroundImage(identifier=imageIdentifier)
+
+    glyphD = await writableTestFont.getGlyph(glyphName)
+    firstLayerName = list(glyphD.layers.keys())[0]
+    layer = glyphD.layers[firstLayerName]
+    layer.glyph.backgroundImage = bgImage
+
+    await writableTestFont.putGlyph(glyphName, glyphD, [ord("D")])
+    await writableTestFont.putBackgroundImage(imageIdentifier, imageDataJPEG)
+
+    imageRoundtripped = await writableTestFont.getBackgroundImage(imageIdentifier)
+    assert imageRoundtripped.type == ImageType.PNG
 
 
 async def test_putAxes(writableTestFont):
