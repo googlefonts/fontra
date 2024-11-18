@@ -125,6 +125,11 @@ export class EditorController {
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
+    canvas.ondragenter = (event) => this._onDragEnter(event);
+    canvas.ondragover = (event) => this._onDragOver(event);
+    canvas.ondragleave = (event) => this._onDragLeave(event);
+    canvas.ondrop = (event) => this._onDrop(event);
+
     const canvasController = new CanvasController(canvas, (magnification) =>
       this.canvasMagnificationChanged(magnification)
     );
@@ -404,21 +409,21 @@ export class EditorController {
         "action.add-component",
         { topic },
         () => this.doAddComponent(),
-        () => this.canAddComponent()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-anchor",
         { topic },
         () => this.doAddAnchor(),
-        () => this.canAddAnchor()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-guideline",
         { topic },
         () => this.doAddGuideline(),
-        () => this.canAddGuideline()
+        () => this.canEditGlyph()
       );
 
       registerAction(
@@ -2105,10 +2110,12 @@ export class EditorController {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
 
-    await this._writeBackgroundImageData(
-      backgroundImageData,
-      backgroundImageIdentifierMapping
-    );
+    if (this.fontController.backendInfo.features["background-image"]) {
+      await this._writeBackgroundImageData(
+        backgroundImageData,
+        backgroundImageIdentifierMapping
+      );
+    }
   }
 
   _makeBackgroundImageIdentifierMapping(backgroundImageData) {
@@ -2141,6 +2148,8 @@ export class EditorController {
       const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
       await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
     }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
   }
 
   async _unpackClipboard() {
@@ -2197,7 +2206,7 @@ export class EditorController {
   }
 
   async _pasteClipboardImage() {
-    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+    if (!this.canPlaceBackgroundImage()) {
       return;
     }
 
@@ -2222,6 +2231,10 @@ export class EditorController {
       return;
     }
 
+    await this._placeBackgroundImage(dataURL);
+  }
+
+  async _placeBackgroundImage(dataURL) {
     // Ensure background images are visible and not locked
     this.visualizationLayersSettings.model["fontra.background-image"] = true;
     this.sceneSettings.backgroundImagesAreLocked = false;
@@ -2239,12 +2252,14 @@ export class EditorController {
         imageIdentifiers.push(imageIdentifier);
       }
       this.sceneController.selection = new Set(["backgroundImage/0"]);
-      return "paste background image"; // TODO: translate
+      return "place background image"; // TODO: translate
     });
 
     for (const imageIdentifier of imageIdentifiers) {
       await this.fontController.putBackgroundImageData(imageIdentifier, dataURL);
     }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
   }
 
   async _pasteReplaceGlyph(varGlyph) {
@@ -2448,10 +2463,6 @@ export class EditorController {
     });
   }
 
-  canAddComponent() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
-  }
-
   async doAddComponent() {
     const glyphName = await this.runGlyphSearchDialog(
       translate("action.add-component"),
@@ -2483,10 +2494,6 @@ export class EditorController {
       this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
       return translate("action.add-component");
     });
-  }
-
-  canAddAnchor() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddAnchor() {
@@ -2733,9 +2740,6 @@ export class EditorController {
   // TODO: We may want to make a more general code for adding and editing
   // so we can handle both anchors and guidelines with the same code
   // Guidelines
-  canAddGuideline() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
-  }
 
   async doAddGuideline(global = false) {
     this.visualizationLayersSettings.model["fontra.guidelines"] = true;
@@ -3656,6 +3660,79 @@ export class EditorController {
       [{ title: "Reconnect", resultValue: "ok" }]
     );
     location.reload();
+  }
+
+  canPlaceBackgroundImage() {
+    return (
+      this.fontController.backendInfo.features["background-image"] &&
+      this.canEditGlyph()
+    );
+  }
+
+  canEditGlyph() {
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    return !!(
+      positionedGlyph &&
+      !this.fontController.readOnly &&
+      !this.sceneModel.isSelectedGlyphLocked() &&
+      positionedGlyph.glyph.canEdit
+    );
+  }
+
+  // Drop files onto canvas
+
+  _onDragEnter(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragOver(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragLeave(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+  }
+
+  _onDrop(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+
+    const items = [];
+
+    for (const item of event.dataTransfer?.files || []) {
+      const suffix = item.name.split(".").at(-1);
+      if (suffix === "png" || suffix === "jpg" || suffix === "jpeg") {
+        items.push(item);
+      }
+    }
+
+    if (items.length != 1) {
+      /* no real need for await */ dialog(
+        "Can't drop files",
+        "Please drop a single .png, .jpg or .jpeg file",
+        [{ title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true }]
+      );
+      return;
+    }
+    const item = items[0];
+    const reader = new FileReader();
+    reader.onload = (event) => this._placeBackgroundImage(reader.result);
+    reader.readAsDataURL(item);
   }
 }
 

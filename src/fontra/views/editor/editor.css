@@ -388,6 +388,10 @@ body {
   outline: none;
 }
 
+#edit-canvas.dropping-files {
+  background-color: #99556655;
+}
+
 .cleanable-overlay.overlay-layer-hidden {
   display: none;
 }
