@@ -3035,7 +3035,10 @@ export class EditorController {
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
       }
-      if (!this.sceneSettings.backgroundImagesAreLocked) {
+      if (
+        !this.sceneSettings.backgroundImagesAreLocked &&
+        this.visualizationLayersSettings.model["fontra.background-image"]
+      ) {
         for (const backgroundImageIndex of positionedGlyph.glyph.backgroundImage
           ? [0]
           : []) {
