@@ -45,6 +45,7 @@ import {
   modulo,
   parseSelection,
   range,
+  readFileOrBlobAsDataURL,
   readFromClipboard,
   reversed,
   scheduleCalls,
@@ -2224,20 +2225,7 @@ export class EditorController {
       return;
     }
 
-    const reader = new FileReader();
-    const resultPromise = new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-
-    reader.readAsDataURL(imageBlob);
-
-    const dataURL = await resultPromise;
-    if (!dataURL) {
-      return;
-    }
-
-    await this._placeBackgroundImage(dataURL);
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(imageBlob));
   }
 
   async _placeBackgroundImage(dataURL) {
@@ -2274,9 +2262,8 @@ export class EditorController {
       // User cancelled
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (event) => this._placeBackgroundImage(reader.result);
-    reader.readAsDataURL(file);
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(file));
   }
 
   async _pasteReplaceGlyph(varGlyph) {
@@ -3722,7 +3709,7 @@ export class EditorController {
     this.canvasController.canvas.classList.remove("dropping-files");
   }
 
-  _onDrop(event) {
+  async _onDrop(event) {
     event.preventDefault();
     if (!this.canPlaceBackgroundImage()) {
       return;
@@ -3739,17 +3726,14 @@ export class EditorController {
     }
 
     if (items.length != 1) {
-      /* no real need for await */ dialog(
+      await dialog(
         "Can't drop files",
         "Please drop a single .png, .jpg or .jpeg file",
         [{ title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true }]
       );
       return;
     }
-    const item = items[0];
-    const reader = new FileReader();
-    reader.onload = (event) => this._placeBackgroundImage(reader.result);
-    reader.readAsDataURL(item);
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(items[0]));
   }
 }
 
