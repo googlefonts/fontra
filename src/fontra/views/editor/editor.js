@@ -2146,6 +2146,8 @@ export class EditorController {
       const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
       await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
     }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
   }
 
   async _unpackClipboard() {
@@ -2254,6 +2256,8 @@ export class EditorController {
     for (const imageIdentifier of imageIdentifiers) {
       await this.fontController.putBackgroundImageData(imageIdentifier, dataURL);
     }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
   }
 
   async _pasteReplaceGlyph(varGlyph) {
