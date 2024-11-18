@@ -22,6 +22,7 @@ dependencies = [
     "ufomerge>=1.8.0",
     "unicodedata2>=15.1.0",
     "skia-pathops>=0.8.0.post1",
+    "pillow>=11.0.0",
 ]
 dynamic = ["version"]
 requires-python = ">=3.10"
