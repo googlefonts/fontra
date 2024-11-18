@@ -404,21 +404,21 @@ export class EditorController {
         "action.add-component",
         { topic },
         () => this.doAddComponent(),
-        () => this.canAddComponent()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-anchor",
         { topic },
         () => this.doAddAnchor(),
-        () => this.canAddAnchor()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-guideline",
         { topic },
         () => this.doAddGuideline(),
-        () => this.canAddGuideline()
+        () => this.canEditGlyph()
       );
 
       registerAction(
@@ -2448,10 +2448,6 @@ export class EditorController {
     });
   }
 
-  canAddComponent() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
-  }
-
   async doAddComponent() {
     const glyphName = await this.runGlyphSearchDialog(
       translate("action.add-component"),
@@ -2483,10 +2479,6 @@ export class EditorController {
       this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
       return translate("action.add-component");
     });
-  }
-
-  canAddAnchor() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddAnchor() {
@@ -2733,9 +2725,6 @@ export class EditorController {
   // TODO: We may want to make a more general code for adding and editing
   // so we can handle both anchors and guidelines with the same code
   // Guidelines
-  canAddGuideline() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
-  }
 
   async doAddGuideline(global = false) {
     this.visualizationLayersSettings.model["fontra.guidelines"] = true;
@@ -3656,6 +3645,16 @@ export class EditorController {
       [{ title: "Reconnect", resultValue: "ok" }]
     );
     location.reload();
+  }
+
+  canEditGlyph() {
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    return !!(
+      positionedGlyph &&
+      !this.fontController.readOnly &&
+      !this.sceneModel.isSelectedGlyphLocked() &&
+      positionedGlyph.glyph.canEdit
+    );
   }
 }
 
