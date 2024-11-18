@@ -3733,6 +3733,7 @@ export class EditorController {
       );
       return;
     }
+
     await this._placeBackgroundImage(await readFileOrBlobAsDataURL(items[0]));
   }
 }
