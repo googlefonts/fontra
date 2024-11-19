@@ -132,12 +132,17 @@ export class FontController {
   }
 
   getBackgroundImage(imageIdentifier) {
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    return cacheEntry.imagePromise;
+  }
+
+  _getBackgroundImageCacheEntry(imageIdentifier) {
     // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
       cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
-    return cacheEntry.imagePromise;
+    return cacheEntry;
   }
 
   getBackgroundImageCached(imageIdentifier, onLoad = null) {
