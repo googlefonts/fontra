@@ -133,11 +133,13 @@ export class FontController {
   }
 
   getBackgroundImage(imageIdentifier) {
+    // This returns a promise for the requested background image
     const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
     return cacheEntry.imagePromise;
   }
 
   getBackgroundImageColorized(imageIdentifier, color) {
+    // This returns a promise for the requested colorized background image
     if (!color) {
       return this.getBackgroundImage(imageIdentifier);
     }
@@ -162,7 +164,6 @@ export class FontController {
   }
 
   _getBackgroundImageCacheEntry(imageIdentifier) {
-    // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
       cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
