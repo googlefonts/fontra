@@ -16,6 +16,7 @@ import { TaskPool } from "./task-pool.js";
 import {
   assert,
   chain,
+  colorizeImage,
   getCharFromCodePoint,
   mapObjectValues,
   throttleCalls,
@@ -136,6 +137,30 @@ export class FontController {
     return cacheEntry.imagePromise;
   }
 
+  getBackgroundImageColorized(imageIdentifier, color) {
+    if (!color) {
+      return this.getBackgroundImage(imageIdentifier);
+    }
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    if (cacheEntry.color !== color) {
+      delete cacheEntry.imageColorized;
+      cacheEntry.color = color;
+      cacheEntry.imageColorizedPromise = new Promise((resolve, reject) => {
+        cacheEntry.imagePromise.then((image) => {
+          if (image) {
+            colorizeImage(image, color).then((image) => {
+              cacheEntry.imageColorized = image;
+              resolve(image);
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      });
+    }
+    return cacheEntry.imageColorizedPromise;
+  }
+
   _getBackgroundImageCacheEntry(imageIdentifier) {
     // This returns a promise for the requested background image
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
@@ -159,6 +184,19 @@ export class FontController {
       this.getBackgroundImage(imageIdentifier).then((image) => onLoad(image));
     }
     return cacheEntry?.image;
+  }
+
+  getBackgroundImageColorizedCached(imageIdentifier, color, onLoad = null) {
+    if (!color) {
+      return this.getBackgroundImageCached(imageIdentifier, onLoad);
+    }
+    const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
+    if ((!cacheEntry?.imageColorizedPromise || cacheEntry.color !== color) && onLoad) {
+      this.getBackgroundImageColorized(imageIdentifier, color).then((image) =>
+        onLoad(image)
+      );
+    }
+    return cacheEntry?.imageColorized;
   }
 
   _cacheBackgroundImageFromIdentifier(imageIdentifier) {

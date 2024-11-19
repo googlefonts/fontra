@@ -427,8 +427,15 @@ registerVisualizationLayerDefinition({
       return;
     }
 
-    const image = model.fontController.getBackgroundImageCached(
+    const image = model.fontController.getBackgroundImageColorizedCached(
       backgroundImage.identifier,
+      backgroundImage.color
+        ? rgbaToCSS([
+            backgroundImage.color.red,
+            backgroundImage.color.green,
+            backgroundImage.color.blue,
+          ])
+        : null,
       () => controller.requestUpdate()
     );
 
