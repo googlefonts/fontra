@@ -635,3 +635,29 @@ export function readFileOrBlobAsDataURL(fileOrBlob) {
     reader.readAsDataURL(fileOrBlob);
   });
 }
+
+export function colorizeImage(inputImage, color) {
+  const canvas = document.createElement("canvas");
+  const w = inputImage.naturalWidth;
+  const h = inputImage.naturalHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const context = canvas.getContext("2d");
+
+  context.drawImage(inputImage, 0, 0, w, h);
+  context.fillStyle = "black";
+  context.globalCompositeOperation = "saturation";
+  context.fillRect(0, 0, w, h);
+  context.fillStyle = color;
+  context.globalCompositeOperation = "screen";
+  context.fillRect(0, 0, w, h);
+
+  const outputImage = new Image();
+  outputImage.width = inputImage.width;
+  outputImage.height = inputImage.height;
+
+  return new Promise((resolve, reject) => {
+    outputImage.onload = (event) => resolve(outputImage);
+    outputImage.src = canvas.toDataURL("image/png");
+  });
+}
