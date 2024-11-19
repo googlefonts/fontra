@@ -637,9 +637,9 @@ export function readFileOrBlobAsDataURL(fileOrBlob) {
 }
 
 export function colorizeImage(inputImage, color) {
-  const canvas = document.createElement("canvas");
   const w = inputImage.naturalWidth;
   const h = inputImage.naturalHeight;
+  const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const context = canvas.getContext("2d");
