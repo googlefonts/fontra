@@ -655,12 +655,17 @@ export function colorizeImage(inputImage, color) {
   context.globalCompositeOperation = "screen";
   context.fillRect(0, 0, w, h);
 
-  const outputImage = new Image();
-  outputImage.width = inputImage.width;
-  outputImage.height = inputImage.height;
-
   return new Promise((resolve, reject) => {
-    outputImage.onload = (event) => resolve(outputImage);
-    outputImage.src = canvas.toDataURL("image/png");
+    canvas.toBlob((blob) => {
+      const outputImage = new Image();
+      outputImage.width = inputImage.width;
+      outputImage.height = inputImage.height;
+      const url = URL.createObjectURL(blob);
+      outputImage.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(outputImage);
+      };
+      outputImage.src = url;
+    });
   });
 }
