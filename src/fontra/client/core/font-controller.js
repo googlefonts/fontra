@@ -145,7 +145,6 @@ export class FontController {
     }
     const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
     if (cacheEntry.color !== color) {
-      delete cacheEntry.imageColorized;
       cacheEntry.color = color;
       cacheEntry.imageColorizedPromise = new Promise((resolve, reject) => {
         cacheEntry.imagePromise.then((image) => {
