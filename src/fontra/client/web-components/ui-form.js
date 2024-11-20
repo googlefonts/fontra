@@ -410,17 +410,42 @@ export class Form extends SimpleElement {
   }
 
   _addColorPicker(valueElement, fieldItem) {
+    const parseColor = fieldItem.parseColor || ((v) => v);
+    const formatColor = fieldItem.formatColor || ((v) => v);
+
     const colorInputElement = html.input({ type: "color" });
-    colorInputElement.value = fieldItem.formatColor
-      ? fieldItem.formatColor(fieldItem.value)
-      : fieldItem.value;
-    colorInputElement.onchange = (event) =>
-      this._fieldChanging(
-        fieldItem,
-        fieldItem.parseColor
-          ? fieldItem.parseColor(colorInputElement.value)
-          : colorInputElement.value
-      );
+    colorInputElement.value = formatColor(fieldItem.value);
+
+    {
+      // color picker change closure
+      let valueStream = undefined;
+
+      colorInputElement.oninput = (event) => {
+        const value = parseColor(colorInputElement.value);
+        if (!valueStream) {
+          valueStream = new QueueIterator(5, true);
+          this._fieldChanging(fieldItem, value, valueStream);
+        }
+
+        if (valueStream) {
+          valueStream.put(value);
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+        } else {
+          this._fieldChanging(fieldItem, value, undefined);
+        }
+      };
+
+      colorInputElement.onchange = (event) => {
+        if (valueStream) {
+          valueStream.done();
+          valueStream = undefined;
+          this._dispatchEvent("endChange", { key: fieldItem.key });
+        } else {
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+        }
+      };
+    }
+
     valueElement.appendChild(colorInputElement);
   }
 
