@@ -63,6 +63,7 @@ export function scheduleCalls(func, timeout = 0) {
       timeoutID = null;
       func(...args);
     }, timeout);
+    return timeoutID;
   };
 }
 
@@ -633,5 +634,39 @@ export function readFileOrBlobAsDataURL(fileOrBlob) {
     reader.onload = (event) => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(fileOrBlob);
+  });
+}
+
+export function colorizeImage(inputImage, color) {
+  const w = inputImage.naturalWidth;
+  const h = inputImage.naturalHeight;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const context = canvas.getContext("2d");
+
+  // First step, draw the image
+  context.drawImage(inputImage, 0, 0, w, h);
+  // Second step, reduce saturation to zero (making the image grayscale)
+  context.fillStyle = "black";
+  context.globalCompositeOperation = "saturation";
+  context.fillRect(0, 0, w, h);
+  // Last step, colorize the image, using screen (inverse multiply)
+  context.fillStyle = color;
+  context.globalCompositeOperation = "screen";
+  context.fillRect(0, 0, w, h);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      const outputImage = new Image();
+      outputImage.width = inputImage.width;
+      outputImage.height = inputImage.height;
+      const url = URL.createObjectURL(blob);
+      outputImage.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(outputImage);
+      };
+      outputImage.src = url;
+    });
   });
 }

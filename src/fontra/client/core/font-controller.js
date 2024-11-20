@@ -16,6 +16,7 @@ import { TaskPool } from "./task-pool.js";
 import {
   assert,
   chain,
+  colorizeImage,
   getCharFromCodePoint,
   mapObjectValues,
   throttleCalls,
@@ -133,11 +134,40 @@ export class FontController {
 
   getBackgroundImage(imageIdentifier) {
     // This returns a promise for the requested background image
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    return cacheEntry.imagePromise;
+  }
+
+  getBackgroundImageColorized(imageIdentifier, color) {
+    // This returns a promise for the requested colorized background image
+    if (!color) {
+      return this.getBackgroundImage(imageIdentifier);
+    }
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    if (cacheEntry.color !== color) {
+      cacheEntry.color = color;
+      cacheEntry.imageColorizedPromise = new Promise((resolve, reject) => {
+        cacheEntry.imagePromise.then((image) => {
+          if (image) {
+            colorizeImage(image, color).then((image) => {
+              cacheEntry.imageColorized = image;
+              resolve(image);
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      });
+    }
+    return cacheEntry.imageColorizedPromise;
+  }
+
+  _getBackgroundImageCacheEntry(imageIdentifier) {
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
       cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
-    return cacheEntry.imagePromise;
+    return cacheEntry;
   }
 
   getBackgroundImageCached(imageIdentifier, onLoad = null) {
@@ -154,6 +184,19 @@ export class FontController {
       this.getBackgroundImage(imageIdentifier).then((image) => onLoad(image));
     }
     return cacheEntry?.image;
+  }
+
+  getBackgroundImageColorizedCached(imageIdentifier, color, onLoad = null) {
+    if (!color) {
+      return this.getBackgroundImageCached(imageIdentifier, onLoad);
+    }
+    const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
+    if ((!cacheEntry?.imageColorizedPromise || cacheEntry.color !== color) && onLoad) {
+      this.getBackgroundImageColorized(imageIdentifier, color).then((image) =>
+        onLoad(image)
+      );
+    }
+    return cacheEntry?.imageColorized;
   }
 
   _cacheBackgroundImageFromIdentifier(imageIdentifier) {
