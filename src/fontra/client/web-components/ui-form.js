@@ -79,6 +79,11 @@ export class Form extends SimpleElement {
       height: 1.6em;
     }
 
+    .ui-form-value input[type="color"] {
+      height: 2em;
+      width: 4em;
+    }
+
     .ui-form-value input[type="text"] {
       width: 100%;
     }
@@ -402,6 +407,21 @@ export class Form extends SimpleElement {
     }
 
     valueElement.appendChild(rangeElement);
+  }
+
+  _addColorPicker(valueElement, fieldItem) {
+    const colorInputElement = html.input({ type: "color" });
+    colorInputElement.value = fieldItem.formatColor
+      ? fieldItem.formatColor(fieldItem.value)
+      : fieldItem.value;
+    colorInputElement.onchange = (event) =>
+      this._fieldChanging(
+        fieldItem,
+        fieldItem.parseColor
+          ? fieldItem.parseColor(colorInputElement.value)
+          : colorInputElement.value
+      );
+    valueElement.appendChild(colorInputElement);
   }
 
   addEventListener(eventName, handler, options) {
