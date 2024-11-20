@@ -63,6 +63,7 @@ export function scheduleCalls(func, timeout = 0) {
       timeoutID = null;
       func(...args);
     }, timeout);
+    return timeoutID;
   };
 }
 
