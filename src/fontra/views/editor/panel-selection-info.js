@@ -11,6 +11,7 @@ import {
   makeUPlusStringFromCodePoint,
   parseSelection,
   range,
+  rgbaToHex,
   round,
   splitGlyphNameExtension,
   throttleCalls,
@@ -290,6 +291,20 @@ export default class SelectionInfoPanel extends Panel {
           ),
           "data-tooltipposition": "left",
         }),
+      });
+
+      formContents.push({
+        type: "color-picker",
+        key: backgroundImageKey("color"),
+        label: translate("background-image.labels.colorize"),
+        value: backgroundImage.color,
+        parseColor: (value) => {
+          const matches = value.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+          const channels = matches.slice(1, 4).map((ch) => parseInt(ch, 16) / 255);
+          return { red: channels[0], green: channels[1], blue: channels[2] };
+        },
+        formatColor: (value) =>
+          value ? rgbaToHex([value.red, value.green, value.blue]) : "#000000",
       });
 
       formContents.push({
