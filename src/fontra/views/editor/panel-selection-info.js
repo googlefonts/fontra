@@ -297,6 +297,7 @@ export default class SelectionInfoPanel extends Panel {
         type: "color-picker",
         key: backgroundImageKey("color"),
         label: translate("background-image.labels.colorize"),
+        continuousDelay: 150,
         value: backgroundImage.color,
         parseColor: (value) => {
           const matches = value.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
