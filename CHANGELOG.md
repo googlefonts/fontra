@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2024-11-20
+
+- Add support for background image colorization [PR 1815](https://github.com/googlefonts/fontra/pull/1815)
+
 ## 2024-11-18
 
 New feature: background images.
