@@ -84,6 +84,11 @@ export class Form extends SimpleElement {
       height: 1.6em;
     }
 
+    .ui-form-value input[type="checkbox"] {
+      width: initial;
+      height: initial;
+    }
+
     .ui-form-value input[type="color"] {
       height: 2em;
       width: 4em;
@@ -426,6 +431,7 @@ export class Form extends SimpleElement {
       let valueStream = undefined;
 
       const oninputFunc = scheduleCalls((event) => {
+        checkboxElement.checked = true;
         const value = parseColor(colorInputElement.value);
         if (!valueStream) {
           valueStream = new QueueIterator(5, true);
@@ -447,6 +453,7 @@ export class Form extends SimpleElement {
       };
 
       colorInputElement.onchange = (event) => {
+        checkboxElement.checked = true;
         if (valueStream) {
           valueStream.done();
           valueStream = undefined;
@@ -462,6 +469,19 @@ export class Form extends SimpleElement {
     }
 
     valueElement.appendChild(colorInputElement);
+
+    const checkboxElement = html.input({
+      type: "checkbox",
+      checked: !!fieldItem.value,
+      onchange: (event) => {
+        this._fieldChanging(
+          fieldItem,
+          checkboxElement.checked ? parseColor(colorInputElement.value) : undefined,
+          undefined
+        );
+      },
+    });
+    valueElement.appendChild(checkboxElement);
   }
 
   addEventListener(eventName, handler, options) {
