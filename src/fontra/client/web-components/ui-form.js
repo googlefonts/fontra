@@ -1,7 +1,12 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { enumerate, hyphenatedToCamelCase, round } from "../core/utils.js";
+import {
+  enumerate,
+  hyphenatedToCamelCase,
+  round,
+  scheduleCalls,
+} from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
@@ -420,7 +425,7 @@ export class Form extends SimpleElement {
       // color picker change closure
       let valueStream = undefined;
 
-      colorInputElement.oninput = (event) => {
+      const oninputFunc = scheduleCalls((event) => {
         const value = parseColor(colorInputElement.value);
         if (!valueStream) {
           valueStream = new QueueIterator(5, true);
@@ -433,12 +438,22 @@ export class Form extends SimpleElement {
         } else {
           this._fieldChanging(fieldItem, value, undefined);
         }
+      }, fieldItem.continuousDelay || 0);
+
+      let oninputTimer;
+
+      colorInputElement.oninput = (event) => {
+        oninputTimer = oninputFunc(event);
       };
 
       colorInputElement.onchange = (event) => {
         if (valueStream) {
           valueStream.done();
           valueStream = undefined;
+          if (oninputTimer) {
+            clearTimeout(oninputTimer);
+            oninputTimer = undefined;
+          }
           this._dispatchEvent("endChange", { key: fieldItem.key });
         } else {
           this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
