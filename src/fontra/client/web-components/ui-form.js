@@ -423,6 +423,7 @@ export class Form extends SimpleElement {
     const parseColor = fieldItem.parseColor || ((v) => v);
     const formatColor = fieldItem.formatColor || ((v) => v);
 
+    let checkboxElement;
     const colorInputElement = html.input({ type: "color" });
     colorInputElement.value = formatColor(fieldItem.value);
 
@@ -431,7 +432,9 @@ export class Form extends SimpleElement {
       let valueStream = undefined;
 
       const oninputFunc = scheduleCalls((event) => {
-        checkboxElement.checked = true;
+        if (checkboxElement) {
+          checkboxElement.checked = true;
+        }
         const value = parseColor(colorInputElement.value);
         if (!valueStream) {
           valueStream = new QueueIterator(5, true);
@@ -453,7 +456,9 @@ export class Form extends SimpleElement {
       };
 
       colorInputElement.onchange = (event) => {
-        checkboxElement.checked = true;
+        if (checkboxElement) {
+          checkboxElement.checked = true;
+        }
         if (valueStream) {
           valueStream.done();
           valueStream = undefined;
@@ -470,18 +475,20 @@ export class Form extends SimpleElement {
 
     valueElement.appendChild(colorInputElement);
 
-    const checkboxElement = html.input({
-      type: "checkbox",
-      checked: !!fieldItem.value,
-      onchange: (event) => {
-        this._fieldChanging(
-          fieldItem,
-          checkboxElement.checked ? parseColor(colorInputElement.value) : undefined,
-          undefined
-        );
-      },
-    });
-    valueElement.appendChild(checkboxElement);
+    if (fieldItem.allowNoColor) {
+      checkboxElement = html.input({
+        type: "checkbox",
+        checked: !!fieldItem.value,
+        onchange: (event) => {
+          this._fieldChanging(
+            fieldItem,
+            checkboxElement.checked ? parseColor(colorInputElement.value) : undefined,
+            undefined
+          );
+        },
+      });
+      valueElement.appendChild(checkboxElement);
+    }
   }
 
   addEventListener(eventName, handler, options) {
