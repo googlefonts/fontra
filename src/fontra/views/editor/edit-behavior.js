@@ -215,6 +215,7 @@ class EditBehavior {
       !this.doFullTransform,
       "can't call makeChangeForDelta on transform behavior"
     );
+
     return this._makeChangeForTransformFunc(
       makePointTranslateFunction(this.constrainDelta(delta)),
       makePointTranslateFunction(delta)
@@ -226,6 +227,7 @@ class EditBehavior {
       this.doFullTransform,
       "can't call makeChangeForTransformation on delta behavior"
     );
+
     const pointTransformFunction =
       transformation.transformPointObject.bind(transformation);
 
@@ -261,16 +263,6 @@ class EditBehavior {
     transformComponentFunc = null,
     transformBackgroundImageFunc = null
   ) {
-    if (this.doFullTransform && !transformComponentFunc) {
-      throw Error(
-        "assert -- must pass transformComponentFunc when doing doFullTransform"
-      );
-    }
-    if (this.doFullTransform && !transformBackgroundImageFunc) {
-      throw Error(
-        "assert -- must pass transformBackgroundImageFunc when doing doFullTransform"
-      );
-    }
     const transform = {
       constrained: transformFunc,
       free: freeTransformFunc || transformFunc,
