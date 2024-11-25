@@ -9,7 +9,7 @@ import {
   rectSize,
 } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
-import { Transform, prependTransformToDecomposed } from "../core/transform.js";
+import { Transform } from "../core/transform.js";
 import {
   boolInt,
   commandKeyProperty,
