@@ -16,7 +16,7 @@ import {
   splitPathAtPointIndices,
 } from "../core/path-functions.js";
 import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
-import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
+import { difference, isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   assert,
@@ -36,7 +36,12 @@ import { translate, translatePlural } from "/core/localization.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 
 export class SceneController {
-  constructor(fontController, canvasController, applicationSettingsController) {
+  constructor(
+    fontController,
+    canvasController,
+    applicationSettingsController,
+    visualizationLayersSettings
+  ) {
     this.canvasController = canvasController;
     this.applicationSettings = applicationSettingsController.model;
     this.fontController = fontController;
@@ -44,6 +49,7 @@ export class SceneController {
 
     this.setupSceneSettings();
     this.sceneSettings = this.sceneSettingsController.model;
+    this.visualizationLayersSettings = visualizationLayersSettings;
 
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
@@ -53,7 +59,8 @@ export class SceneController {
     this.sceneModel = new SceneModel(
       fontController,
       this.sceneSettingsController,
-      isPointInPath
+      isPointInPath,
+      visualizationLayersSettings
     );
 
     this.selectedTool = undefined;
@@ -87,6 +94,7 @@ export class SceneController {
       combinedSelection: new Set(), // dynamic: selection | hoverSelection
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
+      backgroundImagesAreLocked: true,
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -288,10 +296,14 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       ["selection", "hoverSelection"],
       (event) => {
+        if (event.key === "selection") {
+          this._checkSelectionForLockedItems();
+        }
         this.sceneSettings.combinedSelection = union(
           this.sceneSettings.selection,
           this.sceneSettings.hoverSelection
         );
+        this.canvasController.requestUpdate();
       },
       true
     );
@@ -327,6 +339,23 @@ export class SceneController {
         { senderID: this }
       );
     });
+  }
+
+  _checkSelectionForLockedItems() {
+    if (
+      this.sceneSettings.backgroundImagesAreLocked ||
+      !this.visualizationLayersSettings.model["fontra.background-image"]
+    ) {
+      this._deselectBackroundImage();
+    }
+  }
+
+  _deselectBackroundImage() {
+    if (this.sceneSettings.selection.has("backgroundImage/0")) {
+      this.sceneSettings.selection = difference(this.sceneSettings.selection, [
+        "backgroundImage/0",
+      ]);
+    }
   }
 
   setupChangeListeners() {
@@ -370,6 +399,25 @@ export class SceneController {
         this._adjustScrollPosition();
       },
       true
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "backgroundImagesAreLocked",
+      (event) => {
+        if (event.newValue) {
+          this._deselectBackroundImage();
+        }
+      },
+      true
+    );
+
+    this.visualizationLayersSettings.addKeyListener(
+      "fontra.background-image",
+      (event) => {
+        if (!event.newValue) {
+          this._deselectBackroundImage();
+        }
+      }
     );
   }
 
@@ -442,6 +490,15 @@ export class SceneController {
       () => this.doDecomposeSelectedComponents(),
       () => !!this.contextMenuState?.componentSelection?.length
     );
+
+    registerAction("action.lock-background-images", { topic }, () => {
+      this.sceneSettings.backgroundImagesAreLocked =
+        !this.sceneSettings.backgroundImagesAreLocked;
+      if (!this.sceneSettings.backgroundImagesAreLocked) {
+        // If background images are hidden, show them
+        this.visualizationLayersSettings.model["fontra.background-image"] = true;
+      }
+    });
   }
 
   setAutoViewBox() {
@@ -652,7 +709,7 @@ export class SceneController {
 
       return {
         changes: changes,
-        undoLabel: "nudge selection",
+        undoLabel: translate("action.nudge-selection"),
         broadcast: true,
       };
     });
@@ -736,6 +793,15 @@ export class SceneController {
           ),
         actionIdentifier: "action.decompose-component",
       },
+      {
+        title: () =>
+          translate(
+            this.sceneSettings.backgroundImagesAreLocked
+              ? "action.unlock-background-images"
+              : "action.lock-background-images"
+          ),
+        actionIdentifier: "action.lock-background-images",
+      },
     ];
     return contextMenuItems;
   }
@@ -792,11 +858,6 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection || new Set();
       this.sceneModel.hoverSelection = new Set();
-      this.canvasController.requestUpdate();
-      // Delay the notification by a tiny amount, to work around
-      // an ordering problem: sometimes the selection is set to
-      // something that will be valid soon but isn't right now.
-      setTimeout(() => this._dispatchEvent("selectionChanged"), 20);
     }
   }
 
@@ -1107,8 +1168,10 @@ export class SceneController {
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
         message(
-          "The glyph could not be saved.",
-          `The edit has been reverted.\n\n${this._cancelGlyphEditing}`
+          translate("message.glyph-could-not-be-saved"),
+          `${translate("message.edit-has-been-reverted")}\n\n${
+            this._cancelGlyphEditing
+          }`
         );
       }
     } else {
@@ -1117,8 +1180,8 @@ export class SceneController {
     }
   }
 
-  getSelectionBox() {
-    return this.sceneModel.getSelectionBox();
+  getSelectionBounds() {
+    return this.sceneModel.getSelectionBounds();
   }
 
   getUndoRedoInfo(isRedo) {
@@ -1173,7 +1236,7 @@ export class SceneController {
         }
       }
       this.selection = selection;
-      return "Reverse Contour Direction";
+      return translate("action.reverse-contour");
     });
   }
 
@@ -1214,7 +1277,7 @@ export class SceneController {
       }
 
       this.selection = newSelection;
-      return "Set Start Point";
+      return translate("action.set-contour-start");
     });
   }
 
@@ -1261,7 +1324,7 @@ export class SceneController {
         numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
       }
       this.selection = new Set();
-      return "Break Contour" + (numSplits > 1 ? "s" : "");
+      return translatePlural("action.break-contour", numSplits);
     });
   }
 
@@ -1325,7 +1388,7 @@ export class SceneController {
         }
       }
       this.selection = new Set();
-      return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
+      return translatePlural("action.decompose-component", componentSelection?.length);
     });
   }
 

@@ -1,7 +1,12 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { enumerate, hyphenatedToCamelCase, round } from "../core/utils.js";
+import {
+  enumerate,
+  hyphenatedToCamelCase,
+  round,
+  scheduleCalls,
+} from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
@@ -43,6 +48,11 @@ export class Form extends SimpleElement {
       grid-column: 1 / span 2;
     }
 
+    .ui-form-line-spacer {
+      grid-column: 1 / span 2;
+      height: 0.2em;
+    }
+
     .ui-form-label.header {
       overflow-x: unset;
       font-weight: bold;
@@ -72,6 +82,16 @@ export class Form extends SimpleElement {
     .ui-form-value input {
       width: min(100%, 9.5em);
       height: 1.6em;
+    }
+
+    .ui-form-value input[type="checkbox"] {
+      width: initial;
+      height: initial;
+    }
+
+    .ui-form-value input[type="color"] {
+      height: 2em;
+      width: 4em;
     }
 
     .ui-form-value input[type="text"] {
@@ -138,6 +158,10 @@ export class Form extends SimpleElement {
     for (const fieldItem of fieldDescriptions) {
       if (fieldItem.type === "divider") {
         this.contentElement.appendChild(html.hr());
+        continue;
+      }
+      if (fieldItem.type === "line-spacer") {
+        this.contentElement.appendChild(html.div({ class: "ui-form-line-spacer" }));
         continue;
       }
       if (fieldItem.type === "spacer") {
@@ -393,6 +417,78 @@ export class Form extends SimpleElement {
     }
 
     valueElement.appendChild(rangeElement);
+  }
+
+  _addColorPicker(valueElement, fieldItem) {
+    const parseColor = fieldItem.parseColor || ((v) => v);
+    const formatColor = fieldItem.formatColor || ((v) => v);
+
+    let checkboxElement;
+    const colorInputElement = html.input({ type: "color" });
+    colorInputElement.value = formatColor(fieldItem.value);
+
+    {
+      // color picker change closure
+      let valueStream = undefined;
+
+      const oninputFunc = scheduleCalls((event) => {
+        if (checkboxElement) {
+          checkboxElement.checked = true;
+        }
+        const value = parseColor(colorInputElement.value);
+        if (!valueStream) {
+          valueStream = new QueueIterator(5, true);
+          this._fieldChanging(fieldItem, value, valueStream);
+        }
+
+        if (valueStream) {
+          valueStream.put(value);
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+        } else {
+          this._fieldChanging(fieldItem, value, undefined);
+        }
+      }, fieldItem.continuousDelay || 0);
+
+      let oninputTimer;
+
+      colorInputElement.oninput = (event) => {
+        oninputTimer = oninputFunc(event);
+      };
+
+      colorInputElement.onchange = (event) => {
+        if (checkboxElement) {
+          checkboxElement.checked = true;
+        }
+        if (valueStream) {
+          valueStream.done();
+          valueStream = undefined;
+          if (oninputTimer) {
+            clearTimeout(oninputTimer);
+            oninputTimer = undefined;
+          }
+          this._dispatchEvent("endChange", { key: fieldItem.key });
+        } else {
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+        }
+      };
+    }
+
+    valueElement.appendChild(colorInputElement);
+
+    if (fieldItem.allowNoColor) {
+      checkboxElement = html.input({
+        type: "checkbox",
+        checked: !!fieldItem.value,
+        onchange: (event) => {
+          this._fieldChanging(
+            fieldItem,
+            checkboxElement.checked ? parseColor(colorInputElement.value) : undefined,
+            undefined
+          );
+        },
+      });
+      valueElement.appendChild(checkboxElement);
+    }
   }
 
   addEventListener(eventName, handler, options) {

@@ -30,7 +30,7 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
-import { labeledCheckbox, labeledTextInput } from "../core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -45,6 +45,7 @@ import {
   modulo,
   parseSelection,
   range,
+  readFileOrBlobAsDataURL,
   readFromClipboard,
   reversed,
   scheduleCalls,
@@ -87,7 +88,11 @@ import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import Panel from "./panel.js";
 import { applicationSettingsController } from "/core/application-settings.js";
-import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
+import {
+  ensureLanguageHasLoaded,
+  translate,
+  translatePlural,
+} from "/core/localization.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -121,6 +126,11 @@ export class EditorController {
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
+    canvas.ondragenter = (event) => this._onDragEnter(event);
+    canvas.ondragover = (event) => this._onDragOver(event);
+    canvas.ondragleave = (event) => this._onDragLeave(event);
+    canvas.ondrop = (event) => this._onDrop(event);
+
     const canvasController = new CanvasController(canvas, (magnification) =>
       this.canvasMagnificationChanged(magnification)
     );
@@ -131,10 +141,24 @@ export class EditorController {
       async (...args) => await this.editListenerCallback(...args)
     );
 
+    this.visualizationLayers = new VisualizationLayers(
+      visualizationLayerDefinitions,
+      this.isThemeDark
+    );
+
+    this.visualizationLayersSettings = newVisualizationLayersSettings(
+      this.visualizationLayers
+    );
+    this.visualizationLayersSettings.addListener((event) => {
+      this.visualizationLayers.toggle(event.key, event.newValue);
+      this.canvasController.requestUpdate();
+    }, true);
+
     this.sceneController = new SceneController(
       this.fontController,
       canvasController,
-      applicationSettingsController
+      applicationSettingsController,
+      this.visualizationLayersSettings
     );
 
     this.sceneSettingsController = this.sceneController.sceneSettingsController;
@@ -163,19 +187,6 @@ export class EditorController {
     );
 
     this.cjkDesignFrame = new CJKDesignFrame(this);
-
-    this.visualizationLayers = new VisualizationLayers(
-      visualizationLayerDefinitions,
-      this.isThemeDark
-    );
-
-    this.visualizationLayersSettings = newVisualizationLayersSettings(
-      this.visualizationLayers
-    );
-    this.visualizationLayersSettings.addListener((event) => {
-      this.visualizationLayers.toggle(event.key, event.newValue);
-      this.canvasController.requestUpdate();
-    }, true);
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
@@ -399,25 +410,25 @@ export class EditorController {
         "action.add-component",
         { topic },
         () => this.doAddComponent(),
-        () => this.canAddComponent()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-anchor",
         { topic },
         () => this.doAddAnchor(),
-        () => this.canAddAnchor()
+        () => this.canEditGlyph()
       );
 
       registerAction(
         "action.add-guideline",
         { topic },
         () => this.doAddGuideline(),
-        () => this.canAddGuideline()
+        () => this.canEditGlyph()
       );
 
       registerAction(
-        "action.lock-guidelines",
+        "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
         () => this.canLockGuideline()
@@ -462,7 +473,7 @@ export class EditorController {
         },
         () => this.zoomFit(),
         () => {
-          let viewBox = this.sceneController.getSelectionBox();
+          let viewBox = this.sceneController.getSelectionBounds();
           if (!viewBox) {
             return false;
           }
@@ -496,6 +507,26 @@ export class EditorController {
           defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(false)
+      );
+
+      registerAction(
+        "action.select-previous-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-glyph",
+          defaultShortCuts: [{ baseKey: "ArrowLeft", commandKey: true }],
+        },
+        () => this.doSelectPreviousNextGlyph(true)
+      );
+
+      registerAction(
+        "action.select-next-glyph",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-glyph",
+          defaultShortCuts: [{ baseKey: "ArrowRight", commandKey: true }],
+        },
+        () => this.doSelectPreviousNextGlyph(false)
       );
 
       registerAction(
@@ -556,6 +587,16 @@ export class EditorController {
             translate("dialog.add"),
             1
           )
+      );
+    }
+
+    {
+      const topic = "0035-action-topics.menu.glyph";
+      registerAction(
+        "action.glyph.add-background-image",
+        { topic },
+        () => this.addBackgroundImageFromFileSystem(),
+        () => this.canPlaceBackgroundImage()
       );
     }
 
@@ -800,40 +841,13 @@ export class EditorController {
       {
         title: translate("menubar.glyph"),
         enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.glyph.add"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").addSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.delete"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                const designspaceNavigationPanel = this.getSidebarPanel(
-                  "designspace-navigation"
-                );
-                designspaceNavigationPanel.removeSource();
-              },
-            },
-            {
-              title: translate("menubar.glyph.edit-axes"),
-              enabled: () => {
-                return typeof this.sceneModel.selectedGlyph !== "undefined";
-              },
-              callback: () => {
-                this.getSidebarPanel("designspace-navigation").editGlyphAxes();
-              },
-            },
-          ];
-        },
+        getItems: () => [
+          { actionIdentifier: "action.glyph.add-source" },
+          { actionIdentifier: "action.glyph.delete-source" },
+          { actionIdentifier: "action.glyph.edit-glyph-axes" },
+          MenuItemDivider,
+          { actionIdentifier: "action.glyph.add-background-image" },
+        ],
       },
       {
         title: translate("menubar.help"),
@@ -1005,26 +1019,39 @@ export class EditorController {
   async showDialogGlyphEditCannotEditReadOnly(create = false) {
     const glyphName = this.sceneSettings.selectedGlyphName;
     await message(
-      `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
-      "The font is read-only."
+      translate(
+        create ? "dialog.cant-create-glyph.title" : "dialog.cant-edit-glyph.title",
+        glyphName
+      ),
+      translate("dialog.cant-edit-glyph.content")
     );
   }
 
   async showDialogGlyphEditCannotEditLocked() {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    await message(`Can’t edit glyph “${glyphName}”`, "The glyph is locked.");
+    await message(
+      translate("dialog.cant-edit-glyph.title", glyphName),
+      translate("dialog.cant-edit-glyph.content.locked-glyph")
+    );
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
-      `Can’t edit glyph “${glyphName}”`,
-      "The location is not at a source.",
+      translate("dialog.cant-edit-glyph.title", glyphName),
+      translate("dialog.cant-edit-glyph.content.location-not-at-source"),
       [
-        { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-        { title: "New source", resultValue: "createNewSource" },
         {
-          title: "Go to nearest source",
+          title: translate("dialog.cancel"),
+          resultValue: "cancel",
+          isCancelButton: true,
+        },
+        {
+          title: translate("sources.button.new-glyph-source"),
+          resultValue: "createNewSource",
+        },
+        {
+          title: translate("sources.button.go-to-nearest-source"),
           resultValue: "goToNearestSource",
           isDefaultButton: true,
         },
@@ -1451,7 +1478,7 @@ export class EditorController {
         };
       }
       this.sceneController.selection = new Set([`anchor/${anchorIndex}`]);
-      return "Edit Anchor";
+      return translate("action.edit-anchor");
     });
   }
 
@@ -1484,7 +1511,7 @@ export class EditorController {
         };
       }
       this.sceneController.selection = new Set([`guideline/${guidelineIndex}`]);
-      return "Edit Guideline";
+      return translate("action.edit-guideline");
     });
   }
 
@@ -1509,15 +1536,15 @@ export class EditorController {
       // do not add their menu items.
       this.basicContextMenuItems.push(
         {
-          title: "Cut",
+          title: translate("action.cut"),
           actionIdentifier: "action.cut",
         },
         {
-          title: "Copy",
+          title: translate("action.copy"),
           actionIdentifier: "action.copy",
         },
         {
-          title: "Paste",
+          title: translate("action.paste"),
           actionIdentifier: "action.paste",
         }
       );
@@ -1549,7 +1576,7 @@ export class EditorController {
 
     this.glyphEditContextMenuItems.push({
       title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      actionIdentifier: "action.lock-guidelines",
+      actionIdentifier: "action.lock-guideline",
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
@@ -1561,6 +1588,12 @@ export class EditorController {
     });
     this.glyphSelectedContextMenuItems.push({
       actionIdentifier: "action.select-next-source",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.select-previous-glyph",
+    });
+    this.glyphSelectedContextMenuItems.push({
+      actionIdentifier: "action.select-next-glyph",
     });
     this.glyphSelectedContextMenuItems.push({
       title: () =>
@@ -1665,25 +1698,34 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         copyResult = this._prepareCopyOrCutLayers(glyph, true);
         this.sceneController.selection = new Set();
-        return "Cut Selection";
+        return "Cut Selection"; // TODO: translation translate("action.edit-guideline");
       },
       undefined,
       true
     );
     if (copyResult && !event) {
-      const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath);
+      const { layerGlyphs, flattenedPath, backgroundImageData } = copyResult;
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData
+      );
     }
   }
 
@@ -1697,25 +1739,51 @@ export class EditorController {
     }
 
     if (this.sceneSettings.selectedGlyph.isEditing) {
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
-        undefined,
-        false
+      const { layerGlyphs, flattenedPath, backgroundImageData } =
+        this._prepareCopyOrCutLayers(undefined, false);
+      await this._writeLayersToClipboard(
+        null,
+        layerGlyphs,
+        flattenedPath,
+        backgroundImageData,
+        event
       );
-      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     } else {
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       const varGlyph = positionedGlyph.varGlyph.glyph;
+      const backgroundImageData = await this._collectBackgroundImageData(varGlyph);
       const glyphController = positionedGlyph.glyph;
       await this._writeLayersToClipboard(
         varGlyph,
         [{ glyph: glyphController.instance }],
         glyphController.flattenedPath,
+        backgroundImageData,
         event
       );
     }
   }
 
-  async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
+  async _collectBackgroundImageData(varGlyph) {
+    const backgroundImageData = {};
+    for (const layer of Object.values(varGlyph.layers)) {
+      if (layer.glyph.backgroundImage) {
+        const imageIdentifier = layer.glyph.backgroundImage.identifier;
+        const bgImage = await this.fontController.getBackgroundImage(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
+    }
+    return backgroundImageData;
+  }
+
+  async _writeLayersToClipboard(
+    varGlyph,
+    layerGlyphs,
+    flattenedPath,
+    backgroundImageData,
+    event
+  ) {
     if (!layerGlyphs?.length) {
       // nothing to do
       return;
@@ -1730,9 +1798,11 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const codePoints = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, codePoints);
-    const jsonString = JSON.stringify(
-      varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs: layerGlyphs }
-    );
+    const jsonObject = varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs };
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
+      jsonObject.backgroundImageData = backgroundImageData;
+    }
+    const jsonString = JSON.stringify(jsonObject);
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -1752,7 +1822,23 @@ export class EditorController {
         "web image/svg+xml": svgString,
         "web fontra/static-glyph": jsonString,
       };
+
+      await this._addBackgroundImageToClipboard(clipboardObject, backgroundImageData);
+
       await writeToClipboard(clipboardObject);
+    }
+  }
+
+  async _addBackgroundImageToClipboard(clipboardObject, backgroundImageData) {
+    if (
+      this.sceneController.selection.size == 1 &&
+      this.sceneController.selection.has("backgroundImage/0") &&
+      backgroundImageData &&
+      Object.keys(backgroundImageData).length == 1
+    ) {
+      const res = await fetch(Object.values(backgroundImageData)[0]);
+      const blob = await res.blob();
+      clipboardObject[blob.type] = blob;
     }
   }
 
@@ -1780,6 +1866,8 @@ export class EditorController {
 
     const layerGlyphs = [];
     let flattenedPath;
+    const backgroundImageData = {};
+
     for (const [layerName, layerGlyph] of Object.entries(
       this.sceneController.getEditingLayerFromGlyphLayers(varGlyph.layers)
     )) {
@@ -1795,6 +1883,13 @@ export class EditorController {
         location: layerLocations[layerName],
         glyph: copyResult.instance,
       });
+      if (copyResult.instance.backgroundImage) {
+        const imageIdentifier = copyResult.instance.backgroundImage.identifier;
+        const bgImage = this.fontController.getBackgroundImageCached(imageIdentifier);
+        if (bgImage) {
+          backgroundImageData[imageIdentifier] = bgImage.src;
+        }
+      }
     }
     if (!layerGlyphs.length && !doCut) {
       const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
@@ -1808,7 +1903,7 @@ export class EditorController {
       }
       layerGlyphs.push({ glyph: instance });
     }
-    return { layerGlyphs, flattenedPath };
+    return { layerGlyphs, flattenedPath, backgroundImageData };
   }
 
   _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
@@ -1839,11 +1934,13 @@ export class EditorController {
       component: componentIndices,
       anchor: anchorIndices,
       guideline: guidelineIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
     let anchors;
     let guidelines;
+    let backgroundImage;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1876,12 +1973,21 @@ export class EditorController {
         }
       }
     }
+    if (backgroundImageIndices) {
+      backgroundImage = editInstance.backgroundImage;
+      if (doCut) {
+        // TODO: don't delete if bg images are locked
+        // (even though we shouldn't be able to select them)
+        editInstance.backgroundImage = undefined;
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
-      path: path,
-      components: components,
-      anchors: anchors,
-      guidelines: guidelines,
+      path,
+      components,
+      anchors,
+      guidelines,
+      backgroundImage,
     });
     return {
       instance: instance,
@@ -1897,9 +2003,20 @@ export class EditorController {
   }
 
   async doPaste() {
-    let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    let { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData } =
+      await this._unpackClipboard();
     if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
+      await this._pasteClipboardImage();
       return;
+    }
+
+    const backgroundImageIdentifierMapping =
+      this._makeBackgroundImageIdentifierMapping(backgroundImageData);
+
+    if (backgroundImageData && !isObjectEmpty(backgroundImageData)) {
+      // Ensure background images are visible and not locked
+      this.visualizationLayersSettings.model["fontra.background-image"] = true;
+      this.sceneSettings.backgroundImagesAreLocked = false;
     }
 
     if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
@@ -1948,6 +2065,10 @@ export class EditorController {
     }
 
     if (pasteVarGlyph) {
+      this._remapBackgroundImageIdentifiers(
+        Object.values(pasteVarGlyph.layers).map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph.isUndefined) {
         await this.newGlyph(
@@ -1966,8 +2087,53 @@ export class EditorController {
       };
       this.sceneSettings.glyphLocation = { ...this.sceneSettings.glyphLocation };
     } else {
+      this._remapBackgroundImageIdentifiers(
+        pasteLayerGlyphs.map((layerGlyph) => layerGlyph.glyph),
+        backgroundImageIdentifierMapping
+      );
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
+
+    if (this.fontController.backendInfo.features["background-image"]) {
+      await this._writeBackgroundImageData(
+        backgroundImageData,
+        backgroundImageIdentifierMapping
+      );
+    }
+  }
+
+  _makeBackgroundImageIdentifierMapping(backgroundImageData) {
+    if (!backgroundImageData || isObjectEmpty(backgroundImageData)) {
+      return {};
+    }
+    const mapping = {};
+    for (const originalImageIdentifier of Object.keys(backgroundImageData)) {
+      const newImageIdentifier = crypto.randomUUID();
+      mapping[originalImageIdentifier] = newImageIdentifier;
+    }
+    return mapping;
+  }
+
+  _remapBackgroundImageIdentifiers(glyphs, identifierMapping) {
+    for (const glyph of glyphs) {
+      if (glyph.backgroundImage) {
+        glyph.backgroundImage.identifier =
+          identifierMapping[glyph.backgroundImage.identifier] ||
+          glyph.backgroundImage.identifier;
+      }
+    }
+  }
+
+  async _writeBackgroundImageData(backgroundImageData, identifierMapping) {
+    if (!backgroundImageData) {
+      return;
+    }
+    for (const [imageIdentifier, imageData] of Object.entries(backgroundImageData)) {
+      const mappedIdentifier = identifierMapping[imageIdentifier] || imageIdentifier;
+      await this.fontController.putBackgroundImageData(mappedIdentifier, imageData);
+    }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
   }
 
   async _unpackClipboard() {
@@ -1995,6 +2161,7 @@ export class EditorController {
 
     let pasteLayerGlyphs;
     let pasteVarGlyph;
+    let backgroundImageData;
 
     if (customJSON) {
       try {
@@ -2009,13 +2176,71 @@ export class EditorController {
         if (clipboardObject.variableGlyph) {
           pasteVarGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
         }
+        backgroundImageData = clipboardObject.backgroundImageData;
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
+      const glyph = await this.parseClipboard(plainText);
+      if (glyph) {
+        pasteLayerGlyphs = [{ glyph }];
+      }
     }
-    return { pasteVarGlyph, pasteLayerGlyphs };
+    return { pasteVarGlyph, pasteLayerGlyphs, backgroundImageData };
+  }
+
+  async _pasteClipboardImage() {
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+
+    const imageBlob =
+      (await readFromClipboard("image/png", false)) ||
+      (await readFromClipboard("image/jpeg", false));
+
+    if (!imageBlob) {
+      return;
+    }
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(imageBlob));
+  }
+
+  async _placeBackgroundImage(dataURL) {
+    // Ensure background images are visible and not locked
+    this.visualizationLayersSettings.model["fontra.background-image"] = true;
+    this.sceneSettings.backgroundImagesAreLocked = false;
+
+    const imageIdentifiers = [];
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const imageIdentifier = crypto.randomUUID();
+        layerGlyph.backgroundImage = {
+          identifier: imageIdentifier,
+          transformation: getDecomposedIdentity(),
+          opacity: 1.0,
+        };
+        imageIdentifiers.push(imageIdentifier);
+      }
+      this.sceneController.selection = new Set(["backgroundImage/0"]);
+      return "place background image"; // TODO: translate
+    });
+
+    for (const imageIdentifier of imageIdentifiers) {
+      await this.fontController.putBackgroundImageData(imageIdentifier, dataURL);
+    }
+    // Writing the background image data does not cause a refresh
+    this.canvasController.requestUpdate();
+  }
+
+  async addBackgroundImageFromFileSystem() {
+    const file = await pickFile([".png", ".jpeg", ".jpg"]);
+    if (!file) {
+      // User cancelled
+      return;
+    }
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(file));
   }
 
   async _pasteReplaceGlyph(varGlyph) {
@@ -2104,6 +2329,12 @@ export class EditorController {
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
           layerGlyph.anchors.push(...pasteGlyph.anchors);
           layerGlyph.guidelines.push(...pasteGlyph.guidelines);
+          if (pasteGlyph.backgroundImage) {
+            layerGlyph.backgroundImage = pasteGlyph.backgroundImage;
+            if (!this.sceneSettings.backgroundImagesAreLocked) {
+              selection.add("backgroundImage/0");
+            }
+          }
         }
         this.sceneController.selection = selection;
         return "Paste";
@@ -2143,14 +2374,14 @@ export class EditorController {
 
   async _deleteCurrentGlyph(event) {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const result = await dialog(
-      `Are you sure you want to delete glyph "${glyphName}" from the font project?`,
-      "",
-      [
-        { title: "Cancel", isCancelButton: true },
-        { title: "Delete glyph", isDefaultButton: true, resultValue: "ok" },
-      ]
-    );
+    const result = await dialog(translate("dialog.delete-current-glyph.title"), "", [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      {
+        title: translate("action.delete-glyph"),
+        isDefaultButton: true,
+        resultValue: "ok",
+      },
+    ]);
     if (!result) {
       return;
     }
@@ -2163,6 +2394,7 @@ export class EditorController {
       component: componentSelection,
       anchor: anchorSelection,
       guideline: guidelineSelection,
+      backgroundImage: backgroundImageSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
     // TODO: Font Guidelines
@@ -2200,15 +2432,16 @@ export class EditorController {
               layerGlyph.guidelines.splice(guidelineIndex, 1);
             }
           }
+          if (backgroundImageSelection) {
+            // TODO: don't delete if bg images are locked
+            // (even though we shouldn't be able to select them)
+            layerGlyph.backgroundImage = undefined;
+          }
         }
       }
       this.sceneController.selection = new Set();
-      return "Delete Selection";
+      return translate("action.delete-selection");
     });
-  }
-
-  canAddComponent() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddComponent() {
@@ -2240,12 +2473,8 @@ export class EditorController {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newComponentIndex = instance.components.length - 1;
       this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
-      return "Add Component";
+      return translate("action.add-component");
     });
-  }
-
-  canAddAnchor() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddAnchor() {
@@ -2272,12 +2501,13 @@ export class EditorController {
       }
       const newAnchorIndex = instance.anchors.length - 1;
       this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
-      return "Add Anchor";
+      return translate("action.add-anchor");
     });
   }
 
   async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
-    const titlePrefix = anchor ? "Edit" : "Add";
+    const titleDialog = translate(anchor ? "action.edit-anchor" : "action.add-anchor");
+    const defaultButton = translate(anchor ? "dialog.edit" : "dialog.add");
     if (!anchor && !point) {
       // Need at least one of the two
       return {};
@@ -2290,7 +2520,7 @@ export class EditorController {
       const editedAnchorName =
         nameController.model.anchorName || nameController.model.suggestedAnchorName;
       if (!editedAnchorName.length) {
-        warnings.push("⚠️ The name must not be empty");
+        warnings.push(`⚠️ ${translate("warning.name-must-not-be-empty")}`);
       }
       if (
         !(
@@ -2305,7 +2535,7 @@ export class EditorController {
         const value = nameController.model[`anchor${n}`];
         if (isNaN(value)) {
           if (value !== undefined) {
-            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+            warnings.push(`⚠️ ${translate("warning.must-be-number", n.toLowerCase())}`);
           }
         }
       }
@@ -2313,7 +2543,7 @@ export class EditorController {
         editedAnchorName !== anchor?.name &&
         instance.anchors.some((anchor) => anchor.name === editedAnchorName)
       ) {
-        warnings.push("⚠️ The anchor name should be unique");
+        warnings.push(`⚠️ ${translate("warning.name-must-be-unique")}`);
       }
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
@@ -2347,9 +2577,10 @@ export class EditorController {
         : true;
     const { contentElement, warningElement } =
       this._anchorPropertiesContentElement(nameController);
-    const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: titlePrefix, isDefaultButton: true, disabled: disable },
+
+    const dialog = await dialogSetup(titleDialog, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: defaultButton, isDefaultButton: true, disabled: disable },
     ]);
 
     dialog.setContent(contentElement);
@@ -2394,14 +2625,14 @@ export class EditorController {
         `,
       },
       [
-        ...labeledTextInput("Name:", controller, "anchorName", {
+        ...labeledTextInput(translate("anchor.labels.name"), controller, "anchorName", {
           placeholderKey: "suggestedAnchorName",
           id: "anchor-name-text-input",
         }),
-        ...labeledTextInput("x:", controller, "anchorX", {
+        ...labeledTextInput("x", controller, "anchorX", {
           placeholderKey: "suggestedAnchorX",
         }),
-        ...labeledTextInput("y:", controller, "anchorY", {
+        ...labeledTextInput("y", controller, "anchorY", {
           placeholderKey: "suggestedAnchorY",
         }),
         html.br(),
@@ -2436,8 +2667,10 @@ export class EditorController {
     const numGuidelines = guidelineSelection?.length || 0;
     // + (fontGuidelineSelection?.length || 0);
 
-    const s = numGuidelines > 1 ? "s" : "";
-    return `${hasLockedGuidelines ? "Unlock" : "Lock"} Guideline${s}`;
+    return translatePlural(
+      hasLockedGuidelines ? "action.unlock-guideline" : "action.lock-guideline",
+      numGuidelines
+    );
   }
 
   canLockGuideline() {
@@ -2459,7 +2692,6 @@ export class EditorController {
       guideline: guidelineSelection,
       //fontGuideline: fontGuidelineSelection,
     } = parseSelection(this.sceneController.selection);
-    const identifier = locking ? "Unlock" : "Lock";
 
     // Lock glyph guidelines
     if (guidelineSelection) {
@@ -2473,7 +2705,10 @@ export class EditorController {
             guideline.locked = locking;
           }
         }
-        return `${identifier} Guideline(s)`;
+        return translatePlural(
+          locking ? "action.unlock-guideline" : "action.lock-guideline",
+          guidelineSelection.length
+        );
       });
     }
     // TODO: Font Guidelines locking
@@ -2486,9 +2721,6 @@ export class EditorController {
   // TODO: We may want to make a more general code for adding and editing
   // so we can handle both anchors and guidelines with the same code
   // Guidelines
-  canAddGuideline() {
-    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
-  }
 
   async doAddGuideline(global = false) {
     this.visualizationLayersSettings.model["fontra.guidelines"] = true;
@@ -2520,7 +2752,7 @@ export class EditorController {
         }
         const newGuidelineIndex = instance.guidelines.length - 1;
         this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
-        return "Add Guideline";
+        return translate("action.add-guideline");
       });
     }
     // TODO: Font Guidelines
@@ -2531,7 +2763,10 @@ export class EditorController {
     point = undefined,
     global = false
   ) {
-    const titlePrefix = guideline ? "Edit" : "Add";
+    const titleDialog = translate(
+      guideline ? "action.edit-guideline" : "action.add-guideline"
+    );
+    const defaultButton = translate(guideline ? "dialog.edit" : "dialog.add");
     if (!guideline && !point) {
       // Need at least one of the two
       return {};
@@ -2548,7 +2783,7 @@ export class EditorController {
         const value = nameController.model[`guideline${n}`];
         if (isNaN(value)) {
           if (value !== undefined) {
-            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+            warnings.push(`⚠️ ${translate("warning.must-be-number", n.toLowerCase())}`);
           }
         }
       }
@@ -2559,7 +2794,7 @@ export class EditorController {
           (guideline) => guideline.name === editedGuidelineName.trim()
         )
       ) {
-        warnings.push("⚠️ The guideline name should be unique");
+        warnings.push(`⚠️ ${translate("warning.name-must-be-unique")}`);
       }
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
@@ -2598,14 +2833,10 @@ export class EditorController {
         : true;
     const { contentElement, warningElement } =
       this._guidelinePropertiesContentElement(nameController);
-    const dialog = await dialogSetup(
-      `${titlePrefix} ${global ? "Font " : ""}Guideline`,
-      null,
-      [
-        { title: "Cancel", isCancelButton: true },
-        { title: titlePrefix, isDefaultButton: true, disabled: disable },
-      ]
-    );
+    const dialog = await dialogSetup(titleDialog, null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: defaultButton, isDefaultButton: true, disabled: disable },
+    ]);
 
     dialog.setContent(contentElement);
 
@@ -2652,14 +2883,29 @@ export class EditorController {
         `,
       },
       [
-        ...labeledTextInput("Name:", controller, "guidelineName", {
-          id: "guideline-name-text-input",
-        }),
-        ...labeledTextInput("x:", controller, "guidelineX", {}),
-        ...labeledTextInput("y:", controller, "guidelineY", {}),
-        ...labeledTextInput("angle:", controller, "guidelineAngle", {}),
+        ...labeledTextInput(
+          translate("guideline.labels.name"),
+          controller,
+          "guidelineName",
+          {
+            id: "guideline-name-text-input",
+          }
+        ),
+        ...labeledTextInput("x", controller, "guidelineX", {}),
+        ...labeledTextInput("y", controller, "guidelineY", {}),
+        ...labeledTextInput(
+          translate("guideline.labels.angle"),
+          controller,
+          "guidelineAngle",
+          {}
+        ),
         html.div(),
-        labeledCheckbox("locked", controller, "guidelineLocked", {}),
+        labeledCheckbox(
+          translate("guideline.labels.locked"),
+          controller,
+          "guidelineLocked",
+          {}
+        ),
         html.br(),
         warningElement,
       ]
@@ -2774,6 +3020,16 @@ export class EditorController {
       for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
       }
+      if (
+        !this.sceneSettings.backgroundImagesAreLocked &&
+        this.visualizationLayersSettings.model["fontra.background-image"]
+      ) {
+        for (const backgroundImageIndex of positionedGlyph.glyph.backgroundImage
+          ? [0]
+          : []) {
+          newSelection.add(`backgroundImage/${backgroundImageIndex}`);
+        }
+      }
     }
 
     if (selectAnchors) {
@@ -2782,7 +3038,10 @@ export class EditorController {
       }
     }
 
-    if (selectGuidelines) {
+    if (
+      selectGuidelines &&
+      this.visualizationLayersSettings.model["fontra.guidelines"]
+    ) {
       for (const guidelineIndex of range(positionedGlyph.glyph.guidelines.length)) {
         const guideline = positionedGlyph.glyph.guidelines[guidelineIndex];
         if (!guideline.locked) {
@@ -2818,6 +3077,29 @@ export class EditorController {
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
+  async doSelectPreviousNextGlyph(selectPrevious) {
+    const panel = this.getSidebarPanel("glyph-search");
+    const glyphNames = panel.glyphsSearch.getFilteredGlyphNames();
+    if (!glyphNames.length) {
+      return;
+    }
+
+    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
+    if (!selectedGlyphName) {
+      return;
+    }
+    const index = glyphNames.indexOf(selectedGlyphName);
+    const newIndex =
+      index == -1
+        ? selectPrevious
+          ? glyphNames.length - 1
+          : 0
+        : modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
+
+    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphNames[newIndex]);
+    this.insertGlyphInfos([glyphInfo], 0, true);
+  }
+
   async doFindGlyphsThatUseGlyph() {
     const glyphName = this.sceneSettings.selectedGlyphName;
 
@@ -2847,13 +3129,16 @@ export class EditorController {
     });
 
     const theDialog = await dialogSetup(
-      `Glyphs that use glyph '${glyphName}' as a component`,
+      translate("dialog.find-glyphs-that-use.title", glyphName),
       null,
       [
-        { title: "Cancel", isCancelButton: true },
-        { title: "Copy names", resultValue: "copy" },
+        { title: translate("dialog.cancel"), isCancelButton: true },
         {
-          title: "Add to text",
+          title: translate("dialog.find-glyphs-that-use.button.copy-names"),
+          resultValue: "copy",
+        },
+        {
+          title: translate("dialog.find-glyphs-that-use.button.add-to-text"),
           isDefaultButton: true,
           resultValue: "add",
         },
@@ -3062,9 +3347,7 @@ export class EditorController {
       // cancel the edit, but wait for the cancellation to be completed,
       // or else the reload and edit can get mixed up and the glyph data
       // will be out of sync.
-      await this.sceneController.cancelEditing(
-        "Someone else made an edit just before you."
-      );
+      await this.sceneController.cancelEditing(translate("message.cancel-editing"));
     }
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
@@ -3089,7 +3372,7 @@ export class EditorController {
       viewInfo = loadURLFragment(url.hash);
       if (!viewInfo) {
         viewInfo = {};
-        message("The URL is malformed", "The UI settings could not be restored.");
+        message("The URL is malformed", "The UI settings could not be restored."); // TODO: translation
       }
     } else {
       // Legacy URL format
@@ -3213,7 +3496,7 @@ export class EditorController {
 
   _zoom(factor) {
     let viewBox = this.sceneSettings.viewBox;
-    const selBox = this.sceneController.getSelectionBox();
+    const selBox = this.sceneController.getSelectionBounds();
     const center = rectCenter(selBox || viewBox);
     viewBox = rectScaleAroundCenter(viewBox, factor, center);
 
@@ -3233,7 +3516,7 @@ export class EditorController {
   }
 
   zoomFit() {
-    let viewBox = this.sceneController.getSelectionBox();
+    let viewBox = this.sceneController.getSelectionBounds();
     if (viewBox) {
       let size = rectSize(viewBox);
       if (size.width < 4 && size.height < 4) {
@@ -3313,7 +3596,7 @@ export class EditorController {
 
   async handleRemoteClose(event) {
     this._reconnectDialog = await dialogSetup(
-      "Connection closed",
+      "Connection closed", // TODO: translation
       "The connection to the server closed unexpectedly.",
       [{ title: "Reconnect", resultValue: "ok" }]
     );
@@ -3352,12 +3635,83 @@ export class EditorController {
   async handleRemoteError(event) {
     console.log("remote error", event);
     await dialog(
-      "Connection problem",
+      "Connection problem", // TODO: translation
       `There was a problem with the connection to the server.
       See the JavaScript Console for details.`,
       [{ title: "Reconnect", resultValue: "ok" }]
     );
     location.reload();
+  }
+
+  canPlaceBackgroundImage() {
+    return (
+      this.fontController.backendInfo.features["background-image"] &&
+      this.canEditGlyph()
+    );
+  }
+
+  canEditGlyph() {
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    return !!(
+      positionedGlyph &&
+      !this.fontController.readOnly &&
+      !this.sceneModel.isSelectedGlyphLocked() &&
+      positionedGlyph.glyph.canEdit
+    );
+  }
+
+  // Drop files onto canvas
+
+  _onDragEnter(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragOver(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.add("dropping-files");
+  }
+
+  _onDragLeave(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+  }
+
+  async _onDrop(event) {
+    event.preventDefault();
+    if (!this.canPlaceBackgroundImage()) {
+      return;
+    }
+    this.canvasController.canvas.classList.remove("dropping-files");
+
+    const items = [];
+
+    for (const item of event.dataTransfer?.files || []) {
+      const suffix = item.name.split(".").at(-1);
+      if (suffix === "png" || suffix === "jpg" || suffix === "jpeg") {
+        items.push(item);
+      }
+    }
+
+    if (items.length != 1) {
+      await dialog(
+        "Can't drop files",
+        "Please drop a single .png, .jpg or .jpeg file",
+        [{ title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true }]
+      );
+      return;
+    }
+
+    await this._placeBackgroundImage(await readFileOrBlobAsDataURL(items[0]));
   }
 }
 
@@ -3408,19 +3762,19 @@ async function runDialogWholeGlyphPaste() {
     controller.model.behavior = PASTE_BEHAVIOR_REPLACE;
   }
 
-  const dialog = await dialogSetup("You are about to paste an entire glyph", null, [
-    { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-    { title: "Okay", resultValue: "ok", isDefaultButton: true },
+  const dialog = await dialogSetup(translate("dialog.paste-whole-glyph.title"), null, [
+    { title: translate("dialog.cancel"), resultValue: "cancel", isCancelButton: true },
+    { title: translate("dialog.okay"), resultValue: "ok", isDefaultButton: true },
   ]);
 
   const radioGroup = [
-    html.div({}, "What would you like to do with the glyph on the clipboard?"),
+    html.div({}, translate("dialog.paste-whole-glyph.content.question")),
     html.br(),
   ];
 
   for (const [label, value] of [
-    ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
-    ["Add to the current glyph (match layers)", PASTE_BEHAVIOR_ADD],
+    [translate("dialog.paste-whole-glyph.content.replace"), PASTE_BEHAVIOR_REPLACE],
+    [translate("dialog.paste-whole-glyph.content.add"), PASTE_BEHAVIOR_ADD],
   ]) {
     radioGroup.push(
       html.input({

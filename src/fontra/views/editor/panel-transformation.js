@@ -24,7 +24,7 @@ import {
   reversed,
   zip,
 } from "/core/utils.js";
-import { copyComponent } from "/core/var-glyph.js";
+import { copyBackgroundImage, copyComponent } from "/core/var-glyph.js";
 import { VarPackedPath } from "/core/var-path.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -484,7 +484,9 @@ export default class TransformationPanel extends Panel {
         "key": "customDistributionSpacing",
         "value": this.transformParameters.customDistributionSpacing,
         "allowEmptyField": true,
-        "data-tooltip": "Distance in units",
+        "data-tooltip": translate(
+          "sidebar.selection-transformation.distribute.distance-in-units"
+        ),
         "data-tooltipposition": "top-right",
       },
     });
@@ -665,12 +667,19 @@ export default class TransformationPanel extends Panel {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
-    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
+    backgroundImageIndices = backgroundImageIndices || [];
+    if (
+      !pointIndices.length &&
+      !componentIndices.length &&
+      !anchorIndices.length &&
+      !backgroundImageIndices.length
+    ) {
       return;
     }
 
@@ -699,7 +708,10 @@ export default class TransformationPanel extends Panel {
       for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
         const layerGlyph = layerGlyphController.instance;
         const pinPoint = getPinPoint(
-          layerGlyphController.getSelectionBounds(this.sceneController.selection),
+          layerGlyphController.getSelectionBounds(
+            this.sceneController.selection,
+            this.fontController.getBackgroundImageBoundsFunc
+          ),
           this.transformParameters.originX,
           this.transformParameters.originY
         );
@@ -720,10 +732,20 @@ export default class TransformationPanel extends Panel {
           return component;
         };
 
+        const backgroundImageTransformFunction = (backgroundImage) => {
+          backgroundImage = copyBackgroundImage(backgroundImage);
+          backgroundImage.transformation = prependTransformToDecomposed(
+            t,
+            backgroundImage.transformation
+          );
+          return backgroundImage;
+        };
+
         const editChange = editBehavior.makeChangeForTransformFunc(
           pointTransformFunction,
           null,
-          componentTransformFunction
+          componentTransformFunction,
+          backgroundImageTransformFunction
         );
         applyChange(layerGlyph, editChange);
         editChanges.push(consolidateChanges(editChange, changePath));
@@ -758,6 +780,7 @@ export default class TransformationPanel extends Panel {
       point: pointIndices,
       component: componentIndices,
       anchor: anchorIndices,
+      backgroundImage: backgroundImageIndices,
     } = parseSelection(selection);
     pointIndices = pointIndices || [];
 
@@ -765,9 +788,10 @@ export default class TransformationPanel extends Panel {
     const contours = [];
     const components = componentIndices || [];
     const anchors = anchorIndices || [];
+    const backgroundImages = backgroundImageIndices || [];
 
     if (!pointIndices.length) {
-      return { points, contours, components, anchors };
+      return { points, contours, components, anchors, backgroundImages };
     }
 
     const path = layerGlyphController.instance.path;
@@ -810,14 +834,12 @@ export default class TransformationPanel extends Panel {
       }
     }
 
-    return { points, contours, components, anchors };
+    return { points, contours, components, anchors, backgroundImages };
   }
 
   _collectMovableObjects(moveDescriptor, controller) {
-    const { points, contours, components, anchors } = this._splitSelection(
-      controller,
-      this.sceneController.selection
-    );
+    const { points, contours, components, anchors, backgroundImages } =
+      this._splitSelection(controller, this.sceneController.selection);
 
     const movableObjects = [];
     for (const pointIndex of points) {
@@ -838,9 +860,20 @@ export default class TransformationPanel extends Panel {
       const individualSelection = new Set([`anchor/${anchorIndex}`]);
       movableObjects.push(new MovableObject(individualSelection));
     }
+    for (const backgroundImageIndex of backgroundImages) {
+      const individualSelection = new Set([`backgroundImage/${backgroundImageIndex}`]);
+      movableObjects.push(new MovableObject(individualSelection));
+    }
 
     if (moveDescriptor.compareObjects) {
-      movableObjects.sort((a, b) => moveDescriptor.compareObjects(a, b, controller));
+      movableObjects.sort((a, b) =>
+        moveDescriptor.compareObjects(
+          a,
+          b,
+          controller,
+          this.fontController.getBackgroundImageBoundsFunc
+        )
+      );
     }
 
     return movableObjects;
@@ -868,7 +901,10 @@ export default class TransformationPanel extends Panel {
         const controller = staticGlyphControllers[layerName];
 
         const boundingBoxes = movableObjects.map((obj) =>
-          obj.computeBounds(controller)
+          obj.computeBounds(
+            controller,
+            this.fontController.getBackgroundImageBoundsFunc
+          )
         );
         const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(
           boundingBoxes,
@@ -938,8 +974,11 @@ class MovableObject {
     this.selection = selection;
   }
 
-  computeBounds(staticGlyphController) {
-    return staticGlyphController.getSelectionBounds(this.selection);
+  computeBounds(staticGlyphController, getBackgroundImageBoundsFunc) {
+    return staticGlyphController.getSelectionBounds(
+      this.selection,
+      getBackgroundImageBoundsFunc
+    );
   }
 
   makeChangesForDelta(delta, layerGlyph, sceneController) {
@@ -957,7 +996,7 @@ class MovableObject {
 
 // Define moveDescriptor objects
 const alignLeft = {
-  undoLabel: "align left",
+  undoLabel: "align left", // TODO: maybe use translate("sidebar.selection-transformation.align.left")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const xMins = boundingBoxes.map((bounds) => bounds.xMin);
     const left = Math.min(...xMins);
@@ -969,7 +1008,7 @@ const alignLeft = {
 };
 
 const alignCenter = {
-  undoLabel: "align center",
+  undoLabel: "align center", // TODO: maybe use translate("sidebar.selection-transformation.align.center")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
     const xMins = boundingBoxes.map((bounds) => bounds.xMin);
@@ -983,7 +1022,7 @@ const alignCenter = {
 };
 
 const alignRight = {
-  undoLabel: "align right",
+  undoLabel: "align right", // TODO: maybe use translate("sidebar.selection-transformation.align.right")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
     const right = Math.max(...xMaxes);
@@ -995,7 +1034,7 @@ const alignRight = {
 };
 
 const alignTop = {
-  undoLabel: "align top",
+  undoLabel: "align top", // TODO: maybe use translate("sidebar.selection-transformation.align.top")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
     const top = Math.max(...yMaxes);
@@ -1007,7 +1046,7 @@ const alignTop = {
 };
 
 const alignMiddle = {
-  undoLabel: "align middle",
+  undoLabel: "align middle", // TODO: maybe use translate("sidebar.selection-transformation.align.middle")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
     const yMins = boundingBoxes.map((bounds) => bounds.yMin);
@@ -1021,7 +1060,7 @@ const alignMiddle = {
 };
 
 const alignBottom = {
-  undoLabel: "align bottom",
+  undoLabel: "align bottom", // TODO: maybe use translate("sidebar.selection-transformation.align.bottom")
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const yMins = boundingBoxes.map((bounds) => bounds.yMin);
     const bottom = Math.min(...yMins);
@@ -1067,10 +1106,14 @@ class DistributeObjectsDescriptor {
     return deltas;
   }
 
-  compareObjects(a, b, controller) {
+  compareObjects(a, b, glyphController, getBackgroundImageBoundsFunc) {
     return (
-      rectCenter(a.computeBounds(controller))[this.deltaProperty] -
-      rectCenter(b.computeBounds(controller))[this.deltaProperty]
+      rectCenter(a.computeBounds(glyphController, getBackgroundImageBoundsFunc))[
+        this.deltaProperty
+      ] -
+      rectCenter(b.computeBounds(glyphController, getBackgroundImageBoundsFunc))[
+        this.deltaProperty
+      ]
     );
   }
 }

@@ -214,6 +214,7 @@ class DesignspaceBackend:
         self._glyphDependencies: GlyphDependencies | None = None
         self._backgroundTasksTask: asyncio.Task | None = None
         self._imageMapping = DoubleDict()
+        self._imageDataToWrite: dict[str, ImageData] = {}
         # Set this to true to set "public.truetype.overlap" in each writte .glif's lib:
         self.setOverlapSimpleFlag = False
         self._familyName: str | None = None
@@ -651,11 +652,13 @@ class DesignspaceBackend:
                 if imageInfo is not None:
                     _, imageFileName = imageInfo
                 else:
-                    imageFileName = f"{layer.glyph.backgroundImage.identifier}.png"
+                    imageIdentifier = layer.glyph.backgroundImage.identifier
+                    imageFileName = f"{imageIdentifier}.png"
                     imageInfo = (ufoLayer.path, imageFileName)
-                    self._imageMapping[imageInfo] = (
-                        layer.glyph.backgroundImage.identifier
-                    )
+                    self._imageMapping[imageInfo] = imageIdentifier
+                    imageData = self._imageDataToWrite.pop(imageIdentifier, None)
+                    if imageData is not None:
+                        await self.putBackgroundImage(imageIdentifier, imageData)
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph,
@@ -1183,30 +1186,19 @@ class DesignspaceBackend:
 
         return ImageData(type=ImageType.PNG, data=data)
 
-    async def putBackgroundImage(
-        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
-    ) -> None:
-        if glyphName not in self.glyphMap:
-            raise KeyError(glyphName)
-
+    async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         if data.type != ImageType.PNG:
-            raise NotImplementedError("convert image to PNG")
+            data = convertImageData(data, ImageType.PNG)
 
-        defaultStaticGlyph, defaultUFOGlyph = ufoLayerToStaticGlyph(
-            self.defaultUFOLayer.glyphSet, glyphName
-        )
-
-        layerNameMapping = defaultUFOGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-        revLayerNameMapping = {v: k for k, v in layerNameMapping.items()}
-        layerName = revLayerNameMapping.get(layerName, layerName)
-        ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
-
-        imageFileName = f"{imageIdentifier}.{data.type.lower()}"
-
-        ufoLayer.reader.writeImage(imageFileName, data.data, validate=True)
-
-        key = (ufoLayer.path, imageFileName)
-        self._imageMapping[key] = imageIdentifier
+        imageInfo = self._imageMapping.reverse.get(imageIdentifier)
+        if imageInfo is None:
+            # We don't yet know in which layer to write this image, let's postpone
+            # until putGlyph() comes across it.
+            self._imageDataToWrite[imageIdentifier] = data
+        else:
+            ufoPath, imageFileName = self._imageMapping.reverse[imageIdentifier]
+            reader = self.ufoManager.getReader(ufoPath)
+            reader.writeImage(imageFileName, data.data, validate=True)
 
     def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
         key = (ufoPath, imageFileName)
@@ -1828,12 +1820,29 @@ def unpackBackgroundImage(imageDict: dict | None) -> BackgroundImage | None:
         return None
 
     t = Transform(*(imageDict.get(k, dv) for k, dv in imageTransformFields))
-    colorChannels = [float(ch.strip()) for ch in imageDict.get("color", "").split(",")]
+    colorChannels = (
+        [float(ch.strip()) for ch in imageDict["color"].split(",")]
+        if "color" in imageDict
+        else None
+    )
+
+    opacity = 1.0
+
+    if colorChannels:
+        if len(colorChannels) == 4:
+            opacity = colorChannels[3]
+            if colorChannels[:3] != [0, 0, 0]:
+                colorChannels[3] = 1.0
+            else:
+                colorChannels = None
+        else:
+            colorChannels = None
 
     return BackgroundImage(
         identifier=imageDict["fileName"],
         transformation=DecomposedTransform.fromTransform(t),
-        color=RGBAColor(*colorChannels) if len(colorChannels) == 4 else None,
+        opacity=opacity,
+        color=RGBAColor(*colorChannels) if colorChannels else None,
     )
 
 
@@ -1848,8 +1857,11 @@ def packBackgroundImage(backgroundImage, imageFileName) -> dict:
     if backgroundImage.color is not None:
         c = backgroundImage.color
         imageDict["color"] = ",".join(
-            _formatChannelValue(ch) for ch in [c.red, c.green, c.blue, c.alpha]
+            _formatChannelValue(ch)
+            for ch in [c.red, c.green, c.blue, backgroundImage.opacity]
         )
+    elif backgroundImage.opacity != 1.0:
+        imageDict["color"] = f"0,0,0,{_formatChannelValue(backgroundImage.opacity)}"
 
     return imageDict
 
@@ -1915,6 +1927,8 @@ def populateUFOLayerGlyph(
         layerGlyph.image = packBackgroundImage(
             staticGlyph.backgroundImage, imageFileName
         )
+    else:
+        layerGlyph.image = None
 
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
@@ -2226,3 +2240,21 @@ def mergeKernGroups(
                 mergedGroups[groupName] = gA + [n for n in gB if n not in gASet]
 
     return mergedGroups
+
+
+def convertImageData(data, type):
+    import io
+
+    from PIL import Image
+
+    image = Image.open(io.BytesIO(data.data))
+    if image.mode == "RGBA" and type == ImageType.JPEG:
+        # from https://stackoverflow.com/questions/9166400/convert-rgba-png-to-rgb-with-pil
+        image.load()  # required for image.split()
+        imageJPEG = Image.new("RGB", image.size, (255, 255, 255))
+        imageJPEG.paste(image, mask=image.split()[3])  # 3 is the alpha channel
+        image = imageJPEG
+
+    outFile = io.BytesIO()
+    image.save(outFile, type)
+    return ImageData(type=type, data=outFile.getvalue())

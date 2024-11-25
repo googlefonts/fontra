@@ -63,6 +63,7 @@ export function scheduleCalls(func, timeout = 0) {
       timeoutID = null;
       func(...args);
     }, timeout);
+    return timeoutID;
   };
 }
 
@@ -252,9 +253,12 @@ export async function writeToClipboard(clipboardObject) {
 
   const clipboardItemObject = {};
   for (const [key, value] of Object.entries(clipboardObject)) {
-    clipboardItemObject[key] = new Blob([value], {
-      type: key,
-    });
+    if (value instanceof Blob) {
+      assert(key === value.type);
+      clipboardItemObject[key] = value;
+    } else {
+      clipboardItemObject[key] = new Blob([value], { type: key });
+    }
   }
 
   try {
@@ -276,12 +280,12 @@ export async function readClipboardTypes() {
   return clipboardTypes;
 }
 
-export async function readFromClipboard(type) {
+export async function readFromClipboard(type, plainText = true) {
   const clipboardContents = await navigator.clipboard.read();
   for (const item of clipboardContents) {
     if (item.types.includes(type)) {
       const blob = await item.getType(type);
-      return await blob.text();
+      return plainText ? await blob.text() : blob;
     }
   }
   return undefined;
@@ -630,4 +634,47 @@ export function pointCompareFunc(pointA, pointB) {
 
 export function sleepAsync(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function readFileOrBlobAsDataURL(fileOrBlob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(fileOrBlob);
+  });
+}
+
+export function colorizeImage(inputImage, color) {
+  const w = inputImage.naturalWidth;
+  const h = inputImage.naturalHeight;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const context = canvas.getContext("2d");
+
+  // First step, draw the image
+  context.drawImage(inputImage, 0, 0, w, h);
+  // Second step, reduce saturation to zero (making the image grayscale)
+  context.fillStyle = "black";
+  context.globalCompositeOperation = "saturation";
+  context.fillRect(0, 0, w, h);
+  // Last step, colorize the image, using screen (inverse multiply)
+  context.fillStyle = color;
+  context.globalCompositeOperation = "screen";
+  context.fillRect(0, 0, w, h);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      const outputImage = new Image();
+      outputImage.width = inputImage.width;
+      outputImage.height = inputImage.height;
+      const url = URL.createObjectURL(blob);
+      outputImage.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(outputImage);
+      };
+      outputImage.src = url;
+    });
+  });
 }

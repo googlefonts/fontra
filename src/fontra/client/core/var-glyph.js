@@ -77,13 +77,14 @@ export function copyComponent(component) {
   };
 }
 
-function copyBackgroundImage(image) {
+export function copyBackgroundImage(image) {
   if (!image) {
     return undefined;
   }
   return {
     identifier: image.identifier,
     transformation: { ...getDecomposedIdentity(), ...image.transformation },
+    opacity: image.opacity !== undefined ? image.opacity : 1.0,
     color: image.color ? { ...image.color } : undefined,
     customData: copyCustomData(image.customData || {}),
   };

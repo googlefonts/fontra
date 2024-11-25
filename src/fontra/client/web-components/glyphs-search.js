@@ -123,6 +123,10 @@ export class GlyphsSearch extends UnlitElement {
     return this.glyphNamesList.items[this.glyphNamesList.selectedItemIndex]?.glyphName;
   }
 
+  getFilteredGlyphNames() {
+    return this.glyphNamesList.items.map((item) => item.glyphName);
+  }
+
   updateGlyphNamesListContent() {
     const glyphMap = this.glyphMap;
     this.glyphsListItems = [];

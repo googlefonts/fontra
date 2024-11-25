@@ -6,6 +6,8 @@ import {
   normalizeRect,
   offsetRect,
   pointInRect,
+  rectFromPoints,
+  rectToPoints,
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
@@ -19,13 +21,20 @@ import {
 } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
+import { decomposedToTransform } from "/core/transform.js";
 
 export class SceneModel {
-  constructor(fontController, sceneSettingsController, isPointInPath) {
+  constructor(
+    fontController,
+    sceneSettingsController,
+    isPointInPath,
+    visualizationLayersSettings
+  ) {
     this.fontController = fontController;
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
+    this.visualizationLayersSettings = visualizationLayersSettings;
     this.hoveredGlyph = undefined;
     this._glyphLocations = {}; // glyph name -> glyph location
     this.longestLineLength = 0;
@@ -491,14 +500,20 @@ export class SceneModel {
       return selection;
     }
 
-    // Lastly, look for components (ditto)
+    // Then, look for components (ditto)
     const componentSelection = this.componentSelectionAtPoint(
       point,
       size,
       currentSelection ? union(currentSelection, currentHoverSelection) : undefined,
       preferTCenter
     );
-    return { selection: componentSelection };
+    if (componentSelection.size) {
+      return { selection: componentSelection };
+    }
+
+    // Lastly, look for background images
+    const backgroundImageSelection = this.backgroundImageSelectionAtPoint(point);
+    return { selection: backgroundImageSelection };
   }
 
   _selectionAtPoint(point, size, currentSelection) {
@@ -681,6 +696,10 @@ export class SceneModel {
   }
 
   guidelineSelectionAtPoint(point, size, parsedCurrentSelection) {
+    if (!this.visualizationLayersSettings.model["fontra.guidelines"]) {
+      // If guidelines are hidden, don't allow selection
+      return new Set();
+    }
     const positionedGlyph = this.getSelectedPositionedGlyph();
     if (!positionedGlyph) {
       return new Set();
@@ -706,6 +725,64 @@ export class SceneModel {
   //fontGuidelineSelectionAtPoint(point, size) {
   // }
 
+  backgroundImageSelectionAtPoint(point) {
+    return this._backgroundImageSelectionAtPointOrRect(point);
+  }
+
+  backgroundImageSelectionAtRect(selRect) {
+    return this._backgroundImageSelectionAtPointOrRect(undefined, selRect);
+  }
+
+  _backgroundImageSelectionAtPointOrRect(point = undefined, selRect = undefined) {
+    if (
+      !this.visualizationLayersSettings.model["fontra.background-image"] ||
+      this.sceneSettings.backgroundImagesAreLocked
+    ) {
+      // If background images are hidden or locked, don't allow selection
+      return new Set();
+    }
+    // TODO: If background images are locked don't allow selection
+
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    if (point) {
+      const x = point.x - positionedGlyph.x;
+      const y = point.y - positionedGlyph.y;
+      selRect = centeredRect(x, y, 0);
+    }
+
+    if (!selRect) {
+      return new Set();
+    }
+
+    const backgroundImage = positionedGlyph.glyph.backgroundImage;
+    if (!backgroundImage) {
+      return new Set();
+    }
+
+    const affine = decomposedToTransform(backgroundImage.transformation);
+    const backgroundImageBounds = this.fontController.getBackgroundImageBounds(
+      backgroundImage.identifier
+    );
+    if (!backgroundImageBounds) {
+      return new Set();
+    }
+    const rectPoly = rectToPoints(backgroundImageBounds);
+    const polygon = rectPoly.map((point) => affine.transformPointObject(point));
+
+    if (
+      pointInConvexPolygon(selRect.xMin, selRect.yMin, polygon) ||
+      rectIntersectsPolygon(selRect, polygon)
+    ) {
+      return new Set(["backgroundImage/0"]);
+    }
+
+    return new Set();
+  }
+
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();
     if (!this.selectedGlyph?.isEditing) {
@@ -727,6 +804,14 @@ export class SceneModel {
         selection.add(`component/${i}`);
       }
     }
+
+    const backgroundImageSelection = this.backgroundImageSelectionAtRect(selRect);
+    if (backgroundImageSelection.size) {
+      // As long as we don't have multiple background images,
+      // we can just add a single selection
+      selection.add("backgroundImage/0");
+    }
+
     return selection;
   }
 
@@ -828,46 +913,36 @@ export class SceneModel {
     return bounds;
   }
 
-  getSelectionBox() {
+  getSelectionBounds() {
     if (!this.selectedGlyph) {
       return this.getSceneBounds();
     }
+
     let bounds;
+
     if (this.selectedGlyph?.isEditing && this.selection.size) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const [x, y] = [positionedGlyph.x, positionedGlyph.y];
       const instance = this._getSelectedStaticGlyphController();
-      const boundses = [];
 
-      const { point: selectedPointIndices, component: selectedComponentIndices } =
-        parseSelection(this.selection);
-
-      selectedPointIndices?.forEach((pointIndex) => {
-        const pt = instance.path.getPoint(pointIndex);
-        boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
-      });
-
-      selectedComponentIndices?.forEach((componentIndex) => {
-        if (!instance.components[componentIndex]) {
-          // Invalid selection
-          return;
-        }
-        boundses.push(
-          offsetRect(instance.components[componentIndex].controlBounds, x, y)
-        );
-      });
-
-      if (boundses.length) {
-        bounds = unionRect(...boundses);
+      bounds = instance.getSelectionBounds(
+        this.selection,
+        this.fontController.getBackgroundImageBoundsFunc
+      );
+      if (bounds) {
+        bounds = offsetRect(bounds, x, y);
       }
     }
+
     if (!bounds) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       bounds = positionedGlyph.bounds;
     }
+
     if (!bounds) {
       bounds = this.getSceneBounds();
     }
+
     return bounds;
   }
 }

@@ -522,11 +522,12 @@
 "translateX": -100,
 "translateY": -300
 },
+"opacity": 0.684,
 "color": {
 "red": 0.84399,
 "green": 0.80767,
 "blue": 0.37093,
-"alpha": 0.684
+"alpha": 1
 }
 }
 }

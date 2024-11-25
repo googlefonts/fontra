@@ -5,11 +5,13 @@ import { translate } from "/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
+  assert,
   enumerate,
   getCharFromCodePoint,
   makeUPlusStringFromCodePoint,
   parseSelection,
   range,
+  rgbaToHex,
   round,
   splitGlyphNameExtension,
   throttleCalls,
@@ -114,9 +116,10 @@ export default class SelectionInfoPanel extends Panel {
   async update(senderInfo) {
     if (
       senderInfo?.senderID === this &&
-      senderInfo?.fieldKeyPath?.length !== 3 &&
-      senderInfo?.fieldKeyPath?.[0] !== "component" &&
-      senderInfo?.fieldKeyPath?.[2] !== "name"
+      ((senderInfo?.fieldKeyPath?.length !== 3 &&
+        senderInfo?.fieldKeyPath?.[0] !== "component" &&
+        senderInfo?.fieldKeyPath?.[2] !== "name") ||
+        senderInfo?.fieldKeyPath?.[0] === "backgroundImage")
     ) {
       // Don't rebuild, just update the Dimensions field
       await this.updateDimensions();
@@ -176,11 +179,13 @@ export default class SelectionInfoPanel extends Panel {
               ? "/tabler-icons/lock.svg"
               : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
-          "data-tooltip": this.fontController.readOnly
-            ? "Glyph is read-only"
-            : glyphLocked
-            ? "Unlock glyph"
-            : "Lock glyph",
+          "data-tooltip": translate(
+            this.fontController.readOnly
+              ? "sidebar.selection-info.glyph-locking.tooltip.read-only"
+              : glyphLocked
+              ? "sidebar.selection-info.glyph-locking.tooltip.unlock"
+              : "sidebar.selection-info.glyph-locking.tooltip.lock"
+          ),
           "data-tooltipposition": "left",
         }),
       });
@@ -193,14 +198,14 @@ export default class SelectionInfoPanel extends Panel {
       formContents.push({
         key: "unicodes",
         type: "text",
-        label: "Unicode",
+        label: translate("sidebar.selection-info.unicode"),
         value: codePointsStr,
       });
       if (baseCodePointsStr) {
         formContents.push({
           key: "baseUnicodes",
           type: "text",
-          label: "Base unicode",
+          label: translate("sidebar.selection-info.base-unicode"),
           value: baseCodePointsStr,
         });
       }
@@ -253,11 +258,73 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    const { pointIndices, componentIndices } = this._getSelection();
+    const { pointIndices, componentIndices, backgroundImageIndices } =
+      this._getSelection();
 
     if (glyphController) {
       formContents.push(
         ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+      );
+    }
+
+    for (const index of backgroundImageIndices) {
+      assert(index === 0, "only a single bg image is supported");
+
+      const backgroundImage = instance?.backgroundImage;
+      if (!backgroundImage) {
+        continue;
+      }
+
+      const backgroundImageKey = (...path) =>
+        JSON.stringify(["backgroundImage", ...path]);
+
+      formContents.push({ type: "divider" });
+      formContents.push({
+        type: "header",
+        label: translate("sidebar.user-settings.glyph.background-image"),
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/refresh.svg",
+          "onclick": (event) => this._resetTransformationForBackgroundImage(),
+          "data-tooltip": translate(
+            "sidebar.selection-info.component.reset-transformation"
+          ),
+          "data-tooltipposition": "left",
+        }),
+      });
+
+      formContents.push({
+        type: "color-picker",
+        key: backgroundImageKey("color"),
+        label: translate("background-image.labels.colorize"),
+        continuousDelay: 150,
+        allowNoColor: true,
+        value: backgroundImage.color,
+        parseColor: (value) => {
+          const matches = value.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+          const channels = matches.slice(1, 4).map((ch) => parseInt(ch, 16) / 255);
+          return { red: channels[0], green: channels[1], blue: channels[2] };
+        },
+        formatColor: (value) =>
+          value ? rgbaToHex([value.red, value.green, value.blue]) : "#000000",
+      });
+
+      formContents.push({
+        type: "edit-number-slider",
+        key: backgroundImageKey("opacity"),
+        label: translate("background-image.labels.opacity"),
+        value: backgroundImage.opacity,
+        minValue: 0,
+        defaultValue: 1.0,
+        maxValue: 1.0,
+      });
+
+      formContents.push({ type: "line-spacer" });
+
+      addTransformationItems(
+        formContents,
+        backgroundImageKey,
+        backgroundImage.transformation
       );
     }
 
@@ -290,69 +357,14 @@ export default class SelectionInfoPanel extends Panel {
           "style": `width: 1.3em;`,
           "src": "/tabler-icons/refresh.svg",
           "onclick": (event) => this._resetTransformationForComponent(index),
-          "data-tooltip": "Reset transformation",
+          "data-tooltip": translate(
+            "sidebar.selection-info.component.reset-transformation"
+          ),
           "data-tooltipposition": "left",
         }),
       });
 
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.translate"),
-        fieldX: {
-          key: componentKey("transformation", "translateX"),
-          value: component.transformation.translateX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "translateY"),
-          value: component.transformation.translateY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-angle",
-        key: componentKey("transformation", "rotation"),
-        label: translate("sidebar.selection-info.component.rotation"),
-        value: component.transformation.rotation,
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.scale"),
-        fieldX: {
-          key: componentKey("transformation", "scaleX"),
-          value: component.transformation.scaleX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "scaleY"),
-          value: component.transformation.scaleY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.skew"),
-        fieldX: {
-          key: componentKey("transformation", "skewX"),
-          value: component.transformation.skewX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "skewY"),
-          value: component.transformation.skewY,
-        },
-      });
-
-      formContents.push({
-        type: "edit-number-x-y",
-        label: translate("sidebar.selection-info.component.center"),
-        fieldX: {
-          key: componentKey("transformation", "tCenterX"),
-          value: component.transformation.tCenterX,
-        },
-        fieldY: {
-          key: componentKey("transformation", "tCenterY"),
-          value: component.transformation.tCenterY,
-        },
-      });
+      addTransformationItems(formContents, componentKey, component.transformation);
 
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
@@ -407,7 +419,9 @@ export default class SelectionInfoPanel extends Panel {
               "style": `width: 1.3em;`,
               "src": "/tabler-icons/refresh.svg",
               "onclick": (event) => this._resetAxisValuesForComponent(index),
-              "data-tooltip": "Reset axis values",
+              "data-tooltip": translate(
+                "sidebar.selection-info.component.reset-axis-values"
+              ),
               "data-tooltipposition": "left",
             }),
           });
@@ -441,11 +455,11 @@ export default class SelectionInfoPanel extends Panel {
   async _toggleGlyphLock(varGlyph) {
     if (varGlyph.customData["fontra.glyph.locked"]) {
       const result = await dialog(
-        `Are you sure you want to unlock glyph ${varGlyph.name}?`,
+        translate("sidebar.selection-info.dialog.unlock-glyph.title", varGlyph.name),
         "",
         [
-          { title: "Cancel", isCancelButton: true },
-          { title: "Yes", isDefaultButton: true, resultValue: "ok" },
+          { title: translate("dialog.cancel"), isCancelButton: true },
+          { title: translate("dialog.yes"), isDefaultButton: true, resultValue: "ok" },
         ]
       );
 
@@ -467,7 +481,9 @@ export default class SelectionInfoPanel extends Panel {
         } else {
           glyph.customData["fontra.glyph.locked"] = true;
         }
-        return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
+        return glyph.customData["fontra.glyph.locked"]
+          ? translate("sidebar.selection-info.glyph-locking.tooltip.lock")
+          : translate("sidebar.selection-info.glyph-locking.tooltip.unlock");
       },
       undefined,
       undefined,
@@ -484,7 +500,22 @@ export default class SelectionInfoPanel extends Panel {
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
         layerGlyph.components[componentIndex].transformation = getDecomposedIdentity();
       }
-      return "reset transformation";
+      return translate("sidebar.selection-info.component.reset-transformation");
+    });
+  }
+
+  async _resetTransformationForBackgroundImage() {
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        if (layerGlyph.backgroundImage) {
+          layerGlyph.backgroundImage.transformation = getDecomposedIdentity();
+        }
+      }
+      return translate("sidebar.selection-info.component.reset-transformation");
     });
   }
 
@@ -515,7 +546,7 @@ export default class SelectionInfoPanel extends Panel {
           }
         }
       }
-      return "reset axis values";
+      return translate("sidebar.selection-info.component.reset-axis-values");
     });
   }
 
@@ -553,9 +584,8 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   _getSelection() {
-    const { point, component, componentOrigin, componentTCenter } = parseSelection(
-      this.sceneController.selection
-    );
+    const { point, component, componentOrigin, componentTCenter, backgroundImage } =
+      parseSelection(this.sceneController.selection);
 
     const componentIndices = [
       ...new Set([
@@ -564,7 +594,11 @@ export default class SelectionInfoPanel extends Panel {
         ...(componentTCenter || []),
       ]),
     ].sort((a, b) => a - b);
-    return { pointIndices: point || [], componentIndices };
+    return {
+      pointIndices: point || [],
+      componentIndices,
+      backgroundImageIndices: backgroundImage || [],
+    };
   }
 
   _getDimensionsString(glyphController, pointIndices, componentIndices) {
@@ -695,6 +729,67 @@ export default class SelectionInfoPanel extends Panel {
     const fieldKey = JSON.stringify([keyToUpdata]);
     this.infoForm.setValue(fieldKey, glyphController[keyToUpdata]);
   }
+}
+
+function addTransformationItems(formContents, keyFunc, transformation) {
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.translate"),
+    fieldX: {
+      key: keyFunc("transformation", "translateX"),
+      value: transformation.translateX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "translateY"),
+      value: transformation.translateY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-angle",
+    key: keyFunc("transformation", "rotation"),
+    label: translate("sidebar.selection-info.component.rotation"),
+    value: transformation.rotation,
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.scale"),
+    fieldX: {
+      key: keyFunc("transformation", "scaleX"),
+      value: transformation.scaleX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "scaleY"),
+      value: transformation.scaleY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.skew"),
+    fieldX: {
+      key: keyFunc("transformation", "skewX"),
+      value: transformation.skewX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "skewY"),
+      value: transformation.skewY,
+    },
+  });
+
+  formContents.push({
+    type: "edit-number-x-y",
+    label: translate("sidebar.selection-info.component.center"),
+    fieldX: {
+      key: keyFunc("transformation", "tCenterX"),
+      value: transformation.tCenterX,
+    },
+    fieldY: {
+      key: keyFunc("transformation", "tCenterY"),
+      value: transformation.tCenterY,
+    },
+  });
 }
 
 function defaultGetFieldValue(glyph, glyphController, fieldItem) {

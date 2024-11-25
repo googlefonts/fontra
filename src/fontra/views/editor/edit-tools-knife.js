@@ -91,7 +91,7 @@ export class KnifeTool extends BaseTool {
         for (const [layerName, layerPath] of Object.entries(layerPaths)) {
           glyph.layers[layerName].glyph.path = layerPath;
         }
-        return "slice glyph";
+        return translate("edit-tools-knife.undo.slice-glyph");
       },
       undefined,
       true

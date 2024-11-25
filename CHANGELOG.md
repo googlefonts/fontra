@@ -1,5 +1,44 @@
 # Changelog for Fontra
 
+## 2024-11-20
+
+- Add support for background image colorization [PR 1815](https://github.com/googlefonts/fontra/pull/1815)
+
+## 2024-11-18
+
+New feature: background images.
+
+A background image can be added to a glyph in three ways:
+
+- Paste image data
+- Drop an image file onto the canvas
+- Choose an image file from the user's hard drive, with the "Glyph" -> "Add background image..." menu.
+
+The image file or data can be in PNG or JPEG format.
+
+The glyph needs to be in edit mode, and at a selected source (not at an interpolation).
+
+Fontra's background image feature is mostly compatible with UFO background images, although it doesn't implement UFO's colorization feature yet. Fontra does allow the opacity of the image to be set.
+
+Background images are locked by default, and can be unlocked with the "Unlock background images" context menu item.
+
+Selected background images can be moved around by dragging, and they participate in the Selection Transformation panel's operations.
+
+The Selection Info panel shows the settings for a selected background image: the Opacity can be edited there and the Transformation settings can be edited numerically there.
+
+Caveat: support for background images is limited to the `.designspace`/`.ufo` and `.fontra` backends. It is currently not supported in the `rcjk` backend.
+
+[Issue 1660](https://github.com/googlefonts/fontra/issues/1660), [Issue 1777](https://github.com/googlefonts/fontra/issues/1777) (There were too many PRs to mention individually here.)
+
+## 2024-11-13
+
+- Improved UI translations [PR 1764](https://github.com/googlefonts/fontra/pull/1764)
+- Added "Selecte previous/next glyph" menu items [PR 1706](https://github.com/googlefonts/fontra/pull/1706)
+- Partial support for background images (more to come) [PR 1775](https://github.com/googlefonts/fontra/pull/1775)
+- Add support for many UFO font info fields, so they won't get lost during round-tripping [PR 1770](https://github.com/googlefonts/fontra/pull/1770)
+- Fixed cosmetic issue with scrollbars on Windows [PR 1767](https://github.com/googlefonts/fontra/pull/1767)
+- Fixed bug with Copy/Paste menu items [PR 1756](https://github.com/googlefonts/fontra/pull/1756)
+
 ## 2024-10-24
 
 - Various improvements to the font sources panel [PR 1739](https://github.com/googlefonts/fontra/pull/1739)

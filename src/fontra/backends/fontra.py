@@ -197,9 +197,7 @@ class FontraBackend:
 
         return None  # Image not found
 
-    async def putBackgroundImage(
-        self, imageIdentifier: str, glyphName: str, layerName: str, data: ImageData
-    ) -> None:
+    async def putBackgroundImage(self, imageIdentifier: str, data: ImageData) -> None:
         fileName = f"{imageIdentifier}.{data.type.lower()}"
         self.backgroundImagesDir.mkdir(exist_ok=True)
         path = self.backgroundImagesDir / fileName

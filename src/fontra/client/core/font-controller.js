@@ -14,7 +14,9 @@ import { LRUCache } from "./lru-cache.js";
 import { setPopFirst } from "./set-ops.js";
 import { TaskPool } from "./task-pool.js";
 import {
+  assert,
   chain,
+  colorizeImage,
   getCharFromCodePoint,
   mapObjectValues,
   throttleCalls,
@@ -132,14 +134,40 @@ export class FontController {
 
   getBackgroundImage(imageIdentifier) {
     // This returns a promise for the requested background image
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    return cacheEntry.imagePromise;
+  }
+
+  getBackgroundImageColorized(imageIdentifier, color) {
+    // This returns a promise for the requested colorized background image
+    if (!color) {
+      return this.getBackgroundImage(imageIdentifier);
+    }
+    const cacheEntry = this._getBackgroundImageCacheEntry(imageIdentifier);
+    if (cacheEntry.color !== color) {
+      cacheEntry.color = color;
+      cacheEntry.imageColorizedPromise = new Promise((resolve, reject) => {
+        cacheEntry.imagePromise.then((image) => {
+          if (image) {
+            colorizeImage(image, color).then((image) => {
+              cacheEntry.imageColorized = image;
+              resolve(image);
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      });
+    }
+    return cacheEntry.imageColorizedPromise;
+  }
+
+  _getBackgroundImageCacheEntry(imageIdentifier) {
     let cacheEntry = this._backgroundImageCache.get(imageIdentifier);
     if (!cacheEntry) {
-      const imagePromise = this._getBackgroundImage(imageIdentifier);
-      cacheEntry = { imagePromise, image: null };
-      this._backgroundImageCache.put(imageIdentifier, cacheEntry);
-      imagePromise.then((image) => (cacheEntry.image = image));
+      cacheEntry = this._cacheBackgroundImageFromIdentifier(imageIdentifier);
     }
-    return cacheEntry.imagePromise;
+    return cacheEntry;
   }
 
   getBackgroundImageCached(imageIdentifier, onLoad = null) {
@@ -158,19 +186,82 @@ export class FontController {
     return cacheEntry?.image;
   }
 
-  async _getBackgroundImage(imageIdentifier) {
-    const imageData = await this.font.getBackgroundImage(imageIdentifier);
-    if (!imageData) {
-      return null;
+  getBackgroundImageColorizedCached(imageIdentifier, color, onLoad = null) {
+    if (!color) {
+      return this.getBackgroundImageCached(imageIdentifier, onLoad);
     }
+    const cacheEntry = this._backgroundImageCache.get(imageIdentifier);
+    if ((!cacheEntry?.imageColorizedPromise || cacheEntry.color !== color) && onLoad) {
+      this.getBackgroundImageColorized(imageIdentifier, color).then((image) =>
+        onLoad(image)
+      );
+    }
+    return cacheEntry?.imageColorized;
+  }
 
-    const image = new Image();
+  _cacheBackgroundImageFromIdentifier(imageIdentifier) {
+    return this._cacheBackgroundImageFromDataURLPromise(
+      imageIdentifier,
+      this._loadBackgroundImageData(imageIdentifier)
+    );
+  }
+
+  async _loadBackgroundImageData(imageIdentifier) {
+    const imageData = await this.font.getBackgroundImage(imageIdentifier);
+    return imageData ? `data:image/${imageData.type};base64,${imageData.data}` : null;
+  }
+
+  _cacheBackgroundImageFromDataURLPromise(imageIdentifier, imageDataURLPromise) {
     const imagePromise = new Promise((resolve, reject) => {
-      image.onload = (event) => resolve(image);
+      const image = new Image();
+      image.onload = (event) => {
+        cacheEntry.image = image;
+        resolve(image);
+      };
+      imageDataURLPromise.then((imageDataURL) => {
+        if (imageDataURL) {
+          image.src = imageDataURL;
+        } else {
+          resolve(null);
+        }
+      });
     });
-    image.src = `data:image/${imageData.type};base64,${imageData.data}`;
 
-    return await imagePromise;
+    const cacheEntry = { imagePromise, image: null };
+
+    this._backgroundImageCache.put(imageIdentifier, cacheEntry);
+
+    return cacheEntry;
+  }
+
+  getBackgroundImageBounds(imageIdentifier) {
+    const image = this.getBackgroundImageCached(imageIdentifier);
+    if (!image) {
+      return undefined;
+    }
+    return { xMin: 0, yMin: 0, xMax: image.width, yMax: image.height };
+  }
+
+  get getBackgroundImageBoundsFunc() {
+    return this.getBackgroundImageBounds.bind(this);
+  }
+
+  async putBackgroundImageData(imageIdentifier, imageDataURL) {
+    const [header, imageData] = imageDataURL.split(",");
+    const imageTypeRegex = /data:image\/(.+?);/g;
+    const match = imageTypeRegex.exec(header);
+    const imageType = match[1];
+    assert(imageType === "png" || imageType === "jpeg");
+
+    this._cacheBackgroundImageFromDataURLPromise(
+      imageIdentifier,
+      Promise.resolve(imageDataURL)
+    );
+
+    await this.font.putBackgroundImage(imageIdentifier, {
+      type: imageType,
+      data: imageData,
+    });
   }
 
   getCachedGlyphNames() {

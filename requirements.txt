@@ -1,7 +1,8 @@
-aiohttp==3.10.10
+aiohttp==3.11.2
 cattrs==24.1.2
-fonttools[ufo,unicode]==4.54.1
-glyphsLib==6.9.4
+fonttools[ufo,unicode]==4.55.0
+glyphsLib==6.9.5
+pillow==11.0.0
 pyyaml==6.0.2
 ufomerge==1.8.2
 unicodedata2==15.1.0
