@@ -500,7 +500,7 @@ export class PointerTool extends BaseTool {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default", true),
+          editBehavior: behaviorFactory.getTransformBehavior("default"),
           regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
           altPinPoint: getPinPoint(layerBounds, undefined, undefined),
           regularPinPointSelectedLayer: regularPinPointSelectedLayer,

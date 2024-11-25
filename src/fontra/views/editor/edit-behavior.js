@@ -5,7 +5,13 @@ import {
   decomposedToTransform,
   prependTransformToDecomposed,
 } from "../core/transform.js";
-import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
+import {
+  assert,
+  enumerate,
+  parseSelection,
+  reversed,
+  unionIndexSets,
+} from "../core/utils.js";
 import { copyBackgroundImage, copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
@@ -53,7 +59,15 @@ export class EditBehaviorFactory {
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(behaviorName, doFullTransform = false) {
+  getBehavior(behaviorName) {
+    return this._getBehavior(behaviorName);
+  }
+
+  getTransformBehavior(behaviorName) {
+    return this._getBehavior(behaviorName, true);
+  }
+
+  _getBehavior(behaviorName, doFullTransform = false) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -197,6 +211,10 @@ class EditBehavior {
     // For the latter, we don't want the initial change (before the constraint)
     // to be constrained, but pin the handle angle based on the freely transformed
     // off-curve point.
+    assert(
+      !this.doFullTransform,
+      "can't call makeChangeForDelta on transform behavior"
+    );
     return this._makeChangeForTransformFunc(
       makePointTranslateFunction(this.constrainDelta(delta)),
       makePointTranslateFunction(delta)
@@ -204,6 +222,10 @@ class EditBehavior {
   }
 
   makeChangeForTransformation(transformation) {
+    assert(
+      this.doFullTransform,
+      "can't call makeChangeForTransformation on delta behavior"
+    );
     const pointTransformFunction =
       transformation.transformPointObject.bind(transformation);
 
