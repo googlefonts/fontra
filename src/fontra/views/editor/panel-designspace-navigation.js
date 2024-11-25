@@ -882,8 +882,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       layerNames,
       locationBase,
     } = await this._sourcePropertiesRunDialog(
-      translate("sidebar.designspace-navigation.dialog.add-source.title"),
-      translate("sidebar.designspace-navigation.dialog.add-source.ok-button-title"),
+      translate("sidebar.designspace-navigation.dialog.source-properties.title"),
+      translate(
+        "sidebar.designspace-navigation.dialog.source-properties.ok-button-title"
+      ),
       glyph,
       source.name,
       source.layerName,
