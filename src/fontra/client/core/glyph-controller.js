@@ -490,7 +490,7 @@ export class VariableGlyphController {
     let sourceIndex = this._layerNameToSourceIndex[layerName];
     if (sourceIndex === undefined) {
       for (const i of range(this.sources.length)) {
-        const names = this.getBackgroundLayerNamesForSourceIndex(i);
+        const names = this.getSourceLayerNamesForSourceIndex(i);
         const layerNames = names.map(([layerName, layerNameShort]) => layerName);
         if (layerNames.includes(layerName)) {
           sourceIndex = i;
@@ -501,7 +501,7 @@ export class VariableGlyphController {
     return sourceIndex;
   }
 
-  getBackgroundLayerNamesForSourceIndex(sourceIndex) {
+  getSourceLayerNamesForSourceIndex(sourceIndex) {
     let backgroundLayerNames = this._sourceIndexToBackgroundLayerNames.get(sourceIndex);
 
     if (!backgroundLayerNames) {
@@ -509,16 +509,21 @@ export class VariableGlyphController {
       this._layerNameToSourceIndex[source.layerName] = sourceIndex;
 
       const layerNamePrefix = source.layerName + ".";
-      const layerNames = Object.keys(this.glyph.layers).filter((layerName) =>
-        layerName.startsWith(layerNamePrefix)
+      const layerNames = Object.keys(this.glyph.layers).filter(
+        (layerName) =>
+          layerName.startsWith(layerNamePrefix) &&
+          layerName.length > layerNamePrefix.length
       );
       layerNames.forEach((layerName) => {
         this._layerNameToSourceIndex[layerName] = sourceIndex;
       });
-      backgroundLayerNames = layerNames.map((layerName) => [
-        layerName,
-        layerName.slice(layerNamePrefix.length),
-      ]);
+      backgroundLayerNames = [[source.layerName, null]];
+      backgroundLayerNames.push(
+        ...layerNames.map((layerName) => [
+          layerName,
+          layerName.slice(layerNamePrefix.length),
+        ])
+      );
       this._sourceIndexToBackgroundLayerNames.set(sourceIndex, backgroundLayerNames);
     }
 
