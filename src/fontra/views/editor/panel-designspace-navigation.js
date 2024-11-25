@@ -825,8 +825,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       layerNames,
       locationBase,
     } = await this._sourcePropertiesRunDialog(
-      "Add source",
-      "Add",
+      translate("sidebar.designspace-navigation.dialog.add-source.title"),
+      translate("sidebar.designspace-navigation.dialog.add-source.ok-button-title"),
       glyph,
       "",
       "",
@@ -882,8 +882,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       layerNames,
       locationBase,
     } = await this._sourcePropertiesRunDialog(
-      "Source properties",
-      "Done",
+      translate("sidebar.designspace-navigation.dialog.add-source.title"),
+      translate("sidebar.designspace-navigation.dialog.add-source.ok-button-title"),
       glyph,
       source.name,
       source.layerName,
@@ -1136,14 +1136,26 @@ export default class DesignspaceNavigationPanel extends Panel {
           "locationBase",
           fontSourceMenuItems
         ),
-        ...labeledTextInput("Source name:", nameController, "sourceName", {
-          placeholderKey: "suggestedSourceName",
-          id: "source-name-text-input",
-        }),
-        ...labeledTextInput("Layer:", nameController, "layerName", {
-          placeholderKey: "suggestedLayerName",
-          choices: layerNames,
-        }),
+        ...labeledTextInput(
+          translate(
+            "sidebar.designspace-navigation.dialog.add-source.label.source-name"
+          ),
+          nameController,
+          "sourceName",
+          {
+            placeholderKey: "suggestedSourceName",
+            id: "source-name-text-input",
+          }
+        ),
+        ...labeledTextInput(
+          translate("sidebar.designspace-navigation.dialog.add-source.label.layer"),
+          nameController,
+          "layerName",
+          {
+            placeholderKey: "suggestedLayerName",
+            choices: layerNames,
+          }
+        ),
         html.br(),
         locationElement,
         warningElement,
