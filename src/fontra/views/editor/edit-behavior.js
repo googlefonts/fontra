@@ -1,7 +1,17 @@
 import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
-import { Transform, decomposedToTransform } from "../core/transform.js";
-import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
+import {
+  Transform,
+  decomposedToTransform,
+  prependTransformToDecomposed,
+} from "../core/transform.js";
+import {
+  assert,
+  enumerate,
+  parseSelection,
+  reversed,
+  unionIndexSets,
+} from "../core/utils.js";
 import { copyBackgroundImage, copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
@@ -49,7 +59,15 @@ export class EditBehaviorFactory {
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(behaviorName, doFullTransform = false) {
+  getBehavior(behaviorName) {
+    return this._getBehavior(behaviorName);
+  }
+
+  getTransformBehavior(behaviorName) {
+    return this._getBehavior(behaviorName, true);
+  }
+
+  _getBehavior(behaviorName, doFullTransform = false) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -184,6 +202,10 @@ class EditBehavior {
   }
 
   makeChangeForDelta(delta) {
+    assert(
+      !this.doFullTransform,
+      "can't call makeChangeForDelta on transform behavior"
+    );
     // For shift-constrain, we need two transform functions:
     // - one with the delta constrained to 0/45/90 degrees
     // - one with the 'free' delta
@@ -193,28 +215,53 @@ class EditBehavior {
     // For the latter, we don't want the initial change (before the constraint)
     // to be constrained, but pin the handle angle based on the freely transformed
     // off-curve point.
-    return this.makeChangeForTransformFunc(
+    return this._makeChangeForTransformFunc(
       makePointTranslateFunction(this.constrainDelta(delta)),
       makePointTranslateFunction(delta)
     );
   }
 
-  makeChangeForTransformFunc(
+  makeChangeForTransformation(transformation) {
+    assert(
+      this.doFullTransform,
+      "can't call makeChangeForTransformation on delta behavior"
+    );
+
+    const pointTransformFunction =
+      transformation.transformPointObject.bind(transformation);
+
+    const componentTransformFunction = (component, componentIndex) => {
+      component = copyComponent(component);
+      component.transformation = prependTransformToDecomposed(
+        transformation,
+        component.transformation
+      );
+      return component;
+    };
+
+    const backgroundImageTransformFunction = (backgroundImage) => {
+      backgroundImage = copyBackgroundImage(backgroundImage);
+      backgroundImage.transformation = prependTransformToDecomposed(
+        transformation,
+        backgroundImage.transformation
+      );
+      return backgroundImage;
+    };
+
+    return this._makeChangeForTransformFunc(
+      pointTransformFunction,
+      null,
+      componentTransformFunction,
+      backgroundImageTransformFunction
+    );
+  }
+
+  _makeChangeForTransformFunc(
     transformFunc,
     freeTransformFunc = null,
     transformComponentFunc = null,
     transformBackgroundImageFunc = null
   ) {
-    if (this.doFullTransform && !transformComponentFunc) {
-      throw Error(
-        "assert -- must pass transformComponentFunc when doing doFullTransform"
-      );
-    }
-    if (this.doFullTransform && !transformBackgroundImageFunc) {
-      throw Error(
-        "assert -- must pass transformBackgroundImageFunc when doing doFullTransform"
-      );
-    }
     const transform = {
       constrained: transformFunc,
       free: freeTransformFunc || transformFunc,

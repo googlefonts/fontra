@@ -9,7 +9,7 @@ import {
   rectSize,
 } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
-import { Transform, prependTransformToDecomposed } from "../core/transform.js";
+import { Transform } from "../core/transform.js";
 import {
   boolInt,
   commandKeyProperty,
@@ -500,7 +500,7 @@ export class PointerTool extends BaseTool {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default", true),
+          editBehavior: behaviorFactory.getTransformBehavior("default"),
           regularPinPoint: getPinPoint(layerBounds, origin.x, origin.y),
           altPinPoint: getPinPoint(layerBounds, undefined, undefined),
           regularPinPointSelectedLayer: regularPinPointSelectedLayer,
@@ -558,37 +558,13 @@ export class PointerTool extends BaseTool {
             transformation = new Transform().scale(scaleX, scaleY);
           }
 
-          const t = new Transform()
+          const pinnedTransformation = new Transform()
             .translate(pinPoint.x, pinPoint.y)
             .transform(transformation)
             .translate(-pinPoint.x, -pinPoint.y);
 
-          const pointTransformFunction = t.transformPointObject.bind(t);
-
-          const componentTransformFunction = (component, componentIndex) => {
-            component = copyComponent(component);
-            component.transformation = prependTransformToDecomposed(
-              t,
-              component.transformation
-            );
-            return component;
-          };
-
-          const backgroundImageTransformFunction = (backgroundImage) => {
-            backgroundImage = copyBackgroundImage(backgroundImage);
-            backgroundImage.transformation = prependTransformToDecomposed(
-              t,
-              backgroundImage.transformation
-            );
-            return backgroundImage;
-          };
-
-          const editChange = layer.editBehavior.makeChangeForTransformFunc(
-            pointTransformFunction,
-            null,
-            componentTransformFunction,
-            backgroundImageTransformFunction
-          );
+          const editChange =
+            layer.editBehavior.makeChangeForTransformation(pinnedTransformation);
 
           applyChange(layerGlyph, editChange);
           deepEditChanges.push(consolidateChanges(editChange, layer.changePath));

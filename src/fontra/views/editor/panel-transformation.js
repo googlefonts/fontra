@@ -15,7 +15,7 @@ import {
   subtractPath,
   unionPath,
 } from "/core/server-utils.js";
-import { Transform, prependTransformToDecomposed } from "/core/transform.js";
+import { Transform } from "/core/transform.js";
 import {
   enumerate,
   mapObjectValuesAsync,
@@ -699,7 +699,7 @@ export default class TransformationPanel extends Panel {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default", true),
+          editBehavior: behaviorFactory.getTransformBehavior("default"),
         };
       });
 
@@ -716,37 +716,14 @@ export default class TransformationPanel extends Panel {
           this.transformParameters.originY
         );
 
-        const t = new Transform()
+        const pinnedTransformation = new Transform()
           .translate(pinPoint.x, pinPoint.y)
           .transform(transformation)
           .translate(-pinPoint.x, -pinPoint.y);
 
-        const pointTransformFunction = t.transformPointObject.bind(t);
+        const editChange =
+          editBehavior.makeChangeForTransformation(pinnedTransformation);
 
-        const componentTransformFunction = (component, componentIndex) => {
-          component = copyComponent(component);
-          component.transformation = prependTransformToDecomposed(
-            t,
-            component.transformation
-          );
-          return component;
-        };
-
-        const backgroundImageTransformFunction = (backgroundImage) => {
-          backgroundImage = copyBackgroundImage(backgroundImage);
-          backgroundImage.transformation = prependTransformToDecomposed(
-            t,
-            backgroundImage.transformation
-          );
-          return backgroundImage;
-        };
-
-        const editChange = editBehavior.makeChangeForTransformFunc(
-          pointTransformFunction,
-          null,
-          componentTransformFunction,
-          backgroundImageTransformFunction
-        );
         applyChange(layerGlyph, editChange);
         editChanges.push(consolidateChanges(editChange, changePath));
         rollbackChanges.push(
