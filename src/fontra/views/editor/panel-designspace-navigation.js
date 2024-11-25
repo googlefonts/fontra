@@ -273,7 +273,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener(
       ["selectedGlyph", "selectedSourceIndex"],
       (event) => {
-        this._updateBackgroundLayersList();
+        this._updateSourceLayersList();
       }
     );
 
@@ -405,10 +405,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.editSourceProperties(sourceIndex);
     });
 
-    this.backgroundLayersList = this.contentElement.querySelector("#layers-list");
-    this.backgroundLayersList.columnDescriptions = [{ key: "layerName" }];
-    this.backgroundLayersList.addEventListener("listSelectionChanged", (event) => {
-      const layerItem = this.backgroundLayersList.getSelectedItem();
+    this.sourceLayersList = this.contentElement.querySelector("#layers-list");
+    this.sourceLayersList.columnDescriptions = [{ key: "layerName" }];
+    this.sourceLayersList.addEventListener("listSelectionChanged", (event) => {
+      const layerItem = this.sourceLayersList.getSelectedItem();
       if (layerItem) {
         this.sceneSettings.editLayerName = layerItem.layerNameFull;
         this.sceneController.editingLayers = { [layerItem.layerNameFull]: "---" };
@@ -798,15 +798,15 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
-    this._updateBackgroundLayersList();
+    this._updateSourceLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
   }
 
-  async _updateBackgroundLayersList() {
-    // TODO: the background layers feature is not yet functional, disable for now
-    this.glyphLayersAccordionItem.hidden = true;
-    return;
+  async _updateSourceLayersList() {
+    // // TODO: the background layers feature is not yet functional, disable for now
+    // this.glyphLayersAccordionItem.hidden = true;
+    // return;
 
     const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
     const haveLayers =
@@ -814,7 +814,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.glyphLayersAccordionItem.hidden = !haveLayers;
 
     if (!haveLayers) {
-      this.backgroundLayersList.setItems([]);
+      this.sourceLayersList.setItems([]);
       return;
     }
 
@@ -824,7 +824,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const source = varGlyphController.glyph.sources[sourceIndex];
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
-    this.backgroundLayersList.setItems(
+    this.sourceLayersList.setItems(
       layerNames.map(([layerNameFull, layerName]) => ({
         layerName: layerName || "foreground",
         layerNameFull,
