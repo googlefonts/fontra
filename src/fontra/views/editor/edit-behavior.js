@@ -197,7 +197,7 @@ class EditBehavior {
     // For the latter, we don't want the initial change (before the constraint)
     // to be constrained, but pin the handle angle based on the freely transformed
     // off-curve point.
-    return this.makeChangeForTransformFunc(
+    return this._makeChangeForTransformFunc(
       makePointTranslateFunction(this.constrainDelta(delta)),
       makePointTranslateFunction(delta)
     );
@@ -225,7 +225,7 @@ class EditBehavior {
       return backgroundImage;
     };
 
-    return this.makeChangeForTransformFunc(
+    return this._makeChangeForTransformFunc(
       pointTransformFunction,
       null,
       componentTransformFunction,
@@ -233,7 +233,7 @@ class EditBehavior {
     );
   }
 
-  makeChangeForTransformFunc(
+  _makeChangeForTransformFunc(
     transformFunc,
     freeTransformFunc = null,
     transformComponentFunc = null,
