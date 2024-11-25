@@ -635,7 +635,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       backgroundLayers = {};
       for (const source of varGlyphController.sources) {
         if (!backgroundLayers[source.layerName]) {
-          backgroundLayers[source.layerName] = source.name;
+          backgroundLayers[source.layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         }
       }
     }
