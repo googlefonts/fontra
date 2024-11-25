@@ -825,9 +825,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
     this.backgroundLayersList.setItems(
-      [{ layerName: "foreground", layerNameFull: source.layerName }].concat(
-        layerNames.map(([layerNameFull, layerName]) => ({ layerName, layerNameFull }))
-      )
+      layerNames.map(([layerNameFull, layerName]) => ({
+        layerName: layerName || "foreground",
+        layerNameFull,
+      }))
     );
   }
 
