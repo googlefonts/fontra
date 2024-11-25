@@ -526,6 +526,8 @@ export class VariableGlyphController {
   }
 
   getSourceIndexForSourceLocation(sourceLocation) {
+    // Not to be confused with getSourceIndex() which is confusingly similar.
+    // TODO: sort out and fix this confusion.
     return this.getSourceIndexForSourceLocationString(
       this.getSparseLocationStringForSourceLocation(sourceLocation)
     );
