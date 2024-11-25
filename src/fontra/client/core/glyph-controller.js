@@ -39,6 +39,7 @@ import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
   locationToString,
+  makeSparseLocation,
   makeSparseNormalizedLocation,
   mapAxesFromUserSpaceToSourceSpace,
   normalizeLocation,
@@ -54,6 +55,7 @@ export class VariableGlyphController {
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
     this._sourceIndexToBackgroundLayerNames = new Map();
+    this._locationStringToSourceIndex = null;
   }
 
   get name() {
@@ -192,6 +194,7 @@ export class VariableGlyphController {
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
     this._sourceIndexToBackgroundLayerNames = new Map();
+    this._locationStringToSourceIndex = null;
   }
 
   get model() {
@@ -524,6 +527,32 @@ export class VariableGlyphController {
     }
 
     return backgroundLayerNames;
+  }
+
+  getSourceIndexForSourceLocation(sourceLocation) {
+    if (!this._locationStringToSourceIndex) {
+      this._buildLocationStringToSourceIndexMapping();
+    }
+    return this.getSourceIndexForSourceLocationString(
+      this.getSparseLocationStringForSourceLocation(sourceLocation)
+    );
+  }
+
+  getSourceIndexForSourceLocationString(sourceLocationString) {
+    return this._locationStringToSourceIndex[sourceLocationString];
+  }
+
+  _buildLocationStringToSourceIndexMapping() {
+    this._locationStringToSourceIndex = {};
+    for (const [sourceIndex, source] of enumerate(this.sources)) {
+      this._locationStringToSourceIndex[
+        this.getSparseLocationStringForSourceLocation(source.location)
+      ] = sourceIndex;
+    }
+  }
+
+  getSparseLocationStringForSourceLocation(sourceLocation) {
+    return locationToString(makeSparseLocation(sourceLocation, this.combinedAxes));
   }
 
   expandNLIAxes(sourceLocation) {
