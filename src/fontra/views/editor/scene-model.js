@@ -261,11 +261,12 @@ export class SceneModel {
 
   async _setupBackgroundGlyphs(glyphName, varGlyph, layers, skipLayers) {
     const layerGlyphs = [];
-    for (const [layerName, sourceName] of Object.entries(layers)) {
+    for (const [layerName, sourceLocationString] of Object.entries(layers)) {
       if (layerName in skipLayers) {
         continue;
       }
-      let sourceIndex = varGlyph.getSourceIndexForSourceName(sourceName) || 0;
+      let sourceIndex =
+        varGlyph.getSourceIndexForSourceLocationString(sourceLocationString) || 0;
       const layerGlyph = await this.fontController.getLayerGlyphController(
         glyphName,
         layerName,

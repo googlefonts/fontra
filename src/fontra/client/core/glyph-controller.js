@@ -451,10 +451,14 @@ export class VariableGlyphController {
   }
 
   getSourceLocationForSourceIndex(sourceIndex) {
+    return this.getSourceLocationForSource(this.sources[sourceIndex]);
+  }
+
+  getSourceLocationForSource(source) {
     const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
-    const sourceLocation = this.getSourceLocation(this.sources[sourceIndex]);
+    const sourceLocation = this.getSourceLocation(source);
     return { ...defaultLocation, ...sourceLocation };
   }
 
@@ -480,14 +484,6 @@ export class VariableGlyphController {
 
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
     return sourceIndexMapping[nearestIndex];
-  }
-
-  getSourceIndexForSourceName(sourceName) {
-    for (const [sourceIndex, source] of enumerate(this.sources)) {
-      if (source.name === sourceName) {
-        return sourceIndex;
-      }
-    }
   }
 
   getSourceIndexForLayerName(layerName) {
@@ -530,15 +526,15 @@ export class VariableGlyphController {
   }
 
   getSourceIndexForSourceLocation(sourceLocation) {
-    if (!this._locationStringToSourceIndex) {
-      this._buildLocationStringToSourceIndexMapping();
-    }
     return this.getSourceIndexForSourceLocationString(
       this.getSparseLocationStringForSourceLocation(sourceLocation)
     );
   }
 
   getSourceIndexForSourceLocationString(sourceLocationString) {
+    if (!this._locationStringToSourceIndex) {
+      this._buildLocationStringToSourceIndexMapping();
+    }
     return this._locationStringToSourceIndex[sourceLocationString];
   }
 
@@ -549,6 +545,10 @@ export class VariableGlyphController {
         this.getSparseLocationStringForSourceLocation(source.location)
       ] = sourceIndex;
     }
+  }
+
+  getSparseLocationStringForSource(source) {
+    return locationToString(makeSparseLocation(source.location, this.combinedAxes));
   }
 
   getSparseLocationStringForSourceLocation(sourceLocation) {

@@ -735,8 +735,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         name: source.name,
         layerName: source.layerName,
         active: !source.inactive,
-        visible: backgroundLayers[layerName] === source.name,
-        editing: editingLayers[layerName] === source.name,
+        visible:
+          backgroundLayers[layerName] ===
+          varGlyphController.getSparseLocationStringForSource(source),
+        editing:
+          editingLayers[layerName] ===
+          varGlyphController.getSparseLocationStringForSource(source),
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
         interpolationStatus: sourceInterpolationStatus[index],
@@ -755,7 +759,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceController.addKeyListener("visible", async (event) => {
         if (event.newValue) {
-          backgroundLayers[layerName] = source.name;
+          backgroundLayers[layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         } else {
           delete backgroundLayers[layerName];
         }
@@ -763,7 +768,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceController.addKeyListener("editing", async (event) => {
         if (event.newValue) {
-          editingLayers[layerName] = source.name;
+          editingLayers[layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         } else {
           delete editingLayers[layerName];
         }
