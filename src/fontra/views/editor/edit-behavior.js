@@ -199,6 +199,36 @@ class EditBehavior {
     );
   }
 
+  makeChangeForTransformation(transformation) {
+    const pointTransformFunction =
+      transformation.transformPointObject.bind(transformation);
+
+    const componentTransformFunction = (component, componentIndex) => {
+      component = copyComponent(component);
+      component.transformation = prependTransformToDecomposed(
+        transformation,
+        component.transformation
+      );
+      return component;
+    };
+
+    const backgroundImageTransformFunction = (backgroundImage) => {
+      backgroundImage = copyBackgroundImage(backgroundImage);
+      backgroundImage.transformation = prependTransformToDecomposed(
+        transformation,
+        backgroundImage.transformation
+      );
+      return backgroundImage;
+    };
+
+    return this.makeChangeForTransformFunc(
+      pointTransformFunction,
+      null,
+      componentTransformFunction,
+      backgroundImageTransformFunction
+    );
+  }
+
   makeChangeForTransformFunc(
     transformFunc,
     freeTransformFunc = null,
