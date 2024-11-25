@@ -562,11 +562,6 @@ export class FontController {
     return new StaticGlyphController(glyphName, dummyGlyph, undefined);
   }
 
-  async getSourceIndex(glyphName, sourceLocation) {
-    const glyph = await this.getGlyph(glyphName);
-    return glyph?.getSourceIndex(sourceLocation);
-  }
-
   addGlyphChangeListener(glyphName, listener) {
     if (!this._glyphChangeListeners[glyphName]) {
       this._glyphChangeListeners[glyphName] = [];
