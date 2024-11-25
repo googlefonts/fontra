@@ -202,6 +202,10 @@ class EditBehavior {
   }
 
   makeChangeForDelta(delta) {
+    assert(
+      !this.doFullTransform,
+      "can't call makeChangeForDelta on transform behavior"
+    );
     // For shift-constrain, we need two transform functions:
     // - one with the delta constrained to 0/45/90 degrees
     // - one with the 'free' delta
@@ -211,11 +215,6 @@ class EditBehavior {
     // For the latter, we don't want the initial change (before the constraint)
     // to be constrained, but pin the handle angle based on the freely transformed
     // off-curve point.
-    assert(
-      !this.doFullTransform,
-      "can't call makeChangeForDelta on transform behavior"
-    );
-
     return this._makeChangeForTransformFunc(
       makePointTranslateFunction(this.constrainDelta(delta)),
       makePointTranslateFunction(delta)
