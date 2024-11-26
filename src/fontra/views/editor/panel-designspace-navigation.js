@@ -730,20 +730,19 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
+      const locationString =
+        varGlyphController.getSparseLocationStringForSource(source);
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
         layerName: source.layerName,
         active: !source.inactive,
-        visible:
-          backgroundLayers[layerName] ===
-          varGlyphController.getSparseLocationStringForSource(source),
-        editing:
-          editingLayers[layerName] ===
-          varGlyphController.getSparseLocationStringForSource(source),
+        visible: backgroundLayers[layerName] === locationString,
+        editing: editingLayers[layerName] === locationString,
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
+        locationString,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
