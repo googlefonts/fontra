@@ -665,12 +665,17 @@ export default class DesignspaceNavigationPanel extends Panel {
             item.interpolationStatus.discreteLocationKey !== discreteLocationKey
         );
 
+    const editingLayers = {};
     for (const item of items) {
-      item.editing =
+      const editing =
         (onOff &&
           item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
         item === selectedItem;
+      if (editing) {
+        editingLayers[item.layerName] = item.locationString;
+      }
     }
+    this.sceneSettings.editingLayers = editingLayers;
   }
 
   async updateInterpolationContributions() {
