@@ -530,14 +530,6 @@ export class VariableGlyphController {
     return backgroundLayerNames;
   }
 
-  getSourceIndexForSourceLocation(sourceLocation) {
-    // Not to be confused with getSourceIndex() which is confusingly similar.
-    // TODO: sort out and fix this confusion.
-    return this.getSourceIndexForSourceLocationString(
-      this.getSparseLocationStringForSourceLocation(sourceLocation)
-    );
-  }
-
   getSourceIndexForSourceLocationString(sourceLocationString) {
     if (!this._locationStringToSourceIndex) {
       this._buildLocationStringToSourceIndexMapping();
