@@ -548,14 +548,15 @@ export class VariableGlyphController {
   _buildLocationStringToSourceIndexMapping() {
     this._locationStringToSourceIndex = {};
     for (const [sourceIndex, source] of enumerate(this.sources)) {
-      this._locationStringToSourceIndex[
-        this.getSparseLocationStringForSourceLocation(source.location)
-      ] = sourceIndex;
+      this._locationStringToSourceIndex[this.getSparseLocationStringForSource(source)] =
+        sourceIndex;
     }
   }
 
   getSparseLocationStringForSource(source) {
-    return locationToString(makeSparseLocation(source.location, this.combinedAxes));
+    return this.getSparseLocationStringForSourceLocation(
+      this.getSourceLocation(source)
+    );
   }
 
   getSparseLocationStringForSourceLocation(sourceLocation) {
