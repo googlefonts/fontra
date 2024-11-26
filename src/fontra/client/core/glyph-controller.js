@@ -450,11 +450,11 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  getSourceLocationForSourceIndex(sourceIndex) {
-    return this.getSourceLocationForSource(this.sources[sourceIndex]);
+  getDenseSourceLocationForSourceIndex(sourceIndex) {
+    return this.getDenseSourceLocationForSource(this.sources[sourceIndex]);
   }
 
-  getSourceLocationForSource(source) {
+  getDenseSourceLocationForSource(source) {
     const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
