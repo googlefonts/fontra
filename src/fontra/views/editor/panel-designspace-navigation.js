@@ -417,8 +417,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList.addEventListener("listSelectionChanged", (event) => {
       const layerItem = this.sourceLayersList.getSelectedItem();
       if (layerItem) {
-        this.sceneSettings.editLayerName = layerItem.layerNameFull;
-        this.sceneSettings.editingLayers = { [layerItem.layerNameFull]: "---" };
+        this.sceneSettings.editLayerName = layerItem.fullName;
+        this.sceneSettings.editingLayers = { [layerItem.fullName]: "---" };
       }
     });
 
@@ -847,6 +847,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const source = varGlyphController.glyph.sources[sourceIndex];
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
     this.sourceLayersList.setItems(
       layerNames.map((layer) => ({
         fullName: layer.fullName,
@@ -873,7 +874,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     if (!selectedItem) {
       this.sceneSettings.editingLayers = {};
     } else {
-      if (!selectedItem.editing || selectedItem.interpolationStatus?.error) {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      const sourceLayers = varGlyphController.getSourceLayerNamesForSourceIndex(
+        selectedItem.sourceIndex
+      );
+
+      const bgLayerIsEditing = sourceLayers.some(
+        (layer) =>
+          layer.shortName &&
+          this.sceneSettings.editingLayers.hasOwnProperty(layer.fullName)
+      );
+
+      if (
+        !bgLayerIsEditing &&
+        (!selectedItem.editing || selectedItem.interpolationStatus?.error)
+      ) {
         this.sceneSettings.editingLayers = {
           [selectedItem.layerName]: selectedItem.locationString,
         };
