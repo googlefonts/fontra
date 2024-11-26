@@ -40,7 +40,6 @@ export class SceneModel {
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
-    this.backgroundLayers = {};
     this.editingLayers = {};
     this.updateSceneCancelSignal = {};
 
@@ -248,7 +247,7 @@ export class SceneModel {
     this.backgroundLayerGlyphs = await this._setupBackgroundGlyphs(
       glyphName,
       varGlyph,
-      this.backgroundLayers,
+      this.sceneSettings.backgroundLayers,
       this.editingLayers
     );
     this.editingLayerGlyphs = await this._setupBackgroundGlyphs(

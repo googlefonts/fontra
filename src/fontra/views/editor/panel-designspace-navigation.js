@@ -627,7 +627,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async onVisibilityHeaderClick(event) {
     let backgroundLayers;
-    if (Object.keys(this.sceneController.backgroundLayers).length) {
+    if (Object.keys(this.sceneSettings.backgroundLayers).length) {
       backgroundLayers = {};
     } else {
       const varGlyphController =
@@ -640,7 +640,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
       }
     }
-    this.sceneController.backgroundLayers = backgroundLayers;
+    this.sceneSettings.backgroundLayers = backgroundLayers;
     this._updateSources();
   }
 
@@ -725,7 +725,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       }) || [];
-    let backgroundLayers = { ...this.sceneController.backgroundLayers };
+    const backgroundLayers = { ...this.sceneSettings.backgroundLayers };
     let editingLayers = { ...this.sceneController.editingLayers };
 
     const sourceItems = [];
@@ -759,13 +759,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         });
       });
       sourceController.addKeyListener("visible", async (event) => {
+        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
         if (event.newValue) {
-          backgroundLayers[layerName] =
+          newBackgroundLayers[layerName] =
             varGlyphController.getSparseLocationStringForSource(source);
         } else {
-          delete backgroundLayers[layerName];
+          delete newBackgroundLayers[layerName];
         }
-        this.sceneController.backgroundLayers = backgroundLayers;
+        this.sceneSettings.backgroundLayers = newBackgroundLayers;
       });
       sourceController.addKeyListener("editing", async (event) => {
         if (event.newValue) {

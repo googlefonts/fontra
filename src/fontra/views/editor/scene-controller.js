@@ -95,6 +95,7 @@ export class SceneController {
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
       backgroundImagesAreLocked: true,
+      backgroundLayers: {},
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -338,6 +339,12 @@ export class SceneController {
         this.canvasController.getViewBox(),
         { senderID: this }
       );
+    });
+
+    // Update background layer glyphs
+    this.sceneSettingsController.addKeyListener("backgroundLayers", (event) => {
+      this.sceneModel.updateBackgroundGlyphs();
+      this.canvasController.requestUpdate();
     });
   }
 
@@ -890,16 +897,6 @@ export class SceneController {
 
   set selectionRect(selRect) {
     this.sceneModel.selectionRect = selRect;
-    this.canvasController.requestUpdate();
-  }
-
-  get backgroundLayers() {
-    return this.sceneModel.backgroundLayers || [];
-  }
-
-  set backgroundLayers(layers) {
-    this.sceneModel.backgroundLayers = layers;
-    this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
 
