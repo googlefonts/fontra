@@ -862,11 +862,22 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async _updateEditingStatus() {
     const selectedItem = this.sourcesList.getSelectedItem();
-    if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
-      // TODO: take background layers into account
-      this.sourcesList.items.forEach((item) => {
-        item.editing = item === selectedItem;
-      });
+
+    // if no selected item:
+    // - set all item.editing = false
+    // else if the selected item is not editing and no bg layer is editing
+    // - make *only* selected item editing
+    // else if the selected item has an interpolation error
+    // - make *only* selected item editing
+
+    if (!selectedItem) {
+      this.sceneSettings.editingLayers = {};
+    } else {
+      if (!selectedItem.editing || selectedItem.interpolationStatus?.error) {
+        this.sceneSettings.editingLayers = {
+          [selectedItem.layerName]: selectedItem.locationString,
+        };
+      }
     }
   }
 
