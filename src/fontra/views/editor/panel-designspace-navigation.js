@@ -736,7 +736,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
-        layerName: source.layerName,
+        layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === locationString,
         editing: editingLayers[layerName] === locationString,
