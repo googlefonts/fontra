@@ -342,6 +342,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     );
 
+    this.sceneSettingsController.addKeyListener(
+      ["backgroundLayers", "editingLayers"],
+      (event) => {
+        this._updateSourceItems();
+      }
+    );
+
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", () => {
       // This happens also when the user tries to change the development status
       // or the "on/off" source selector, in which case we must refresh the UI.
@@ -641,7 +648,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     }
     this.sceneSettings.backgroundLayers = backgroundLayers;
-    this._updateSources();
   }
 
   onEditHeaderClick(event) {
@@ -802,6 +808,17 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSourceLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
+  }
+
+  _updateSourceItems() {
+    const backgroundLayers = this.sceneSettings.backgroundLayers;
+    const editingLayers = this.sceneSettings.editingLayers;
+    for (const sourceItem of this.sourcesList.items) {
+      sourceItem.visible =
+        backgroundLayers[sourceItem.layerName] === sourceItem.locationString;
+      sourceItem.editing =
+        editingLayers[sourceItem.layerName] === sourceItem.locationString;
+    }
   }
 
   async _updateSourceLayersList() {
