@@ -415,10 +415,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList = this.contentElement.querySelector("#layers-list");
     this.sourceLayersList.columnDescriptions = [{ key: "shortName" }];
     this.sourceLayersList.addEventListener("listSelectionChanged", (event) => {
+      const sourceItem = this.sourcesList.getSelectedItem();
       const layerItem = this.sourceLayersList.getSelectedItem();
       if (layerItem) {
         this.sceneSettings.editLayerName = layerItem.fullName;
-        this.sceneSettings.editingLayers = { [layerItem.fullName]: "---" };
+        this.sceneSettings.editingLayers = {
+          [layerItem.fullName]: sourceItem.locationString,
+        };
       }
     });
 
