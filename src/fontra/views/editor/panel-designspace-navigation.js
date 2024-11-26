@@ -857,6 +857,10 @@ export default class DesignspaceNavigationPanel extends Panel {
         shortName: layer.shortName || "foreground",
       }))
     );
+
+    // TODO: keep track of the bg layer short name so we can switch sources/glyphs
+    // while staying in the "same" bg layer
+    this.sourceLayersList.setSelectedItemIndex(0);
   }
 
   _updateRemoveSourceButtonState() {
