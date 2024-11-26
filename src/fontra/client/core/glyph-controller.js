@@ -54,7 +54,7 @@ export class VariableGlyphController {
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
-    this._sourceIndexToBackgroundLayerNames = new Map();
+    this._sourceIndexToSourceLayerNames = new Map();
     this._locationStringToSourceIndex = null;
   }
 
@@ -193,7 +193,7 @@ export class VariableGlyphController {
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
-    this._sourceIndexToBackgroundLayerNames = new Map();
+    this._sourceIndexToSourceLayerNames = new Map();
     this._locationStringToSourceIndex = null;
   }
 
@@ -502,7 +502,7 @@ export class VariableGlyphController {
   }
 
   getSourceLayerNamesForSourceIndex(sourceIndex) {
-    let backgroundLayerNames = this._sourceIndexToBackgroundLayerNames.get(sourceIndex);
+    let backgroundLayerNames = this._sourceIndexToSourceLayerNames.get(sourceIndex);
 
     if (!backgroundLayerNames) {
       const source = this.sources[sourceIndex];
@@ -524,7 +524,7 @@ export class VariableGlyphController {
           layerName.slice(layerNamePrefix.length),
         ])
       );
-      this._sourceIndexToBackgroundLayerNames.set(sourceIndex, backgroundLayerNames);
+      this._sourceIndexToSourceLayerNames.set(sourceIndex, backgroundLayerNames);
     }
 
     return backgroundLayerNames;
