@@ -96,6 +96,7 @@ export class SceneController {
       positionedLines: [],
       backgroundImagesAreLocked: true,
       backgroundLayers: {},
+      editingLayers: {},
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -342,10 +343,13 @@ export class SceneController {
     });
 
     // Update background layer glyphs
-    this.sceneSettingsController.addKeyListener("backgroundLayers", (event) => {
-      this.sceneModel.updateBackgroundGlyphs();
-      this.canvasController.requestUpdate();
-    });
+    this.sceneSettingsController.addKeyListener(
+      ["backgroundLayers", "editingLayers"],
+      (event) => {
+        this.sceneModel.updateBackgroundGlyphs();
+        this.canvasController.requestUpdate();
+      }
+    );
   }
 
   _checkSelectionForLockedItems() {
@@ -900,20 +904,10 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
-  get editingLayers() {
-    return this.sceneModel.editingLayers || {};
-  }
-
-  set editingLayers(layers) {
-    this.sceneModel.editingLayers = layers;
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
-
   get editingLayerNames() {
     const primaryLayerName =
       this.sceneModel.getSelectedPositionedGlyph()?.glyph?.layerName;
-    const layerNames = Object.keys(this.editingLayers);
+    const layerNames = Object.keys(this.sceneSettings.editingLayers);
     if (primaryLayerName) {
       // Ensure the primary editing layer name is first in the list
       const i = layerNames.indexOf(primaryLayerName);

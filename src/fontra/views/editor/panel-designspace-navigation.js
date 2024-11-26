@@ -411,7 +411,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       const layerItem = this.sourceLayersList.getSelectedItem();
       if (layerItem) {
         this.sceneSettings.editLayerName = layerItem.layerNameFull;
-        this.sceneController.editingLayers = { [layerItem.layerNameFull]: "---" };
+        this.sceneSettings.editingLayers = { [layerItem.layerNameFull]: "---" };
       }
     });
 
@@ -726,7 +726,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         ...this.sceneSettings.glyphLocation,
       }) || [];
     const backgroundLayers = { ...this.sceneSettings.backgroundLayers };
-    let editingLayers = { ...this.sceneController.editingLayers };
+    const editingLayers = { ...this.sceneSettings.editingLayers };
 
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
@@ -769,13 +769,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneSettings.backgroundLayers = newBackgroundLayers;
       });
       sourceController.addKeyListener("editing", async (event) => {
+        const newEditingLayers = { ...this.sceneSettings.editingLayers };
         if (event.newValue) {
-          editingLayers[layerName] =
+          newEditingLayers[layerName] =
             varGlyphController.getSparseLocationStringForSource(source);
         } else {
-          delete editingLayers[layerName];
+          delete newEditingLayers[layerName];
         }
-        this.sceneController.editingLayers = editingLayers;
+        this.sceneSettings.editingLayers = newEditingLayers;
         await this._pruneEditingLayers();
       });
       sourceController.addKeyListener("status", async (event) => {
@@ -855,13 +856,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const layers = varGlyphController.layers;
-    const editingLayers = { ...this.sceneController.editingLayers };
+    const editingLayers = { ...this.sceneSettings.editingLayers };
     for (const layerName of Object.keys(editingLayers)) {
       if (!(layerName in layers)) {
         delete editingLayers[layerName];
       }
     }
-    this.sceneController.editingLayers = editingLayers;
+    this.sceneSettings.editingLayers = editingLayers;
   }
 
   async removeSource() {

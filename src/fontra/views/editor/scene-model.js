@@ -40,7 +40,6 @@ export class SceneModel {
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
-    this.editingLayers = {};
     this.updateSceneCancelSignal = {};
 
     this.sceneSettingsController.addKeyListener(
@@ -248,12 +247,12 @@ export class SceneModel {
       glyphName,
       varGlyph,
       this.sceneSettings.backgroundLayers,
-      this.editingLayers
+      this.sceneSettings.editingLayers
     );
     this.editingLayerGlyphs = await this._setupBackgroundGlyphs(
       glyphName,
       varGlyph,
-      this.editingLayers,
+      this.sceneSettings.editingLayers,
       {}
     );
   }
