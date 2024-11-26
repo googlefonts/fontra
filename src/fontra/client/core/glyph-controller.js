@@ -491,7 +491,7 @@ export class VariableGlyphController {
     if (sourceIndex === undefined) {
       for (const i of range(this.sources.length)) {
         const names = this.getSourceLayerNamesForSourceIndex(i);
-        const layerNames = names.map(([layerName, layerNameShort]) => layerName);
+        const layerNames = names.map((layer) => layer.fullName);
         if (layerNames.includes(layerName)) {
           sourceIndex = i;
           break;
@@ -517,12 +517,12 @@ export class VariableGlyphController {
       layerNames.forEach((layerName) => {
         this._layerNameToSourceIndex[layerName] = sourceIndex;
       });
-      sourceLayerNames = [[source.layerName, null]];
+      sourceLayerNames = [{ fullName: source.layerName, shortName: null }];
       sourceLayerNames.push(
-        ...layerNames.map((layerName) => [
-          layerName,
-          layerName.slice(layerNamePrefix.length),
-        ])
+        ...layerNames.map((layerName) => ({
+          fullName: layerName,
+          shortName: layerName.slice(layerNamePrefix.length),
+        }))
       );
       this._sourceIndexToSourceLayerNames.set(sourceIndex, sourceLayerNames);
     }
