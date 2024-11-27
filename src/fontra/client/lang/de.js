@@ -231,6 +231,7 @@ export const strings = {
     "Entferne ausgewählten Glyphen von der Zeichenfläche",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Ersetze ausgewählten Glyphen auf der Zeichenfläche",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Nächster Glyph",
   "menubar.view.select-next-source": "Nächste Source",
   "menubar.view.select-next-source-layer": "Select next source layer",

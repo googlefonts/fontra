@@ -230,6 +230,7 @@ export const strings = {
     "Verwijder de geselecteerde glyph van het canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Vervang de geselecteerde glyph op het canvas",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Select next glyph",
   "menubar.view.select-next-source": "Selecteer de volgende source",
   "menubar.view.select-next-source-layer": "Select next source layer",

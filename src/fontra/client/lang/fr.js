@@ -231,6 +231,7 @@ export const strings = {
     "Retirer le glyphe sélectionné du canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Remplacer le glyphe sélectionné du canvas",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Select next glyph",
   "menubar.view.select-next-source": "Sélectionner la source suivante ",
   "menubar.view.select-next-source-layer": "Select next source layer",

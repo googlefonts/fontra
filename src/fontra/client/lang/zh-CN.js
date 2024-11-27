@@ -217,6 +217,7 @@ export const strings = {
   "menubar.view.find-glyphs-that-use": "寻找使用了 '%0' 的字形",
   "menubar.view.remove-selected-glyph-from-canvas": "将选中字形从编辑区域中删除",
   "menubar.view.replace-selected-glyph-on-canvas": "在编辑区域中替换选中字形",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "选择下一个字形",
   "menubar.view.select-next-source": "选择下一个源",
   "menubar.view.select-next-source-layer": "Select next source layer",

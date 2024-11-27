@@ -226,6 +226,7 @@ export const strings = {
   "menubar.view.find-glyphs-that-use": "Find glyphs that use '%0'",
   "menubar.view.remove-selected-glyph-from-canvas": "Remove selected glyph from canvas",
   "menubar.view.replace-selected-glyph-on-canvas": "Replace selected glyph on canvas",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Select next glyph",
   "menubar.view.select-next-source": "Select next source",
   "menubar.view.select-next-source-layer": "Select next source layer",
