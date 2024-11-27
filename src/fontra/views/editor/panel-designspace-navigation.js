@@ -876,6 +876,10 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateEditingStatus() {
+    if (!this.sourcesList.items.length) {
+      return;
+    }
+
     const selectedItem = this.sourcesList.getSelectedItem();
 
     // if no selected item:
