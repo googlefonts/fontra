@@ -1,5 +1,11 @@
 # Changelog for Fontra
 
+## 2024-11-27
+
+- Fixed bug with colorizing the background image on Safari [PR 1825](https://github.com/googlefonts/fontra/pull/1825)
+- Reorganize context menu: put "Edit" items under a sub menu [PR 1824](https://github.com/googlefonts/fontra/pull/1824)
+- Fix the Knife tool [PR 1823](https://github.com/googlefonts/fontra/pull/1823)
+
 ## 2024-11-20
 
 - Add support for background image colorization [PR 1815](https://github.com/googlefonts/fontra/pull/1815)
