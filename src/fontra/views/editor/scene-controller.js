@@ -793,6 +793,7 @@ export class SceneController {
           ),
         actionIdentifier: "action.decompose-component",
       },
+      { actionIdentifier: "action.glyph.add-background-image" },
       {
         title: () =>
           translate(
