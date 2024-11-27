@@ -2,7 +2,6 @@ import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
-import { translate } from "/core/localization.js";
 import { range } from "/core/utils.js";
 
 const cjkDesignFrameGlyphName = "_cjkDesignFrame";
