@@ -516,7 +516,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-previous-source-layer",
-          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true, shiftKey: true }],
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true, altKey: true }],
         },
         () => this.doSelectPreviousNextSourceLayer(true)
       );
@@ -526,9 +526,7 @@ export class EditorController {
         {
           topic,
           titleKey: "menubar.view.select-next-source-layer",
-          defaultShortCuts: [
-            { baseKey: "ArrowDown", commandKey: true, shiftKey: true },
-          ],
+          defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true, altKey: true }],
         },
         () => this.doSelectPreviousNextSourceLayer(false)
       );
