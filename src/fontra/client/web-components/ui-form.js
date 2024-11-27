@@ -441,12 +441,8 @@ export class Form extends SimpleElement {
           this._fieldChanging(fieldItem, value, valueStream);
         }
 
-        if (valueStream) {
-          valueStream.put(value);
-          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
-        } else {
-          this._fieldChanging(fieldItem, value, undefined);
-        }
+        valueStream.put(value);
+        this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
       }, fieldItem.continuousDelay || 0);
 
       let oninputTimer;
@@ -459,16 +455,17 @@ export class Form extends SimpleElement {
         if (checkboxElement) {
           checkboxElement.checked = true;
         }
+        if (oninputTimer) {
+          clearTimeout(oninputTimer);
+          oninputTimer = undefined;
+        }
         if (valueStream) {
           valueStream.done();
           valueStream = undefined;
-          if (oninputTimer) {
-            clearTimeout(oninputTimer);
-            oninputTimer = undefined;
-          }
           this._dispatchEvent("endChange", { key: fieldItem.key });
         } else {
-          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+          const value = parseColor(colorInputElement.value);
+          this._fieldChanging(fieldItem, value, undefined);
         }
       };
     }
