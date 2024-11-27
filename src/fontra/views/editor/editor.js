@@ -512,6 +512,28 @@ export class EditorController {
       );
 
       registerAction(
+        "action.select-previous-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-source-layer",
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true, shiftKey: true }],
+        },
+        () => this.doSelectPreviousNextSourceLayer(true)
+      );
+
+      registerAction(
+        "action.select-next-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-source-layer",
+          defaultShortCuts: [
+            { baseKey: "ArrowDown", commandKey: true, shiftKey: true },
+          ],
+        },
+        () => this.doSelectPreviousNextSourceLayer(false)
+      );
+
+      registerAction(
         "action.select-previous-glyph",
         {
           topic,
@@ -1586,17 +1608,17 @@ export class EditorController {
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-source",
+      title: "Select glyph/source/layer",
+      getItems: () => [
+        { actionIdentifier: "action.select-previous-glyph" },
+        { actionIdentifier: "action.select-next-glyph" },
+        { actionIdentifier: "action.select-previous-source" },
+        { actionIdentifier: "action.select-next-source" },
+        { actionIdentifier: "action.select-previous-source-layer" },
+        { actionIdentifier: "action.select-next-source-layer" },
+      ],
     });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-source",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-glyph",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-glyph",
-    });
+
     this.glyphSelectedContextMenuItems.push({
       title: () =>
         translate(
@@ -3077,6 +3099,10 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
+  async doSelectPreviousNextSourceLayer(selectPrevious) {
+    console.log("next source layer", selectPrevious);
   }
 
   async doSelectPreviousNextGlyph(selectPrevious) {
