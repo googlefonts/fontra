@@ -1147,6 +1147,8 @@ export class SceneController {
         redoSelection: this.selection,
         fontLocation: this.sceneSettings.fontLocationSourceMapped,
         glyphLocation: this.sceneSettings.glyphLocation,
+        editingLayers: this.sceneSettings.editingLayers,
+        editLayerName: this.sceneSettings.editLayerName,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -1199,6 +1201,8 @@ export class SceneController {
         // the glyph data (eg. a source being there or not)
         this.sceneSettings.fontLocationSourceMapped = { ...undoInfo.fontLocation };
         this.sceneSettings.glyphLocation = { ...undoInfo.glyphLocation };
+        this.sceneSettings.editingLayers = undoInfo.editingLayers;
+        this.sceneSettings.editLayerName = undoInfo.editLayerName;
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();
