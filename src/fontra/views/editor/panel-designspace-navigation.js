@@ -9,6 +9,7 @@ import {
   boolInt,
   enumerate,
   escapeHTMLCharacters,
+  modulo,
   objectsEqual,
   range,
   rgbaToCSS,
@@ -868,6 +869,19 @@ export default class DesignspaceNavigationPanel extends Panel {
     } else {
       this.sourceLayersList.setSelectedItemIndex(0);
     }
+  }
+
+  doSelectPreviousNextSourceLayer(selectPrevious) {
+    if (this.sourceLayersList.items.length < 2) {
+      return;
+    }
+
+    const index = this.sourceLayersList.getSelectedItemIndex() || 0;
+    const newIndex = modulo(
+      index + (selectPrevious ? -1 : 1),
+      this.sourceLayersList.items.length
+    );
+    this.sourceLayersList.setSelectedItemIndex(newIndex, true);
   }
 
   _updateRemoveSourceButtonState() {

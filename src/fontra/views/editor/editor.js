@@ -1608,7 +1608,7 @@ export class EditorController {
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      title: "Select glyph/source/layer",
+      title: translate("menubar.view.select-glyph-source-layer"),
       getItems: () => [
         { actionIdentifier: "action.select-previous-glyph" },
         { actionIdentifier: "action.select-next-glyph" },
@@ -3102,7 +3102,8 @@ export class EditorController {
   }
 
   async doSelectPreviousNextSourceLayer(selectPrevious) {
-    console.log("next source layer", selectPrevious);
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.doSelectPreviousNextSourceLayer(selectPrevious);
   }
 
   async doSelectPreviousNextGlyph(selectPrevious) {
