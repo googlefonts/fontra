@@ -3274,7 +3274,9 @@ export class EditorController {
   }
 
   buildContextMenuItems(event) {
-    const menuItems = [...this.basicContextMenuItems];
+    const menuItems = [
+      { title: translate("menubar.edit"), getItems: () => this.basicContextMenuItems },
+    ];
     if (this.sceneSettings.selectedGlyph?.isEditing) {
       this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
