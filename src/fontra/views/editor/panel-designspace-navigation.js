@@ -860,7 +860,14 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     // TODO: keep track of the bg layer short name so we can switch sources/glyphs
     // while staying in the "same" bg layer
-    this.sourceLayersList.setSelectedItemIndex(0);
+    const itemMatch = this.sourceLayersList.items.find(
+      (item) => item.fullName === this.sceneSettings.editLayerName
+    );
+    if (itemMatch) {
+      this.sourceLayersList.setSelectedItem(itemMatch);
+    } else {
+      this.sourceLayersList.setSelectedItemIndex(0);
+    }
   }
 
   _updateRemoveSourceButtonState() {
