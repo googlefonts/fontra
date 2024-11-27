@@ -61,11 +61,12 @@ def main():
     )
     parser.add_argument(
         "--include-wip",
-        action="store_true",
-        help="Include work-in-progress strings, as marked with 'WIP' in the the first column.",
+        help="Include work-in-progress strings that contain this argument "
+        "*and* the string 'WIP' in the the first column. The special string 'all' "
+        "matches all 'WIP' strings.",
     )
     args = parser.parse_args()
-    includeWorkInProgress = args.include_wip
+    includeWorkInProgressTag = args.include_wip
     languageSpreadsheetURL = (
         "https://docs.google.com/"
         "spreadsheets/d/1woTU8dZCHJh7yvdk-N1kgQBUj4Sn3SdRsbKgn6ltJQs/"
@@ -108,8 +109,14 @@ def main():
         languageStrings[languageCode] = strings = {}
 
         for row in rows:
-            if "WIP" in row[0] and not includeWorkInProgress:
-                # Skip rows marked as work in progress
+            includeRow = "WIP" not in row[0] or (
+                includeWorkInProgressTag
+                and (
+                    includeWorkInProgressTag == "all"
+                    or includeWorkInProgressTag in row[0]
+                )
+            )
+            if not includeRow:
                 continue
 
             key = row[1]
