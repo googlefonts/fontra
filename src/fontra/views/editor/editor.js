@@ -168,6 +168,8 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
+        "editLayerName",
+        "editingLayers",
         "fontLocationUser",
         "glyphLocation",
         "fontAxesUseSourceCoordinates",
@@ -3414,11 +3416,19 @@ export class EditorController {
     if (viewInfo["fontAxesSkipMapping"]) {
       this.sceneSettings.fontAxesSkipMapping = true;
     }
+
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
+
+    if (viewInfo["editLayerName"]) {
+      this.sceneSettings.editLayerName = viewInfo["editLayerName"];
+    }
+    if (viewInfo["editingLayers"]) {
+      this.sceneSettings.editingLayers = viewInfo["editingLayers"];
+    }
 
     if (viewInfo["selection"]) {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
@@ -3458,6 +3468,14 @@ export class EditorController {
     if (this.sceneSettings.fontAxesSkipMapping) {
       viewInfo["fontAxesSkipMapping"] = true;
     }
+
+    if (this.sceneSettings.editLayerName) {
+      viewInfo["editLayerName"] = this.sceneSettings.editLayerName;
+    }
+    if (Object.keys(this.sceneSettings.editingLayers).length) {
+      viewInfo["editingLayers"] = this.sceneSettings.editingLayers;
+    }
+
     const glyphLocations = this.sceneController.getGlyphLocations(true);
     if (Object.keys(glyphLocations).length) {
       viewInfo["glyphLocations"] = glyphLocations;
