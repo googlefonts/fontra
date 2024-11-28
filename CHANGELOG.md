@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2024-11-28
+
+- Keep the focus on the canvas when clicking icon buttons and (some) list cell buttons [PR 1829](https://github.com/googlefonts/fontra/pull/1829)
+
 ## 2024-11-27
 
 - Add 'Add background image' menu to context menu [PR 1827](https://github.com/googlefonts/fontra/pull/1827)
