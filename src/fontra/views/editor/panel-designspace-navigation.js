@@ -9,6 +9,7 @@ import {
   boolInt,
   enumerate,
   escapeHTMLCharacters,
+  FocusKeeper,
   objectsEqual,
   range,
   rgbaToCSS,
@@ -1344,11 +1345,13 @@ function makeIconCellFactory(
   switchValue = null
 ) {
   return (item, colDesc) => {
+    const focus = new FocusKeeper();
     const value = item[colDesc.key];
     const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
     const iconElement = html.createDomElement("inline-svg", {
       src: iconPaths[boolInt(value)],
       style: "width: 1.2em; height: 1.2em;",
+      onmousedown: focus.save,
       ondblclick: (event) => {
         event.stopImmediatePropagation();
       },
@@ -1361,6 +1364,7 @@ function makeIconCellFactory(
         if (!selectItem) {
           event.stopImmediatePropagation();
         }
+        focus.restore();
       },
     });
     item[controllerKey].addKeyListener(colDesc.key, (event) => {
@@ -1467,11 +1471,16 @@ function cellColorStyle(color) {
 }
 
 function makeClickableIconHeader(iconPath, onClick) {
+  const focus = new FocusKeeper();
   return html.div(
     {
       class: "clickable-icon-header",
       style: "height: 1.2em; width: 1.2em;",
-      onclick: onClick,
+      onmousedown: focus.save,
+      onclick: (event) => {
+        onClick(event);
+        focus.restore();
+      },
     },
     [
       html.createDomElement("inline-svg", {
