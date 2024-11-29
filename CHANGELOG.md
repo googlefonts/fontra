@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2024-11-29
+
+- Japanese UI translation (thanks Maskaki Ando!)
+
 ## 2024-11-28
 
 - Keep the focus on the canvas when clicking icon buttons and (some) list cell buttons [PR 1829](https://github.com/googlefonts/fontra/pull/1829)
