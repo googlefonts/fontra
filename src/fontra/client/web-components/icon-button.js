@@ -1,6 +1,7 @@
 import { InlineSVG } from "./inline-svg.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
+import { FocusKeeper } from "/core/utils.js";
 
 export class IconButton extends UnlitElement {
   static styles = `
@@ -67,11 +68,14 @@ export class IconButton extends UnlitElement {
   }
 
   render() {
+    const focus = new FocusKeeper();
     this._button = html.button(
       {
+        onmousedown: focus.save,
         onclick: (event) => {
           this._buttonOnClick?.(event);
           event.stopImmediatePropagation();
+          focus.restore();
         },
         disabled: this._buttonDisabled,
       },

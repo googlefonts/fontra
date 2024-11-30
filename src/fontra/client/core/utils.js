@@ -670,3 +670,16 @@ export function colorizeImage(inputImage, color) {
     });
   });
 }
+
+export class FocusKeeper {
+  get save() {
+    // Return a bound method that can be used as an event handler
+    return (event) => {
+      this._focusedElement = findNestedActiveElement();
+    };
+  }
+
+  restore() {
+    this._focusedElement?.focus();
+  }
+}
