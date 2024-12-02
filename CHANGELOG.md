@@ -2,7 +2,7 @@
 
 ## 2024-11-29
 
-- Japanese UI translation (thanks Maskaki Ando!)
+- Japanese UI translation (thanks Masaki Ando!)
 
 ## 2024-11-28
 
