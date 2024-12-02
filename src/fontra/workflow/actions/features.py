@@ -226,11 +226,13 @@ class BaseGenerateKerningFeature(BaseFilter):
         for left, rightDict in sorted(
             kerning.values.items(), key=self._kernKeySortFunc
         ):
-            if left.startswith(self._kern1Prefix):
+            leftIsClass = left.startswith(self._kern1Prefix)
+            if leftIsClass:
                 left = "@" + left
 
             for right, values in sorted(rightDict.items(), key=self._kernKeySortFunc):
-                if right.startswith(self._kern2Prefix):
+                rightIsClass = right.startswith(self._kern2Prefix)
+                if rightIsClass:
                     right = "@" + right
 
                 values = [0 if v is None else round(v) for v in values]
@@ -245,7 +247,8 @@ class BaseGenerateKerningFeature(BaseFilter):
                     for loc, v in zip(locations, values, strict=True):
                         scalar.add_value(loc, v)
 
-                fea.addLine(f"pos {left} {right} {scalar}")
+                enumStr = "enum " if leftIsClass != rightIsClass else ""
+                fea.addLine(f"{enumStr}pos {left} {right} {scalar}")
 
         featureText = w.asFea()
 
