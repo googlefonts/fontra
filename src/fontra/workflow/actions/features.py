@@ -195,8 +195,8 @@ class BaseGenerateKerningFeature(BaseFilter):
         return key.startswith(self._kern1Prefix) or key.startswith(self._kern2Prefix)
 
     async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
-        verticalKerning = (await self.inputKerning).get(self._kernFeatureTag)
-        if verticalKerning is None:
+        kerning = (await self.inputKerning).get(self._kernFeatureTag)
+        if kerning is None:
             return features
 
         glyphMap = await self.inputGlyphMap
@@ -213,24 +213,26 @@ class BaseGenerateKerningFeature(BaseFilter):
                     for k, v in mapLocation(sources[sid].location).items()
                 }
             )
-            for sid in verticalKerning.sourceIdentifiers
+            for sid in kerning.sourceIdentifiers
         ]
 
         w = FeatureWriter()
 
-        for groupName, group in sorted(verticalKerning.groups.items()):
+        for groupName, group in sorted(kerning.groups.items()):
             w.addGroup(groupName, group)
 
         fea = w.addFeature(self._kernFeatureTag)
 
         for left, rightDict in sorted(
-            verticalKerning.values.items(), key=self._kernKeySortFunc
+            kerning.values.items(), key=self._kernKeySortFunc
         ):
-            if left.startswith(self._kern1Prefix):
+            leftIsClass = left.startswith(self._kern1Prefix)
+            if leftIsClass:
                 left = "@" + left
 
             for right, values in sorted(rightDict.items(), key=self._kernKeySortFunc):
-                if right.startswith(self._kern2Prefix):
+                rightIsClass = right.startswith(self._kern2Prefix)
+                if rightIsClass:
                     right = "@" + right
 
                 values = [0 if v is None else round(v) for v in values]
@@ -245,7 +247,8 @@ class BaseGenerateKerningFeature(BaseFilter):
                     for loc, v in zip(locations, values, strict=True):
                         scalar.add_value(loc, v)
 
-                fea.addLine(f"pos {left} {right} {scalar}")
+                enumStr = "enum " if leftIsClass != rightIsClass else ""
+                fea.addLine(f"{enumStr}pos {left} {right} {scalar}")
 
         featureText = w.asFea()
 
