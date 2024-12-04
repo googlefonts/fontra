@@ -236,7 +236,7 @@ function fetchKeyboardLayout() {
 
 fetchKeyboardLayout();
 
-const legacyMapping = {
+const keyboardFallbackMapping = {
   " ": "Space",
 };
 
@@ -261,7 +261,7 @@ export function getBaseKeyFromKeyEvent(event) {
         ? String.fromCodePoint(event.keyCode).toLowerCase()
         : event.key;
 
-    baseKey = legacyMapping[baseKey] || baseKey;
+    baseKey = keyboardFallbackMapping[baseKey] || baseKey;
   }
 
   return baseKey || event.code;
