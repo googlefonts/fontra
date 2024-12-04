@@ -236,6 +236,10 @@ function fetchKeyboardLayout() {
 
 fetchKeyboardLayout();
 
+const legacyMapping = {
+  " ": "Space",
+};
+
 export function getBaseKeyFromKeyEvent(event) {
   assert(event.type === "keydown" || event.type === "keyup");
 
@@ -256,6 +260,8 @@ export function getBaseKeyFromKeyEvent(event) {
       event.keyCode <= 126
         ? String.fromCodePoint(event.keyCode).toLowerCase()
         : event.key;
+
+    baseKey = legacyMapping[baseKey] || baseKey;
   }
 
   return baseKey || event.code;
