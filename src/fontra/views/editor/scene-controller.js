@@ -95,6 +95,8 @@ export class SceneController {
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
       backgroundImagesAreLocked: true,
+      backgroundLayers: {},
+      editingLayers: {},
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -249,7 +251,7 @@ export class SceneController {
           await this.sceneModel.getSelectedVariableGlyphController();
 
         const location =
-          varGlyphController.getSourceLocationFromSourceIndex(sourceIndex);
+          varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
         const { fontLocation, glyphLocation } = splitLocation(
           location,
           varGlyphController.axes
@@ -339,6 +341,15 @@ export class SceneController {
         { senderID: this }
       );
     });
+
+    // Update background layer glyphs
+    this.sceneSettingsController.addKeyListener(
+      ["backgroundLayers", "editingLayers"],
+      (event) => {
+        this.sceneModel.updateBackgroundGlyphs();
+        this.canvasController.requestUpdate();
+      }
+    );
   }
 
   _checkSelectionForLockedItems() {
@@ -893,30 +904,10 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
-  get backgroundLayers() {
-    return this.sceneModel.backgroundLayers || [];
-  }
-
-  set backgroundLayers(layerNames) {
-    this.sceneModel.backgroundLayers = layerNames;
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
-
-  get editingLayers() {
-    return this.sceneModel.editingLayers || {};
-  }
-
-  set editingLayers(layerNames) {
-    this.sceneModel.editingLayers = layerNames;
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
-
   get editingLayerNames() {
     const primaryLayerName =
       this.sceneModel.getSelectedPositionedGlyph()?.glyph?.layerName;
-    const layerNames = Object.keys(this.editingLayers);
+    const layerNames = Object.keys(this.sceneSettings.editingLayers);
     if (primaryLayerName) {
       // Ensure the primary editing layer name is first in the list
       const i = layerNames.indexOf(primaryLayerName);
@@ -1156,6 +1147,8 @@ export class SceneController {
         redoSelection: this.selection,
         fontLocation: this.sceneSettings.fontLocationSourceMapped,
         glyphLocation: this.sceneSettings.glyphLocation,
+        editingLayers: this.sceneSettings.editingLayers,
+        editLayerName: this.sceneSettings.editLayerName,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -1208,6 +1201,8 @@ export class SceneController {
         // the glyph data (eg. a source being there or not)
         this.sceneSettings.fontLocationSourceMapped = { ...undoInfo.fontLocation };
         this.sceneSettings.glyphLocation = { ...undoInfo.glyphLocation };
+        this.sceneSettings.editingLayers = undoInfo.editingLayers;
+        this.sceneSettings.editLayerName = undoInfo.editLayerName;
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();
@@ -1340,7 +1335,7 @@ export class SceneController {
         !(source.layerName in layerLocations)
       ) {
         layerLocations[source.layerName] =
-          varGlyph.getSourceLocationFromSourceIndex(sourceIndex);
+          varGlyph.getDenseSourceLocationForSourceIndex(sourceIndex);
       }
     }
 

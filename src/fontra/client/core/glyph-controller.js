@@ -39,6 +39,7 @@ import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
   locationToString,
+  makeSparseLocation,
   makeSparseNormalizedLocation,
   mapAxesFromUserSpaceToSourceSpace,
   normalizeLocation,
@@ -52,6 +53,9 @@ export class VariableGlyphController {
     this._fontSources = fontSources;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
+    this._layerNameToSourceIndex = {};
+    this._sourceIndexToSourceLayerNames = new Map();
+    this._locationStringToSourceIndex = null;
   }
 
   get name() {
@@ -157,14 +161,6 @@ export class VariableGlyphController {
     return undefined;
   }
 
-  getSourceIndexFromName(sourceName) {
-    for (const [sourceIndex, source] of enumerate(this.sources)) {
-      if (source.name === sourceName) {
-        return sourceIndex;
-      }
-    }
-  }
-
   getAllComponentNames() {
     // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
@@ -196,6 +192,9 @@ export class VariableGlyphController {
     delete this._fontAxesSourceSpace;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
+    this._layerNameToSourceIndex = {};
+    this._sourceIndexToSourceLayerNames = new Map();
+    this._locationStringToSourceIndex = null;
   }
 
   get model() {
@@ -451,15 +450,18 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  getSourceLocationFromSourceIndex(sourceIndex) {
-    const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
-    const glyphDefaultLocation = makeDefaultLocation(this.axes);
-    const defaultLocation = { ...fontDefaultLocation, ...glyphDefaultLocation };
-    const sourceLocation = this.getSourceLocation(this.sources[sourceIndex]);
-    return { ...defaultLocation, ...sourceLocation };
+  getDenseSourceLocationForSourceIndex(sourceIndex) {
+    return this.getDenseSourceLocationForSource(this.sources[sourceIndex]);
   }
 
-  findNearestSourceFromSourceLocation(sourceLocation, skipInactive = false) {
+  getDenseSourceLocationForSource(source) {
+    const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
+    const glyphDefaultLocation = makeDefaultLocation(this.axes);
+    const sourceLocation = this.getSourceLocation(source);
+    return { ...fontDefaultLocation, ...glyphDefaultLocation, ...sourceLocation };
+  }
+
+  findNearestSourceForSourceLocation(sourceLocation, skipInactive = false) {
     sourceLocation = this.expandNLIAxes(sourceLocation);
 
     // Ensure locations are *not* sparse
@@ -481,6 +483,75 @@ export class VariableGlyphController {
 
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
     return sourceIndexMapping[nearestIndex];
+  }
+
+  getSourceIndexForLayerName(layerName) {
+    let sourceIndex = this._layerNameToSourceIndex[layerName];
+    if (sourceIndex === undefined) {
+      for (const i of range(this.sources.length)) {
+        const names = this.getSourceLayerNamesForSourceIndex(i);
+        const layerNames = names.map((layer) => layer.fullName);
+        if (layerNames.includes(layerName)) {
+          sourceIndex = i;
+          break;
+        }
+      }
+    }
+    return sourceIndex;
+  }
+
+  getSourceLayerNamesForSourceIndex(sourceIndex) {
+    let sourceLayerNames = this._sourceIndexToSourceLayerNames.get(sourceIndex);
+
+    if (!sourceLayerNames) {
+      const source = this.sources[sourceIndex];
+      this._layerNameToSourceIndex[source.layerName] = sourceIndex;
+
+      const layerNamePrefix = source.layerName + ".";
+      const layerNames = Object.keys(this.glyph.layers).filter(
+        (layerName) =>
+          layerName.startsWith(layerNamePrefix) &&
+          layerName.length > layerNamePrefix.length
+      );
+      layerNames.forEach((layerName) => {
+        this._layerNameToSourceIndex[layerName] = sourceIndex;
+      });
+      sourceLayerNames = [{ fullName: source.layerName, shortName: null }];
+      sourceLayerNames.push(
+        ...layerNames.map((layerName) => ({
+          fullName: layerName,
+          shortName: layerName.slice(layerNamePrefix.length),
+        }))
+      );
+      this._sourceIndexToSourceLayerNames.set(sourceIndex, sourceLayerNames);
+    }
+
+    return sourceLayerNames;
+  }
+
+  getSourceIndexForSourceLocationString(sourceLocationString) {
+    if (!this._locationStringToSourceIndex) {
+      this._buildLocationStringToSourceIndexMapping();
+    }
+    return this._locationStringToSourceIndex[sourceLocationString];
+  }
+
+  _buildLocationStringToSourceIndexMapping() {
+    this._locationStringToSourceIndex = {};
+    for (const [sourceIndex, source] of enumerate(this.sources)) {
+      this._locationStringToSourceIndex[this.getSparseLocationStringForSource(source)] =
+        sourceIndex;
+    }
+  }
+
+  getSparseLocationStringForSource(source) {
+    return this.getSparseLocationStringForSourceLocation(
+      this.getSourceLocation(source)
+    );
+  }
+
+  getSparseLocationStringForSourceLocation(sourceLocation) {
+    return locationToString(makeSparseLocation(sourceLocation, this.combinedAxes));
   }
 
   expandNLIAxes(sourceLocation) {

@@ -500,7 +500,7 @@ export class FontController {
       return;
     }
     const getGlyphFunc = this.getGlyph.bind(this);
-    return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+    return await varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
   requestGlyphInstance(glyphName, sourceLocation) {
@@ -560,11 +560,6 @@ export class FontController {
   getDummyGlyphInstanceController(glyphName = "<dummy>") {
     const dummyGlyph = StaticGlyph.fromObject({ xAdvance: this.unitsPerEm / 2 });
     return new StaticGlyphController(glyphName, dummyGlyph, undefined);
-  }
-
-  async getSourceIndex(glyphName, sourceLocation) {
-    const glyph = await this.getGlyph(glyphName);
-    return glyph?.getSourceIndex(sourceLocation);
   }
 
   addGlyphChangeListener(glyphName, listener) {

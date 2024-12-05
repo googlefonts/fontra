@@ -229,10 +229,13 @@ export const strings = {
   "menubar.view.remove-selected-glyph-from-canvas": "エディターから選択グリフを削除",
   "menubar.view.replace-selected-glyph-on-canvas":
     "選択中のグリフを別のグリフに切り替え",
+  "menubar.view.select-glyph-source-layer": "グリフ/ソース/レイヤーを選択",
   "menubar.view.select-next-glyph": "次のグリフを選択",
   "menubar.view.select-next-source": "次のソースを選択",
+  "menubar.view.select-next-source-layer": "次のソースレイヤーを選択",
   "menubar.view.select-previous-glyph": "前のグリフを選択",
   "menubar.view.select-previous-source": "前のソースを選択",
+  "menubar.view.select-previous-source-layer": "前のソースレイヤーを選択",
   "message.cancel-editing": "他のユーザーがあなたの直前に操作を行いました。",
   "message.edit-has-been-reverted": "このグリフは前の状態に戻されました。",
   "message.glyph-could-not-be-saved": "このグリフは保存されません。",
