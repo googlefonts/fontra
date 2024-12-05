@@ -283,6 +283,14 @@ class FontHandler:
             type=imageData.type, data=base64.b64encode(imageData.data).decode("ascii")
         )
 
+    @remoteMethod
+    async def deleteBackgroundImage(
+        self, imageIdentifier: str, *, connection=None
+    ) -> dict | None:
+        if not hasattr(self.backend, "deleteBackgroundImage"):
+            return None
+        return await self.backend.deleteBackgroundImage(imageIdentifier)
+
     def _getClientData(self, connection, key, default=None):
         return self.clientData[connection.clientUUID].get(key, default)
 

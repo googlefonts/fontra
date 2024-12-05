@@ -203,6 +203,13 @@ class FontraBackend:
         path = self.backgroundImagesDir / fileName
         path.write_bytes(data.data)
 
+    async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
+        for imageType in [ImageType.PNG, ImageType.JPEG]:
+            fileName = f"{imageIdentifier}.{imageType.lower()}"
+            path = self.backgroundImagesDir / fileName
+            if path.is_file():
+                path.unlink()
+
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)
 

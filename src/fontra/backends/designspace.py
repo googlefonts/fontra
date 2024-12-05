@@ -1200,6 +1200,24 @@ class DesignspaceBackend:
             reader = self.ufoManager.getReader(ufoPath)
             reader.writeImage(imageFileName, data.data, validate=True)
 
+    async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
+        imageInfo = self._imageMapping.reverse.get(imageIdentifier)
+        if imageInfo is None:
+            return
+
+        ufoPath, imageFileName = self._imageMapping.reverse[imageIdentifier]
+        # a temp folder is not needed if we get back the image from cache.
+
+        # # before we remove the image: copy to temporary folder
+        # # so that we can restore it if needed
+        # temp_dir = pathlib.Path(ufoPath) / "temp"
+        # temp_dir.mkdir(exist_ok=True)
+
+        reader = self.ufoManager.getReader(ufoPath)
+        # reader.copyFromReader(reader, f"images/{imageFileName}", f"temp/{imageFileName}")
+
+        reader.removeImage(imageFileName)
+
     def _getImageIdentifier(self, ufoPath: str, imageFileName: str) -> str:
         key = (ufoPath, imageFileName)
         imageIdentifier = self._imageMapping.get(key)
