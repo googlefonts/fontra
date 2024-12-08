@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2024-12-04
+
+- Fixes "clean view" (space bar) on Safari [PR 1835](https://github.com/googlefonts/fontra/pull/1835)
+
 ## 2024-11-29
 
 - Japanese UI translation (thanks Masaki Ando!)
