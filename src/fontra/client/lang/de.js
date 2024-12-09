@@ -231,10 +231,13 @@ export const strings = {
     "Entferne ausgewählten Glyphen von der Zeichenfläche",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Ersetze ausgewählten Glyphen auf der Zeichenfläche",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Nächster Glyph",
   "menubar.view.select-next-source": "Nächste Source",
+  "menubar.view.select-next-source-layer": "Select next source layer",
   "menubar.view.select-previous-glyph": "Vorheriger Glyph",
   "menubar.view.select-previous-source": "Vorherige Source",
+  "menubar.view.select-previous-source-layer": "Select previous source layer",
   "message.cancel-editing": "Jemand anderes hat vor dir etwas geändert.",
   "message.edit-has-been-reverted": "Die Änderung wurde rückgängig gemacht.",
   "message.glyph-could-not-be-saved": "Glyph konnte nicht gespeichert werden.",

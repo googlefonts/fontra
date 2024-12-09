@@ -230,10 +230,13 @@ export const strings = {
     "Verwijder de geselecteerde glyph van het canvas",
   "menubar.view.replace-selected-glyph-on-canvas":
     "Vervang de geselecteerde glyph op het canvas",
+  "menubar.view.select-glyph-source-layer": "Select glyph/source/layer",
   "menubar.view.select-next-glyph": "Select next glyph",
   "menubar.view.select-next-source": "Selecteer de volgende source",
+  "menubar.view.select-next-source-layer": "Select next source layer",
   "menubar.view.select-previous-glyph": "Select previous glyph",
   "menubar.view.select-previous-source": "Selecteer de vorige source",
+  "menubar.view.select-previous-source-layer": "Select previous source layer",
   "message.cancel-editing": "Someone else made an edit just before you.",
   "message.edit-has-been-reverted": "The edit has been reverted.",
   "message.glyph-could-not-be-saved": "The glyph could not be saved.",

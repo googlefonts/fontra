@@ -10,6 +10,7 @@ import {
   enumerate,
   escapeHTMLCharacters,
   FocusKeeper,
+  modulo,
   objectsEqual,
   range,
   rgbaToCSS,
@@ -189,6 +190,24 @@ export default class DesignspaceNavigationPanel extends Panel {
           ]
         ),
       },
+      {
+        id: "glyph-layers-accordion-item",
+        label: "Source layers", // XXXX TODO add translate strings
+        open: true,
+        content: html.div(
+          {
+            style:
+              "display: grid; grid-template-rows: 1fr auto; height: 100%; box-sizing: border-box;",
+          },
+          [
+            html.createDomElement("ui-list", { id: "layers-list" }),
+            html.createDomElement("add-remove-buttons", {
+              style: "padding: 0.5em 0 0 0;",
+              id: "glyph-layers-add-remove-buttons",
+            }),
+          ]
+        ),
+      },
     ];
 
     return accordion;
@@ -208,6 +227,10 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   get glyphSourcesAccordionItem() {
     return this.contentElement.querySelector("#glyph-sources-accordion-item");
+  }
+
+  get glyphLayersAccordionItem() {
+    return this.contentElement.querySelector("#glyph-layers-accordion-item");
   }
 
   setup() {
@@ -248,6 +271,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateSources();
       this._updateInterpolationErrorInfo();
     });
+
+    this.sceneSettingsController.addKeyListener(
+      ["selectedGlyph", "selectedSourceIndex"],
+      (event) => {
+        this._updateSourceLayersList();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener(
       [
@@ -314,6 +344,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     );
 
+    this.sceneSettingsController.addKeyListener(
+      ["backgroundLayers", "editingLayers"],
+      (event) => {
+        this._updateSourceItems();
+      }
+    );
+
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", () => {
       // This happens also when the user tries to change the development status
       // or the "on/off" source selector, in which case we must refresh the UI.
@@ -375,6 +412,19 @@ export default class DesignspaceNavigationPanel extends Panel {
       const sourceIndex =
         this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
       this.editSourceProperties(sourceIndex);
+    });
+
+    this.sourceLayersList = this.contentElement.querySelector("#layers-list");
+    this.sourceLayersList.columnDescriptions = [{ key: "shortName" }];
+    this.sourceLayersList.addEventListener("listSelectionChanged", (event) => {
+      const sourceItem = this.sourcesList.getSelectedItem();
+      const layerItem = this.sourceLayersList.getSelectedItem();
+      if (layerItem) {
+        this.sceneSettings.editLayerName = layerItem.fullName;
+        this.sceneSettings.editingLayers = {
+          [layerItem.fullName]: sourceItem.locationString,
+        };
+      }
     });
 
     this.fontController.addChangeListener(
@@ -589,7 +639,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async onVisibilityHeaderClick(event) {
     let backgroundLayers;
-    if (Object.keys(this.sceneController.backgroundLayers).length) {
+    if (Object.keys(this.sceneSettings.backgroundLayers).length) {
       backgroundLayers = {};
     } else {
       const varGlyphController =
@@ -597,12 +647,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       backgroundLayers = {};
       for (const source of varGlyphController.sources) {
         if (!backgroundLayers[source.layerName]) {
-          backgroundLayers[source.layerName] = source.name;
+          backgroundLayers[source.layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         }
       }
     }
-    this.sceneController.backgroundLayers = backgroundLayers;
-    this._updateSources();
+    this.sceneSettings.backgroundLayers = backgroundLayers;
   }
 
   onEditHeaderClick(event) {
@@ -620,12 +670,17 @@ export default class DesignspaceNavigationPanel extends Panel {
             item.interpolationStatus.discreteLocationKey !== discreteLocationKey
         );
 
+    const editingLayers = {};
     for (const item of items) {
-      item.editing =
+      const editing =
         (onOff &&
           item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
         item === selectedItem;
+      if (editing) {
+        editingLayers[item.layerName] = item.locationString;
+      }
     }
+    this.sceneSettings.editingLayers = editingLayers;
   }
 
   async updateInterpolationContributions() {
@@ -686,21 +741,24 @@ export default class DesignspaceNavigationPanel extends Panel {
         ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       }) || [];
-    let backgroundLayers = { ...this.sceneController.backgroundLayers };
-    let editingLayers = { ...this.sceneController.editingLayers };
+    const backgroundLayers = { ...this.sceneSettings.backgroundLayers };
+    const editingLayers = { ...this.sceneSettings.editingLayers };
 
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
+      const locationString =
+        varGlyphController.getSparseLocationStringForSource(source);
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
-        layerName: source.layerName,
+        layerName,
         active: !source.inactive,
-        visible: backgroundLayers[layerName] === source.name,
-        editing: editingLayers[layerName] === source.name,
+        visible: backgroundLayers[layerName] === locationString,
+        editing: editingLayers[layerName] === locationString,
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
+        locationString,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
@@ -716,20 +774,24 @@ export default class DesignspaceNavigationPanel extends Panel {
         });
       });
       sourceController.addKeyListener("visible", async (event) => {
+        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
         if (event.newValue) {
-          backgroundLayers[layerName] = source.name;
+          newBackgroundLayers[layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         } else {
-          delete backgroundLayers[layerName];
+          delete newBackgroundLayers[layerName];
         }
-        this.sceneController.backgroundLayers = backgroundLayers;
+        this.sceneSettings.backgroundLayers = newBackgroundLayers;
       });
       sourceController.addKeyListener("editing", async (event) => {
+        const newEditingLayers = { ...this.sceneSettings.editingLayers };
         if (event.newValue) {
-          editingLayers[layerName] = source.name;
+          newEditingLayers[layerName] =
+            varGlyphController.getSparseLocationStringForSource(source);
         } else {
-          delete editingLayers[layerName];
+          delete newEditingLayers[layerName];
         }
-        this.sceneController.editingLayers = editingLayers;
+        this.sceneSettings.editingLayers = newEditingLayers;
         await this._pruneEditingLayers();
       });
       sourceController.addKeyListener("status", async (event) => {
@@ -753,8 +815,74 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
+    this._updateSourceLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
+  }
+
+  _updateSourceItems() {
+    const backgroundLayers = this.sceneSettings.backgroundLayers;
+    const editingLayers = this.sceneSettings.editingLayers;
+    for (const sourceItem of this.sourcesList.items) {
+      sourceItem.visible =
+        backgroundLayers[sourceItem.layerName] === sourceItem.locationString;
+      sourceItem.editing =
+        editingLayers[sourceItem.layerName] === sourceItem.locationString;
+    }
+  }
+
+  async _updateSourceLayersList() {
+    // TODO: the background layers feature is not yet functional, disable for now
+    this.glyphLayersAccordionItem.hidden = true;
+    return;
+
+    const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
+    const haveLayers =
+      this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
+    this.glyphLayersAccordionItem.hidden = !haveLayers;
+
+    if (!haveLayers) {
+      this.sourceLayersList.setItems([]);
+      return;
+    }
+
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    const source = varGlyphController.glyph.sources[sourceIndex];
+    const layerNames =
+      varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
+    this.sourceLayersList.setItems(
+      layerNames.map((layer) => ({
+        fullName: layer.fullName,
+        shortName: layer.shortName || "foreground",
+      }))
+    );
+
+    // TODO: keep track of the bg layer short name so we can switch sources/glyphs
+    // while staying in the "same" bg layer
+    const itemMatch = this.sourceLayersList.items.find(
+      (item) => item.fullName === this.sceneSettings.editLayerName
+    );
+    if (itemMatch) {
+      this.sourceLayersList.setSelectedItem(itemMatch);
+    } else {
+      this.sourceLayersList.setSelectedItemIndex(0);
+    }
+  }
+
+  doSelectPreviousNextSourceLayer(selectPrevious) {
+    if (this.sourceLayersList.items.length < 2) {
+      return;
+    }
+
+    const index = this.sourceLayersList.getSelectedItemIndex() || 0;
+    const newIndex = modulo(
+      index + (selectPrevious ? -1 : 1),
+      this.sourceLayersList.items.length
+    );
+    this.sourceLayersList.setSelectedItemIndex(newIndex, true);
   }
 
   _updateRemoveSourceButtonState() {
@@ -763,11 +891,42 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateEditingStatus() {
+    if (!this.sourcesList.items.length) {
+      return;
+    }
+
     const selectedItem = this.sourcesList.getSelectedItem();
-    if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
-      this.sourcesList.items.forEach((item) => {
-        item.editing = item === selectedItem;
-      });
+
+    // if no selected item:
+    // - set all item.editing = false
+    // else if the selected item is not editing and no bg layer is editing
+    // - make *only* selected item editing
+    // else if the selected item has an interpolation error
+    // - make *only* selected item editing
+
+    if (!selectedItem) {
+      this.sceneSettings.editingLayers = {};
+    } else {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      const sourceLayers = varGlyphController.getSourceLayerNamesForSourceIndex(
+        selectedItem.sourceIndex
+      );
+
+      const bgLayerIsEditing = sourceLayers.some(
+        (layer) =>
+          layer.shortName &&
+          this.sceneSettings.editingLayers.hasOwnProperty(layer.fullName)
+      );
+
+      if (
+        !bgLayerIsEditing &&
+        (!selectedItem.editing || selectedItem.interpolationStatus?.error)
+      ) {
+        this.sceneSettings.editingLayers = {
+          [selectedItem.layerName]: selectedItem.locationString,
+        };
+      }
     }
   }
 
@@ -778,13 +937,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
     const layers = varGlyphController.layers;
-    const editingLayers = { ...this.sceneController.editingLayers };
+    const editingLayers = { ...this.sceneSettings.editingLayers };
     for (const layerName of Object.keys(editingLayers)) {
       if (!(layerName in layers)) {
         delete editingLayers[layerName];
       }
     }
-    this.sceneController.editingLayers = editingLayers;
+    this.sceneSettings.editingLayers = editingLayers;
   }
 
   async removeSource() {

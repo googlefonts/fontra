@@ -168,6 +168,8 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
+        "editLayerName",
+        "editingLayers",
         "fontLocationUser",
         "glyphLocation",
         "fontAxesUseSourceCoordinates",
@@ -507,6 +509,26 @@ export class EditorController {
           defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true }],
         },
         () => this.doSelectPreviousNextSource(false)
+      );
+
+      registerAction(
+        "action.select-previous-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-source-layer",
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true, altKey: true }],
+        },
+        () => this.doSelectPreviousNextSourceLayer(true)
+      );
+
+      registerAction(
+        "action.select-next-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-source-layer",
+          defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true, altKey: true }],
+        },
+        () => this.doSelectPreviousNextSourceLayer(false)
       );
 
       registerAction(
@@ -1064,7 +1086,7 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromSourceLocation(
+        const nearestSourceIndex = glyphController.findNearestSourceForSourceLocation(
           {
             ...this.sceneSettings.fontLocationSourceMapped,
             ...this.sceneSettings.glyphLocation,
@@ -1584,17 +1606,17 @@ export class EditorController {
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-source",
+      title: translate("menubar.view.select-glyph-source-layer"),
+      getItems: () => [
+        { actionIdentifier: "action.select-previous-glyph" },
+        { actionIdentifier: "action.select-next-glyph" },
+        { actionIdentifier: "action.select-previous-source" },
+        { actionIdentifier: "action.select-next-source" },
+        // { actionIdentifier: "action.select-previous-source-layer" },
+        // { actionIdentifier: "action.select-next-source-layer" },
+      ],
     });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-source",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-glyph",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-glyph",
-    });
+
     this.glyphSelectedContextMenuItems.push({
       title: () =>
         translate(
@@ -3063,7 +3085,7 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromSourceLocation({
+      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
         ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
@@ -3075,6 +3097,11 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
+  async doSelectPreviousNextSourceLayer(selectPrevious) {
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.doSelectPreviousNextSourceLayer(selectPrevious);
   }
 
   async doSelectPreviousNextGlyph(selectPrevious) {
@@ -3414,11 +3441,19 @@ export class EditorController {
     if (viewInfo["fontAxesSkipMapping"]) {
       this.sceneSettings.fontAxesSkipMapping = true;
     }
+
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
+
+    if (viewInfo["editLayerName"]) {
+      this.sceneSettings.editLayerName = viewInfo["editLayerName"];
+    }
+    if (viewInfo["editingLayers"]) {
+      this.sceneSettings.editingLayers = viewInfo["editingLayers"];
+    }
 
     if (viewInfo["selection"]) {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
@@ -3458,6 +3493,14 @@ export class EditorController {
     if (this.sceneSettings.fontAxesSkipMapping) {
       viewInfo["fontAxesSkipMapping"] = true;
     }
+
+    if (this.sceneSettings.editLayerName) {
+      viewInfo["editLayerName"] = this.sceneSettings.editLayerName;
+    }
+    if (Object.keys(this.sceneSettings.editingLayers).length) {
+      viewInfo["editingLayers"] = this.sceneSettings.editingLayers;
+    }
+
     const glyphLocations = this.sceneController.getGlyphLocations(true);
     if (Object.keys(glyphLocations).length) {
       viewInfo["glyphLocations"] = glyphLocations;
