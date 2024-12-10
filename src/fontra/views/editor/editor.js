@@ -3497,7 +3497,10 @@ export class EditorController {
     if (this.sceneSettings.editLayerName) {
       viewInfo["editLayerName"] = this.sceneSettings.editLayerName;
     }
-    if (Object.keys(this.sceneSettings.editingLayers).length) {
+    if (
+      this.sceneSettings.editingLayers &&
+      Object.keys(this.sceneSettings.editingLayers).length
+    ) {
       viewInfo["editingLayers"] = this.sceneSettings.editingLayers;
     }
 
