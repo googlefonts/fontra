@@ -5,8 +5,10 @@ import logging
 from dataclasses import dataclass, replace
 from typing import Any
 
+from fontTools.cu2qu.ufo import glyphs_to_quadratic
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
+from fontTools.pens.pointPen import SegmentToPointPen
 
 from ...core.classes import (
     Component,
@@ -17,7 +19,7 @@ from ...core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
-from ...core.path import PackedPath
+from ...core.path import PackedPath, PackedPathPointPen
 from ...core.varutils import locationToTuple
 from .base import (
     BaseFilter,
@@ -532,4 +534,60 @@ class DropBackgroundImages(BaseFilter):
                     for layerName, layer in glyph.layers.items()
                 },
             )
+        return glyph
+
+
+@dataclass(kw_only=True)
+class Cu2QuGlyphGlue:
+    path: PackedPath
+
+    def __post_init__(self):
+        self._pen = None
+
+    def clearContours(self):
+        pass
+
+    def drawPoints(self, pen):
+        self.path.drawPoints(pen)
+
+    def getPen(self):
+        self._pen = PackedPathPointPen()
+        return SegmentToPointPen(self._pen)
+
+    @property
+    def modifiedPath(self):
+        return self._pen.getPath() if self._pen is not None else self.path
+
+
+@registerFilterAction("convert-to-quadratics")
+@dataclass(kw_only=True)
+class ConvertToQuadratics(BaseFilter):
+    maximumError: float | None = None
+    reverseDirection: bool = False
+
+    async def processGlyph(self, glyph):
+        layers = {
+            source.layerName: glyph.layers[source.layerName]
+            for source in getActiveSources(glyph.sources)
+        }
+        wrappedPaths = [
+            Cu2QuGlyphGlue(path=layer.glyph.path) for layer in layers.values()
+        ]
+        if glyphs_to_quadratic(
+            wrappedPaths,
+            max_err=self.maximumError,
+            reverse_direction=self.reverseDirection,
+        ):
+            glyph = replace(
+                glyph,
+                layers={
+                    layerName: replace(
+                        layer, glyph=replace(layer.glyph, path=wrappedPath.modifiedPath)
+                    )
+                    for (layerName, layer), wrappedPath in zip(
+                        layers.items(), wrappedPaths
+                    )
+                },
+            )
+
         return glyph

@@ -1349,6 +1349,21 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "convert-to-quadratics",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: convert-to-quadratics
+              maximumError: 1
+              reverseDirection: false
+            - output: fontra-write
+              destination: "output-convert-to-quadratics.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
