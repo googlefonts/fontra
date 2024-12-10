@@ -578,16 +578,12 @@ class ConvertToQuadratics(BaseFilter):
             max_err=self.maximumError,
             reverse_direction=self.reverseDirection,
         ):
-            glyph = replace(
-                glyph,
-                layers={
-                    layerName: replace(
-                        layer, glyph=replace(layer.glyph, path=wrappedPath.modifiedPath)
-                    )
-                    for (layerName, layer), wrappedPath in zip(
-                        layers.items(), wrappedPaths
-                    )
-                },
-            )
+            newLayers = dict(glyph.layers)
+            for (layerName, layer), wrappedPath in zip(layers.items(), wrappedPaths):
+                newLayers[layerName] = replace(
+                    layer, glyph=replace(layer.glyph, path=wrappedPath.modifiedPath)
+                )
+
+            glyph = replace(glyph, layers=newLayers)
 
         return glyph
