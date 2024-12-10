@@ -566,6 +566,7 @@ class ConvertToQuadratics(BaseFilter):
     reverseDirection: bool = False
 
     async def processGlyph(self, glyph):
+        # TODO: we should split by discrete subspace so we can support discrete axes
         layers = {
             source.layerName: glyph.layers[source.layerName]
             for source in getActiveSources(glyph.sources)
