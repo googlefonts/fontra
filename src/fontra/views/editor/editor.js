@@ -872,6 +872,23 @@ export class EditorController {
         ],
       },
       {
+        title: translate("menubar.window"),
+        enabled: () => true,
+        getItems: () => {
+          return [
+            {
+              title: translate("font-overview.title"),
+              enabled: () => true,
+              callback: () => {
+                const url = new URL(window.location);
+                url.pathname = url.pathname.replace("/editor/", "/fontoverview/");
+                window.open(url.toString());
+              },
+            },
+          ];
+        },
+      },
+      {
         title: translate("menubar.help"),
         enabled: () => true,
         getItems: () => {

@@ -1,0 +1,35 @@
+body {
+  overflow: scroll;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  padding: 0em;
+  box-sizing: border-box;
+  gap: 0em;
+  width: 100vw;
+  height: 100vh;
+}
+
+#sidebar-container {
+  display: grid;
+  align-content: start;
+  gap: 1em;
+  padding: 2em 1em 2em 2em;
+  background-color: var(--ui-element-background-color);
+}
+
+.sidebar-shadow-box {
+  box-shadow: 0px 0px 8px #0006;
+}
+
+.font-overview-panel {
+  display: grid;
+  padding: 2em 2em 2em 1em;
+  outline: none;
+}
+
+#panel-container {
+  overflow: auto;
+}
