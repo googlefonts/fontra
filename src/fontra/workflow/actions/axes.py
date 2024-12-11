@@ -710,12 +710,11 @@ class TrimVariableGlyphs(BaseFilter):
         baseGlyphs = {}
         glyphAxisRanges = {}
 
-        async def getInstancer(glyphName, addToCache=False):
+        async def getInstancer(glyphName):
             instancer = baseGlyphs.get(glyphName)
             if instancer is None:
                 instancer = await fontInstancer.getGlyphInstancer(glyphName)
-                if addToCache:
-                    baseGlyphs[glyphName] = instancer
+                baseGlyphs[glyphName] = instancer
             return instancer
 
         for glyphName in await self.inputGlyphMap:
@@ -723,24 +722,16 @@ class TrimVariableGlyphs(BaseFilter):
 
             glyph = instancer.glyph
 
-            axisRanges = getComponentAxisRanges(glyph)
+            axisRanges = await getComponentAxisRanges(glyph, getInstancer)
 
             componentNames = set(axisRanges)
             if componentNames:
                 dependencies.update(glyphName, componentNames)
-                for baseGlyphName in componentNames:
-                    baseInstancer = await getInstancer(baseGlyphName, True)
-                    componentAxisRanges = axisRanges[baseGlyphName]
-                    for axis in baseInstancer.glyph.axes:
-                        if axis.name not in componentAxisRanges:
-                            componentAxisRanges[axis.name] = AxisRange(
-                                axis.defaultValue, axis.defaultValue
-                            )
 
             glyphAxisRanges[glyphName] = axisRanges
 
-            if glyph.axes:
-                baseGlyphs[glyphName] = instancer
+            if not glyph.axes:
+                del baseGlyphs[glyphName]
 
         glyphsToTrim = {
             glyphName: instancer
@@ -770,8 +761,8 @@ class TrimVariableGlyphs(BaseFilter):
                 trimmedGlyphs[glyphName] = trimGlyphByAxisRanges(
                     fontInstancer, instancer, axisRanges.get(glyphName, {})
                 )
-                glyphAxisRanges[glyphName] = getComponentAxisRanges(
-                    trimmedGlyphs[glyphName]
+                glyphAxisRanges[glyphName] = await getComponentAxisRanges(
+                    trimmedGlyphs[glyphName], getInstancer
                 )
 
             axisRanges = mergeAxisRanges(glyphAxisRanges.values())
@@ -785,13 +776,16 @@ class TrimVariableGlyphs(BaseFilter):
         return glyph
 
 
-def getComponentAxisRanges(glyph):
+async def getComponentAxisRanges(glyph, getInstancer):
     axisRanges = defaultdict(lambda: defaultdict(AxisRange))
     for source in getActiveSources(glyph.sources):
         for component in glyph.layers[source.layerName].glyph.components:
             baseGlyphName = component.name
-            for axisName, value in component.location.items():
-                axisRanges[baseGlyphName][axisName].update(value)
+            instancer = await getInstancer(baseGlyphName)
+            for axis in instancer.glyph.axes:
+                axisRanges[baseGlyphName][axis.name].update(
+                    component.location.get(axis.name, axis.defaultValue)
+                )
     return axisRanges
 
 
