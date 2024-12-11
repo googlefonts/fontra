@@ -57,6 +57,7 @@ fontra-workflow = "fontra.workflow.command:main"
 
 [project.entry-points."fontra.views"]
 editor = "fontra.views.editor"
+fontoverview = "fontra.views.fontoverview"
 fontinfo = "fontra.views.fontinfo"
 applicationsettings = "fontra.views.applicationsettings"
 
