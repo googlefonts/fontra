@@ -620,7 +620,7 @@ class SourceBox extends HTMLElement {
 
 customElements.define("source-box", SourceBox);
 
-function sortedSourceIdentifiers(sources, fontAxes) {
+export function sortedSourceIdentifiers(sources, fontAxes) {
   const sortFunc = (identifierA, identifierB) => {
     for (const axis of fontAxes) {
       const valueA = sources[identifierA].location[axis.name];
