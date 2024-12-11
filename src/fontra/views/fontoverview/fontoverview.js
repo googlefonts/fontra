@@ -11,14 +11,15 @@ import { message } from "/web-components/modal-dialog.js";
 
 // TODOs:
 // 1. I am wondering if it would make sense to refactor GlyphsSearch into two web components:
-//    1. GlyphsSearch: Includes the search field, only. Access the list of glyphs with eg. glyphsListItemsController.
-//    2. GlyphsSearchForEditor which uses GlyphsSearch and adds the glyph list.
+//    1. GlyphsSearchField: Includes the search field, only. Access the list of glyphs with eg. glyphsListItemsController.
+//    2. GlyphsSearchList: (contain the GlyphsSearchField) which uses GlyphsSearch and adds the glyph list.
 // 2. We may want to move sortedSourceIdentifiers to a more general location like utils. Follow up task?
 // 3. Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
-// 4. Context menu is implemented in the overview, yet. We may want to add them. Is this a follow up task?
-// 5. Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? Follow up task?
+// 4. Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
+// 5. Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
 // 6. Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
-// 7. When opening a glyph in the editor via double click, there is an error: It says 'error while interpolating font sources '{message: 'objects have incompatible number of entries: 7 != 6', type: 'interpolation-error'}'. But this is not true. I don't know why this is happening.
+// 7. When opening a glyph in the editor via double click, there is an error: It says 'error while interpolating font sources '{message: 'objects have incompatible number of entries: 7 != 6', type: 'interpolation-error'}'. Maybe not relevant for this PR.
+// 8. Glyph selection: also multiple glyphs.
 
 // START OF COPY: This is a copy of GlyphsSearch but without the list of glyph names
 import { UnlitElement, div, label, option, select } from "/core/html-utils.js";
@@ -363,14 +364,15 @@ export class FontOverviewController {
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
-    const glyphLocations = {};
-    glyphLocations[glyphName] = this.fontSources[this.currentFontSourceIdentifier]
+    const sourceLocation = this.fontSources[this.currentFontSourceIdentifier]
       ? this.fontSources[this.currentFontSourceIdentifier].location
-      : {}; // TODO: what happens if the glyph does not have the font location?
+      : {};
+    const userLocation =
+      this.fontController.mapSourceLocationToUserLocation(sourceLocation);
 
     const viewInfo = {
       selectedGlyph: glyphName,
-      glyphLocations: glyphLocations,
+      location: userLocation,
     };
     if (codePoints.length) {
       viewInfo.text = String.fromCharCode(codePoints[0]);
