@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from functools import partial
@@ -23,6 +24,7 @@ from ...core.classes import (
     unstructure,
 )
 from ...core.discretevariationmodel import DiscreteVariationModel
+from ...core.glyphdependencies import GlyphDependencies
 from ...core.varutils import locationToTuple, makeDenseLocation
 from . import ActionError
 from .base import (
@@ -533,6 +535,34 @@ class Instantiate(BaseMoveDefaultLocation):
         return filteredLocations
 
 
+@dataclass
+class AxisRange:
+    minValue: float | None = None
+    maxValue: float | None = None
+
+    def update(self, value):
+        if self.minValue is None:
+            self.minValue = value
+            self.maxValue = value
+        else:
+            self.minValue = min(self.minValue, value)
+            self.maxValue = max(self.maxValue, value)
+
+    def updateRange(self, other):
+        self.update(other.minValue)
+        self.update(other.maxValue)
+
+    def clipRange(self, minValue, maxValue):
+        self.minValue = max(min(self.minValue, maxValue), minValue)
+        self.maxValue = max(min(self.maxValue, maxValue), minValue)
+
+    def clipValue(self, value):
+        return max(min(value, self.maxValue), self.minValue)
+
+    def isEmpty(self):
+        return self.minValue == self.maxValue
+
+
 @registerFilterAction("trim-axes")
 @dataclass(kw_only=True)
 class TrimAxes(BaseFilter):
@@ -555,7 +585,7 @@ class TrimAxes(BaseFilter):
             }
 
             if not rangeDict:
-                sourceRanges[axis.name] = (axis.minValue, axis.maxValue)
+                sourceRanges[axis.name] = AxisRange(axis.minValue, axis.maxValue)
                 continue
 
             trimmedAxis.minValue = max(
@@ -593,9 +623,9 @@ class TrimAxes(BaseFilter):
                         if trimmedAxis.minValue <= u <= trimmedAxis.maxValue
                     ]
                 )
-                sourceRanges[axis.name] = tuple(rangeValues)
+                sourceRanges[axis.name] = AxisRange(*rangeValues)
             else:
-                sourceRanges[axis.name] = (
+                sourceRanges[axis.name] = AxisRange(
                     trimmedAxis.minValue,
                     trimmedAxis.maxValue,
                 )
@@ -664,6 +694,120 @@ class TrimAxes(BaseFilter):
         return updateGlyphSourcesAndLayers(instancer, newLocations)
 
 
+@registerFilterAction("trim-variable-glyphs")
+@dataclass(kw_only=True)
+class TrimVariableGlyphs(BaseFilter):
+    @async_cached_property
+    async def trimmedGlyphs(self):
+        fontInstancer = self.fontInstancer
+
+        dependencies = GlyphDependencies()
+        glyphsToTrim = {}
+        glyphAxisRanges = {}
+
+        for glyphName in await self.inputGlyphMap:
+            instancer = await fontInstancer.getGlyphInstancer(glyphName)
+            glyph = instancer.glyph
+
+            axisRanges = getComponentAxisRanges(glyph)
+            glyphAxisRanges[glyphName] = axisRanges
+
+            componentNames = set(axisRanges)
+            if componentNames:
+                dependencies.update(glyphName, componentNames)
+
+            if glyph.axes:
+                glyphsToTrim[glyphName] = instancer
+
+        axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        trimmedGlyphs = {}
+
+        while glyphsToTrim:
+            # We want to trim those glyphs first, that are not *used* in
+            # a glyph to be trimmed
+            nextBatch = {
+                glyphName: instancer
+                for glyphName, instancer in glyphsToTrim.items()
+                if not any(
+                    parentGlyphName in glyphsToTrim
+                    for parentGlyphName in dependencies.usedBy.get(glyphName, ())
+                )
+            }
+            assert nextBatch
+
+            for glyphName, instancer in nextBatch.items():
+                del glyphsToTrim[glyphName]
+                trimmedGlyph = trimGlyphByAxisRanges(
+                    fontInstancer, instancer, axisRanges.get(glyphName, {})
+                )
+                glyphAxisRanges[glyphName] = getComponentAxisRanges(trimmedGlyph)
+
+            axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        return trimmedGlyphs
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        glyph = (await self.trimmedGlyphs).get(glyphName)
+        if glyph is None:
+            glyph = await self.validatedInput.getGlyph(glyphName)
+        return glyph
+
+
+def getComponentAxisRanges(glyph):
+    axisRanges = defaultdict(lambda: defaultdict(AxisRange))
+    for source in getActiveSources(glyph.sources):
+        for component in glyph.layers[source.layerName].glyph.components:
+            baseGlyphName = component.name
+            for axisName, value in component.location.items():
+                axisRanges[baseGlyphName][axisName].update(value)
+    return axisRanges
+
+
+def mergeAxisRanges(glyphAxisRanges):
+    mergedAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+    for axisRanges in glyphAxisRanges:
+        for baseGlyphName, ranges in axisRanges.items():
+            for axisName, axisRange in ranges.items():
+                mergedAxisRanges[baseGlyphName][axisName].updateRange(axisRange)
+    return mergedAxisRanges
+
+
+def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
+    glyph = instancer.glyph
+    glyphAxisNames = {axis.name for axis in glyph.axes}
+
+    # Drop unknown axes
+    axisRanges = subsetLocationKeep(axisRanges, glyphAxisNames)
+
+    for axis in glyph.axes:
+        if axis.name not in axisRanges:
+            axisRanges[axis.name] = AxisRange(axis.defaultValue, axis.defaultValue)
+
+    # originalDefaultSourceLocation = instancer.defaultSourceLocation
+    # newDefaultSourceLocation = {
+    #     axisName: axisRange.minValue
+    #     for axisName, axisRange in axisRanges.items()
+    #     if axisRange.isEmpty()
+    # }
+
+    # locations = [
+    #     originalDefaultSourceLocation | fontInstancer.getGlyphSourceLocation(source)
+    #     for source in instancer.activeSources
+    # ]
+
+    # newLocations = moveDefaultLocations(
+    #     locations,
+    #     originalDefaultSourceLocation,
+    #     newDefaultSourceLocation,
+    #     glyphAxisNames,
+    # )
+
+    # newLocations = trimLocations(newLocations, axisRanges)
+    # return updateGlyphSourcesAndLayers(instancer, newLocations)
+    return instancer.glyph
+
+
 def trimLocations(originalLocations, ranges):
     return [trimLocation(loc, ranges) for loc in originalLocations]
 
@@ -674,8 +818,8 @@ def trimLocation(originalLocation, ranges):
     for axisName, value in originalLocation.items():
         if axisName not in ranges:
             continue
-        minValue, maxValue = ranges[axisName]
-        newLocation[axisName] = max(min(value, maxValue), minValue)
+        axisRange = ranges[axisName]
+        newLocation[axisName] = axisRange.clipValue(value)
 
     return newLocation
 
