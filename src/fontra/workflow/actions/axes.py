@@ -805,27 +805,28 @@ def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
     # Drop unknown axes
     axisRanges = subsetLocationKeep(axisRanges, glyphAxisNames)
 
+    newDefaultSourceLocation = {}
+    axesToDrop = set()
     newAxes = []
     for axis in glyph.axes:
         axisRange = axisRanges.get(axis.name)
         if axisRange is None:
             axisRanges[axis.name] = AxisRange(axis.defaultValue, axis.defaultValue)
-        elif not axisRange.isEmpty():
-            newAxes.append(
-                replace(
-                    axis,
-                    minValue=axisRange.minValue,
-                    defaultValue=axisRange.clipValue(axis.defaultValue),
-                    maxValue=axisRange.maxValue,
-                )
+        elif axisRange.isEmpty():
+            newDefaultSourceLocation[axis.name] = axisRange.minValue
+            axesToDrop.add(axis.name)
+        else:
+            newAxis = replace(
+                axis,
+                minValue=axisRange.minValue,
+                defaultValue=axisRange.clipValue(axis.defaultValue),
+                maxValue=axisRange.maxValue,
             )
+            newAxes.append(newAxis)
+            if axis.defaultValue != newAxis.defaultValue:
+                newDefaultSourceLocation[axis.name] = newAxis.defaultValue
 
     originalDefaultSourceLocation = instancer.defaultSourceLocation
-    newDefaultSourceLocation = {
-        axisName: axisRange.minValue
-        for axisName, axisRange in axisRanges.items()
-        if axisRange.isEmpty()
-    }
 
     locations = [
         originalDefaultSourceLocation | fontInstancer.getGlyphSourceLocation(source)
@@ -841,7 +842,7 @@ def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
 
     trimmedLocations = trimLocations(newLocations, axisRanges)
 
-    remainingAxisNames = instancer.combinedAxisNames - set(newDefaultSourceLocation)
+    remainingAxisNames = instancer.combinedAxisNames - axesToDrop
 
     glyph = updateGlyphSourcesAndLayers(instancer, trimmedLocations, remainingAxisNames)
     glyph = replace(
