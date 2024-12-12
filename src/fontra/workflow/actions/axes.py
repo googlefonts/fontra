@@ -781,8 +781,8 @@ async def getComponentAxisRanges(glyph, getInstancer):
     for source in getActiveSources(glyph.sources):
         for component in glyph.layers[source.layerName].glyph.components:
             baseGlyphName = component.name
-            instancer = await getInstancer(baseGlyphName)
-            for axis in instancer.glyph.axes:
+            baseInstancer = await getInstancer(baseGlyphName)
+            for axis in baseInstancer.glyph.axes:
                 axisRanges[baseGlyphName][axis.name].update(
                     component.location.get(axis.name, axis.defaultValue)
                 )
