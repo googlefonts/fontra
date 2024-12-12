@@ -4,6 +4,7 @@ import {
   getActionIdentifierFromKeyEvent,
   registerAction,
 } from "../core/actions.js";
+import { Backend } from "../core/backend-api.js";
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { applyChange } from "../core/changes.js";
@@ -28,7 +29,6 @@ import {
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
-import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
@@ -2203,7 +2203,7 @@ export class EditorController {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      const glyph = await this.parseClipboard(plainText);
+      const glyph = await Backend.parseClipboard(plainText);
       if (glyph) {
         pasteLayerGlyphs = [{ glyph }];
       }
@@ -2364,11 +2364,6 @@ export class EditorController {
       undefined,
       true
     );
-  }
-
-  async parseClipboard(data) {
-    const result = await parseClipboard(data);
-    return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
   canDelete() {

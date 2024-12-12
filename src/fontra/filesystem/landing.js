@@ -1,6 +1,5 @@
+import { Backend } from "/core/backend-api.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
-import { getRemoteProxy } from "/core/remote.js";
-import { fetchJSON } from "/core/utils.js";
 
 export async function startupLandingPage(authenticateFunc) {
   if (authenticateFunc) {
@@ -8,7 +7,7 @@ export async function startupLandingPage(authenticateFunc) {
       return;
     }
   }
-  const projectList = await loaderSpinner(fetchJSON("/projectlist"));
+  const projectList = await loaderSpinner(Backend.getProjects());
   const projectListContainer = document.querySelector("#project-list");
   projectListContainer.classList.remove("hidden");
 

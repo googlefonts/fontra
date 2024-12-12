@@ -1,4 +1,5 @@
 import { registerAction } from "../core/actions.js";
+import { Backend } from "../core/backend-api.js";
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
@@ -9,12 +10,6 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
-import {
-  excludePath,
-  intersectPath,
-  subtractPath,
-  unionPath,
-} from "/core/server-utils.js";
 import { Transform } from "/core/transform.js";
 import {
   enumerate,
@@ -127,10 +122,10 @@ export default class TransformationPanel extends Panel {
     }
 
     const pathActions = [
-      ["union", unionPath],
-      ["subtract", subtractPath],
-      ["intersect", intersectPath],
-      ["exclude", excludePath],
+      ["union", Backend.unionPath],
+      ["subtract", Backend.subtractPath],
+      ["intersect", Backend.intersectPath],
+      ["exclude", Backend.excludePath],
     ];
     for (const [keyPart, pathOperationFunc] of pathActions) {
       registerAction(
