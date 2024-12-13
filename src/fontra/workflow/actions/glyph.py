@@ -330,7 +330,7 @@ class TrimVariableGlyphs(BaseFilter):
             glyph = instancer.glyph
 
             glyphAxisRanges[glyphName] = await getComponentAxisRanges(
-                instancer, fontInstancer
+                fontInstancer, instancer
             )
 
             if instancer.componentNames:
@@ -367,7 +367,7 @@ class TrimVariableGlyphs(BaseFilter):
                     trimmedGlyphs[glyphName], fontInstancer
                 )
                 glyphAxisRanges[glyphName] = await getComponentAxisRanges(
-                    trimmedInstancer, fontInstancer
+                    fontInstancer, trimmedInstancer
                 )
 
             axisRanges = mergeAxisRanges(glyphAxisRanges.values())
@@ -382,7 +382,7 @@ class TrimVariableGlyphs(BaseFilter):
 
 
 async def getComponentAxisRanges(
-    instancer: GlyphInstancer, fontInstancer: FontInstancer
+    fontInstancer: FontInstancer, instancer: GlyphInstancer
 ) -> dict[str, dict[str, AxisRange]]:
     with fontInstancer.collectVariableGlyphAxisRanges() as axisRanges:
         _ = await decomposeComposites(fontInstancer, instancer)
