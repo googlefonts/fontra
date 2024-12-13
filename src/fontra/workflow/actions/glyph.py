@@ -409,6 +409,8 @@ def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
     newAxes = []
     for axis in glyph.axes:
         axisRange = axisRanges.get(axis.name)
+        # Ensure the range is actually within the original axis' range
+        axisRange.clipRange(axis.minValue, axis.maxValue)
         if axisRange is None:
             axisRanges[axis.name] = AxisRange(axis.defaultValue, axis.defaultValue)
         elif axisRange.isEmpty():

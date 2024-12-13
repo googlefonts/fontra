@@ -283,7 +283,10 @@ class GlyphInstancer:
 
         if self.fontInstancer.variableGlyphAxisRanges is not None:
             self.fontInstancer.updateVariableGlyphAxisRanges(
-                self.glyph.name, subsetLocationKeep(location, self.glyphAxisNames)
+                self.glyph.name,
+                subsetLocationKeep(
+                    self.defaultSourceLocation | location, self.glyphAxisNames
+                ),
             )
 
         try:
