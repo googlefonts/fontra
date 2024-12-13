@@ -176,54 +176,58 @@ class DecomposeComposites(BaseFilter):
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
-        glyph = instancer.glyph
-        defaultFontSourceLocation = instancer.defaultFontSourceLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
-            return glyph
+            glyph = instancer.glyph
+        else:
+            glyph = await decomposeComposites(self.fontInstancer, instancer)
 
-        haveLocations = getFontSourceLocationsFromSources(
-            self.fontInstancer, instancer.activeSources, defaultFontSourceLocation
+        return glyph
+
+
+async def decomposeComposites(fontInstancer, instancer):
+    defaultFontSourceLocation = instancer.defaultFontSourceLocation
+
+    haveLocations = getFontSourceLocationsFromSources(
+        fontInstancer, instancer.activeSources, defaultFontSourceLocation
+    )
+
+    needLocations = await getFontSourceLocationsFromBaseGlyphs(
+        fontInstancer,
+        instancer.glyph,
+        fontInstancer.backend,
+        defaultFontSourceLocation,
+    )
+
+    needLocations = multiplyLocations(
+        haveLocations, needLocations, defaultFontSourceLocation
+    )
+
+    locationsToAdd = [
+        dict(location) for location in sorted(needLocations - haveLocations)
+    ]
+    layerNames = [locationToString(location) for location in locationsToAdd]
+
+    newSources = instancer.activeSources + [
+        GlyphSource(name=name, location=location, layerName=name)
+        for location, name in zip(locationsToAdd, layerNames, strict=True)
+    ]
+    newLayers = {}
+
+    for source in newSources:
+        instance = instancer.instantiate(fontInstancer.getGlyphSourceLocation(source))
+
+        newLayers[source.layerName] = Layer(
+            glyph=replace(
+                instance.glyph,
+                path=await instance.getDecomposedPath(),
+                components=[],
+            ),
         )
 
-        needLocations = await getFontSourceLocationsFromBaseGlyphs(
-            self.fontInstancer,
-            glyph,
-            self.fontInstancer.backend,
-            defaultFontSourceLocation,
-        )
-
-        needLocations = multiplyLocations(
-            haveLocations, needLocations, defaultFontSourceLocation
-        )
-
-        locationsToAdd = [
-            dict(location) for location in sorted(needLocations - haveLocations)
-        ]
-        layerNames = [locationToString(location) for location in locationsToAdd]
-
-        newSources = instancer.activeSources + [
-            GlyphSource(name=name, location=location, layerName=name)
-            for location, name in zip(locationsToAdd, layerNames, strict=True)
-        ]
-        newLayers = {}
-
-        for source in newSources:
-            instance = instancer.instantiate(
-                self.fontInstancer.getGlyphSourceLocation(source)
-            )
-
-            newLayers[source.layerName] = Layer(
-                glyph=replace(
-                    instance.glyph,
-                    path=await instance.getDecomposedPath(),
-                    components=[],
-                ),
-            )
-
-        return replace(glyph, sources=newSources, layers=newLayers)
+    return replace(instancer.glyph, sources=newSources, layers=newLayers)
 
 
 async def getFontSourceLocationsFromBaseGlyphs(
