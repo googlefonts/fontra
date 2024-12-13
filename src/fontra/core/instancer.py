@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, singledispatch
@@ -67,12 +68,18 @@ class FontInstancer:
             assert self._fontSources is None
             self._fontSources = await self.backend.getSources()
 
+    @contextmanager
     def collectVariableGlyphAxisRanges(self):
-        self.variableGlyphAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+        try:
+            self.variableGlyphAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+            yield self.variableGlyphAxisRanges
+        finally:
+            self.variableGlyphAxisRanges = None
 
     def updateVariableGlyphAxisRanges(self, glyphName, location):
         if self.variableGlyphAxisRanges is None:
             return
+
         glyphAxisRanges = self.variableGlyphAxisRanges[glyphName]
         for axisName, value in location.items():
             glyphAxisRanges[axisName].update(value)
@@ -126,6 +133,9 @@ class FontInstancer:
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    def dropGlyphInstancerFromCache(self, glyphName):
+        self.glyphInstancers.pop(glyphName, None)
 
     def glyphError(self, errorMessage):
         if errorMessage not in self._glyphErrors:
@@ -273,7 +283,7 @@ class GlyphInstancer:
 
         if self.fontInstancer.variableGlyphAxisRanges is not None:
             self.fontInstancer.updateVariableGlyphAxisRanges(
-                subsetLocationKeep(location, self.glyphAxisNames)
+                self.glyph.name, subsetLocationKeep(location, self.glyphAxisNames)
             )
 
         try:
@@ -341,6 +351,10 @@ class GlyphInstancer:
         if source is None:
             source = self.activeSources[0]
         return source
+
+    @cached_property
+    def componentNames(self) -> list[str]:
+        return [component.name for component in self.activeLayerGlyphs[0].components]
 
     @cached_property
     def componentTypes(self) -> list[bool]:
