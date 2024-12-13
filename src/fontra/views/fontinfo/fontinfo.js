@@ -1,35 +1,15 @@
-import { FontController } from "../core/font-controller.js";
 import * as html from "../core/html-utils.js";
-import { getRemoteProxy } from "../core/remote.js";
-import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
 import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
 import { translate } from "/core/localization.js";
-import { message } from "/web-components/modal-dialog.js";
+import { ViewController } from "/core/view.js";
 
-export class FontInfoController {
-  static async fromWebSocket() {
-    const pathItems = window.location.pathname.split("/").slice(3);
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = `Fontra Font Info — ${decodeURI(displayPath)}`;
-    const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
-
-    const remoteFontEngine = await getRemoteProxy(wsURL);
-    const fontInfoController = new FontInfoController(remoteFontEngine);
-    remoteFontEngine.receiver = fontInfoController;
-    remoteFontEngine.onclose = (event) => fontInfoController.handleRemoteClose(event);
-    remoteFontEngine.onerror = (event) => fontInfoController.handleRemoteError(event);
-    await fontInfoController.start();
-    return fontInfoController;
-  }
-
-  constructor(font) {
-    this.fontController = new FontController(font);
+export class FontInfoController extends ViewController {
+  static titlePattern(displayPath) {
+    return `Fontra Font Info — ${decodeURI(displayPath)}`;
   }
 
   async start() {
@@ -107,30 +87,12 @@ export class FontInfoController {
     panel?.handleKeyDown?.(event);
   }
 
-  async externalChange(change, isLiveChange) {
-    await this.fontController.applyChange(change, true);
-    this.fontController.notifyChangeListeners(change, isLiveChange, true);
-  }
-
   async reloadData(reloadPattern) {
     // We have currently no way to refine update behavior based on the
     // reloadPattern.
     //
     // reloadEverything() will trigger the appropriate listeners
     this.fontController.reloadEverything();
-  }
-
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
-  }
-
-  handleRemoteClose(event) {
-    //
-  }
-
-  handleRemoteError(event) {
-    //
   }
 }
 

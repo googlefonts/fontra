@@ -27,7 +27,6 @@ import {
   rectSize,
   rectToArray,
 } from "../core/rectangle.js";
-import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
@@ -93,6 +92,7 @@ import {
   translate,
   translatePlural,
 } from "/core/localization.js";
+import { ViewController } from "/core/view.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -101,28 +101,9 @@ const PASTE_BEHAVIOR_ADD = "add";
 
 const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
 
-export class EditorController {
-  static async fromWebSocket() {
-    const pathItems = window.location.pathname.split("/").slice(3);
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = `Fontra — ${decodeURI(displayPath)}`;
-    const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
-
-    await ensureLanguageHasLoaded;
-
-    const remoteFontEngine = await getRemoteProxy(wsURL);
-    const editorController = new EditorController(remoteFontEngine);
-    remoteFontEngine.receiver = editorController;
-    remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
-    remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
-
-    await editorController.start();
-    return editorController;
-  }
-
+export class EditorController extends ViewController {
   constructor(font) {
+    super(font);
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
@@ -3376,11 +3357,6 @@ export class EditorController {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
-  }
-
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
   }
 
   async setupFromWindowLocation() {
