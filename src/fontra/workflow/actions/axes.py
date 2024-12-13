@@ -23,7 +23,13 @@ from ...core.classes import (
     unstructure,
 )
 from ...core.discretevariationmodel import DiscreteVariationModel
-from ...core.varutils import locationToTuple, makeDenseLocation
+from ...core.varutils import (
+    AxisRange,
+    locationToTuple,
+    makeDenseLocation,
+    subsetLocationDrop,
+    subsetLocationKeep,
+)
 from . import ActionError
 from .base import (
     BaseFilter,
@@ -285,14 +291,6 @@ class SubsetAxes(BaseFilter):
         return mapKerningSourcesAndFilter(kerning, mapping)
 
 
-def subsetLocationKeep(location, axisNames):
-    return {n: v for n, v in location.items() if n in axisNames}
-
-
-def subsetLocationDrop(location, axisNames):
-    return {n: v for n, v in location.items() if n not in axisNames}
-
-
 def getDefaultSourceLocation(axes):
     return {
         axis.name: (
@@ -533,37 +531,6 @@ class Instantiate(BaseMoveDefaultLocation):
             if all(loc.get(name, value) == value for name, value in location.items())
         ]
         return filteredLocations
-
-
-@dataclass
-class AxisRange:
-    minValue: float | None = None
-    maxValue: float | None = None
-
-    def update(self, value):
-        if self.minValue is None:
-            self.minValue = value
-            self.maxValue = value
-        else:
-            self.minValue = min(self.minValue, value)
-            self.maxValue = max(self.maxValue, value)
-
-    def updateRange(self, other):
-        self.update(other.minValue)
-        self.update(other.maxValue)
-
-    def clipRange(self, minValue, maxValue):
-        self.minValue = max(min(self.minValue, maxValue), minValue)
-        self.maxValue = max(min(self.maxValue, maxValue), minValue)
-
-    def clipValue(self, value):
-        return max(min(value, self.maxValue), self.minValue)
-
-    def contains(self, value):
-        return self.minValue <= value <= self.maxValue
-
-    def isEmpty(self):
-        return self.minValue == self.maxValue
 
 
 @registerFilterAction("trim-axes")
