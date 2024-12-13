@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import shutil
 import subprocess
 
 import pytest
@@ -1424,7 +1425,13 @@ def test_command(tmpdir, configYAMLSources, substitutions):
     ],
 )
 async def test_workflow_actions(
-    testName, configSource, continueOnError, expectedLog, tmpdir, caplog
+    testName,
+    configSource,
+    continueOnError,
+    expectedLog,
+    tmpdir,
+    caplog,
+    writeExpectedData,
 ):
     caplog.set_level(logging.WARNING)
     tmpdir = pathlib.Path(tmpdir)
@@ -1442,6 +1449,12 @@ async def test_workflow_actions(
             if expectedPath.is_file():
                 raise NotImplementedError("file comparison to be implemented")
             elif expectedPath.is_dir():
+                if writeExpectedData:
+                    print(
+                        "WARNING: force write of expected data: --write-expected-data"
+                    )
+                    shutil.rmtree(expectedPath)
+                    shutil.copytree(resultPath, expectedPath)
                 expectedLines = directoryTreeToList(expectedPath)
                 resultLines = directoryTreeToList(resultPath)
                 assert expectedLines == resultLines, resultPath
