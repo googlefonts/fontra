@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -10,6 +11,7 @@ from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import SegmentToPointPen
 
+from ...core.async_property import async_cached_property
 from ...core.classes import (
     Component,
     FontSource,
@@ -19,8 +21,16 @@ from ...core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
+from ...core.glyphdependencies import GlyphDependencies
 from ...core.path import PackedPath, PackedPathPointPen
 from ...core.varutils import locationToTuple
+from .axes import (
+    AxisRange,
+    moveDefaultLocations,
+    subsetLocationKeep,
+    trimLocations,
+    updateGlyphSourcesAndLayers,
+)
 from .base import (
     BaseFilter,
     getActiveSources,
@@ -296,6 +306,159 @@ def multiplyLocations(
         for haveLoc, needLoc in itertools.product(haveLocations, needLocations)
     ]
     return {locationToTuple(loc) for loc in needLocations}
+
+
+@registerFilterAction("trim-variable-glyphs")
+@dataclass(kw_only=True)
+class TrimVariableGlyphs(BaseFilter):
+    @async_cached_property
+    async def trimmedGlyphs(self):
+        fontInstancer = self.fontInstancer
+
+        dependencies = GlyphDependencies()
+        baseGlyphs = {}
+        glyphAxisRanges = {}
+
+        async def getInstancer(glyphName):
+            instancer = baseGlyphs.get(glyphName)
+            if instancer is None:
+                instancer = await fontInstancer.getGlyphInstancer(glyphName)
+                baseGlyphs[glyphName] = instancer
+            return instancer
+
+        for glyphName in await self.inputGlyphMap:
+            instancer = await getInstancer(glyphName)
+
+            glyph = instancer.glyph
+
+            axisRanges = await getComponentAxisRanges(glyph, getInstancer)
+
+            componentNames = set(axisRanges)
+            if componentNames:
+                dependencies.update(glyphName, componentNames)
+
+            glyphAxisRanges[glyphName] = axisRanges
+
+            if not glyph.axes:
+                del baseGlyphs[glyphName]
+
+        glyphsToTrim = {
+            glyphName: instancer
+            for glyphName, instancer in baseGlyphs.items()
+            if instancer.glyph.axes
+        }
+
+        axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        trimmedGlyphs = {}
+
+        while glyphsToTrim:
+            # We want to trim those glyphs first, that are not *used* in
+            # a glyph to be trimmed
+            nextBatch = {
+                glyphName: instancer
+                for glyphName, instancer in glyphsToTrim.items()
+                if not any(
+                    parentGlyphName in glyphsToTrim
+                    for parentGlyphName in dependencies.usedBy.get(glyphName, ())
+                )
+            }
+            assert nextBatch
+
+            for glyphName, instancer in nextBatch.items():
+                del glyphsToTrim[glyphName]
+                trimmedGlyphs[glyphName] = trimGlyphByAxisRanges(
+                    fontInstancer, instancer, axisRanges.get(glyphName, {})
+                )
+                glyphAxisRanges[glyphName] = await getComponentAxisRanges(
+                    trimmedGlyphs[glyphName], getInstancer
+                )
+
+            axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        return trimmedGlyphs
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        glyph = (await self.trimmedGlyphs).get(glyphName)
+        if glyph is None:
+            glyph = await self.validatedInput.getGlyph(glyphName)
+        return glyph
+
+
+async def getComponentAxisRanges(glyph, getInstancer):
+    axisRanges = defaultdict(lambda: defaultdict(AxisRange))
+    for source in getActiveSources(glyph.sources):
+        for component in glyph.layers[source.layerName].glyph.components:
+            baseGlyphName = component.name
+            baseInstancer = await getInstancer(baseGlyphName)
+            for axis in baseInstancer.glyph.axes:
+                axisRanges[baseGlyphName][axis.name].update(
+                    component.location.get(axis.name, axis.defaultValue)
+                )
+    return axisRanges
+
+
+def mergeAxisRanges(glyphAxisRanges):
+    mergedAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+    for axisRanges in glyphAxisRanges:
+        for baseGlyphName, ranges in axisRanges.items():
+            for axisName, axisRange in ranges.items():
+                mergedAxisRanges[baseGlyphName][axisName].updateRange(axisRange)
+    return mergedAxisRanges
+
+
+def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
+    glyph = instancer.glyph
+    glyphAxisNames = {axis.name for axis in glyph.axes}
+
+    # Drop unknown axes
+    axisRanges = subsetLocationKeep(axisRanges, glyphAxisNames)
+
+    newDefaultSourceLocation = {}
+    axesToDrop = set()
+    newAxes = []
+    for axis in glyph.axes:
+        axisRange = axisRanges.get(axis.name)
+        if axisRange is None:
+            axisRanges[axis.name] = AxisRange(axis.defaultValue, axis.defaultValue)
+        elif axisRange.isEmpty():
+            newDefaultSourceLocation[axis.name] = axisRange.minValue
+            axesToDrop.add(axis.name)
+        else:
+            newAxis = replace(
+                axis,
+                minValue=axisRange.minValue,
+                defaultValue=axisRange.clipValue(axis.defaultValue),
+                maxValue=axisRange.maxValue,
+            )
+            newAxes.append(newAxis)
+            if axis.defaultValue != newAxis.defaultValue:
+                newDefaultSourceLocation[axis.name] = newAxis.defaultValue
+
+    originalDefaultSourceLocation = instancer.defaultSourceLocation
+
+    locations = [
+        originalDefaultSourceLocation | fontInstancer.getGlyphSourceLocation(source)
+        for source in instancer.activeSources
+    ]
+
+    newLocations = moveDefaultLocations(
+        locations,
+        originalDefaultSourceLocation,
+        newDefaultSourceLocation,
+        glyphAxisNames,
+    )
+
+    trimmedLocations = trimLocations(newLocations, axisRanges)
+
+    remainingAxisNames = instancer.combinedAxisNames - axesToDrop
+
+    glyph = updateGlyphSourcesAndLayers(instancer, trimmedLocations, remainingAxisNames)
+    glyph = replace(
+        glyph,
+        axes=newAxes,
+    )
+    return glyph
 
 
 @registerFilterAction("drop-shapes")
