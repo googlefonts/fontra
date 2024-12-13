@@ -1440,6 +1440,27 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "trim-variable-glyphs-3",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - filter: move-default-location
+              newDefaultUserLocation:
+                wght: 500
+            - filter: trim-axes
+              axes:
+                wght:
+                  minValue: 500
+                  maxValue: 900
+            - filter: trim-variable-glyphs
+            - output: fontra-write
+              destination: "output-trim-variable-glyphs-3.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
