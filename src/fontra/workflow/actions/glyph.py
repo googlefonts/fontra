@@ -22,6 +22,7 @@ from ...core.classes import (
     VariableGlyph,
 )
 from ...core.glyphdependencies import GlyphDependencies
+from ...core.instancer import GlyphInstancer
 from ...core.path import PackedPath, PackedPathPointPen
 from ...core.varutils import locationToTuple
 from .axes import (
@@ -320,37 +321,25 @@ class TrimVariableGlyphs(BaseFilter):
         fontInstancer = self.fontInstancer
 
         dependencies = GlyphDependencies()
-        baseGlyphs = {}
+        glyphsToTrim = {}
         glyphAxisRanges = {}
 
-        async def getInstancer(glyphName):
-            instancer = baseGlyphs.get(glyphName)
-            if instancer is None:
-                instancer = await fontInstancer.getGlyphInstancer(glyphName)
-                baseGlyphs[glyphName] = instancer
-            return instancer
-
         for glyphName in await self.inputGlyphMap:
-            instancer = await getInstancer(glyphName)
+            instancer = await fontInstancer.getGlyphInstancer(glyphName, True)
 
             glyph = instancer.glyph
 
-            axisRanges = await getComponentAxisRanges(glyph, getInstancer)
+            glyphAxisRanges[glyphName] = await getComponentAxisRanges(
+                instancer, fontInstancer
+            )
 
-            componentNames = set(axisRanges)
-            if componentNames:
-                dependencies.update(glyphName, componentNames)
+            if instancer.componentNames:
+                dependencies.update(glyphName, instancer.componentNames)
 
-            glyphAxisRanges[glyphName] = axisRanges
-
-            if not glyph.axes:
-                del baseGlyphs[glyphName]
-
-        glyphsToTrim = {
-            glyphName: instancer
-            for glyphName, instancer in baseGlyphs.items()
-            if instancer.glyph.axes
-        }
+            if glyph.axes:
+                glyphsToTrim[glyphName] = instancer
+            else:
+                fontInstancer.dropGlyphInstancerFromCache(glyphName)
 
         axisRanges = mergeAxisRanges(glyphAxisRanges.values())
 
@@ -367,15 +356,18 @@ class TrimVariableGlyphs(BaseFilter):
                     for parentGlyphName in dependencies.usedBy.get(glyphName, ())
                 )
             }
-            assert nextBatch
+            assert nextBatch, list(glyphsToTrim)
 
             for glyphName, instancer in nextBatch.items():
                 del glyphsToTrim[glyphName]
                 trimmedGlyphs[glyphName] = trimGlyphByAxisRanges(
                     fontInstancer, instancer, axisRanges.get(glyphName, {})
                 )
+                trimmedInstancer = GlyphInstancer(
+                    trimmedGlyphs[glyphName], fontInstancer
+                )
                 glyphAxisRanges[glyphName] = await getComponentAxisRanges(
-                    trimmedGlyphs[glyphName], getInstancer
+                    trimmedInstancer, fontInstancer
                 )
 
             axisRanges = mergeAxisRanges(glyphAxisRanges.values())
@@ -389,16 +381,10 @@ class TrimVariableGlyphs(BaseFilter):
         return glyph
 
 
-async def getComponentAxisRanges(glyph, getInstancer):
-    axisRanges = defaultdict(lambda: defaultdict(AxisRange))
-    for source in getActiveSources(glyph.sources):
-        for component in glyph.layers[source.layerName].glyph.components:
-            baseGlyphName = component.name
-            baseInstancer = await getInstancer(baseGlyphName)
-            for axis in baseInstancer.glyph.axes:
-                axisRanges[baseGlyphName][axis.name].update(
-                    component.location.get(axis.name, axis.defaultValue)
-                )
+async def getComponentAxisRanges(instancer, fontInstancer):
+    with fontInstancer.collectVariableGlyphAxisRanges() as axisRanges:
+        _ = await decomposeComposites(fontInstancer, instancer)
+        return axisRanges
     return axisRanges
 
 
