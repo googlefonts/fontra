@@ -188,7 +188,9 @@ class DecomposeComposites(BaseFilter):
         return glyph
 
 
-async def decomposeComposites(fontInstancer, instancer):
+async def decomposeComposites(
+    fontInstancer: FontInstancer, instancer: GlyphInstancer
+) -> VariableGlyph:
     defaultFontSourceLocation = instancer.defaultFontSourceLocation
 
     haveLocations = getFontSourceLocationsFromSources(
