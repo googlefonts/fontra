@@ -384,8 +384,10 @@ class TrimVariableGlyphs(BaseFilter):
 async def getComponentAxisRanges(instancer, fontInstancer):
     with fontInstancer.collectVariableGlyphAxisRanges() as axisRanges:
         _ = await decomposeComposites(fontInstancer, instancer)
+        # axisRanges will also contain the full ranges for *this*
+        # glyph, which defeats the purpose, so we drop that.
+        del axisRanges[instancer.glyph.name]
         return axisRanges
-    return axisRanges
 
 
 def mergeAxisRanges(glyphAxisRanges):
