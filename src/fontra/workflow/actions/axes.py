@@ -665,11 +665,15 @@ class TrimAxes(BaseFilter):
         return updateGlyphSourcesAndLayers(instancer, newLocations)
 
 
-def trimLocations(originalLocations, ranges):
+def trimLocations(
+    originalLocations: list[dict[str, float]], ranges: dict[str, AxisRange]
+) -> list[dict[str, float]]:
     return [trimLocation(loc, ranges) for loc in originalLocations]
 
 
-def trimLocation(originalLocation, ranges):
+def trimLocation(
+    originalLocation: dict[str, float], ranges: dict[str, AxisRange]
+) -> dict[str, float]:
     newLocation = {**originalLocation}
 
     for axisName, value in originalLocation.items():

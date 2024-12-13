@@ -76,7 +76,7 @@ class FontInstancer:
         finally:
             self.variableGlyphAxisRanges = None
 
-    def updateVariableGlyphAxisRanges(self, glyphName, location):
+    def updateVariableGlyphAxisRanges(self, glyphName: str, location: dict[str, float]):
         if self.variableGlyphAxisRanges is None:
             return
 

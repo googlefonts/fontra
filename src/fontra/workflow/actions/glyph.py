@@ -22,7 +22,7 @@ from ...core.classes import (
     VariableGlyph,
 )
 from ...core.glyphdependencies import GlyphDependencies
-from ...core.instancer import GlyphInstancer
+from ...core.instancer import FontInstancer, GlyphInstancer
 from ...core.path import PackedPath, PackedPathPointPen
 from ...core.varutils import locationToTuple
 from .axes import (
@@ -317,7 +317,7 @@ def multiplyLocations(
 @dataclass(kw_only=True)
 class TrimVariableGlyphs(BaseFilter):
     @async_cached_property
-    async def trimmedGlyphs(self):
+    async def trimmedGlyphs(self) -> dict[str, VariableGlyph]:
         fontInstancer = self.fontInstancer
 
         dependencies = GlyphDependencies()
@@ -381,7 +381,9 @@ class TrimVariableGlyphs(BaseFilter):
         return glyph
 
 
-async def getComponentAxisRanges(instancer, fontInstancer):
+async def getComponentAxisRanges(
+    instancer: GlyphInstancer, fontInstancer: FontInstancer
+) -> dict[str, dict[str, AxisRange]]:
     with fontInstancer.collectVariableGlyphAxisRanges() as axisRanges:
         _ = await decomposeComposites(fontInstancer, instancer)
         # axisRanges will also contain the full ranges for *this*
@@ -399,7 +401,9 @@ def mergeAxisRanges(glyphAxisRanges):
     return mergedAxisRanges
 
 
-def trimGlyphByAxisRanges(fontInstancer, instancer, axisRanges):
+def trimGlyphByAxisRanges(
+    fontInstancer: FontInstancer, instancer: GlyphInstancer, axisRanges
+) -> VariableGlyph:
     glyph = instancer.glyph
     glyphAxisNames = {axis.name for axis in glyph.axes}
 
