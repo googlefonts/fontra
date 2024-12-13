@@ -655,7 +655,8 @@ class TrimAxes(BaseFilter):
         # are unique until they are normalized, and then VariationModel
         # complains.
         localRanges = {
-            axis.name: (axis.minValue, axis.maxValue) for axis in instancer.glyph.axes
+            axis.name: AxisRange(axis.minValue, axis.maxValue)
+            for axis in instancer.glyph.axes
         }
         ranges = localRanges | trimmedRanges
 
