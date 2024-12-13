@@ -1,3 +1,4 @@
+import { getRemoteProxy } from "../core/remote.js";
 import { fetchJSON } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
 
@@ -127,6 +128,12 @@ class PythonBackend extends AbstractBackend {
   static async excludePath(pathA, pathB) {
     const newPath = await this._callServerAPI("excludePath", { pathA, pathB });
     return VarPackedPath.fromObject(newPath);
+  }
+
+  static async remoteFont(projectPath) {
+    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
+    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
+    return getRemoteProxy(wsURL);
   }
 }
 

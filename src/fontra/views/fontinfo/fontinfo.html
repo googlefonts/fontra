@@ -69,7 +69,7 @@
     import { FontInfoController } from "/fontinfo/fontinfo.js";
 
     async function startApp() {
-      window.fontInfoController = await FontInfoController.fromWebSocket();
+      window.fontInfoController = await FontInfoController.fromBackend();
     }
 
     startApp();

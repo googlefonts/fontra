@@ -1,6 +1,7 @@
 import { FontController } from "../core/font-controller.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
+import { Backend } from "./backend-api.js";
 import { ensureLanguageHasLoaded } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
@@ -8,17 +9,15 @@ export class ViewController {
   static titlePattern(displayPath) {
     return `Fontra — ${decodeURI(displayPath)}`;
   }
-  static async fromWebSocket() {
+  static async fromBackend() {
     const pathItems = window.location.pathname.split("/").slice(3);
     const displayPath = makeDisplayPath(pathItems);
     document.title = this.titlePattern(displayPath);
     const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
 
     await ensureLanguageHasLoaded;
 
-    const remoteFontEngine = await getRemoteProxy(wsURL);
+    const remoteFontEngine = await Backend.remoteFont(projectPath);
     const controller = new this(remoteFontEngine);
     remoteFontEngine.receiver = controller;
     remoteFontEngine.onclose = (event) => controller.handleRemoteClose(event);
