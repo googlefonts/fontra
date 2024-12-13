@@ -418,7 +418,7 @@ def trimGlyphByAxisRanges(
     for axis in glyph.axes:
         axisRange = axisRanges.get(axis.name)
         if axisRange is not None:
-            # Ensure the range is actually within the original axis' range
+            # Ensure the range is within the original axis' range
             axisRange.clipRange(axis.minValue, axis.maxValue)
 
         if axisRange is None:
