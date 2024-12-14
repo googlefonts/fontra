@@ -425,7 +425,8 @@ def trimGlyphByAxisRanges(
         axisRange.clipRange(axis.minValue, axis.maxValue)
 
         if axisRange.isEmpty():
-            newDefaultSourceLocation[axis.name] = axisRange.minValue
+            if axisRange.minValue != axis.defaultValue:
+                newDefaultSourceLocation[axis.name] = axisRange.minValue
             axesToDrop.add(axis.name)
         else:
             newAxis = replace(
@@ -445,11 +446,15 @@ def trimGlyphByAxisRanges(
         for source in instancer.activeSources
     ]
 
-    newLocations = moveDefaultLocations(
-        locations,
-        originalDefaultSourceLocation,
-        newDefaultSourceLocation,
-        glyphAxisNames,
+    newLocations = (
+        locations
+        if not newDefaultSourceLocation
+        else moveDefaultLocations(
+            locations,
+            originalDefaultSourceLocation,
+            newDefaultSourceLocation,
+            glyphAxisNames,
+        )
     )
 
     trimmedLocations = trimLocations(newLocations, axisRanges)
