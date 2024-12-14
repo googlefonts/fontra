@@ -417,13 +417,14 @@ def trimGlyphByAxisRanges(
     newAxes = []
     for axis in glyph.axes:
         axisRange = axisRanges.get(axis.name)
-        if axisRange is not None:
-            # Ensure the range is within the original axis' range
-            axisRange.clipRange(axis.minValue, axis.maxValue)
-
         if axisRange is None:
-            axisRanges[axis.name] = AxisRange(axis.defaultValue, axis.defaultValue)
-        elif axisRange.isEmpty():
+            axisRange = AxisRange(axis.defaultValue, axis.defaultValue)
+            axisRanges[axis.name] = axisRange
+
+        # Ensure the range is within the original axis' range
+        axisRange.clipRange(axis.minValue, axis.maxValue)
+
+        if axisRange.isEmpty():
             newDefaultSourceLocation[axis.name] = axisRange.minValue
             axesToDrop.add(axis.name)
         else:
