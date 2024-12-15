@@ -356,7 +356,7 @@ function addCharInfo(fontController, glyphNames) {
   });
 }
 
-function findParentWithClass(element, parentClass) {
+export function findParentWithClass(element, parentClass) {
   let parent = element;
   do {
     parent = parent.parentElement;

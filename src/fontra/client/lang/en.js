@@ -204,6 +204,7 @@ export const strings = {
   "font-info.vendorid": "Vendor ID",
   "font-info.version.major": "Version Major",
   "font-info.version.minor": "Version Minor",
+  "font-overview.glyphs": "Glyphs",
   "font-overview.title": "Font overview",
   "glyph-overview.title": "Glyph overview",
   "guideline.labels.angle": "Angle",

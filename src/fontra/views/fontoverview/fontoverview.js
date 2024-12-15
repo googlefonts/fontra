@@ -5,8 +5,10 @@ import { getRemoteProxy } from "../core/remote.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { translate } from "/core/localization.js";
+import { findParentWithClass } from "/editor/panel-related-glyphs.js"; // see TODOs below.
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { message } from "/web-components/modal-dialog.js";
+import { Accordion } from "/web-components/ui-accordion.js";
 
 // TODOs:
 // 1. I am wondering if it would make sense to refactor GlyphsSearch into two web components:
@@ -18,6 +20,7 @@ import { message } from "/web-components/modal-dialog.js";
 // 6. Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
 // 7. When opening a glyph in the editor via double click, there is an error: It says 'error while interpolating font sources '{message: 'objects have incompatible number of entries: 7 != 6', type: 'interpolation-error'}'. Maybe not relevant for this PR.
 // 8. Glyph selection: also multiple glyphs.
+// - refactor findParentWithClass
 
 // START OF COPY: This is a copy of GlyphsSearch but without the list of glyph names
 import { UnlitElement, div, label, option, select } from "/core/html-utils.js";
@@ -213,9 +216,9 @@ export class FontOverviewController {
       glyphsListItems: [],
     });
 
-    this.glyphs = this.glyphsListItemsController.model.glyphsListItems;
+    this.contentElement = this.getContentElement();
 
-    this.throttledUpdate = throttleCalls(() => this._updateGlyphOverview(), 50);
+    this.throttledUpdate = throttleCalls(() => this.update(), 50);
   }
 
   async start() {
@@ -224,7 +227,8 @@ export class FontOverviewController {
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
     );
-    this.sortedSourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
+    this.sortedSourceIdentifiers =
+      await this.fontController.getSortedSourceIdentifiers();
     this.currentFontSourceIdentifier = this.sortedSourceIdentifiers[0];
     this.locationController.model.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
@@ -235,15 +239,7 @@ export class FontOverviewController {
 
     const sidebarElement = await this._getSidebarForGlyphOverview();
     sidebarContainer.appendChild(sidebarElement);
-
-    const panelElement = html.div(
-      {
-        class: "font-overview-panel",
-        id: "font-overview-panel",
-      },
-      ["No glyphs found. Font is empty."]
-    );
-    panelContainer.appendChild(panelElement);
+    panelContainer.appendChild(this.contentElement);
 
     this.glyphsListItemsController.addKeyListener(
       "glyphsListItems",
@@ -251,7 +247,7 @@ export class FontOverviewController {
     );
 
     // This is the inital load of the overview
-    await this._updateGlyphOverview();
+    await this.update();
   }
 
   async _getSidebarForGlyphOverview() {
@@ -314,45 +310,101 @@ export class FontOverviewController {
     return element;
   }
 
-  async _updateGlyphOverview() {
-    const glyphs = this.glyphsListItemsController.model.glyphsListItems;
-    console.log("glyphs", glyphs);
-    const element = document.querySelector("#font-overview-panel");
+  getContentElement() {
+    this.accordion = new Accordion();
+
+    this.accordion.appendStyle(`
+    .placeholder-label {
+      font-size: 0.9em;
+      opacity: 40%;
+    }
+
+    .font-overview-accordion-item {
+      height: 100%;
+      width: 100%;
+      overflow-y: scroll;
+      white-space: normal;
+    }
+    `);
+
+    // TODO: refactor this if we implement different sections. For now only one section.
+    this.accordion.items = [
+      {
+        label: translate("font-overview.glyphs"),
+        open: true,
+        content: html.div({ class: "font-overview-accordion-item" }, []),
+        section: "Glyphs",
+      },
+    ];
+
+    return html.div(
+      {
+        class: "sidebar-glyph-relationships",
+      },
+      [this.accordion]
+    );
+  }
+
+  async update() {
+    this.glyphs = this.glyphsListItemsController.model.glyphsListItems;
+
+    const results = [];
+
+    for (const item of this.accordion.items) {
+      this._updateAccordionItem(item).then((hasResult) => {
+        results.push(hasResult);
+      });
+    }
+  }
+
+  async _updateAccordionItem(item) {
+    const element = item.content;
+    const parent = findParentWithClass(element, "ui-accordion-item");
+
     element.innerHTML = "";
+    let hideAccordionItem = true;
 
-    if (!glyphs.length) {
-      return element;
+    element.appendChild(
+      html.span({ class: "placeholder-label" }, [
+        translate("sidebar.related-glyphs.loading"), // TODO: general loading key.
+      ])
+    );
+    const glyphs = await this.getGlyphs(item.section);
+
+    if (glyphs?.length) {
+      const documentFragment = document.createDocumentFragment();
+      for (const { glyphName, unicodes } of glyphs) {
+        const glyphCell = new GlyphCell(
+          this.fontController,
+          glyphName,
+          unicodes,
+          this.locationController,
+          "fontLocationSourceMapped"
+        );
+        glyphCell.ondblclick = () => this.handleDoubleClick(glyphName, unicodes);
+        // TODO: context menu
+        // glyphCell.addEventListener("contextmenu", (event) =>
+        //   this.handleContextMenu(event, glyphCell, item)
+        // );
+
+        documentFragment.appendChild(glyphCell);
+      }
+      element.innerHTML = "";
+      element.appendChild(documentFragment);
+
+      // At least in Chrome, we need to reset the scroll position, but it doesn't
+      // work if we do it right away, only after the next event iteration.
+      setTimeout(() => {
+        element.scrollTop = 0;
+      }, 0);
+
+      hideAccordionItem = false;
+    } else {
+      element.innerHTML = "";
     }
 
-    const sectionHeader = html.span({ class: "font-overview-section-header" }, [
-      translate("Glyphs"),
-    ]);
-    element.appendChild(sectionHeader);
-
-    // TODO: Handle sections, but for now only one with all glyphs or selectiojn of 'Search'.
-    const glyphCellsSection = html.div({ class: "glyph-cells-section" });
-    const documentFragment = document.createDocumentFragment({
-      class: "glyph-cells-wrapper",
-    });
-    for (const { glyphName, unicodes } of glyphs) {
-      const glyphCellWrapper = html.div({ class: "glyph-cell-wrapper" });
-      const glyphCell = new GlyphCell(
-        this.fontController,
-        glyphName,
-        unicodes,
-        this.locationController,
-        "fontLocationSourceMapped"
-      );
-      glyphCell.ondblclick = () => this.handleDoubleClick(glyphName, unicodes);
-      // TODO: context menu
-      // glyphCell.addEventListener("contextmenu", (event) =>
-      //   this.handleContextMenu(event, glyphCell, item)
-      // );
-      glyphCellWrapper.appendChild(glyphCell);
-      documentFragment.appendChild(glyphCellWrapper);
-    }
-    glyphCellsSection.appendChild(documentFragment);
-    element.appendChild(glyphCellsSection);
+    parent.hidden = hideAccordionItem;
+    return !hideAccordionItem;
   }
 
   async handleDoubleClick(glyphName, codePoints) {
@@ -382,5 +434,10 @@ export class FontOverviewController {
   async messageFromServer(headline, msg) {
     // don't await the dialog result, the server doesn't need an answer
     message(headline, msg);
+  }
+
+  async getGlyphs(section) {
+    // TODO: section. For now return all glyphs
+    return this.glyphs;
   }
 }

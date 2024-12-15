@@ -207,6 +207,7 @@ export const strings = {
   "font-info.vendorid": "Hersteller ID",
   "font-info.version.major": "Hauptversionsnummer",
   "font-info.version.minor": "Nebenversionsnummer",
+  "font-overview.glyphs": "Glyphs",
   "font-overview.title": "Font overview",
   "glyph-overview.title": "Glyph overview",
   "guideline.labels.angle": "Neigung",

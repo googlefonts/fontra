@@ -206,6 +206,7 @@ export const strings = {
   "font-info.vendorid": "ベンダーID",
   "font-info.version.major": "メジャーバージョン",
   "font-info.version.minor": "マイナーバージョン",
+  "font-overview.glyphs": "Glyphs",
   "font-overview.title": "Font overview",
   "glyph-overview.title": "Glyph overview",
   "guideline.labels.angle": "角度",
