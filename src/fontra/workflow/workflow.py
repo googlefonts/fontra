@@ -184,6 +184,34 @@ class ForkActionStep:
         return WorkflowEndPoints(endPoint=currentInput, outputs=endPoints.outputs)
 
 
+@registerActionStepClass("fork-merge")
+@dataclass(kw_only=True)
+class ForkMergeActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.actionName:
+            raise WorkflowError(
+                "fork-merge 'value' needs to be empty; use 'fork-merge:', "
+                + "instead of 'fork-merge: <something>'"
+            )
+        if self.arguments:
+            raise WorkflowError("fork-merge does not expect arguments")
+
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
+        # set up nested steps
+        endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
+
+        endPoint = FontBackendMerger(
+            inputA=currentInput, inputB=endPoints.endPoint, warnAboutDuplicates=False
+        )
+        return WorkflowEndPoints(endPoint=endPoint, outputs=endPoints.outputs)
+
+
 MISSING_ACTION_TYPE = object()
 
 
