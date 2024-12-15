@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 class FontBackendMerger:
     inputA: ReadableFontBackend
     inputB: ReadableFontBackend
+    warnAboutDuplicates: bool = True
 
     def __post_init__(self):
         self._glyphNamesA = None
@@ -63,7 +64,7 @@ class FontBackendMerger:
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         await self._prepareGlyphMap()
         if glyphName in self._glyphNamesB:
-            if glyphName in self._glyphNamesA:
+            if glyphName in self._glyphNamesA and self.warnAboutDuplicates:
                 logger.warning(f"Merger: Glyph {glyphName!r} exists in both fonts")
             return await self.inputB.getGlyph(glyphName)
         elif glyphName in self._glyphNamesA:
