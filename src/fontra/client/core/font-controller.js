@@ -23,7 +23,12 @@ import {
   uniqueID,
 } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
-import { locationToString, mapBackward, mapForward } from "./var-model.js";
+import {
+  locationToString,
+  mapAxesFromUserSpaceToSourceSpace,
+  mapBackward,
+  mapForward,
+} from "./var-model.js";
 
 const GLYPH_CACHE_SIZE = 2000;
 const BACKGROUND_IMAGE_CACHE_SIZE = 100;
@@ -130,6 +135,22 @@ export class FontController {
   async getSources() {
     // backwards compat, this.sources is the same
     return this._rootObject.sources;
+  }
+
+  async getSortedSourceIdentifiers() {
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    const sortFunc = (identifierA, identifierB) => {
+      for (const axis of fontAxesSourceSpace) {
+        const valueA = this.sources[identifierA].location[axis.name];
+        const valueB = this.sources[identifierB].location[axis.name];
+        if (valueA === valueB) {
+          continue;
+        }
+        return valueA < valueB ? -1 : 0;
+      }
+      return 0;
+    };
+    return Object.keys(this.sources).sort(sortFunc);
   }
 
   getBackgroundImage(imageIdentifier) {
