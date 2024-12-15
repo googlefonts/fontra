@@ -375,7 +375,8 @@ export class FontOverviewController {
       location: userLocation,
     };
     if (codePoints.length) {
-      viewInfo.text = String.fromCharCode(codePoints[0]);
+      viewInfo.text =
+        0x002f === codePoints[0] ? "//" : String.fromCharCode(codePoints[0]);
     } else {
       viewInfo.text = `/${glyphName}`;
     }
