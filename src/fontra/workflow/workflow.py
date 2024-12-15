@@ -179,8 +179,6 @@ class ForkActionStep:
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        # backend = await exitStack.enter_async_context(currentInput.connect(currentInput))
-
         # set up nested steps
         endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
 
