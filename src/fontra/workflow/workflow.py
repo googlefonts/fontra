@@ -7,7 +7,7 @@ from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from functools import singledispatch
 from importlib.metadata import entry_points
-from typing import Any, AsyncGenerator, ClassVar
+from typing import Any, AsyncGenerator, Protocol
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
@@ -56,47 +56,49 @@ class WorkflowEndPoints:
     outputs: list[OutputProcessorProtocol]
 
 
-@dataclass(kw_only=True)
-class ActionStep:
-    actionName: str
-    arguments: dict
-    steps: list[ActionStep] = field(default_factory=list)
-    actionType: ClassVar[str]
-
-    def getAction(
-        self,
-    ) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
-        actionClass = getActionClass(self.actionType, self.actionName)
-        action = actionClass(**self.arguments)
-        assert isinstance(
-            action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
-        )
-        return action
-
+class ActionStep(Protocol):
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        raise NotImplementedError
+        pass
+
+
+def getAction(
+    actionType,
+    actionName,
+    actionArguments,
+) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
+    actionClass = getActionClass(actionType, actionName)
+    action = actionClass(**actionArguments)
+    assert isinstance(
+        action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
+    )
+    return action
 
 
 _actionStepClasses = {}
 
 
-def registerActionStepClass(cls):
-    assert cls.actionType not in _actionStepClasses
-    _actionStepClasses[cls.actionType] = cls
-    return cls
+def registerActionStepClass(actionType):
+    def register(cls):
+        assert actionType not in _actionStepClasses
+        _actionStepClasses[actionType] = cls
+        return cls
+
+    return register
 
 
-@registerActionStepClass
+@registerActionStepClass("input")
 @dataclass(kw_only=True)
-class InputActionStep(ActionStep):
-    actionType = "input"
+class InputActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        action = self.getAction()
+        action = getAction("input", self.actionName, self.arguments)
         assert isinstance(action, InputActionProtocol)
 
         backend = await exitStack.enter_async_context(action.prepare())
@@ -109,15 +111,17 @@ class InputActionStep(ActionStep):
         return WorkflowEndPoints(endPoint=endPoint, outputs=endPoints.outputs)
 
 
-@registerActionStepClass
+@registerActionStepClass("filter")
 @dataclass(kw_only=True)
-class FilterActionStep(ActionStep):
-    actionType = "filter"
+class FilterActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        action = self.getAction()
+        action = getAction("filter", self.actionName, self.arguments)
         assert isinstance(action, FilterActionProtocol)
 
         backend = await exitStack.enter_async_context(action.connect(currentInput))
@@ -126,16 +130,18 @@ class FilterActionStep(ActionStep):
         return await _prepareEndPoints(backend, self.steps, exitStack)
 
 
-@registerActionStepClass
+@registerActionStepClass("output")
 @dataclass(kw_only=True)
-class OutputActionStep(ActionStep):
-    actionType = "output"
+class OutputActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
         assert currentInput is not None
-        action = self.getAction()
+        action = getAction("output", self.actionName, self.arguments)
         assert isinstance(action, OutputActionProtocol)
 
         outputs = []
