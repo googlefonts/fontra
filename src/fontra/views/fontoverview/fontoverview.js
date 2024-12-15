@@ -5,7 +5,6 @@ import { getRemoteProxy } from "../core/remote.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { translate } from "/core/localization.js";
-import { sortedSourceIdentifiers } from "/fontinfo/panel-sources.js"; // see TODOs below.
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { message } from "/web-components/modal-dialog.js";
 
@@ -13,7 +12,6 @@ import { message } from "/web-components/modal-dialog.js";
 // 1. I am wondering if it would make sense to refactor GlyphsSearch into two web components:
 //    1. GlyphsSearchField: Includes the search field, only. Access the list of glyphs with eg. glyphsListItemsController.
 //    2. GlyphsSearchList: (contain the GlyphsSearchField) which uses GlyphsSearch and adds the glyph list.
-// 2. We may want to move sortedSourceIdentifiers to a more general location like utils. Follow up task?
 // 3. Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
 // 4. Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
 // 5. Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
@@ -226,10 +224,7 @@ export class FontOverviewController {
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
     );
-    this.sortedSourceIdentifiers = sortedSourceIdentifiers(
-      this.fontSources,
-      this.fontAxesSourceSpace
-    );
+    this.sortedSourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
     this.currentFontSourceIdentifier = this.sortedSourceIdentifiers[0];
     this.locationController.model.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
