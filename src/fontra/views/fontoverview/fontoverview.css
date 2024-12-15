@@ -29,19 +29,6 @@ body {
   gap: 1em;
 }
 
-.font-overview-panel {
-  display: grid;
-  padding: 2em 2em 2em 1em;
-  outline: none;
-  grid-gap: 1em;
-}
-
-.glyph-cells-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 1em;
-}
-
 #panel-container {
   overflow: auto;
 }
@@ -57,9 +44,3 @@ body {
 .font-overview-section-header {
   font-weight: bold;
 }
-
-/* .glyph-cell-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em;
-} */
