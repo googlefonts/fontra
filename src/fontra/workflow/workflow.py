@@ -181,7 +181,6 @@ class ForkActionStep:
     ) -> WorkflowEndPoints:
         # set up nested steps
         endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
-
         return WorkflowEndPoints(endPoint=currentInput, outputs=endPoints.outputs)
 
 
