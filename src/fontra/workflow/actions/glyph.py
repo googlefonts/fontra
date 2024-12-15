@@ -318,7 +318,7 @@ def multiplyLocations(
 
 class MoveDefaultBehavior(Enum):
     none = "none"  # Don't move any default axis positions
-    empty = "empty"  # Only move the default for axes that will be dropped, as a way to instaniate
+    empty = "empty"  # Only move the default for axes that will be dropped, as a way to instantiate
     any = "any"  # Move the default for axes if the needed range does not include the default
 
 
