@@ -4,6 +4,7 @@ import itertools
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, replace
+from enum import Enum
 from typing import Any
 
 from fontTools.cu2qu.ufo import glyphs_to_quadratic
@@ -315,9 +316,17 @@ def multiplyLocations(
     return {locationToTuple(loc) for loc in needLocations}
 
 
+class MoveDefaultBehavior(Enum):
+    none = "none"  # Don't move any default axis positions
+    empty = "empty"  # Only move the default for axes that will be dropped, as a way to instaniate
+    any = "any"  # Move the default for axes if the needed range does not include the default
+
+
 @registerFilterAction("trim-variable-glyphs")
 @dataclass(kw_only=True)
 class TrimVariableGlyphs(BaseFilter):
+    moveDefaultBehavior: MoveDefaultBehavior = MoveDefaultBehavior.any
+
     @async_cached_property
     async def trimmedGlyphs(self) -> dict[str, VariableGlyph]:
         fontInstancer = self.fontInstancer
@@ -363,7 +372,10 @@ class TrimVariableGlyphs(BaseFilter):
             for glyphName, instancer in nextBatch.items():
                 del glyphsToTrim[glyphName]
                 trimmedGlyphs[glyphName] = trimGlyphByAxisRanges(
-                    fontInstancer, instancer, axisRanges.get(glyphName, {})
+                    fontInstancer,
+                    instancer,
+                    axisRanges.get(glyphName, {}),
+                    MoveDefaultBehavior(self.moveDefaultBehavior),
                 )
                 trimmedInstancer = GlyphInstancer(
                     trimmedGlyphs[glyphName], fontInstancer
@@ -404,7 +416,10 @@ def mergeAxisRanges(glyphAxisRanges):
 
 
 def trimGlyphByAxisRanges(
-    fontInstancer: FontInstancer, instancer: GlyphInstancer, axisRanges
+    fontInstancer: FontInstancer,
+    instancer: GlyphInstancer,
+    axisRanges,
+    moveDefaultBehavior,
 ) -> VariableGlyph:
     glyph = instancer.glyph
     glyphAxisNames = {axis.name for axis in glyph.axes}
@@ -423,6 +438,14 @@ def trimGlyphByAxisRanges(
 
         # Ensure the range is within the original axis' range
         axisRange.clipRange(axis.minValue, axis.maxValue)
+
+        if not (
+            moveDefaultBehavior == MoveDefaultBehavior.any
+            or (
+                moveDefaultBehavior == MoveDefaultBehavior.empty and axisRange.isEmpty()
+            )
+        ):
+            axisRange.update(axis.defaultValue)
 
         if axisRange.isEmpty():
             if axisRange.minValue != axis.defaultValue:
