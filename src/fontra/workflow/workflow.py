@@ -160,17 +160,47 @@ class OutputActionStep:
         return WorkflowEndPoints(endPoint=currentInput, outputs=outputs)
 
 
+@registerActionStepClass("fork")
+@dataclass(kw_only=True)
+class ForkActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.actionName:
+            raise WorkflowError(
+                "fork 'value' needs to be empty; use 'fork:', "
+                + "instead of 'fork: <something>'"
+            )
+        if self.arguments:
+            raise WorkflowError("fork does not expect arguments")
+
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
+        # backend = await exitStack.enter_async_context(currentInput.connect(currentInput))
+
+        # set up nested steps
+        endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
+
+        return WorkflowEndPoints(endPoint=currentInput, outputs=endPoints.outputs)
+
+
+MISSING_ACTION_TYPE = object()
+
+
 def _structureSteps(rawSteps) -> list[ActionStep]:
     structured = []
 
     for rawStep in rawSteps:
         actionName = None
         for actionType in _actionStepClasses:
-            actionName = rawStep.get(actionType)
-            if actionName is None:
+            actionName = rawStep.get(actionType, MISSING_ACTION_TYPE)
+            if actionName is MISSING_ACTION_TYPE:
                 continue
             break
-        if actionName is None:
+        if actionName is MISSING_ACTION_TYPE:
             raise WorkflowError("no action type keyword found in step")
         arguments = dict(rawStep)
         del arguments[actionType]
