@@ -1,0 +1,29 @@
+{
+"sources": {
+"5bea6334": {
+"name": "LightCondensed",
+"lineMetricsHorizontalLayout": {
+"ascender": {
+"value": 400,
+"zone": 8
+},
+"capHeight": {
+"value": 375,
+"zone": 8
+},
+"xHeight": {
+"value": 250,
+"zone": 8
+},
+"baseline": {
+"value": 0,
+"zone": -8
+},
+"descender": {
+"value": -125,
+"zone": -8
+}
+}
+}
+}
+}

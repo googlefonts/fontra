@@ -1364,6 +1364,50 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "fork",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: subset-axes
+              axisNames: []
+            - fork:
+              steps:
+              - filter: subset-glyphs
+                glyphNames: ["A"]
+              - output: fontra-write
+                destination: "output-fork-A.fontra"
+            - fork:
+              steps:
+              - filter: subset-glyphs
+                glyphNames: ["B"]
+              - output: fontra-write
+                destination: "output-fork-B.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "fork-merge",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: subset-axes
+              axisNames: []
+            - fork-merge:
+              steps:
+              - filter: subset-glyphs
+                glyphNames: ["B"]
+              - filter: scale
+                scaleFactor: 0.5
+            - output: fontra-write
+              destination: "output-fork-merge.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
