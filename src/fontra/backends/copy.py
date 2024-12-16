@@ -211,7 +211,8 @@ async def mainAsync() -> None:
     sourcePath = args.source
     destPath = args.destination
 
-    # Delete destination
+    # Delete destination.
+    # TODO: move the destination to a tmp location, only delete when copy succeeds
     if destPath.is_dir():
         shutil.rmtree(destPath)
     elif destPath.exists():
