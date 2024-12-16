@@ -211,13 +211,11 @@ async def mainAsync() -> None:
     sourcePath = args.source
     destPath = args.destination
 
-    if args:
-        if destPath.is_dir():
-            shutil.rmtree(destPath)
-        elif destPath.exists():
-            destPath.unlink()
+    # Delete destination
+    if destPath.is_dir():
+        shutil.rmtree(destPath)
     elif destPath.exists():
-        raise argparse.ArgumentError(None, "the destination file already exists")
+        destPath.unlink()
 
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
