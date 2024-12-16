@@ -36,13 +36,15 @@ export default class TransformationPanel extends Panel {
     .selection-transformation {
       display: flex;
       flex-direction: column;
-      gap: 1em;
       justify-content: space-between;
       box-sizing: border-box;
       height: 100%;
       width: 100%;
-      padding: 1em;
       white-space: normal;
+    }
+
+    .selection-transformation-form {
+      flex: 1;
     }
   `;
 
@@ -82,7 +84,7 @@ export default class TransformationPanel extends Panel {
   constructor(editorController) {
     super(editorController);
     this.infoForm = new Form();
-
+    this.infoForm.classList.add("selection-transformation-form");
     this.infoForm.appendStyle(TransformationPanel.stylesForm);
     this.contentElement.appendChild(this.infoForm);
     this.fontController = this.editorController.fontController;
