@@ -230,7 +230,8 @@ export class FontOverviewController {
     );
     this.sortedSourceIdentifiers =
       await this.fontController.getSortedSourceIdentifiers();
-    this.currentFontSourceIdentifier = this.sortedSourceIdentifiers[0];
+    this.currentFontSourceIdentifier =
+      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
     this.locationController.model.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
     }; // Note: a font may not have font sources therefore the ?-check.
