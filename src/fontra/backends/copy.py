@@ -149,15 +149,38 @@ async def copyGlyphs(
     return backgroundImageIdentifiers
 
 
+class PathChecker:
+    def __init__(self):
+        self.sourcePath = None
+
+    def sourcePathType(self, argument):
+        path = pathlib.Path(argument).resolve()
+        if not path.exists():
+            raise argparse.ArgumentError(None, "the source file does not exist")
+        self.sourcePath = path
+        return path
+
+    def destPathType(self, argument):
+        path = pathlib.Path(argument).resolve()
+        if path == self.sourcePath:
+            raise argparse.ArgumentError(
+                None, "the destination file must be different from the source file"
+            )
+        return path
+
+
 async def mainAsync() -> None:
     logging.basicConfig(
         format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
         level=logging.INFO,
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+    pathChecker = PathChecker()
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("source")
-    parser.add_argument("destination")
+    parser.add_argument("source", type=pathChecker.sourcePathType)
+    parser.add_argument("destination", type=pathChecker.destPathType)
     parser.add_argument(
         "--glyph-names",
         help="A comma- or space-separated list of glyph names",
@@ -185,17 +208,15 @@ async def mainAsync() -> None:
     if args.glyph_names_file is not None:
         glyphNames.extend(args.glyph_names_file.read().split())
 
-    sourcePath = pathlib.Path(args.source)
-    if not sourcePath.exists():
-        raise FileNotFoundError(sourcePath)
-    destPath = pathlib.Path(args.destination)
-    if args:
-        if destPath.is_dir():
-            shutil.rmtree(destPath)
-        elif destPath.exists():
-            destPath.unlink()
+    sourcePath = args.source
+    destPath = args.destination
+
+    # Delete destination.
+    # TODO: move the destination to a tmp location, only delete when copy succeeds
+    if destPath.is_dir():
+        shutil.rmtree(destPath)
     elif destPath.exists():
-        raise argparse.ArgumentError(None, "the destination file already exists")
+        destPath.unlink()
 
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
