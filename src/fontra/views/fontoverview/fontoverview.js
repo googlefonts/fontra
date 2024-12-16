@@ -481,7 +481,7 @@ export class FontOverviewController {
     for (const { glyphName, codePoints } of this.glyphSelection) {
       if (codePoints.length) {
         viewInfo.text +=
-          0x002f === codePoints[0] ? "//" : String.fromCharCode(codePoints[0]);
+          0x002f === codePoints[0] ? "//" : String.fromCodePoint(codePoints[0]);
       } else {
         viewInfo.text += `/${glyphName}`;
       }
