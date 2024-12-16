@@ -53,6 +53,16 @@ export class RemoteObject {
     );
   }
 
+  on(event, callback) {
+    if (event === "close") {
+      this.onclose = callback;
+    } else if (event === "error") {
+      this.onerror = callback;
+    } else {
+      throw new Error(`unknown event: ${event}`);
+    }
+  }
+
   connect() {
     if (this._connectPromise !== undefined) {
       // websocket is still connecting/opening, return the same promise
