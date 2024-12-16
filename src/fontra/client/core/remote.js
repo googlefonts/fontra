@@ -35,6 +35,13 @@ export class RemoteObject {
 
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
+    this._handlers = {
+      close: this._default_onclose,
+      error: this._default_onerror,
+      messageFromServer: undefined,
+      externalChange: undefined,
+      reloadData: undefined,
+    };
 
     const g = _genNextClientCallID();
     this._getNextClientCallID = () => {
@@ -54,12 +61,18 @@ export class RemoteObject {
   }
 
   on(event, callback) {
-    if (event === "close") {
-      this.onclose = callback;
-    } else if (event === "error") {
-      this.onerror = callback;
+    if (this._handlers.hasOwnProperty(event)) {
+      this._handlers[event] = callback;
     } else {
-      throw new Error(`unknown event: ${event}`);
+      console.error(`Ignoring attempt to register handler for unknown event: ${event}`);
+    }
+  }
+
+  async trigger(event, ...args) {
+    if (this._handlers.hasOwnProperty(event)) {
+      return await this._handlers[event](...args);
+    } else {
+      throw new Error(`Recieved unknown event from server: ${event}`);
     }
   }
 
@@ -77,8 +90,8 @@ export class RemoteObject {
       this.websocket.onopen = (event) => {
         resolve(event);
         delete this._connectPromise;
-        this.websocket.onclose = (event) => this._onclose(event);
-        this.websocket.onerror = (event) => this._onerror(event);
+        this.websocket.onclose = (event) => this.trigger("close", event);
+        this.websocket.onerror = (event) => this.trigger("error", event);
         const message = {
           "client-uuid": this.clientUUID,
         };
@@ -89,20 +102,12 @@ export class RemoteObject {
     return this._connectPromise;
   }
 
-  _onclose(event) {
-    if (this.onclose) {
-      this.onclose(event);
-    } else {
-      console.log(`websocket closed`, event);
-    }
+  _default_onclose(event) {
+    console.log(`websocket closed`, event);
   }
 
-  _onerror(event) {
-    if (this.onerror) {
-      this.onerror(event);
-    } else {
-      console.log(`websocket error`, event);
-    }
+  _default_onerror(event) {
+    console.log(`websocket error`, event);
   }
 
   async _handleIncomingMessage(event) {
@@ -123,28 +128,23 @@ export class RemoteObject {
       delete this._callReturnCallbacks[clientCallID];
     } else if (serverCallID !== undefined) {
       // this is an incoming server -> client call
-      if (this.receiver) {
-        let returnMessage;
-        try {
-          let method = this.receiver[message["method-name"]];
-          if (method === undefined) {
-            throw new Error(`undefined receiver method: ${message["method-name"]}`);
-          }
-          method = method.bind(this.receiver);
-          const returnValue = await method(...message["arguments"]);
-          returnMessage = {
-            "server-call-id": serverCallID,
-            "return-value": returnValue,
-          };
-        } catch (error) {
-          console.log("exception in receiver call", error.toString());
-          console.error(error, error.stack);
-          returnMessage = { "server-call-id": serverCallID, "error": error.toString() };
+      let returnMessage;
+      try {
+        let method = message["method-name"];
+        if (!this._handlers.hasOwnProperty(method)) {
+          throw new Error(`undefined method: ${method}`);
         }
-        this.websocket.send(JSON.stringify(returnMessage));
-      } else {
-        console.log("no receiver in place to receive server messages", message);
+        const returnValue = await this.trigger(method, ...message["arguments"]);
+        returnMessage = {
+          "server-call-id": serverCallID,
+          "return-value": returnValue,
+        };
+      } catch (error) {
+        console.log("exception in method call", error.toString());
+        console.error(error, error.stack);
+        returnMessage = { "server-call-id": serverCallID, "error": error.toString() };
       }
+      this.websocket.send(JSON.stringify(returnMessage));
     }
   }
 
