@@ -1,6 +1,8 @@
 import { getRemoteProxy } from "../core/remote.js";
 import { fetchJSON } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
+import { VarPackedPath } from "./var-path.js";
+/** @import { RemoteFont } from "remotefont" */
 
 /**
  * @module fontra/client/core/backend-api
@@ -10,7 +12,6 @@ import { StaticGlyph } from "./var-glyph.js";
  * an abstraction over the functionality of the web server, so that alternative
  * backends can be used.
  *
- * @typedef {import('./var-path.js').VarPackedPath} VarPackedPath
  */
 class AbstractBackend {
   /**
@@ -130,6 +131,11 @@ class PythonBackend extends AbstractBackend {
     return VarPackedPath.fromObject(newPath);
   }
 
+  /**
+   *
+   * @param {string} projectPath
+   * @returns {Promise<RemoteFont>} Proxy object representing a font on the server.
+   */
   static async remoteFont(projectPath) {
     const protocol = window.location.protocol === "http:" ? "ws" : "wss";
     const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
