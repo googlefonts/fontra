@@ -1,4 +1,4 @@
-from dataclasses import replace
+from dataclasses import dataclass, replace
 
 from fontTools.varLib.models import piecewiseLinearMap
 
@@ -52,3 +52,42 @@ def makeSparseLocation(location, defaultLocation):
 
 def makeDenseLocation(location, defaultLocation):
     return {name: location.get(name, value) for name, value in defaultLocation.items()}
+
+
+def subsetLocationKeep(location, axisNames):
+    return {n: v for n, v in location.items() if n in axisNames}
+
+
+def subsetLocationDrop(location, axisNames):
+    return {n: v for n, v in location.items() if n not in axisNames}
+
+
+@dataclass
+class AxisRange:
+    minValue: float | None = None
+    maxValue: float | None = None
+
+    def update(self, value):
+        if self.minValue is None:
+            self.minValue = value
+            self.maxValue = value
+        else:
+            self.minValue = min(self.minValue, value)
+            self.maxValue = max(self.maxValue, value)
+
+    def updateRange(self, other):
+        self.update(other.minValue)
+        self.update(other.maxValue)
+
+    def clipRange(self, minValue, maxValue):
+        self.minValue = max(min(self.minValue, maxValue), minValue)
+        self.maxValue = max(min(self.maxValue, maxValue), minValue)
+
+    def clipValue(self, value):
+        return max(min(value, self.maxValue), self.minValue)
+
+    def contains(self, value):
+        return self.minValue <= value <= self.maxValue
+
+    def isEmpty(self):
+        return self.minValue == self.maxValue

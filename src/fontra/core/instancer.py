@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, singledispatch
@@ -29,9 +31,11 @@ from .lrucache import LRUCache
 from .path import InterpolationError, PackedPath, joinPaths
 from .protocols import ReadableFontBackend
 from .varutils import (
+    AxisRange,
     locationToTuple,
     makeDenseLocation,
     mapAxesFromUserSpaceToSourceSpace,
+    subsetLocationKeep,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,12 +60,29 @@ class FontInstancer:
         self._fontAxes: list[FontAxis | DiscreteFontAxis] | None = None
         self._fontSources: dict[str, FontSource] | None = None
         self._glyphErrors: set[str] = set()
+        self.variableGlyphAxisRanges: dict[str, dict[str, AxisRange]] | None = None
 
     async def _ensureSetup(self):
         if self._fontAxes is None:
             self._fontAxes = (await self.backend.getAxes()).axes
             assert self._fontSources is None
             self._fontSources = await self.backend.getSources()
+
+    @contextmanager
+    def collectVariableGlyphAxisRanges(self):
+        try:
+            self.variableGlyphAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+            yield self.variableGlyphAxisRanges
+        finally:
+            self.variableGlyphAxisRanges = None
+
+    def updateVariableGlyphAxisRanges(self, glyphName: str, location: dict[str, float]):
+        if self.variableGlyphAxisRanges is None:
+            return
+
+        glyphAxisRanges = self.variableGlyphAxisRanges[glyphName]
+        for axisName, value in location.items():
+            glyphAxisRanges[axisName].update(value)
 
     @cached_property
     def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
@@ -112,6 +133,9 @@ class FontInstancer:
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    def dropGlyphInstancerFromCache(self, glyphName):
+        self.glyphInstancers.pop(glyphName, None)
 
     def glyphError(self, errorMessage):
         if errorMessage not in self._glyphErrors:
@@ -251,17 +275,19 @@ class GlyphInstancer:
         )
         return instance
 
-    @cached_property
-    def fontAxisNames(self) -> set[str]:
-        return self.fontInstancer.fontAxisNames - {
-            axis.name for axis in self.glyph.axes
-        }
-
     def instantiate(
         self, location, *, coordSystem=LocationCoordinateSystem.SOURCE
     ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.fontAxes)
+
+        if self.fontInstancer.variableGlyphAxisRanges is not None:
+            self.fontInstancer.updateVariableGlyphAxisRanges(
+                self.glyph.name,
+                subsetLocationKeep(
+                    self.defaultSourceLocation | location, self.glyphAxisNames
+                ),
+            )
 
         try:
             result = self.model.interpolateFromDeltas(location, self.deltas)
@@ -302,10 +328,6 @@ class GlyphInstancer:
         )
 
     @cached_property
-    def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
-        return self.fontInstancer.fontAxes
-
-    @cached_property
     def defaultFontSourceLocation(self) -> dict[str, float]:
         location = {axis.name: axis.defaultValue for axis in self.fontAxes}
         return mapLocationFromUserToSource(location, self.fontAxes)
@@ -334,6 +356,10 @@ class GlyphInstancer:
         return source
 
     @cached_property
+    def componentNames(self) -> list[str]:
+        return [component.name for component in self.activeLayerGlyphs[0].components]
+
+    @cached_property
     def componentTypes(self) -> list[bool]:
         """A list with a boolean for each component: True if the component is
         variable (has a non-empty location) and False if it is a "classic"
@@ -355,8 +381,22 @@ class GlyphInstancer:
         ]
 
     @cached_property
+    def fontAxes(self) -> list[FontAxis | DiscreteFontAxis]:
+        return self.fontInstancer.fontAxes
+
+    @cached_property
+    def fontAxisNames(self) -> set[str]:
+        return self.fontInstancer.fontAxisNames - {
+            axis.name for axis in self.glyph.axes
+        }
+
+    @cached_property
+    def glyphAxisNames(self) -> set[str]:
+        return {axis.name for axis in self.glyph.axes}
+
+    @cached_property
     def combinedAxes(self) -> list[FontAxis | DiscreteFontAxis | GlyphAxis]:
-        glyphAxisNames = {axis.name for axis in self.glyph.axes}
+        glyphAxisNames = self.glyphAxisNames
         fontAxes = [axis for axis in self.fontAxes if axis.name not in glyphAxisNames]
         fontAxes = mapAxesFromUserSpaceToSourceSpace(fontAxes)
         return self.glyph.axes + fontAxes

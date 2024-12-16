@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import shutil
 import subprocess
 
 import pytest
@@ -1408,10 +1409,68 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "trim-variable-glyphs-1",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - filter: trim-variable-glyphs
+            - output: fontra-write
+              destination: "output-trim-variable-glyphs-1.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "trim-variable-glyphs-2",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - filter: trim-axes
+              axes:
+                wght:
+                  minValue: 200
+                  maxValue: 500
+            - filter: trim-variable-glyphs
+            - output: fontra-write
+              destination: "output-trim-variable-glyphs-2.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "trim-variable-glyphs-3",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - filter: move-default-location
+              newDefaultUserLocation:
+                wght: 500
+            - filter: trim-axes
+              axes:
+                wght:
+                  minValue: 500
+                  maxValue: 900
+            - filter: trim-variable-glyphs
+            - output: fontra-write
+              destination: "output-trim-variable-glyphs-3.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
-    testName, configSource, continueOnError, expectedLog, tmpdir, caplog
+    testName,
+    configSource,
+    continueOnError,
+    expectedLog,
+    tmpdir,
+    caplog,
+    writeExpectedData,
 ):
     caplog.set_level(logging.WARNING)
     tmpdir = pathlib.Path(tmpdir)
@@ -1426,6 +1485,13 @@ async def test_workflow_actions(
             await output.process(tmpdir, continueOnError=continueOnError)
             expectedPath = workflowDataDir / output.destination
             resultPath = tmpdir / output.destination
+
+            if writeExpectedData:
+                print("WARNING: force write of expected data: --write-expected-data")
+                if expectedPath.exists():
+                    shutil.rmtree(expectedPath)
+                shutil.copytree(resultPath, expectedPath)
+
             if expectedPath.is_file():
                 raise NotImplementedError("file comparison to be implemented")
             elif expectedPath.is_dir():

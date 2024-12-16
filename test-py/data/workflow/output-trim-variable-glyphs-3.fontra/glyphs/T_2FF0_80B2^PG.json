@@ -1,0 +1,459 @@
+{
+"name": "T_2FF0_80B2",
+"axes": [
+{
+"name": "width",
+"minValue": 643.3986819534921,
+"defaultValue": 669,
+"maxValue": 669
+}
+],
+"sources": [
+{
+"name": "wght=0.35997,width=643.39868",
+"layerName": "wght=0.35997,width=643.39868",
+"location": {
+"wght": 0.35996704883730246,
+"width": 643.3986819534921
+}
+},
+{
+"name": "wght=0.35997,width=669",
+"layerName": "wght=0.35997,width=669",
+"location": {
+"wght": 0.35996704883730246,
+"width": 669
+}
+},
+{
+"name": "wght=1,width=643.39868",
+"layerName": "wght=1,width=643.39868",
+"location": {
+"wght": 1,
+"width": 643.3986819534921
+}
+},
+{
+"name": "wght=1,width=669",
+"layerName": "wght=1,width=669",
+"location": {
+"wght": 1,
+"width": 669
+}
+}
+],
+"layers": {
+"wght=0.35997,width=643.39868": {
+"glyph": {
+"components": [
+{
+"name": "T_2FF1_6708",
+"transformation": {
+"translateX": 138.55182118663214
+},
+"location": {
+"height": 514.4229902565908,
+"width": -129.87322631306085
+}
+},
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": 114.00750672416326,
+"translateY": -39.116599717742154
+},
+"location": {
+"B_curve": 0,
+"length": 138.59967048837302,
+"serif_height": -3.5197693418611173,
+"serif_moveV": 1.159802293023815,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -2.239703439535722,
+"weight": 80.05452009966439
+}
+},
+{
+"name": "VG_4E00_00",
+"transformation": {
+"translateX": 326.32066378077064,
+"translateY": 287.2162324645305
+},
+"location": {
+"L_cutangle": 0,
+"serif_bottom_handle_moveH": 0,
+"serif_bottom_point_moveH": 0,
+"serif_height": -10.161449851158691,
+"serif_right_curve": 0,
+"serif_right_moveV": 0.35996704883730246,
+"serif_top_moveH": 0,
+"serif_width": -16.882207727900735,
+"weight": 28.6400329511627,
+"width": 647.5494878807965
+}
+},
+{
+"name": "VG_31C0_00",
+"transformation": {
+"translateX": 262.6282938572402,
+"translateY": 435.61305106684426
+},
+"location": {
+"B_moveH": 5.05808520508133,
+"R_moveV": 8.960461316277765,
+"weight": 75.52221498286517,
+"width": 526.240444522594
+}
+},
+{
+"name": "VG_4E36_00",
+"transformation": {
+"translateX": 471.2293493900406,
+"translateY": 24.528080222479698
+},
+"location": {
+"L_curveH": 22.19934097674605,
+"L_curveV": -24.799011465119072,
+"R_curveH": -19.80065902325395,
+"R_curveV": -13.829269982348835,
+"height": 218.10348331743185,
+"weight": 91.22387254832786,
+"width": 242.94150651180487
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -81.21899647979923,
+"translateY": -120.9392066402072
+},
+"location": {
+"L_curveH": 1,
+"L_curveV": -1.7998352441865122,
+"R_curveH": -2.719110318607166,
+"R_curveV": -14.880560169765857,
+"end_weightH": 6.400329511626976,
+"end_weightV": 3.2800659023253953,
+"height": 196.00082377906745,
+"serif_height": -28.759472781396838,
+"serif_right_moveV": 19.519769341861117,
+"serif_width": -1.3599670488373024,
+"weight": 112.15187399932074,
+"width": 151.08328009804458
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"wght=0.35997,width=669": {
+"glyph": {
+"components": [
+{
+"name": "T_2FF1_6708",
+"transformation": {
+"translateX": 126.59884670930559
+},
+"location": {
+"height": 513.0799011465119,
+"width": -115.8385501488413
+}
+},
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": 102.44069197441665,
+"translateY": -38.52059312092855
+},
+"location": {
+"B_curve": 0,
+"length": 138.59967048837302,
+"serif_height": -3.5197693418611173,
+"serif_moveV": 1.159802293023815,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -2.239703439535722,
+"weight": 80.35667193256755
+}
+},
+{
+"name": "VG_4E00_00",
+"transformation": {
+"translateX": 302.599670488373,
+"translateY": 287.7199340976746
+},
+"location": {
+"L_cutangle": 0,
+"serif_bottom_handle_moveH": 0,
+"serif_bottom_point_moveH": 0,
+"serif_height": -10.161449851158691,
+"serif_right_curve": 0,
+"serif_right_moveV": 0.35996704883730246,
+"serif_top_moveH": 0,
+"serif_width": -16.882207727900735,
+"weight": 28.6400329511627,
+"width": 673.679571634885
+}
+},
+{
+"name": "VG_31C0_00",
+"transformation": {
+"translateX": 239.15897851395638,
+"translateY": 433.4390444162818
+},
+"location": {
+"B_moveH": 4.68039541395237,
+"R_moveV": 8.960461316277765,
+"weight": 76.27759456512308,
+"width": 545.0008237790674
+}
+},
+{
+"name": "VG_4E36_00",
+"transformation": {
+"translateX": 460.35914326976985,
+"translateY": 26.559308025583352
+},
+"location": {
+"L_curveH": 22.19934097674605,
+"L_curveV": -24.799011465119072,
+"R_curveH": -19.80065902325395,
+"R_curveV": -12.998352441865123,
+"height": 221.8385501488413,
+"weight": 91.67710029768261,
+"width": 254.23970343953573
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -94.07825358837704,
+"translateY": -120.3599670488373
+},
+"location": {
+"L_curveH": 1,
+"L_curveV": -1.7998352441865122,
+"R_curveH": -2.719110318607166,
+"R_curveV": -14.880560169765857,
+"end_weightH": 6.400329511626976,
+"end_weightV": 3.2800659023253953,
+"height": 196.00082377906745,
+"serif_height": -28.759472781396838,
+"serif_right_moveV": 19.519769341861117,
+"serif_width": -1.3599670488373024,
+"weight": 112.75617766512708,
+"width": 154.12191116743645
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"wght=1,width=643.39868": {
+"glyph": {
+"components": [
+{
+"name": "T_2FF1_6708",
+"transformation": {
+"translateX": 159.07264972321622
+},
+"location": {
+"height": 515,
+"width": -155.7514246770856
+}
+},
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": 99.49234346168357,
+"translateY": -26.79015313076633
+},
+"location": {
+"B_curve": 0,
+"length": 145,
+"serif_height": -8,
+"serif_moveV": 5,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -8,
+"weight": 144.1606125230653
+}
+},
+{
+"name": "VG_4E00_00",
+"transformation": {
+"translateX": 334.6013180465079,
+"translateY": 289.8393874769347
+},
+"location": {
+"L_cutangle": 0,
+"serif_bottom_handle_moveH": 0,
+"serif_bottom_point_moveH": 0,
+"serif_height": 18,
+"serif_right_curve": 0,
+"serif_right_moveV": 1,
+"serif_top_moveH": 0,
+"serif_width": 26,
+"weight": 28,
+"width": 654.9297538688564
+}
+},
+{
+"name": "VG_31C0_00",
+"transformation": {
+"translateX": 281.66346187723656,
+"translateY": 454.3083155615704
+},
+"location": {
+"B_moveH": -1.9507656538316427,
+"R_moveV": 0,
+"weight": 120.90153130766329,
+"width": 511.58270985360525
+}
+},
+{
+"name": "VG_4E36_00",
+"transformation": {
+"translateX": 485.18402790011316,
+"translateY": 36.22275635379391
+},
+"location": {
+"L_curveH": 35,
+"L_curveV": -44,
+"R_curveH": -7,
+"R_curveV": -47.30831556157038,
+"height": 242.23566583835415,
+"weight": 146.740918784598,
+"width": 249.5076565383164
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -112.05163793824097,
+"translateY": -120.37045939229898
+},
+"location": {
+"L_curveH": 1,
+"L_curveV": -5,
+"R_curveH": -20,
+"R_curveV": -4,
+"end_weightH": 0,
+"end_weightV": 2,
+"height": 180,
+"serif_height": -39,
+"serif_right_moveV": 24,
+"serif_width": -2,
+"weight": 185.32122504613065,
+"width": 114.90153130766329
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"wght=1,width=669": {
+"glyph": {
+"components": [
+{
+"name": "T_2FF1_6708",
+"transformation": {
+"translateX": 149
+},
+"location": {
+"height": 515,
+"width": -144
+}
+},
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": 89,
+"translateY": -27
+},
+"location": {
+"B_curve": 0,
+"length": 145,
+"serif_height": -8,
+"serif_moveV": 5,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -8,
+"weight": 145
+}
+},
+{
+"name": "VG_4E00_00",
+"transformation": {
+"translateX": 309,
+"translateY": 289
+},
+"location": {
+"L_cutangle": 0,
+"serif_bottom_handle_moveH": 0,
+"serif_bottom_point_moveH": 0,
+"serif_height": 18,
+"serif_right_curve": 0,
+"serif_right_moveV": 1,
+"serif_top_moveH": 0,
+"serif_width": 26,
+"weight": 28,
+"width": 682
+}
+},
+{
+"name": "VG_31C0_00",
+"transformation": {
+"translateX": 259,
+"translateY": 452
+},
+"location": {
+"B_moveH": -3,
+"R_moveV": 0,
+"weight": 123,
+"width": 529
+}
+},
+{
+"name": "VG_4E36_00",
+"transformation": {
+"translateX": 477,
+"translateY": 40
+},
+"location": {
+"L_curveH": 35,
+"L_curveV": -44,
+"R_curveH": -7,
+"R_curveV": -45,
+"height": 250,
+"weight": 148,
+"width": 260
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -128,
+"translateY": -121
+},
+"location": {
+"L_curveH": 1,
+"L_curveV": -5,
+"R_curveH": -20,
+"R_curveV": -4,
+"end_weightH": 0,
+"end_weightV": 2,
+"height": 180,
+"serif_height": -39,
+"serif_right_moveV": 24,
+"serif_width": -2,
+"weight": 187,
+"width": 117
+}
+}
+],
+"xAdvance": 1000
+}
+}
+}
+}
