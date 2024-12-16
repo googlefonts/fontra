@@ -29,12 +29,18 @@ import {
   mapBackward,
   mapForward,
 } from "./var-model.js";
+/**
+ * @import { RemoteFont, FontSource } from 'remotefont';
+ * */
 
 const GLYPH_CACHE_SIZE = 2000;
 const BACKGROUND_IMAGE_CACHE_SIZE = 100;
 const NUM_TASKS = 12;
 
 export class FontController {
+  /**
+   * @param {RemoteFont} font
+   */
   constructor(font) {
     this.font = font;
     this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // glyph name -> var-glyph promise
@@ -78,12 +84,12 @@ export class FontController {
     this._resolveInitialized();
   }
 
-  subscribeChanges(change, wantLiveChanges) {
-    this.font.subscribeChanges(change, wantLiveChanges);
+  subscribeChanges(pathOrPattern, wantLiveChanges) {
+    this.font.subscribeChanges(pathOrPattern, wantLiveChanges);
   }
 
-  unsubscribeChanges(change, wantLiveChanges) {
-    this.font.unsubscribeChanges(change, wantLiveChanges);
+  unsubscribeChanges(pathOrPattern, wantLiveChanges) {
+    this.font.unsubscribeChanges(pathOrPattern, wantLiveChanges);
   }
 
   getRootKeys() {
@@ -1081,6 +1087,10 @@ function ensureDenseAxes(axes) {
   return { ...axes, axes: axes.axes || [], mappings: axes.mappings || [] };
 }
 
+/**
+ * @param {Record<string, FontSource>} sources
+ * @returns {Record<string, FontSource>}
+ */
 function ensureDenseSources(sources) {
   return mapObjectValues(sources, (source) => {
     return {
