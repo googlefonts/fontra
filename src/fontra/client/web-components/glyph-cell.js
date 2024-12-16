@@ -18,6 +18,10 @@ export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
+  :host {
+    display: inline-block;
+  }
+
   #glyph-cell-container {
     background-color: var(--cell-background-color);
     display: inline-block;
@@ -126,11 +130,7 @@ export class GlyphCell extends UnlitElement {
         });
       },
       {
-        root: this.parentElement,
-        // Somehow our cell is only seen as intersecting if the glyph name / status
-        // color is visible: it seems to ignore the SVG cell. Let's use the cell
-        // height as the bottom root margin.
-        rootMargin: `0px 0px ${this.height}px 0px`, // (top, right, bottom, left).
+        root: document.documentElement, // Maybe use a more nearby clipping element?
       }
     );
     observer.observe(this);
