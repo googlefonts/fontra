@@ -36,6 +36,10 @@ export class GlyphCell extends UnlitElement {
     background-color: var(--cell-active-color);
   }
 
+  #glyph-cell-container.selected {
+    background-color: var(--cell-active-color);
+  }
+
   #glyph-cell-content {
     display: grid;
     justify-items: center;
@@ -84,6 +88,7 @@ export class GlyphCell extends UnlitElement {
     this._glyphCharacter = this.codePoints?.[0]
       ? getCharFromCodePoint(this.codePoints[0]) || ""
       : "";
+    this.isSelected = false;
   }
 
   connectedCallback() {
@@ -224,6 +229,15 @@ export class GlyphCell extends UnlitElement {
       ]),
     ]);
     return this._glyphCellContent;
+  }
+
+  setIsSelected(isSelected) {
+    this.isSelected = isSelected;
+    if (this.isSelected) {
+      this._glyphCellContent.classList.add("selected");
+    } else {
+      this._glyphCellContent.classList.remove("selected");
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 body {
   overflow: scroll;
+  user-select: none;
 }
 
 .main-container {

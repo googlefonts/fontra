@@ -18,8 +18,8 @@ import { Accordion } from "/web-components/ui-accordion.js";
 // 4. Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
 // 5. Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
 // 6. Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
-// 7. When opening a glyph in the editor via double click, there is an error: It says 'error while interpolating font sources '{message: 'objects have incompatible number of entries: 7 != 6', type: 'interpolation-error'}'. Maybe not relevant for this PR.
-// 8. Glyph selection: also multiple glyphs.
+// 7. When opening a glyph in the editor via double click, there is an error: Done.
+// 8. Glyph selection: also multiple glyphs. Done.
 // - refactor findParentWithClass
 
 // START OF COPY: This is a copy of GlyphsSearch but without the list of glyph names
@@ -219,6 +219,7 @@ export class FontOverviewController {
     this.contentElement = this.getContentElement();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
+    this.glyphSelection = [];
   }
 
   async start() {
@@ -381,7 +382,55 @@ export class FontOverviewController {
           this.locationController,
           "fontLocationSourceMapped"
         );
-        glyphCell.ondblclick = () => this.handleDoubleClick(glyphName, unicodes);
+        glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
+
+        glyphCell.onclick = (event) => {
+          const isPartOfSelection = this.glyphSelection.some(
+            (glyph) => glyph.glyphName === glyphName
+          );
+          if (isPartOfSelection && event.shiftKey) {
+            // remove from selection
+            this.glyphSelection = this.glyphSelection.filter(
+              (selection) => selection.glyphName !== glyphName
+            );
+            glyphCell.setIsSelected(false);
+          } else if (!isPartOfSelection && event.shiftKey) {
+            // add to selection
+            // the following allows multi-selection:
+            const getLastSelectedGlyph =
+              this.glyphSelection[this.glyphSelection.length - 1];
+            const lastSelectedGlyphName = getLastSelectedGlyph.glyphName;
+            let isInbetween = false;
+            for (const cell of element.children) {
+              if (cell.glyphName === lastSelectedGlyphName) {
+                isInbetween = true;
+              }
+              if (isInbetween) {
+                this.glyphSelection.push({
+                  glyphName: cell.glyphName,
+                  codePoints: cell.codePoints,
+                });
+                cell.setIsSelected(true);
+              }
+              if (cell.glyphName === glyphName) {
+                break;
+              }
+            }
+            // NOTE: The following would be single selection:
+            // this.glyphSelection.push({ glyphName: glyphName, codePoints: unicodes });
+            // glyphCell.setIsSelected(true);
+          } else {
+            // replace selection
+            // first remove all selected glyphs
+            for (const cell of element.children) {
+              cell.setIsSelected(false);
+            }
+            // then add the new selected glyph
+            this.glyphSelection = [{ glyphName: glyphName, codePoints: unicodes }];
+            glyphCell.setIsSelected(true);
+          }
+        };
+
         // TODO: context menu
         // glyphCell.addEventListener("contextmenu", (event) =>
         //   this.handleContextMenu(event, glyphCell, item)
@@ -407,7 +456,13 @@ export class FontOverviewController {
     return !hideAccordionItem;
   }
 
-  async handleDoubleClick(glyphName, codePoints) {
+  async handleDoubleClick(event, glyphName) {
+    if (event.shiftKey) {
+      // TODO: prevent open in new window does not work, yet.
+      // "_blank" as a second argument does not work for window.open().
+      event.preventDefault();
+    }
+
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
@@ -418,15 +473,20 @@ export class FontOverviewController {
       this.fontController.mapSourceLocationToUserLocation(sourceLocation);
 
     const viewInfo = {
-      selectedGlyph: glyphName,
+      selectedGlyph: glyphName, // TODO: selection does not work, yet.
       location: userLocation,
+      text: "",
     };
-    if (codePoints.length) {
-      viewInfo.text =
-        0x002f === codePoints[0] ? "//" : String.fromCharCode(codePoints[0]);
-    } else {
-      viewInfo.text = `/${glyphName}`;
+
+    for (const { glyphName, codePoints } of this.glyphSelection) {
+      if (codePoints.length) {
+        viewInfo.text +=
+          0x002f === codePoints[0] ? "//" : String.fromCharCode(codePoints[0]);
+      } else {
+        viewInfo.text += `/${glyphName}`;
+      }
     }
+
     url.hash = dumpURLFragment(viewInfo);
     window.open(url.toString());
   }
