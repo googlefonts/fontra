@@ -2,7 +2,7 @@ import { RemoteError } from "./errors.js";
 
 export async function getRemoteProxy(wsURL) {
   const remote = new RemoteObject(wsURL);
-  await remote.connect();
+  await remote._connect();
   const remoteProxy = new Proxy(remote, {
     get: (remote, propertyName) => {
       if (propertyName === "then" || propertyName === "toJSON") {
@@ -14,7 +14,7 @@ export async function getRemoteProxy(wsURL) {
         return remote[propertyName];
       }
       return (...args) => {
-        return remote.doCall(propertyName, args);
+        return remote._doCall(propertyName, args);
       };
     },
     set: (remote, propertyName, value) => {
@@ -53,7 +53,7 @@ export class RemoteObject {
       (event) => {
         if (document.visibilityState === "visible" && this.websocket.readyState > 1) {
           // console.log("wake reconnect");
-          this.connect();
+          this._connect();
         }
       },
       false
@@ -68,7 +68,7 @@ export class RemoteObject {
     }
   }
 
-  async trigger(event, ...args) {
+  async _trigger(event, ...args) {
     if (this._handlers.hasOwnProperty(event)) {
       return await this._handlers[event](...args);
     } else {
@@ -76,7 +76,7 @@ export class RemoteObject {
     }
   }
 
-  connect() {
+  _connect() {
     if (this._connectPromise !== undefined) {
       // websocket is still connecting/opening, return the same promise
       return this._connectPromise;
@@ -90,8 +90,8 @@ export class RemoteObject {
       this.websocket.onopen = (event) => {
         resolve(event);
         delete this._connectPromise;
-        this.websocket.onclose = (event) => this.trigger("close", event);
-        this.websocket.onerror = (event) => this.trigger("error", event);
+        this.websocket.onclose = (event) => this._trigger("close", event);
+        this.websocket.onerror = (event) => this._trigger("error", event);
         const message = {
           "client-uuid": this.clientUUID,
         };
@@ -134,7 +134,7 @@ export class RemoteObject {
         if (!this._handlers.hasOwnProperty(method)) {
           throw new Error(`undefined method: ${method}`);
         }
-        const returnValue = await this.trigger(method, ...message["arguments"]);
+        const returnValue = await this._trigger(method, ...message["arguments"]);
         returnMessage = {
           "server-call-id": serverCallID,
           "return-value": returnValue,
@@ -148,7 +148,7 @@ export class RemoteObject {
     }
   }
 
-  async doCall(methodName, args) {
+  async _doCall(methodName, args) {
     // console.log("--- doCall", methodName);
     const clientCallID = this._getNextClientCallID();
     const message = {
@@ -158,7 +158,7 @@ export class RemoteObject {
     };
     if (this.websocket.readyState !== 1) {
       // console.log("waiting for reconnect");
-      await this.connect();
+      await this._connect();
     }
     this.websocket.send(JSON.stringify(message));
 
