@@ -3148,7 +3148,7 @@ export class EditorController {
       usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
     );
 
-    const glyphsSearch = document.createElement("glyphs-search");
+    const glyphsSearch = document.createElement("glyphs-search-list");
     glyphsSearch.glyphMap = glyphMap;
 
     glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
@@ -3223,7 +3223,7 @@ export class EditorController {
     titleLabel = translate("dialog.glyphs.search"),
     okLabel = translate("dialog.add")
   ) {
-    const glyphsSearch = document.createElement("glyphs-search");
+    const glyphsSearch = document.createElement("glyphs-search-list");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 
     glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
