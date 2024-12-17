@@ -2,6 +2,7 @@ import { FontController } from "../core/font-controller.js";
 import * as html from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import { getRemoteProxy } from "../core/remote.js";
+import { commandKeyProperty, enumerate } from "../core/utils.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { translate } from "/core/localization.js";
@@ -375,7 +376,7 @@ export class FontOverviewController {
 
     if (glyphs?.length) {
       const documentFragment = document.createDocumentFragment();
-      for (const { glyphName, unicodes } of glyphs) {
+      for (const [index, { glyphName, unicodes }] of enumerate(glyphs)) {
         const glyphCell = new GlyphCell(
           this.fontController,
           glyphName,
@@ -384,52 +385,11 @@ export class FontOverviewController {
           "fontLocationSourceMapped"
         );
         glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
-
         glyphCell.onclick = (event) => {
-          const isPartOfSelection = this.glyphSelection.some(
-            (glyph) => glyph.glyphName === glyphName
-          );
-          if (isPartOfSelection && event.shiftKey) {
-            // remove from selection
-            this.glyphSelection = this.glyphSelection.filter(
-              (selection) => selection.glyphName !== glyphName
-            );
-            glyphCell.setIsSelected(false);
-          } else if (!isPartOfSelection && event.shiftKey) {
-            // add to selection
-            // the following allows multi-selection:
-            const getLastSelectedGlyph =
-              this.glyphSelection[this.glyphSelection.length - 1];
-            const lastSelectedGlyphName = getLastSelectedGlyph.glyphName;
-            let isInbetween = false;
-            for (const cell of element.children) {
-              if (cell.glyphName === lastSelectedGlyphName) {
-                isInbetween = true;
-              }
-              if (isInbetween) {
-                this.glyphSelection.push({
-                  glyphName: cell.glyphName,
-                  codePoints: cell.codePoints,
-                });
-                cell.setIsSelected(true);
-              }
-              if (cell.glyphName === glyphName) {
-                break;
-              }
-            }
-            // NOTE: The following would be single selection:
-            // this.glyphSelection.push({ glyphName: glyphName, codePoints: unicodes });
-            // glyphCell.setIsSelected(true);
-          } else {
-            // replace selection
-            // first remove all selected glyphs
-            for (const cell of element.children) {
-              cell.setIsSelected(false);
-            }
-            // then add the new selected glyph
-            this.glyphSelection = [{ glyphName: glyphName, codePoints: unicodes }];
-            glyphCell.setIsSelected(true);
-          }
+          // INFO: We need to delay the single click event to allow for a double click to happen.
+          setTimeout(() => {
+            this.handleSingleClick(event, element, glyphCell);
+          }, 200);
         };
 
         // TODO: context menu
@@ -455,6 +415,66 @@ export class FontOverviewController {
 
     parent.hidden = hideAccordionItem;
     return !hideAccordionItem;
+  }
+
+  async handleSingleClick(event, element, glyphCell) {
+    const glyphName = glyphCell.glyphName;
+    const unicodes = glyphCell.codePoints;
+
+    if (event[commandKeyProperty]) {
+      if (glyphCell.isSelected) {
+        // remove glyph from selection
+        const glyph = this.glyphSelection.find(
+          (glyph) => glyph.glyphName === glyphName
+        );
+        const index = this.glyphSelection.indexOf(glyph);
+        this.glyphSelection.splice(index, 1);
+        glyphCell.setIsSelected(false);
+
+        // we removed the last clicked glyph, therefore set the last glyph of selection as last clicked glyph
+        const lastGlyph = this.glyphSelection[this.glyphSelection.length - 1];
+        this.lastClickedGlyphName = lastGlyph.glyphName;
+      } else {
+        // add single character to selection with command key
+        this.glyphSelection.push({ glyphName: glyphName, codePoints: unicodes });
+        glyphCell.setIsSelected(true);
+        this.lastClickedGlyphName = glyphName;
+      }
+      return;
+    }
+
+    if (this.lastClickedGlyphName && event.shiftKey) {
+      const glyphCells = Array.from(element.children);
+
+      const lastClickedIndex = glyphCells.findIndex(
+        (cell) => cell.glyphName === this.lastClickedGlyphName
+      );
+      const clickedIndex = glyphCells.findIndex((cell) => cell.glyphName === glyphName);
+
+      const start = Math.min(lastClickedIndex, clickedIndex);
+      const end = Math.max(lastClickedIndex, clickedIndex);
+
+      for (let i = start; i <= end; i++) {
+        const cell = glyphCells[i];
+        this.glyphSelection.push({
+          glyphName: cell.glyphName,
+          codePoints: cell.codePoints,
+        });
+        cell.setIsSelected(true);
+      }
+    } else {
+      // replace selection
+      // first remove all selected glyphs
+      for (const cell of element.children) {
+        if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
+          cell.setIsSelected(false);
+        }
+      }
+      // then add the new selected glyph
+      this.glyphSelection = [{ glyphName: glyphName, codePoints: unicodes }];
+      glyphCell.setIsSelected(true);
+      this.lastClickedGlyphName = glyphName;
+    }
   }
 
   async handleDoubleClick(event, glyphName) {

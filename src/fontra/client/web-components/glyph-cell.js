@@ -228,6 +228,10 @@ export class GlyphCell extends UnlitElement {
         }),
       ]),
     ]);
+
+    // update the selected state if updating the glyph, for example: when changing the location or scrolling
+    this.setIsSelected(this.isSelected);
+
     return this._glyphCellContent;
   }
 
