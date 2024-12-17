@@ -428,8 +428,8 @@ export class FontOverviewController {
         glyphCell.setIsSelected(false);
 
         // we removed the last clicked glyph, therefore set the last glyph of selection as last clicked glyph
-        const lastGlyph = this.glyphSelection[this.glyphSelection.length - 1];
-        this.lastClickedGlyphName = lastGlyph.glyphName;
+        this.lastClickedGlyphName =
+          this.glyphSelection[this.glyphSelection.length - 1]?.glyphName;
       } else {
         // add single character to selection with command key
         this.glyphSelection.push({ glyphName: glyphName, codePoints: unicodes });
