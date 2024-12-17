@@ -2,7 +2,12 @@ import { FontController } from "../core/font-controller.js";
 import * as html from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import { getRemoteProxy } from "../core/remote.js";
-import { commandKeyProperty, enumerate } from "../core/utils.js";
+import {
+  arrowKeyDeltas,
+  commandKeyProperty,
+  enumerate,
+  modulo,
+} from "../core/utils.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { translate } from "/core/localization.js";
@@ -217,6 +222,8 @@ export class FontOverviewController {
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
     this.glyphSelection = [];
+
+    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
   }
 
   async start() {
@@ -511,6 +518,48 @@ export class FontOverviewController {
 
     url.hash = dumpURLFragment(viewInfo);
     window.open(url.toString());
+  }
+
+  handleKeyDown(event) {
+    if (event.key in arrowKeyDeltas) {
+      this.handleArrowKeys(event);
+      event.preventDefault();
+      return;
+    }
+  }
+
+  handleArrowKeys(event) {
+    // TODO: Implement arrow key handling. But first we need to specify the behavior. Maybe:
+    // - if no other key is pressed, we can navigate through the glyphs
+    // - if shift or command is pressed, we can add or remove to the selection with left and right arrow keys
+    // - shift + up and down arrow keys can be used to add or remove whole lines to the selection
+
+    const accordion = Array.from(
+      this.contentElement.getElementsByTagName("ui-accordion")
+    )[0];
+    const glyphCells = Array.from(accordion.shadowRoot.querySelectorAll("glyph-cell"));
+
+    // Select next or previous glyph-cell
+    // TODO: Up and down also do next and previous in this implementation. Maybe we want to change this?
+    const selectPrevious = event.key === "ArrowLeft" || event.key === "ArrowUp";
+    const index = glyphCells.findIndex((cell) => cell.isSelected);
+
+    const newIndex =
+      index == -1
+        ? selectPrevious
+          ? glyphCells.length - 1
+          : 0
+        : modulo(index + (selectPrevious ? -1 : 1), glyphCells.length);
+
+    glyphCells[index]?.setIsSelected(false); // NOTE: can be undefined if no glyph is selected, therefore the ?-check.
+    glyphCells[newIndex].setIsSelected(true);
+    this.glyphSelection = [
+      {
+        glyphName: glyphCells[newIndex].glyphName,
+        codePoints: glyphCells[newIndex].codePoints,
+      },
+    ];
+    this.lastClickedGlyphName = glyphCells[newIndex].glyphName;
   }
 
   async messageFromServer(headline, msg) {
