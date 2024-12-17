@@ -12,16 +12,12 @@ import { message } from "/web-components/modal-dialog.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 // TODOs:
-// 1. I am wondering if it would make sense to refactor GlyphsSearch into two web components:
-//    1. GlyphsSearchField: Includes the search field, only. Access the list of glyphs with eg. glyphsListItemsController.
-//    2. GlyphsSearchList: (contain the GlyphsSearchField) which uses GlyphsSearch and adds the glyph list.
-// 3. Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
-// 4. Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
-// 5. Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
-// 6. Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
-// 7. When opening a glyph in the editor via double click, there is an error: Done.
-// 8. Glyph selection: also multiple glyphs. Done.
-// - refactor findParentWithClass
+// - Refactor GlyphsSearch, please see #1867
+// - Refactor findParentWithClass: please see #1866
+// - Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
+// - Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
+// - Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
+// - Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
 
 // START OF COPY: This is a copy of GlyphsSearch but without the list of glyph names
 import { UnlitElement, div, label, option, select } from "/core/html-utils.js";
