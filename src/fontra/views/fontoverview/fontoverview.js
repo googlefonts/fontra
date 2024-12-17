@@ -485,7 +485,7 @@ export class FontOverviewController {
       this.fontController.mapSourceLocationToUserLocation(sourceLocation);
 
     const viewInfo = {
-      selectedGlyph: glyphName, // TODO: selection does not work, yet.
+      selectedGlyph: glyphName, // TODO: selectedGlyph does not work. I am wondering if we need to set this.sceneSettings.selectedGlyph;
       location: userLocation,
       text: "",
     };
