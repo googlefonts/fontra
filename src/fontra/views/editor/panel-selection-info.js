@@ -27,24 +27,26 @@ export default class SelectionInfoPanel extends Panel {
     .selection-info {
       display: flex;
       flex-direction: column;
-      gap: 1em;
       justify-content: space-between;
       box-sizing: border-box;
       height: 100%;
       width: 100%;
-      padding: 1em;
       white-space: normal;
     }
 
-    ui-form {
-      overflow-x: hidden;
-      overflow-y: auto;
+    .selection-info-form {
+      flex: 1;
+    }
+
+    .behavior-field {
+      padding: 1em;
     }
   `;
 
   constructor(editorController) {
     super(editorController);
     this.infoForm = new Form();
+    this.infoForm.classList.add("selection-info-form");
     this.contentElement.appendChild(this.infoForm);
     this.contentElement.appendChild(this.setupBehaviorCheckBox());
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);

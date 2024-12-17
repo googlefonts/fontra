@@ -14,14 +14,16 @@ export class Form extends SimpleElement {
   static styles = `
     :host {
       --label-column-width: 32%;
+      padding: 1em;
+      overflow: hidden auto;
     }
+
     .ui-form {
       display: grid;
       align-items: center;
       grid-template-columns: var(--label-column-width) auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
-      overflow-y: auto;
       margin: 0em;
       padding: 0em;
     }
