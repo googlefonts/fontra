@@ -9,8 +9,9 @@ import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],
-  "cell-hover-color": ["#E0E0E0", "#606060"],
-  "cell-active-color": ["#D8D8D8", "#686868"],
+  "cell-hover-color": ["#E5E5E5", "#606060"],
+  "cell-active-color": ["#D8D8D8", "#6F6F6F"],
+  "cell-selected-color": ["#C8C8C8", "#8F8F8F"],
   "glyph-shape-placeholder-color": ["#AAA", "#AAA"],
 };
 
@@ -41,7 +42,7 @@ export class GlyphCell extends UnlitElement {
   }
 
   #glyph-cell-container.selected {
-    background-color: var(--cell-active-color);
+    background-color: var(--cell-selected-color);
   }
 
   #glyph-cell-content {

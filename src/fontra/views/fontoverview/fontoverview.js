@@ -497,7 +497,7 @@ export class FontOverviewController {
       text: "",
     };
 
-    // if glyphName is not in the selection, it's a double click on a single glyph
+    // if glyphName is not in the selection, it's a double click on a single glyph outside of the selection
     if (!this.glyphSelection.some((glyph) => glyph.glyphName === glyphName)) {
       for (const cell of element.children) {
         if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
