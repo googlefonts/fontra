@@ -559,6 +559,11 @@ export class FontOverviewController {
         codePoints: glyphCells[newIndex].codePoints,
       },
     ];
+    glyphCells[newIndex].scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "nearest",
+    });
     this.lastClickedGlyphName = glyphCells[newIndex].glyphName;
   }
 
