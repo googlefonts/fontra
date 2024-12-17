@@ -148,6 +148,7 @@ export default class RelatedGlyphPanel extends Panel {
 
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item, glyphName, codePoint).then((hasResult) => {
+        this.accordion.showHideAccordionItem(item, hasResult);
         results.push(hasResult);
         if (results.length === this.accordion.items.length) {
           if (!results.some((hasResult) => hasResult)) {
@@ -170,7 +171,6 @@ export default class RelatedGlyphPanel extends Panel {
 
   async _updateAccordionItem(item, glyphName, codePoint) {
     const element = item.content;
-    const parent = findParentWithClass(element, "ui-accordion-item");
 
     element.innerHTML = "";
     let hideAccordionItem = true;
@@ -217,7 +217,6 @@ export default class RelatedGlyphPanel extends Panel {
         element.innerHTML = "";
       }
     }
-    parent.hidden = hideAccordionItem;
     return !hideAccordionItem;
   }
 
@@ -354,14 +353,6 @@ function addCharInfo(fontController, glyphNames) {
   return glyphNames.map((glyphName) => {
     return { glyphName, codePoints: glyphMap[glyphName] || [] };
   });
-}
-
-function findParentWithClass(element, parentClass) {
-  let parent = element;
-  do {
-    parent = parent.parentElement;
-  } while (parent && !parent.classList.contains(parentClass));
-  return parent;
 }
 
 customElements.define("panel-related-glyph", RelatedGlyphPanel);
