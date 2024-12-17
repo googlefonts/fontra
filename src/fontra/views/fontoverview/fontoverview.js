@@ -380,7 +380,8 @@ export class FontOverviewController {
           this.locationController,
           "fontLocationSourceMapped"
         );
-        glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphName);
+        glyphCell.ondblclick = (event) =>
+          this.handleDoubleClick(element, glyphName, unicodes);
         glyphCell.onclick = (event) => {
           // INFO: We need to delay the single click event to allow for a double click to happen.
           setTimeout(() => {
@@ -473,13 +474,7 @@ export class FontOverviewController {
     }
   }
 
-  async handleDoubleClick(event, glyphName) {
-    if (event.shiftKey) {
-      // TODO: prevent open in new window does not work, yet.
-      // "_blank" as a second argument does not work for window.open().
-      event.preventDefault();
-    }
-
+  async handleDoubleClick(element, glyphName, codePoints) {
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
@@ -494,6 +489,16 @@ export class FontOverviewController {
       location: userLocation,
       text: "",
     };
+
+    // if glyphName is not in the selection, it's a double click on a single glyph
+    if (!this.glyphSelection.some((glyph) => glyph.glyphName === glyphName)) {
+      for (const cell of element.children) {
+        if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
+          cell.setIsSelected(false);
+        }
+      }
+      this.glyphSelection = [{ glyphName: glyphName, codePoints: codePoints }];
+    }
 
     for (const { glyphName, codePoints } of this.glyphSelection) {
       if (codePoints.length) {
@@ -516,5 +521,13 @@ export class FontOverviewController {
   async getGlyphs(section) {
     // TODO: section. For now return all glyphs
     return this.glyphs;
+  }
+
+  handleRemoteClose(event) {
+    //
+  }
+
+  handleRemoteError(event) {
+    //
   }
 }
