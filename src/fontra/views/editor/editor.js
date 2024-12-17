@@ -882,6 +882,7 @@ export class EditorController {
               callback: () => {
                 const url = new URL(window.location);
                 url.pathname = url.pathname.replace("/editor/", "/fontoverview/");
+                url.hash = ""; // remove any hash
                 window.open(url.toString());
               },
             },
