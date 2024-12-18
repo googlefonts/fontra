@@ -21,12 +21,12 @@ export class GlyphsSearchList extends UnlitElement {
       this.glyphsListItemsController,
       "glyphsListItems"
     );
-    this.glyphNamesList = this.getGlyphNamesList();
+    this.glyphNamesList = this.makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
   }
 
-  getGlyphNamesList() {
+  makeGlyphNamesList() {
     const columnDescriptions = [
       {
         key: "char",
