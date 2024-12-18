@@ -7,6 +7,7 @@ import {
   commandKeyProperty,
   enumerate,
   modulo,
+  range,
 } from "../core/utils.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
@@ -224,6 +225,7 @@ export class FontOverviewController {
     this.glyphSelection = [];
 
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
     this.previousArrowDirection = "ArrowRight";
   }
 
@@ -470,12 +472,7 @@ export class FontOverviewController {
     } else {
       // replace selection
       // first remove all selected glyphs
-      const glyphCells = this.makeListOfAllGlyphCells();
-      for (const cell of glyphCells) {
-        if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
-          cell.setIsSelected(false);
-        }
-      }
+      this.deselectAllGlyphs();
       // then add the new selected glyph
       this.glyphSelection = [{ glyphName: glyphName, codePoints: unicodes }];
       glyphCell.setIsSelected(true);
@@ -533,24 +530,91 @@ export class FontOverviewController {
     // and unselect all via command + shift + a
   }
 
+  // handleKeyUp(event) {
+  //   if (event.shiftKey || event[commandKeyProperty]) {
+  //     this.previousArrowDirection = "ArrowRight";
+  //   }
+  // }
+
   handleArrowKeys(event) {
+    // I am so, so sorry, but the following code is a mess. I am not proud of it.
+    // There is a lot of duplicate code, because I am still figuring out the behavior.
+
     // TODO: Implement arrow key handling. But first we need to specify the behavior. Maybe:
     // - if no other key is pressed, we can navigate through the glyphs: done.
     // - if shift or command is pressed, we can add or remove to the selection with left and right arrow keys
     // - shift + up and down arrow keys can be used to add or remove whole lines to the selection
 
     const glyphCells = this.makeListOfAllGlyphCells();
-    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-      // TODO: Up and down
-      return;
-    }
 
-    // Select next or previous glyph-cell
-    const selectPrevious = event.key === "ArrowLeft";
+    const selectPrevious = event.key === "ArrowLeft" || event.key === "ArrowUp";
     let index = glyphCells.findIndex(
       (cell) => cell.glyphName === this.lastGlyphSelected
     );
 
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      // if shiftKey delta is 10 if we go to the right, -10 if we go to the left
+      const delta = 10; //TODO: should be number of cells in a row for adding or removing a whole row
+
+      if (this.previousArrowDirection !== event.key) {
+        if (this.previousArrowDirection === "ArrowUp") {
+          --index;
+        } else if (this.previousArrowDirection === "ArrowDown") {
+          ++index;
+        }
+      }
+
+      let newIndex =
+        index == -1
+          ? selectPrevious
+            ? glyphCells.length - 1
+            : 0
+          : modulo(index + (selectPrevious ? -delta : delta), glyphCells.length);
+
+      const newGlyphCell = glyphCells[newIndex];
+
+      const newGlyph = {
+        glyphName: newGlyphCell.glyphName,
+        codePoints: newGlyphCell.codePoints,
+      };
+      const deselectGlyphs = newGlyphCell.isSelected;
+      if (!event.shiftKey && !event[commandKeyProperty]) {
+        this.deselectAllGlyphs();
+        this.glyphSelection = [newGlyph];
+        newGlyphCell.setIsSelected(true);
+      } else {
+        // add or remove multiple glyph cells to the selection with left and right arrow keys
+        const minIndex = Math.min(index, newIndex);
+        const maxIndex = Math.max(index, newIndex);
+
+        for (const i of range(minIndex, maxIndex)) {
+          const glyphCell = glyphCells[i];
+          const glyph = {
+            glyphName: glyphCell.glyphName,
+            codePoints: glyphCell.codePoints,
+          };
+
+          // if we change the direction of the arrow key, we need to remove the last glyph
+          // TODO: This is not working as expected, we need to fix this.
+          // I somehow have a logic error here with switching the direction of the arrow key while holding shift.
+          if (deselectGlyphs) {
+            // seems like we need to remove glyphs from the selection
+            const j = this.glyphSelection.indexOf(glyph);
+            this.glyphSelection.splice(j, 1);
+            glyphCell.setIsSelected(false);
+          } else {
+            this.glyphSelection.push(glyph);
+            glyphCell.setIsSelected(true);
+          }
+        }
+      }
+
+      this.lastGlyphSelected = newGlyphCell.glyphName;
+      this.previousArrowDirection = event.key;
+      return;
+    }
+
+    // Select next or previous glyph-cell
     // This is needed if we change the direction of the arrow key
     if (this.previousArrowDirection !== event.key) {
       if (this.previousArrowDirection === "ArrowLeft") {
@@ -560,7 +624,7 @@ export class FontOverviewController {
       }
     }
 
-    const newIndex =
+    let newIndex =
       index == -1
         ? selectPrevious
           ? glyphCells.length - 1
@@ -575,12 +639,12 @@ export class FontOverviewController {
       codePoints: newGlyphCell.codePoints,
     };
 
+    // First, if no key is pressed, we can navigate through the glyphs
     if (!event.shiftKey && !event[commandKeyProperty]) {
-      glyphCell?.setIsSelected(false); // NOTE: can be undefined if no glyph is selected, therefore the ?-check.
-      newGlyphCell.setIsSelected(true);
+      this.deselectAllGlyphs();
       this.glyphSelection = [newGlyph];
+      newGlyphCell.setIsSelected(true);
     } else {
-      // Maybe this should not select or deselect glyphs, more similar to hover effect?
       if (newGlyphCell.isSelected) {
         // remove glyph from selection
         const i = this.glyphSelection.indexOf(newGlyph);
@@ -606,6 +670,18 @@ export class FontOverviewController {
       this.contentElement.getElementsByTagName("ui-accordion")
     )[0];
     return Array.from(accordion.shadowRoot.querySelectorAll("glyph-cell"));
+  }
+
+  deselectAllGlyphs() {
+    const glyphCells = this.makeListOfAllGlyphCells();
+    for (const glyphCell of glyphCells) {
+      if (
+        this.glyphSelection.some((glyph) => glyph.glyphName === glyphCell.glyphName)
+      ) {
+        glyphCell.setIsSelected(false);
+      }
+    }
+    this.glyphSelection = [];
   }
 
   async messageFromServer(headline, msg) {
