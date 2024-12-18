@@ -18,7 +18,7 @@ export default class GlyphSearchPanel extends Panel {
 
   constructor(editorController) {
     super(editorController);
-    this.glyphsSearch = this.contentElement.querySelector("#glyphs-search");
+    this.glyphsSearch = this.contentElement.querySelector("#glyphs-search-list");
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
@@ -65,8 +65,8 @@ export default class GlyphSearchPanel extends Panel {
         class: "glyph-search",
       },
       [
-        html.createDomElement("glyphs-search", {
-          id: "glyphs-search",
+        html.createDomElement("glyphs-search-list", {
+          id: "glyphs-search-list",
         }),
       ]
     );
@@ -74,7 +74,7 @@ export default class GlyphSearchPanel extends Panel {
 
   async toggle(on, focus) {
     if (on && focus) {
-      const glyphsSearch = this.contentElement.querySelector("#glyphs-search");
+      const glyphsSearch = this.contentElement.querySelector("#glyphs-search-list");
       glyphsSearch.focusSearchField();
     }
   }

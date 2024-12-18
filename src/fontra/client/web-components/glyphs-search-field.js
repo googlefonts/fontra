@@ -1,20 +1,14 @@
 import { themeColorCSS } from "./theme-support.js";
-import { UIList } from "./ui-list.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import {
-  getCharFromCodePoint,
-  guessCharFromGlyphName,
-  makeUPlusStringFromCodePoint,
-} from "/core/utils.js";
 
 const colors = {
   "search-input-foreground-color": ["black", "white"],
   "search-input-background-color": ["#eee", "#333"],
 };
 
-export class GlyphsSearch extends UnlitElement {
+export class GlyphsSearchField extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
@@ -43,58 +37,15 @@ export class GlyphsSearch extends UnlitElement {
     }
   `;
 
-  constructor() {
+  constructor(glyphsListItemsController, controllerKey) {
     super();
-
+    this.glyphsListItemsController = glyphsListItemsController;
+    this.controllerKey = controllerKey;
     this.searchField = html.input({
       type: "text",
       placeholder: translate("sidebar.glyphs.search"),
       autocomplete: "off",
       oninput: (event) => this._searchFieldChanged(event),
-    });
-
-    const columnDescriptions = [
-      {
-        key: "char",
-        title: " ",
-        width: "1.8em",
-        cellFactory: (item, description) => {
-          if (item.unicodes[0]) {
-            return getCharFromCodePoint(item.unicodes[0]);
-          }
-          const guessedChar = guessCharFromGlyphName(item.glyphName);
-          return guessedChar ? html.span({ class: "guessed-char" }, [guessedChar]) : "";
-        },
-      },
-      { key: "glyphName", title: "glyph name", width: "10em", isIdentifierKey: true },
-      {
-        key: "unicode",
-        width: "fit-content",
-        get: (item) => item.unicodes.map(makeUPlusStringFromCodePoint).join(","),
-      },
-    ];
-    this.glyphNamesList = new UIList();
-    this.glyphNamesList.appendStyle(`
-      .guessed-char {
-        color: #999;
-      }
-    `);
-    this.glyphNamesList.columnDescriptions = columnDescriptions;
-
-    this.glyphNamesList.addEventListener("listSelectionChanged", () => {
-      const event = new CustomEvent("selectedGlyphNameChanged", {
-        bubbles: false,
-        detail: this.getSelectedGlyphName(),
-      });
-      this.dispatchEvent(event);
-    });
-
-    this.glyphNamesList.addEventListener("rowDoubleClicked", () => {
-      const event = new CustomEvent("selectedGlyphNameDoubleClicked", {
-        bubbles: false,
-        detail: this.getSelectedGlyphName(),
-      });
-      this.dispatchEvent(event);
     });
 
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
@@ -107,7 +58,7 @@ export class GlyphsSearch extends UnlitElement {
   }
 
   render() {
-    return [this.searchField, this.glyphNamesList];
+    return this.searchField;
   }
 
   get glyphMap() {
@@ -117,14 +68,6 @@ export class GlyphsSearch extends UnlitElement {
   set glyphMap(glyphMap) {
     this._glyphMap = glyphMap;
     this.updateGlyphNamesListContent();
-  }
-
-  getSelectedGlyphName() {
-    return this.glyphNamesList.items[this.glyphNamesList.selectedItemIndex]?.glyphName;
-  }
-
-  getFilteredGlyphNames() {
-    return this.glyphNamesList.items.map((item) => item.glyphName);
   }
 
   updateGlyphNamesListContent() {
@@ -155,11 +98,11 @@ export class GlyphsSearch extends UnlitElement {
     const filteredGlyphItems = this.glyphsListItems.filter(
       this._glyphNamesListFilterFunc
     );
-    this.glyphNamesList.setItems(filteredGlyphItems);
+    this.glyphsListItemsController.model[this.controllerKey] = filteredGlyphItems;
   }
 }
 
-customElements.define("glyphs-search", GlyphsSearch);
+customElements.define("glyphs-search-field", GlyphsSearchField);
 
 function glyphItemSortFunc(item1, item2) {
   const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
