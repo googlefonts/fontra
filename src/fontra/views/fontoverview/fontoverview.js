@@ -528,6 +528,9 @@ export class FontOverviewController {
       event.preventDefault();
       return;
     }
+    // TODO: maybe:
+    // select all via command + a
+    // and unselect all via command + shift + a
   }
 
   handleArrowKeys(event) {
@@ -567,7 +570,7 @@ export class FontOverviewController {
     const glyphCell = glyphCells[index];
     const newGlyphCell = glyphCells[newIndex];
 
-    const glyph = {
+    const newGlyph = {
       glyphName: newGlyphCell.glyphName,
       codePoints: newGlyphCell.codePoints,
     };
@@ -575,18 +578,16 @@ export class FontOverviewController {
     if (!event.shiftKey && !event[commandKeyProperty]) {
       glyphCell?.setIsSelected(false); // NOTE: can be undefined if no glyph is selected, therefore the ?-check.
       newGlyphCell.setIsSelected(true);
-      this.glyphSelection = [glyph];
+      this.glyphSelection = [newGlyph];
     } else {
+      // Maybe this should not select or deselect glyphs, more similar to hover effect?
       if (newGlyphCell.isSelected) {
         // remove glyph from selection
-        const newGlyph = this.glyphSelection.find(
-          (g) => g.glyphName === newGlyphCell.glyphName
-        );
-        const newI = this.glyphSelection.indexOf(newGlyph);
-        this.glyphSelection.splice(newI, 1);
+        const i = this.glyphSelection.indexOf(newGlyph);
+        this.glyphSelection.splice(i, 1);
         newGlyphCell.setIsSelected(false);
       } else {
-        this.glyphSelection.push(glyph);
+        this.glyphSelection.push(newGlyph);
         newGlyphCell.setIsSelected(true);
       }
     }
