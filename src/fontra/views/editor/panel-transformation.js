@@ -502,7 +502,7 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doPathOperations(unionPath, "union"),
+          "onclick": (event) => this.doPathOperations(Backend.unionPath, "union"),
           "data-tooltip": translate(`${labelKeyPathOperations}.union`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -513,7 +513,7 @@ export default class TransformationPanel extends Panel {
         key: "subtractContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) => this.doPathOperations(subtractPath, "subtract"),
+          "onclick": (event) => this.doPathOperations(Backend.subtractPath, "subtract"),
           "data-tooltip": translate(`${labelKeyPathOperations}.subtract`),
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -524,7 +524,8 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
-          "onclick": (event) => this.doPathOperations(intersectPath, "intersect"),
+          "onclick": (event) =>
+            this.doPathOperations(Backend.intersectPath, "intersect"),
           "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
@@ -539,7 +540,7 @@ export default class TransformationPanel extends Panel {
         key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(excludePath, "exclude"),
+          "onclick": (event) => this.doPathOperations(Backend.excludePath, "exclude"),
           "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
