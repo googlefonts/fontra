@@ -5,7 +5,7 @@ import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-de
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
 import { translate } from "/core/localization.js";
-import { ViewController } from "/core/view.js";
+import { ViewController } from "/core/view-controller.js";
 
 export class FontInfoController extends ViewController {
   static titlePattern(displayPath) {

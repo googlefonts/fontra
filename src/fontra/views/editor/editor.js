@@ -92,7 +92,7 @@ import {
   translate,
   translatePlural,
 } from "/core/localization.js";
-import { ViewController } from "/core/view.js";
+import { ViewController } from "/core/view-controller.js";
 
 const MIN_CANVAS_SPACE = 200;
 

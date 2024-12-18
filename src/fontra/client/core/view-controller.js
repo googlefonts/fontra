@@ -1,7 +1,7 @@
-import { FontController } from "../core/font-controller.js";
-import { getRemoteProxy } from "../core/remote.js";
-import { makeDisplayPath } from "../core/view-utils.js";
 import { Backend } from "./backend-api.js";
+import { FontController } from "./font-controller.js";
+import { getRemoteProxy } from "./remote.js";
+import { makeDisplayPath } from "./view-utils.js";
 import { ensureLanguageHasLoaded } from "/core/localization.js";
 import { message } from "/web-components/modal-dialog.js";
 
