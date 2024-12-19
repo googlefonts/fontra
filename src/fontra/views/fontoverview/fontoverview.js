@@ -284,8 +284,6 @@ export class FontOverviewController extends ViewController {
         this.glyphSelection = new Set([glyphName]);
       }
     }
-
-    console.log(this.glyphSelection);
   }
 
   async handleDoubleClick(element, glyphName, codePoints) {
