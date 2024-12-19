@@ -114,6 +114,18 @@ export class Accordion extends UnlitElement {
   _toggleItem(itemElement) {
     itemElement.classList.toggle("ui-accordion-item-closed");
   }
+
+  showHideAccordionItem(item, onOff) {
+    let parent = item.content;
+    do {
+      parent = parent.parentElement;
+    } while (parent && !parent.classList.contains("ui-accordion-item"));
+
+    if (!parent) {
+      return;
+    }
+    parent.hidden = !onOff;
+  }
 }
 
 customElements.define("ui-accordion", Accordion);

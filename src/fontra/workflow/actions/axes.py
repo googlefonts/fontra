@@ -23,7 +23,13 @@ from ...core.classes import (
     unstructure,
 )
 from ...core.discretevariationmodel import DiscreteVariationModel
-from ...core.varutils import locationToTuple, makeDenseLocation
+from ...core.varutils import (
+    AxisRange,
+    locationToTuple,
+    makeDenseLocation,
+    subsetLocationDrop,
+    subsetLocationKeep,
+)
 from . import ActionError
 from .base import (
     BaseFilter,
@@ -285,14 +291,6 @@ class SubsetAxes(BaseFilter):
         return mapKerningSourcesAndFilter(kerning, mapping)
 
 
-def subsetLocationKeep(location, axisNames):
-    return {n: v for n, v in location.items() if n in axisNames}
-
-
-def subsetLocationDrop(location, axisNames):
-    return {n: v for n, v in location.items() if n not in axisNames}
-
-
 def getDefaultSourceLocation(axes):
     return {
         axis.name: (
@@ -380,12 +378,14 @@ class BaseMoveDefaultLocation(BaseFilter):
             allAxisNames,
         )
 
-        remainingFontAxisNames = {axis.name for axis in (await self.processedAxes).axes}
+        remainingAxisNames = {axis.name for axis in (await self.processedAxes).axes} | {
+            axis.name for axis in instancer.glyph.axes
+        }
 
         return updateGlyphSourcesAndLayers(
             instancer,
             self._filterNewLocations(newLocations, await self.newDefaultSourceLocation),
-            remainingFontAxisNames,
+            remainingAxisNames,
         )
 
     @async_cached_property
@@ -555,7 +555,7 @@ class TrimAxes(BaseFilter):
             }
 
             if not rangeDict:
-                sourceRanges[axis.name] = (axis.minValue, axis.maxValue)
+                sourceRanges[axis.name] = AxisRange(axis.minValue, axis.maxValue)
                 continue
 
             trimmedAxis.minValue = max(
@@ -593,9 +593,9 @@ class TrimAxes(BaseFilter):
                         if trimmedAxis.minValue <= u <= trimmedAxis.maxValue
                     ]
                 )
-                sourceRanges[axis.name] = tuple(rangeValues)
+                sourceRanges[axis.name] = AxisRange(*rangeValues)
             else:
-                sourceRanges[axis.name] = (
+                sourceRanges[axis.name] = AxisRange(
                     trimmedAxis.minValue,
                     trimmedAxis.maxValue,
                 )
@@ -655,7 +655,8 @@ class TrimAxes(BaseFilter):
         # are unique until they are normalized, and then VariationModel
         # complains.
         localRanges = {
-            axis.name: (axis.minValue, axis.maxValue) for axis in instancer.glyph.axes
+            axis.name: AxisRange(axis.minValue, axis.maxValue)
+            for axis in instancer.glyph.axes
         }
         ranges = localRanges | trimmedRanges
 
@@ -664,18 +665,22 @@ class TrimAxes(BaseFilter):
         return updateGlyphSourcesAndLayers(instancer, newLocations)
 
 
-def trimLocations(originalLocations, ranges):
+def trimLocations(
+    originalLocations: list[dict[str, float]], ranges: dict[str, AxisRange]
+) -> list[dict[str, float]]:
     return [trimLocation(loc, ranges) for loc in originalLocations]
 
 
-def trimLocation(originalLocation, ranges):
+def trimLocation(
+    originalLocation: dict[str, float], ranges: dict[str, AxisRange]
+) -> dict[str, float]:
     newLocation = {**originalLocation}
 
     for axisName, value in originalLocation.items():
         if axisName not in ranges:
             continue
-        minValue, maxValue = ranges[axisName]
-        newLocation[axisName] = max(min(value, maxValue), minValue)
+        axisRange = ranges[axisName]
+        newLocation[axisName] = axisRange.clipValue(value)
 
     return newLocation
 
@@ -781,16 +786,12 @@ def updateKerningTable(
 
 
 def updateGlyphSourcesAndLayers(
-    instancer, newLocations, remainingFontAxisNames=None
+    instancer, newLocations, remainingAxisNames=None
 ) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
 
-    remainingAxisNames = (
-        axisNames
-        if remainingFontAxisNames is None
-        else remainingFontAxisNames | {axis.name for axis in glyph.axes}
-    )
+    remainingAxisNames = axisNames if remainingAxisNames is None else remainingAxisNames
 
     sourcesByLocation = {
         locationToTuple(

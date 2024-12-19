@@ -1,0 +1,523 @@
+{
+"name": "VG_4E00_00",
+"axes": [
+{
+"name": "width",
+"minValue": 629,
+"defaultValue": 682,
+"maxValue": 682
+},
+{
+"name": "weight",
+"minValue": 28,
+"defaultValue": 29,
+"maxValue": 29
+},
+{
+"name": "serif_height",
+"minValue": -26,
+"defaultValue": 0,
+"maxValue": 18
+},
+{
+"name": "serif_width",
+"minValue": -41,
+"defaultValue": 0,
+"maxValue": 26
+}
+],
+"sources": [
+{
+"name": "serif_height=-26,serif_width=0,weight=29,wght=0,width=682",
+"layerName": "serif_height=-26,serif_width=0,weight=29,wght=0,width=682",
+"location": {
+"serif_height": -26,
+"serif_width": 0,
+"weight": 29,
+"wght": 0,
+"width": 682
+}
+},
+{
+"name": "serif_height=0,serif_width=-41,weight=29,wght=0,width=682",
+"layerName": "serif_height=0,serif_width=-41,weight=29,wght=0,width=682",
+"location": {
+"serif_height": 0,
+"serif_width": -41,
+"weight": 29,
+"wght": 0,
+"width": 682
+}
+},
+{
+"name": "serif_height=0,serif_width=0,weight=28,wght=0,width=682",
+"layerName": "serif_height=0,serif_width=0,weight=28,wght=0,width=682",
+"location": {
+"serif_height": 0,
+"serif_width": 0,
+"weight": 28,
+"wght": 0,
+"width": 682
+}
+},
+{
+"name": "serif_height=0,serif_width=0,weight=29,wght=0,width=629",
+"layerName": "serif_height=0,serif_width=0,weight=29,wght=0,width=629",
+"location": {
+"serif_height": 0,
+"serif_width": 0,
+"weight": 29,
+"wght": 0,
+"width": 629
+}
+},
+{
+"name": "serif_height=0,serif_width=0,weight=29,wght=0,width=682",
+"layerName": "serif_height=0,serif_width=0,weight=29,wght=0,width=682",
+"location": {
+"serif_height": 0,
+"serif_width": 0,
+"weight": 29,
+"wght": 0,
+"width": 682
+}
+},
+{
+"name": "serif_height=0,serif_width=26,weight=29,wght=0,width=682",
+"layerName": "serif_height=0,serif_width=26,weight=29,wght=0,width=682",
+"location": {
+"serif_height": 0,
+"serif_width": 26,
+"weight": 29,
+"wght": 0,
+"width": 682
+}
+},
+{
+"name": "serif_height=18,serif_width=0,weight=29,wght=0,width=682",
+"layerName": "serif_height=18,serif_width=0,weight=29,wght=0,width=682",
+"location": {
+"serif_height": 18,
+"serif_width": 0,
+"weight": 29,
+"wght": 0,
+"width": 682
+}
+}
+],
+"layers": {
+"serif_height=-26,serif_width=0,weight=29,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 577,
+"y": 479
+},
+{
+"x": 518.8695652173913,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 641,
+"y": 443.08,
+"type": "cubic"
+},
+{
+"x": 577,
+"y": 479,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=0,serif_width=-41,weight=29,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 603.24,
+"y": 505
+},
+{
+"x": 559.8695652173913,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 651.66,
+"y": 454,
+"type": "cubic"
+},
+{
+"x": 603.24,
+"y": 505,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=0,serif_width=0,weight=28,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 577,
+"y": 505
+},
+{
+"x": 518.0869565217391,
+"y": 429
+},
+{
+"x": 0,
+"y": 429
+},
+{
+"x": 8.478260869565217,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 641,
+"y": 454,
+"type": "cubic"
+},
+{
+"x": 577,
+"y": 505,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=0,serif_width=0,weight=29,wght=0,width=629": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 524,
+"y": 505
+},
+{
+"x": 465.86956521739125,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 599,
+"y": 401,
+"smooth": true
+},
+{
+"x": 615,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 626,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 629,
+"y": 416
+},
+{
+"x": 588,
+"y": 454,
+"type": "cubic"
+},
+{
+"x": 524,
+"y": 505,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=0,serif_width=0,weight=29,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 577,
+"y": 505
+},
+{
+"x": 518.8695652173913,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 641,
+"y": 454,
+"type": "cubic"
+},
+{
+"x": 577,
+"y": 505,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=0,serif_width=26,weight=29,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 559.58,
+"y": 505
+},
+{
+"x": 492.86956521739125,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 634.5,
+"y": 454,
+"type": "cubic"
+},
+{
+"x": 559.58,
+"y": 505,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"serif_height=18,serif_width=0,weight=29,wght=0,width=682": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 577,
+"y": 523
+},
+{
+"x": 518.8695652173913,
+"y": 430
+},
+{
+"x": 0,
+"y": 430
+},
+{
+"x": 8.782608695652174,
+"y": 401
+},
+{
+"x": 652,
+"y": 401,
+"smooth": true
+},
+{
+"x": 668,
+"y": 401,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 404,
+"type": "cubic"
+},
+{
+"x": 682,
+"y": 416
+},
+{
+"x": 641,
+"y": 461.2,
+"type": "cubic"
+},
+{
+"x": 577,
+"y": 523,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+}
+}
+}

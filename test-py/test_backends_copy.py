@@ -53,6 +53,29 @@ def test_fontra_copy(tmpdir):
     ] == fileNamesFromDir(tmpdir)
 
 
+def test_fontra_copy_missing_source(tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    destPath = tmpdir / "MutatorCopy.designspace"
+    result = subprocess.run(
+        ["fontra-copy", tmpdir / "Missing.fontra", destPath],
+        capture_output=True,
+        text=True,
+    )
+    assert "the source file does not exist" in result.stderr
+
+
+def test_fontra_copy_source_dest_match(tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    result = subprocess.run(
+        ["fontra-copy", mutatorDSPath, mutatorDSPath],
+        capture_output=True,
+        text=True,
+    )
+    assert (
+        "the destination file must be different from the source file" in result.stderr
+    )
+
+
 def test_newFileSystemBackend_unknown_filetype():
     with pytest.raises(
         UnknownFileType, match="Can't find backend for files with extension"

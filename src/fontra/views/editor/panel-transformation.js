@@ -1,4 +1,5 @@
 import { registerAction } from "../core/actions.js";
+import { Backend } from "../core/backend-api.js";
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
@@ -9,12 +10,6 @@ import {
   getSelectionByContour,
 } from "/core/path-functions.js";
 import { rectCenter, rectSize } from "/core/rectangle.js";
-import {
-  excludePath,
-  intersectPath,
-  subtractPath,
-  unionPath,
-} from "/core/server-utils.js";
 import { Transform } from "/core/transform.js";
 import {
   enumerate,
@@ -36,13 +31,15 @@ export default class TransformationPanel extends Panel {
     .selection-transformation {
       display: flex;
       flex-direction: column;
-      gap: 1em;
       justify-content: space-between;
       box-sizing: border-box;
       height: 100%;
       width: 100%;
-      padding: 1em;
       white-space: normal;
+    }
+
+    .selection-transformation-form {
+      flex: 1;
     }
   `;
 
@@ -82,11 +79,20 @@ export default class TransformationPanel extends Panel {
   constructor(editorController) {
     super(editorController);
     this.infoForm = new Form();
-
+    this.infoForm.classList.add("selection-transformation-form");
     this.infoForm.appendStyle(TransformationPanel.stylesForm);
     this.contentElement.appendChild(this.infoForm);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
+
+    this.pathOperations = Object.fromEntries(
+      [
+        Backend.unionPath,
+        Backend.subtractPath,
+        Backend.intersectPath,
+        Backend.excludePath,
+      ].map((func) => [func.name, func.bind(Backend)])
+    );
 
     this.transformParameters = {
       scaleX: 100,
@@ -127,10 +133,10 @@ export default class TransformationPanel extends Panel {
     }
 
     const pathActions = [
-      ["union", unionPath],
-      ["subtract", subtractPath],
-      ["intersect", intersectPath],
-      ["exclude", excludePath],
+      ["union", this.pathOperations.unionPath],
+      ["subtract", this.pathOperations.subtractPath],
+      ["intersect", this.pathOperations.intersectPath],
+      ["exclude", this.pathOperations.excludePath],
     ];
     for (const [keyPart, pathOperationFunc] of pathActions) {
       registerAction(
@@ -507,7 +513,8 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doPathOperations(unionPath, "union"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.unionPath, "union"),
           "data-tooltip": translate(`${labelKeyPathOperations}.union`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -518,7 +525,8 @@ export default class TransformationPanel extends Panel {
         key: "subtractContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) => this.doPathOperations(subtractPath, "subtract"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.subtractPath, "subtract"),
           "data-tooltip": translate(`${labelKeyPathOperations}.subtract`),
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -529,7 +537,8 @@ export default class TransformationPanel extends Panel {
         key: "intersectContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
-          "onclick": (event) => this.doPathOperations(intersectPath, "intersect"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.intersectPath, "intersect"),
           "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
@@ -544,7 +553,8 @@ export default class TransformationPanel extends Panel {
         key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(excludePath, "exclude"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.excludePath, "exclude"),
           "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -586,7 +596,7 @@ export default class TransformationPanel extends Panel {
     const undoLabel = translate(
       `sidebar.selection-transformation.path-operations.${key}`
     );
-    const doUnion = pathOperationFunc === unionPath;
+    const doUnion = pathOperationFunc === this.pathOperations.unionPath;
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 

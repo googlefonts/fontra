@@ -1,0 +1,66 @@
+{
+"name": "uni4FFC",
+"sources": [
+{
+"name": "wght=0",
+"layerName": "wght=0",
+"location": {
+"wght": 0
+}
+},
+{
+"name": "wght=0.35997",
+"layerName": "wght=0.35997",
+"location": {
+"wght": 0.35996704883730246
+}
+}
+],
+"layers": {
+"wght=0": {
+"glyph": {
+"components": [
+{
+"name": "T_4EBB_2FF0",
+"location": {
+"S_moveH": 6,
+"S_top_moveV": -5,
+"width": 309
+}
+},
+{
+"name": "T_2FF0_80B2",
+"location": {
+"width": 629
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"wght=0.35997": {
+"glyph": {
+"components": [
+{
+"name": "T_4EBB_2FF0",
+"location": {
+"S_moveH": 3.1202636093015803,
+"S_top_moveV": -5,
+"width": 308.6400329511627
+}
+},
+{
+"name": "T_2FF0_80B2",
+"transformation": {
+"translateX": -3.5996704883730244
+},
+"location": {
+"width": 643.3986819534921
+}
+}
+],
+"xAdvance": 1000
+}
+}
+}
+}

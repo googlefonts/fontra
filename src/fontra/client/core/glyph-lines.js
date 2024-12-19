@@ -1,4 +1,4 @@
-import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./server-utils.js";
+import { Backend } from "./backend-api.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
 export async function glyphLinesFromText(text, characterMap, glyphMap) {
@@ -56,7 +56,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
             // a glyph name associated with that character
             let properBaseGlyphName = characterMap[baseCharCode];
             if (!properBaseGlyphName) {
-              properBaseGlyphName = await getSuggestedGlyphName(baseCharCode);
+              properBaseGlyphName = await Backend.getSuggestedGlyphName(baseCharCode);
             }
             if (properBaseGlyphName) {
               glyphName = properBaseGlyphName + extension;
@@ -67,7 +67,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           } else {
             // This is a regular glyph name, but it doesn't exist in the font.
             // Try to see if there's a code point associated with it.
-            const codePoint = await getCodePointFromGlyphName(glyphName);
+            const codePoint = await Backend.getCodePointFromGlyphName(glyphName);
             if (codePoint) {
               char = String.fromCodePoint(codePoint);
             }
@@ -85,7 +85,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
     if (glyphName !== "") {
       let isUndefined = false;
       if (!glyphName && char) {
-        glyphName = await getSuggestedGlyphName(char.codePointAt(0));
+        glyphName = await Backend.getSuggestedGlyphName(char.codePointAt(0));
         isUndefined = true;
       } else if (glyphName) {
         isUndefined = !(glyphName in glyphMap);

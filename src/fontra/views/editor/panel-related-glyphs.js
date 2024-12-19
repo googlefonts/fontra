@@ -1,10 +1,7 @@
 import Panel from "./panel.js";
+import { Backend } from "/core/backend-api.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import {
-  getCodePointFromGlyphName,
-  getSuggestedGlyphName,
-} from "/core/server-utils.js";
 import { unicodeMadeOf, unicodeUsedBy } from "/core/unicode-utils.js";
 
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
@@ -128,7 +125,7 @@ export default class RelatedGlyphPanel extends Panel {
     const character = glyphName
       ? getCharFromCodePoint(
           this.fontController.codePointForGlyph(glyphName) ||
-            (await getCodePointFromGlyphName(glyphName))
+            (await Backend.getCodePointFromGlyphName(glyphName))
         ) || ""
       : "";
     const codePoint = character ? character.codePointAt(0) : undefined;
@@ -148,6 +145,7 @@ export default class RelatedGlyphPanel extends Panel {
 
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item, glyphName, codePoint).then((hasResult) => {
+        this.accordion.showHideAccordionItem(item, hasResult);
         results.push(hasResult);
         if (results.length === this.accordion.items.length) {
           if (!results.some((hasResult) => hasResult)) {
@@ -170,7 +168,6 @@ export default class RelatedGlyphPanel extends Panel {
 
   async _updateAccordionItem(item, glyphName, codePoint) {
     const element = item.content;
-    const parent = findParentWithClass(element, "ui-accordion-item");
 
     element.innerHTML = "";
     let hideAccordionItem = true;
@@ -217,7 +214,6 @@ export default class RelatedGlyphPanel extends Panel {
         element.innerHTML = "";
       }
     }
-    parent.hidden = hideAccordionItem;
     return !hideAccordionItem;
   }
 
@@ -343,7 +339,7 @@ async function _getRelatedUnicode(
   for (const codePoint of usedByCodePoints) {
     const glyphName =
       fontController.characterMap[codePoint] ||
-      (await getSuggestedGlyphName(codePoint));
+      (await Backend.getSuggestedGlyphName(codePoint));
     glyphInfo.push({ glyphName, codePoints: [codePoint] });
   }
   return glyphInfo;
@@ -354,14 +350,6 @@ function addCharInfo(fontController, glyphNames) {
   return glyphNames.map((glyphName) => {
     return { glyphName, codePoints: glyphMap[glyphName] || [] };
   });
-}
-
-function findParentWithClass(element, parentClass) {
-  let parent = element;
-  do {
-    parent = parent.parentElement;
-  } while (parent && !parent.classList.contains(parentClass));
-  return parent;
 }
 
 customElements.define("panel-related-glyph", RelatedGlyphPanel);

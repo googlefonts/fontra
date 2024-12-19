@@ -4,6 +4,7 @@ import {
   getActionIdentifierFromKeyEvent,
   registerAction,
 } from "../core/actions.js";
+import { Backend } from "../core/backend-api.js";
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { applyChange } from "../core/changes.js";
@@ -26,9 +27,7 @@ import {
   rectSize,
   rectToArray,
 } from "../core/rectangle.js";
-import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
-import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
@@ -93,6 +92,7 @@ import {
   translate,
   translatePlural,
 } from "/core/localization.js";
+import { ViewController } from "/core/view-controller.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -101,28 +101,9 @@ const PASTE_BEHAVIOR_ADD = "add";
 
 const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
 
-export class EditorController {
-  static async fromWebSocket() {
-    const pathItems = window.location.pathname.split("/").slice(3);
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = `Fontra — ${decodeURI(displayPath)}`;
-    const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
-
-    await ensureLanguageHasLoaded;
-
-    const remoteFontEngine = await getRemoteProxy(wsURL);
-    const editorController = new EditorController(remoteFontEngine);
-    remoteFontEngine.receiver = editorController;
-    remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
-    remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
-
-    await editorController.start();
-    return editorController;
-  }
-
+export class EditorController extends ViewController {
   constructor(font) {
+    super(font);
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
@@ -2221,7 +2202,7 @@ export class EditorController {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      const glyph = await this.parseClipboard(plainText);
+      const glyph = await Backend.parseClipboard(plainText);
       if (glyph) {
         pasteLayerGlyphs = [{ glyph }];
       }
@@ -2382,11 +2363,6 @@ export class EditorController {
       undefined,
       true
     );
-  }
-
-  async parseClipboard(data) {
-    const result = await parseClipboard(data);
-    return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
   canDelete() {
@@ -3166,7 +3142,7 @@ export class EditorController {
       usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
     );
 
-    const glyphsSearch = document.createElement("glyphs-search");
+    const glyphsSearch = document.createElement("glyphs-search-list");
     glyphsSearch.glyphMap = glyphMap;
 
     glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
@@ -3241,7 +3217,7 @@ export class EditorController {
     titleLabel = translate("dialog.glyphs.search"),
     okLabel = translate("dialog.add")
   ) {
-    const glyphsSearch = document.createElement("glyphs-search");
+    const glyphsSearch = document.createElement("glyphs-search-list");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 
     glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
@@ -3399,11 +3375,6 @@ export class EditorController {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
-  }
-
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
   }
 
   async setupFromWindowLocation() {
