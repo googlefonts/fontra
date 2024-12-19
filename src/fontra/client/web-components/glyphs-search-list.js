@@ -11,6 +11,17 @@ import {
 } from "/core/utils.js";
 
 export class GlyphsSearchList extends UnlitElement {
+  static styles = `
+    :host {
+      display: grid;
+      gap: 1em;
+      grid-template-rows: auto 1fr;
+      box-sizing: border-box;
+      overflow: hidden;
+      align-content: start;
+    }
+  `;
+
   constructor() {
     super();
     this.glyphsListItemsController = new ObservableController({
