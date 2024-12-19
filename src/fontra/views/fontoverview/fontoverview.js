@@ -271,6 +271,12 @@ export class FontOverviewController extends ViewController {
   }
 
   async handleSingleClick(event, glyphCell) {
+    if (event.detail > 1) {
+      // Part of a double click, we should do nothing and let handleDoubleClick
+      // deal with the event
+      return;
+    }
+
     const glyphName = glyphCell.glyphName;
 
     if (this.glyphSelection.has(glyphName)) {
