@@ -41,30 +41,6 @@ const colors = {
   "search-input-background-color": ["#eee", "#333"],
 };
 
-function glyphItemSortFunc(item1, item2) {
-  const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
-  const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
-  return uniCmp ? uniCmp : glyphNameCmp;
-}
-
-function glyphFilterFunc(item, searchItems) {
-  if (!searchItems.length) {
-    return true;
-  }
-  for (const searchString of searchItems) {
-    if (item.glyphName.indexOf(searchString) >= 0) {
-      return true;
-    }
-    if (item.unicodes[0] !== undefined) {
-      const char = String.fromCodePoint(item.unicodes[0]);
-      if (searchString === char) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 function compare(a, b) {
   // sort undefined at the end
   if (a === b) {
