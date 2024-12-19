@@ -140,7 +140,7 @@ export class FontOverviewController extends ViewController {
       this.throttledUpdate
     );
 
-    // This is the inital load of the overview
+    // This is the initial load of the overview
     await this.update();
   }
 
