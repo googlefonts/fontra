@@ -289,6 +289,10 @@ export class FontOverviewController extends ViewController {
   }
 
   async handleDoubleClick(element, glyphName, codePoints) {
+    const selectedGlyphs = this.glyphs.filter((glyphInfo) =>
+      this.glyphSelection.has(glyphInfo.glyphName)
+    );
+
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
@@ -299,22 +303,16 @@ export class FontOverviewController extends ViewController {
       this.fontController.mapSourceLocationToUserLocation(sourceLocation);
 
     const viewInfo = {
-      selectedGlyph: glyphName, // TODO: selectedGlyph does not work. I am wondering if we need to set this.sceneSettings.selectedGlyph;
       location: userLocation,
       text: "",
     };
 
-    // if glyphName is not in the selection, it's a double click on a single glyph outside of the selection
-    if (!this.glyphSelection.some((glyph) => glyph.glyphName === glyphName)) {
-      for (const cell of element.children) {
-        if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
-          cell.selected = false;
-        }
-      }
-      this.glyphSelection = [{ glyphName: glyphName, codePoints: codePoints }];
+    if (selectedGlyphs.length === 1) {
+      viewInfo.selectedGlyph = { lineIndex: 0, glyphIndex: 0, isEditing: true };
     }
 
-    for (const { glyphName, codePoints } of this.glyphSelection) {
+    for (const { glyphName, unicodes } of selectedGlyphs) {
+      const codePoints = unicodes;
       if (codePoints.length) {
         viewInfo.text +=
           0x002f === codePoints[0] ? "//" : String.fromCodePoint(codePoints[0]);
