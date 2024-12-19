@@ -12,7 +12,6 @@ import {
 import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { translate } from "/core/localization.js";
-import { findParentWithClass } from "/editor/panel-related-glyphs.js"; // see TODOs below.
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { message } from "/web-components/modal-dialog.js";
 import { Accordion } from "/web-components/ui-accordion.js";
@@ -701,4 +700,12 @@ export class FontOverviewController {
   handleRemoteError(event) {
     //
   }
+}
+
+function findParentWithClass(element, parentClass) {
+  let parent = element;
+  do {
+    parent = parent.parentElement;
+  } while (parent && !parent.classList.contains(parentClass));
+  return parent;
 }
