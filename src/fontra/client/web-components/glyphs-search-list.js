@@ -35,6 +35,11 @@ export class GlyphsSearchList extends UnlitElement {
     this.glyphNamesList = this.makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
+
+    this.glyphsListItemsController.addKeyListener(
+      "glyphsListItems",
+      this.throttledUpdate
+    );
   }
 
   makeGlyphNamesList() {
@@ -93,10 +98,6 @@ export class GlyphsSearchList extends UnlitElement {
   }
 
   async render() {
-    this.glyphsListItemsController.addKeyListener(
-      "glyphsListItems",
-      this.throttledUpdate
-    );
     return [this.searchField, this.glyphNamesList];
   }
 
