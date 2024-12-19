@@ -582,7 +582,7 @@ export default class TransformationPanel extends Panel {
     const undoLabel = translate(
       `sidebar.selection-transformation.path-operations.${key}`
     );
-    const doUnion = pathOperationFunc === unionPath;
+    const doUnion = pathOperationFunc === Backend.unionPath;
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 
@@ -629,9 +629,12 @@ export default class TransformationPanel extends Panel {
           }
         }
         if (doUnion) {
-          return await pathOperationFunc(selectedContoursPath);
+          return await pathOperationFunc.bind(Backend)(selectedContoursPath);
         } else {
-          return await pathOperationFunc(unselectedContoursPath, selectedContoursPath);
+          return await pathOperationFunc.bind(Backend)(
+            unselectedContoursPath,
+            selectedContoursPath
+          );
         }
       }
     );
