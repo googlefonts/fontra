@@ -1,5 +1,14 @@
 # Changelog for Fontra
 
+## 2024-12-19
+
+- Making the interface between server and client more explicit [PR 1863](https://github.com/googlefonts/fontra/pull/1863)
+- Fixed editing bug with multiple edit views [PR 1870](https://github.com/googlefonts/fontra/pull/1870)
+- Prevent `fontra-copy` and Fontra Pak's "Export as..." to write on top of the source data (as this destroyed the data)
+  - `fontra-copy`: [PR 1860](https://github.com/googlefonts/fontra/pull/1860)
+  - Fontra Pak: [PR 148](https://github.com/googlefonts/fontra-pak/pull/148)
+- Fontra Pak: add button with link to documentation [PR 143](https://github.com/googlefonts/fontra-pak/pull/143)
+
 ## 2024-12-04
 
 - Fixes "clean view" (space bar) on Safari [PR 1835](https://github.com/googlefonts/fontra/pull/1835)
