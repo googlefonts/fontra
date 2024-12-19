@@ -109,6 +109,13 @@ export class FontOverviewController extends ViewController {
 
   async _start() {
     await this.fontController.initialize();
+    const rootSubscriptionPattern = {};
+    for (const rootKey of this.fontController.getRootKeys()) {
+      rootSubscriptionPattern[rootKey] = null;
+    }
+    rootSubscriptionPattern["glyphs"] = null;
+    await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
+
     this.fontSources = await this.fontController.getSources();
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
@@ -135,6 +142,11 @@ export class FontOverviewController extends ViewController {
 
     // This is the inital load of the overview
     await this.update();
+  }
+
+  async externalChange(change, isLiveChange) {
+    await this.fontController.applyChange(change, true);
+    this.fontController.notifyChangeListeners(change, isLiveChange, true);
   }
 
   async _getSidebarForGlyphOverview() {
