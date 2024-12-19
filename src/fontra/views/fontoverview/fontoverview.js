@@ -214,8 +214,7 @@ export class FontOverviewController extends ViewController {
           this.locationController,
           "fontLocationSourceMapped"
         );
-        glyphCell.ondblclick = (event) =>
-          this.handleDoubleClick(element, glyphName, unicodes);
+        glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
         glyphCell.onclick = (event) => {
           this.handleSingleClick(event, glyphCell);
         };
@@ -292,7 +291,7 @@ export class FontOverviewController extends ViewController {
     }
   }
 
-  async handleDoubleClick(element, glyphName, codePoints) {
+  async handleDoubleClick(event, glyphCell) {
     const selectedGlyphs = this.glyphs.filter((glyphInfo) =>
       this.glyphSelection.has(glyphInfo.glyphName)
     );
