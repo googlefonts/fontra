@@ -2,20 +2,18 @@ import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { getRemoteProxy } from "/core/remote.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
+  dumpURLFragment,
   enumerate,
   modulo,
   range,
+  throttleCalls,
 } from "/core/utils.js";
-import { mapAxesFromUserSpaceToSourceSpace } from "/core/var-model.js";
 import { ViewController } from "/core/view-controller.js";
-import { makeDisplayPath } from "/core/view-utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
-import { message } from "/web-components/modal-dialog.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 // TODOs:
@@ -23,16 +21,6 @@ import { Accordion } from "/web-components/ui-accordion.js";
 // - Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
 // - Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
 // - Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
-
-// START OF COPY: This is a copy of GlyphsSearch but without the list of glyph names
-import { UnlitElement, div, label, option, select } from "/core/html-utils.js";
-import {
-  dumpURLFragment,
-  getCharFromCodePoint,
-  guessCharFromGlyphName,
-  makeUPlusStringFromCodePoint,
-  throttleCalls,
-} from "/core/utils.js";
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
@@ -70,9 +58,7 @@ export class FontOverviewController extends ViewController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
 
     this.fontSources = await this.fontController.getSources();
-    this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
-      this.fontController.axes.axes
-    );
+
     this.sortedSourceIdentifiers =
       await this.fontController.getSortedSourceIdentifiers();
     this.currentFontSourceIdentifier =
@@ -101,7 +87,7 @@ export class FontOverviewController extends ViewController {
     const element = html.div({ class: "font-overview-sidebar" });
 
     // font source selector
-    this.fontSourceInput = select(
+    this.fontSourceInput = html.select(
       {
         id: "font-source-select",
         style: "width: 100%;",
@@ -120,7 +106,7 @@ export class FontOverviewController extends ViewController {
     for (const fontSourceIdentifier of this.sortedSourceIdentifiers) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
-        option(
+        html.option(
           {
             value: fontSourceIdentifier,
             selected: this.currentFontSourceIdentifier === fontSourceIdentifier,
@@ -130,12 +116,12 @@ export class FontOverviewController extends ViewController {
       );
     }
 
-    const fontSourceSelector = div(
+    const fontSourceSelector = html.div(
       {
         class: "font-source-selector",
       },
       [
-        label(
+        html.label(
           { for: "font-source-select" },
           translate("sidebar.font-overview.font-source")
         ),
@@ -519,11 +505,6 @@ export class FontOverviewController extends ViewController {
       }
     }
     this.glyphSelection = [];
-  }
-
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
   }
 
   async getGlyphs(section) {
