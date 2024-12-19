@@ -85,6 +85,15 @@ export default class TransformationPanel extends Panel {
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
+    this.pathOperations = Object.fromEntries(
+      [
+        Backend.unionPath,
+        Backend.subtractPath,
+        Backend.intersectPath,
+        Backend.excludePath,
+      ].map((func) => [func.name, func.bind(Backend)])
+    );
+
     this.transformParameters = {
       scaleX: 100,
       scaleY: undefined,
@@ -124,10 +133,10 @@ export default class TransformationPanel extends Panel {
     }
 
     const pathActions = [
-      ["union", Backend.unionPath],
-      ["subtract", Backend.subtractPath],
-      ["intersect", Backend.intersectPath],
-      ["exclude", Backend.excludePath],
+      ["union", this.pathOperations.unionPath],
+      ["subtract", this.pathOperations.subtractPath],
+      ["intersect", this.pathOperations.intersectPath],
+      ["exclude", this.pathOperations.excludePath],
     ];
     for (const [keyPart, pathOperationFunc] of pathActions) {
       registerAction(
@@ -504,7 +513,8 @@ export default class TransformationPanel extends Panel {
         key: "removeOverlaps",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-union.svg",
-          "onclick": (event) => this.doPathOperations(Backend.unionPath, "union"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.unionPath, "union"),
           "data-tooltip": translate(`${labelKeyPathOperations}.union`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -515,7 +525,8 @@ export default class TransformationPanel extends Panel {
         key: "subtractContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-subtract.svg",
-          "onclick": (event) => this.doPathOperations(Backend.subtractPath, "subtract"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.subtractPath, "subtract"),
           "data-tooltip": translate(`${labelKeyPathOperations}.subtract`),
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -527,7 +538,7 @@ export default class TransformationPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-intersect-2.svg",
           "onclick": (event) =>
-            this.doPathOperations(Backend.intersectPath, "intersect"),
+            this.doPathOperations(this.pathOperations.intersectPath, "intersect"),
           "data-tooltip": translate(`${labelKeyPathOperations}.intersect`),
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
@@ -542,7 +553,8 @@ export default class TransformationPanel extends Panel {
         key: "excludeContours",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layers-difference.svg",
-          "onclick": (event) => this.doPathOperations(Backend.excludePath, "exclude"),
+          "onclick": (event) =>
+            this.doPathOperations(this.pathOperations.excludePath, "exclude"),
           "data-tooltip": translate(`${labelKeyPathOperations}.exclude`),
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -584,7 +596,7 @@ export default class TransformationPanel extends Panel {
     const undoLabel = translate(
       `sidebar.selection-transformation.path-operations.${key}`
     );
-    const doUnion = pathOperationFunc === Backend.unionPath;
+    const doUnion = pathOperationFunc === this.pathOperations.unionPath;
     let { point: pointIndices } = parseSelection(this.sceneController.selection);
     pointIndices = pointIndices || [];
 
@@ -631,12 +643,9 @@ export default class TransformationPanel extends Panel {
           }
         }
         if (doUnion) {
-          return await pathOperationFunc.bind(Backend)(selectedContoursPath);
+          return await pathOperationFunc(selectedContoursPath);
         } else {
-          return await pathOperationFunc.bind(Backend)(
-            unselectedContoursPath,
-            selectedContoursPath
-          );
+          return await pathOperationFunc(unselectedContoursPath, selectedContoursPath);
         }
       }
     );
