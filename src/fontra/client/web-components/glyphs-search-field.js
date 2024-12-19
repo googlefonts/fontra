@@ -12,15 +12,6 @@ export class GlyphsSearchField extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
-    :host {
-      display: grid;
-      gap: 1em;
-      grid-template-rows: auto 1fr;
-      box-sizing: border-box;
-      overflow: hidden;
-      align-content: start;
-    }
-
     input {
       color: var(--search-input-foreground-color);
       background-color: var(--search-input-background-color);

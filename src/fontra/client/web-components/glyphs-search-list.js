@@ -11,6 +11,17 @@ import {
 } from "/core/utils.js";
 
 export class GlyphsSearchList extends UnlitElement {
+  static styles = `
+    :host {
+      display: grid;
+      gap: 1em;
+      grid-template-rows: auto 1fr;
+      box-sizing: border-box;
+      overflow: hidden;
+      align-content: start;
+    }
+  `;
+
   constructor() {
     super();
     this.glyphsListItemsController = new ObservableController({
@@ -24,6 +35,11 @@ export class GlyphsSearchList extends UnlitElement {
     this.glyphNamesList = this.makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
+
+    this.glyphsListItemsController.addKeyListener(
+      "glyphsListItems",
+      this.throttledUpdate
+    );
   }
 
   makeGlyphNamesList() {
@@ -82,10 +98,6 @@ export class GlyphsSearchList extends UnlitElement {
   }
 
   async render() {
-    this.glyphsListItemsController.addKeyListener(
-      "glyphsListItems",
-      this.throttledUpdate
-    );
     return [this.searchField, this.glyphNamesList];
   }
 
