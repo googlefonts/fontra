@@ -17,8 +17,6 @@ import { message } from "/web-components/modal-dialog.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 // TODOs:
-// - Refactor GlyphsSearch, please see #1867
-// - Refactor findParentWithClass: please see #1866
 // - Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
 // - Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
 // - Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
@@ -360,6 +358,7 @@ export class FontOverviewController {
 
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item).then((hasResult) => {
+        this.accordion.showHideAccordionItem(item, hasResult);
         results.push(hasResult);
       });
     }
@@ -367,7 +366,6 @@ export class FontOverviewController {
 
   async _updateAccordionItem(item) {
     const element = item.content;
-    const parent = findParentWithClass(element, "ui-accordion-item");
 
     element.innerHTML = "";
     let hideAccordionItem = true;
@@ -419,7 +417,6 @@ export class FontOverviewController {
       element.innerHTML = "";
     }
 
-    parent.hidden = hideAccordionItem;
     return !hideAccordionItem;
   }
 
@@ -700,12 +697,4 @@ export class FontOverviewController {
   handleRemoteError(event) {
     //
   }
-}
-
-function findParentWithClass(element, parentClass) {
-  let parent = element;
-  do {
-    parent = parent.parentElement;
-  } while (parent && !parent.classList.contains(parentClass));
-  return parent;
 }
