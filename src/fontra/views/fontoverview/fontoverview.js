@@ -33,29 +33,6 @@ import {
   makeUPlusStringFromCodePoint,
   throttleCalls,
 } from "/core/utils.js";
-import { themeColorCSS } from "/web-components/theme-support.js";
-import { UIList } from "/web-components/ui-list.js";
-
-const colors = {
-  "search-input-foreground-color": ["black", "white"],
-  "search-input-background-color": ["#eee", "#333"],
-};
-
-function compare(a, b) {
-  // sort undefined at the end
-  if (a === b) {
-    return 0;
-  } else if (a === undefined) {
-    return 1;
-  } else if (b === undefined) {
-    return -1;
-  } else if (a < b) {
-    return -1;
-  } else {
-    return 1;
-  }
-}
-// END OF COPY
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
