@@ -1,5 +1,5 @@
-import { FontController } from "/core/font-controller.js";
 import * as html from "/core/html-utils.js";
+import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
 import { getRemoteProxy } from "/core/remote.js";
@@ -11,6 +11,7 @@ import {
   range,
 } from "/core/utils.js";
 import { mapAxesFromUserSpaceToSourceSpace } from "/core/var-model.js";
+import { ViewController } from "/core/view-controller.js";
 import { makeDisplayPath } from "/core/view-utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
@@ -80,28 +81,9 @@ function compare(a, b) {
 }
 // END OF COPY
 
-export class FontOverviewController {
-  static async fromWebSocket() {
-    const pathItems = window.location.pathname.split("/").slice(3);
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = `Fontra Font Overview — ${decodeURI(displayPath)}`;
-    const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
-
-    const remoteFontEngine = await getRemoteProxy(wsURL);
-    const fontOverviewController = new FontOverviewController(remoteFontEngine);
-    remoteFontEngine.receiver = fontOverviewController;
-    remoteFontEngine.onclose = (event) =>
-      fontOverviewController.handleRemoteClose(event);
-    remoteFontEngine.onerror = (event) =>
-      fontOverviewController.handleRemoteError(event);
-    await fontOverviewController.start();
-    return fontOverviewController;
-  }
-
+export class FontOverviewController extends ViewController {
   constructor(font) {
-    this.fontController = new FontController(font);
+    super(font);
 
     this.locationController = new ObservableController({
       fontLocationSourceMapped: {},
@@ -122,6 +104,10 @@ export class FontOverviewController {
   }
 
   async start() {
+    await loaderSpinner(this._start());
+  }
+
+  async _start() {
     await this.fontController.initialize();
     this.fontSources = await this.fontController.getSources();
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(

@@ -12,6 +12,7 @@
   </head>
   <body>
     <modal-dialog></modal-dialog>
+    <div id="global-loader-spinner"></div>
     <div class="main-container">
       <div id="sidebar-container" class="font-overview-sidebar-shadow-box"></div>
       <div id="panel-container"></div>
@@ -21,7 +22,7 @@
     import { FontOverviewController } from "/fontoverview/fontoverview.js";
 
     async function startApp() {
-      window.fontOverviewController = await FontOverviewController.fromWebSocket();
+      window.fontOverviewController = await FontOverviewController.fromBackend();
     }
 
     startApp();
