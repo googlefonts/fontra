@@ -1,17 +1,17 @@
-import { FontController } from "../core/font-controller.js";
-import * as html from "../core/html-utils.js";
-import { ObservableController } from "../core/observable-object.js";
-import { getRemoteProxy } from "../core/remote.js";
+import { FontController } from "/core/font-controller.js";
+import * as html from "/core/html-utils.js";
+import { translate } from "/core/localization.js";
+import { ObservableController } from "/core/observable-object.js";
+import { getRemoteProxy } from "/core/remote.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
   enumerate,
   modulo,
   range,
-} from "../core/utils.js";
-import { mapAxesFromUserSpaceToSourceSpace } from "../core/var-model.js";
-import { makeDisplayPath } from "../core/view-utils.js";
-import { translate } from "/core/localization.js";
+} from "/core/utils.js";
+import { mapAxesFromUserSpaceToSourceSpace } from "/core/var-model.js";
+import { makeDisplayPath } from "/core/view-utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
 import { message } from "/web-components/modal-dialog.js";
