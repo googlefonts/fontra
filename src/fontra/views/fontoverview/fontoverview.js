@@ -144,11 +144,6 @@ export class FontOverviewController extends ViewController {
     await this.update();
   }
 
-  async externalChange(change, isLiveChange) {
-    await this.fontController.applyChange(change, true);
-    this.fontController.notifyChangeListeners(change, isLiveChange, true);
-  }
-
   async _getSidebarForGlyphOverview() {
     const element = html.div({ class: "font-overview-sidebar" });
 
