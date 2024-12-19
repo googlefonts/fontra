@@ -93,7 +93,7 @@ export class GlyphCell extends UnlitElement {
     this._glyphCharacter = this.codePoints?.[0]
       ? getCharFromCodePoint(this.codePoints[0]) || ""
       : "";
-    this.isSelected = false;
+    this._selected = false;
   }
 
   connectedCallback() {
@@ -231,18 +231,22 @@ export class GlyphCell extends UnlitElement {
     ]);
 
     // update the selected state if updating the glyph, for example: when changing the location or scrolling
-    this.setIsSelected(this.isSelected);
+    this._updateSelectedState();
 
     return this._glyphCellContent;
   }
 
-  setIsSelected(isSelected) {
-    this.isSelected = isSelected;
-    if (this.isSelected) {
-      this._glyphCellContent.classList.add("selected");
-    } else {
-      this._glyphCellContent.classList.remove("selected");
-    }
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(onOff) {
+    this._selected = onOff;
+    this._updateSelectedState();
+  }
+
+  _updateSelectedState() {
+    this._glyphCellContent.classList.toggle("selected", this._selected);
   }
 }
 

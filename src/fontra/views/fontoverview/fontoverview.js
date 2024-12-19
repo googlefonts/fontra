@@ -320,7 +320,7 @@ export class FontOverviewController extends ViewController {
         );
         const index = this.glyphSelection.indexOf(glyph);
         this.glyphSelection.splice(index, 1);
-        glyphCell.setIsSelected(false);
+        glyphCell.selected = false;
 
         // we removed the last clicked glyph, therefore set the last glyph of selection as last clicked glyph
         this.lastGlyphSelected =
@@ -328,7 +328,7 @@ export class FontOverviewController extends ViewController {
       } else {
         // add single character to selection with command key
         this.glyphSelection.push({ glyphName: glyphName, codePoints: unicodes });
-        glyphCell.setIsSelected(true);
+        glyphCell.selected = true;
         this.lastGlyphSelected = glyphName;
       }
       return;
@@ -351,7 +351,7 @@ export class FontOverviewController extends ViewController {
           glyphName: cell.glyphName,
           codePoints: cell.codePoints,
         });
-        cell.setIsSelected(true);
+        cell.selected = true;
       }
     } else {
       // replace selection
@@ -359,7 +359,7 @@ export class FontOverviewController extends ViewController {
       this.deselectAllGlyphs();
       // then add the new selected glyph
       this.glyphSelection = [{ glyphName: glyphName, codePoints: unicodes }];
-      glyphCell.setIsSelected(true);
+      glyphCell.selected = true;
       this.lastGlyphSelected = glyphName;
     }
   }
@@ -384,7 +384,7 @@ export class FontOverviewController extends ViewController {
     if (!this.glyphSelection.some((glyph) => glyph.glyphName === glyphName)) {
       for (const cell of element.children) {
         if (this.glyphSelection.some((glyph) => glyph.glyphName === cell.glyphName)) {
-          cell.setIsSelected(false);
+          cell.selected = false;
         }
       }
       this.glyphSelection = [{ glyphName: glyphName, codePoints: codePoints }];
@@ -465,7 +465,7 @@ export class FontOverviewController extends ViewController {
       if (!event.shiftKey && !event[commandKeyProperty]) {
         this.deselectAllGlyphs();
         this.glyphSelection = [newGlyph];
-        newGlyphCell.setIsSelected(true);
+        newGlyphCell.selected = true;
       } else {
         // add or remove multiple glyph cells to the selection with left and right arrow keys
         const minIndex = Math.min(index, newIndex);
@@ -485,10 +485,10 @@ export class FontOverviewController extends ViewController {
             // seems like we need to remove glyphs from the selection
             const j = this.glyphSelection.indexOf(glyph);
             this.glyphSelection.splice(j, 1);
-            glyphCell.setIsSelected(false);
+            glyphCell.selected = false;
           } else {
             this.glyphSelection.push(glyph);
-            glyphCell.setIsSelected(true);
+            glyphCell.selected = true;
           }
         }
       }
@@ -527,16 +527,16 @@ export class FontOverviewController extends ViewController {
     if (!event.shiftKey && !event[commandKeyProperty]) {
       this.deselectAllGlyphs();
       this.glyphSelection = [newGlyph];
-      newGlyphCell.setIsSelected(true);
+      newGlyphCell.selected = true;
     } else {
       if (newGlyphCell.isSelected) {
         // remove glyph from selection
         const i = this.glyphSelection.indexOf(newGlyph);
         this.glyphSelection.splice(i, 1);
-        newGlyphCell.setIsSelected(false);
+        newGlyphCell.selected = false;
       } else {
         this.glyphSelection.push(newGlyph);
-        newGlyphCell.setIsSelected(true);
+        newGlyphCell.selected = true;
       }
     }
 
@@ -562,7 +562,7 @@ export class FontOverviewController extends ViewController {
       if (
         this.glyphSelection.some((glyph) => glyph.glyphName === glyphCell.glyphName)
       ) {
-        glyphCell.setIsSelected(false);
+        glyphCell.selected = false;
       }
     }
     this.glyphSelection = [];
