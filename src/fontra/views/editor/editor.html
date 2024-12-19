@@ -106,7 +106,7 @@
     import { EditorController } from "/editor/editor.js";
 
     async function startApp() {
-      window.editorController = await EditorController.fromWebSocket();
+      window.editorController = await EditorController.fromBackend();
     }
 
     startApp();

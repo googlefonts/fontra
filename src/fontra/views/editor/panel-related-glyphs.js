@@ -1,10 +1,7 @@
 import Panel from "./panel.js";
+import { Backend } from "/core/backend-api.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import {
-  getCodePointFromGlyphName,
-  getSuggestedGlyphName,
-} from "/core/server-utils.js";
 import { unicodeMadeOf, unicodeUsedBy } from "/core/unicode-utils.js";
 
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
@@ -128,7 +125,7 @@ export default class RelatedGlyphPanel extends Panel {
     const character = glyphName
       ? getCharFromCodePoint(
           this.fontController.codePointForGlyph(glyphName) ||
-            (await getCodePointFromGlyphName(glyphName))
+            (await Backend.getCodePointFromGlyphName(glyphName))
         ) || ""
       : "";
     const codePoint = character ? character.codePointAt(0) : undefined;
@@ -342,7 +339,7 @@ async function _getRelatedUnicode(
   for (const codePoint of usedByCodePoints) {
     const glyphName =
       fontController.characterMap[codePoint] ||
-      (await getSuggestedGlyphName(codePoint));
+      (await Backend.getSuggestedGlyphName(codePoint));
     glyphInfo.push({ glyphName, codePoints: [codePoint] });
   }
   return glyphInfo;
