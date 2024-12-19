@@ -111,6 +111,10 @@ export class Accordion extends UnlitElement {
     return this.shadowRoot.querySelector(selector);
   }
 
+  querySelectorAll(selector) {
+    return this.shadowRoot.querySelectorAll(selector);
+  }
+
   _toggleItem(itemElement) {
     itemElement.classList.toggle("ui-accordion-item-closed");
   }
