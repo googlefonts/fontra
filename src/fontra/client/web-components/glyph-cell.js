@@ -9,14 +9,19 @@ import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],
-  "cell-hover-color": ["#E0E0E0", "#606060"],
-  "cell-active-color": ["#D8D8D8", "#686868"],
+  "cell-hover-color": ["#E5E5E5", "#606060"],
+  "cell-active-color": ["#D8D8D8", "#6F6F6F"],
+  "cell-selected-color": ["#C8C8C8", "#8F8F8F"],
   "glyph-shape-placeholder-color": ["#AAA", "#AAA"],
 };
 
 export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
+
+  :host {
+    display: inline-block;
+  }
 
   #glyph-cell-container {
     background-color: var(--cell-background-color);
@@ -34,6 +39,10 @@ export class GlyphCell extends UnlitElement {
 
   #glyph-cell-container:active {
     background-color: var(--cell-active-color);
+  }
+
+  #glyph-cell-container.selected {
+    background-color: var(--cell-selected-color);
   }
 
   #glyph-cell-content {
@@ -84,6 +93,7 @@ export class GlyphCell extends UnlitElement {
     this._glyphCharacter = this.codePoints?.[0]
       ? getCharFromCodePoint(this.codePoints[0]) || ""
       : "";
+    this._selected = false;
   }
 
   connectedCallback() {
@@ -121,11 +131,7 @@ export class GlyphCell extends UnlitElement {
         });
       },
       {
-        root: this.parentElement,
-        // Somehow our cell is only seen as intersecting if the glyph name / status
-        // color is visible: it seems to ignore the SVG cell. Let's use the cell
-        // height as the bottom root margin.
-        rootMargin: `0px 0px ${this.height}px 0px`, // (top, right, bottom, left).
+        root: document.documentElement, // Maybe use a more nearby clipping element?
       }
     );
     observer.observe(this);
@@ -223,7 +229,24 @@ export class GlyphCell extends UnlitElement {
         }),
       ]),
     ]);
+
+    // update the selected state if updating the glyph, for example: when changing the location or scrolling
+    this._updateSelectedState();
+
     return this._glyphCellContent;
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(onOff) {
+    this._selected = onOff;
+    this._updateSelectedState();
+  }
+
+  _updateSelectedState() {
+    this._glyphCellContent.classList.toggle("selected", this._selected);
   }
 }
 
