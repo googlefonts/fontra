@@ -693,16 +693,16 @@ export class EditorController extends ViewController {
   }
 
   initActionsAfterStart() {
-    if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-      for (const format of EXPORT_FORMATS) {
-        registerAction(
-          `action.export-as.${format}`,
-          {
-            topic: "0035-action-topics.export-as",
-          },
-          (event) => this.fontController.exportAs({ format })
-        );
-      }
+    for (const format of this.fontController.backendInfo.projectManagerFeatures[
+      "export-as"
+    ] || []) {
+      registerAction(
+        `action.export-as.${format}`,
+        {
+          topic: "0035-action-topics.export-as",
+        },
+        (event) => this.fontController.exportAs({ format })
+      );
     }
   }
 
