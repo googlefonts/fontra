@@ -7,6 +7,7 @@ import {
   arrowKeyDeltas,
   commandKeyProperty,
   dumpURLFragment,
+  enumerate,
   modulo,
   range,
   throttleCalls,
@@ -42,6 +43,15 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
     // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
     this.previousArrowDirection = "ArrowRight";
+    this._intersectionObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio > 0) {
+          this._intersectionObserver.unobserve(entry.target);
+          entry.target.onBecomeVisible?.();
+        } else {
+        }
+      });
+    });
   }
 
   async start() {
@@ -204,31 +214,11 @@ export class FontOverviewController extends ViewController {
     );
     const glyphs = await this.getGlyphs(item.section);
 
+    item.glyphsToAdd = [...glyphs];
+
     if (glyphs?.length) {
-      const documentFragment = document.createDocumentFragment();
-      for (const { glyphName, unicodes } of glyphs) {
-        const glyphCell = new GlyphCell(
-          this.fontController,
-          glyphName,
-          unicodes,
-          this.locationController,
-          "fontLocationSourceMapped"
-        );
-        glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
-        glyphCell.onclick = (event) => {
-          this.handleSingleClick(event, glyphCell);
-        };
-
-        // TODO: context menu
-        // glyphCell.addEventListener("contextmenu", (event) =>
-        //   this.handleContextMenu(event, glyphCell, item)
-        // );
-
-        documentFragment.appendChild(glyphCell);
-      }
       element.innerHTML = "";
-      element.appendChild(documentFragment);
-
+      this._addCellsIfNeeded(item);
       // At least in Chrome, we need to reset the scroll position, but it doesn't
       // work if we do it right away, only after the next event iteration.
       setTimeout(() => {
@@ -241,6 +231,44 @@ export class FontOverviewController extends ViewController {
     }
 
     return !hideAccordionItem;
+  }
+
+  _addCellsIfNeeded(item) {
+    if (!item.glyphsToAdd.length) {
+      return;
+    }
+    const CHUNK_SIZE = 200;
+    const ADD_CELLS_TRIGGER_INDEX = 150;
+    const chunkOfGlyphs = item.glyphsToAdd.splice(0, CHUNK_SIZE);
+    const documentFragment = document.createDocumentFragment();
+    for (const [index, { glyphName, unicodes }] of enumerate(chunkOfGlyphs)) {
+      const glyphCell = new GlyphCell(
+        this.fontController,
+        glyphName,
+        unicodes,
+        this.locationController,
+        "fontLocationSourceMapped"
+      );
+      glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
+      glyphCell.onclick = (event) => {
+        this.handleSingleClick(event, glyphCell);
+      };
+
+      // TODO: context menu
+      // glyphCell.addEventListener("contextmenu", (event) =>
+      //   this.handleContextMenu(event, glyphCell, item)
+      // );
+
+      if (index == ADD_CELLS_TRIGGER_INDEX) {
+        glyphCell.onBecomeVisible = () => {
+          this._addCellsIfNeeded(item);
+        };
+        this._intersectionObserver.observe(glyphCell);
+      }
+
+      documentFragment.appendChild(glyphCell);
+    }
+    item.content.appendChild(documentFragment);
   }
 
   get glyphSelection() {
