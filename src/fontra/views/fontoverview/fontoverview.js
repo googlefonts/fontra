@@ -8,6 +8,7 @@ import {
   commandKeyProperty,
   dumpURLFragment,
   enumerate,
+  isActiveElementTypeable,
   modulo,
   range,
   throttleCalls,
@@ -357,6 +358,10 @@ export class FontOverviewController extends ViewController {
   }
 
   handleKeyDown(event) {
+    if (isActiveElementTypeable()) {
+      // The cell area for sure doesn't have the focus
+      return;
+    }
     if (event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
       event.preventDefault();
