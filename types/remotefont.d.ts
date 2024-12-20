@@ -20,7 +20,7 @@ interface BackendFeatures {
   "background-image": boolean;
 }
 interface BackendProjectManagerFeatures {
-  "export-as": boolean;
+  "export-as"?: string[];
 }
 
 interface BackendInfo {
