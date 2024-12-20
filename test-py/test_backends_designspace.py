@@ -414,6 +414,20 @@ async def test_putBackgroundImage(writableTestFont):
     assert imageData2 == imageData
 
 
+async def test_deleteBackgroundImage(writableTestFont):
+    glyph = await writableTestFont.getGlyph("C")
+    for layerName, layer in glyph.layers.items():
+        bgImage = layer.glyph.backgroundImage
+        if bgImage is not None:
+            break
+
+    await writableTestFont.deleteBackgroundImage(bgImage.identifier)
+
+    imageData3 = await writableTestFont.getBackgroundImage(bgImage.identifier)
+
+    assert imageData3 is None
+
+
 async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
     tmpdir = pathlib.Path(tmpdir)
     newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")

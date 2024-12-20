@@ -2433,6 +2433,9 @@ export class EditorController extends ViewController {
           if (backgroundImageSelection) {
             // TODO: don't delete if bg images are locked
             // (even though we shouldn't be able to select them)
+            this.fontController.deleteBackgroundImageData(
+              layerGlyph.backgroundImage.identifier
+            );
             layerGlyph.backgroundImage = undefined;
           }
         }

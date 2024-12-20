@@ -106,8 +106,8 @@ class WriteBackgroundImage(Protocol):
 
     # TODO: since the image data does not itself participate in change messages,
     # we may depend on the backend itself to purge unused images.
-    # async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
-    #     pass
+    async def deleteBackgroundImage(self, imageIdentifier: str) -> None:
+        pass
 
 
 @runtime_checkable
