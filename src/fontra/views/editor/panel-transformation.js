@@ -38,8 +38,10 @@ export default class TransformationPanel extends Panel {
       white-space: normal;
     }
 
-    .selection-transformation-form {
+    .selection-transformation-section {
       flex: 1;
+      padding: 1em;
+      overflow: hidden auto;
     }
   `;
 
@@ -79,9 +81,10 @@ export default class TransformationPanel extends Panel {
   constructor(editorController) {
     super(editorController);
     this.infoForm = new Form();
-    this.infoForm.classList.add("selection-transformation-form");
     this.infoForm.appendStyle(TransformationPanel.stylesForm);
-    this.contentElement.appendChild(this.infoForm);
+    this.contentElement.appendChild(
+      html.div({ class: "selection-transformation-section" }, [this.infoForm])
+    );
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
