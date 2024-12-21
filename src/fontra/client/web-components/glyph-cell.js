@@ -23,7 +23,7 @@ export class GlyphCell extends UnlitElement {
 
   :host {
     display: inline-block;
-    --glyph-cell-scale-factor: 1;
+    --glyph-cell-scale-factor: calc(var(--glyph-cell-scale-factor-override, 1));
   }
 
   #glyph-cell-container {
