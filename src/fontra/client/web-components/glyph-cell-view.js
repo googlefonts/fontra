@@ -1,5 +1,6 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
+import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import { enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
