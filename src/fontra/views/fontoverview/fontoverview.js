@@ -162,34 +162,7 @@ export class FontOverviewController extends ViewController {
   }
 
   openSelectedGlyphs() {
-    this.openGlyphs(this.glyphCellView.getSelectedGlyphInfo());
-  }
-
-  openGlyphs(glyphsInfo) {
-    const url = new URL(window.location);
-    url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
-
-    const viewInfo = {
-      location: this.getUserLocation(),
-      text: "",
-    };
-
-    if (glyphsInfo.length === 1) {
-      viewInfo.selectedGlyph = { lineIndex: 0, glyphIndex: 0, isEditing: true };
-    }
-
-    for (const { glyphName, unicodes } of glyphsInfo) {
-      const codePoints = unicodes;
-      if (codePoints.length) {
-        viewInfo.text +=
-          0x002f === codePoints[0] ? "//" : String.fromCodePoint(codePoints[0]);
-      } else {
-        viewInfo.text += `/${glyphName}`;
-      }
-    }
-
-    url.hash = dumpURLFragment(viewInfo);
-    window.open(url.toString());
+    openGlyphs(this.glyphCellView.getSelectedGlyphInfo(), this.getUserLocation());
   }
 
   handleKeyDown(event) {
@@ -214,4 +187,31 @@ export class FontOverviewController extends ViewController {
   handleRemoteError(event) {
     //
   }
+}
+
+function openGlyphs(glyphsInfo, userLocation) {
+  const url = new URL(window.location);
+  url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
+
+  const viewInfo = {
+    location: userLocation,
+    text: "",
+  };
+
+  if (glyphsInfo.length === 1) {
+    viewInfo.selectedGlyph = { lineIndex: 0, glyphIndex: 0, isEditing: true };
+  }
+
+  for (const { glyphName, unicodes } of glyphsInfo) {
+    const codePoints = unicodes;
+    if (codePoints.length) {
+      viewInfo.text +=
+        0x002f === codePoints[0] ? "//" : String.fromCodePoint(codePoints[0]);
+    } else {
+      viewInfo.text += `/${glyphName}`;
+    }
+  }
+
+  url.hash = dumpURLFragment(viewInfo);
+  window.open(url.toString());
 }
