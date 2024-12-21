@@ -1,3 +1,4 @@
+import { FontOverviewNavigation } from "./panel-navigation.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
@@ -13,7 +14,6 @@ import {
 } from "/core/utils.js";
 import { ViewController } from "/core/view-controller.js";
 import { GlyphCellView } from "/web-components/glyph-cell-view.js";
-import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
 
 // TODOs:
 // - Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
@@ -60,21 +60,14 @@ export class FontOverviewController extends ViewController {
     rootSubscriptionPattern["glyphs"] = null;
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
 
-    this.fontSources = await this.fontController.getSources();
-
-    this.sortedSourceIdentifiers =
-      await this.fontController.getSortedSourceIdentifiers();
-    this.currentFontSourceIdentifier =
-      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
-    this.locationController.model.fontLocationSourceMapped = {
-      ...this.fontSources[this.currentFontSourceIdentifier]?.location,
-    }; // Note: a font may not have font sources therefore the ?-check.
-
     const sidebarContainer = document.querySelector("#sidebar-container");
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
-    const sidebarElement = await this._getSidebarForGlyphOverview();
-    sidebarContainer.appendChild(sidebarElement);
+    this.navigation = new FontOverviewNavigation(this);
+    await this.navigation.start();
+
+    // const sidebarElement = this._getSidebarForGlyphOverview();
+    sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
 
     this.glyphsListItemsController.addKeyListener(
@@ -86,73 +79,6 @@ export class FontOverviewController extends ViewController {
     await this.update();
   }
 
-  async _getSidebarForGlyphOverview() {
-    const element = html.div({ class: "font-overview-sidebar" });
-
-    // font source selector
-    this.fontSourceInput = html.select(
-      {
-        id: "font-source-select",
-        style: "width: 100%;",
-        onchange: (event) => {
-          this.currentFontSourceIdentifier = event.target.value;
-          this.locationController.model.fontLocationSourceMapped = {
-            ...this.fontSources[this.currentFontSourceIdentifier].location,
-          };
-        },
-      },
-      []
-    );
-
-    this.fontSourceInput.innerHTML = "";
-
-    for (const fontSourceIdentifier of this.sortedSourceIdentifiers) {
-      const sourceName = this.fontSources[fontSourceIdentifier].name;
-      this.fontSourceInput.appendChild(
-        html.option(
-          {
-            value: fontSourceIdentifier,
-            selected: this.currentFontSourceIdentifier === fontSourceIdentifier,
-          },
-          [sourceName]
-        )
-      );
-    }
-
-    const fontSourceSelector = html.div(
-      {
-        class: "font-source-selector",
-      },
-      [
-        html.label(
-          { for: "font-source-select" },
-          translate("sidebar.font-overview.font-source")
-        ),
-        this.fontSourceInput,
-      ]
-    );
-
-    // glyph search
-    this.glyphsSearch = new GlyphsSearchField(
-      this.glyphsListItemsController,
-      "glyphsListItems"
-    );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-
-    const glyphsSearch = html.div({ class: "glyph-search" }, [this.glyphsSearch]);
-
-    element.appendChild(glyphsSearch);
-    element.appendChild(fontSourceSelector);
-    return element;
-  }
-
-  getUserLocation() {
-    const sourceLocation = this.fontSources[this.currentFontSourceIdentifier]
-      ? this.fontSources[this.currentFontSourceIdentifier].location
-      : {};
-    return this.fontController.mapSourceLocationToUserLocation(sourceLocation);
-  }
-
   async update() {
     this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
@@ -162,7 +88,10 @@ export class FontOverviewController extends ViewController {
   }
 
   openSelectedGlyphs() {
-    openGlyphs(this.glyphCellView.getSelectedGlyphInfo(), this.getUserLocation());
+    openGlyphs(
+      this.glyphCellView.getSelectedGlyphInfo(),
+      this.navigation.getUserLocation()
+    );
   }
 
   handleKeyDown(event) {
