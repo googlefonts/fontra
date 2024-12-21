@@ -87,7 +87,7 @@ export class FontOverviewController extends ViewController {
   }
 
   openSelectedGlyphs() {
-    openGlyphs(
+    openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
       this.navigation.getUserLocation()
     );
@@ -117,7 +117,7 @@ export class FontOverviewController extends ViewController {
   }
 }
 
-function openGlyphs(glyphsInfo, userLocation) {
+function openGlyphsInEditor(glyphsInfo, userLocation) {
   const url = new URL(window.location);
   url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
