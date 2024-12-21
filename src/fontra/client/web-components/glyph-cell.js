@@ -187,6 +187,7 @@ export class GlyphCell extends UnlitElement {
           glyphController.xAdvance + 2 * this.marginSide * unitsPerEm,
           ascender - descender + (this.marginTop + this.marginBottom) * unitsPerEm
         ),
+        width: "100%",
         height: "100%",
       },
       [
