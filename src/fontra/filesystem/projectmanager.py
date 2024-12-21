@@ -55,6 +55,8 @@ def existingFolderOrFontFile(path):
 
 
 class FileSystemProjectManager:
+    supportedExportFormats = []
+
     def __init__(
         self,
         rootPath: pathlib.Path | None,

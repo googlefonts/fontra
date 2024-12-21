@@ -123,6 +123,8 @@ class ProjectManagerFactory(Protocol):
 
 @runtime_checkable
 class ProjectManager(Protocol):
+    supportedExportFormats: list[str]
+
     async def aclose(self) -> None:
         pass
 
