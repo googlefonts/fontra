@@ -150,7 +150,7 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
 
-  async handleDoubleClick(event) {
+  handleDoubleClick(event) {
     const selectedGlyphs = this.glyphCellView.getSelectedGlyphInfo();
 
     const url = new URL(window.location);

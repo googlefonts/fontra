@@ -168,7 +168,7 @@ export class GlyphCellView extends HTMLElement {
     }
   }
 
-  async handleSingleClick(event, glyphCell) {
+  handleSingleClick(event, glyphCell) {
     if (event.detail > 1) {
       // Part of a double click, we should do nothing and let handleDoubleClick
       // deal with the event
