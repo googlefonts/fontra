@@ -33,13 +33,6 @@ export class FontOverviewController extends ViewController {
       glyphsListItems: [],
     });
 
-    this.glyphCellView = new GlyphCellView(
-      this.fontController,
-      this.locationController
-    );
-
-    this.glyphCellView.ondblclick = (event) => this.handleDoubleClick(event);
-
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
     // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
@@ -66,7 +59,13 @@ export class FontOverviewController extends ViewController {
     this.navigation = new FontOverviewNavigation(this);
     await this.navigation.start();
 
-    // const sidebarElement = this._getSidebarForGlyphOverview();
+    this.glyphCellView = new GlyphCellView(
+      this.fontController,
+      this.locationController
+    );
+
+    this.glyphCellView.ondblclick = (event) => this.handleDoubleClick(event);
+
     sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
 
