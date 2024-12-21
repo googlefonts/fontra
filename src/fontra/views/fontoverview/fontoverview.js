@@ -75,11 +75,10 @@ export class FontOverviewController extends ViewController {
       this.throttledUpdate
     );
 
-    // This is the initial load of the overview
-    await this.update();
+    this.update();
   }
 
-  async update() {
+  update() {
     this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
 
