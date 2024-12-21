@@ -46,6 +46,7 @@ export class FontOverviewController extends ViewController {
 
   async _start() {
     await this.fontController.initialize();
+
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
       rootSubscriptionPattern[rootKey] = null;
