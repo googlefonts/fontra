@@ -7,16 +7,14 @@ import {
   arrowKeyDeltas,
   commandKeyProperty,
   dumpURLFragment,
-  enumerate,
   isActiveElementTypeable,
   modulo,
   range,
   throttleCalls,
 } from "/core/utils.js";
 import { ViewController } from "/core/view-controller.js";
-import { GlyphCell } from "/web-components/glyph-cell.js";
+import { GlyphCellView } from "/web-components/glyph-cell-view.js";
 import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
-import { Accordion } from "/web-components/ui-accordion.js";
 
 // TODOs:
 // - Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
@@ -36,23 +34,16 @@ export class FontOverviewController extends ViewController {
       glyphsListItems: [],
     });
 
-    this.contentElement = this.getContentElement();
+    this.glyphCellView = new GlyphCellView(
+      this.fontController,
+      this.locationController
+    );
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
-    this._glyphSelection = new Set();
 
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
     // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
-    this.previousArrowDirection = "ArrowRight";
-    this._intersectionObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.intersectionRatio > 0) {
-          this._intersectionObserver.unobserve(entry.target);
-          entry.target.onBecomeVisible?.();
-        } else {
-        }
-      });
-    });
+    // this.previousArrowDirection = "ArrowRight";
   }
 
   async start() {
@@ -83,7 +74,7 @@ export class FontOverviewController extends ViewController {
 
     const sidebarElement = await this._getSidebarForGlyphOverview();
     sidebarContainer.appendChild(sidebarElement);
-    panelContainer.appendChild(this.contentElement);
+    panelContainer.appendChild(this.glyphCellView);
 
     this.glyphsListItemsController.addKeyListener(
       "glyphsListItems",
@@ -154,170 +145,8 @@ export class FontOverviewController extends ViewController {
     return element;
   }
 
-  getContentElement() {
-    this.accordion = new Accordion();
-
-    this.accordion.appendStyle(`
-    .placeholder-label {
-      font-size: 0.9em;
-      opacity: 40%;
-    }
-
-    .font-overview-accordion-item {
-      height: 100%;
-      width: 100%;
-      overflow-y: scroll;
-      white-space: normal;
-    }
-    `);
-
-    // TODO: refactor this if we implement different sections. For now only one section.
-    this.accordion.items = [
-      {
-        label: translate("font-overview.glyphs"),
-        open: true,
-        content: html.div({ class: "font-overview-accordion-item" }, []),
-        section: "Glyphs",
-      },
-    ];
-
-    return html.div(
-      {
-        class: "sidebar-glyph-relationships",
-      },
-      [this.accordion]
-    );
-  }
-
   async update() {
-    this.glyphs = this.glyphsListItemsController.model.glyphsListItems;
-
-    const results = [];
-
-    for (const item of this.accordion.items) {
-      this._updateAccordionItem(item).then((hasResult) => {
-        this.accordion.showHideAccordionItem(item, hasResult);
-        results.push(hasResult);
-      });
-    }
-  }
-
-  async _updateAccordionItem(item) {
-    const element = item.content;
-
-    element.innerHTML = "";
-    let hideAccordionItem = true;
-
-    element.appendChild(
-      html.span({ class: "placeholder-label" }, [
-        translate("sidebar.related-glyphs.loading"), // TODO: general loading key.
-      ])
-    );
-    const glyphs = await this.getGlyphs(item.section);
-
-    item.glyphsToAdd = [...glyphs];
-
-    if (glyphs?.length) {
-      element.innerHTML = "";
-      this._addCellsIfNeeded(item);
-      // At least in Chrome, we need to reset the scroll position, but it doesn't
-      // work if we do it right away, only after the next event iteration.
-      setTimeout(() => {
-        element.scrollTop = 0;
-      }, 0);
-
-      hideAccordionItem = false;
-    } else {
-      element.innerHTML = "";
-    }
-
-    return !hideAccordionItem;
-  }
-
-  _addCellsIfNeeded(item) {
-    if (!item.glyphsToAdd.length) {
-      return;
-    }
-    const CHUNK_SIZE = 200;
-    const ADD_CELLS_TRIGGER_INDEX = 150;
-    const chunkOfGlyphs = item.glyphsToAdd.splice(0, CHUNK_SIZE);
-    const documentFragment = document.createDocumentFragment();
-    for (const [index, { glyphName, unicodes }] of enumerate(chunkOfGlyphs)) {
-      const glyphCell = new GlyphCell(
-        this.fontController,
-        glyphName,
-        unicodes,
-        this.locationController,
-        "fontLocationSourceMapped"
-      );
-      glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
-      glyphCell.onclick = (event) => {
-        this.handleSingleClick(event, glyphCell);
-      };
-
-      // TODO: context menu
-      // glyphCell.addEventListener("contextmenu", (event) =>
-      //   this.handleContextMenu(event, glyphCell, item)
-      // );
-
-      if (index == ADD_CELLS_TRIGGER_INDEX) {
-        glyphCell.onBecomeVisible = () => {
-          this._addCellsIfNeeded(item);
-        };
-        this._intersectionObserver.observe(glyphCell);
-      }
-
-      documentFragment.appendChild(glyphCell);
-    }
-    item.content.appendChild(documentFragment);
-  }
-
-  get glyphSelection() {
-    return this._glyphSelection;
-  }
-
-  set glyphSelection(selection) {
-    const diff = symmetricDifference(selection, this.glyphSelection);
-    this.forEachGlyphCell((glyphCell) => {
-      if (diff.has(glyphCell.glyphName)) {
-        glyphCell.selected = selection.has(glyphCell.glyphName);
-      }
-    });
-    this._glyphSelection = selection;
-  }
-
-  forEachGlyphCell(func) {
-    for (const glyphCell of this.iterGlyphCells()) {
-      func(glyphCell);
-    }
-  }
-
-  *iterGlyphCells() {
-    for (const glyphCell of this.accordion.shadowRoot.querySelectorAll("glyph-cell")) {
-      yield glyphCell;
-    }
-  }
-
-  async handleSingleClick(event, glyphCell) {
-    if (event.detail > 1) {
-      // Part of a double click, we should do nothing and let handleDoubleClick
-      // deal with the event
-      return;
-    }
-
-    const glyphName = glyphCell.glyphName;
-
-    if (this.glyphSelection.has(glyphName)) {
-      if (event.shiftKey) {
-        this.glyphSelection = difference(this.glyphSelection, [glyphName]);
-      }
-    } else {
-      if (event.shiftKey) {
-        this.glyphSelection = union(this.glyphSelection, [glyphName]);
-      } else {
-        this.glyphSelection = new Set([glyphName]);
-      }
-    }
+    this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
 
   async handleDoubleClick(event, glyphCell) {
@@ -482,11 +311,6 @@ export class FontOverviewController extends ViewController {
     // });
     // this.lastGlyphSelected = newGlyphCell.glyphName;
     // this.previousArrowDirection = event.key;
-  }
-
-  async getGlyphs(section) {
-    // TODO: section. For now return all glyphs
-    return this.glyphs;
   }
 
   handleRemoteClose(event) {
