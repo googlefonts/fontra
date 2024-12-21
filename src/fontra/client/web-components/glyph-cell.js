@@ -5,7 +5,7 @@ import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
 import * as svg from "/core/svg-utils.js";
 import { Transform } from "/core/transform.js";
-import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
+import { assert, getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],
@@ -15,12 +15,15 @@ const colors = {
   "glyph-shape-placeholder-color": ["#AAA", "#AAA"],
 };
 
+const UNSCALED_CELL_HEIGHT = 75;
+
 export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
   :host {
     display: inline-block;
+    --glyph-cell-scale-factor: 1;
   }
 
   #glyph-cell-container {
@@ -47,6 +50,7 @@ export class GlyphCell extends UnlitElement {
 
   #glyph-cell-content {
     display: grid;
+    grid-template-rows: calc(${UNSCALED_CELL_HEIGHT}px * var(--glyph-cell-scale-factor, 1)) auto auto;
     justify-items: center;
     gap: 0;
   }
@@ -89,6 +93,7 @@ export class GlyphCell extends UnlitElement {
     this.marginSide = 0;
     this.size = 60;
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
+    assert(this.height === UNSCALED_CELL_HEIGHT, "manual size dependency incorrect");
     this.width = this.height;
     this._glyphCharacter = this.codePoints?.[0]
       ? getCharFromCodePoint(this.codePoints[0]) || ""
@@ -182,8 +187,7 @@ export class GlyphCell extends UnlitElement {
           glyphController.xAdvance + 2 * this.marginSide * unitsPerEm,
           ascender - descender + (this.marginTop + this.marginBottom) * unitsPerEm
         ),
-        width: this.width,
-        height,
+        height: "100%",
       },
       [
         svg.path({
@@ -212,17 +216,20 @@ export class GlyphCell extends UnlitElement {
               {
                 class: "glyph-shape-placeholder",
                 style: `
-                  width: ${this.width}px;
-                  height: ${this.height}px;
-                  font-size: ${fallbackFontSize}px;
+                  width: calc(${this.width}px * var(--glyph-cell-scale-factor));
+                  font-size: calc(${fallbackFontSize}px * var(--glyph-cell-scale-factor));
                   line-height: ${fallbackFontSize}px;
                 `,
               },
               [this._glyphCharacter]
             ),
-        html.div({ class: "glyph-name-label", style: `width: ${this.width}px;` }, [
-          this.glyphName,
-        ]),
+        html.div(
+          {
+            class: "glyph-name-label",
+            style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
+          },
+          [this.glyphName]
+        ),
         html.div({
           class: "glyph-status-color",
           style: `background-color: ${this._glyphStatusColor};`,
