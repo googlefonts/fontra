@@ -1,5 +1,6 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
+import { ObservableController } from "/core/observable-object.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import { enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
@@ -11,7 +12,17 @@ export class GlyphCellView extends HTMLElement {
 
     this.fontController = fontController;
     this.locationController = locationController;
-    this._glyphSelection = new Set();
+
+    this.glyphSelectionController = new ObservableController({ selection: new Set() });
+    this.glyphSelectionController.addKeyListener("selection", (event) => {
+      const selection = event.newValue;
+      const diff = symmetricDifference(selection, event.oldValue);
+      this.forEachGlyphCell((glyphCell) => {
+        if (diff.has(glyphCell.glyphName)) {
+          glyphCell.selected = selection.has(glyphCell.glyphName);
+        }
+      });
+    });
 
     this._intersectionObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
@@ -143,17 +154,11 @@ export class GlyphCellView extends HTMLElement {
   }
 
   get glyphSelection() {
-    return this._glyphSelection;
+    return this.glyphSelectionController.model.selection;
   }
 
   set glyphSelection(selection) {
-    const diff = symmetricDifference(selection, this.glyphSelection);
-    this.forEachGlyphCell((glyphCell) => {
-      if (diff.has(glyphCell.glyphName)) {
-        glyphCell.selected = selection.has(glyphCell.glyphName);
-      }
-    });
-    this._glyphSelection = selection;
+    this.glyphSelectionController.model.selection = selection;
   }
 
   forEachGlyphCell(func) {
