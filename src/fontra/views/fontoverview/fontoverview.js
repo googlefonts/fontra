@@ -146,6 +146,13 @@ export class FontOverviewController extends ViewController {
     return element;
   }
 
+  getUserLocation() {
+    const sourceLocation = this.fontSources[this.currentFontSourceIdentifier]
+      ? this.fontSources[this.currentFontSourceIdentifier].location
+      : {};
+    return this.fontController.mapSourceLocationToUserLocation(sourceLocation);
+  }
+
   async update() {
     this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
@@ -162,14 +169,8 @@ export class FontOverviewController extends ViewController {
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
-    const sourceLocation = this.fontSources[this.currentFontSourceIdentifier]
-      ? this.fontSources[this.currentFontSourceIdentifier].location
-      : {};
-    const userLocation =
-      this.fontController.mapSourceLocationToUserLocation(sourceLocation);
-
     const viewInfo = {
-      location: userLocation,
+      location: this.getUserLocation(),
       text: "",
     };
 
