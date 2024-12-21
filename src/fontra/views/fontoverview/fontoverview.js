@@ -38,6 +38,8 @@ export class FontOverviewController extends ViewController {
       this.locationController
     );
 
+    this.glyphCellView.ondblclick = (event) => this.handleDoubleClick(event);
+
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
     // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
@@ -148,10 +150,8 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
   }
 
-  async handleDoubleClick(event, glyphCell) {
-    const selectedGlyphs = this.glyphs.filter((glyphInfo) =>
-      this.glyphSelection.has(glyphInfo.glyphName)
-    );
+  async handleDoubleClick(event) {
+    const selectedGlyphs = this.glyphCellView.getSelectedGlyphInfo();
 
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");

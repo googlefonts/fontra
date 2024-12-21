@@ -136,6 +136,12 @@ export class GlyphCellView extends HTMLElement {
     item.content.appendChild(documentFragment);
   }
 
+  getSelectedGlyphInfo() {
+    return this.glyphs.filter((glyphInfo) =>
+      this.glyphSelection.has(glyphInfo.glyphName)
+    );
+  }
+
   get glyphSelection() {
     return this._glyphSelection;
   }
