@@ -151,8 +151,14 @@ export class FontOverviewController extends ViewController {
   }
 
   handleDoubleClick(event) {
-    const selectedGlyphs = this.glyphCellView.getSelectedGlyphInfo();
+    this.openSelectedGlyphs();
+  }
 
+  openSelectedGlyphs() {
+    this.openGlyphs(this.glyphCellView.getSelectedGlyphInfo());
+  }
+
+  openGlyphs(glyphsInfo) {
     const url = new URL(window.location);
     url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
@@ -167,11 +173,11 @@ export class FontOverviewController extends ViewController {
       text: "",
     };
 
-    if (selectedGlyphs.length === 1) {
+    if (glyphsInfo.length === 1) {
       viewInfo.selectedGlyph = { lineIndex: 0, glyphIndex: 0, isEditing: true };
     }
 
-    for (const { glyphName, unicodes } of selectedGlyphs) {
+    for (const { glyphName, unicodes } of glyphsInfo) {
       const codePoints = unicodes;
       if (codePoints.length) {
         viewInfo.text +=
