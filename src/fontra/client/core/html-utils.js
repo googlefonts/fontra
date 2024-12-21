@@ -16,7 +16,7 @@ export class SimpleElement extends HTMLElement {
 
   _attachStyles() {
     if (this.constructor.styles) {
-      this.appendStyle(this.constructor.styles);
+      this._appendStyle(this.constructor.styles);
     }
   }
 
