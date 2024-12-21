@@ -30,7 +30,7 @@ body {
   gap: 1em;
 }
 
-#panel-container {
+#glyph-cell-view-container {
   overflow: auto;
 }
 

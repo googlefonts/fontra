@@ -71,11 +71,11 @@ export class FontOverviewController extends ViewController {
     }; // Note: a font may not have font sources therefore the ?-check.
 
     const sidebarContainer = document.querySelector("#sidebar-container");
-    const panelContainer = document.querySelector("#panel-container");
+    const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
     const sidebarElement = await this._getSidebarForGlyphOverview();
     sidebarContainer.appendChild(sidebarElement);
-    panelContainer.appendChild(this.glyphCellView);
+    glyphCellViewContainer.appendChild(this.glyphCellView);
 
     this.glyphsListItemsController.addKeyListener(
       "glyphsListItems",
