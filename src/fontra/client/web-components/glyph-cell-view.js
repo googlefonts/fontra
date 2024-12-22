@@ -130,11 +130,11 @@ export class GlyphCellView extends HTMLElement {
     const ADD_CELLS_TRIGGER_INDEX = 150;
     const chunkOfGlyphs = item.glyphsToAdd.splice(0, CHUNK_SIZE);
     const documentFragment = document.createDocumentFragment();
-    for (const [index, { glyphName, unicodes }] of enumerate(chunkOfGlyphs)) {
+    for (const [index, { glyphName, codePoints }] of enumerate(chunkOfGlyphs)) {
       const glyphCell = new GlyphCell(
         this.fontController,
         glyphName,
-        unicodes,
+        codePoints,
         this.locationController,
         "fontLocationSourceMapped"
       );
