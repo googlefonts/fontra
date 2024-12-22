@@ -86,7 +86,7 @@ export class FontOverviewController extends ViewController {
 
   _updateGlyphSelection() {
     const glyphItemList = this.navigation.filterGlyphs(this._glyphItemList);
-    this.glyphCellView.update(glyphItemList);
+    this.glyphCellView.setGlyphItems(glyphItemList);
   }
 
   handleDoubleClick(event) {

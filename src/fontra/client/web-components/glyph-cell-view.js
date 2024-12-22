@@ -79,7 +79,7 @@ export class GlyphCellView extends HTMLElement {
     );
   }
 
-  update(glyphs) {
+  setGlyphItems(glyphs) {
     this.glyphs = glyphs;
     const results = [];
     for (const item of this.accordion.items) {
