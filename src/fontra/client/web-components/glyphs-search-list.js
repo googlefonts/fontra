@@ -1,7 +1,7 @@
 import { GlyphsSearchField } from "./glyphs-search-field.js";
 import { UIList } from "./ui-list.js";
 import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
+import { SimpleElement } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
 import {
   getCharFromCodePoint,
@@ -10,7 +10,7 @@ import {
   throttleCalls,
 } from "/core/utils.js";
 
-export class GlyphsSearchList extends UnlitElement {
+export class GlyphsSearchList extends SimpleElement {
   static styles = `
     :host {
       display: grid;
@@ -40,6 +40,9 @@ export class GlyphsSearchList extends UnlitElement {
       "glyphsListItems",
       this.throttledUpdate
     );
+
+    this.shadowRoot.appendChild(this.searchField);
+    this.shadowRoot.appendChild(this.glyphNamesList);
   }
 
   makeGlyphNamesList() {
@@ -95,10 +98,6 @@ export class GlyphsSearchList extends UnlitElement {
 
   async update() {
     this.glyphNamesList.setItems(this.glyphsListItemsController.model.glyphsListItems);
-  }
-
-  async render() {
-    return [this.searchField, this.glyphNamesList];
   }
 
   get glyphMap() {
