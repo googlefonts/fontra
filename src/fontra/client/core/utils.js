@@ -683,3 +683,10 @@ export class FocusKeeper {
     this._focusedElement?.focus();
   }
 }
+
+export function glyphMapToItemList(glyphMap) {
+  return Object.entries(glyphMap).map(([glyphName, codePoints]) => ({
+    glyphName,
+    codePoints,
+  }));
+}
