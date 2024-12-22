@@ -71,12 +71,7 @@ export class GlyphCellView extends HTMLElement {
       },
     ];
 
-    return html.div(
-      {
-        class: "sidebar-glyph-relationships",
-      },
-      [this.accordion]
-    );
+    return html.div({}, [this.accordion]); // wrap in div for scroll behavior
   }
 
   setGlyphItems(glyphs) {
