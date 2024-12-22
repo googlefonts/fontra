@@ -70,12 +70,6 @@ export class GlyphsSearchField extends SimpleElement {
 
 customElements.define("glyphs-search-field", GlyphsSearchField);
 
-function glyphItemSortFunc(item1, item2) {
-  const uniCmp = compare(item1.codePoints[0], item2.codePoints[0]);
-  const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
-  return uniCmp ? uniCmp : glyphNameCmp;
-}
-
 function glyphFilterFunc(item, searchItems) {
   if (!searchItems.length) {
     return true;
@@ -92,6 +86,12 @@ function glyphFilterFunc(item, searchItems) {
     }
   }
   return false;
+}
+
+function glyphItemSortFunc(item1, item2) {
+  const uniCmp = compare(item1.codePoints[0], item2.codePoints[0]);
+  const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
+  return uniCmp ? uniCmp : glyphNameCmp;
 }
 
 function compare(a, b) {
