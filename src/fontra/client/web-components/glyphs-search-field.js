@@ -58,19 +58,6 @@ export class GlyphsSearchField extends SimpleElement {
     this.onSearchFieldChanged?.(event);
   }
 
-  sortedGlyphListFromGlyphMap(glyphMap) {
-    // This arguably doesn't belong here
-    const glyphsListItems = [];
-    for (const glyphName in glyphMap) {
-      glyphsListItems.push({
-        glyphName: glyphName,
-        codePoints: glyphMap[glyphName],
-      });
-    }
-
-    return this.sortGlyphs(glyphsListItems);
-  }
-
   sortGlyphs(glyphs) {
     // This arguably doesn't belong here
     glyphs = [...glyphs];
