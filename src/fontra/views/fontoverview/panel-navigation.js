@@ -14,18 +14,16 @@ export class FontOverviewNavigation extends HTMLElement {
   async start() {
     this.fontSources = await this.fontController.getSources();
 
-    this.sortedSourceIdentifiers =
-      await this.fontController.getSortedSourceIdentifiers();
     this.currentFontSourceIdentifier =
       this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
     this.locationController.model.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
     }; // Note: a font may not have font sources therefore the ?-check.
 
-    this._setupUI();
+    await this._setupUI();
   }
 
-  _setupUI() {
+  async _setupUI() {
     // font source selector
     this.fontSourceInput = html.select(
       {
@@ -43,7 +41,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.fontSourceInput.innerHTML = "";
 
-    for (const fontSourceIdentifier of this.sortedSourceIdentifiers) {
+    for (const fontSourceIdentifier of await this.fontController.getSortedSourceIdentifiers()) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
         html.option(
