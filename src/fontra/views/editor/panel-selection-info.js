@@ -34,21 +34,18 @@ export default class SelectionInfoPanel extends Panel {
       white-space: normal;
     }
 
-    .selection-info-form {
-      flex: 1;
+    .selection-info-section {
+      padding: 1em;
     }
 
-    .behavior-field {
-      padding: 1em;
+    .selection-info-section--scrollable {
+      flex: 1;
+      overflow: hidden auto;
     }
   `;
 
   constructor(editorController) {
     super(editorController);
-    this.infoForm = new Form();
-    this.infoForm.classList.add("selection-info-form");
-    this.contentElement.appendChild(this.infoForm);
-    this.contentElement.appendChild(this.setupBehaviorCheckBox());
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
@@ -87,11 +84,18 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   getContentElement() {
+    this.infoForm = new Form();
     return html.div(
       {
         class: "selection-info",
       },
-      []
+      [
+        html.div(
+          { class: "selection-info-section selection-info-section--scrollable" },
+          [this.infoForm]
+        ),
+        html.div({ class: "selection-info-section" }, this.getBehaviorElements()),
+      ]
     );
   }
 
@@ -101,10 +105,10 @@ export default class SelectionInfoPanel extends Panel {
     }
   }
 
-  setupBehaviorCheckBox() {
+  getBehaviorElements() {
     const storageKey = "fontra.selection-info.absolute-value-changes";
     this.multiEditChangesAreAbsolute = localStorage.getItem(storageKey) === "true";
-    return html.div({ class: "behavior-field" }, [
+    return [
       html.input({
         type: "checkbox",
         id: "behavior-checkbox",
@@ -118,7 +122,7 @@ export default class SelectionInfoPanel extends Panel {
         { for: "behavior-checkbox" },
         translate("sidebar.selection-info.multi-source")
       ),
-    ]);
+    ];
   }
 
   async update(senderInfo) {
