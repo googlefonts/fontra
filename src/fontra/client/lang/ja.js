@@ -204,6 +204,7 @@ export const strings = {
   "font-info.vendorid": "ベンダーID",
   "font-info.version.major": "メジャーバージョン",
   "font-info.version.minor": "マイナーバージョン",
+  "font-overview.title": "Font overview",
   "guideline.labels.angle": "角度",
   "guideline.labels.locked": "ロック",
   "guideline.labels.name": "ガイド名",
@@ -236,6 +237,7 @@ export const strings = {
   "menubar.view.select-previous-glyph": "前のグリフを選択",
   "menubar.view.select-previous-source": "前のソースを選択",
   "menubar.view.select-previous-source-layer": "前のソースレイヤーを選択",
+  "menubar.window": "Window",
   "message.cancel-editing": "他のユーザーがあなたの直前に操作を行いました。",
   "message.edit-has-been-reverted": "このグリフは前の状態に戻されました。",
   "message.glyph-could-not-be-saved": "このグリフは保存されません。",
@@ -296,6 +298,7 @@ export const strings = {
   "sidebar.designspace-navigation.warning.delete-associated-layer":
     "同様にレイヤー%0も削除",
   "sidebar.designspace-navigation.warning.delete-source": "ソース%0を削除しますか？",
+  "sidebar.font-overview.font-source": "Font source",
   "sidebar.glyph-note": "グリフノート",
   "sidebar.glyph-note.glyph-note-for-glyph": "%0のグリフノート",
   "sidebar.glyph-note.no-glyph-selected": "（グリフが選択されていません）",

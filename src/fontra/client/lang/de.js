@@ -205,6 +205,7 @@ export const strings = {
   "font-info.vendorid": "Hersteller ID",
   "font-info.version.major": "Hauptversionsnummer",
   "font-info.version.minor": "Nebenversionsnummer",
+  "font-overview.title": "Font overview",
   "guideline.labels.angle": "Neigung",
   "guideline.labels.locked": "Gesperrt",
   "guideline.labels.name": "Name",
@@ -238,6 +239,7 @@ export const strings = {
   "menubar.view.select-previous-glyph": "Vorheriger Glyph",
   "menubar.view.select-previous-source": "Vorherige Source",
   "menubar.view.select-previous-source-layer": "Select previous source layer",
+  "menubar.window": "Window",
   "message.cancel-editing": "Jemand anderes hat vor dir etwas geändert.",
   "message.edit-has-been-reverted": "Die Änderung wurde rückgängig gemacht.",
   "message.glyph-could-not-be-saved": "Glyph konnte nicht gespeichert werden.",
@@ -301,6 +303,7 @@ export const strings = {
     "Auch den dazugehörigen Layer %0 entfernen",
   "sidebar.designspace-navigation.warning.delete-source":
     "Bist du sicher, dass du Source %0 entfernen willst?",
+  "sidebar.font-overview.font-source": "Font source",
   "sidebar.glyph-note": "Glyph-Notiz",
   "sidebar.glyph-note.glyph-note-for-glyph": "Glyph-Notiz für %0",
   "sidebar.glyph-note.no-glyph-selected": "(keine Glyphe ausgewählt)",

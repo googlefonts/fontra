@@ -203,6 +203,7 @@ export const strings = {
   "font-info.vendorid": "Identifiant du vendeur",
   "font-info.version.major": "Version Major",
   "font-info.version.minor": "Version Minor",
+  "font-overview.title": "Font overview",
   "guideline.labels.angle": "Angle",
   "guideline.labels.locked": "Vérouillé",
   "guideline.labels.name": "Nom",
@@ -238,6 +239,7 @@ export const strings = {
   "menubar.view.select-previous-glyph": "Sélectionner le glyphe précédente",
   "menubar.view.select-previous-source": "Sélectionner la source précédente",
   "menubar.view.select-previous-source-layer": "Select previous source layer",
+  "menubar.window": "Window",
   "message.cancel-editing": "Quelqu'un d'autre a édité juste avant vous",
   "message.edit-has-been-reverted": "L'édition a été annulé",
   "message.glyph-could-not-be-saved": "Le glyphe n'a pas pu être enregistré",
@@ -305,6 +307,7 @@ export const strings = {
     "Also delete associated layer %0",
   "sidebar.designspace-navigation.warning.delete-source":
     "Êtes-vous sûr de vouloir supprimer la source %0",
+  "sidebar.font-overview.font-source": "Font source",
   "sidebar.glyph-note": "Note du glyphe",
   "sidebar.glyph-note.glyph-note-for-glyph": "Note du glyphe %0",
   "sidebar.glyph-note.no-glyph-selected": "(aucun glyphe sélectionné)",

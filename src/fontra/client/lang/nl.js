@@ -202,6 +202,7 @@ export const strings = {
   "font-info.vendorid": "Vendor ID",
   "font-info.version.major": "Versie major",
   "font-info.version.minor": "Versie minor",
+  "font-overview.title": "Font overview",
   "guideline.labels.angle": "Angle",
   "guideline.labels.locked": "Locked",
   "guideline.labels.name": "Naam",
@@ -237,6 +238,7 @@ export const strings = {
   "menubar.view.select-previous-glyph": "Select previous glyph",
   "menubar.view.select-previous-source": "Selecteer de vorige source",
   "menubar.view.select-previous-source-layer": "Select previous source layer",
+  "menubar.window": "Window",
   "message.cancel-editing": "Someone else made an edit just before you.",
   "message.edit-has-been-reverted": "The edit has been reverted.",
   "message.glyph-could-not-be-saved": "The glyph could not be saved.",
@@ -297,6 +299,7 @@ export const strings = {
     "Also delete associated layer %0",
   "sidebar.designspace-navigation.warning.delete-source":
     "Are you sure you want to delete source %0?",
+  "sidebar.font-overview.font-source": "Font source",
   "sidebar.glyph-note": "Glyph notitie",
   "sidebar.glyph-note.glyph-note-for-glyph": "Glyph Note for %0",
   "sidebar.glyph-note.no-glyph-selected": "(No glyph selected)",

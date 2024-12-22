@@ -4,6 +4,7 @@ import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
 import {
   getCharFromCodePoint,
+  glyphMapToItemList,
   guessCharFromGlyphName,
   makeUPlusStringFromCodePoint,
   throttleCalls,
@@ -100,16 +101,9 @@ export class GlyphsSearchList extends SimpleElement {
   }
 
   updateGlyphNamesListContent() {
-    const glyphMap = this.glyphMap;
-    const glyphsListItems = [];
-    for (const glyphName in glyphMap) {
-      glyphsListItems.push({
-        glyphName: glyphName,
-        codePoints: glyphMap[glyphName],
-      });
-    }
-
-    this.glyphsListItems = this.searchField.sortGlyphs(glyphsListItems);
+    this.glyphsListItems = this.searchField.sortGlyphs(
+      glyphMapToItemList(this.glyphMap)
+    );
     this._setFilteredGlyphNamesListContent();
   }
 
