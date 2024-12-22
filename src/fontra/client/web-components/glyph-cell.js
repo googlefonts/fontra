@@ -210,32 +210,38 @@ export class GlyphCell extends UnlitElement {
   render() {
     const fallbackFontSize = this.height / 2;
     this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
-      html.div({ id: "glyph-cell-content" }, [
-        this._glyphSVG
-          ? this._glyphSVG
-          : html.div(
-              {
-                class: "glyph-shape-placeholder",
-                style: `
+      html.div(
+        {
+          id: "glyph-cell-content",
+          style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
+        },
+        [
+          this._glyphSVG
+            ? this._glyphSVG
+            : html.div(
+                {
+                  class: "glyph-shape-placeholder",
+                  style: `
                   width: calc(${this.width}px * var(--glyph-cell-scale-factor));
                   font-size: calc(${fallbackFontSize}px * var(--glyph-cell-scale-factor));
                   line-height: ${fallbackFontSize}px;
                 `,
-              },
-              [this._glyphCharacter]
-            ),
-        html.div(
-          {
-            class: "glyph-name-label",
-            style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
-          },
-          [this.glyphName]
-        ),
-        html.div({
-          class: "glyph-status-color",
-          style: `background-color: ${this._glyphStatusColor};`,
-        }),
-      ]),
+                },
+                [this._glyphCharacter]
+              ),
+          html.div(
+            {
+              class: "glyph-name-label",
+              style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
+            },
+            [this.glyphName]
+          ),
+          html.div({
+            class: "glyph-status-color",
+            style: `background-color: ${this._glyphStatusColor};`,
+          }),
+        ]
+      ),
     ]);
 
     // update the selected state when rebuilding the cell contents
