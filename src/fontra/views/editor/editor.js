@@ -852,24 +852,25 @@ export class EditorController extends ViewController {
           { actionIdentifier: "action.glyph.add-background-image" },
         ],
       },
-      {
-        title: translate("menubar.window"),
-        enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("font-overview.title"),
-              enabled: () => true,
-              callback: () => {
-                const url = new URL(window.location);
-                url.pathname = url.pathname.replace("/editor/", "/fontoverview/");
-                url.hash = ""; // remove any hash
-                window.open(url.toString());
-              },
-            },
-          ];
-        },
-      },
+      // // Disable for now, as the font overview isn't yet minimally feature-complete
+      // {
+      //   title: translate("menubar.window"),
+      //   enabled: () => true,
+      //   getItems: () => {
+      //     return [
+      //       {
+      //         title: translate("font-overview.title"),
+      //         enabled: () => true,
+      //         callback: () => {
+      //           const url = new URL(window.location);
+      //           url.pathname = url.pathname.replace("/editor/", "/fontoverview/");
+      //           url.hash = ""; // remove any hash
+      //           window.open(url.toString());
+      //         },
+      //       },
+      //     ];
+      //   },
+      // },
       {
         title: translate("menubar.help"),
         enabled: () => true,
