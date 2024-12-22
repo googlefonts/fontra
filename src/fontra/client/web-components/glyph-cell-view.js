@@ -64,7 +64,7 @@ export class GlyphCellView extends HTMLElement {
     // TODO: refactor this if we implement different sections. For now only one section.
     this.accordion.items = [
       {
-        label: translate("font-overview.glyphs"),
+        label: "Glyphs",
         open: true,
         content: html.div({ class: "font-overview-accordion-item" }, []),
         section: "Glyphs",
