@@ -92,7 +92,8 @@ export class FontOverviewController extends ViewController {
   openSelectedGlyphs() {
     openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
-      this.navigation.getUserLocation()
+      this.navigation.getUserLocation(),
+      this.fontController.glyphMap
     );
   }
 
@@ -120,7 +121,7 @@ export class FontOverviewController extends ViewController {
   }
 }
 
-function openGlyphsInEditor(glyphsInfo, userLocation) {
+function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
   const url = new URL(window.location);
   url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
 
@@ -130,7 +131,11 @@ function openGlyphsInEditor(glyphsInfo, userLocation) {
   };
 
   if (glyphsInfo.length === 1) {
-    viewInfo.selectedGlyph = { lineIndex: 0, glyphIndex: 0, isEditing: true };
+    viewInfo.selectedGlyph = {
+      lineIndex: 0,
+      glyphIndex: 0,
+      isEditing: glyphsInfo[0].glyphName in glyphMap,
+    };
   }
 
   for (const { glyphName, unicodes } of glyphsInfo) {
