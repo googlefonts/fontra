@@ -184,7 +184,7 @@ export class GlyphCell extends UnlitElement {
         viewBox: svg.viewBox(
           -this.marginSide * unitsPerEm,
           -(ascender + this.marginTop * unitsPerEm),
-          glyphController.xAdvance + 2 * this.marginSide * unitsPerEm,
+          Math.max(glyphController.xAdvance + 2 * this.marginSide * unitsPerEm, 1), // a width of 0 is problematic
           ascender - descender + (this.marginTop + this.marginBottom) * unitsPerEm
         ),
         width: "100%",
