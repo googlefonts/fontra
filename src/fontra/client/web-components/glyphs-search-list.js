@@ -2,7 +2,6 @@ import { GlyphsSearchField } from "./glyphs-search-field.js";
 import { UIList } from "./ui-list.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
-import { ObservableController } from "/core/observable-object.js";
 import {
   getCharFromCodePoint,
   guessCharFromGlyphName,
