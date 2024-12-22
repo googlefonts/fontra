@@ -16,12 +16,6 @@ import {
 import { ViewController } from "/core/view-controller.js";
 import { GlyphCellView } from "/web-components/glyph-cell-view.js";
 
-// TODOs:
-// - Do we want to make the sidebar scalable? If so, we may want to refactor sidebar-resize-gutter or at least have a look at it. Follow up task?
-// - Context menu is not implemented in the overview, yet. We may want to add them. As follow up task. Related to 6. Add top menu bar.
-// - Maybe use https://www.npmjs.com/package/unicode-properties for overview sections. Also, how to we handle unencoded glyphs? As follow up task!
-// - Add top menu bar, please see: https://github.com/googlefonts/fontra/issues/1845
-
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
