@@ -3448,6 +3448,27 @@ export class EditorController extends ViewController {
     if (viewInfo["selection"]) {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
     }
+
+    if (
+      this.sceneController.autoViewBox &&
+      this.sceneSettings.selectedGlyph?.isEditing
+    ) {
+      // This is a bit of a hack: if isEditing is true, the autoViewBox
+      // doesn't work. Also, autoViewBox *needs* to be off in edit mode,
+      // or the canvas behaves really weirdly (it resizes as you drag points)
+      // We can't call .zoomFit() right away as the scene isn't done setting
+      // up. We add a temporary listener to do .zoomFit() once the scene is
+      // there.
+      const delayedZoomFit = () => {
+        this.sceneSettingsController.removeKeyListener(
+          "positionedLines",
+          delayedZoomFit
+        );
+        this.zoomFit(false);
+      };
+      this.sceneSettingsController.addKeyListener("positionedLines", delayedZoomFit);
+    }
+
     this.canvasController.requestUpdate();
     this._didFirstSetup = true;
   }
@@ -3553,7 +3574,7 @@ export class EditorController extends ViewController {
     this.sceneController.autoViewBox = false;
   }
 
-  zoomFit() {
+  zoomFit(animate = true) {
     let viewBox = this.sceneController.getSelectionBounds();
     if (viewBox) {
       let size = rectSize(viewBox);
@@ -3563,7 +3584,11 @@ export class EditorController extends ViewController {
       } else {
         viewBox = rectAddMargin(viewBox, 0.1);
       }
-      this.animateToViewBox(viewBox);
+      if (animate) {
+        this.animateToViewBox(viewBox);
+      } else {
+        this.sceneSettings.viewBox = viewBox;
+      }
     }
     this.sceneController.autoViewBox = false;
   }

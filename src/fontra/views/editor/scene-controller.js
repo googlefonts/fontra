@@ -130,11 +130,7 @@ export class SceneController {
 
     // auto view box
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
-      if (
-        event.newValue?.lineIndex == event.oldValue?.lineIndex &&
-        event.newValue?.glyphIndex == event.oldValue?.glyphIndex &&
-        event.newValue?.isEditing
-      ) {
+      if (event.newValue?.isEditing) {
         this.autoViewBox = false;
       }
       this.canvasController.requestUpdate();
