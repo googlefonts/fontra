@@ -72,6 +72,10 @@ export class FontOverviewNavigation extends HTMLElement {
     );
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
 
+    this.fontController.addChangeListener({ glyphMap: null }, () => {
+      this.glyphsSearch.glyphMap = this.fontController.glyphMap;
+    });
+
     const glyphsSearch = html.div({ class: "glyph-search" }, [this.glyphsSearch]);
 
     this.appendChild(glyphsSearch);
