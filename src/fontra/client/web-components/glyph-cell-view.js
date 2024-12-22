@@ -1,7 +1,7 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { difference, symmetricDifference, union } from "/core/set-ops.js";
+import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
 import { enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
@@ -22,6 +22,13 @@ export class GlyphCellView extends HTMLElement {
           glyphCell.selected = selection.has(glyphCell.glyphName);
         }
       });
+    });
+
+    this.fontController.addChangeListener({ glyphMap: null }, (event) => {
+      this.glyphSelection = intersection(
+        this.glyphSelection,
+        Object.keys(this.fontController.glyphMap)
+      );
     });
 
     this._intersectionObserver = new IntersectionObserver((entries, observer) => {
@@ -134,6 +141,8 @@ export class GlyphCellView extends HTMLElement {
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
       };
+
+      glyphCell.selected = this.glyphSelection.has(glyphName);
 
       if (index == ADD_CELLS_TRIGGER_INDEX) {
         glyphCell.onBecomeVisible = () => {

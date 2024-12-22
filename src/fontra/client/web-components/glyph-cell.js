@@ -254,7 +254,7 @@ export class GlyphCell extends UnlitElement {
   }
 
   _updateSelectedState() {
-    this._glyphCellContent.classList.toggle("selected", this._selected);
+    this._glyphCellContent?.classList.toggle("selected", this._selected);
   }
 }
 
