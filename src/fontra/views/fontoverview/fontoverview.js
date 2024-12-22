@@ -85,6 +85,9 @@ export class FontOverviewController extends ViewController {
   }
 
   _updateGlyphSelection() {
+    // We possibly need to be smarter about this:
+    this.glyphCellView.parentElement.scrollTop = 0;
+
     const glyphItemList = this.navigation.filterGlyphs(this._glyphItemList);
     this.glyphCellView.setGlyphItems(glyphItemList);
   }
