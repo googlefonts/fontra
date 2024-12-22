@@ -78,6 +78,14 @@ export class FontOverviewNavigation extends HTMLElement {
       : {};
     return this.fontController.mapSourceLocationToUserLocation(sourceLocation);
   }
+
+  sortGlyphs(glyphItems) {
+    return this.searchField.sortGlyphs(glyphItems);
+  }
+
+  filterGlyphs(glyphItems) {
+    return this.searchField.filterGlyphs(glyphItems);
+  }
 }
 
 customElements.define("font-overview-navigation", FontOverviewNavigation);

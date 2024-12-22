@@ -7,6 +7,7 @@ import {
   arrowKeyDeltas,
   commandKeyProperty,
   dumpURLFragment,
+  glyphMapToItemList,
   isActiveElementTypeable,
   modulo,
   range,
@@ -77,14 +78,14 @@ export class FontOverviewController extends ViewController {
   }
 
   _updateGlyphItemList() {
-    this._glyphItemList = this.navigation.searchField.sortedGlyphListFromGlyphMap(
-      this.fontController.glyphMap
+    this._glyphItemList = this.navigation.sortGlyphs(
+      glyphMapToItemList(this.fontController.glyphMap)
     );
     this._updateGlyphSelection();
   }
 
   _updateGlyphSelection() {
-    const glyphItemList = this.navigation.searchField.filterGlyphs(this._glyphItemList);
+    const glyphItemList = this.navigation.filterGlyphs(this._glyphItemList);
     this.glyphCellView.update(glyphItemList);
   }
 
