@@ -109,6 +109,10 @@ export class GlyphsSearchList extends UnlitElement {
     this.searchField.glyphMap = glyphMap;
   }
 
+  updateGlyphNamesListContent() {
+    this.searchField.updateGlyphNamesListContent();
+  }
+
   getSelectedGlyphName() {
     return this.glyphNamesList.items[this.glyphNamesList.selectedItemIndex]?.glyphName;
   }
