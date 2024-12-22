@@ -90,7 +90,7 @@ export class GlyphsSearchList extends UnlitElement {
   }
 
   focusSearchField() {
-    this.searchField.focus();
+    this.searchField.focusSearchField();
   }
 
   async update() {
