@@ -143,7 +143,7 @@ export class FontController {
     return this._rootObject.sources;
   }
 
-  async getSortedSourceIdentifiers() {
+  getSortedSourceIdentifiers() {
     const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const sortFunc = (identifierA, identifierB) => {
       for (const axis of fontAxesSourceSpace) {

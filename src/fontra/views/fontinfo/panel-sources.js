@@ -50,7 +50,7 @@ export class SourcesPanel extends BaseInfoPanel {
       style: "display: grid; gap: 0.5em;",
     });
 
-    for (const identifier of await this.fontController.getSortedSourceIdentifiers()) {
+    for (const identifier of this.fontController.getSortedSourceIdentifiers()) {
       if (!cardsInfos[identifier]) {
         cardsInfos[identifier] = {};
       }

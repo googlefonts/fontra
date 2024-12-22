@@ -20,10 +20,10 @@ export class FontOverviewNavigation extends HTMLElement {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
     }; // Note: a font may not have font sources therefore the ?-check.
 
-    await this._setupUI();
+    this._setupUI();
   }
 
-  async _setupUI() {
+  _setupUI() {
     // font source selector
     this.fontSourceInput = html.select(
       {
@@ -39,7 +39,7 @@ export class FontOverviewNavigation extends HTMLElement {
       []
     );
 
-    for (const fontSourceIdentifier of await this.fontController.getSortedSourceIdentifiers()) {
+    for (const fontSourceIdentifier of this.fontController.getSortedSourceIdentifiers()) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
         html.option(
