@@ -29,11 +29,7 @@ export class FontOverviewController extends ViewController {
       fontLocationSourceMapped: {},
     });
 
-    this.glyphsListItemsController = new ObservableController({
-      glyphsListItems: [],
-    });
-
-    this.throttledUpdate = throttleCalls(() => this.update(), 50);
+    this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
 
     // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
     // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
@@ -59,6 +55,7 @@ export class FontOverviewController extends ViewController {
 
     this.navigation = new FontOverviewNavigation(this);
     await this.navigation.start();
+    this.navigation.onSearchFieldChanged = this.updateGlyphSelection;
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
@@ -73,16 +70,22 @@ export class FontOverviewController extends ViewController {
     sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
 
-    this.glyphsListItemsController.addKeyListener(
-      "glyphsListItems",
-      this.throttledUpdate
-    );
-
-    this.update();
+    this.fontController.addChangeListener({ glyphMap: null }, () => {
+      this._updateGlyphItemList();
+    });
+    this._updateGlyphItemList();
   }
 
-  update() {
-    this.glyphCellView.update(this.glyphsListItemsController.model.glyphsListItems);
+  _updateGlyphItemList() {
+    this._glyphItemList = this.navigation.searchField.sortedGlyphListFromGlyphMap(
+      this.fontController.glyphMap
+    );
+    this._updateGlyphSelection();
+  }
+
+  _updateGlyphSelection() {
+    const glyphItemList = this.navigation.searchField.filterGlyphs(this._glyphItemList);
+    this.glyphCellView.update(glyphItemList);
   }
 
   handleDoubleClick(event) {
@@ -138,8 +141,7 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
     };
   }
 
-  for (const { glyphName, unicodes } of glyphsInfo) {
-    const codePoints = unicodes;
+  for (const { glyphName, codePoints } of glyphsInfo) {
     if (codePoints.length) {
       viewInfo.text +=
         0x002f === codePoints[0] ? "//" : String.fromCodePoint(codePoints[0]);

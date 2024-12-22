@@ -8,7 +8,6 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.fontController = fontOverviewController.fontController;
     this.locationController = fontOverviewController.locationController;
-    this.glyphsListItemsController = fontOverviewController.glyphsListItemsController;
   }
 
   async start() {
@@ -66,19 +65,10 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     // glyph search
-    this.glyphsSearch = new GlyphsSearchField(
-      this.glyphsListItemsController,
-      "glyphsListItems"
-    );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
+    this.searchField = new GlyphsSearchField();
+    this.searchField.onSearchFieldChanged = () => this.onSearchFieldChanged?.();
 
-    this.fontController.addChangeListener({ glyphMap: null }, () => {
-      this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    });
-
-    const glyphsSearch = html.div({ class: "glyph-search" }, [this.glyphsSearch]);
-
-    this.appendChild(glyphsSearch);
+    this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
   }
 
