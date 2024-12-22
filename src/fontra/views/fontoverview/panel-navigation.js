@@ -39,8 +39,6 @@ export class FontOverviewNavigation extends HTMLElement {
       []
     );
 
-    this.fontSourceInput.innerHTML = "";
-
     for (const fontSourceIdentifier of await this.fontController.getSortedSourceIdentifiers()) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
