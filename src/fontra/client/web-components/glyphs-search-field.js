@@ -1,6 +1,6 @@
 import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
+import { SimpleElement } from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 
 const colors = {
@@ -8,7 +8,7 @@ const colors = {
   "search-input-background-color": ["#eee", "#333"],
 };
 
-export class GlyphsSearchField extends UnlitElement {
+export class GlyphsSearchField extends SimpleElement {
   static styles = `
     ${themeColorCSS(colors)}
 
@@ -42,14 +42,12 @@ export class GlyphsSearchField extends UnlitElement {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
     this.glyphMap = {};
+
+    this.shadowRoot.appendChild(this.searchField);
   }
 
   focusSearchField() {
     this.searchField.focus();
-  }
-
-  render() {
-    return this.searchField;
   }
 
   get glyphMap() {
