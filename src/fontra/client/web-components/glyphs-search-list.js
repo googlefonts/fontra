@@ -24,36 +24,27 @@ export class GlyphsSearchList extends SimpleElement {
 
   constructor() {
     super();
-    this.glyphsListItemsController = new ObservableController({
-      glyphsListItems: [],
-    });
 
-    this.searchField = new GlyphsSearchField(
-      this.glyphsListItemsController,
-      "glyphsListItems"
-    );
-    this.glyphNamesList = this.makeGlyphNamesList();
+    this.searchField = new GlyphsSearchField();
+    this.glyphNamesList = this._makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
-    this.glyphsListItemsController.addKeyListener(
-      "glyphsListItems",
-      this.throttledUpdate
-    );
+    this.searchField.oninput = (event) => this.throttledUpdate();
 
     this.shadowRoot.appendChild(this.searchField);
     this.shadowRoot.appendChild(this.glyphNamesList);
   }
 
-  makeGlyphNamesList() {
+  _makeGlyphNamesList() {
     const columnDescriptions = [
       {
         key: "char",
         title: " ",
         width: "1.8em",
         cellFactory: (item, description) => {
-          if (item.unicodes[0]) {
-            return getCharFromCodePoint(item.unicodes[0]);
+          if (item.codePoints[0]) {
+            return getCharFromCodePoint(item.codePoints[0]);
           }
           const guessedChar = guessCharFromGlyphName(item.glyphName);
           return guessedChar ? html.span({ class: "guessed-char" }, [guessedChar]) : "";
@@ -63,7 +54,7 @@ export class GlyphsSearchList extends SimpleElement {
       {
         key: "unicode",
         width: "fit-content",
-        get: (item) => item.unicodes.map(makeUPlusStringFromCodePoint).join(","),
+        get: (item) => item.codePoints.map(makeUPlusStringFromCodePoint).join(","),
       },
     ];
     const glyphNamesList = new UIList();
@@ -96,20 +87,36 @@ export class GlyphsSearchList extends SimpleElement {
     this.searchField.focusSearchField();
   }
 
-  async update() {
-    this.glyphNamesList.setItems(this.glyphsListItemsController.model.glyphsListItems);
+  update() {
+    this.updateGlyphNamesListContent();
   }
 
   get glyphMap() {
-    return this.searchField._glyphMap;
+    return this._glyphMap;
   }
 
   set glyphMap(glyphMap) {
-    this.searchField.glyphMap = glyphMap;
+    this._glyphMap = glyphMap;
+    this.updateGlyphNamesListContent();
   }
 
   updateGlyphNamesListContent() {
-    this.searchField.updateGlyphNamesListContent();
+    const glyphMap = this.glyphMap;
+    const glyphsListItems = [];
+    for (const glyphName in glyphMap) {
+      glyphsListItems.push({
+        glyphName: glyphName,
+        codePoints: glyphMap[glyphName],
+      });
+    }
+
+    this.glyphsListItems = this.searchField.sortGlyphs(glyphsListItems);
+    this._setFilteredGlyphNamesListContent();
+  }
+
+  _setFilteredGlyphNamesListContent() {
+    const filteredGlyphItems = this.searchField.filterGlyphs(this.glyphsListItems);
+    this.glyphNamesList.setItems(filteredGlyphItems);
   }
 
   getSelectedGlyphName() {
