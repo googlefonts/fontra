@@ -100,16 +100,7 @@ export class GlyphsSearchList extends SimpleElement {
   }
 
   updateGlyphNamesListContent() {
-    const glyphMap = this.glyphMap;
-    const glyphsListItems = [];
-    for (const glyphName in glyphMap) {
-      glyphsListItems.push({
-        glyphName: glyphName,
-        codePoints: glyphMap[glyphName],
-      });
-    }
-
-    this.glyphsListItems = this.searchField.sortGlyphs(glyphsListItems);
+    this.glyphsListItems = this.searchField.sortedGlyphListFromGlyphMap(this.glyphMap);
     this._setFilteredGlyphNamesListContent();
   }
 

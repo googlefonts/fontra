@@ -54,10 +54,25 @@ export class GlyphsSearchField extends SimpleElement {
       .map((item) => item.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"));
     searchItems.push(...hexSearchItems);
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
-    this.oninput?.(event);
+
+    this.onSearchFieldChanged?.(event);
+  }
+
+  sortedGlyphListFromGlyphMap(glyphMap) {
+    // This arguably doesn't belong here
+    const glyphsListItems = [];
+    for (const glyphName in glyphMap) {
+      glyphsListItems.push({
+        glyphName: glyphName,
+        codePoints: glyphMap[glyphName],
+      });
+    }
+
+    return this.sortGlyphs(glyphsListItems);
   }
 
   sortGlyphs(glyphs) {
+    // This arguably doesn't belong here
     glyphs = [...glyphs];
     glyphs.sort(glyphItemSortFunc);
     return glyphs;
