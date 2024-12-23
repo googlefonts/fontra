@@ -1,3 +1,4 @@
+import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
@@ -7,7 +8,9 @@ export class FontOverviewNavigation extends HTMLElement {
     super();
 
     this.fontController = fontOverviewController.fontController;
-    this.locationController = fontOverviewController.locationController;
+    this.fontOverviewSettingsObserver =
+      fontOverviewController.fontOverviewSettingsObserver;
+    this.glyphOrganizer = new GlyphOrganizer();
   }
 
   async start() {
@@ -15,7 +18,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.currentFontSourceIdentifier =
       this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
-    this.locationController.model.fontLocationSourceMapped = {
+    this.fontOverviewSettingsObserver.model.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
     }; // Note: a font may not have font sources therefore the ?-check.
 
@@ -30,7 +33,7 @@ export class FontOverviewNavigation extends HTMLElement {
         style: "width: 100%;",
         onchange: (event) => {
           this.currentFontSourceIdentifier = event.target.value;
-          this.locationController.model.fontLocationSourceMapped = {
+          this.fontOverviewSettingsObserver.model.fontLocationSourceMapped = {
             ...this.fontSources[this.currentFontSourceIdentifier].location,
           };
         },
@@ -65,8 +68,10 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     // glyph search
-    this.searchField = new GlyphSearchField();
-    this.searchField.onSearchFieldChanged = () => this.onSearchFieldChanged?.();
+    this.searchField = new GlyphSearchField({
+      observer: this.fontOverviewSettingsObserver,
+      observerKey: "searchString",
+    });
 
     this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
@@ -77,14 +82,6 @@ export class FontOverviewNavigation extends HTMLElement {
       ? this.fontSources[this.currentFontSourceIdentifier].location
       : {};
     return this.fontController.mapSourceLocationToUserLocation(sourceLocation);
-  }
-
-  sortGlyphs(glyphItems) {
-    return this.searchField.sortGlyphs(glyphItems);
-  }
-
-  filterGlyphs(glyphItems) {
-    return this.searchField.filterGlyphs(glyphItems);
   }
 }
 

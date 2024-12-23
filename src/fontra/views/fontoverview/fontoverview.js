@@ -1,4 +1,5 @@
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
@@ -20,11 +21,21 @@ export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
-    this.locationController = new ObservableController({
+    this.fontOverviewSettingsObserver = new ObservableController({
+      searchString: "",
       fontLocationSourceMapped: {},
+      fontSourceIdentifier: null,
+      glyphSelection: new Set(),
     });
 
+    this.glyphOrganizer = new GlyphOrganizer();
+
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
+
+    this.fontOverviewSettingsObserver.addKeyListener("searchString", (event) => {
+      this.glyphOrganizer.setSearchString(event.newValue);
+      this.updateGlyphSelection();
+    });
 
     // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
     // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
@@ -50,11 +61,10 @@ export class FontOverviewController extends ViewController {
 
     this.navigation = new FontOverviewNavigation(this);
     await this.navigation.start();
-    this.navigation.onSearchFieldChanged = this.updateGlyphSelection;
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
-      this.locationController
+      this.fontOverviewSettingsObserver
     );
 
     // // This is how we can change the cell size:
@@ -72,7 +82,7 @@ export class FontOverviewController extends ViewController {
   }
 
   _updateGlyphItemList() {
-    this._glyphItemList = this.navigation.sortGlyphs(
+    this._glyphItemList = this.glyphOrganizer.sortGlyphs(
       glyphMapToItemList(this.fontController.glyphMap)
     );
     this._updateGlyphSelection();
@@ -82,7 +92,7 @@ export class FontOverviewController extends ViewController {
     // We possibly need to be smarter about this:
     this.glyphCellView.parentElement.scrollTop = 0;
 
-    const glyphItemList = this.navigation.filterGlyphs(this._glyphItemList);
+    const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
     this.glyphCellView.setGlyphItems(glyphItemList);
   }
 

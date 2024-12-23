@@ -7,11 +7,12 @@ import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 export class GlyphCellView extends HTMLElement {
-  constructor(fontController, locationController) {
+  constructor(fontController, observer, options) {
     super();
 
     this.fontController = fontController;
-    this.locationController = locationController;
+    this.observer = observer;
+    this.locationKey = options?.locationKey || "fontLocationSourceMapped";
 
     this.glyphSelectionController = new ObservableController({ selection: new Set() });
     this.glyphSelectionController.addKeyListener("selection", (event) => {
@@ -130,8 +131,8 @@ export class GlyphCellView extends HTMLElement {
         this.fontController,
         glyphName,
         codePoints,
-        this.locationController,
-        "fontLocationSourceMapped"
+        this.observer,
+        this.locationKey
       );
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
