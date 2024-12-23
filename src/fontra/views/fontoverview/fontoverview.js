@@ -33,15 +33,15 @@ export class FontOverviewController extends ViewController {
 
     this.fontSources = await this.fontController.getSources();
 
-    this.fontOverviewSettingsObserver = new ObservableController({
+    this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
       fontSourceIdentifier: null,
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
     });
-    this.fontOverviewSettings = this.fontOverviewSettingsObserver.model;
+    this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
-    this.fontOverviewSettingsObserver.addKeyListener(
+    this.fontOverviewSettingsController.addKeyListener(
       "fontSourceIdentifier",
       (event) => {
         const sourceLocation = {
@@ -58,7 +58,7 @@ export class FontOverviewController extends ViewController {
     this.fontOverviewSettings.fontSourceIdentifier =
       this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
 
-    this.fontOverviewSettingsObserver.addKeyListener("searchString", (event) => {
+    this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
       this.glyphOrganizer.setSearchString(event.newValue);
       this.updateGlyphSelection();
     });
@@ -79,7 +79,7 @@ export class FontOverviewController extends ViewController {
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
-      this.fontOverviewSettingsObserver
+      this.fontOverviewSettingsController
     );
 
     // // This is how we can change the cell size:

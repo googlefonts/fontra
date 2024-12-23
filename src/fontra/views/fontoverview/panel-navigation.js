@@ -8,9 +8,9 @@ export class FontOverviewNavigation extends HTMLElement {
     super();
 
     this.fontController = fontOverviewController.fontController;
-    this.fontOverviewSettingsObserver =
-      fontOverviewController.fontOverviewSettingsObserver;
-    this.fontOverviewSettings = this.fontOverviewSettingsObserver.model;
+    this.fontOverviewSettingsController =
+      fontOverviewController.fontOverviewSettingsController;
+    this.fontOverviewSettings = this.fontOverviewSettingsController.model;
     this.glyphOrganizer = new GlyphOrganizer();
 
     this._setupUI();
@@ -58,7 +58,7 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     this.searchField = new GlyphSearchField({
-      observer: this.fontOverviewSettingsObserver,
+      observer: this.fontOverviewSettingsController,
       observerKey: "searchString",
     });
 
