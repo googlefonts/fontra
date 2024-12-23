@@ -58,8 +58,8 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     this.searchField = new GlyphSearchField({
-      observer: this.fontOverviewSettingsController,
-      observerKey: "searchString",
+      settingsController: this.fontOverviewSettingsController,
+      searchStringKey: "searchString",
     });
 
     this.appendChild(this.searchField);

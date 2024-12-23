@@ -37,10 +37,10 @@ export class GlyphSearchField extends SimpleElement {
       oninput: (event) => this._searchFieldChanged(event),
     });
 
-    if (options?.observer) {
-      this._observer = options.observer;
-      this._observerKey = options.observerKey || "searchString";
-      this._observer.addKeyListener(this._observerKey, (event) => {
+    if (options?.settingsController) {
+      this._settingsController = options.settingsController;
+      this._searchStringKey = options.searchStringKey || "searchString";
+      this._settingsController.addKeyListener(this._searchStringKey, (event) => {
         this.searchField.value = event.newValue;
       });
     }
@@ -61,8 +61,8 @@ export class GlyphSearchField extends SimpleElement {
     event.stopImmediatePropagation();
     const value = event.target.value;
 
-    if (this._observer) {
-      this._observer.model[this._observerKey] = value;
+    if (this._settingsController) {
+      this._settingsController.model[this._searchStringKey] = value;
     }
 
     this.onSearchFieldChanged?.(event);
