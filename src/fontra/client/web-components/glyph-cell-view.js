@@ -13,9 +13,9 @@ export class GlyphCellView extends HTMLElement {
     this.fontController = fontController;
     this.observer = observer;
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
+    this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
-    this.glyphSelectionController = new ObservableController({ selection: new Set() });
-    this.glyphSelectionController.addKeyListener("selection", (event) => {
+    this.observer.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
       const diff = symmetricDifference(selection, event.oldValue);
       this.forEachGlyphCell((glyphCell) => {
@@ -159,11 +159,11 @@ export class GlyphCellView extends HTMLElement {
   }
 
   get glyphSelection() {
-    return this.glyphSelectionController.model.selection;
+    return this.observer.model[this.glyphSelectionKey];
   }
 
   set glyphSelection(selection) {
-    this.glyphSelectionController.model.selection = selection;
+    this.observer.model[this.glyphSelectionKey] = selection;
   }
 
   forEachGlyphCell(func) {
