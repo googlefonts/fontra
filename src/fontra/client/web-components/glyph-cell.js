@@ -64,8 +64,6 @@ export class GlyphCell extends UnlitElement {
 
   .glyph-name-label {
     font-size: 0.85em;
-    padding-left: 0.3em;
-    padding-right: 0.3em;
     overflow-x: hidden;
     text-overflow: ellipsis;
     text-overflow: ellipsis;
