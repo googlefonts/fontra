@@ -1,6 +1,5 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import { ObservableController } from "/core/observable-object.js";
 import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
 import { enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
