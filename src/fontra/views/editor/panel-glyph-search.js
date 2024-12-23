@@ -74,8 +74,7 @@ export default class GlyphSearchPanel extends Panel {
 
   async toggle(on, focus) {
     if (on && focus) {
-      const glyphSearch = this.contentElement.querySelector("#glyph-search-list");
-      glyphSearch.focusSearchField();
+      this.glyphSearch.focusSearchField();
     }
   }
 }
