@@ -10,6 +10,7 @@ export class FontOverviewNavigation extends HTMLElement {
     this.fontController = fontOverviewController.fontController;
     this.fontOverviewSettingsObserver =
       fontOverviewController.fontOverviewSettingsObserver;
+    this.fontOverviewSettings = this.fontOverviewSettingsObserver.model;
     this.glyphOrganizer = new GlyphOrganizer();
   }
 
@@ -18,7 +19,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.currentFontSourceIdentifier =
       this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
-    this.fontOverviewSettingsObserver.model.fontLocationSourceMapped = {
+    this.fontOverviewSettings.fontLocationSourceMapped = {
       ...this.fontSources[this.currentFontSourceIdentifier]?.location,
     }; // Note: a font may not have font sources therefore the ?-check.
 
@@ -26,14 +27,13 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _setupUI() {
-    // font source selector
     this.fontSourceInput = html.select(
       {
         id: "font-source-select",
         style: "width: 100%;",
         onchange: (event) => {
           this.currentFontSourceIdentifier = event.target.value;
-          this.fontOverviewSettingsObserver.model.fontLocationSourceMapped = {
+          this.fontOverviewSettings.fontLocationSourceMapped = {
             ...this.fontSources[this.currentFontSourceIdentifier].location,
           };
         },
