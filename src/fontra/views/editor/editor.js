@@ -3101,7 +3101,7 @@ export class EditorController extends ViewController {
 
   async doSelectPreviousNextGlyph(selectPrevious) {
     const panel = this.getSidebarPanel("glyph-search");
-    const glyphNames = panel.glyphsSearch.getFilteredGlyphNames();
+    const glyphNames = panel.glyphSearch.getFilteredGlyphNames();
     if (!glyphNames.length) {
       return;
     }
@@ -3143,10 +3143,10 @@ export class EditorController extends ViewController {
       usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
     );
 
-    const glyphsSearch = document.createElement("glyphs-search-list");
-    glyphsSearch.glyphMap = glyphMap;
+    const glyphSearch = document.createElement("glyph-search-list");
+    glyphSearch.glyphMap = glyphMap;
 
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
       theDialog.defaultButton.click();
     });
 
@@ -3167,9 +3167,9 @@ export class EditorController extends ViewController {
       ]
     );
 
-    theDialog.setContent(glyphsSearch);
+    theDialog.setContent(glyphSearch);
 
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+    setTimeout(() => glyphSearch.focusSearchField(), 0); // next event loop iteration
 
     switch (await theDialog.run()) {
       case "copy": {
@@ -3183,7 +3183,7 @@ export class EditorController extends ViewController {
         break;
       }
       case "add": {
-        const glyphName = glyphsSearch.getSelectedGlyphName();
+        const glyphName = glyphSearch.getSelectedGlyphName();
         const MAX_NUM_GLYPHS = 100;
         const truncate = !glyphName && usedBy.length > MAX_NUM_GLYPHS;
         const glyphNames = glyphName
@@ -3218,17 +3218,17 @@ export class EditorController extends ViewController {
     titleLabel = translate("dialog.glyphs.search"),
     okLabel = translate("dialog.add")
   ) {
-    const glyphsSearch = document.createElement("glyphs-search-list");
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
+    const glyphSearch = document.createElement("glyph-search-list");
+    glyphSearch.glyphMap = this.fontController.glyphMap;
 
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameChanged", (event) => {
       dialog.defaultButton.classList.toggle(
         "disabled",
-        !glyphsSearch.getSelectedGlyphName()
+        !glyphSearch.getSelectedGlyphName()
       );
     });
 
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
       dialog.defaultButton.click();
     });
 
@@ -3237,16 +3237,16 @@ export class EditorController extends ViewController {
       { title: okLabel, isDefaultButton: true, resultValue: "ok", disabled: true },
     ]);
 
-    dialog.setContent(glyphsSearch);
+    dialog.setContent(glyphSearch);
 
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+    setTimeout(() => glyphSearch.focusSearchField(), 0); // next event loop iteration
 
     if (!(await dialog.run())) {
       // User cancelled
       return;
     }
 
-    const glyphName = glyphsSearch.getSelectedGlyphName();
+    const glyphName = glyphSearch.getSelectedGlyphName();
     if (!glyphName) {
       // Invalid selection
       return;

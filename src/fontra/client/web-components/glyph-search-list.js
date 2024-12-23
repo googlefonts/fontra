@@ -1,4 +1,4 @@
-import { GlyphsSearchField } from "./glyphs-search-field.js";
+import { GlyphSearchField } from "./glyph-search-field.js";
 import { UIList } from "./ui-list.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
@@ -10,7 +10,7 @@ import {
   throttleCalls,
 } from "/core/utils.js";
 
-export class GlyphsSearchList extends SimpleElement {
+export class GlyphSearchList extends SimpleElement {
   static styles = `
     :host {
       display: grid;
@@ -25,7 +25,7 @@ export class GlyphsSearchList extends SimpleElement {
   constructor() {
     super();
 
-    this.searchField = new GlyphsSearchField();
+    this.searchField = new GlyphSearchField();
     this.glyphNamesList = this._makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
@@ -121,4 +121,4 @@ export class GlyphsSearchList extends SimpleElement {
   }
 }
 
-customElements.define("glyphs-search-list", GlyphsSearchList);
+customElements.define("glyph-search-list", GlyphSearchList);

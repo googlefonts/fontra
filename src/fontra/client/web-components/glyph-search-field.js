@@ -8,7 +8,7 @@ const colors = {
   "search-input-background-color": ["#eee", "#333"],
 };
 
-export class GlyphsSearchField extends SimpleElement {
+export class GlyphSearchField extends SimpleElement {
   static styles = `
     ${themeColorCSS(colors)}
 
@@ -70,7 +70,7 @@ export class GlyphsSearchField extends SimpleElement {
   }
 }
 
-customElements.define("glyphs-search-field", GlyphsSearchField);
+customElements.define("glyph-search-field", GlyphSearchField);
 
 function glyphFilterFunc(item, searchItems) {
   if (!searchItems.length) {

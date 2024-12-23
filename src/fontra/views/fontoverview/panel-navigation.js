@@ -1,6 +1,6 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import { GlyphsSearchField } from "/web-components/glyphs-search-field.js";
+import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 
 export class FontOverviewNavigation extends HTMLElement {
   constructor(fontOverviewController) {
@@ -65,7 +65,7 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     // glyph search
-    this.searchField = new GlyphsSearchField();
+    this.searchField = new GlyphSearchField();
     this.searchField.onSearchFieldChanged = () => this.onSearchFieldChanged?.();
 
     this.appendChild(this.searchField);
