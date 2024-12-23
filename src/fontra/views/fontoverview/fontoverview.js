@@ -44,9 +44,12 @@ export class FontOverviewController extends ViewController {
     this.fontOverviewSettingsObserver.addKeyListener(
       "fontSourceIdentifier",
       (event) => {
-        this.fontOverviewSettings.fontLocationSourceMapped = {
+        const sourceLocation = {
           ...this.fontSources[event.newValue]?.location,
-        }; // A font may not have any font sources, therefore the ?-check.,
+        }; // A font may not have any font sources, therefore the ?-check
+
+        this.fontOverviewSettings.fontLocationSourceMapped =
+          this.fontController.mapSourceLocationToUserLocation(sourceLocation);
       }
     );
     // Note: once we add an axis slider UI, we should do the opposite mapping,
