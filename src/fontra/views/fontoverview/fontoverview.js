@@ -21,25 +21,7 @@ export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
-    this.fontOverviewSettingsObserver = new ObservableController({
-      searchString: "",
-      fontLocationSourceMapped: {},
-      fontSourceIdentifier: null,
-      glyphSelection: new Set(),
-    });
-
-    this.glyphOrganizer = new GlyphOrganizer();
-
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
-
-    this.fontOverviewSettingsObserver.addKeyListener("searchString", (event) => {
-      this.glyphOrganizer.setSearchString(event.newValue);
-      this.updateGlyphSelection();
-    });
-
-    // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
-    // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
-    // this.previousArrowDirection = "ArrowRight";
   }
 
   async start() {
@@ -48,6 +30,37 @@ export class FontOverviewController extends ViewController {
 
   async _start() {
     await this.fontController.initialize();
+
+    this.fontSources = await this.fontController.getSources();
+
+    this.fontOverviewSettingsObserver = new ObservableController({
+      searchString: "",
+      fontSourceIdentifier: null,
+      fontLocationSourceMapped: {},
+      glyphSelection: new Set(),
+    });
+    this.fontOverviewSettings = this.fontOverviewSettingsObserver.model;
+
+    this.fontOverviewSettingsObserver.addKeyListener(
+      "fontSourceIdentifier",
+      (event) => {
+        this.fontOverviewSettings.fontLocationSourceMapped = {
+          ...this.fontSources[event.newValue]?.location,
+        }; // A font may not have any font sources, therefore the ?-check.,
+      }
+    );
+    // Note: once we add an axis slider UI, we should do the opposite mapping,
+    // too, from location to source identifier
+
+    this.fontOverviewSettings.fontSourceIdentifier =
+      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
+
+    this.fontOverviewSettingsObserver.addKeyListener("searchString", (event) => {
+      this.glyphOrganizer.setSearchString(event.newValue);
+      this.updateGlyphSelection();
+    });
+
+    this.glyphOrganizer = new GlyphOrganizer();
 
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
@@ -60,7 +73,6 @@ export class FontOverviewController extends ViewController {
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
     this.navigation = new FontOverviewNavigation(this);
-    await this.navigation.start();
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
@@ -103,7 +115,7 @@ export class FontOverviewController extends ViewController {
   openSelectedGlyphs() {
     openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
-      this.navigation.getUserLocation(),
+      this.fontOverviewSettings.fontLocationSourceMapped,
       this.fontController.glyphMap
     );
   }

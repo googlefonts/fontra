@@ -12,30 +12,19 @@ export class FontOverviewNavigation extends HTMLElement {
       fontOverviewController.fontOverviewSettingsObserver;
     this.fontOverviewSettings = this.fontOverviewSettingsObserver.model;
     this.glyphOrganizer = new GlyphOrganizer();
-  }
-
-  async start() {
-    this.fontSources = await this.fontController.getSources();
-
-    this.currentFontSourceIdentifier =
-      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
-    this.fontOverviewSettings.fontLocationSourceMapped = {
-      ...this.fontSources[this.currentFontSourceIdentifier]?.location,
-    }; // Note: a font may not have font sources therefore the ?-check.
 
     this._setupUI();
   }
 
-  _setupUI() {
+  async _setupUI() {
+    this.fontSources = await this.fontController.getSources();
+
     this.fontSourceInput = html.select(
       {
         id: "font-source-select",
         style: "width: 100%;",
         onchange: (event) => {
-          this.currentFontSourceIdentifier = event.target.value;
-          this.fontOverviewSettings.fontLocationSourceMapped = {
-            ...this.fontSources[this.currentFontSourceIdentifier].location,
-          };
+          this.fontOverviewSettings.fontSourceIdentifier = event.target.value;
         },
       },
       []
@@ -47,7 +36,8 @@ export class FontOverviewNavigation extends HTMLElement {
         html.option(
           {
             value: fontSourceIdentifier,
-            selected: this.currentFontSourceIdentifier === fontSourceIdentifier,
+            selected:
+              this.fontOverviewSettings.fontSourceIdentifier === fontSourceIdentifier,
           },
           [sourceName]
         )
@@ -67,7 +57,6 @@ export class FontOverviewNavigation extends HTMLElement {
       ]
     );
 
-    // glyph search
     this.searchField = new GlyphSearchField({
       observer: this.fontOverviewSettingsObserver,
       observerKey: "searchString",
@@ -75,13 +64,6 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
-  }
-
-  getUserLocation() {
-    const sourceLocation = this.fontSources[this.currentFontSourceIdentifier]
-      ? this.fontSources[this.currentFontSourceIdentifier].location
-      : {};
-    return this.fontController.mapSourceLocationToUserLocation(sourceLocation);
   }
 }
 
