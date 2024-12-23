@@ -1,4 +1,5 @@
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
@@ -20,15 +21,7 @@ export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
-    this.locationController = new ObservableController({
-      fontLocationSourceMapped: {},
-    });
-
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
-
-    // document.addEventListener("keydown", (event) => this.handleKeyDown(event));
-    // document.addEventListener("keyup", (event) => this.handleKeyUp(event));
-    // this.previousArrowDirection = "ArrowRight";
   }
 
   async start() {
@@ -37,6 +30,40 @@ export class FontOverviewController extends ViewController {
 
   async _start() {
     await this.fontController.initialize();
+
+    this.fontSources = await this.fontController.getSources();
+
+    this.fontOverviewSettingsController = new ObservableController({
+      searchString: "",
+      fontSourceIdentifier: null,
+      fontLocationSourceMapped: {},
+      glyphSelection: new Set(),
+    });
+    this.fontOverviewSettings = this.fontOverviewSettingsController.model;
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "fontSourceIdentifier",
+      (event) => {
+        const sourceLocation = {
+          ...this.fontSources[event.newValue]?.location,
+        }; // A font may not have any font sources, therefore the ?-check
+
+        this.fontOverviewSettings.fontLocationSourceMapped =
+          this.fontController.mapSourceLocationToUserLocation(sourceLocation);
+      }
+    );
+    // Note: once we add an axis slider UI, we should do the opposite mapping,
+    // too, from location to source identifier
+
+    this.fontOverviewSettings.fontSourceIdentifier =
+      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
+
+    this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
+      this.glyphOrganizer.setSearchString(event.newValue);
+      this.updateGlyphSelection();
+    });
+
+    this.glyphOrganizer = new GlyphOrganizer();
 
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
@@ -49,12 +76,10 @@ export class FontOverviewController extends ViewController {
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
     this.navigation = new FontOverviewNavigation(this);
-    await this.navigation.start();
-    this.navigation.onSearchFieldChanged = this.updateGlyphSelection;
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
-      this.locationController
+      this.fontOverviewSettingsController
     );
 
     // // This is how we can change the cell size:
@@ -72,7 +97,7 @@ export class FontOverviewController extends ViewController {
   }
 
   _updateGlyphItemList() {
-    this._glyphItemList = this.navigation.sortGlyphs(
+    this._glyphItemList = this.glyphOrganizer.sortGlyphs(
       glyphMapToItemList(this.fontController.glyphMap)
     );
     this._updateGlyphSelection();
@@ -82,7 +107,7 @@ export class FontOverviewController extends ViewController {
     // We possibly need to be smarter about this:
     this.glyphCellView.parentElement.scrollTop = 0;
 
-    const glyphItemList = this.navigation.filterGlyphs(this._glyphItemList);
+    const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
     this.glyphCellView.setGlyphItems(glyphItemList);
   }
 
@@ -93,7 +118,7 @@ export class FontOverviewController extends ViewController {
   openSelectedGlyphs() {
     openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
-      this.navigation.getUserLocation(),
+      this.fontOverviewSettings.fontLocationSourceMapped,
       this.fontController.glyphMap
     );
   }

@@ -1,20 +1,20 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import { ObservableController } from "/core/observable-object.js";
 import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
 import { enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 export class GlyphCellView extends HTMLElement {
-  constructor(fontController, locationController) {
+  constructor(fontController, settingsController, options) {
     super();
 
     this.fontController = fontController;
-    this.locationController = locationController;
+    this.settingsController = settingsController;
+    this.locationKey = options?.locationKey || "fontLocationSourceMapped";
+    this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
-    this.glyphSelectionController = new ObservableController({ selection: new Set() });
-    this.glyphSelectionController.addKeyListener("selection", (event) => {
+    this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
       const diff = symmetricDifference(selection, event.oldValue);
       this.forEachGlyphCell((glyphCell) => {
@@ -130,8 +130,8 @@ export class GlyphCellView extends HTMLElement {
         this.fontController,
         glyphName,
         codePoints,
-        this.locationController,
-        "fontLocationSourceMapped"
+        this.settingsController,
+        this.locationKey
       );
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
@@ -158,11 +158,11 @@ export class GlyphCellView extends HTMLElement {
   }
 
   get glyphSelection() {
-    return this.glyphSelectionController.model.selection;
+    return this.settingsController.model[this.glyphSelectionKey];
   }
 
   set glyphSelection(selection) {
-    this.glyphSelectionController.model.selection = selection;
+    this.settingsController.model[this.glyphSelectionKey] = selection;
   }
 
   forEachGlyphCell(func) {

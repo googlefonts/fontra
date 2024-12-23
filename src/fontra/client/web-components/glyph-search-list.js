@@ -1,5 +1,6 @@
 import { GlyphSearchField } from "./glyph-search-field.js";
 import { UIList } from "./ui-list.js";
+import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
 import {
@@ -25,12 +26,14 @@ export class GlyphSearchList extends SimpleElement {
   constructor() {
     super();
 
+    this.glyphOrganizer = new GlyphOrganizer();
+
     this.searchField = new GlyphSearchField();
     this.glyphNamesList = this._makeGlyphNamesList();
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
-    this.searchField.oninput = (event) => this.throttledUpdate();
+    this.searchField.onSearchFieldChanged = (event) => this.throttledUpdate();
 
     this.shadowRoot.appendChild(this.searchField);
     this.shadowRoot.appendChild(this.glyphNamesList);
@@ -101,14 +104,15 @@ export class GlyphSearchList extends SimpleElement {
   }
 
   updateGlyphNamesListContent() {
-    this.glyphsListItems = this.searchField.sortGlyphs(
+    this.glyphOrganizer.setSearchString(this.searchField.searchString);
+    this.glyphsListItems = this.glyphOrganizer.sortGlyphs(
       glyphMapToItemList(this.glyphMap)
     );
     this._setFilteredGlyphNamesListContent();
   }
 
   _setFilteredGlyphNamesListContent() {
-    const filteredGlyphItems = this.searchField.filterGlyphs(this.glyphsListItems);
+    const filteredGlyphItems = this.glyphOrganizer.filterGlyphs(this.glyphsListItems);
     this.glyphNamesList.setItems(filteredGlyphItems);
   }
 
