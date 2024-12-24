@@ -76,11 +76,13 @@ export class GlyphCellView extends HTMLElement {
 
     this.accordion.items = accordionItems;
 
+    // `results` is in preparation for https://github.com/googlefonts/fontra/issues/1887
     const results = [];
+
     for (const item of this.accordion.items) {
-      this._updateAccordionItem(item).then((hasResult) => {
-        this.accordion.showHideAccordionItem(item, hasResult);
-        results.push(hasResult);
+      this._updateAccordionItem(item).then((itemHasGlyphs) => {
+        this.accordion.showHideAccordionItem(item, itemHasGlyphs);
+        results.push(itemHasGlyphs);
       });
     }
   }
@@ -89,7 +91,6 @@ export class GlyphCellView extends HTMLElement {
     const element = item.content;
 
     element.innerHTML = "";
-    let hideAccordionItem = true;
 
     element.appendChild(
       html.span({ class: "placeholder-label" }, [
@@ -97,23 +98,22 @@ export class GlyphCellView extends HTMLElement {
       ])
     );
 
-    item.glyphsToAdd = [...item.glyphs];
+    const glyphs = await item.glyphs;
+    const itemHasGlyphs = !!glyphs?.length;
 
-    if (item.glyphs.length) {
-      element.innerHTML = "";
+    element.innerHTML = "";
+
+    if (itemHasGlyphs) {
+      item.glyphsToAdd = [...glyphs];
       this._addCellsIfNeeded(item);
       // At least in Chrome, we need to reset the scroll position, but it doesn't
       // work if we do it right away, only after the next event iteration.
       setTimeout(() => {
         element.scrollTop = 0;
       }, 0);
-
-      hideAccordionItem = false;
-    } else {
-      element.innerHTML = "";
     }
 
-    return !hideAccordionItem;
+    return itemHasGlyphs;
   }
 
   _addCellsIfNeeded(item) {
