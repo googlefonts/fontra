@@ -111,7 +111,9 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.parentElement.scrollTop = 0;
 
     const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
-    this.glyphCellView.setGlyphSections([{ label: "Glyphs", glyphs: glyphItemList }]);
+    this.glyphCellView.setGlyphSections([
+      { label: "All glyphs", glyphs: glyphItemList },
+    ]);
   }
 
   handleDoubleClick(event) {
