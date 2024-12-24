@@ -88,7 +88,8 @@ export class FontOverviewController extends ViewController {
     // // This is how we can change the cell size:
     // this.glyphCellView.style.setProperty("--glyph-cell-scale-factor-override", "1");
 
-    this.glyphCellView.ondblclick = (event) => this.handleDoubleClick(event);
+    this.glyphCellView.onCellDoubleClick = (event, glyphCell) =>
+      this.handleDoubleClick(event, glyphCell);
 
     sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
@@ -116,8 +117,10 @@ export class FontOverviewController extends ViewController {
     ]);
   }
 
-  handleDoubleClick(event) {
-    this.openSelectedGlyphs();
+  handleDoubleClick(event, glyphCell) {
+    if (glyphCell.selected) {
+      this.openSelectedGlyphs();
+    }
   }
 
   openSelectedGlyphs() {
