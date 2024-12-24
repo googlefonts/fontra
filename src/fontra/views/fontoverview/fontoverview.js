@@ -36,6 +36,7 @@ export class FontOverviewController extends ViewController {
     this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
       fontSourceIdentifier: null,
+      fontLocationUser: {},
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
     });
@@ -48,7 +49,9 @@ export class FontOverviewController extends ViewController {
           ...this.fontSources[event.newValue]?.location,
         }; // A font may not have any font sources, therefore the ?-check
 
-        this.fontOverviewSettings.fontLocationSourceMapped =
+        this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
+
+        this.fontOverviewSettings.fontLocationUser =
           this.fontController.mapSourceLocationToUserLocation(sourceLocation);
       }
     );
