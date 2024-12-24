@@ -61,26 +61,28 @@ export class GlyphCellView extends HTMLElement {
     }
     `);
 
-    // TODO: refactor this if we implement different sections. For now only one section.
-    this.accordion.items = [
-      {
-        label: "Glyphs",
-        open: true,
-        content: html.div({ class: "font-overview-accordion-item" }, []),
-        section: "Glyphs",
-      },
-    ];
-
     return html.div({}, [this.accordion]); // wrap in div for scroll behavior
   }
 
-  setGlyphItems(glyphs) {
-    this.glyphs = glyphs;
+  setGlyphSections(glyphSections) {
+    this.glyphSections = glyphSections;
+
+    const accordionItems = glyphSections.map((section) => ({
+      label: section.label,
+      open: true,
+      content: html.div({ class: "font-overview-accordion-item" }, []),
+      glyphs: section.glyphs,
+    }));
+
+    this.accordion.items = accordionItems;
+
+    // `results` is in preparation for https://github.com/googlefonts/fontra/issues/1887
     const results = [];
+
     for (const item of this.accordion.items) {
-      this._updateAccordionItem(item).then((hasResult) => {
-        this.accordion.showHideAccordionItem(item, hasResult);
-        results.push(hasResult);
+      this._updateAccordionItem(item).then((itemHasGlyphs) => {
+        this.accordion.showHideAccordionItem(item, itemHasGlyphs);
+        results.push(itemHasGlyphs);
       });
     }
   }
@@ -89,32 +91,29 @@ export class GlyphCellView extends HTMLElement {
     const element = item.content;
 
     element.innerHTML = "";
-    let hideAccordionItem = true;
 
     element.appendChild(
       html.span({ class: "placeholder-label" }, [
         translate("sidebar.related-glyphs.loading"), // TODO: general loading key.
       ])
     );
-    const glyphs = await this.getGlyphs(item.section);
 
-    item.glyphsToAdd = [...glyphs];
+    const glyphs = await item.glyphs;
+    const itemHasGlyphs = !!glyphs?.length;
 
-    if (glyphs?.length) {
-      element.innerHTML = "";
+    element.innerHTML = "";
+
+    if (itemHasGlyphs) {
+      item.glyphsToAdd = [...glyphs];
       this._addCellsIfNeeded(item);
       // At least in Chrome, we need to reset the scroll position, but it doesn't
       // work if we do it right away, only after the next event iteration.
       setTimeout(() => {
         element.scrollTop = 0;
       }, 0);
-
-      hideAccordionItem = false;
-    } else {
-      element.innerHTML = "";
     }
 
-    return !hideAccordionItem;
+    return itemHasGlyphs;
   }
 
   _addCellsIfNeeded(item) {
@@ -152,9 +151,12 @@ export class GlyphCellView extends HTMLElement {
   }
 
   getSelectedGlyphInfo() {
-    return this.glyphs.filter((glyphInfo) =>
-      this.glyphSelection.has(glyphInfo.glyphName)
-    );
+    const glyphSelection = this.glyphSelection;
+    return this.glyphSections
+      .map((section) =>
+        section.glyphs.filter((glyphInfo) => glyphSelection.has(glyphInfo.glyphName))
+      )
+      .flat();
   }
 
   get glyphSelection() {
@@ -197,11 +199,6 @@ export class GlyphCellView extends HTMLElement {
         this.glyphSelection = new Set([glyphName]);
       }
     }
-  }
-
-  async getGlyphs(section) {
-    // TODO: section. For now return all glyphs
-    return this.glyphs;
   }
 }
 

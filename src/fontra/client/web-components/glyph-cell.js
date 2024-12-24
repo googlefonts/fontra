@@ -17,6 +17,38 @@ const colors = {
 
 const UNSCALED_CELL_HEIGHT = 75;
 
+const cellObserver = new IntersectionObserver(
+  (entries, observer) => {
+    entries.forEach((entry) => {
+      const cell = entry.target;
+      if (entry.intersectionRatio > 0) {
+        cell.locationController.addKeyListener(cell.locationKey, cell.throttledUpdate);
+        cell.fontController.addGlyphChangeListener(
+          cell.glyphName,
+          cell.throttledUpdate
+        );
+        cell.throttledUpdate();
+      } else {
+        if (cell._glyphInstanceRequestID) {
+          cell.fontController.cancelGlyphInstanceRequest(cell._glyphInstanceRequestID);
+          delete cell._glyphInstanceRequestID;
+        }
+        cell.locationController.removeKeyListener(
+          cell.locationKey,
+          cell.throttledUpdate
+        );
+        cell.fontController.removeGlyphChangeListener(
+          cell.glyphName,
+          cell.throttledUpdate
+        );
+      }
+    });
+  },
+  {
+    root: document.documentElement, // Maybe use a more nearby clipping element?
+  }
+);
+
 export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
@@ -101,47 +133,12 @@ export class GlyphCell extends UnlitElement {
 
   connectedCallback() {
     super.connectedCallback();
-
-    const observer = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio > 0) {
-            this.locationController.addKeyListener(
-              this.locationKey,
-              this.throttledUpdate
-            );
-            this.fontController.addGlyphChangeListener(
-              this.glyphName,
-              this.throttledUpdate
-            );
-            this.throttledUpdate();
-          } else {
-            if (this._glyphInstanceRequestID) {
-              this.fontController.cancelGlyphInstanceRequest(
-                this._glyphInstanceRequestID
-              );
-              delete this._glyphInstanceRequestID;
-            }
-            this.locationController.removeKeyListener(
-              this.locationKey,
-              this.throttledUpdate
-            );
-            this.fontController.removeGlyphChangeListener(
-              this.glyphName,
-              this.throttledUpdate
-            );
-          }
-        });
-      },
-      {
-        root: document.documentElement, // Maybe use a more nearby clipping element?
-      }
-    );
-    observer.observe(this);
+    cellObserver.observe(this);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
+    cellObserver.unobserve(this);
     this.locationController.removeKeyListener(this.locationKey, this.throttledUpdate);
     this.fontController.removeGlyphChangeListener(this.glyphName, this.throttledUpdate);
   }

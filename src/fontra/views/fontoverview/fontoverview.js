@@ -36,6 +36,7 @@ export class FontOverviewController extends ViewController {
     this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
       fontSourceIdentifier: null,
+      fontLocationUser: {},
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
     });
@@ -48,7 +49,9 @@ export class FontOverviewController extends ViewController {
           ...this.fontSources[event.newValue]?.location,
         }; // A font may not have any font sources, therefore the ?-check
 
-        this.fontOverviewSettings.fontLocationSourceMapped =
+        this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
+
+        this.fontOverviewSettings.fontLocationUser =
           this.fontController.mapSourceLocationToUserLocation(sourceLocation);
       }
     );
@@ -108,7 +111,9 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.parentElement.scrollTop = 0;
 
     const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
-    this.glyphCellView.setGlyphItems(glyphItemList);
+    this.glyphCellView.setGlyphSections([
+      { label: "All glyphs", glyphs: glyphItemList },
+    ]);
   }
 
   handleDoubleClick(event) {
@@ -118,7 +123,7 @@ export class FontOverviewController extends ViewController {
   openSelectedGlyphs() {
     openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
-      this.fontOverviewSettings.fontLocationSourceMapped,
+      this.fontOverviewSettings.fontLocationUser,
       this.fontController.glyphMap
     );
   }
