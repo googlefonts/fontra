@@ -61,21 +61,21 @@ export class GlyphCellView extends HTMLElement {
     }
     `);
 
-    // TODO: refactor this if we implement different sections. For now only one section.
-    this.accordion.items = [
-      {
-        label: "Glyphs",
-        open: true,
-        content: html.div({ class: "font-overview-accordion-item" }, []),
-        section: "Glyphs",
-      },
-    ];
-
     return html.div({}, [this.accordion]); // wrap in div for scroll behavior
   }
 
-  setGlyphItems(glyphs) {
-    this.glyphs = glyphs;
+  setGlyphSections(glyphSections) {
+    this.glyphSections = glyphSections;
+
+    const accordionItems = glyphSections.map((section) => ({
+      label: section.label,
+      open: true,
+      content: html.div({ class: "font-overview-accordion-item" }, []),
+      glyphs: section.glyphs,
+    }));
+
+    this.accordion.items = accordionItems;
+
     const results = [];
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item).then((hasResult) => {
@@ -96,11 +96,10 @@ export class GlyphCellView extends HTMLElement {
         translate("sidebar.related-glyphs.loading"), // TODO: general loading key.
       ])
     );
-    const glyphs = await this.getGlyphs(item.section);
 
-    item.glyphsToAdd = [...glyphs];
+    item.glyphsToAdd = [...item.glyphs];
 
-    if (glyphs?.length) {
+    if (item.glyphs.length) {
       element.innerHTML = "";
       this._addCellsIfNeeded(item);
       // At least in Chrome, we need to reset the scroll position, but it doesn't
@@ -152,9 +151,12 @@ export class GlyphCellView extends HTMLElement {
   }
 
   getSelectedGlyphInfo() {
-    return this.glyphs.filter((glyphInfo) =>
-      this.glyphSelection.has(glyphInfo.glyphName)
-    );
+    const glyphSelection = this.glyphSelection;
+    return this.glyphSections
+      .map((section) =>
+        section.glyphs.filter((glyphInfo) => glyphSelection.has(glyphInfo.glyphName))
+      )
+      .flat();
   }
 
   get glyphSelection() {
@@ -197,11 +199,6 @@ export class GlyphCellView extends HTMLElement {
         this.glyphSelection = new Set([glyphName]);
       }
     }
-  }
-
-  async getGlyphs(section) {
-    // TODO: section. For now return all glyphs
-    return this.glyphs;
   }
 }
 
