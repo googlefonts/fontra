@@ -259,6 +259,10 @@ export class GlyphCellView extends HTMLElement {
   }
 
   handleSingleClickShift(event, glyphCell) {
+    this.extendSelection(glyphCell);
+  }
+
+  ensureFirstClickedCell(glyphCell) {
     if (!this._firstClickedCell) {
       const firstSelectedCell = this.findFirstSelectedCell();
       const lastSelectedCell = this.findLastSelectedCell();
@@ -267,6 +271,10 @@ export class GlyphCellView extends HTMLElement {
           ? firstSelectedCell
           : lastSelectedCell;
     }
+  }
+
+  extendSelection(glyphCell) {
+    this.ensureFirstClickedCell(glyphCell);
 
     let selection = this.glyphSelection;
 
@@ -308,41 +316,48 @@ export class GlyphCellView extends HTMLElement {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    if (!this._firstClickedCell) {
-      this._firstClickedCell = this.findFirstSelectedCell();
-    } else if (this._secondClickedCell) {
-      this._firstClickedCell = this._secondClickedCell;
-      this._secondClickedCell = null;
-    }
+    const referenceCell = this._firstClickedCell
+      ? this._secondClickedCell
+        ? this._secondClickedCell
+        : this._firstClickedCell
+      : this.findFirstSelectedCell();
 
     let nextCell;
 
-    if (!this._firstClickedCell) {
+    if (!referenceCell) {
       const itemContent = this.accordion.items[0].content;
       nextCell = itemContent.firstElementChild;
     } else {
       const [deltaX, deltaY] = arrowKeyDeltas[event.key];
       if (deltaX) {
         this._cellCenterForArrowUpDown = null;
-        nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
+        nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
       } else {
         if (this._cellCenterForArrowUpDown === null) {
           this._cellCenterForArrowUpDown = boundsCenterX(
-            this._firstClickedCell.getBoundingClientRect()
+            referenceCell.getBoundingClientRect()
           );
         }
 
         nextCell = nextGlyphCellVertical(
-          this._firstClickedCell,
+          referenceCell,
           -deltaY,
           this._cellCenterForArrowUpDown
         );
       }
     }
 
+    // this._firstClickedCell = referenceCell;
+
     if (nextCell) {
-      this._firstClickedCell = nextCell;
-      this.glyphSelection = new Set([nextCell.glyphName]);
+      if (event.shiftKey) {
+        this.extendSelection(nextCell);
+      } else {
+        this._firstClickedCell = nextCell;
+        this._secondClickedCell = null;
+        this.glyphSelection = new Set([nextCell.glyphName]);
+      }
+
       nextCell.scrollIntoView({
         behavior: "auto",
         block: "nearest",
