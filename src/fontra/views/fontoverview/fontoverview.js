@@ -114,7 +114,8 @@ export class FontOverviewController extends ViewController {
 
     const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
     this.glyphCellView.setGlyphSections([
-      { label: "All glyphs", glyphs: glyphItemList },
+      { label: "Some glyphs", glyphs: glyphItemList.slice(0, 40) },
+      { label: "All glyphs", glyphs: glyphItemList.slice(40) },
     ]);
   }
 

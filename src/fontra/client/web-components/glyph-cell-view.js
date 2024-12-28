@@ -1,7 +1,7 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
-import { arrowKeyDeltas, enumerate } from "/core/utils.js";
+import { arrowKeyDeltas, assert, enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
@@ -232,9 +232,10 @@ export class GlyphCellView extends HTMLElement {
     let nextCell;
     const [deltaX, deltaY] = arrowKeyDeltas[event.key];
     if (deltaX) {
-      nextCell = nextSibling(this._firstClickedCell, deltaX);
+      nextCell = nextGlyphCell(this._firstClickedCell, deltaX);
     } else {
     }
+
     if (nextCell) {
       this._firstClickedCell = nextCell;
       this.glyphSelection = new Set([nextCell.glyphName]);
@@ -243,6 +244,21 @@ export class GlyphCellView extends HTMLElement {
 }
 
 customElements.define("glyph-cell-view", GlyphCellView);
+
+function nextGlyphCell(glyphCell, direction) {
+  let nextCell = nextSibling(glyphCell, direction);
+  if (!nextCell) {
+    const accordionItem = glyphCell.parentNode.parentNode.parentNode;
+    assert(accordionItem.classList.contains("ui-accordion-item"));
+    const nextAccordionItem = nextSibling(accordionItem, direction);
+    if (nextAccordionItem) {
+      nextCell = nextAccordionItem.querySelector(
+        `glyph-cell:${direction == 1 ? "first" : "last"}-child`
+      );
+    }
+  }
+  return nextCell;
+}
 
 function nextSibling(element, direction) {
   return direction == 1 ? element.nextElementSibling : element.previousElementSibling;
