@@ -239,6 +239,11 @@ export class GlyphCellView extends HTMLElement {
     if (nextCell) {
       this._firstClickedCell = nextCell;
       this.glyphSelection = new Set([nextCell.glyphName]);
+      nextCell.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
     }
   }
 }
