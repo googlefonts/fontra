@@ -5,8 +5,6 @@ import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
 import {
-  arrowKeyDeltas,
-  commandKeyProperty,
   dumpURLFragment,
   glyphMapToItemList,
   isActiveElementTypeable,
@@ -97,6 +95,9 @@ export class FontOverviewController extends ViewController {
     this.fontController.addChangeListener({ glyphMap: null }, () => {
       this._updateGlyphItemList();
     });
+
+    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
+
     this._updateGlyphItemList();
   }
 
@@ -136,14 +137,7 @@ export class FontOverviewController extends ViewController {
       // The cell area for sure doesn't have the focus
       return;
     }
-    // if (event.key in arrowKeyDeltas) {
-    //   this.handleArrowKeys(event);
-    //   event.preventDefault();
-    //   return;
-    // }
-    // TODO: maybe:
-    // select all via command + a
-    // and unselect all via command + shift + a
+    this.glyphCellView.handleKeyDown(event);
   }
 
   handleRemoteClose(event) {

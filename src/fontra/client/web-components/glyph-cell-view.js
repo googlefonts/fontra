@@ -1,7 +1,7 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
-import { enumerate } from "/core/utils.js";
+import { arrowKeyDeltas, enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
@@ -13,6 +13,9 @@ export class GlyphCellView extends HTMLElement {
     this.settingsController = settingsController;
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
+
+    this._firstClickedCell = null;
+    this._secondClickedCell = null;
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
@@ -42,6 +45,8 @@ export class GlyphCellView extends HTMLElement {
     });
 
     this.appendChild(this.getContentElement());
+
+    this.addEventListener("keydown", (event) => this.handleKeyDown(event));
   }
 
   getContentElement() {
@@ -193,6 +198,8 @@ export class GlyphCellView extends HTMLElement {
       return;
     }
 
+    this._firstClickedCell = glyphCell;
+
     const glyphName = glyphCell.glyphName;
 
     if (this.glyphSelection.has(glyphName)) {
@@ -207,6 +214,36 @@ export class GlyphCellView extends HTMLElement {
       }
     }
   }
+
+  handleKeyDown(event) {
+    if (event.key in arrowKeyDeltas) {
+      this.handleArrowKeys(event);
+    }
+  }
+
+  handleArrowKeys(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (!this._firstClickedCell) {
+      return;
+    }
+
+    let nextCell;
+    const [deltaX, deltaY] = arrowKeyDeltas[event.key];
+    if (deltaX) {
+      nextCell = nextSibling(this._firstClickedCell, deltaX);
+    } else {
+    }
+    if (nextCell) {
+      this._firstClickedCell = nextCell;
+      this.glyphSelection = new Set([nextCell.glyphName]);
+    }
+  }
 }
 
 customElements.define("glyph-cell-view", GlyphCellView);
+
+function nextSibling(element, direction) {
+  return direction == 1 ? element.nextElementSibling : element.previousElementSibling;
+}
