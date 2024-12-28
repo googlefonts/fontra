@@ -320,57 +320,60 @@ export class GlyphCellView extends HTMLElement {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    const referenceCell =
-      (this._firstClickedCell
+    const referenceCell = this._firstClickedCell
+      ? this._secondClickedCell
         ? this._secondClickedCell
-          ? this._secondClickedCell
-          : this._firstClickedCell
-        : this.findFirstSelectedCell()) || this.getFirstGlyphCell();
-
-    if (!referenceCell) {
-      // There are no glyphs whatsoever, so there is nowehere to go
-      return;
-    }
+        : this._firstClickedCell
+      : this.findFirstSelectedCell();
 
     let nextCell;
 
-    const [deltaX, deltaY] = arrowKeyDeltas[event.key];
-    if (deltaX) {
-      this._cellCenterForArrowUpDown = null;
-      nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
+    if (!referenceCell) {
+      nextCell = this.getFirstGlyphCell();
+      if (!nextCell) {
+        // There are no glyphs whatsoever, so there is nowehere to go
+        return;
+      }
     } else {
-      if (this._cellCenterForArrowUpDown === null) {
-        this._cellCenterForArrowUpDown = boundsCenterX(
-          referenceCell.getBoundingClientRect()
+      const [deltaX, deltaY] = arrowKeyDeltas[event.key];
+      if (deltaX) {
+        this._cellCenterForArrowUpDown = null;
+        nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
+      } else {
+        if (this._cellCenterForArrowUpDown === null) {
+          this._cellCenterForArrowUpDown = boundsCenterX(
+            referenceCell.getBoundingClientRect()
+          );
+        }
+
+        nextCell = nextGlyphCellVertical(
+          referenceCell,
+          -deltaY,
+          this._cellCenterForArrowUpDown
         );
       }
 
-      nextCell = nextGlyphCellVertical(
-        referenceCell,
-        -deltaY,
-        this._cellCenterForArrowUpDown
-      );
-    }
-
-    if (!nextCell) {
-      nextCell = referenceCell;
-    }
-
-    if (nextCell) {
-      if (event.shiftKey) {
-        this.extendSelection(nextCell);
-      } else {
-        this._firstClickedCell = nextCell;
-        this._secondClickedCell = null;
-        this.glyphSelection = new Set([nextCell.glyphName]);
+      if (!nextCell) {
+        // Fallback
+        nextCell = referenceCell;
       }
-
-      nextCell.scrollIntoView({
-        behavior: "auto",
-        block: "nearest",
-        inline: "nearest",
-      });
     }
+
+    assert(nextCell);
+
+    if (event.shiftKey) {
+      this.extendSelection(nextCell);
+    } else {
+      this._firstClickedCell = nextCell;
+      this._secondClickedCell = null;
+      this.glyphSelection = new Set([nextCell.glyphName]);
+    }
+
+    nextCell.scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "nearest",
+    });
   }
 
   getFirstGlyphCell() {
