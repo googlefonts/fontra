@@ -203,6 +203,19 @@ export class GlyphCellView extends HTMLElement {
     return firstSelectedCell;
   }
 
+  findLastSelectedCell() {
+    let lastSelectedCell = undefined;
+    if (!this.glyphSelection.size) {
+      return lastSelectedCell;
+    }
+    for (const glyphCell of this.iterGlyphCells()) {
+      if (this.glyphSelection.has(glyphCell.glyphName)) {
+        lastSelectedCell = glyphCell;
+      }
+    }
+    return lastSelectedCell;
+  }
+
   forEachGlyphCell(func) {
     for (const glyphCell of this.iterGlyphCells()) {
       func(glyphCell);
@@ -220,6 +233,10 @@ export class GlyphCellView extends HTMLElement {
       // Part of a double click, we should do nothing and let handleDoubleClick
       // deal with the event
       return;
+    }
+
+    if (event.shiftKey) {
+      return this.handleSingleClickShift(event, glyphCell);
     }
 
     this._firstClickedCell = glyphCell;
@@ -241,6 +258,46 @@ export class GlyphCellView extends HTMLElement {
     }
   }
 
+  handleSingleClickShift(event, glyphCell) {
+    if (!this._firstClickedCell) {
+      const firstSelectedCell = this.findFirstSelectedCell();
+      const lastSelectedCell = this.findLastSelectedCell();
+      this._firstClickedCell =
+        cellCompare(lastSelectedCell, glyphCell) < 0
+          ? firstSelectedCell
+          : lastSelectedCell;
+    }
+
+    let selection = this.glyphSelection;
+
+    if (this._secondClickedCell) {
+      selection = difference(
+        selection,
+        this.getGlyphNamesForRange(this._firstClickedCell, this._secondClickedCell)
+      );
+    }
+
+    const newRange = this.getGlyphNamesForRange(this._firstClickedCell, glyphCell);
+    selection = union(selection, newRange);
+    this.glyphSelection = selection;
+    this._secondClickedCell = glyphCell;
+  }
+
+  getGlyphNamesForRange(firstCell, secondCell) {
+    if (cellCompare(firstCell, secondCell) < 0) {
+      [secondCell, firstCell] = [firstCell, secondCell];
+    }
+    const glyphSelection = new Set([firstCell.glyphName]);
+    let cell = firstCell;
+    while (cell && cell !== secondCell) {
+      cell = nextGlyphCellHorizontal(cell, 1);
+      if (cell) {
+        glyphSelection.add(cell.glyphName);
+      }
+    }
+    return glyphSelection;
+  }
+
   handleKeyDown(event) {
     if (event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
@@ -253,6 +310,9 @@ export class GlyphCellView extends HTMLElement {
 
     if (!this._firstClickedCell) {
       this._firstClickedCell = this.findFirstSelectedCell();
+    } else if (this._secondClickedCell) {
+      this._firstClickedCell = this._secondClickedCell;
+      this._secondClickedCell = null;
     }
 
     let nextCell;
@@ -363,4 +423,14 @@ function horizontalOverlap(rect1, rect2) {
 
 function boundsCenterX(rect) {
   return rect.left + rect.width / 2;
+}
+
+function cellCompare(cellA, cellB) {
+  if (cellA == cellB) {
+    return 0;
+  }
+  return cellA._sectionIndex < cellB._sectionIndex ||
+    (cellA._sectionIndex == cellB._sectionIndex && cellA._cellIndex <= cellB._cellIndex)
+    ? 1
+    : -1;
 }
