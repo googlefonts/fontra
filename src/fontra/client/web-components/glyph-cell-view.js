@@ -67,11 +67,14 @@ export class GlyphCellView extends HTMLElement {
   setGlyphSections(glyphSections) {
     this.glyphSections = glyphSections;
 
+    let sectionIndex = 0;
     const accordionItems = glyphSections.map((section) => ({
       label: section.label,
       open: true,
       content: html.div({ class: "font-overview-accordion-item" }, []),
       glyphs: section.glyphs,
+      sectionIndex: sectionIndex++,
+      nextCellIndex: 0,
     }));
 
     this.accordion.items = accordionItems;
@@ -132,6 +135,9 @@ export class GlyphCellView extends HTMLElement {
         this.settingsController,
         this.locationKey
       );
+      glyphCell._sectionIndex = item.sectionIndex;
+      glyphCell._cellIndex = item.nextCellIndex++;
+
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
       };
