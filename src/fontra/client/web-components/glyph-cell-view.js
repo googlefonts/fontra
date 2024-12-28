@@ -262,21 +262,6 @@ export class GlyphCellView extends HTMLElement {
     this.extendSelection(glyphCell);
   }
 
-  ensureFirstClickedCell(glyphCell) {
-    if (!this._firstClickedCell) {
-      if (!this.glyphSelection.size) {
-        this._firstClickedCell = this.getFirstGlyphCell();
-      } else {
-        const firstSelectedCell = this.findFirstSelectedCell();
-        const lastSelectedCell = this.findLastSelectedCell();
-        this._firstClickedCell =
-          cellCompare(lastSelectedCell, glyphCell) < 0
-            ? firstSelectedCell
-            : lastSelectedCell;
-      }
-    }
-  }
-
   extendSelection(glyphCell) {
     this.ensureFirstClickedCell(glyphCell);
 
@@ -293,6 +278,21 @@ export class GlyphCellView extends HTMLElement {
     selection = union(selection, newRange);
     this.glyphSelection = selection;
     this._secondClickedCell = glyphCell;
+  }
+
+  ensureFirstClickedCell(glyphCell) {
+    if (!this._firstClickedCell) {
+      if (!this.glyphSelection.size) {
+        this._firstClickedCell = this.getFirstGlyphCell();
+      } else {
+        const firstSelectedCell = this.findFirstSelectedCell();
+        const lastSelectedCell = this.findLastSelectedCell();
+        this._firstClickedCell =
+          cellCompare(lastSelectedCell, glyphCell) < 0
+            ? firstSelectedCell
+            : lastSelectedCell;
+      }
+    }
   }
 
   getGlyphNamesForRange(firstCell, secondCell) {
