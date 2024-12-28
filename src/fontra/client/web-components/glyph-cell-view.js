@@ -329,7 +329,23 @@ function nextGlyphCellVertical(firstCell, direction, cellCenter) {
   matches.sort(
     (a, b) => Math.abs(cellCenter - a.center) - Math.abs(cellCenter - b.center)
   );
-  return matches[0]?.cell;
+  nextCell = matches[0]?.cell;
+  if (!nextCell) {
+    nextCell = findFirstLastGlyphCell(firstCell, direction);
+  }
+  return nextCell;
+}
+
+function findFirstLastGlyphCell(firstCell, direction) {
+  let firstLastCell = firstCell;
+  while (true) {
+    const nextCell = nextGlyphCell(firstLastCell, direction);
+    if (!nextCell) {
+      break;
+    }
+    firstLastCell = nextCell;
+  }
+  return firstLastCell;
 }
 
 function horizontalOverlap(rect1, rect2) {
