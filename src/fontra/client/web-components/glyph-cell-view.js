@@ -320,34 +320,35 @@ export class GlyphCellView extends HTMLElement {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    const referenceCell = this._firstClickedCell
-      ? this._secondClickedCell
+    const referenceCell =
+      (this._firstClickedCell
         ? this._secondClickedCell
-        : this._firstClickedCell
-      : this.findFirstSelectedCell();
+          ? this._secondClickedCell
+          : this._firstClickedCell
+        : this.findFirstSelectedCell()) || this.getFirstGlyphCell();
 
     let nextCell;
 
-    if (!referenceCell) {
-      nextCell = this.getFirstGlyphCell();
+    const [deltaX, deltaY] = arrowKeyDeltas[event.key];
+    if (deltaX) {
+      this._cellCenterForArrowUpDown = null;
+      nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
     } else {
-      const [deltaX, deltaY] = arrowKeyDeltas[event.key];
-      if (deltaX) {
-        this._cellCenterForArrowUpDown = null;
-        nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
-      } else {
-        if (this._cellCenterForArrowUpDown === null) {
-          this._cellCenterForArrowUpDown = boundsCenterX(
-            referenceCell.getBoundingClientRect()
-          );
-        }
-
-        nextCell = nextGlyphCellVertical(
-          referenceCell,
-          -deltaY,
-          this._cellCenterForArrowUpDown
+      if (this._cellCenterForArrowUpDown === null) {
+        this._cellCenterForArrowUpDown = boundsCenterX(
+          referenceCell.getBoundingClientRect()
         );
       }
+
+      nextCell = nextGlyphCellVertical(
+        referenceCell,
+        -deltaY,
+        this._cellCenterForArrowUpDown
+      );
+    }
+
+    if (!nextCell) {
+      nextCell = referenceCell;
     }
 
     if (nextCell) {
