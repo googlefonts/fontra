@@ -327,6 +327,11 @@ export class GlyphCellView extends HTMLElement {
           : this._firstClickedCell
         : this.findFirstSelectedCell()) || this.getFirstGlyphCell();
 
+    if (!referenceCell) {
+      // There are no glyphs whatsoever, so there is nowehere to go
+      return;
+    }
+
     let nextCell;
 
     const [deltaX, deltaY] = arrowKeyDeltas[event.key];
