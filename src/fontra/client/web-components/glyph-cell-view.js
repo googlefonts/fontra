@@ -14,6 +14,8 @@ export class GlyphCellView extends HTMLElement {
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
+    this._magnification = 1;
+
     this._resetSelectionHelpers();
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
@@ -391,6 +393,15 @@ export class GlyphCellView extends HTMLElement {
   getFirstGlyphCell() {
     const itemContent = this.accordion.items[0].content;
     return itemContent.firstElementChild;
+  }
+
+  get magnification() {
+    return this._magnification;
+  }
+
+  set magnification(magnification) {
+    this._magnification = magnification;
+    this.style.setProperty("--glyph-cell-scale-factor-override", magnification);
   }
 }
 
