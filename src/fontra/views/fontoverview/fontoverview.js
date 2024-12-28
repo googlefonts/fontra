@@ -126,6 +126,9 @@ export class FontOverviewController extends ViewController {
   }
 
   openSelectedGlyphs() {
+    if (!this.fontOverviewSettings.glyphSelection.size) {
+      return;
+    }
     openGlyphsInEditor(
       this.glyphCellView.getSelectedGlyphInfo(),
       this.fontOverviewSettings.fontLocationUser,
@@ -138,7 +141,11 @@ export class FontOverviewController extends ViewController {
       // The cell area for sure doesn't have the focus
       return;
     }
-    this.glyphCellView.handleKeyDown(event);
+    if (event.key == "Enter") {
+      this.openSelectedGlyphs();
+    } else {
+      this.glyphCellView.handleKeyDown(event);
+    }
   }
 
   handleRemoteClose(event) {
