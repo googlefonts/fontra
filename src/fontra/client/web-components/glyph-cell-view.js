@@ -1,7 +1,7 @@
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { difference, intersection, symmetricDifference, union } from "/core/set-ops.js";
-import { enumerate } from "/core/utils.js";
+import { arrowKeyDeltas, assert, enumerate } from "/core/utils.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
@@ -14,6 +14,8 @@ export class GlyphCellView extends HTMLElement {
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
+    this._resetSelectionHelpers();
+
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
       const diff = symmetricDifference(selection, event.oldValue);
@@ -22,6 +24,10 @@ export class GlyphCellView extends HTMLElement {
           glyphCell.selected = selection.has(glyphCell.glyphName);
         }
       });
+    });
+
+    this.settingsController.addKeyListener(this.locationKey, (event) => {
+      this._cellCenterForArrowUpDown = null;
     });
 
     this.fontController.addChangeListener({ glyphMap: null }, (event) => {
@@ -42,6 +48,14 @@ export class GlyphCellView extends HTMLElement {
     });
 
     this.appendChild(this.getContentElement());
+
+    this.addEventListener("keydown", (event) => this.handleKeyDown(event));
+  }
+
+  _resetSelectionHelpers() {
+    this._firstClickedCell = null;
+    this._secondClickedCell = null;
+    this._cellCenterForArrowUpDown = null;
   }
 
   getContentElement() {
@@ -65,13 +79,17 @@ export class GlyphCellView extends HTMLElement {
   }
 
   setGlyphSections(glyphSections) {
+    this._resetSelectionHelpers();
     this.glyphSections = glyphSections;
 
+    let sectionIndex = 0;
     const accordionItems = glyphSections.map((section) => ({
       label: section.label,
       open: true,
       content: html.div({ class: "font-overview-accordion-item" }, []),
       glyphs: section.glyphs,
+      sectionIndex: sectionIndex++,
+      nextCellIndex: 0,
     }));
 
     this.accordion.items = accordionItems;
@@ -132,6 +150,9 @@ export class GlyphCellView extends HTMLElement {
         this.settingsController,
         this.locationKey
       );
+      glyphCell._sectionIndex = item.sectionIndex;
+      glyphCell._cellIndex = item.nextCellIndex++;
+
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
       };
@@ -168,6 +189,20 @@ export class GlyphCellView extends HTMLElement {
     this.settingsController.model[this.glyphSelectionKey] = selection;
   }
 
+  findFirstSelectedCell() {
+    let firstSelectedCell = undefined;
+    if (!this.glyphSelection.size) {
+      return firstSelectedCell;
+    }
+    for (const glyphCell of this.iterGlyphCells()) {
+      if (this.glyphSelection.has(glyphCell.glyphName)) {
+        firstSelectedCell = glyphCell;
+        break;
+      }
+    }
+    return firstSelectedCell;
+  }
+
   forEachGlyphCell(func) {
     for (const glyphCell of this.iterGlyphCells()) {
       func(glyphCell);
@@ -175,7 +210,7 @@ export class GlyphCellView extends HTMLElement {
   }
 
   *iterGlyphCells() {
-    for (const glyphCell of this.accordion.shadowRoot.querySelectorAll("glyph-cell")) {
+    for (const glyphCell of this.accordion.querySelectorAll("glyph-cell")) {
       yield glyphCell;
     }
   }
@@ -187,10 +222,16 @@ export class GlyphCellView extends HTMLElement {
       return;
     }
 
+    this._firstClickedCell = glyphCell;
+    this._cellCenterForArrowUpDown = null;
+
     const glyphName = glyphCell.glyphName;
 
     if (this.glyphSelection.has(glyphName)) {
       if (event.shiftKey) {
+        if (glyphCell.selected) {
+          this._resetSelectionHelpers();
+        }
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
       }
     } else {
@@ -201,6 +242,127 @@ export class GlyphCellView extends HTMLElement {
       }
     }
   }
+
+  handleKeyDown(event) {
+    if (event.key in arrowKeyDeltas) {
+      this.handleArrowKeys(event);
+    }
+  }
+
+  handleArrowKeys(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (!this._firstClickedCell) {
+      this._firstClickedCell = this.findFirstSelectedCell();
+    }
+
+    let nextCell;
+
+    if (!this._firstClickedCell) {
+      const itemContent = this.accordion.items[0].content;
+      nextCell = itemContent.firstElementChild;
+    } else {
+      const [deltaX, deltaY] = arrowKeyDeltas[event.key];
+      if (deltaX) {
+        this._cellCenterForArrowUpDown = null;
+        nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
+      } else {
+        if (this._cellCenterForArrowUpDown === null) {
+          this._cellCenterForArrowUpDown = boundsCenterX(
+            this._firstClickedCell.getBoundingClientRect()
+          );
+        }
+
+        nextCell = nextGlyphCellVertical(
+          this._firstClickedCell,
+          -deltaY,
+          this._cellCenterForArrowUpDown
+        );
+      }
+    }
+
+    if (nextCell) {
+      this._firstClickedCell = nextCell;
+      this.glyphSelection = new Set([nextCell.glyphName]);
+      nextCell.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }
 }
 
 customElements.define("glyph-cell-view", GlyphCellView);
+
+function nextGlyphCellHorizontal(glyphCell, direction) {
+  let nextCell = nextSibling(glyphCell, direction);
+  if (!nextCell) {
+    const accordionItem = glyphCell.parentNode.parentNode.parentNode;
+    assert(accordionItem.classList.contains("ui-accordion-item"));
+    const nextAccordionItem = nextSibling(accordionItem, direction);
+    if (nextAccordionItem) {
+      nextCell = nextAccordionItem.querySelector(
+        `glyph-cell:${direction == 1 ? "first" : "last"}-child`
+      );
+    }
+  }
+  return nextCell;
+}
+
+function nextSibling(element, direction) {
+  return direction == 1 ? element.nextElementSibling : element.previousElementSibling;
+}
+
+function nextGlyphCellVertical(firstCell, direction, cellCenter) {
+  const firstCellBounds = firstCell.getBoundingClientRect();
+  let nextCell = firstCell;
+
+  const matches = [];
+  while (true) {
+    nextCell = nextGlyphCellHorizontal(nextCell, direction);
+    if (!nextCell) {
+      break;
+    }
+
+    const nextCellBounds = nextCell.getBoundingClientRect();
+    const overlap = horizontalOverlap(firstCellBounds, nextCellBounds);
+
+    if (overlap) {
+      matches.push({ cell: nextCell, center: boundsCenterX(nextCellBounds) });
+    } else if (matches.length) {
+      break;
+    }
+  }
+  matches.sort(
+    (a, b) => Math.abs(cellCenter - a.center) - Math.abs(cellCenter - b.center)
+  );
+  nextCell = matches[0]?.cell;
+  if (!nextCell) {
+    nextCell = findFirstLastGlyphCell(firstCell, direction);
+  }
+  return nextCell;
+}
+
+function findFirstLastGlyphCell(firstCell, direction) {
+  let firstLastCell = firstCell;
+  while (true) {
+    const nextCell = nextGlyphCellHorizontal(firstLastCell, direction);
+    if (!nextCell) {
+      break;
+    }
+    firstLastCell = nextCell;
+  }
+  return firstLastCell;
+}
+
+function horizontalOverlap(rect1, rect2) {
+  const left = Math.max(rect1.left, rect2.left);
+  const right = Math.min(rect1.right, rect2.right);
+  return left < right ? right - left : 0;
+}
+
+function boundsCenterX(rect) {
+  return rect.left + rect.width / 2;
+}
