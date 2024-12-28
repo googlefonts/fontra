@@ -229,6 +229,9 @@ export class GlyphCellView extends HTMLElement {
 
     if (this.glyphSelection.has(glyphName)) {
       if (event.shiftKey) {
+        if (glyphCell.selected) {
+          this._resetSelectionHelpers();
+        }
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
       }
     } else {
@@ -256,21 +259,27 @@ export class GlyphCellView extends HTMLElement {
 
     let nextCell;
     const [deltaX, deltaY] = arrowKeyDeltas[event.key];
-    if (deltaX) {
-      this._cellCenterForArrowUpDown = null;
-      nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
+
+    if (!this._firstClickedCell) {
+      const itemContent = this.accordion.items[0].content;
+      nextCell = itemContent.firstElementChild;
     } else {
-      if (this._cellCenterForArrowUpDown === null) {
-        this._cellCenterForArrowUpDown = boundsCenterX(
-          this._firstClickedCell.getBoundingClientRect()
+      if (deltaX) {
+        this._cellCenterForArrowUpDown = null;
+        nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
+      } else {
+        if (this._cellCenterForArrowUpDown === null) {
+          this._cellCenterForArrowUpDown = boundsCenterX(
+            this._firstClickedCell.getBoundingClientRect()
+          );
+        }
+
+        nextCell = nextGlyphCellVertical(
+          this._firstClickedCell,
+          -deltaY,
+          this._cellCenterForArrowUpDown
         );
       }
-
-      nextCell = nextGlyphCellVertical(
-        this._firstClickedCell,
-        -deltaY,
-        this._cellCenterForArrowUpDown
-      );
     }
 
     if (nextCell) {
