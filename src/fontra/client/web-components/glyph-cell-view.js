@@ -203,6 +203,19 @@ export class GlyphCellView extends HTMLElement {
     return firstSelectedCell;
   }
 
+  findLastSelectedCell() {
+    let lastSelectedCell = undefined;
+    if (!this.glyphSelection.size) {
+      return lastSelectedCell;
+    }
+    for (const glyphCell of this.iterGlyphCells()) {
+      if (this.glyphSelection.has(glyphCell.glyphName)) {
+        lastSelectedCell = glyphCell;
+      }
+    }
+    return lastSelectedCell;
+  }
+
   forEachGlyphCell(func) {
     for (const glyphCell of this.iterGlyphCells()) {
       func(glyphCell);
@@ -222,25 +235,79 @@ export class GlyphCellView extends HTMLElement {
       return;
     }
 
+    if (event.shiftKey) {
+      return this.handleSingleClickShift(event, glyphCell);
+    }
+
     this._firstClickedCell = glyphCell;
     this._cellCenterForArrowUpDown = null;
 
     const glyphName = glyphCell.glyphName;
 
     if (this.glyphSelection.has(glyphName)) {
-      if (event.shiftKey) {
-        if (glyphCell.selected) {
-          this._resetSelectionHelpers();
-        }
+      if (event.metaKey) {
+        this._resetSelectionHelpers();
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
       }
     } else {
-      if (event.shiftKey) {
+      if (event.metaKey) {
         this.glyphSelection = union(this.glyphSelection, [glyphName]);
       } else {
         this.glyphSelection = new Set([glyphName]);
       }
     }
+  }
+
+  handleSingleClickShift(event, glyphCell) {
+    this.extendSelection(glyphCell);
+  }
+
+  extendSelection(glyphCell) {
+    this.ensureFirstClickedCell(glyphCell);
+
+    let selection = this.glyphSelection;
+
+    if (this._secondClickedCell) {
+      selection = difference(
+        selection,
+        this.getGlyphNamesForRange(this._firstClickedCell, this._secondClickedCell)
+      );
+    }
+
+    const newRange = this.getGlyphNamesForRange(this._firstClickedCell, glyphCell);
+    selection = union(selection, newRange);
+    this.glyphSelection = selection;
+    this._secondClickedCell = glyphCell;
+  }
+
+  ensureFirstClickedCell(glyphCell) {
+    if (!this._firstClickedCell) {
+      if (!this.glyphSelection.size) {
+        this._firstClickedCell = this.getFirstGlyphCell();
+      } else {
+        const firstSelectedCell = this.findFirstSelectedCell();
+        const lastSelectedCell = this.findLastSelectedCell();
+        this._firstClickedCell =
+          cellCompare(lastSelectedCell, glyphCell) < 0
+            ? firstSelectedCell
+            : lastSelectedCell;
+      }
+    }
+  }
+
+  getGlyphNamesForRange(firstCell, secondCell) {
+    if (cellCompare(firstCell, secondCell) < 0) {
+      [secondCell, firstCell] = [firstCell, secondCell];
+    }
+    const glyphSelection = new Set([firstCell.glyphName]);
+    let cell = firstCell;
+    while (cell && cell !== secondCell) {
+      cell = nextGlyphCellHorizontal(cell, 1);
+      if (cell) {
+        glyphSelection.add(cell.glyphName);
+      }
+    }
+    return glyphSelection;
   }
 
   handleKeyDown(event) {
@@ -253,44 +320,65 @@ export class GlyphCellView extends HTMLElement {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    if (!this._firstClickedCell) {
-      this._firstClickedCell = this.findFirstSelectedCell();
-    }
+    const referenceCell = this._firstClickedCell
+      ? this._secondClickedCell
+        ? this._secondClickedCell
+        : this._firstClickedCell
+      : this.findFirstSelectedCell();
 
     let nextCell;
 
-    if (!this._firstClickedCell) {
-      const itemContent = this.accordion.items[0].content;
-      nextCell = itemContent.firstElementChild;
+    if (!referenceCell) {
+      nextCell = this.getFirstGlyphCell();
+      if (!nextCell) {
+        // There are no glyphs whatsoever, so there is nowehere to go
+        return;
+      }
     } else {
       const [deltaX, deltaY] = arrowKeyDeltas[event.key];
       if (deltaX) {
         this._cellCenterForArrowUpDown = null;
-        nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
+        nextCell = nextGlyphCellHorizontal(referenceCell, deltaX);
       } else {
         if (this._cellCenterForArrowUpDown === null) {
           this._cellCenterForArrowUpDown = boundsCenterX(
-            this._firstClickedCell.getBoundingClientRect()
+            referenceCell.getBoundingClientRect()
           );
         }
 
         nextCell = nextGlyphCellVertical(
-          this._firstClickedCell,
+          referenceCell,
           -deltaY,
           this._cellCenterForArrowUpDown
         );
       }
+
+      if (!nextCell) {
+        // Fallback
+        nextCell = referenceCell;
+      }
     }
 
-    if (nextCell) {
+    assert(nextCell);
+
+    if (event.shiftKey) {
+      this.extendSelection(nextCell);
+    } else {
       this._firstClickedCell = nextCell;
+      this._secondClickedCell = null;
       this.glyphSelection = new Set([nextCell.glyphName]);
-      nextCell.scrollIntoView({
-        behavior: "auto",
-        block: "nearest",
-        inline: "nearest",
-      });
     }
+
+    nextCell.scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }
+
+  getFirstGlyphCell() {
+    const itemContent = this.accordion.items[0].content;
+    return itemContent.firstElementChild;
   }
 }
 
@@ -365,4 +453,14 @@ function horizontalOverlap(rect1, rect2) {
 
 function boundsCenterX(rect) {
   return rect.left + rect.width / 2;
+}
+
+function cellCompare(cellA, cellB) {
+  if (cellA == cellB) {
+    return 0;
+  }
+  return cellA._sectionIndex < cellB._sectionIndex ||
+    (cellA._sectionIndex == cellB._sectionIndex && cellA._cellIndex <= cellB._cellIndex)
+    ? 1
+    : -1;
 }
