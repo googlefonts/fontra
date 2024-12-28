@@ -16,6 +16,7 @@ export class GlyphCellView extends HTMLElement {
 
     this._firstClickedCell = null;
     this._secondClickedCell = null;
+    this._cellCenterForArrowUpDown = null;
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
@@ -25,6 +26,10 @@ export class GlyphCellView extends HTMLElement {
           glyphCell.selected = selection.has(glyphCell.glyphName);
         }
       });
+    });
+
+    this.settingsController.addKeyListener(this.locationKey, (event) => {
+      this._cellCenterForArrowUpDown = null;
     });
 
     this.fontController.addChangeListener({ glyphMap: null }, (event) => {
@@ -199,6 +204,7 @@ export class GlyphCellView extends HTMLElement {
     }
 
     this._firstClickedCell = glyphCell;
+    this._cellCenterForArrowUpDown = null;
 
     const glyphName = glyphCell.glyphName;
 
@@ -232,8 +238,38 @@ export class GlyphCellView extends HTMLElement {
     let nextCell;
     const [deltaX, deltaY] = arrowKeyDeltas[event.key];
     if (deltaX) {
+      this._cellCenterForArrowUpDown = null;
       nextCell = nextGlyphCell(this._firstClickedCell, deltaX);
     } else {
+      const firstCellBounds = this._firstClickedCell.getBoundingClientRect();
+      if (this._cellCenterForArrowUpDown === null) {
+        this._cellCenterForArrowUpDown = boundsCenterX(firstCellBounds);
+      }
+
+      nextCell = this._firstClickedCell;
+
+      const matches = [];
+      while (true) {
+        nextCell = nextGlyphCell(nextCell, -deltaY);
+        if (!nextCell) {
+          break;
+        }
+
+        const nextCellBounds = nextCell.getBoundingClientRect();
+        const overlap = horizontalOverlap(firstCellBounds, nextCellBounds);
+
+        if (overlap) {
+          matches.push({ cell: nextCell, center: boundsCenterX(nextCellBounds) });
+        } else if (matches.length) {
+          break;
+        }
+      }
+      matches.sort(
+        (a, b) =>
+          Math.abs(this._cellCenterForArrowUpDown - a.center) -
+          Math.abs(this._cellCenterForArrowUpDown - b.center)
+      );
+      nextCell = matches[0]?.cell;
     }
 
     if (nextCell) {
@@ -267,4 +303,14 @@ function nextGlyphCell(glyphCell, direction) {
 
 function nextSibling(element, direction) {
   return direction == 1 ? element.nextElementSibling : element.previousElementSibling;
+}
+
+function horizontalOverlap(rect1, rect2) {
+  const left = Math.max(rect1.left, rect2.left);
+  const right = Math.min(rect1.right, rect2.right);
+  return left < right ? right - left : 0;
+}
+
+function boundsCenterX(rect) {
+  return rect.left + rect.width / 2;
 }
