@@ -210,7 +210,7 @@ export class GlyphCellView extends HTMLElement {
   }
 
   *iterGlyphCells() {
-    for (const glyphCell of this.accordion.shadowRoot.querySelectorAll("glyph-cell")) {
+    for (const glyphCell of this.accordion.querySelectorAll("glyph-cell")) {
       yield glyphCell;
     }
   }
