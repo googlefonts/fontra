@@ -228,14 +228,12 @@ export class GlyphCellView extends HTMLElement {
     const glyphName = glyphCell.glyphName;
 
     if (this.glyphSelection.has(glyphName)) {
-      if (event.shiftKey) {
-        if (glyphCell.selected) {
-          this._resetSelectionHelpers();
-        }
+      if (event.metaKey) {
+        this._resetSelectionHelpers();
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
       }
     } else {
-      if (event.shiftKey) {
+      if (event.metaKey) {
         this.glyphSelection = union(this.glyphSelection, [glyphName]);
       } else {
         this.glyphSelection = new Set([glyphName]);
