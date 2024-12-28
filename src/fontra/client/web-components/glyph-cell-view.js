@@ -241,35 +241,17 @@ export class GlyphCellView extends HTMLElement {
       this._cellCenterForArrowUpDown = null;
       nextCell = nextGlyphCell(this._firstClickedCell, deltaX);
     } else {
-      const firstCellBounds = this._firstClickedCell.getBoundingClientRect();
       if (this._cellCenterForArrowUpDown === null) {
-        this._cellCenterForArrowUpDown = boundsCenterX(firstCellBounds);
+        this._cellCenterForArrowUpDown = boundsCenterX(
+          this._firstClickedCell.getBoundingClientRect()
+        );
       }
 
-      nextCell = this._firstClickedCell;
-
-      const matches = [];
-      while (true) {
-        nextCell = nextGlyphCell(nextCell, -deltaY);
-        if (!nextCell) {
-          break;
-        }
-
-        const nextCellBounds = nextCell.getBoundingClientRect();
-        const overlap = horizontalOverlap(firstCellBounds, nextCellBounds);
-
-        if (overlap) {
-          matches.push({ cell: nextCell, center: boundsCenterX(nextCellBounds) });
-        } else if (matches.length) {
-          break;
-        }
-      }
-      matches.sort(
-        (a, b) =>
-          Math.abs(this._cellCenterForArrowUpDown - a.center) -
-          Math.abs(this._cellCenterForArrowUpDown - b.center)
+      nextCell = nextGlyphCellVertical(
+        this._firstClickedCell,
+        -deltaY,
+        this._cellCenterForArrowUpDown
       );
-      nextCell = matches[0]?.cell;
     }
 
     if (nextCell) {
@@ -303,6 +285,32 @@ function nextGlyphCell(glyphCell, direction) {
 
 function nextSibling(element, direction) {
   return direction == 1 ? element.nextElementSibling : element.previousElementSibling;
+}
+
+function nextGlyphCellVertical(firstCell, direction, cellCenter) {
+  const firstCellBounds = firstCell.getBoundingClientRect();
+  let nextCell = firstCell;
+
+  const matches = [];
+  while (true) {
+    nextCell = nextGlyphCell(nextCell, direction);
+    if (!nextCell) {
+      break;
+    }
+
+    const nextCellBounds = nextCell.getBoundingClientRect();
+    const overlap = horizontalOverlap(firstCellBounds, nextCellBounds);
+
+    if (overlap) {
+      matches.push({ cell: nextCell, center: boundsCenterX(nextCellBounds) });
+    } else if (matches.length) {
+      break;
+    }
+  }
+  matches.sort(
+    (a, b) => Math.abs(cellCenter - a.center) - Math.abs(cellCenter - b.center)
+  );
+  return matches[0]?.cell;
 }
 
 function horizontalOverlap(rect1, rect2) {
