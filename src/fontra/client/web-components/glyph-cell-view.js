@@ -189,6 +189,20 @@ export class GlyphCellView extends HTMLElement {
     this.settingsController.model[this.glyphSelectionKey] = selection;
   }
 
+  findFirstSelectedCell() {
+    let firstSelectedCell = undefined;
+    if (!this.glyphSelection.size) {
+      return firstSelectedCell;
+    }
+    for (const glyphCell of this.iterGlyphCells()) {
+      if (this.glyphSelection.has(glyphCell.glyphName)) {
+        firstSelectedCell = glyphCell;
+        break;
+      }
+    }
+    return firstSelectedCell;
+  }
+
   forEachGlyphCell(func) {
     for (const glyphCell of this.iterGlyphCells()) {
       func(glyphCell);
@@ -237,7 +251,7 @@ export class GlyphCellView extends HTMLElement {
     event.stopImmediatePropagation();
 
     if (!this._firstClickedCell) {
-      return;
+      this._firstClickedCell = this.findFirstSelectedCell();
     }
 
     let nextCell;
