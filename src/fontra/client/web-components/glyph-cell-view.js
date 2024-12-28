@@ -258,12 +258,12 @@ export class GlyphCellView extends HTMLElement {
     }
 
     let nextCell;
-    const [deltaX, deltaY] = arrowKeyDeltas[event.key];
 
     if (!this._firstClickedCell) {
       const itemContent = this.accordion.items[0].content;
       nextCell = itemContent.firstElementChild;
     } else {
+      const [deltaX, deltaY] = arrowKeyDeltas[event.key];
       if (deltaX) {
         this._cellCenterForArrowUpDown = null;
         nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
