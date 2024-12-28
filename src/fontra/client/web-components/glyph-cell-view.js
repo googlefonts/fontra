@@ -14,9 +14,7 @@ export class GlyphCellView extends HTMLElement {
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
-    this._firstClickedCell = null;
-    this._secondClickedCell = null;
-    this._cellCenterForArrowUpDown = null;
+    this._resetSelectionHelpers();
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
@@ -54,6 +52,12 @@ export class GlyphCellView extends HTMLElement {
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
   }
 
+  _resetSelectionHelpers() {
+    this._firstClickedCell = null;
+    this._secondClickedCell = null;
+    this._cellCenterForArrowUpDown = null;
+  }
+
   getContentElement() {
     this.accordion = new Accordion();
 
@@ -75,6 +79,7 @@ export class GlyphCellView extends HTMLElement {
   }
 
   setGlyphSections(glyphSections) {
+    this._resetSelectionHelpers();
     this.glyphSections = glyphSections;
 
     let sectionIndex = 0;
