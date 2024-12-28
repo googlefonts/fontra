@@ -264,12 +264,16 @@ export class GlyphCellView extends HTMLElement {
 
   ensureFirstClickedCell(glyphCell) {
     if (!this._firstClickedCell) {
-      const firstSelectedCell = this.findFirstSelectedCell();
-      const lastSelectedCell = this.findLastSelectedCell();
-      this._firstClickedCell =
-        cellCompare(lastSelectedCell, glyphCell) < 0
-          ? firstSelectedCell
-          : lastSelectedCell;
+      if (!this.glyphSelection.size) {
+        this._firstClickedCell = this.getFirstGlyphCell();
+      } else {
+        const firstSelectedCell = this.findFirstSelectedCell();
+        const lastSelectedCell = this.findLastSelectedCell();
+        this._firstClickedCell =
+          cellCompare(lastSelectedCell, glyphCell) < 0
+            ? firstSelectedCell
+            : lastSelectedCell;
+      }
     }
   }
 
@@ -325,8 +329,7 @@ export class GlyphCellView extends HTMLElement {
     let nextCell;
 
     if (!referenceCell) {
-      const itemContent = this.accordion.items[0].content;
-      nextCell = itemContent.firstElementChild;
+      nextCell = this.getFirstGlyphCell();
     } else {
       const [deltaX, deltaY] = arrowKeyDeltas[event.key];
       if (deltaX) {
@@ -347,8 +350,6 @@ export class GlyphCellView extends HTMLElement {
       }
     }
 
-    // this._firstClickedCell = referenceCell;
-
     if (nextCell) {
       if (event.shiftKey) {
         this.extendSelection(nextCell);
@@ -364,6 +365,11 @@ export class GlyphCellView extends HTMLElement {
         inline: "nearest",
       });
     }
+  }
+
+  getFirstGlyphCell() {
+    const itemContent = this.accordion.items[0].content;
+    return itemContent.firstElementChild;
   }
 }
 
