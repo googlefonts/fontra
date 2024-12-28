@@ -258,7 +258,7 @@ export class GlyphCellView extends HTMLElement {
     const [deltaX, deltaY] = arrowKeyDeltas[event.key];
     if (deltaX) {
       this._cellCenterForArrowUpDown = null;
-      nextCell = nextGlyphCell(this._firstClickedCell, deltaX);
+      nextCell = nextGlyphCellHorizontal(this._firstClickedCell, deltaX);
     } else {
       if (this._cellCenterForArrowUpDown === null) {
         this._cellCenterForArrowUpDown = boundsCenterX(
@@ -287,7 +287,7 @@ export class GlyphCellView extends HTMLElement {
 
 customElements.define("glyph-cell-view", GlyphCellView);
 
-function nextGlyphCell(glyphCell, direction) {
+function nextGlyphCellHorizontal(glyphCell, direction) {
   let nextCell = nextSibling(glyphCell, direction);
   if (!nextCell) {
     const accordionItem = glyphCell.parentNode.parentNode.parentNode;
@@ -312,7 +312,7 @@ function nextGlyphCellVertical(firstCell, direction, cellCenter) {
 
   const matches = [];
   while (true) {
-    nextCell = nextGlyphCell(nextCell, direction);
+    nextCell = nextGlyphCellHorizontal(nextCell, direction);
     if (!nextCell) {
       break;
     }
@@ -339,7 +339,7 @@ function nextGlyphCellVertical(firstCell, direction, cellCenter) {
 function findFirstLastGlyphCell(firstCell, direction) {
   let firstLastCell = firstCell;
   while (true) {
-    const nextCell = nextGlyphCell(firstLastCell, direction);
+    const nextCell = nextGlyphCellHorizontal(firstLastCell, direction);
     if (!nextCell) {
       break;
     }
