@@ -232,6 +232,7 @@ export class GlyphCellView extends HTMLElement {
     if (event.detail > 1) {
       // Part of a double click, we should do nothing and let handleDoubleClick
       // deal with the event
+      clearTimeout(this._selectionTimerID);
       return;
     }
 
@@ -248,6 +249,17 @@ export class GlyphCellView extends HTMLElement {
       if (event.metaKey) {
         this._resetSelectionHelpers();
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
+      } else if (this.glyphSelection.size > 1) {
+        // The user clicked on a selected glyph that's part of a larger
+        // selection. We want the selection to be the clicked glyph only,
+        // but we need to do this after a delay, or else we can't double-click
+        // on a selection > 1. The delay should ideally match the double-click
+        // time (which is user-configurable), but instead we take 500ms, which
+        // should be default-ish in many cases.
+        // If indeed a double-click comes, the timer is cancelled.
+        this._selectionTimerID = setTimeout(() => {
+          this.glyphSelection = new Set([glyphName]);
+        }, 500);
       }
     } else {
       if (event.metaKey) {
