@@ -16,12 +16,9 @@ if (typeof process !== "undefined") {
   glyphDataCSV = fs.readFileSync(path, "utf8");
 } else {
   // Browser
-  const response = await fetch("../../data/glyph-data.csv");
+  const response = await fetch("/data/glyph-data.csv");
   glyphDataCSV = await response.text();
 }
-
-// console.log("-----------------------------------");
-// console.log(glyphDataCSV);
 
 let glyphData;
 let glyphDataByName = new Map();
