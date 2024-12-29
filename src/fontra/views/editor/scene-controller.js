@@ -106,7 +106,7 @@ export class SceneController {
         return;
       }
       await this.fontController.ensureInitialized;
-      const glyphLines = await glyphLinesFromText(
+      const glyphLines = glyphLinesFromText(
         event.newValue,
         this.fontController.characterMap,
         this.fontController.glyphMap
