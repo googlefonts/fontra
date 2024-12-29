@@ -218,6 +218,8 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   handleDoubleClick(event, glyphCell) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
     this.insertGlyphIntoTextString(glyphCell, event.altKey ? 1 : 0, !event.altKey);
   }
 

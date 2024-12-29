@@ -85,6 +85,7 @@ export class GlyphCell extends UnlitElement {
     grid-template-rows: calc(${UNSCALED_CELL_HEIGHT}px * var(--glyph-cell-scale-factor, 1)) auto auto;
     justify-items: center;
     gap: 0;
+    user-select: none;
   }
 
   .glyph-shape-placeholder {
