@@ -13,7 +13,7 @@ if (typeof process !== "undefined") {
     "data",
     "glyph-data.csv"
   );
-  glyphDataCSV = fs.readFileSync(path, "utf8");
+  glyphDataCSV = fs.readFileSync(path, "utf8").replaceAll("\r\n", "\n");
 } else {
   // Browser
   const response = await fetch("/data/glyph-data.csv");
