@@ -1951,17 +1951,17 @@ A69C;modifierhardsign-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC HAR
 A69D;modifiersoftsign-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC SOFT SIGN;uniA69D
 A69E;efcomb-cy;Mark;Nonspacing;;;cyrillic;COMBINING CYRILLIC LETTER EF;uniA69E
 A69F;iotifiedecomb-cy;Mark;Nonspacing;;;cyrillic;COMBINING CYRILLIC LETTER IOTIFIED E;uniA69F
-1C80;verounded-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER ROUNDED VE;uni1C80
-1C81;delonglegged;Letter;;lower;;latin;CYRILLIC SMALL LETTER LONG-LEGGED DE;uni1C81
-1C82;onarrow-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER NARROW O;uni1C82
-1C83;eswide-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER WIDE ES;uni1C83
-1C84;tetall-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER TALL TE;uni1C84
-1C85;tethreelegged-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER THREE-LEGGED TE;uni1C85
-1C86;hardsigntall-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER TALL HARD SIGN;uni1C86
-1C87;yattall-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER TALL YAT;uni1C87
-1C88;ukunblended-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER UNBLENDED UK;uni1C88
-1C89;Tje-cy;Letter;;upper;;latin;CYRILLIC CAPITAL LETTER TJE;uni1C89
-1C8A;tje-cy;Letter;;lower;;latin;CYRILLIC SMALL LETTER TJE;uni1C8A
+1C80;verounded-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER ROUNDED VE;uni1C80
+1C81;delonglegged-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER LONG-LEGGED DE;uni1C81
+1C82;onarrow-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER NARROW O;uni1C82
+1C83;eswide-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER WIDE ES;uni1C83
+1C84;tetall-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TALL TE;uni1C84
+1C85;tethreelegged-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER THREE-LEGGED TE;uni1C85
+1C86;hardsigntall-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TALL HARD SIGN;uni1C86
+1C87;yattall-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TALL YAT;uni1C87
+1C88;ukunblended-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER UNBLENDED UK;uni1C88
+1C89;Tje-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TJE;uni1C89
+1C8A;tje-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TJE;uni1C8A
 1E030;amod-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC SMALL A;u1E030
 1E031;bemod-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC SMALL BE;u1E031
 1E032;vemod-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC SMALL VE;u1E032
