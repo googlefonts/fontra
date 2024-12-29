@@ -21,20 +21,6 @@ class AbstractBackend {
   static async getProjects() {}
 
   /**
-   * Get a suggested glyph name for a given code point.
-   * @param {number} codePoint - The code point.
-   * @returns {Promise<string>} The suggested glyph name.
-   */
-  static async getSuggestedGlyphName(codePoint) {}
-
-  /**
-   * Get the code point for a given glyph name.
-   * @param {string} glyphName - The glyph name.
-   * @returns {Promise<number>} The code point.
-   */
-  static async getCodePointFromGlyphName(glyphName) {}
-
-  /**
    * Parse clipboard data.
    *
    * Returns a glyph object parsed from either a SVG string or an UFO .glif.
@@ -96,14 +82,6 @@ class PythonBackend extends AbstractBackend {
       throw new Error(result.error);
     }
     return result.returnValue;
-  }
-
-  static async getSuggestedGlyphName(codePoint) {
-    return await this._callServerAPI("getSuggestedGlyphName", { codePoint });
-  }
-
-  static async getCodePointFromGlyphName(glyphName) {
-    return await this._callServerAPI("getCodePointFromGlyphName", { glyphName });
   }
 
   static async parseClipboard(data) {
