@@ -69,7 +69,7 @@ def rebuildGlyphData(check=False):
 
     if check:
         oldData = glyphDataPath.read_text()
-        if csvGlyphData != oldData:
+        if csvGlyphData.splitlines() != oldData.splitlines():
             raise ValueError("new source differs from old source")
     else:
         glyphDataPath.write_text(csvGlyphData)
