@@ -54,7 +54,7 @@ class FontraServer:
     versionToken: Optional[str] = None
     cookieMaxAge: int = 7 * 24 * 60 * 60
     allowedFileExtensions: frozenset[str] = frozenset(
-        ["css", "html", "ico", "js", "json", "svg", "woff2"]
+        ["css", "html", "ico", "js", "json", "svg", "woff2", "csv"]
     )
 
     def setup(self) -> None:
