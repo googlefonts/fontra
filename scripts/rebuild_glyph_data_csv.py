@@ -68,11 +68,11 @@ def rebuildGlyphData(check=False):
     csvGlyphData = glyphDataAsCSV()
 
     if check:
-        oldData = glyphDataPath.read_text()
-        if csvGlyphData.splitlines() != oldData.splitlines():
+        oldData = glyphDataPath.read_text(encoding="utf-8")
+        if csvGlyphData != oldData:
             raise ValueError("new source differs from old source")
     else:
-        glyphDataPath.write_text(csvGlyphData)
+        glyphDataPath.write_text(csvGlyphData, encoding="utf-8")
 
 
 if __name__ == "__main__":
