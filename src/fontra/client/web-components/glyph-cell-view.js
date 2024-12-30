@@ -72,7 +72,7 @@ export class GlyphCellView extends HTMLElement {
     .font-overview-accordion-item {
       height: 100%;
       width: 100%;
-      overflow-y: scroll;
+      overflow-y: auto;
       white-space: normal;
     }
     `);
