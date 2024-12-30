@@ -15,6 +15,7 @@ function getGroupingInfo(glyph, options) {
     category: options.category ? glyphInfo?.category : undefined,
     subCategory: options.subCategory ? glyphInfo?.subCategory : undefined,
     script: options.script ? glyphInfo?.script : undefined,
+    case: options.case ? glyphInfo?.case : undefined,
     glyphNameExtension: options.glyphNameExtension
       ? getGlyphNameExtension(glyph.glyphName)
       : undefined,
@@ -25,7 +26,13 @@ export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
-    this.setGroupings(["category", "subCategory", "script", "glyphNameExtension"]);
+    this.setGroupings([
+      "category",
+      "subCategory",
+      "case",
+      "script",
+      "glyphNameExtension",
+    ]);
   }
 
   setSearchString(searchString) {
@@ -140,6 +147,10 @@ function getGroupingKey(glyph, options) {
 
   if (groupingInfo.subCategory) {
     key += (key ? "/" : "") + groupingInfo.subCategory;
+  }
+
+  if (groupingInfo.case) {
+    key += (key ? "/" : "") + groupingInfo.case;
   }
 
   if (groupingInfo.script) {
