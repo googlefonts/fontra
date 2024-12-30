@@ -12,7 +12,9 @@ function getGlyphInfo(glyph) {
 function getGroupingInfo(glyph, options) {
   const glyphInfo = getGlyphInfo(glyph);
   return {
-    ...glyphInfo,
+    ...Object.fromEntries(
+      Object.entries(glyphInfo || {}).filter(([key, value]) => options[key])
+    ),
     glyphNameExtension: options.glyphNameExtension
       ? getGlyphNameExtension(glyph.glyphName)
       : undefined,
@@ -31,7 +33,7 @@ export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
-    this.setGroupings(groupProperties);
+    this.setGroupings([]);
   }
 
   setSearchString(searchString) {

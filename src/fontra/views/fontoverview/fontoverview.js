@@ -37,6 +37,7 @@ export class FontOverviewController extends ViewController {
       fontLocationUser: {},
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
+      groupByKeys: [],
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
@@ -61,6 +62,11 @@ export class FontOverviewController extends ViewController {
 
     this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
       this.glyphOrganizer.setSearchString(event.newValue);
+      this.updateGlyphSelection();
+    });
+
+    this.fontOverviewSettingsController.addKeyListener("groupByKeys", (event) => {
+      this.glyphOrganizer.setGroupings(event.newValue);
       this.updateGlyphSelection();
     });
 

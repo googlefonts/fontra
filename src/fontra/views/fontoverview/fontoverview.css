@@ -39,7 +39,6 @@ font-overview-navigation {
   grid-template-columns: max-content auto;
   align-items: center;
   gap: 0.666em;
-  padding-bottom: 1em;
 }
 
 .font-overview-section-header {
