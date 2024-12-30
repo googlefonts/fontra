@@ -22,8 +22,8 @@ function getGroupingInfo(glyph, options) {
 const groupProperties = [
   "script",
   "category",
-  "subCategory",
   "case",
+  "subCategory",
   "glyphNameExtension",
 ];
 
@@ -171,11 +171,11 @@ function getGroupingKey(glyph, options) {
   }
 
   if (groupingInfo.subCategory) {
-    groupingKey += (groupingKey ? "/" : "") + groupingInfo.subCategory;
+    groupingKey += (groupingKey ? " / " : "") + groupingInfo.subCategory;
   }
 
   if (groupingInfo.case) {
-    groupingKey += (groupingKey ? "/" : "") + groupingInfo.case;
+    groupingKey += (groupingKey ? " / " : "") + groupingInfo.case;
   }
 
   if (groupingInfo.script) {
