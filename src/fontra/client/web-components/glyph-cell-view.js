@@ -502,5 +502,5 @@ function makeGlyphCountString(glyphs, glyphMap) {
 
   return numGlyphs === numDefinedGlyphs
     ? `(${numGlyphs})`
-    : `(${numDefinedGlyphs}/${numGlyphs})`;
+    : `(${numDefinedGlyphs} of ${numGlyphs})`;
 }
