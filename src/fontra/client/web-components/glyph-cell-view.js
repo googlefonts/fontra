@@ -394,6 +394,18 @@ export class GlyphCellView extends HTMLElement {
       this.glyphSelection = new Set([nextCell.glyphName]);
     }
 
+    // If the cell is in the top row, make sure the *header* is in view
+    const leftMostCell = leftMostSibling(nextCell);
+    if (!leftMostCell.previousElementSibling) {
+      const header = nextCell.parentElement.parentElement.previousElementSibling;
+      assert(header.classList.contains("ui-accordion-item-header"));
+      header.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+
     nextCell.scrollIntoView({
       behavior: "auto",
       block: "nearest",
@@ -500,6 +512,19 @@ function horizontalOverlap(rect1, rect2) {
 
 function boundsCenterX(rect) {
   return rect.left + rect.width / 2;
+}
+
+function leftMostSibling(nextCell) {
+  const top = nextCell.getBoundingClientRect().top;
+
+  while (true) {
+    const candidateCell = nextCell.previousElementSibling;
+    if (!candidateCell || candidateCell.getBoundingClientRect().top != top) {
+      break;
+    }
+    nextCell = candidateCell;
+  }
+  return nextCell;
 }
 
 function cellCompare(cellA, cellB) {
