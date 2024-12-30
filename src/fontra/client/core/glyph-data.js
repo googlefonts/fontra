@@ -98,3 +98,13 @@ export function getCodePointFromGlyphName(glyphName) {
 
   return codePoint;
 }
+
+export function getGlyphInfoFromCodePoint(codePoint) {
+  parseGlyphDataCSV();
+  return glyphDataByCodePoint.get(codePoint);
+}
+
+export function getGlyphInfoFromGlyphName(glyphName) {
+  parseGlyphDataCSV();
+  return glyphDataByName.get(glyphName);
+}

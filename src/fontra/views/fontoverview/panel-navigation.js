@@ -1,6 +1,8 @@
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
+import { ObservableController } from "/core/observable-object.js";
+import { labeledCheckbox } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 
 export class FontOverviewNavigation extends HTMLElement {
@@ -57,6 +59,33 @@ export class FontOverviewNavigation extends HTMLElement {
       ]
     );
 
+    const groupByProperties = [
+      ["script", "Script"],
+      ["category", "Category"],
+      ["subCategory", "Sub-category"],
+      ["case", "Case"],
+      ["glyphNameExtension", "Glyph name extension"],
+    ];
+
+    const groupByKeys = groupByProperties.map((item) => item[0]);
+
+    const groupByController = new ObservableController({});
+
+    groupByController.addKeyListener(
+      groupByKeys,
+      (event) =>
+        (this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
+          (key) => groupByController.model[key]
+        ))
+    );
+
+    const groupByContainer = html.div({}, [
+      html.span({}, ["Group by"]),
+      ...groupByProperties.map(([key, label]) =>
+        labeledCheckbox(label, groupByController, key)
+      ),
+    ]);
+
     this.searchField = new GlyphSearchField({
       settingsController: this.fontOverviewSettingsController,
       searchStringKey: "searchString",
@@ -64,6 +93,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
+    this.appendChild(groupByContainer);
   }
 }
 

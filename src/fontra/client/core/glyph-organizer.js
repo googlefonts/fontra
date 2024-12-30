@@ -1,6 +1,39 @@
+import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
+
+function getGlyphInfo(glyph) {
+  const codePoint = glyph.codePoints[0];
+  return (
+    getGlyphInfoFromCodePoint(codePoint) ||
+    getGlyphInfoFromGlyphName(glyph.glyphName) ||
+    getGlyphInfoFromGlyphName(getBaseGlyphName(glyph.glyphName))
+  );
+}
+
+function getGroupingInfo(glyph, options) {
+  const glyphInfo = getGlyphInfo(glyph);
+  return {
+    ...Object.fromEntries(
+      Object.entries(glyphInfo || {}).filter(([key, value]) => options[key])
+    ),
+    glyphNameExtension: options.glyphNameExtension
+      ? getGlyphNameExtension(glyph.glyphName)
+      : undefined,
+  };
+}
+
+const groupProperties = [
+  "script",
+  "category",
+  "case",
+  "subCategory",
+  "glyphNameExtension",
+];
+
 export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
+
+    this.setGroupings([]);
   }
 
   setSearchString(searchString) {
@@ -12,6 +45,17 @@ export class GlyphOrganizer {
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
   }
 
+  setGroupings(groupings) {
+    const options = {};
+    groupings.forEach((grouping) => (options[grouping] = true));
+
+    this.setGroupingFunc((glyph) => getGroupingKey(glyph, options));
+  }
+
+  setGroupingFunc(groupingFunc) {
+    this._groupingFunc = groupingFunc;
+  }
+
   sortGlyphs(glyphs) {
     glyphs = [...glyphs];
     glyphs.sort(glyphItemSortFunc);
@@ -21,6 +65,54 @@ export class GlyphOrganizer {
   filterGlyphs(glyphs) {
     return glyphs.filter(this._glyphNamesListFilterFunc);
   }
+
+  groupGlyphs(glyphs) {
+    const groups = new Map();
+
+    for (const item of glyphs) {
+      const groupingInfo = this._groupingFunc(item);
+      let group = groups.get(groupingInfo.groupingKey);
+      if (!group) {
+        group = { groupingInfo, glyphs: [] };
+        groups.set(groupingInfo.groupingKey, group);
+      }
+      group.glyphs.push(item);
+    }
+
+    const groupEntries = [...groups.values()];
+    groupEntries.sort(compareGroupInfo);
+
+    const sections = groupEntries.map(({ groupingInfo, glyphs }) => ({
+      label: groupingInfo.groupingKey,
+      glyphs: glyphs,
+    }));
+
+    return sections;
+  }
+}
+
+function compareGroupInfo(groupingEntryA, groupingEntryB) {
+  const groupingInfoA = groupingEntryA.groupingInfo;
+  const groupingInfoB = groupingEntryB.groupingInfo;
+
+  for (const prop of groupProperties) {
+    const valueA = groupingInfoA[prop];
+    const valueB = groupingInfoB[prop];
+
+    if (valueA === valueB) {
+      continue;
+    }
+
+    if (valueA === undefined) {
+      return 1;
+    } else if (valueB === undefined) {
+      return -1;
+    }
+
+    return valueA < valueB ? -1 : 1;
+  }
+
+  return 0;
 }
 
 function glyphFilterFunc(item, searchItems) {
@@ -60,4 +152,46 @@ function compare(a, b) {
   } else {
     return 1;
   }
+}
+
+function getGlyphNameExtension(glyphName) {
+  const i = glyphName.lastIndexOf(".");
+  return i >= 1 ? glyphName.slice(i) : "";
+}
+
+function getBaseGlyphName(glyphName) {
+  const i = glyphName.indexOf(".");
+  return i >= 1 ? glyphName.slice(0, i) : "";
+}
+
+function getGroupingKey(glyph, options) {
+  const groupingInfo = getGroupingInfo(glyph, options);
+
+  let groupingKey = "";
+
+  if (groupingInfo.category) {
+    groupingKey += groupingInfo.category;
+  }
+
+  if (groupingInfo.subCategory) {
+    groupingKey += (groupingKey ? " / " : "") + groupingInfo.subCategory;
+  }
+
+  if (groupingInfo.case) {
+    groupingKey += (groupingKey ? " / " : "") + groupingInfo.case;
+  }
+
+  if (groupingInfo.script) {
+    groupingKey += (groupingKey ? " " : "") + `(${groupingInfo.script})`;
+  }
+
+  if (groupingInfo.glyphNameExtension) {
+    groupingKey += (groupingKey ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
+  }
+
+  if (!groupingKey) {
+    groupingKey = "Other";
+  }
+
+  return { groupingKey, ...groupingInfo };
 }

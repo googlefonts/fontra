@@ -49,6 +49,19 @@ export class GlyphCellView extends HTMLElement {
       });
     });
 
+    // // Pinch magnify: this works well for small fonts, but very badly for big fonts
+    // this.addEventListener("wheel", (event) => {
+    //   if (!event.ctrlKey && !event.altKey) {
+    //     return;
+    //   }
+    //   event.preventDefault();
+    //   const clunkyScrollWheel = false;
+    //   let { deltaX, deltaY, wheelDeltaX, wheelDeltaY } = event;
+    //   const scaleDown = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
+    //   const zoomFactor = 1 - deltaY / scaleDown;
+    //   this.magnification = this.magnification * zoomFactor;
+    // });
+
     this.appendChild(this.getContentElement());
 
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
@@ -75,6 +88,11 @@ export class GlyphCellView extends HTMLElement {
       overflow-y: auto;
       white-space: normal;
     }
+
+    .glyph-count {
+      font-weight: normal;
+      opacity: 50%;
+    }
     `);
 
     return html.div({}, [this.accordion]); // wrap in div for scroll behavior
@@ -86,7 +104,13 @@ export class GlyphCellView extends HTMLElement {
 
     let sectionIndex = 0;
     const accordionItems = glyphSections.map((section) => ({
-      label: section.label,
+      label: html.span({}, [
+        section.label,
+        html.span({ class: "glyph-count" }, [
+          " ",
+          makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
+        ]),
+      ]),
       open: true,
       content: html.div({ class: "font-overview-accordion-item" }, []),
       glyphs: section.glyphs,
@@ -383,6 +407,18 @@ export class GlyphCellView extends HTMLElement {
       this.glyphSelection = new Set([nextCell.glyphName]);
     }
 
+    // If the cell is in the top row, make sure the *header* is in view
+    const leftMostCell = leftMostSibling(nextCell);
+    if (!leftMostCell.previousElementSibling) {
+      const header = nextCell.parentElement.parentElement.previousElementSibling;
+      assert(header.classList.contains("ui-accordion-item-header"));
+      header.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+
     nextCell.scrollIntoView({
       behavior: "auto",
       block: "nearest",
@@ -412,7 +448,20 @@ function nextGlyphCellHorizontal(glyphCell, direction) {
   if (!nextCell) {
     const accordionItem = glyphCell.parentNode.parentNode.parentNode;
     assert(accordionItem.classList.contains("ui-accordion-item"));
-    const nextAccordionItem = nextSibling(accordionItem, direction);
+
+    let nextAccordionItem = accordionItem;
+
+    while (true) {
+      nextAccordionItem = nextSibling(nextAccordionItem, direction);
+      if (!nextAccordionItem) {
+        break;
+      }
+      if (!nextAccordionItem.classList.contains("ui-accordion-item-closed")) {
+        // Skip closed items
+        break;
+      }
+    }
+
     if (nextAccordionItem) {
       nextCell = nextAccordionItem.querySelector(
         `glyph-cell:${direction == 1 ? "first" : "last"}-child`
@@ -478,6 +527,19 @@ function boundsCenterX(rect) {
   return rect.left + rect.width / 2;
 }
 
+function leftMostSibling(nextCell) {
+  const top = nextCell.getBoundingClientRect().top;
+
+  while (true) {
+    const candidateCell = nextCell.previousElementSibling;
+    if (!candidateCell || candidateCell.getBoundingClientRect().top != top) {
+      break;
+    }
+    nextCell = candidateCell;
+  }
+  return nextCell;
+}
+
 function cellCompare(cellA, cellB) {
   if (cellA == cellB) {
     return 0;
@@ -486,4 +548,15 @@ function cellCompare(cellA, cellB) {
     (cellA._sectionIndex == cellB._sectionIndex && cellA._cellIndex <= cellB._cellIndex)
     ? 1
     : -1;
+}
+
+function makeGlyphCountString(glyphs, glyphMap) {
+  const numGlyphs = glyphs.length;
+  const numDefinedGlyphs = glyphs.filter(
+    (glyph) => glyphMap[glyph.glyphName] !== undefined
+  ).length;
+
+  return numGlyphs === numDefinedGlyphs
+    ? `(${numGlyphs})`
+    : `(${numDefinedGlyphs}/${numGlyphs})`;
 }
