@@ -42,6 +42,7 @@ mimeTypes = {
     "svg": "image/svg+xml",
     "txt": "text/plain",
     "woff2": "font/woff2",
+    "csv": "text/csv",
 }
 
 
