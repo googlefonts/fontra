@@ -300,7 +300,7 @@ addStyleSheet(`
   gap: 0.5em;
   align-items: start;
   align-content: start;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .fontra-ui-font-info-sources-panel-header.min-height,
