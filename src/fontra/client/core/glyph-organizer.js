@@ -19,17 +19,19 @@ function getGroupingInfo(glyph, options) {
   };
 }
 
+const groupProperties = [
+  "script",
+  "category",
+  "subCategory",
+  "case",
+  "glyphNameExtension",
+];
+
 export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
-    this.setGroupings([
-      "category",
-      "subCategory",
-      "case",
-      "script",
-      "glyphNameExtension",
-    ]);
+    this.setGroupings(groupProperties);
   }
 
   setSearchString(searchString) {
@@ -66,22 +68,48 @@ export class GlyphOrganizer {
     const groups = new Map();
 
     for (const item of glyphs) {
-      const grouping = this._groupingFunc(item);
-      let group = groups.get(grouping);
+      const groupingInfo = this._groupingFunc(item);
+      let group = groups.get(groupingInfo.groupingKey);
       if (!group) {
-        group = [];
-        groups.set(grouping, group);
+        group = { groupingInfo, glyphs: [] };
+        groups.set(groupingInfo.groupingKey, group);
       }
-      group.push(item);
+      group.glyphs.push(item);
     }
 
-    const sections = [];
-    for (const [key, value] of groups.entries()) {
-      sections.push({ label: key, glyphs: value });
-    }
+    const groupEntries = [...groups.values()];
+    groupEntries.sort(compareGroupInfo);
+
+    const sections = groupEntries.map(({ groupingInfo, glyphs }) => ({
+      label: groupingInfo.groupingKey,
+      glyphs: glyphs,
+    }));
 
     return sections;
   }
+}
+
+function compareGroupInfo(groupingEntryA, groupingEntryB) {
+  const groupingInfoA = groupingEntryA.groupingInfo;
+  const groupingInfoB = groupingEntryB.groupingInfo;
+
+  for (const prop of groupProperties) {
+    const valueA = groupingInfoA[prop];
+    const valueB = groupingInfoB[prop];
+
+    if (valueA === valueB) {
+      continue;
+    }
+
+    if (valueA === undefined) {
+      return 1;
+    } else if (valueB === undefined) {
+      return -1;
+    }
+
+    return valueA < valueB ? -1 : 1;
+  }
+  return 0;
 }
 
 function glyphFilterFunc(item, searchItems) {
@@ -136,31 +164,31 @@ function getBaseGlyphName(glyphName) {
 function getGroupingKey(glyph, options) {
   const groupingInfo = getGroupingInfo(glyph, options);
 
-  let key = "";
+  let groupingKey = "";
 
   if (groupingInfo.category) {
-    key += groupingInfo.category;
+    groupingKey += groupingInfo.category;
   }
 
   if (groupingInfo.subCategory) {
-    key += (key ? "/" : "") + groupingInfo.subCategory;
+    groupingKey += (groupingKey ? "/" : "") + groupingInfo.subCategory;
   }
 
   if (groupingInfo.case) {
-    key += (key ? "/" : "") + groupingInfo.case;
+    groupingKey += (groupingKey ? "/" : "") + groupingInfo.case;
   }
 
   if (groupingInfo.script) {
-    key += (key ? " " : "") + `(${groupingInfo.script})`;
+    groupingKey += (groupingKey ? " " : "") + `(${groupingInfo.script})`;
   }
 
   if (groupingInfo.glyphNameExtension) {
-    key += (key ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
+    groupingKey += (groupingKey ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
   }
 
-  if (!key) {
-    key = "Other";
+  if (!groupingKey) {
+    groupingKey = "Other";
   }
 
-  return key;
+  return { groupingKey, ...groupingInfo };
 }
