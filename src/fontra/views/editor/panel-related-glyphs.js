@@ -16,13 +16,19 @@ export default class RelatedGlyphPanel extends Panel {
   static styles = `
     .sidebar-glyph-relationships {
       box-sizing: border-box;
-      height: calc(100% - 2em); // Would be nice to do without the calc
-      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     #related-glyphs-header {
       padding: 1em 1em 0 1em;
       text-wrap: wrap;
+    }
+
+    .related-glyphs-accordion {
+      flex: 1;
+      overflow: hidden;
     }
 
     .no-related-glyphs {
@@ -51,7 +57,7 @@ export default class RelatedGlyphPanel extends Panel {
 
   getContentElement() {
     this.accordion = new Accordion();
-
+    this.accordion.classList.add("related-glyphs-accordion");
     this.accordion.appendStyle(`
     .placeholder-label {
       font-size: 0.9em;
