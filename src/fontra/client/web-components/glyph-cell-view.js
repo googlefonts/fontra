@@ -75,6 +75,11 @@ export class GlyphCellView extends HTMLElement {
       overflow-y: auto;
       white-space: normal;
     }
+
+    .glyph-count {
+      font-weight: normal;
+      opacity: 50%;
+    }
     `);
 
     return html.div({}, [this.accordion]); // wrap in div for scroll behavior
@@ -88,7 +93,7 @@ export class GlyphCellView extends HTMLElement {
     const accordionItems = glyphSections.map((section) => ({
       label: html.span({}, [
         section.label,
-        html.span({ style: "font-weight: normal;" }, [
+        html.span({ class: "glyph-count" }, [
           " ",
           makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
         ]),

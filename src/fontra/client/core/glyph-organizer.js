@@ -12,10 +12,7 @@ function getGlyphInfo(glyph) {
 function getGroupingInfo(glyph, options) {
   const glyphInfo = getGlyphInfo(glyph);
   return {
-    category: options.category ? glyphInfo?.category : undefined,
-    subCategory: options.subCategory ? glyphInfo?.subCategory : undefined,
-    script: options.script ? glyphInfo?.script : undefined,
-    case: options.case ? glyphInfo?.case : undefined,
+    ...glyphInfo,
     glyphNameExtension: options.glyphNameExtension
       ? getGlyphNameExtension(glyph.glyphName)
       : undefined,
