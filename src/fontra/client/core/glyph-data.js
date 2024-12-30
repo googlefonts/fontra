@@ -13,12 +13,14 @@ if (typeof process !== "undefined") {
     "data",
     "glyph-data.csv"
   );
-  glyphDataCSV = fs.readFileSync(path, "utf8").replaceAll("\r\n", "\n");
+  glyphDataCSV = fs.readFileSync(path, "utf8");
 } else {
   // Browser
   const response = await fetch("/data/glyph-data.csv");
   glyphDataCSV = await response.text();
 }
+
+glyphDataCSV = glyphDataCSV.replaceAll("\r\n", "\n");
 
 let glyphData;
 let glyphDataByName = new Map();
