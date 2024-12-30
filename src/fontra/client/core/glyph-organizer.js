@@ -1,6 +1,7 @@
 export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
+    this._groupingFunc = (item) => "Glyphs";
   }
 
   setSearchString(searchString) {
@@ -12,6 +13,10 @@ export class GlyphOrganizer {
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
   }
 
+  setGroupingFunc(groupingFunc) {
+    this._groupingFunc = groupingFunc;
+  }
+
   sortGlyphs(glyphs) {
     glyphs = [...glyphs];
     glyphs.sort(glyphItemSortFunc);
@@ -20,6 +25,27 @@ export class GlyphOrganizer {
 
   filterGlyphs(glyphs) {
     return glyphs.filter(this._glyphNamesListFilterFunc);
+  }
+
+  groupGlyphs(glyphs) {
+    const groups = new Map();
+
+    for (const item of glyphs) {
+      const grouping = this._groupingFunc(item);
+      let group = groups.get(grouping);
+      if (!group) {
+        group = [];
+        groups.set(grouping, group);
+      }
+      group.push(item);
+    }
+
+    const sections = [];
+    for (const [key, value] of groups.entries()) {
+      sections.push({ label: key, glyphs: value });
+    }
+
+    return sections;
   }
 }
 
