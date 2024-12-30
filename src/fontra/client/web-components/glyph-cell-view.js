@@ -423,7 +423,20 @@ function nextGlyphCellHorizontal(glyphCell, direction) {
   if (!nextCell) {
     const accordionItem = glyphCell.parentNode.parentNode.parentNode;
     assert(accordionItem.classList.contains("ui-accordion-item"));
-    const nextAccordionItem = nextSibling(accordionItem, direction);
+
+    let nextAccordionItem = accordionItem;
+
+    while (true) {
+      nextAccordionItem = nextSibling(nextAccordionItem, direction);
+      if (!nextAccordionItem) {
+        break;
+      }
+      if (!nextAccordionItem.classList.contains("ui-accordion-item-closed")) {
+        // Skip closed items
+        break;
+      }
+    }
+
     if (nextAccordionItem) {
       nextCell = nextAccordionItem.querySelector(
         `glyph-cell:${direction == 1 ? "first" : "last"}-child`
