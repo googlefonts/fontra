@@ -71,7 +71,8 @@ export class Accordion extends UnlitElement {
       const headerElement = html.div(
         {
           class: "ui-accordion-item-header",
-          onclick: (event) => this._toggleItem(itemElement),
+          onclick: (event) =>
+            this._handleItemHeaderClick(event, itemElement, itemElements),
         },
         [
           html.createDomElement("inline-svg", {
@@ -115,8 +116,17 @@ export class Accordion extends UnlitElement {
     return this.shadowRoot.querySelectorAll(selector);
   }
 
-  _toggleItem(itemElement) {
-    itemElement.classList.toggle("ui-accordion-item-closed");
+  _handleItemHeaderClick(event, itemElement, itemElements) {
+    if (event.altKey) {
+      // Toggle all items depending on the open/closed state of the clicked item
+      const onOff = !itemElement.classList.contains("ui-accordion-item-closed");
+      itemElements.forEach((itemElement) =>
+        itemElement.classList.toggle("ui-accordion-item-closed", onOff)
+      );
+    } else {
+      // Toggle single item
+      itemElement.classList.toggle("ui-accordion-item-closed");
+    }
   }
 
   showHideAccordionItem(item, onOff) {
