@@ -49,6 +49,19 @@ export class GlyphCellView extends HTMLElement {
       });
     });
 
+    // // Pinch magnify: this works well for small fonts, but very badly for big fonts
+    // this.addEventListener("wheel", (event) => {
+    //   if (!event.ctrlKey && !event.altKey) {
+    //     return;
+    //   }
+    //   event.preventDefault();
+    //   const clunkyScrollWheel = false;
+    //   let { deltaX, deltaY, wheelDeltaX, wheelDeltaY } = event;
+    //   const scaleDown = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
+    //   const zoomFactor = 1 - deltaY / scaleDown;
+    //   this.magnification = this.magnification * zoomFactor;
+    // });
+
     this.appendChild(this.getContentElement());
 
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
