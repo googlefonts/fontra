@@ -1,7 +1,31 @@
+import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
+
+function getGlyphInfo(glyph) {
+  const codePoint = glyph.codePoints[0];
+  return (
+    getGlyphInfoFromCodePoint(codePoint) ||
+    getGlyphInfoFromGlyphName(glyph.glyphName) ||
+    getGlyphInfoFromGlyphName(getBaseGlyphName(glyph.glyphName))
+  );
+}
+
+function getGroupingInfo(glyph, options) {
+  const glyphInfo = getGlyphInfo(glyph);
+  return {
+    category: options.category ? glyphInfo?.category : undefined,
+    subCategory: options.subCategory ? glyphInfo?.subCategory : undefined,
+    script: options.script ? glyphInfo?.script : undefined,
+    glyphNameExtension: options.glyphNameExtension
+      ? getGlyphNameExtension(glyph.glyphName)
+      : undefined,
+  };
+}
+
 export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
-    this._groupingFunc = (item) => "Glyphs";
+
+    this.setGroupings(["category", "subCategory", "script", "glyphNameExtension"]);
   }
 
   setSearchString(searchString) {
@@ -11,6 +35,13 @@ export class GlyphOrganizer {
       .map((item) => item.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"));
     searchItems.push(...hexSearchItems);
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
+  }
+
+  setGroupings(groupings) {
+    const options = {};
+    groupings.forEach((grouping) => (options[grouping] = true));
+
+    this.setGroupingFunc((glyph) => getGroupingKey(glyph, options));
   }
 
   setGroupingFunc(groupingFunc) {
@@ -86,4 +117,42 @@ function compare(a, b) {
   } else {
     return 1;
   }
+}
+
+function getGlyphNameExtension(glyphName) {
+  const i = glyphName.lastIndexOf(".");
+  return i >= 1 ? glyphName.slice(i) : "";
+}
+
+function getBaseGlyphName(glyphName) {
+  const i = glyphName.indexOf(".");
+  return i >= 1 ? glyphName.slice(0, i) : "";
+}
+
+function getGroupingKey(glyph, options) {
+  const groupingInfo = getGroupingInfo(glyph, options);
+
+  let key = "";
+
+  if (groupingInfo.category) {
+    key += groupingInfo.category;
+  }
+
+  if (groupingInfo.subCategory) {
+    key += (key ? "/" : "") + groupingInfo.subCategory;
+  }
+
+  if (groupingInfo.script) {
+    key += (key ? " " : "") + `(${groupingInfo.script})`;
+  }
+
+  if (groupingInfo.glyphNameExtension) {
+    key += (key ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
+  }
+
+  if (!key) {
+    key = "Other";
+  }
+
+  return key;
 }
