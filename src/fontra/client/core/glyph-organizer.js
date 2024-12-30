@@ -109,6 +109,7 @@ function compareGroupInfo(groupingEntryA, groupingEntryB) {
 
     return valueA < valueB ? -1 : 1;
   }
+
   return 0;
 }
 
