@@ -86,7 +86,13 @@ export class GlyphCellView extends HTMLElement {
 
     let sectionIndex = 0;
     const accordionItems = glyphSections.map((section) => ({
-      label: section.label,
+      label: html.span({}, [
+        section.label,
+        html.span({ style: "font-weight: normal;" }, [
+          " ",
+          makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
+        ]),
+      ]),
       open: true,
       content: html.div({ class: "font-overview-accordion-item" }, []),
       glyphs: section.glyphs,
@@ -486,4 +492,15 @@ function cellCompare(cellA, cellB) {
     (cellA._sectionIndex == cellB._sectionIndex && cellA._cellIndex <= cellB._cellIndex)
     ? 1
     : -1;
+}
+
+function makeGlyphCountString(glyphs, glyphMap) {
+  const numGlyphs = glyphs.length;
+  const numDefinedGlyphs = glyphs.filter(
+    (glyph) => glyphMap[glyph.glyphName] !== undefined
+  ).length;
+
+  return numGlyphs === numDefinedGlyphs
+    ? `(${numGlyphs})`
+    : `(${numDefinedGlyphs}/${numGlyphs})`;
 }
