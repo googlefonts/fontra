@@ -87,7 +87,6 @@ export class GlyphCellView extends HTMLElement {
       display: ${this.displayMode};
     }
 
-
     .placeholder-label {
       font-size: 0.9em;
       opacity: 40%;
