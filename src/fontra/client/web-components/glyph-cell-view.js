@@ -14,6 +14,8 @@ export class GlyphCellView extends HTMLElement {
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
 
+    this._closedSections = new Set();
+
     this._magnification = 1;
 
     this._resetSelectionHelpers();
@@ -102,6 +104,16 @@ export class GlyphCellView extends HTMLElement {
     this._resetSelectionHelpers();
     this.glyphSections = glyphSections;
 
+    if (this.accordion.items) {
+      this.accordion.items.forEach((item) => {
+        if (item.open) {
+          this._closedSections.delete(item.sectionLabel);
+        } else {
+          this._closedSections.add(item.sectionLabel);
+        }
+      });
+    }
+
     let sectionIndex = 0;
     const accordionItems = glyphSections.map((section) => ({
       label: html.span({}, [
@@ -111,7 +123,8 @@ export class GlyphCellView extends HTMLElement {
           makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
         ]),
       ]),
-      open: true,
+      sectionLabel: section.label, // not part of Accordion data, this is for us
+      open: !this._closedSections.has(section.label),
       content: html.div({ class: "font-overview-accordion-item" }, []),
       glyphs: section.glyphs,
       sectionIndex: sectionIndex++,

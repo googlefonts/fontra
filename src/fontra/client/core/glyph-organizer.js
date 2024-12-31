@@ -1,4 +1,5 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
+import { capitalizeFirstLetter } from "./utils.js";
 
 function getGlyphInfo(glyph) {
   const codePoint = glyph.codePoints[0];
@@ -9,7 +10,7 @@ function getGlyphInfo(glyph) {
   );
 }
 
-function getGroupingInfo(glyph, options) {
+function getGroupByInfo(glyph, options) {
   const glyphInfo = getGlyphInfo(glyph);
   return {
     ...Object.fromEntries(
@@ -21,19 +22,21 @@ function getGroupingInfo(glyph, options) {
   };
 }
 
-const groupProperties = [
-  "script",
-  "category",
-  "case",
-  "subCategory",
-  "glyphNameExtension",
+export const groupByProperties = [
+  { key: "script", label: "Script" },
+  { key: "case", label: "Case", compare: compareCase },
+  { key: "category", label: "Category" },
+  { key: "subCategory", label: "Sub-category" },
+  { key: "glyphNameExtension", label: "Glyph name extension" },
 ];
+
+export const groupByKeys = groupByProperties.map(({ key }) => key);
 
 export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
-    this.setGroupings([]);
+    this.setGroupByKeys([]);
   }
 
   setSearchString(searchString) {
@@ -45,15 +48,15 @@ export class GlyphOrganizer {
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
   }
 
-  setGroupings(groupings) {
+  setGroupByKeys(groupByKeys) {
     const options = {};
-    groupings.forEach((grouping) => (options[grouping] = true));
+    groupByKeys.forEach((groupByKey) => (options[groupByKey] = true));
 
-    this.setGroupingFunc((glyph) => getGroupingKey(glyph, options));
+    this.setGroupByFunc((glyph) => getGroupByKey(glyph, options));
   }
 
-  setGroupingFunc(groupingFunc) {
-    this._groupingFunc = groupingFunc;
+  setGroupByFunc(groupByFunc) {
+    this._groupByFunc = groupByFunc;
   }
 
   sortGlyphs(glyphs) {
@@ -70,11 +73,11 @@ export class GlyphOrganizer {
     const groups = new Map();
 
     for (const item of glyphs) {
-      const groupingInfo = this._groupingFunc(item);
-      let group = groups.get(groupingInfo.groupingKey);
+      const groupByInfo = this._groupByFunc(item);
+      let group = groups.get(groupByInfo.groupByKey);
       if (!group) {
-        group = { groupingInfo, glyphs: [] };
-        groups.set(groupingInfo.groupingKey, group);
+        group = { groupByInfo, glyphs: [] };
+        groups.set(groupByInfo.groupByKey, group);
       }
       group.glyphs.push(item);
     }
@@ -82,8 +85,8 @@ export class GlyphOrganizer {
     const groupEntries = [...groups.values()];
     groupEntries.sort(compareGroupInfo);
 
-    const sections = groupEntries.map(({ groupingInfo, glyphs }) => ({
-      label: groupingInfo.groupingKey,
+    const sections = groupEntries.map(({ groupByInfo, glyphs }) => ({
+      label: groupByInfo.groupByKey,
       glyphs: glyphs,
     }));
 
@@ -91,13 +94,13 @@ export class GlyphOrganizer {
   }
 }
 
-function compareGroupInfo(groupingEntryA, groupingEntryB) {
-  const groupingInfoA = groupingEntryA.groupingInfo;
-  const groupingInfoB = groupingEntryB.groupingInfo;
+function compareGroupInfo(groupByEntryA, groupByEntryB) {
+  const groupByInfoA = groupByEntryA.groupByInfo;
+  const groupByInfoB = groupByEntryB.groupByInfo;
 
-  for (const prop of groupProperties) {
-    const valueA = groupingInfoA[prop];
-    const valueB = groupingInfoB[prop];
+  for (const { key, compare } of groupByProperties) {
+    const valueA = groupByInfoA[key];
+    const valueB = groupByInfoB[key];
 
     if (valueA === valueB) {
       continue;
@@ -109,7 +112,7 @@ function compareGroupInfo(groupingEntryA, groupingEntryB) {
       return -1;
     }
 
-    return valueA < valueB ? -1 : 1;
+    return compare ? compare(valueA, valueB) : valueA < valueB ? -1 : 1;
   }
 
   return 0;
@@ -164,34 +167,41 @@ function getBaseGlyphName(glyphName) {
   return i >= 1 ? glyphName.slice(0, i) : "";
 }
 
-function getGroupingKey(glyph, options) {
-  const groupingInfo = getGroupingInfo(glyph, options);
+function getGroupByKey(glyph, options) {
+  const groupByInfo = getGroupByInfo(glyph, options);
 
-  let groupingKey = "";
+  const groupByKeyItems = [];
 
-  if (groupingInfo.category) {
-    groupingKey += groupingInfo.category;
+  if (groupByInfo.script) {
+    groupByKeyItems.push(capitalizeFirstLetter(groupByInfo.script));
   }
 
-  if (groupingInfo.subCategory) {
-    groupingKey += (groupingKey ? " / " : "") + groupingInfo.subCategory;
+  if (groupByInfo.case) {
+    groupByKeyItems.push(capitalizeFirstLetter(groupByInfo.case));
   }
 
-  if (groupingInfo.case) {
-    groupingKey += (groupingKey ? " / " : "") + groupingInfo.case;
+  if (groupByInfo.category) {
+    groupByKeyItems.push(groupByInfo.category);
   }
 
-  if (groupingInfo.script) {
-    groupingKey += (groupingKey ? " " : "") + `(${groupingInfo.script})`;
+  if (groupByInfo.subCategory) {
+    groupByKeyItems.push(groupByInfo.subCategory);
   }
 
-  if (groupingInfo.glyphNameExtension) {
-    groupingKey += (groupingKey ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
+  if (groupByInfo.glyphNameExtension) {
+    groupByKeyItems.push(`*${groupByInfo.glyphNameExtension}`);
   }
 
-  if (!groupingKey) {
-    groupingKey = "Other";
+  if (!groupByKeyItems.length) {
+    groupByKeyItems.push("Other");
   }
 
-  return { groupingKey, ...groupingInfo };
+  return { groupByKey: groupByKeyItems.join(" / "), ...groupByInfo };
+}
+
+function compareCase(caseA, caseB) {
+  const cases = ["upper", "lower", "minor"];
+  const indexA = cases.indexOf(caseA);
+  const indexB = cases.indexOf(caseB);
+  return indexA - indexB;
 }

@@ -66,7 +66,7 @@ export class FontOverviewController extends ViewController {
     });
 
     this.fontOverviewSettingsController.addKeyListener("groupByKeys", (event) => {
-      this.glyphOrganizer.setGroupings(event.newValue);
+      this.glyphOrganizer.setGroupByKeys(event.newValue);
       this.updateGlyphSelection();
     });
 

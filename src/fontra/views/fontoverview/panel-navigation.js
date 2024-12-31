@@ -1,4 +1,8 @@
-import { GlyphOrganizer } from "/core/glyph-organizer.js";
+import {
+  GlyphOrganizer,
+  groupByKeys,
+  groupByProperties,
+} from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
@@ -59,20 +63,9 @@ export class FontOverviewNavigation extends HTMLElement {
       ]
     );
 
-    const groupByProperties = [
-      ["script", "Script"],
-      ["category", "Category"],
-      ["subCategory", "Sub-category"],
-      ["case", "Case"],
-      ["glyphNameExtension", "Glyph name extension"],
-    ];
-
-    const groupByKeys = groupByProperties.map((item) => item[0]);
-
     const groupByController = new ObservableController({});
 
-    groupByController.addKeyListener(
-      groupByKeys,
+    groupByController.addListener(
       (event) =>
         (this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
           (key) => groupByController.model[key]
@@ -81,7 +74,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     const groupByContainer = html.div({}, [
       html.span({}, ["Group by"]),
-      ...groupByProperties.map(([key, label]) =>
+      ...groupByProperties.map(({ key, label }) =>
         labeledCheckbox(label, groupByController, key)
       ),
     ]);
