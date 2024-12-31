@@ -66,6 +66,10 @@ export class Accordion extends UnlitElement {
   render() {
     const itemElements = [];
     for (const [index, item] of enumerate(this.items || [])) {
+      if (item.hidden) {
+        continue;
+      }
+
       const id = item.id || `ui-accordion-item-${index}`;
 
       const headerElement = html.div(
@@ -132,6 +136,8 @@ export class Accordion extends UnlitElement {
   }
 
   showHideAccordionItem(item, onOff) {
+    item.hidden = !onOff;
+
     let parent = item.content;
     do {
       parent = parent.parentElement;
