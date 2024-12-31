@@ -5,9 +5,9 @@ import { translate } from "/core/localization.js";
 import { unicodeMadeOf, unicodeUsedBy } from "/core/unicode-utils.js";
 
 import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
+import { GlyphCellView } from "/web-components/glyph-cell-view.js";
 import { GlyphCell } from "/web-components/glyph-cell.js";
 import { showMenu } from "/web-components/menu-panel.js";
-import { Accordion } from "/web-components/ui-accordion.js";
 
 export default class RelatedGlyphPanel extends Panel {
   identifier = "related-glyphs";
@@ -56,56 +56,29 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   getContentElement() {
-    this.accordion = new Accordion();
-    this.accordion.classList.add("related-glyphs-accordion");
-    this.accordion.appendStyle(`
-    .placeholder-label {
-      font-size: 0.9em;
-      opacity: 40%;
-    }
+    this.glyphCellView = new GlyphCellView(
+      this.editorController.fontController,
+      this.editorController.sceneSettingsController,
+      { glyphSelectionKey: "relatedGlyphsGlyphSelection", displayMode: "inline" }
+    );
 
-    .related-glyphs-accordion-item {
-      height: 100%;
-      width: 100%;
-      overflow-y: auto;
-      white-space: normal;
-    }
-    `);
+    this.glyphCellView.classList.add("related-glyphs-accordion");
 
-    this.accordion.items = [
-      {
-        label: translate("sidebar.related-glyphs.alternate-glyphs"),
-        open: true,
-        content: html.div({ class: "related-glyphs-accordion-item" }, []),
-        getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
-      },
-      {
-        label: translate("sidebar.related-glyphs.components-used-by-this-glyph"),
-        open: true,
-        content: html.div({ class: "related-glyphs-accordion-item" }, []),
-        getRelatedGlyphsFunc: getComponentGlyphs,
-      },
-      {
-        label: translate(
-          "sidebar.related-glyphs.glyphs-using-this-glyph-as-a-component"
-        ),
-        open: true,
-        content: html.div({ class: "related-glyphs-accordion-item" }, []),
-        getRelatedGlyphsFunc: getUsedByGlyphs,
-      },
-      {
-        label: translate("sidebar.related-glyphs.character-decomposition"),
-        open: true,
-        content: html.div({ class: "related-glyphs-accordion-item" }, []),
-        getRelatedGlyphsFunc: getUnicodeDecomposed,
-      },
-      {
-        label: translate("sidebar.related-glyphs.character-decompose-with-character"),
-        open: true,
-        content: html.div({ class: "related-glyphs-accordion-item" }, []),
-        getRelatedGlyphsFunc: getUnicodeUsedBy,
-      },
-    ];
+    this.glyphCellView.onCellDoubleClick = (event, glyphCell) =>
+      this.handleDoubleClick(event, glyphCell);
+
+    this.glyphCellView.onCellContextMenu = (event, glyphCell) =>
+      this.handleContextMenu(event, glyphCell);
+
+    this.glyphCellView.onNoGlyphsToDisplay = () => {
+      this.relatedGlyphsHeaderElement.appendChild(
+        html.div({ class: "no-related-glyphs" }, [
+          translate(
+            "sidebar.related-glyphs.no-related-glyphs-or-characters-were-found"
+          ),
+        ])
+      );
+    };
 
     return html.div(
       {
@@ -115,7 +88,7 @@ export default class RelatedGlyphPanel extends Panel {
         html.div({ id: "related-glyphs-header" }, [
           translate("sidebar.related-glyphs.related-glyphs"),
         ]),
-        this.accordion,
+        this.glyphCellView,
       ]
     );
   }
@@ -147,80 +120,44 @@ export default class RelatedGlyphPanel extends Panel {
       ? `<b>${translate("sidebar.related-glyphs.title", displayGlyphString)}</b>`
       : `<b>${translate("sidebar.related-glyphs")}</b>`;
 
-    const results = [];
-
-    for (const item of this.accordion.items) {
-      this._updateAccordionItem(item, glyphName, codePoint).then((hasResult) => {
-        this.accordion.showHideAccordionItem(item, hasResult);
-        results.push(hasResult);
-        if (results.length === this.accordion.items.length) {
-          if (!results.some((hasResult) => hasResult)) {
-            this.relatedGlyphsHeaderElement.appendChild(
-              html.div({ class: "no-related-glyphs" }, [
-                translate(
-                  glyphName
-                    ? "sidebar.related-glyphs.no-related-glyphs-or-characters-were-found"
-                    : "sidebar.related-glyphs.no-glyph-selected"
-                ),
-              ])
-            );
-          }
-        }
-      });
-    }
-
-    this.accordion.hidden = !glyphName;
-  }
-
-  async _updateAccordionItem(item, glyphName, codePoint) {
-    const element = item.content;
-
-    element.innerHTML = "";
-    let hideAccordionItem = true;
     if (glyphName) {
-      element.appendChild(
-        html.span({ class: "placeholder-label" }, [
-          translate("sidebar.related-glyphs.loading"),
+      const sectionDefinitions = [
+        {
+          labelKey: "sidebar.related-glyphs.alternate-glyphs",
+          getRelatedGlyphsFunc: getRelatedGlyphsByExtension,
+        },
+        {
+          labelKey: "sidebar.related-glyphs.components-used-by-this-glyph",
+          getRelatedGlyphsFunc: getComponentGlyphs,
+        },
+        {
+          labelKey: "sidebar.related-glyphs.glyphs-using-this-glyph-as-a-component",
+          getRelatedGlyphsFunc: getUsedByGlyphs,
+        },
+        {
+          labelKey: "sidebar.related-glyphs.character-decomposition",
+          getRelatedGlyphsFunc: getUnicodeDecomposed,
+        },
+        {
+          labelKey: "sidebar.related-glyphs.character-decompose-with-character",
+          getRelatedGlyphsFunc: getUnicodeUsedBy,
+        },
+      ];
+
+      const sections = sectionDefinitions.map(({ labelKey, getRelatedGlyphsFunc }) => ({
+        label: translate(labelKey),
+        glyphs: getRelatedGlyphsFunc(this.fontController, glyphName, codePoint),
+      }));
+      this.glyphCellView.setGlyphSections(sections);
+    } else {
+      this.glyphCellView.setGlyphSections([]);
+
+      this.relatedGlyphsHeaderElement.appendChild(
+        html.div({ class: "no-related-glyphs" }, [
+          translate("sidebar.related-glyphs.no-glyph-selected"),
         ])
       );
-      const relatedGlyphs = await item.getRelatedGlyphsFunc(
-        this.fontController,
-        glyphName,
-        codePoint
-      );
-
-      if (relatedGlyphs?.length) {
-        const documentFragment = document.createDocumentFragment();
-        for (const { glyphName, codePoints } of relatedGlyphs) {
-          const glyphCell = new GlyphCell(
-            this.fontController,
-            glyphName,
-            codePoints,
-            this.sceneController.sceneSettingsController,
-            "fontLocationSourceMapped"
-          );
-          glyphCell.ondblclick = (event) => this.handleDoubleClick(event, glyphCell);
-          glyphCell.addEventListener("contextmenu", (event) =>
-            this.handleContextMenu(event, glyphCell, item)
-          );
-
-          documentFragment.appendChild(glyphCell);
-        }
-        element.innerHTML = "";
-        element.appendChild(documentFragment);
-
-        // At least in Chrome, we need to reset the scroll position, but it doesn't
-        // work if we do it right away, only after the next event iteration.
-        setTimeout(() => {
-          element.scrollTop = 0;
-        }, 0);
-
-        hideAccordionItem = false;
-      } else {
-        element.innerHTML = "";
-      }
     }
-    return !hideAccordionItem;
   }
 
   handleDoubleClick(event, glyphCell) {
@@ -239,7 +176,7 @@ export default class RelatedGlyphPanel extends Panel {
     this.editorController.insertGlyphInfos(glyphInfos, where, select);
   }
 
-  handleContextMenu(event, glyphCell, item) {
+  handleContextMenu(event, glyphCell) {
     event.preventDefault();
 
     const items = [
