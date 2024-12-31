@@ -71,8 +71,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
     const groupByController = new ObservableController({});
 
-    groupByController.addKeyListener(
-      groupByKeys,
+    groupByController.addListener(
       (event) =>
         (this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
           (key) => groupByController.model[key]
