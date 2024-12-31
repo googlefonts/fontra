@@ -24,7 +24,7 @@ function getGroupByInfo(glyph, options) {
 
 export const groupByProperties = [
   { key: "script", label: "Script" },
-  { key: "case", label: "Case" },
+  { key: "case", label: "Case", compare: compareCase },
   { key: "category", label: "Category" },
   { key: "subCategory", label: "Sub-category" },
   { key: "glyphNameExtension", label: "Glyph name extension" },
@@ -98,9 +98,9 @@ function compareGroupInfo(groupByEntryA, groupByEntryB) {
   const groupByInfoA = groupByEntryA.groupByInfo;
   const groupByInfoB = groupByEntryB.groupByInfo;
 
-  for (const prop of groupByKeys) {
-    const valueA = groupByInfoA[prop];
-    const valueB = groupByInfoB[prop];
+  for (const { key, compare } of groupByProperties) {
+    const valueA = groupByInfoA[key];
+    const valueB = groupByInfoB[key];
 
     if (valueA === valueB) {
       continue;
@@ -112,7 +112,7 @@ function compareGroupInfo(groupByEntryA, groupByEntryB) {
       return -1;
     }
 
-    return valueA < valueB ? -1 : 1;
+    return compare ? compare(valueA, valueB) : valueA < valueB ? -1 : 1;
   }
 
   return 0;
@@ -197,4 +197,11 @@ function getGroupByKey(glyph, options) {
   }
 
   return { groupByKey: groupByKeyItems.join(" / "), ...groupByInfo };
+}
+
+function compareCase(caseA, caseB) {
+  const cases = ["upper", "lower", "minor"];
+  const indexA = cases.indexOf(caseA);
+  const indexB = cases.indexOf(caseB);
+  return indexA - indexB;
 }
