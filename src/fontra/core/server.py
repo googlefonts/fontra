@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 # mimetypes.guess_type() is unreliable as it depends on system configuration
 mimeTypes = {
     "css": "text/css",
+    "csv": "text/csv",
     "html": "text/html",
     "ico": "image/x-icon",
     "js": "application/javascript",
@@ -42,7 +43,6 @@ mimeTypes = {
     "svg": "image/svg+xml",
     "txt": "text/plain",
     "woff2": "font/woff2",
-    "csv": "text/csv",
 }
 
 
@@ -54,9 +54,7 @@ class FontraServer:
     launchWebBrowser: bool = False
     versionToken: Optional[str] = None
     cookieMaxAge: int = 7 * 24 * 60 * 60
-    allowedFileExtensions: frozenset[str] = frozenset(
-        ["css", "html", "ico", "js", "json", "svg", "woff2", "csv"]
-    )
+    allowedFileExtensions: frozenset[str] = frozenset(mimeTypes.keys())
 
     def setup(self) -> None:
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
