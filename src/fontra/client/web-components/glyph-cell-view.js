@@ -9,10 +9,14 @@ export class GlyphCellView extends HTMLElement {
   constructor(fontController, settingsController, options) {
     super();
 
+    this.style = `outline: none;`;
+    this.tabIndex = 0;
+
     this.fontController = fontController;
     this.settingsController = settingsController;
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
+    this.displayMode = options?.displayMode || "block";
 
     this._closedSections = new Set();
 
@@ -22,7 +26,7 @@ export class GlyphCellView extends HTMLElement {
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
-      const diff = symmetricDifference(selection, event.oldValue);
+      const diff = symmetricDifference(selection, event.oldValue || new Set());
       this.forEachGlyphCell((glyphCell) => {
         if (diff.has(glyphCell.glyphName)) {
           glyphCell.selected = selection.has(glyphCell.glyphName);
@@ -79,6 +83,11 @@ export class GlyphCellView extends HTMLElement {
     this.accordion = new Accordion();
 
     this.accordion.appendStyle(`
+    :host {
+      display: ${this.displayMode};
+    }
+
+
     .placeholder-label {
       font-size: 0.9em;
       opacity: 40%;
@@ -97,7 +106,7 @@ export class GlyphCellView extends HTMLElement {
     }
     `);
 
-    return html.div({}, [this.accordion]); // wrap in div for scroll behavior
+    return this.accordion;
   }
 
   setGlyphSections(glyphSections) {
@@ -118,10 +127,8 @@ export class GlyphCellView extends HTMLElement {
     const accordionItems = glyphSections.map((section) => ({
       label: html.span({}, [
         section.label,
-        html.span({ class: "glyph-count" }, [
-          " ",
-          makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
-        ]),
+        " ",
+        html.span({ class: "glyph-count" }, [""]),
       ]),
       sectionLabel: section.label, // not part of Accordion data, this is for us
       open: !this._closedSections.has(section.label),
@@ -133,13 +140,18 @@ export class GlyphCellView extends HTMLElement {
 
     this.accordion.items = accordionItems;
 
-    // `results` is in preparation for https://github.com/googlefonts/fontra/issues/1887
     const results = [];
 
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item).then((itemHasGlyphs) => {
         this.accordion.showHideAccordionItem(item, itemHasGlyphs);
         results.push(itemHasGlyphs);
+
+        if (results.length === this.accordion.items.length) {
+          if (!results.some((itemHasGlyphs) => itemHasGlyphs)) {
+            this.onNoGlyphsToDisplay?.();
+          }
+        }
       });
     }
   }
@@ -156,6 +168,13 @@ export class GlyphCellView extends HTMLElement {
     );
 
     const glyphs = await item.glyphs;
+
+    const glyphCountElement = item.label.querySelector(".glyph-count");
+    glyphCountElement.innerText = makeGlyphCountString(
+      glyphs,
+      this.fontController.glyphMap
+    );
+
     const itemHasGlyphs = !!glyphs?.length;
 
     element.innerHTML = "";
@@ -196,6 +215,7 @@ export class GlyphCellView extends HTMLElement {
         this.handleSingleClick(event, glyphCell);
       };
       glyphCell.ondblclick = (event) => this.onCellDoubleClick?.(event, glyphCell);
+      glyphCell.oncontextmenu = (event) => this.onCellContextMenu?.(event, glyphCell);
 
       glyphCell.selected = this.glyphSelection.has(glyphName);
 
@@ -221,7 +241,7 @@ export class GlyphCellView extends HTMLElement {
   }
 
   get glyphSelection() {
-    return this.settingsController.model[this.glyphSelectionKey];
+    return this.settingsController.model[this.glyphSelectionKey] || new Set();
   }
 
   set glyphSelection(selection) {
