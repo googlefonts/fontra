@@ -10,7 +10,7 @@ function getGlyphInfo(glyph) {
   );
 }
 
-function getGroupingInfo(glyph, options) {
+function getGroupByInfo(glyph, options) {
   const glyphInfo = getGlyphInfo(glyph);
   return {
     ...Object.fromEntries(
@@ -36,7 +36,7 @@ export class GlyphOrganizer {
   constructor() {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
-    this.setGroupings([]);
+    this.setGroupByKeys([]);
   }
 
   setSearchString(searchString) {
@@ -48,15 +48,15 @@ export class GlyphOrganizer {
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
   }
 
-  setGroupings(groupings) {
+  setGroupByKeys(groupByKeys) {
     const options = {};
-    groupings.forEach((grouping) => (options[grouping] = true));
+    groupByKeys.forEach((groupByKey) => (options[groupByKey] = true));
 
-    this.setGroupingFunc((glyph) => getGroupingKey(glyph, options));
+    this.setGroupByFunc((glyph) => getGroupByKey(glyph, options));
   }
 
-  setGroupingFunc(groupingFunc) {
-    this._groupingFunc = groupingFunc;
+  setGroupByFunc(groupByFunc) {
+    this._groupByFunc = groupByFunc;
   }
 
   sortGlyphs(glyphs) {
@@ -73,11 +73,11 @@ export class GlyphOrganizer {
     const groups = new Map();
 
     for (const item of glyphs) {
-      const groupingInfo = this._groupingFunc(item);
-      let group = groups.get(groupingInfo.groupingKey);
+      const groupByInfo = this._groupByFunc(item);
+      let group = groups.get(groupByInfo.groupByKey);
       if (!group) {
-        group = { groupingInfo, glyphs: [] };
-        groups.set(groupingInfo.groupingKey, group);
+        group = { groupByInfo, glyphs: [] };
+        groups.set(groupByInfo.groupByKey, group);
       }
       group.glyphs.push(item);
     }
@@ -85,8 +85,8 @@ export class GlyphOrganizer {
     const groupEntries = [...groups.values()];
     groupEntries.sort(compareGroupInfo);
 
-    const sections = groupEntries.map(({ groupingInfo, glyphs }) => ({
-      label: groupingInfo.groupingKey,
+    const sections = groupEntries.map(({ groupByInfo, glyphs }) => ({
+      label: groupByInfo.groupByKey,
       glyphs: glyphs,
     }));
 
@@ -94,13 +94,13 @@ export class GlyphOrganizer {
   }
 }
 
-function compareGroupInfo(groupingEntryA, groupingEntryB) {
-  const groupingInfoA = groupingEntryA.groupingInfo;
-  const groupingInfoB = groupingEntryB.groupingInfo;
+function compareGroupInfo(groupByEntryA, groupByEntryB) {
+  const groupByInfoA = groupByEntryA.groupByInfo;
+  const groupByInfoB = groupByEntryB.groupByInfo;
 
   for (const prop of groupByKeys) {
-    const valueA = groupingInfoA[prop];
-    const valueB = groupingInfoB[prop];
+    const valueA = groupByInfoA[prop];
+    const valueB = groupByInfoB[prop];
 
     if (valueA === valueB) {
       continue;
@@ -167,34 +167,34 @@ function getBaseGlyphName(glyphName) {
   return i >= 1 ? glyphName.slice(0, i) : "";
 }
 
-function getGroupingKey(glyph, options) {
-  const groupingInfo = getGroupingInfo(glyph, options);
+function getGroupByKey(glyph, options) {
+  const groupByInfo = getGroupByInfo(glyph, options);
 
-  const groupingKeyItems = [];
+  const groupByKeyItems = [];
 
-  if (groupingInfo.script) {
-    groupingKeyItems.push(capitalizeFirstLetter(groupingInfo.script));
+  if (groupByInfo.script) {
+    groupByKeyItems.push(capitalizeFirstLetter(groupByInfo.script));
   }
 
-  if (groupingInfo.case) {
-    groupingKeyItems.push(capitalizeFirstLetter(groupingInfo.case));
+  if (groupByInfo.case) {
+    groupByKeyItems.push(capitalizeFirstLetter(groupByInfo.case));
   }
 
-  if (groupingInfo.category) {
-    groupingKeyItems.push(groupingInfo.category);
+  if (groupByInfo.category) {
+    groupByKeyItems.push(groupByInfo.category);
   }
 
-  if (groupingInfo.subCategory) {
-    groupingKeyItems.push(groupingInfo.subCategory);
+  if (groupByInfo.subCategory) {
+    groupByKeyItems.push(groupByInfo.subCategory);
   }
 
-  if (groupingInfo.glyphNameExtension) {
-    groupingKeyItems.push(`*${groupingInfo.glyphNameExtension}`);
+  if (groupByInfo.glyphNameExtension) {
+    groupByKeyItems.push(`*${groupByInfo.glyphNameExtension}`);
   }
 
-  if (!groupingKeyItems.length) {
-    groupingKeyItems.push("Other");
+  if (!groupByKeyItems.length) {
+    groupByKeyItems.push("Other");
   }
 
-  return { groupingKey: groupingKeyItems.join(" / "), ...groupingInfo };
+  return { groupByKey: groupByKeyItems.join(" / "), ...groupByInfo };
 }
