@@ -1,4 +1,5 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
+import { capitalizeFirstLetter } from "./utils.js";
 
 function getGlyphInfo(glyph) {
   const codePoint = glyph.codePoints[0];
@@ -21,13 +22,15 @@ function getGroupingInfo(glyph, options) {
   };
 }
 
-const groupProperties = [
-  "script",
-  "category",
-  "case",
-  "subCategory",
-  "glyphNameExtension",
+export const groupByProperties = [
+  { key: "script", label: "Script" },
+  { key: "case", label: "Case" },
+  { key: "category", label: "Category" },
+  { key: "subCategory", label: "Sub-category" },
+  { key: "glyphNameExtension", label: "Glyph name extension" },
 ];
+
+export const groupByKeys = groupByProperties.map(({ key }) => key);
 
 export class GlyphOrganizer {
   constructor() {
@@ -95,7 +98,7 @@ function compareGroupInfo(groupingEntryA, groupingEntryB) {
   const groupingInfoA = groupingEntryA.groupingInfo;
   const groupingInfoB = groupingEntryB.groupingInfo;
 
-  for (const prop of groupProperties) {
+  for (const prop of groupByKeys) {
     const valueA = groupingInfoA[prop];
     const valueB = groupingInfoB[prop];
 
@@ -167,31 +170,31 @@ function getBaseGlyphName(glyphName) {
 function getGroupingKey(glyph, options) {
   const groupingInfo = getGroupingInfo(glyph, options);
 
-  let groupingKey = "";
+  const groupingKeyItems = [];
 
-  if (groupingInfo.category) {
-    groupingKey += groupingInfo.category;
-  }
-
-  if (groupingInfo.subCategory) {
-    groupingKey += (groupingKey ? " / " : "") + groupingInfo.subCategory;
+  if (groupingInfo.script) {
+    groupingKeyItems.push(capitalizeFirstLetter(groupingInfo.script));
   }
 
   if (groupingInfo.case) {
-    groupingKey += (groupingKey ? " / " : "") + groupingInfo.case;
+    groupingKeyItems.push(capitalizeFirstLetter(groupingInfo.case));
   }
 
-  if (groupingInfo.script) {
-    groupingKey += (groupingKey ? " " : "") + `(${groupingInfo.script})`;
+  if (groupingInfo.category) {
+    groupingKeyItems.push(groupingInfo.category);
+  }
+
+  if (groupingInfo.subCategory) {
+    groupingKeyItems.push(groupingInfo.subCategory);
   }
 
   if (groupingInfo.glyphNameExtension) {
-    groupingKey += (groupingKey ? " " : "") + `(*${groupingInfo.glyphNameExtension})`;
+    groupingKeyItems.push(`*${groupingInfo.glyphNameExtension}`);
   }
 
-  if (!groupingKey) {
-    groupingKey = "Other";
+  if (!groupingKeyItems.length) {
+    groupingKeyItems.push("Other");
   }
 
-  return { groupingKey, ...groupingInfo };
+  return { groupingKey: groupingKeyItems.join(" / "), ...groupingInfo };
 }
