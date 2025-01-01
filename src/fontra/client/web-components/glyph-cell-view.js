@@ -246,6 +246,10 @@ export class GlyphCellView extends HTMLElement {
 
   getSelectedGlyphInfo(filterDuplicates = false) {
     const glyphSelection = this.glyphSelection;
+    if (!glyphSelection.size) {
+      return [];
+    }
+
     let selectedGlyphInfo = this.glyphSections
       .map((section) =>
         section.resolvedGlyphs.filter((glyphInfo) =>
