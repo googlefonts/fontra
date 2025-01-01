@@ -181,6 +181,7 @@ export default class RelatedGlyphPanel extends Panel {
 
   handleContextMenu(event, glyphCell) {
     event.preventDefault();
+
     const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo(true);
     if (!selectedGlyphInfo.length) {
       return;
