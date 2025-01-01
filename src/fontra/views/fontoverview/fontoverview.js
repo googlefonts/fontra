@@ -89,8 +89,7 @@ export class FontOverviewController extends ViewController {
       this.fontOverviewSettingsController
     );
 
-    this.glyphCellView.onCellDoubleClick = (event, glyphCell) =>
-      this.handleDoubleClick(event, glyphCell);
+    this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
     sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
@@ -120,18 +119,13 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.setGlyphSections(glyphSections);
   }
 
-  handleDoubleClick(event, glyphCell) {
-    if (glyphCell.selected) {
-      this.openSelectedGlyphs();
-    }
-  }
-
   openSelectedGlyphs() {
-    if (!this.fontOverviewSettings.glyphSelection.size) {
+    const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo();
+    if (!selectedGlyphInfo.length) {
       return;
     }
     openGlyphsInEditor(
-      this.glyphCellView.getSelectedGlyphInfo(),
+      selectedGlyphInfo,
       this.fontOverviewSettings.fontLocationUser,
       this.fontController.glyphMap
     );
@@ -142,11 +136,7 @@ export class FontOverviewController extends ViewController {
       // The cell area for sure doesn't have the focus
       return;
     }
-    if (event.key == "Enter") {
-      this.openSelectedGlyphs();
-    } else {
-      this.glyphCellView.handleKeyDown(event);
-    }
+    this.glyphCellView.handleKeyDown(event);
   }
 
   handleRemoteClose(event) {

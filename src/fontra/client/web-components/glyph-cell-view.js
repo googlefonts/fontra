@@ -9,10 +9,14 @@ export class GlyphCellView extends HTMLElement {
   constructor(fontController, settingsController, options) {
     super();
 
+    this.style = `outline: none;`;
+    this.tabIndex = 0;
+
     this.fontController = fontController;
     this.settingsController = settingsController;
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
+    this.displayMode = options?.displayMode || "block";
 
     this._closedSections = new Set();
 
@@ -22,7 +26,7 @@ export class GlyphCellView extends HTMLElement {
 
     this.settingsController.addKeyListener(this.glyphSelectionKey, (event) => {
       const selection = event.newValue;
-      const diff = symmetricDifference(selection, event.oldValue);
+      const diff = symmetricDifference(selection, event.oldValue || new Set());
       this.forEachGlyphCell((glyphCell) => {
         if (diff.has(glyphCell.glyphName)) {
           glyphCell.selected = selection.has(glyphCell.glyphName);
@@ -79,6 +83,10 @@ export class GlyphCellView extends HTMLElement {
     this.accordion = new Accordion();
 
     this.accordion.appendStyle(`
+    :host {
+      display: ${this.displayMode};
+    }
+
     .placeholder-label {
       font-size: 0.9em;
       opacity: 40%;
@@ -97,19 +105,22 @@ export class GlyphCellView extends HTMLElement {
     }
     `);
 
-    return html.div({}, [this.accordion]); // wrap in div for scroll behavior
+    return this.accordion;
   }
 
-  setGlyphSections(glyphSections) {
+  setGlyphSections(glyphSections, resetGlyphSelection = false) {
     this._resetSelectionHelpers();
+    if (resetGlyphSelection) {
+      this.glyphSelection = new Set();
+    }
     this.glyphSections = glyphSections;
 
     if (this.accordion.items) {
       this.accordion.items.forEach((item) => {
         if (item.open) {
-          this._closedSections.delete(item.sectionLabel);
+          this._closedSections.delete(item.section.label);
         } else {
-          this._closedSections.add(item.sectionLabel);
+          this._closedSections.add(item.section.label);
         }
       });
     }
@@ -118,28 +129,31 @@ export class GlyphCellView extends HTMLElement {
     const accordionItems = glyphSections.map((section) => ({
       label: html.span({}, [
         section.label,
-        html.span({ class: "glyph-count" }, [
-          " ",
-          makeGlyphCountString(section.glyphs, this.fontController.glyphMap),
-        ]),
+        " ",
+        html.span({ class: "glyph-count" }, [""]),
       ]),
-      sectionLabel: section.label, // not part of Accordion data, this is for us
       open: !this._closedSections.has(section.label),
       content: html.div({ class: "font-overview-accordion-item" }, []),
-      glyphs: section.glyphs,
+      section,
       sectionIndex: sectionIndex++,
       nextCellIndex: 0,
     }));
 
     this.accordion.items = accordionItems;
 
-    // `results` is in preparation for https://github.com/googlefonts/fontra/issues/1887
     const results = [];
 
     for (const item of this.accordion.items) {
       this._updateAccordionItem(item).then((itemHasGlyphs) => {
         this.accordion.showHideAccordionItem(item, itemHasGlyphs);
         results.push(itemHasGlyphs);
+
+        if (
+          results.length === this.accordion.items.length &&
+          !results.some((itemHasGlyphs) => itemHasGlyphs)
+        ) {
+          this.onNoGlyphsToDisplay?.();
+        }
       });
     }
   }
@@ -155,7 +169,15 @@ export class GlyphCellView extends HTMLElement {
       ])
     );
 
-    const glyphs = await item.glyphs;
+    const glyphs = await item.section.glyphs;
+    item.section.resolvedGlyphs = glyphs;
+
+    const glyphCountElement = item.label.querySelector(".glyph-count");
+    glyphCountElement.innerText = makeGlyphCountString(
+      glyphs,
+      this.fontController.glyphMap
+    );
+
     const itemHasGlyphs = !!glyphs?.length;
 
     element.innerHTML = "";
@@ -195,7 +217,19 @@ export class GlyphCellView extends HTMLElement {
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
       };
-      glyphCell.ondblclick = (event) => this.onCellDoubleClick?.(event, glyphCell);
+      glyphCell.ondblclick = (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!glyphCell.selected) {
+          return;
+        }
+        this.onOpenSelectedGlyphs?.(event);
+        this.onCellDoubleClick?.(event, glyphCell);
+      };
+      glyphCell.oncontextmenu = (event) => {
+        this.handleSingleClick(event, glyphCell, false);
+        this.onCellContextMenu?.(event, glyphCell);
+      };
 
       glyphCell.selected = this.glyphSelection.has(glyphName);
 
@@ -211,17 +245,36 @@ export class GlyphCellView extends HTMLElement {
     item.content.appendChild(documentFragment);
   }
 
-  getSelectedGlyphInfo() {
+  getSelectedGlyphInfo(filterDuplicates = false) {
     const glyphSelection = this.glyphSelection;
-    return this.glyphSections
+    if (!glyphSelection.size) {
+      return [];
+    }
+
+    let selectedGlyphInfo = this.glyphSections
       .map((section) =>
-        section.glyphs.filter((glyphInfo) => glyphSelection.has(glyphInfo.glyphName))
+        section.resolvedGlyphs.filter((glyphInfo) =>
+          glyphSelection.has(glyphInfo.glyphName)
+        )
       )
       .flat();
+
+    if (filterDuplicates) {
+      const seen = new Set();
+      selectedGlyphInfo = selectedGlyphInfo.filter((glyphInfo) => {
+        if (seen.has(glyphInfo.glyphName)) {
+          return false;
+        }
+        seen.add(glyphInfo.glyphName);
+        return true;
+      });
+    }
+
+    return selectedGlyphInfo;
   }
 
   get glyphSelection() {
-    return this.settingsController.model[this.glyphSelectionKey];
+    return this.settingsController.model[this.glyphSelectionKey] || new Set();
   }
 
   set glyphSelection(selection) {
@@ -267,10 +320,10 @@ export class GlyphCellView extends HTMLElement {
     }
   }
 
-  handleSingleClick(event, glyphCell) {
+  handleSingleClick(event, glyphCell, resetGlyphSelection = true) {
     if (event.detail > 1) {
-      // Part of a double click, we should do nothing and let handleDoubleClick
-      // deal with the event
+      // Part of a double click, we should do nothing and let the double click
+      // event handler deal with it
       clearTimeout(this._selectionTimerID);
       return;
     }
@@ -288,7 +341,7 @@ export class GlyphCellView extends HTMLElement {
       if (event.metaKey) {
         this._resetSelectionHelpers();
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
-      } else if (this.glyphSelection.size > 1) {
+      } else if (resetGlyphSelection && this.glyphSelection.size > 1) {
         // The user clicked on a selected glyph that's part of a larger
         // selection. We want the selection to be the clicked glyph only,
         // but we need to do this after a delay, or else we can't double-click
@@ -338,10 +391,11 @@ export class GlyphCellView extends HTMLElement {
       } else {
         const firstSelectedCell = this.findFirstSelectedCell();
         const lastSelectedCell = this.findLastSelectedCell();
-        this._firstClickedCell =
-          cellCompare(lastSelectedCell, glyphCell) < 0
-            ? firstSelectedCell
-            : lastSelectedCell;
+        this._firstClickedCell = !firstSelectedCell
+          ? this.getFirstGlyphCell()
+          : cellCompare(lastSelectedCell, glyphCell) < 0
+          ? firstSelectedCell
+          : lastSelectedCell;
       }
     }
   }
@@ -364,6 +418,8 @@ export class GlyphCellView extends HTMLElement {
   handleKeyDown(event) {
     if (event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
+    } else if (event.key == "Enter") {
+      this.onOpenSelectedGlyphs?.(event);
     }
   }
 
