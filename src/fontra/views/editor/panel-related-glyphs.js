@@ -148,9 +148,9 @@ export default class RelatedGlyphPanel extends Panel {
         label: translate(labelKey),
         glyphs: getRelatedGlyphsFunc(this.fontController, glyphName, codePoint),
       }));
-      this.glyphCellView.setGlyphSections(sections);
+      this.glyphCellView.setGlyphSections(sections, true);
     } else {
-      this.glyphCellView.setGlyphSections([]);
+      this.glyphCellView.setGlyphSections([], true);
 
       this.relatedGlyphsHeaderElement.appendChild(
         html.div({ class: "no-related-glyphs" }, [
@@ -173,7 +173,6 @@ export default class RelatedGlyphPanel extends Panel {
   }
 
   insertGlyphIntoTextString(selectedGlyphInfo, where, select) {
-    console.log(selectedGlyphInfo);
     const glyphInfos = selectedGlyphInfo.map((glyphInfo) => ({
       glyphName: glyphInfo.glyphName,
       character: getCharFromCodePoint(glyphInfo.codePoints[0]),

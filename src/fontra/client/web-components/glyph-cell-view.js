@@ -108,8 +108,11 @@ export class GlyphCellView extends HTMLElement {
     return this.accordion;
   }
 
-  setGlyphSections(glyphSections) {
+  setGlyphSections(glyphSections, resetGlyphSelection = false) {
     this._resetSelectionHelpers();
+    if (resetGlyphSelection) {
+      this.glyphSelection = new Set();
+    }
     this.glyphSections = glyphSections;
 
     if (this.accordion.items) {
@@ -214,7 +217,10 @@ export class GlyphCellView extends HTMLElement {
         this.handleSingleClick(event, glyphCell);
       };
       glyphCell.ondblclick = (event) => this.onCellDoubleClick?.(event, glyphCell);
-      glyphCell.oncontextmenu = (event) => this.onCellContextMenu?.(event, glyphCell);
+      glyphCell.oncontextmenu = (event) => {
+        this.handleSingleClick(event, glyphCell, false);
+        this.onCellContextMenu?.(event, glyphCell);
+      };
 
       glyphCell.selected = this.glyphSelection.has(glyphName);
 
@@ -301,7 +307,7 @@ export class GlyphCellView extends HTMLElement {
     }
   }
 
-  handleSingleClick(event, glyphCell) {
+  handleSingleClick(event, glyphCell, resetGlyphSelection = true) {
     if (event.detail > 1) {
       // Part of a double click, we should do nothing and let handleDoubleClick
       // deal with the event
@@ -322,7 +328,7 @@ export class GlyphCellView extends HTMLElement {
       if (event.metaKey) {
         this._resetSelectionHelpers();
         this.glyphSelection = difference(this.glyphSelection, [glyphName]);
-      } else if (this.glyphSelection.size > 1) {
+      } else if (resetGlyphSelection && this.glyphSelection.size > 1) {
         // The user clicked on a selected glyph that's part of a larger
         // selection. We want the selection to be the clicked glyph only,
         // but we need to do this after a delay, or else we can't double-click
