@@ -148,10 +148,11 @@ export class GlyphCellView extends HTMLElement {
         this.accordion.showHideAccordionItem(item, itemHasGlyphs);
         results.push(itemHasGlyphs);
 
-        if (results.length === this.accordion.items.length) {
-          if (!results.some((itemHasGlyphs) => itemHasGlyphs)) {
-            this.onNoGlyphsToDisplay?.();
-          }
+        if (
+          results.length === this.accordion.items.length &&
+          !results.some((itemHasGlyphs) => itemHasGlyphs)
+        ) {
+          this.onNoGlyphsToDisplay?.();
         }
       });
     }
