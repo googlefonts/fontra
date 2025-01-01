@@ -26,7 +26,7 @@ export default class RelatedGlyphPanel extends Panel {
       text-wrap: wrap;
     }
 
-    .related-glyphs-accordion {
+    glyph-cell-view {
       flex: 1;
       overflow: hidden;
     }
@@ -61,8 +61,6 @@ export default class RelatedGlyphPanel extends Panel {
       this.editorController.sceneSettingsController,
       { glyphSelectionKey: "relatedGlyphsGlyphSelection", displayMode: "inline" }
     );
-
-    this.glyphCellView.classList.add("related-glyphs-accordion");
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs(event);
 
