@@ -135,11 +135,7 @@ export class FontOverviewController extends ViewController {
       // The cell area for sure doesn't have the focus
       return;
     }
-    if (event.key == "Enter") {
-      this.openSelectedGlyphs();
-    } else {
-      this.glyphCellView.handleKeyDown(event);
-    }
+    this.glyphCellView.handleKeyDown(event);
   }
 
   handleRemoteClose(event) {
