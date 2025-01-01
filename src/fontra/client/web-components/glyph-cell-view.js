@@ -357,10 +357,11 @@ export class GlyphCellView extends HTMLElement {
       } else {
         const firstSelectedCell = this.findFirstSelectedCell();
         const lastSelectedCell = this.findLastSelectedCell();
-        this._firstClickedCell =
-          cellCompare(lastSelectedCell, glyphCell) < 0
-            ? firstSelectedCell
-            : lastSelectedCell;
+        this._firstClickedCell = !firstSelectedCell
+          ? this.getFirstGlyphCell()
+          : cellCompare(lastSelectedCell, glyphCell) < 0
+          ? firstSelectedCell
+          : lastSelectedCell;
       }
     }
   }
