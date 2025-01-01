@@ -125,7 +125,7 @@ export class FontOverviewController extends ViewController {
       return;
     }
     openGlyphsInEditor(
-      this.glyphCellView.getSelectedGlyphInfo(),
+      selectedGlyphInfo,
       this.fontOverviewSettings.fontLocationUser,
       this.fontController.glyphMap
     );
