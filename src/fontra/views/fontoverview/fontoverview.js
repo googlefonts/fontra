@@ -120,7 +120,8 @@ export class FontOverviewController extends ViewController {
   }
 
   openSelectedGlyphs() {
-    if (!this.fontOverviewSettings.glyphSelection.size) {
+    const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo();
+    if (!selectedGlyphInfo.length) {
       return;
     }
     openGlyphsInEditor(
