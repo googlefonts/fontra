@@ -163,33 +163,39 @@ export default class RelatedGlyphPanel extends Panel {
   handleDoubleClick(event, glyphCell) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    this.insertGlyphIntoTextString(glyphCell, event.altKey ? 1 : 0, !event.altKey);
+
+    const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo(true);
+    this.insertGlyphIntoTextString(
+      selectedGlyphInfo,
+      event.altKey ? 1 : 0,
+      !event.altKey
+    );
   }
 
-  insertGlyphIntoTextString(glyphCell, where, select) {
-    const glyphInfos = [
-      {
-        glyphName: glyphCell.glyphName,
-        character: getCharFromCodePoint(glyphCell.codePoints[0]),
-      },
-    ];
+  insertGlyphIntoTextString(selectedGlyphInfo, where, select) {
+    console.log(selectedGlyphInfo);
+    const glyphInfos = selectedGlyphInfo.map((glyphInfo) => ({
+      glyphName: glyphInfo.glyphName,
+      character: getCharFromCodePoint(glyphInfo.codePoints[0]),
+    }));
     this.editorController.insertGlyphInfos(glyphInfos, where, select);
   }
 
   handleContextMenu(event, glyphCell) {
     event.preventDefault();
+    const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo(true);
 
     const items = [
       {
         title: translate("sidebar.related-glyphs.replace-selected-glyph"),
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell, 0, true);
+          this.insertGlyphIntoTextString(selectedGlyphInfo, 0, true);
         },
       },
       {
         title: translate("sidebar.related-glyphs.insert-after-selected-glyph"),
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell, 1, false);
+          this.insertGlyphIntoTextString(selectedGlyphInfo, 1, false);
         },
       },
       {
@@ -197,13 +203,13 @@ export default class RelatedGlyphPanel extends Panel {
           "sidebar.related-glyphs.insert-after-selected-glyph-and-select"
         ),
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell, 1, true);
+          this.insertGlyphIntoTextString(selectedGlyphInfo, 1, true);
         },
       },
       {
         title: translate("sidebar.related-glyphs.insert-before-selected-glyph"),
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell, -1, false);
+          this.insertGlyphIntoTextString(selectedGlyphInfo, -1, false);
         },
       },
       {
@@ -211,7 +217,7 @@ export default class RelatedGlyphPanel extends Panel {
           "sidebar.related-glyphs.insert-before-selected-glyph-and-select"
         ),
         callback: () => {
-          this.insertGlyphIntoTextString(glyphCell, -1, true);
+          this.insertGlyphIntoTextString(selectedGlyphInfo, -1, true);
         },
       },
     ];

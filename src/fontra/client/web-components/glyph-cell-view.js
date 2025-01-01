@@ -115,9 +115,9 @@ export class GlyphCellView extends HTMLElement {
     if (this.accordion.items) {
       this.accordion.items.forEach((item) => {
         if (item.open) {
-          this._closedSections.delete(item.sectionLabel);
+          this._closedSections.delete(item.section.label);
         } else {
-          this._closedSections.add(item.sectionLabel);
+          this._closedSections.add(item.section.label);
         }
       });
     }
@@ -129,10 +129,9 @@ export class GlyphCellView extends HTMLElement {
         " ",
         html.span({ class: "glyph-count" }, [""]),
       ]),
-      sectionLabel: section.label, // not part of Accordion data, this is for us
       open: !this._closedSections.has(section.label),
       content: html.div({ class: "font-overview-accordion-item" }, []),
-      glyphs: section.glyphs,
+      section,
       sectionIndex: sectionIndex++,
       nextCellIndex: 0,
     }));
@@ -166,7 +165,8 @@ export class GlyphCellView extends HTMLElement {
       ])
     );
 
-    const glyphs = await item.glyphs;
+    const glyphs = await item.section.glyphs;
+    item.section.resolvedGlyphs = glyphs;
 
     const glyphCountElement = item.label.querySelector(".glyph-count");
     glyphCountElement.innerText = makeGlyphCountString(
@@ -230,13 +230,28 @@ export class GlyphCellView extends HTMLElement {
     item.content.appendChild(documentFragment);
   }
 
-  getSelectedGlyphInfo() {
+  getSelectedGlyphInfo(filterDuplicates = false) {
     const glyphSelection = this.glyphSelection;
-    return this.glyphSections
+    let selectedGlyphInfo = this.glyphSections
       .map((section) =>
-        section.glyphs.filter((glyphInfo) => glyphSelection.has(glyphInfo.glyphName))
+        section.resolvedGlyphs.filter((glyphInfo) =>
+          glyphSelection.has(glyphInfo.glyphName)
+        )
       )
       .flat();
+
+    if (filterDuplicates) {
+      const seen = new Set();
+      selectedGlyphInfo = selectedGlyphInfo.filter((glyphInfo) => {
+        if (seen.has(glyphInfo.glyphName)) {
+          return false;
+        }
+        seen.add(glyphInfo.glyphName);
+        return true;
+      });
+    }
+
+    return selectedGlyphInfo;
   }
 
   get glyphSelection() {
