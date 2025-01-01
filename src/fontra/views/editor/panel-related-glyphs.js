@@ -161,6 +161,9 @@ export default class RelatedGlyphPanel extends Panel {
 
   openSelectedGlyphs(event) {
     const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo(true);
+    if (!selectedGlyphInfo.length) {
+      return;
+    }
     this.insertGlyphIntoTextString(
       selectedGlyphInfo,
       event.altKey ? 1 : 0,
