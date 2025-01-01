@@ -64,8 +64,7 @@ export default class RelatedGlyphPanel extends Panel {
 
     this.glyphCellView.classList.add("related-glyphs-accordion");
 
-    this.glyphCellView.onCellDoubleClick = (event, glyphCell) =>
-      this.handleDoubleClick(event, glyphCell);
+    this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
     this.glyphCellView.onCellContextMenu = (event, glyphCell) =>
       this.handleContextMenu(event, glyphCell);
@@ -160,10 +159,7 @@ export default class RelatedGlyphPanel extends Panel {
     }
   }
 
-  handleDoubleClick(event, glyphCell) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-
+  openSelectedGlyphs() {
     const selectedGlyphInfo = this.glyphCellView.getSelectedGlyphInfo(true);
     this.insertGlyphIntoTextString(
       selectedGlyphInfo,

@@ -89,8 +89,7 @@ export class FontOverviewController extends ViewController {
       this.fontOverviewSettingsController
     );
 
-    this.glyphCellView.onCellDoubleClick = (event, glyphCell) =>
-      this.handleDoubleClick(event, glyphCell);
+    this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
     sidebarContainer.appendChild(this.navigation);
     glyphCellViewContainer.appendChild(this.glyphCellView);
@@ -118,12 +117,6 @@ export class FontOverviewController extends ViewController {
     const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
-  }
-
-  handleDoubleClick(event, glyphCell) {
-    if (glyphCell.selected) {
-      this.openSelectedGlyphs();
-    }
   }
 
   openSelectedGlyphs() {

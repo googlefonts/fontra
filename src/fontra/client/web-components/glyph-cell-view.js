@@ -216,7 +216,15 @@ export class GlyphCellView extends HTMLElement {
       glyphCell.onclick = (event) => {
         this.handleSingleClick(event, glyphCell);
       };
-      glyphCell.ondblclick = (event) => this.onCellDoubleClick?.(event, glyphCell);
+      glyphCell.ondblclick = (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!glyphCell.selected) {
+          return;
+        }
+        this.onOpenSelectedGlyphs?.(event);
+        this.onCellDoubleClick?.(event, glyphCell);
+      };
       glyphCell.oncontextmenu = (event) => {
         this.handleSingleClick(event, glyphCell, false);
         this.onCellContextMenu?.(event, glyphCell);
