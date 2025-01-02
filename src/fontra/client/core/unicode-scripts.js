@@ -534,3 +534,24 @@ export function script(codePoint) {
   const i = bisect_right(SCRIPT_RANGES, codePoint);
   return SCRIPT_VALUES[i - 1];
 }
+
+export function scriptExtension(codePoint) {
+  // Return the script extension property assigned to the Unicode character
+  // 'char' as a set of string.
+
+  // >>> script_extension("a") == {'Latn'}
+  // True
+  // >>> script_extension(chr(0x060C)) == {'Nkoo', 'Arab', 'Rohg', 'Thaa', 'Syrc', 'Gara', 'Yezi'}
+  // True
+  // >>> script_extension(chr(0x10FFFF)) == {'Zzzz'}
+  // True
+
+  const i = bisect_right(SCRIPT_EXTENSIONS_RANGES, codePoint);
+  const value = SCRIPT_EXTENSIONS_VALUES[i - 1];
+  if (!value) {
+    // code points not explicitly listed for Script Extensions
+    // have as their value the corresponding Script property value
+    return [script(codePoint)];
+  }
+  return value;
+}

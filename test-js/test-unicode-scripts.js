@@ -1,6 +1,6 @@
 import { expect, use } from "chai";
 
-import { script } from "../src/fontra/client/core/unicode-scripts.js";
+import { script, scriptExtension } from "../src/fontra/client/core/unicode-scripts.js";
 
 import { parametrize } from "./test-support.js";
 
@@ -155,7 +155,51 @@ describe("unicode-script tests", () => {
     { codePoint: 0x11f00, scriptCode: "Kawi" },
   ];
 
-  parametrize("unicode-script tests", scriptTestCases, (testData) => {
+  parametrize("unicode-script script tests", scriptTestCases, (testData) => {
     expect(script(testData.codePoint)).to.equal(testData.scriptCode);
   });
+
+  const scriptExtensionTestCases = [
+    { codePoint: "a".codePointAt(0), scriptCodes: ["Latn"] },
+    { codePoint: 0x0, scriptCodes: ["Zyyy"] },
+
+    { codePoint: 0x0378, scriptCodes: ["Zzzz"] },
+    { codePoint: 0x10ffff, scriptCodes: ["Zzzz"] },
+
+    { codePoint: "\u0660".codePointAt(0), scriptCodes: ["Arab", "Thaa", "Yezi"] },
+    {
+      codePoint: "\u0964".codePointAt(0),
+      scriptCodes: [
+        "Beng",
+        "Deva",
+        "Dogr",
+        "Gong",
+        "Gonm",
+        "Gran",
+        "Gujr",
+        "Guru",
+        "Knda",
+        "Mahj",
+        "Mlym",
+        "Nand",
+        "Onao",
+        "Orya",
+        "Sind",
+        "Sinh",
+        "Sylo",
+        "Takr",
+        "Taml",
+        "Telu",
+        "Tirh",
+      ],
+    },
+  ];
+
+  parametrize(
+    "unicode-script scriptExtension tests",
+    scriptExtensionTestCases,
+    (testData) => {
+      expect(scriptExtension(testData.codePoint)).to.deep.equal(testData.scriptCodes);
+    }
+  );
 });
