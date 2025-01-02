@@ -690,3 +690,32 @@ export function glyphMapToItemList(glyphMap) {
     codePoints,
   }));
 }
+
+export function bisect_right(a, x) {
+  // Return the index where to insert item x in list a, assuming a is sorted.
+  //
+  // The return value i is such that all e in a[:i] have e <= x, and all e in
+  // a[i:] have e > x.  So if x already appears in the list, a.insert(i, x) will
+  // insert just after the rightmost x already there.
+  //
+  // Optional args lo (default 0) and hi (default len(a)) bound the
+  // slice of a to be searched.
+  //
+  // A custom key function can be supplied to customize the sort order.
+
+  // This is adapted from the Python implementation
+
+  let lo = 0;
+  let hi = a.length;
+
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (x < a[mid]) {
+      hi = mid;
+    } else {
+      lo = mid + 1;
+    }
+  }
+
+  return lo;
+}
