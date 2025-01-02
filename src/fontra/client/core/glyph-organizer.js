@@ -1,4 +1,5 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
+import { script, scriptNames } from "./unicode-scripts.js";
 import { capitalizeFirstLetter } from "./utils.js";
 
 function getGlyphInfo(glyph) {
@@ -11,15 +12,27 @@ function getGlyphInfo(glyph) {
 }
 
 function getGroupByInfo(glyph, options) {
-  const glyphInfo = getGlyphInfo(glyph);
-  return {
+  const glyphInfo = getGlyphInfo(glyph) || {};
+
+  const groupByInfo = {
     ...Object.fromEntries(
-      Object.entries(glyphInfo || {}).filter(([key, value]) => options[key])
+      Object.entries(glyphInfo).filter(([key, value]) => options[key])
     ),
     glyphNameExtension: options.glyphNameExtension
       ? getGlyphNameExtension(glyph.glyphName)
       : undefined,
   };
+
+  if (options.script) {
+    const codePoint = glyph.codePoints[0];
+    if (codePoint) {
+      // Override script from unicode-scripts.js
+      const scriptCode = script(codePoint);
+      groupByInfo.script = scriptNames[scriptCode] || scriptCode;
+    }
+  }
+
+  return groupByInfo;
 }
 
 export const groupByProperties = [
@@ -99,8 +112,8 @@ function compareGroupInfo(groupByEntryA, groupByEntryB) {
   const groupByInfoB = groupByEntryB.groupByInfo;
 
   for (const { key, compare } of groupByProperties) {
-    const valueA = groupByInfoA[key];
-    const valueB = groupByInfoB[key];
+    const valueA = groupByInfoA[key]?.toLowerCase(); // compare non-case sensitive
+    const valueB = groupByInfoB[key]?.toLowerCase();
 
     if (valueA === valueB) {
       continue;
