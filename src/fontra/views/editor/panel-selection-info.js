@@ -28,7 +28,6 @@ export default class SelectionInfoPanel extends Panel {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-sizing: border-box;
       height: 100%;
       width: 100%;
       white-space: normal;

@@ -15,7 +15,6 @@ export default class RelatedGlyphPanel extends Panel {
 
   static styles = `
     .sidebar-glyph-relationships {
-      box-sizing: border-box;
       height: 100%;
       display: flex;
       flex-direction: column;

@@ -23,14 +23,12 @@ export class UIList extends UnlitElement {
       gap: 0.2em;
       min-height: 0;
       min-width: 0;
-      box-sizing: border-box;
     }
 
     .container {
       overflow: auto;
       height: 100%;
       width: 100%;
-      box-sizing: border-box;
       border: solid 1px var(--border-color);
       background-color: var(--row-background-color);
     }
@@ -54,7 +52,6 @@ export class UIList extends UnlitElement {
       overflow: auto;
       height: 100%;
       width: 100%;
-      box-sizing: border-box;
       scrollbar-width: none;  /* hide scrollbar in FireFox */
     }
 
@@ -62,7 +59,6 @@ export class UIList extends UnlitElement {
       display: flex;
       width: min-content;
       min-width: 100%;
-      box-sizing: border-box;
       padding: 0.15em;
       padding-left: 0.5em;
       padding-right: 0.5em;
@@ -73,7 +69,6 @@ export class UIList extends UnlitElement {
       display: flex;
       width: min-content;
       min-width: 100%;
-      box-sizing: border-box;
       border-top: solid 1px var(--row-border-color);
       color: var(--row-foreground-color);
       background-color: var(--row-background-color);
@@ -92,6 +87,7 @@ export class UIList extends UnlitElement {
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0 0.2em 0 0.1em;
+      box-sizing: content-box; /* FIXME: use border-box */
     }
 
     .list-cell.editing,
