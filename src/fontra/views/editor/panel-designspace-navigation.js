@@ -175,8 +175,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         open: true,
         content: html.div(
           {
-            style:
-              "display: grid; grid-template-rows: 1fr auto auto; height: 100%; box-sizing: border-box;",
+            style: "display: grid; grid-template-rows: 1fr auto auto; height: 100%;",
           },
           [
             html.createDomElement("ui-list", { id: "sources-list" }),
@@ -196,8 +195,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         open: true,
         content: html.div(
           {
-            style:
-              "display: grid; grid-template-rows: 1fr auto; height: 100%; box-sizing: border-box;",
+            style: "display: grid; grid-template-rows: 1fr auto; height: 100%;",
           },
           [
             html.createDomElement("ui-list", { id: "layers-list" }),

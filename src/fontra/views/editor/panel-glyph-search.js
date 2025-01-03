@@ -7,7 +7,6 @@ export default class GlyphSearchPanel extends Panel {
 
   static styles = `
     .glyph-search {
-      box-sizing: border-box;
       height: 100%;
       width: 100%;
       display: grid;

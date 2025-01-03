@@ -241,7 +241,6 @@ addStyleSheet(`
   .fontra-ui-shortcuts-panel-input {
     min-width: ${shortcutsPanelInputWidth};
     text-align: center;
-    box-sizing: border-box;
     background-color: var(--text-input-background-color);
     color: var(--text-input-foreground-color);
     border-radius: 0.25em;

@@ -20,7 +20,6 @@ export class Form extends SimpleElement {
       display: grid;
       align-items: center;
       grid-template-columns: var(--label-column-width) auto;
-      box-sizing: border-box;
       gap: 0.35rem 0.35rem;
       margin: 0em;
       padding: 0em;
@@ -64,7 +63,6 @@ export class Form extends SimpleElement {
     }
 
     input {
-      box-sizing: border-box;
       background-color: var(--text-input-background-color);
       color: var(--text-input-foreground-color);
       border-radius: 0.25em;
@@ -73,10 +71,6 @@ export class Form extends SimpleElement {
       padding: 0.1em 0.3em;
       font-family: "fontra-ui-regular";
       font-size: 100%;
-    }
-
-    .ui-form-value {
-      box-sizing: border-box;
     }
 
     .ui-form-value input {

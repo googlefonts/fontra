@@ -9,7 +9,6 @@ export default class GlyphNotePanel extends Panel {
 
   static styles = `
     .sidebar-glyph-note {
-      box-sizing: border-box;
       height: 100%;
       width: 100%;
       display: flex;
@@ -30,6 +29,7 @@ export default class GlyphNotePanel extends Panel {
       resize: none;
       overflow-x: auto;
       text-wrap: wrap;
+      box-sizing: content-box; /* FIXME: use border-box */
     }
 
     #glyph-note-textarea:disabled {

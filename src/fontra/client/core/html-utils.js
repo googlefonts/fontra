@@ -2,6 +2,7 @@
 // object notation to construct dom elements instead of HTML.
 
 import { consolidateCalls } from "./utils.js";
+import shadowDomStyles from "/css/shadow-dom.js";
 
 export class SimpleElement extends HTMLElement {
   constructor() {
@@ -15,6 +16,7 @@ export class SimpleElement extends HTMLElement {
   }
 
   _attachStyles() {
+    this._appendStyle(shadowDomStyles);
     if (this.constructor.styles) {
       this._appendStyle(this.constructor.styles);
     }

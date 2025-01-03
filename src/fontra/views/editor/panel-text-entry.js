@@ -8,7 +8,6 @@ export default class TextEntryPanel extends Panel {
 
   static styles = `
     .sidebar-text-entry {
-      box-sizing: border-box;
       height: 100%;
       width: 100%;
       display: flex;
@@ -33,6 +32,7 @@ export default class TextEntryPanel extends Panel {
       cursor: pointer;
       user-select: none;
       transition: 120ms;
+      box-sizing: content-box; /* FIXME: use border-box */
     }
 
     #text-align-menu > inline-svg:hover {
@@ -58,6 +58,7 @@ export default class TextEntryPanel extends Panel {
       font-size: 1.1rem;
       resize: none;
       overflow-x: auto;
+      box-sizing: content-box;
     }
   `;
 

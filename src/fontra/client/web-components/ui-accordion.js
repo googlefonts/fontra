@@ -13,7 +13,6 @@ export class Accordion extends UnlitElement {
     text-wrap: wrap;
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item {
@@ -21,7 +20,6 @@ export class Accordion extends UnlitElement {
     grid-template-rows: auto 1fr;
     gap: 0.2em;
     min-height: 0;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item[hidden] {
@@ -35,7 +33,6 @@ export class Accordion extends UnlitElement {
     align-items: center;
     font-weight: bold;
     cursor: pointer;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item .open-close-icon {
@@ -54,7 +51,6 @@ export class Accordion extends UnlitElement {
 
   .ui-accordion-item-content {
     display: block;
-    box-sizing: border-box;
     overflow: hidden;
   }
   `;
