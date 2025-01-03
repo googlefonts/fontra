@@ -700,3 +700,18 @@ export function scriptExtension(codePoint) {
   }
   return value;
 }
+
+export function block(codePoint) {
+  // Return the block property assigned to the Unicode character 'char'
+  // as a string.
+
+  // >>> block("a")
+  // 'Basic Latin'
+  // >>> block(chr(0x060C))
+  // 'Arabic'
+  // >>> block(chr(0xEFFFF))
+  // 'No_Block'
+
+  const i = bisect_right(BLOCKS_RANGES, codePoint);
+  return BLOCKS_VALUES[i - 1];
+}

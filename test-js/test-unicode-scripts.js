@@ -1,6 +1,10 @@
 import { expect, use } from "chai";
 
-import { script, scriptExtension } from "../src/fontra/client/core/unicode-scripts.js";
+import {
+  block,
+  script,
+  scriptExtension,
+} from "../src/fontra/client/core/unicode-scripts.js";
 
 import { parametrize } from "./test-support.js";
 
@@ -202,4 +206,17 @@ describe("unicode-script tests", () => {
       expect(scriptExtension(testData.codePoint)).to.deep.equal(testData.scriptCodes);
     }
   );
+
+  const blockTestCases = [
+    { codePoint: 0x00, blockName: "Basic Latin" },
+    { codePoint: 0x7f, blockName: "Basic Latin" },
+    { codePoint: 0x80, blockName: "Latin-1 Supplement" },
+    { codePoint: 0x1c90, blockName: "Georgian Extended" },
+    { codePoint: 0x0870, blockName: "Arabic Extended-B" },
+    { codePoint: 0x11b00, blockName: "Devanagari Extended-A" },
+  ];
+
+  parametrize("unicode-script block tests", blockTestCases, (testData) => {
+    expect(block(testData.codePoint)).to.deep.equal(testData.blockName);
+  });
 });
