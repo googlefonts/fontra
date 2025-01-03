@@ -1,5 +1,5 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
-import { script, scriptNames } from "./unicode-scripts.js";
+import { block, script, scriptNames } from "./unicode-scripts.js";
 import { capitalizeFirstLetter } from "./utils.js";
 
 function getGlyphInfo(glyph) {
@@ -23,12 +23,15 @@ function getGroupByInfo(glyph, options) {
       : undefined,
   };
 
-  if (options.script) {
-    const codePoint = glyph.codePoints[0];
-    if (codePoint) {
+  const codePoint = glyph.codePoints[0];
+  if (codePoint) {
+    if (options.script) {
       // Override script from unicode-scripts.js
       const scriptCode = script(codePoint);
       groupByInfo.script = scriptNames[scriptCode] || scriptCode;
+    }
+    if (options.block) {
+      groupByInfo.block = block(codePoint);
     }
   }
 
@@ -37,6 +40,7 @@ function getGroupByInfo(glyph, options) {
 
 export const groupByProperties = [
   { key: "script", label: "Script" },
+  { key: "block", label: "Block" },
   { key: "case", label: "Case", compare: compareCase },
   { key: "category", label: "Category" },
   { key: "subCategory", label: "Sub-category" },
@@ -187,6 +191,10 @@ function getGroupByKey(glyph, options) {
 
   if (groupByInfo.script) {
     groupByKeyItems.push(capitalizeFirstLetter(groupByInfo.script));
+  }
+
+  if (groupByInfo.block) {
+    groupByKeyItems.push(groupByInfo.block);
   }
 
   if (groupByInfo.case) {
