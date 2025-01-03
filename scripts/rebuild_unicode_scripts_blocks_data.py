@@ -4,6 +4,8 @@ import argparse
 import pathlib
 import textwrap
 
+from fontTools.unicodedata.Blocks import RANGES as BLOCKS_RANGES
+from fontTools.unicodedata.Blocks import VALUES as BLOCKS_VALUES
 from fontTools.unicodedata.ScriptExtensions import RANGES as SCRIPT_EXTENSIONS_RANGES
 from fontTools.unicodedata.ScriptExtensions import VALUES as SCRIPT_EXTENSIONS_VALUES
 from fontTools.unicodedata.Scripts import NAMES as SCRIPT_NAMES
@@ -48,6 +50,17 @@ scriptExtensionValuesString = formatArray(
 _scriptNamesItems = (f'{k}: "{v}"' for k, v in SCRIPT_NAMES.items())
 scriptNamesString = formatArray("scriptNames", _scriptNamesItems, "{", "}", True)
 
+_blocksRangesItems = (f"0x{x:x}" for x in BLOCKS_RANGES)
+blocksRangesString = formatArray("BLOCKS_RANGES", _blocksRangesItems)
+
+# Replace space and hyphen with markers and back to work around our dumb line wrap approach
+_blocksValuesItems = (
+    f'"{x.replace(" ", "+").replace("-", "|")}"' for x in BLOCKS_VALUES
+)
+blocksValuesString = (
+    formatArray("BLOCKS_VALUES", _blocksValuesItems).replace("|", "-").replace("+", " ")
+)
+
 
 startMarker = "// Begin auto-generated code\n\n"
 endMarker = "// End auto-generated code\n"
@@ -56,7 +69,7 @@ endMarker = "// End auto-generated code\n"
 def insertScriptsIntoModule(check=False):
     repoDir = pathlib.Path(__file__).resolve().parent.parent
     unicodeScriptsPath = (
-        repoDir / "src" / "fontra" / "client" / "core" / "unicode-scripts.js"
+        repoDir / "src" / "fontra" / "client" / "core" / "unicode-scripts-blocks.js"
     )
 
     sourceText = unicodeScriptsPath.read_text(encoding="utf-8")
@@ -75,6 +88,8 @@ def insertScriptsIntoModule(check=False):
         + scriptExtensionRangesString
         + scriptExtensionValuesString
         + scriptNamesString
+        + blocksRangesString
+        + blocksValuesString
         + sourceText[end:]
     )
 
