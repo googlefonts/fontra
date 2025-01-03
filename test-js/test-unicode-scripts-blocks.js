@@ -4,7 +4,7 @@ import {
   block,
   script,
   scriptExtension,
-} from "../src/fontra/client/core/unicode-scripts.js";
+} from "../src/fontra/client/core/unicode-scripts-blocks.js";
 
 import { parametrize } from "./test-support.js";
 

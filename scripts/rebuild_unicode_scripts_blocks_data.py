@@ -69,7 +69,7 @@ endMarker = "// End auto-generated code\n"
 def insertScriptsIntoModule(check=False):
     repoDir = pathlib.Path(__file__).resolve().parent.parent
     unicodeScriptsPath = (
-        repoDir / "src" / "fontra" / "client" / "core" / "unicode-scripts.js"
+        repoDir / "src" / "fontra" / "client" / "core" / "unicode-scripts-blocks.js"
     )
 
     sourceText = unicodeScriptsPath.read_text(encoding="utf-8")

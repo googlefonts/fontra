@@ -1,5 +1,5 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
-import { block, script, scriptNames } from "./unicode-scripts.js";
+import { block, script, scriptNames } from "./unicode-scripts-blocks.js";
 import { capitalizeFirstLetter } from "./utils.js";
 
 function getGlyphInfo(glyph) {
@@ -26,7 +26,7 @@ function getGroupByInfo(glyph, options) {
   const codePoint = glyph.codePoints[0];
   if (codePoint) {
     if (options.script) {
-      // Override script from unicode-scripts.js
+      // Override script from unicode-scripts-blocks.js
       const scriptCode = script(codePoint);
       groupByInfo.script = scriptNames[scriptCode] || scriptCode;
     }
