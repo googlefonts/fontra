@@ -1216,7 +1216,6 @@ export class EditorController extends ViewController {
             window.addEventListener("mousedown", globalListener, false);
             window.addEventListener("keydown", globalListener, false);
           }, 650);
-          
           if (toolButton !== editToolsElement.children[0]) {
             event.stopImmediatePropagation();
           }
