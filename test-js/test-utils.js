@@ -688,10 +688,10 @@ describe("glyphMapToItemList", () => {
     {
       glyphMap: { "A.alt": [], "A": [65], "a": [97], "B": [66, 98] },
       result: [
-        { glyphName: "A.alt", codePoints: [] },
-        { glyphName: "A", codePoints: [65] },
-        { glyphName: "a", codePoints: [97] },
-        { glyphName: "B", codePoints: [66, 98] },
+        { glyphName: "A.alt", codePoints: [], associatedCodePoints: [65] },
+        { glyphName: "A", codePoints: [65], associatedCodePoints: [] },
+        { glyphName: "a", codePoints: [97], associatedCodePoints: [] },
+        { glyphName: "B", codePoints: [66, 98], associatedCodePoints: [] },
       ],
     },
   ];
