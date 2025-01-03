@@ -493,6 +493,16 @@ export function splitGlyphNameExtension(glyphName) {
   return [baseGlyphName, extension];
 }
 
+export function getBaseGlyphName(glyphName) {
+  const i = glyphName.indexOf(".");
+  return i >= 1 ? glyphName.slice(0, i) : "";
+}
+
+export function getGlyphNameExtension(glyphName) {
+  const i = glyphName.lastIndexOf(".");
+  return i >= 1 ? glyphName.slice(i) : "";
+}
+
 export function isObjectEmpty(obj) {
   // Return true if `obj` has no properties
   for (const _ in obj) {
@@ -688,7 +698,17 @@ export function glyphMapToItemList(glyphMap) {
   return Object.entries(glyphMap).map(([glyphName, codePoints]) => ({
     glyphName,
     codePoints,
+    associatedCodePoints: getAssociatedCodePoints(glyphName, glyphMap),
   }));
+}
+
+export function getAssociatedCodePoints(glyphName, glyphMap) {
+  const baseGlyphName = getBaseGlyphName(glyphName);
+  return baseGlyphName != glyphName ? glyphMap[baseGlyphName] || [] : [];
+}
+
+export function getCodePointFromGlyphItem(glyphItem) {
+  return glyphItem.codePoints[0] || glyphItem.associatedCodePoints[0];
 }
 
 export function bisect_right(a, x) {
