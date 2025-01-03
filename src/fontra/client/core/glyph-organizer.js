@@ -1,29 +1,34 @@
 import { getGlyphInfoFromCodePoint, getGlyphInfoFromGlyphName } from "./glyph-data.js";
 import { block, script, scriptNames } from "./unicode-scripts-blocks.js";
-import { capitalizeFirstLetter } from "./utils.js";
+import {
+  capitalizeFirstLetter,
+  getBaseGlyphName,
+  getCodePointFromGlyphItem,
+  getGlyphNameExtension,
+} from "./utils.js";
 
-function getGlyphInfo(glyph) {
-  const codePoint = glyph.codePoints[0];
+function getGlyphInfo(codePoint, glyphName) {
   return (
     getGlyphInfoFromCodePoint(codePoint) ||
-    getGlyphInfoFromGlyphName(glyph.glyphName) ||
-    getGlyphInfoFromGlyphName(getBaseGlyphName(glyph.glyphName))
+    getGlyphInfoFromGlyphName(glyphName) ||
+    getGlyphInfoFromGlyphName(getBaseGlyphName(glyphName))
   );
 }
 
-function getGroupByInfo(glyph, options) {
-  const glyphInfo = getGlyphInfo(glyph) || {};
+function getGroupByInfo(glyphItem, options) {
+  const codePoint = getCodePointFromGlyphItem(glyphItem);
+
+  const glyphInfo = getGlyphInfo(codePoint, glyphItem.glyphName) || {};
 
   const groupByInfo = {
     ...Object.fromEntries(
       Object.entries(glyphInfo).filter(([key, value]) => options[key])
     ),
     glyphNameExtension: options.glyphNameExtension
-      ? getGlyphNameExtension(glyph.glyphName)
+      ? getGlyphNameExtension(glyphItem.glyphName)
       : undefined,
   };
 
-  const codePoint = glyph.codePoints[0];
   if (codePoint) {
     if (options.script) {
       // Override script from unicode-scripts-blocks.js
@@ -172,16 +177,6 @@ function compare(a, b) {
   } else {
     return 1;
   }
-}
-
-function getGlyphNameExtension(glyphName) {
-  const i = glyphName.lastIndexOf(".");
-  return i >= 1 ? glyphName.slice(i) : "";
-}
-
-function getBaseGlyphName(glyphName) {
-  const i = glyphName.indexOf(".");
-  return i >= 1 ? glyphName.slice(0, i) : "";
 }
 
 function getGroupByKey(glyph, options) {
