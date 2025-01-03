@@ -17,10 +17,11 @@ interface FontSource {
 }
 
 interface BackendFeatures {
+  "find-glyphs-that-use-glyph": boolean;
   "background-image": boolean;
 }
 interface BackendProjectManagerFeatures {
-  "export-as": boolean;
+  "export-as"?: string[];
 }
 
 interface BackendInfo {
