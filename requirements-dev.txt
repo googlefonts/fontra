@@ -1,5 +1,5 @@
-mypy==1.14.0
+mypy==1.14.1
 pre-commit==4.0.1
 pytest==8.3.4
-pytest-asyncio==0.25.0
-types-PyYAML==6.0.12.20241221
+pytest-asyncio==0.25.1
+types-PyYAML==6.0.12.20241230
