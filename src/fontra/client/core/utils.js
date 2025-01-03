@@ -495,7 +495,7 @@ export function splitGlyphNameExtension(glyphName) {
 
 export function getBaseGlyphName(glyphName) {
   const i = glyphName.indexOf(".");
-  return i >= 1 ? glyphName.slice(0, i) : "";
+  return i >= 1 ? glyphName.slice(0, i) : glyphName;
 }
 
 export function getGlyphNameExtension(glyphName) {
@@ -703,8 +703,11 @@ export function glyphMapToItemList(glyphMap) {
 }
 
 export function getAssociatedCodePoints(glyphName, glyphMap) {
-  const baseGlyphName = getBaseGlyphName(glyphName);
-  return baseGlyphName != glyphName ? glyphMap[baseGlyphName] || [] : [];
+  return getBaseGlyphName(glyphName)
+    .split("_")
+    .filter((baseGlyphName) => baseGlyphName !== glyphName)
+    .map((baseGlyphName) => glyphMap[baseGlyphName]?.[0])
+    .filter((codePoint) => codePoint);
 }
 
 export function getCodePointFromGlyphItem(glyphItem) {
