@@ -21,6 +21,7 @@ const persistentSettings = [
   { key: "searchString" },
   { key: "fontLocationUser" },
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
+  { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "groupByKeys" },
 ];
 
@@ -56,6 +57,7 @@ export class FontOverviewController extends ViewController {
       fontLocationUser: {},
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
+      closedGlyphSections: new Set(),
       groupByKeys: [],
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
