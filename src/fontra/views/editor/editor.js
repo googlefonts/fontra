@@ -1217,6 +1217,7 @@ export class EditorController extends ViewController {
             window.addEventListener("keydown", globalListener, false);
           }, 650);
           if (toolButton !== editToolsElement.children[0]) {
+            // ensure the multi-tool mousedown timer only affects the first child
             event.stopImmediatePropagation();
           }
         };
