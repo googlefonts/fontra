@@ -8,18 +8,32 @@ import {
   dumpURLFragment,
   glyphMapToItemList,
   isActiveElementTypeable,
+  loadURLFragment,
   modulo,
   range,
+  scheduleCalls,
   throttleCalls,
 } from "/core/utils.js";
 import { ViewController } from "/core/view-controller.js";
 import { GlyphCellView } from "/web-components/glyph-cell-view.js";
+
+const persistentSettings = [
+  { key: "searchString" },
+  { key: "fontLocationUser" },
+  { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
+  { key: "groupByKeys" },
+];
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
+
+    this.updateWindowLocation = scheduleCalls(
+      (event) => this._updateWindowLocation(),
+      200
+    );
   }
 
   async start() {
@@ -31,6 +45,12 @@ export class FontOverviewController extends ViewController {
 
     this.fontSources = await this.fontController.getSources();
 
+    window.addEventListener("popstate", (event) => {
+      this._updateFromWindowLocation();
+    });
+
+    const viewInfo = viewInfoFromURL();
+
     this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
       fontSourceIdentifier: null,
@@ -40,6 +60,13 @@ export class FontOverviewController extends ViewController {
       groupByKeys: [],
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
+    this._updateFromWindowLocation();
+
+    this.fontOverviewSettingsController.addListener((event) => {
+      if (event.senderInfo?.senderID !== this) {
+        this.updateWindowLocation();
+      }
+    });
 
     this.fontOverviewSettingsController.addKeyListener(
       "fontSourceIdentifier",
@@ -103,6 +130,33 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _updateFromWindowLocation() {
+    const viewInfo = viewInfoFromURL();
+    this.fontOverviewSettingsController.withSenderInfo({ senderID: this }, () => {
+      for (const { key, fromJSON } of persistentSettings) {
+        const value = viewInfo[key];
+        if (value !== undefined) {
+          this.fontOverviewSettings[key] = fromJSON?.(value) || value;
+        }
+      }
+    });
+  }
+
+  _updateWindowLocation() {
+    const viewInfo = Object.fromEntries(
+      persistentSettings.map(({ key, toJSON }) => [
+        key,
+        toJSON?.(this.fontOverviewSettings[key]) || this.fontOverviewSettings[key],
+      ])
+    );
+    const url = new URL(window.location);
+    const fragment = dumpURLFragment(viewInfo);
+    if (url.hash !== fragment) {
+      url.hash = fragment;
+      window.history.pushState({}, "", url);
+    }
   }
 
   _updateGlyphItemList() {
@@ -178,4 +232,9 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 
   url.hash = dumpURLFragment(viewInfo);
   window.open(url.toString());
+}
+
+function viewInfoFromURL() {
+  const url = new URL(window.location);
+  return url.hash ? loadURLFragment(url.hash) : {};
 }

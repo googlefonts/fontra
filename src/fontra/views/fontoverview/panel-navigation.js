@@ -64,12 +64,21 @@ export class FontOverviewNavigation extends HTMLElement {
       )
     );
 
-    groupByController.addListener(
-      (event) =>
-        (this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
+    groupByController.addListener((event) => {
+      if (event.senderInfo?.senderID !== this) {
+        this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
           (key) => groupByController.model[key]
-        ))
-    );
+        );
+      }
+    });
+
+    this.fontOverviewSettingsController.addKeyListener("groupByKeys", (event) => {
+      groupByController.withSenderInfo({ senderID: this }, () => {
+        for (const key of groupByKeys) {
+          groupByController.model[key] = event.newValue.includes(key);
+        }
+      });
+    });
 
     const groupByContainer = html.div({}, [
       html.span({}, ["Group by"]),
