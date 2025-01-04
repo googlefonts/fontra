@@ -1,8 +1,4 @@
-import {
-  GlyphOrganizer,
-  groupByKeys,
-  groupByProperties,
-} from "/core/glyph-organizer.js";
+import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
@@ -17,7 +13,6 @@ export class FontOverviewNavigation extends HTMLElement {
     this.fontOverviewSettingsController =
       fontOverviewController.fontOverviewSettingsController;
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
-    this.glyphOrganizer = new GlyphOrganizer();
 
     this._setupUI();
   }
@@ -63,7 +58,11 @@ export class FontOverviewNavigation extends HTMLElement {
       ]
     );
 
-    const groupByController = new ObservableController({});
+    const groupByController = new ObservableController(
+      Object.fromEntries(
+        this.fontOverviewSettings.groupByKeys.map((key) => [key, true])
+      )
+    );
 
     groupByController.addListener(
       (event) =>

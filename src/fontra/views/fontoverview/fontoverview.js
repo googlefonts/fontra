@@ -71,6 +71,8 @@ export class FontOverviewController extends ViewController {
     });
 
     this.glyphOrganizer = new GlyphOrganizer();
+    this.glyphOrganizer.setSearchString(this.fontOverviewSettings.searchString);
+    this.glyphOrganizer.setGroupByKeys(this.fontOverviewSettings.groupByKeys);
 
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {

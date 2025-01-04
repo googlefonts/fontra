@@ -43,6 +43,7 @@ export class GlyphSearchField extends SimpleElement {
       this._settingsController.addKeyListener(this._searchStringKey, (event) => {
         this.searchField.value = event.newValue;
       });
+      this.searchField.value = this._settingsController.model.searchString;
     }
 
     this.shadowRoot.appendChild(this.searchField);
