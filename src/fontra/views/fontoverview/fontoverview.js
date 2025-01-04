@@ -53,13 +53,15 @@ export class FontOverviewController extends ViewController {
 
     this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
-      fontSourceIdentifier: null,
       fontLocationUser: {},
       fontLocationSourceMapped: {},
       glyphSelection: new Set(),
       groupByKeys: [],
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
+
+    this._setupLocationDependencies();
+
     this._updateFromWindowLocation();
 
     this.fontOverviewSettingsController.addListener((event) => {
@@ -67,25 +69,6 @@ export class FontOverviewController extends ViewController {
         this.updateWindowLocation();
       }
     });
-
-    this.fontOverviewSettingsController.addKeyListener(
-      "fontSourceIdentifier",
-      (event) => {
-        const sourceLocation = {
-          ...this.fontSources[event.newValue]?.location,
-        }; // A font may not have any font sources, therefore the ?-check
-
-        this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
-
-        this.fontOverviewSettings.fontLocationUser =
-          this.fontController.mapSourceLocationToUserLocation(sourceLocation);
-      }
-    );
-    // Note: once we add an axis slider UI, we should do the opposite mapping,
-    // too, from location to source identifier
-
-    this.fontOverviewSettings.fontSourceIdentifier =
-      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
 
     this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
       this.glyphOrganizer.setSearchString(event.newValue);
@@ -130,6 +113,37 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _setupLocationDependencies() {
+    // TODO: I don't think this does avar-2 / cross-axis-mappings correctly :(
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "fontLocationSourceMapped",
+      (event) => {
+        if (!event.senderInfo?.fromFontLocationUser) {
+          this.fontOverviewSettingsController.withSenderInfo(
+            { fromFontLocationSourceMapped: true },
+            () => {
+              this.fontOverviewSettingsController.model.fontLocationUser =
+                this.fontController.mapSourceLocationToUserLocation(event.newValue);
+            }
+          );
+        }
+      }
+    );
+
+    this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
+      if (!event.senderInfo?.fromFontLocationSourceMapped) {
+        this.fontOverviewSettingsController.withSenderInfo(
+          { fromFontLocationUser: true },
+          () => {
+            this.fontOverviewSettingsController.model.fontLocationSourceMapped =
+              this.fontController.mapUserLocationToSourceLocation(event.newValue);
+          }
+        );
+      }
+    });
   }
 
   _updateFromWindowLocation() {

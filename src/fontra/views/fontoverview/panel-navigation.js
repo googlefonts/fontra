@@ -25,7 +25,11 @@ export class FontOverviewNavigation extends HTMLElement {
         id: "font-source-select",
         style: "width: 100%;",
         onchange: (event) => {
-          this.fontOverviewSettings.fontSourceIdentifier = event.target.value;
+          const fontSourceIdentifier = event.target.value;
+          const sourceLocation = {
+            ...this.fontSources[fontSourceIdentifier]?.location,
+          }; // A font may not have any font sources, therefore the ?-check
+          this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
         },
       },
       []
@@ -34,14 +38,7 @@ export class FontOverviewNavigation extends HTMLElement {
     for (const fontSourceIdentifier of this.fontController.getSortedSourceIdentifiers()) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
-        html.option(
-          {
-            value: fontSourceIdentifier,
-            selected:
-              this.fontOverviewSettings.fontSourceIdentifier === fontSourceIdentifier,
-          },
-          [sourceName]
-        )
+        html.option({ value: fontSourceIdentifier }, [sourceName])
       );
     }
 
@@ -57,6 +54,8 @@ export class FontOverviewNavigation extends HTMLElement {
         this.fontSourceInput,
       ]
     );
+
+    this._updateFontSourceInput();
 
     const groupByController = new ObservableController(
       Object.fromEntries(
@@ -80,6 +79,11 @@ export class FontOverviewNavigation extends HTMLElement {
       });
     });
 
+    this.fontOverviewSettingsController.addKeyListener(
+      "fontLocationSourceMapped",
+      (event) => this._updateFontSourceInput()
+    );
+
     const groupByContainer = html.div({}, [
       html.span({}, ["Group by"]),
       ...groupByProperties.map(({ key, label }) =>
@@ -95,6 +99,16 @@ export class FontOverviewNavigation extends HTMLElement {
     this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
     this.appendChild(groupByContainer);
+  }
+
+  _updateFontSourceInput() {
+    const fontSourceIdentifier =
+      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+        this.fontOverviewSettings.fontLocationSourceMapped
+      );
+    for (const optionElement of this.fontSourceInput.children) {
+      optionElement.selected = optionElement.value === fontSourceIdentifier;
+    }
   }
 }
 
