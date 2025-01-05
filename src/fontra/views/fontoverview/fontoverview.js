@@ -8,14 +8,16 @@ import {
   dumpURLFragment,
   glyphMapToItemList,
   isActiveElementTypeable,
-  loadURLFragment,
   modulo,
   range,
+  readObjectFromURLFragment,
   scheduleCalls,
   throttleCalls,
+  writeObjectToURLFragment,
 } from "/core/utils.js";
 import { ViewController } from "/core/view-controller.js";
 import { GlyphCellView } from "/web-components/glyph-cell-view.js";
+import { message } from "/web-components/modal-dialog.js";
 
 const persistentSettings = [
   { key: "searchString" },
@@ -49,8 +51,6 @@ export class FontOverviewController extends ViewController {
     window.addEventListener("popstate", (event) => {
       this._updateFromWindowLocation();
     });
-
-    const viewInfo = viewInfoFromURL();
 
     this.fontOverviewSettingsController = new ObservableController({
       searchString: "",
@@ -149,7 +149,11 @@ export class FontOverviewController extends ViewController {
   }
 
   _updateFromWindowLocation() {
-    const viewInfo = viewInfoFromURL();
+    const viewInfo = readObjectFromURLFragment();
+    if (!viewInfo) {
+      message("The URL is malformed", "The UI settings could not be restored."); // TODO: translation
+      return;
+    }
     this.fontOverviewSettingsController.withSenderInfo({ senderID: this }, () => {
       for (const { key, fromJSON } of persistentSettings) {
         const value = viewInfo[key];
@@ -167,12 +171,8 @@ export class FontOverviewController extends ViewController {
         toJSON?.(this.fontOverviewSettings[key]) || this.fontOverviewSettings[key],
       ])
     );
-    const url = new URL(window.location);
-    const fragment = dumpURLFragment(viewInfo);
-    if (url.hash !== fragment) {
-      url.hash = fragment;
-      window.history.pushState({}, "", url);
-    }
+    console.log(viewInfo);
+    writeObjectToURLFragment(viewInfo);
   }
 
   _updateGlyphItemList() {
@@ -248,9 +248,4 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 
   url.hash = dumpURLFragment(viewInfo);
   window.open(url.toString());
-}
-
-function viewInfoFromURL() {
-  const url = new URL(window.location);
-  return url.hash ? loadURLFragment(url.hash) : {};
 }
