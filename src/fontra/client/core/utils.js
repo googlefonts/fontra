@@ -544,6 +544,25 @@ export function dumpURLFragment(obj) {
   return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
 }
 
+export function readObjectFromURLFragment() {
+  const url = new URL(window.location);
+  return url.hash ? loadURLFragment(url.hash) : {};
+}
+
+export function writeObjectToURLFragment(obj, replace = false) {
+  const newFragment = dumpURLFragment(obj);
+  const url = new URL(window.location);
+  if (url.hash === newFragment) {
+    return;
+  }
+  url.hash = newFragment;
+  if (replace) {
+    window.history.replaceState({}, "", url);
+  } else {
+    window.history.pushState({}, "", url);
+  }
+}
+
 export function areGuidelinesCompatible(parents) {
   const referenceGuidelines = parents[0].guidelines;
   if (!referenceGuidelines) {

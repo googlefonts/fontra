@@ -16,9 +16,9 @@ export class GlyphCellView extends HTMLElement {
     this.settingsController = settingsController;
     this.locationKey = options?.locationKey || "fontLocationSourceMapped";
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
+    this.closedGlyphSectionsKey =
+      options?.closedGlyphSectionsKey || "closedGlyphSections";
     this.displayMode = options?.displayMode || "block";
-
-    this._closedSections = new Set();
 
     this._magnification = 1;
 
@@ -36,6 +36,17 @@ export class GlyphCellView extends HTMLElement {
 
     this.settingsController.addKeyListener(this.locationKey, (event) => {
       this._cellCenterForArrowUpDown = null;
+    });
+
+    this.settingsController.addKeyListener(this.closedGlyphSectionsKey, (event) => {
+      if (event.senderInfo?.senderID !== this) {
+        for (const item of this.accordion.items) {
+          const label = item.section.label;
+          if (event.oldValue.has(label) !== event.newValue.has(label)) {
+            this.accordion.openCloseAccordionItem(item, !event.newValue.has(label));
+          }
+        }
+      }
     });
 
     this.fontController.addChangeListener({ glyphMap: null }, (event) => {
@@ -105,6 +116,10 @@ export class GlyphCellView extends HTMLElement {
     }
     `);
 
+    this.accordion.onItemOpenClose = (item, openClose) => {
+      this._updateClosedGlyphSectionsForItem(item);
+    };
+
     return this.accordion;
   }
 
@@ -117,11 +132,7 @@ export class GlyphCellView extends HTMLElement {
 
     if (this.accordion.items) {
       this.accordion.items.forEach((item) => {
-        if (item.open) {
-          this._closedSections.delete(item.section.label);
-        } else {
-          this._closedSections.add(item.section.label);
-        }
+        this._updateClosedGlyphSectionsForItem(item);
       });
     }
 
@@ -132,7 +143,7 @@ export class GlyphCellView extends HTMLElement {
         " ",
         html.span({ class: "glyph-count" }, [""]),
       ]),
-      open: !this._closedSections.has(section.label),
+      open: !this.closedGlyphSections.has(section.label),
       content: html.div({ class: "font-overview-accordion-item" }, []),
       section,
       sectionIndex: sectionIndex++,
@@ -156,6 +167,18 @@ export class GlyphCellView extends HTMLElement {
         }
       });
     }
+  }
+
+  _updateClosedGlyphSectionsForItem(item) {
+    if (this.closedGlyphSections.has(item.section.label) !== item.open) {
+      return;
+    }
+    const setOpFunc = item.open ? difference : union;
+    this.settingsController.withSenderInfo({ senderID: this }, () => {
+      this.closedGlyphSections = setOpFunc(this.closedGlyphSections, [
+        item.section.label,
+      ]);
+    });
   }
 
   async _updateAccordionItem(item) {
@@ -279,6 +302,14 @@ export class GlyphCellView extends HTMLElement {
 
   set glyphSelection(selection) {
     this.settingsController.model[this.glyphSelectionKey] = selection;
+  }
+
+  get closedGlyphSections() {
+    return this.settingsController.model[this.closedGlyphSectionsKey] || new Set();
+  }
+
+  set closedGlyphSections(selection) {
+    this.settingsController.model[this.closedGlyphSectionsKey] = selection;
   }
 
   findFirstSelectedCell() {

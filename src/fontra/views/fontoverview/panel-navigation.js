@@ -1,8 +1,4 @@
-import {
-  GlyphOrganizer,
-  groupByKeys,
-  groupByProperties,
-} from "/core/glyph-organizer.js";
+import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
@@ -17,7 +13,6 @@ export class FontOverviewNavigation extends HTMLElement {
     this.fontOverviewSettingsController =
       fontOverviewController.fontOverviewSettingsController;
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
-    this.glyphOrganizer = new GlyphOrganizer();
 
     this._setupUI();
   }
@@ -30,7 +25,11 @@ export class FontOverviewNavigation extends HTMLElement {
         id: "font-source-select",
         style: "width: 100%;",
         onchange: (event) => {
-          this.fontOverviewSettings.fontSourceIdentifier = event.target.value;
+          const fontSourceIdentifier = event.target.value;
+          const sourceLocation = {
+            ...this.fontSources[fontSourceIdentifier]?.location,
+          }; // A font may not have any font sources, therefore the ?-check
+          this.fontOverviewSettings.fontLocationSource = sourceLocation;
         },
       },
       []
@@ -39,14 +38,7 @@ export class FontOverviewNavigation extends HTMLElement {
     for (const fontSourceIdentifier of this.fontController.getSortedSourceIdentifiers()) {
       const sourceName = this.fontSources[fontSourceIdentifier].name;
       this.fontSourceInput.appendChild(
-        html.option(
-          {
-            value: fontSourceIdentifier,
-            selected:
-              this.fontOverviewSettings.fontSourceIdentifier === fontSourceIdentifier,
-          },
-          [sourceName]
-        )
+        html.option({ value: fontSourceIdentifier }, [sourceName])
       );
     }
 
@@ -63,13 +55,32 @@ export class FontOverviewNavigation extends HTMLElement {
       ]
     );
 
-    const groupByController = new ObservableController({});
+    this._updateFontSourceInput();
 
-    groupByController.addListener(
-      (event) =>
-        (this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
+    const groupByController = new ObservableController(
+      Object.fromEntries(
+        this.fontOverviewSettings.groupByKeys.map((key) => [key, true])
+      )
+    );
+
+    groupByController.addListener((event) => {
+      if (event.senderInfo?.senderID !== this) {
+        this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
           (key) => groupByController.model[key]
-        ))
+        );
+      }
+    });
+
+    this.fontOverviewSettingsController.addKeyListener("groupByKeys", (event) => {
+      groupByController.withSenderInfo({ senderID: this }, () => {
+        for (const key of groupByKeys) {
+          groupByController.model[key] = event.newValue.includes(key);
+        }
+      });
+    });
+
+    this.fontOverviewSettingsController.addKeyListener("fontLocationSource", (event) =>
+      this._updateFontSourceInput()
     );
 
     const groupByContainer = html.div({}, [
@@ -87,6 +98,16 @@ export class FontOverviewNavigation extends HTMLElement {
     this.appendChild(this.searchField);
     this.appendChild(fontSourceSelector);
     this.appendChild(groupByContainer);
+  }
+
+  _updateFontSourceInput() {
+    const fontSourceIdentifier =
+      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+        this.fontOverviewSettings.fontLocationSource
+      );
+    for (const optionElement of this.fontSourceInput.children) {
+      optionElement.selected = optionElement.value === fontSourceIdentifier;
+    }
   }
 }
 

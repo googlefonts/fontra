@@ -10,16 +10,44 @@ import {
   isActiveElementTypeable,
   modulo,
   range,
+  readObjectFromURLFragment,
+  scheduleCalls,
   throttleCalls,
+  writeObjectToURLFragment,
 } from "/core/utils.js";
 import { ViewController } from "/core/view-controller.js";
 import { GlyphCellView } from "/web-components/glyph-cell-view.js";
+import { message } from "/web-components/modal-dialog.js";
+
+const persistentSettings = [
+  { key: "searchString" },
+  { key: "fontLocationUser" },
+  { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
+  { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
+  { key: "groupByKeys" },
+];
+
+function getDefaultFontOverviewSettings() {
+  return {
+    searchString: "",
+    fontLocationUser: {},
+    fontLocationSource: {},
+    glyphSelection: new Set(),
+    closedGlyphSections: new Set(),
+    groupByKeys: [],
+  };
+}
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
+
+    this.updateWindowLocation = scheduleCalls(
+      (event) => this._updateWindowLocation(),
+      200
+    );
   }
 
   async start() {
@@ -31,34 +59,27 @@ export class FontOverviewController extends ViewController {
 
     this.fontSources = await this.fontController.getSources();
 
-    this.fontOverviewSettingsController = new ObservableController({
-      searchString: "",
-      fontSourceIdentifier: null,
-      fontLocationUser: {},
-      fontLocationSourceMapped: {},
-      glyphSelection: new Set(),
-      groupByKeys: [],
+    window.addEventListener("popstate", (event) => {
+      this._updateFromWindowLocation();
     });
+
+    this.fontOverviewSettingsController = new ObservableController(
+      getDefaultFontOverviewSettings()
+    );
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
+    this._setupLocationDependencies();
+
+    this._updateFromWindowLocation();
+
     this.fontOverviewSettingsController.addKeyListener(
-      "fontSourceIdentifier",
+      persistentSettings.map(({ key }) => key),
       (event) => {
-        const sourceLocation = {
-          ...this.fontSources[event.newValue]?.location,
-        }; // A font may not have any font sources, therefore the ?-check
-
-        this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
-
-        this.fontOverviewSettings.fontLocationUser =
-          this.fontController.mapSourceLocationToUserLocation(sourceLocation);
+        if (event.senderInfo?.senderID !== this) {
+          this.updateWindowLocation();
+        }
       }
     );
-    // Note: once we add an axis slider UI, we should do the opposite mapping,
-    // too, from location to source identifier
-
-    this.fontOverviewSettings.fontSourceIdentifier =
-      this.fontController.fontSourcesInstancer.defaultSourceIdentifier;
 
     this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
       this.glyphOrganizer.setSearchString(event.newValue);
@@ -71,6 +92,8 @@ export class FontOverviewController extends ViewController {
     });
 
     this.glyphOrganizer = new GlyphOrganizer();
+    this.glyphOrganizer.setSearchString(this.fontOverviewSettings.searchString);
+    this.glyphOrganizer.setGroupByKeys(this.fontOverviewSettings.groupByKeys);
 
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
@@ -86,7 +109,8 @@ export class FontOverviewController extends ViewController {
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
-      this.fontOverviewSettingsController
+      this.fontOverviewSettingsController,
+      { locationKey: "fontLocationSource" }
     );
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
@@ -101,6 +125,71 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _setupLocationDependencies() {
+    // TODO: This currently does *not* do avar-2 / cross-axis-mapping
+    // - We need the "user location" to send to the editor
+    // - We would need the "mapped source location" for the glyph cells
+    // - We use the "user location" to store in the fontoverview URL fragment
+    // - Mapping from "user" to "source" to "mapped source" is easy
+    // - The reverse is not: see CrossAxisMapping.unmapLocation()
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "fontLocationSource",
+      (event) => {
+        if (!event.senderInfo?.fromFontLocationUser) {
+          this.fontOverviewSettingsController.withSenderInfo(
+            { fromFontLocationSource: true },
+            () => {
+              this.fontOverviewSettingsController.model.fontLocationUser =
+                this.fontController.mapSourceLocationToUserLocation(event.newValue);
+            }
+          );
+        }
+      }
+    );
+
+    this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
+      if (!event.senderInfo?.fromFontLocationSource) {
+        this.fontOverviewSettingsController.withSenderInfo(
+          { fromFontLocationUser: true },
+          () => {
+            this.fontOverviewSettingsController.model.fontLocationSource =
+              this.fontController.mapUserLocationToSourceLocation(event.newValue);
+          }
+        );
+      }
+    });
+  }
+
+  _updateFromWindowLocation() {
+    const viewInfo = readObjectFromURLFragment();
+    if (!viewInfo) {
+      message("The URL is malformed", "The UI settings could not be restored."); // TODO: translation
+      return;
+    }
+    const defaultSettings = getDefaultFontOverviewSettings();
+    this.fontOverviewSettingsController.withSenderInfo({ senderID: this }, () => {
+      for (const { key, fromJSON } of persistentSettings) {
+        const value = viewInfo[key];
+        if (value !== undefined) {
+          this.fontOverviewSettings[key] = fromJSON?.(value) || value;
+        } else {
+          this.fontOverviewSettings[key] = defaultSettings[key];
+        }
+      }
+    });
+  }
+
+  _updateWindowLocation() {
+    const viewInfo = Object.fromEntries(
+      persistentSettings.map(({ key, toJSON }) => [
+        key,
+        toJSON?.(this.fontOverviewSettings[key]) || this.fontOverviewSettings[key],
+      ])
+    );
+    writeObjectToURLFragment(viewInfo);
   }
 
   _updateGlyphItemList() {

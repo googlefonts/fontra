@@ -32,7 +32,6 @@ import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
-  dumpURLFragment,
   enumerate,
   fetchJSON,
   hyphenatedToCamelCase,
@@ -48,6 +47,7 @@ import {
   readFromClipboard,
   reversed,
   scheduleCalls,
+  writeObjectToURLFragment,
   writeToClipboard,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
@@ -3533,14 +3533,8 @@ export class EditorController extends ViewController {
 
     const url = new URL(window.location);
     clearSearchParams(url.searchParams); /* clear legacy URL format */
-    url.hash = dumpURLFragment(viewInfo);
-    if (this._previousURLText !== viewInfo["text"]) {
-      window.history.pushState({}, "", url);
-    } else if (this._previousURLHash !== url.hash) {
-      window.history.replaceState({}, "", url);
-    }
+    writeObjectToURLFragment(viewInfo, this._previousURLText === viewInfo["text"]);
     this._previousURLText = viewInfo["text"];
-    this._previousURLHash = url.hash;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {

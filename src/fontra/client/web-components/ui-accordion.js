@@ -75,8 +75,7 @@ export class Accordion extends UnlitElement {
       const headerElement = html.div(
         {
           class: "ui-accordion-item-header",
-          onclick: (event) =>
-            this._handleItemHeaderClick(event, item, itemElement, itemElements),
+          onclick: (event) => this._handleItemHeaderClick(event, item),
         },
         [
           html.createDomElement("inline-svg", {
@@ -120,34 +119,45 @@ export class Accordion extends UnlitElement {
     return this.shadowRoot.querySelectorAll(selector);
   }
 
-  _handleItemHeaderClick(event, item, itemElement, itemElements) {
+  _handleItemHeaderClick(event, item) {
     if (event.altKey) {
       // Toggle all items depending on the open/closed state of the clicked item
-      const doClose = !itemElement.classList.contains("ui-accordion-item-closed");
-      itemElements.forEach((itemElement) =>
-        itemElement.classList.toggle("ui-accordion-item-closed", doClose)
-      );
-      this.items.forEach((item) => (item.open = !doClose));
+      const doClose = item.open;
+      this.items.forEach((item) => {
+        this.openCloseAccordionItem(item, !doClose);
+      });
     } else {
       // Toggle single item
-      itemElement.classList.toggle("ui-accordion-item-closed");
-      item.open = !item.open;
+      this.openCloseAccordionItem(item, !item.open);
     }
+  }
+
+  openCloseAccordionItem(item, openClose) {
+    item.open = openClose;
+    const parent = parentWithClass(item.content, "ui-accordion-item");
+    if (parent) {
+      parent.classList.toggle("ui-accordion-item-closed", !openClose);
+    }
+    this.onItemOpenClose?.(item, item.open);
   }
 
   showHideAccordionItem(item, onOff) {
     item.hidden = !onOff;
 
-    let parent = item.content;
-    do {
-      parent = parent.parentElement;
-    } while (parent && !parent.classList.contains("ui-accordion-item"));
+    const parent = parentWithClass(item.content, "ui-accordion-item");
 
-    if (!parent) {
-      return;
+    if (parent) {
+      parent.hidden = !onOff;
     }
-    parent.hidden = !onOff;
   }
 }
 
 customElements.define("ui-accordion", Accordion);
+
+function parentWithClass(element, className) {
+  let parent = element;
+  do {
+    parent = parent.parentElement;
+  } while (parent && !parent.classList.contains(className));
+  return parent;
+}
