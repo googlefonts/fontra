@@ -29,7 +29,7 @@ export class FontOverviewNavigation extends HTMLElement {
           const sourceLocation = {
             ...this.fontSources[fontSourceIdentifier]?.location,
           }; // A font may not have any font sources, therefore the ?-check
-          this.fontOverviewSettings.fontLocationSourceMapped = sourceLocation;
+          this.fontOverviewSettings.fontLocationSource = sourceLocation;
         },
       },
       []
@@ -79,9 +79,8 @@ export class FontOverviewNavigation extends HTMLElement {
       });
     });
 
-    this.fontOverviewSettingsController.addKeyListener(
-      "fontLocationSourceMapped",
-      (event) => this._updateFontSourceInput()
+    this.fontOverviewSettingsController.addKeyListener("fontLocationSource", (event) =>
+      this._updateFontSourceInput()
     );
 
     const groupByContainer = html.div({}, [
@@ -104,7 +103,7 @@ export class FontOverviewNavigation extends HTMLElement {
   _updateFontSourceInput() {
     const fontSourceIdentifier =
       this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
-        this.fontOverviewSettings.fontLocationSourceMapped
+        this.fontOverviewSettings.fontLocationSource
       );
     for (const optionElement of this.fontSourceInput.children) {
       optionElement.selected = optionElement.value === fontSourceIdentifier;

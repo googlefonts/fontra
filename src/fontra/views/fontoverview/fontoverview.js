@@ -31,7 +31,7 @@ function getDefaultFontOverviewSettings() {
   return {
     searchString: "",
     fontLocationUser: {},
-    fontLocationSourceMapped: {},
+    fontLocationSource: {},
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
     groupByKeys: [],
@@ -109,7 +109,8 @@ export class FontOverviewController extends ViewController {
 
     this.glyphCellView = new GlyphCellView(
       this.fontController,
-      this.fontOverviewSettingsController
+      this.fontOverviewSettingsController,
+      { locationKey: "fontLocationSource" }
     );
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
@@ -127,14 +128,19 @@ export class FontOverviewController extends ViewController {
   }
 
   _setupLocationDependencies() {
-    // TODO: I don't think this does avar-2 / cross-axis-mappings correctly :(
+    // TODO: This currently does *not* do avar-2 / cross-axis-mapping
+    // - We need the "user location" to send to the editor
+    // - We would need the "mapped source location" for the glyph cells
+    // - We use the "user location" to store in the fontoverview URL fragment
+    // - Mapping from "user" to "source" to "mapped source" is easy
+    // - The reverse is not: see CrossAxisMapping.unmapLocation()
 
     this.fontOverviewSettingsController.addKeyListener(
-      "fontLocationSourceMapped",
+      "fontLocationSource",
       (event) => {
         if (!event.senderInfo?.fromFontLocationUser) {
           this.fontOverviewSettingsController.withSenderInfo(
-            { fromFontLocationSourceMapped: true },
+            { fromFontLocationSource: true },
             () => {
               this.fontOverviewSettingsController.model.fontLocationUser =
                 this.fontController.mapSourceLocationToUserLocation(event.newValue);
@@ -145,11 +151,11 @@ export class FontOverviewController extends ViewController {
     );
 
     this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
-      if (!event.senderInfo?.fromFontLocationSourceMapped) {
+      if (!event.senderInfo?.fromFontLocationSource) {
         this.fontOverviewSettingsController.withSenderInfo(
           { fromFontLocationUser: true },
           () => {
-            this.fontOverviewSettingsController.model.fontLocationSourceMapped =
+            this.fontOverviewSettingsController.model.fontLocationSource =
               this.fontController.mapUserLocationToSourceLocation(event.newValue);
           }
         );
