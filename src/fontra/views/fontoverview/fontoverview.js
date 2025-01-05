@@ -27,6 +27,17 @@ const persistentSettings = [
   { key: "groupByKeys" },
 ];
 
+function getDefaultFontOverviewSettings() {
+  return {
+    searchString: "",
+    fontLocationUser: {},
+    fontLocationSourceMapped: {},
+    glyphSelection: new Set(),
+    closedGlyphSections: new Set(),
+    groupByKeys: [],
+  };
+}
+
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
@@ -52,14 +63,9 @@ export class FontOverviewController extends ViewController {
       this._updateFromWindowLocation();
     });
 
-    this.fontOverviewSettingsController = new ObservableController({
-      searchString: "",
-      fontLocationUser: {},
-      fontLocationSourceMapped: {},
-      glyphSelection: new Set(),
-      closedGlyphSections: new Set(),
-      groupByKeys: [],
-    });
+    this.fontOverviewSettingsController = new ObservableController(
+      getDefaultFontOverviewSettings()
+    );
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
     this._setupLocationDependencies();
@@ -154,11 +160,14 @@ export class FontOverviewController extends ViewController {
       message("The URL is malformed", "The UI settings could not be restored."); // TODO: translation
       return;
     }
+    const defaultSettings = getDefaultFontOverviewSettings();
     this.fontOverviewSettingsController.withSenderInfo({ senderID: this }, () => {
       for (const { key, fromJSON } of persistentSettings) {
         const value = viewInfo[key];
         if (value !== undefined) {
           this.fontOverviewSettings[key] = fromJSON?.(value) || value;
+        } else {
+          this.fontOverviewSettings[key] = defaultSettings[key];
         }
       }
     });
