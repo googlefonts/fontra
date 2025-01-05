@@ -72,11 +72,14 @@ export class FontOverviewController extends ViewController {
 
     this._updateFromWindowLocation();
 
-    this.fontOverviewSettingsController.addListener((event) => {
-      if (event.senderInfo?.senderID !== this) {
-        this.updateWindowLocation();
+    this.fontOverviewSettingsController.addKeyListener(
+      persistentSettings.map(({ key }) => key),
+      (event) => {
+        if (event.senderInfo?.senderID !== this) {
+          this.updateWindowLocation();
+        }
       }
-    });
+    );
 
     this.fontOverviewSettingsController.addKeyListener("searchString", (event) => {
       this.glyphOrganizer.setSearchString(event.newValue);
@@ -180,7 +183,6 @@ export class FontOverviewController extends ViewController {
         toJSON?.(this.fontOverviewSettings[key]) || this.fontOverviewSettings[key],
       ])
     );
-    console.log(viewInfo);
     writeObjectToURLFragment(viewInfo);
   }
 
