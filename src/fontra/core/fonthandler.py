@@ -170,8 +170,12 @@ class FontHandler:
         ]:
             features[key] = hasattr(self.backend, methodName)
         projectManagerFeatures = {}
-        for key, methodName in [("export-as", "exportAs")]:
-            projectManagerFeatures[key] = hasattr(self.projectManager, methodName)
+        if hasattr(self.projectManager, "exportAs") and hasattr(
+            self.projectManager, "getSupportedExportFormats"
+        ):
+            projectManagerFeatures["export-as"] = (
+                self.projectManager.getSupportedExportFormats()  # type: ignore[union-attr]
+            )
         return dict(
             name=self.backend.__class__.__name__,
             features=features,

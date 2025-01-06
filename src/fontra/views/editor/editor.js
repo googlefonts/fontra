@@ -99,8 +99,6 @@ const MIN_CANVAS_SPACE = 200;
 const PASTE_BEHAVIOR_REPLACE = "replace";
 const PASTE_BEHAVIOR_ADD = "add";
 
-const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
-
 export class EditorController extends ViewController {
   constructor(font) {
     super(font);
@@ -693,16 +691,16 @@ export class EditorController extends ViewController {
   }
 
   initActionsAfterStart() {
-    if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-      for (const format of EXPORT_FORMATS) {
-        registerAction(
-          `action.export-as.${format}`,
-          {
-            topic: "0035-action-topics.export-as",
-          },
-          (event) => this.fontController.exportAs({ format })
-        );
-      }
+    for (const format of this.fontController.backendInfo.projectManagerFeatures[
+      "export-as"
+    ] || []) {
+      registerAction(
+        `action.export-as.${format}`,
+        {
+          topic: "0035-action-topics.export-as",
+        },
+        (event) => this.fontController.exportAs({ format })
+      );
     }
   }
 
@@ -735,12 +733,14 @@ export class EditorController extends ViewController {
       {
         title: translate("menubar.file"),
         getItems: () => {
-          if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
+          let exportFormats =
+            this.fontController.backendInfo.projectManagerFeatures["export-as"] || [];
+          if (exportFormats.length > 0) {
             return [
               {
                 title: translate("menubar.file.export-as"),
                 getItems: () =>
-                  EXPORT_FORMATS.map((format) => ({
+                  exportFormats.map((format) => ({
                     actionIdentifier: `action.export-as.${format}`,
                   })),
               },
