@@ -2,7 +2,6 @@
 // object notation to construct dom elements instead of HTML.
 
 import { consolidateCalls } from "./utils.js";
-import shadowDomStyles from "/css/shadow-dom.js";
 
 export class SimpleElement extends HTMLElement {
   constructor() {
@@ -16,7 +15,7 @@ export class SimpleElement extends HTMLElement {
   }
 
   _attachStyles() {
-    this._appendStyle(shadowDomStyles);
+    this._appendStyleSheetLink("/css/shared.css");
     if (this.constructor.styles) {
       this._appendStyle(this.constructor.styles);
     }
@@ -24,6 +23,10 @@ export class SimpleElement extends HTMLElement {
 
   _appendStyle(cssText) {
     addStyleSheet(cssText, this.shadowRoot);
+  }
+
+  _appendStyleSheetLink(href) {
+    addStyleSheetLink(href, this.shadowRoot);
   }
 
   appendStyle(cssText) {
@@ -151,6 +154,16 @@ export function addStyleSheet(cssText, element = null) {
   }
   const styleElement = style({}, [cssText]);
   element.appendChild(styleElement);
+}
+
+export function addStyleSheetLink(href, element = null) {
+  if (!element) {
+    element = document.head;
+  }
+  const stylesheetLink = link();
+  stylesheetLink.href = href;
+  stylesheetLink.rel = "stylesheet";
+  element.appendChild(stylesheetLink);
 }
 
 // Convenience shortcuts

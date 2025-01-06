@@ -79,12 +79,6 @@
   --horizontal-rule-color: #aaa8;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
 html,
 body {
   font-family:
