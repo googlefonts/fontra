@@ -152,18 +152,14 @@ export function addStyleSheet(cssText, element = null) {
   if (!element) {
     element = document.head;
   }
-  const styleElement = style({}, [cssText]);
-  element.appendChild(styleElement);
+  element.appendChild(style({}, [cssText]));
 }
 
 export function addStyleSheetLink(href, element = null) {
   if (!element) {
     element = document.head;
   }
-  const stylesheetLink = link();
-  stylesheetLink.href = href;
-  stylesheetLink.rel = "stylesheet";
-  element.appendChild(stylesheetLink);
+  element.appendChild(link({ href, rel: "stylesheet" }));
 }
 
 // Convenience shortcuts
