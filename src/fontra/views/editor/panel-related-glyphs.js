@@ -16,12 +16,13 @@ export default class RelatedGlyphPanel extends Panel {
   static styles = `
     .sidebar-glyph-relationships {
       height: 100%;
+      padding: 1em;
       display: flex;
+      gap: 1em;
       flex-direction: column;
     }
 
     #related-glyphs-header {
-      padding: 1em 1em 0 1em;
       text-wrap: wrap;
     }
 
