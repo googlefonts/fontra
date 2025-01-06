@@ -385,13 +385,12 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
 }
 
 export function deleteSelectedPoints(path, pointIndices) {
+  // `pointIndices` must be sorted
   const contourFragmentsToDelete = preparePointDeletion(path, pointIndices);
   const contoursToDelete = [];
-  for (const {
-    contourIndex,
-    fragmentsToDelete,
-    startPoint,
-  } of contourFragmentsToDelete) {
+  for (const { contourIndex, fragmentsToDelete, startPoint } of reversed(
+    contourFragmentsToDelete
+  )) {
     if (!fragmentsToDelete) {
       contoursToDelete.push(contourIndex);
       continue;
