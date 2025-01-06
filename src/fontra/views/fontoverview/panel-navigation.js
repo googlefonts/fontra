@@ -4,6 +4,7 @@ import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
 import { labeledCheckbox } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
+import { Accordion } from "/web-components/ui-accordion.js";
 
 export class FontOverviewNavigation extends HTMLElement {
   constructor(fontOverviewController) {
@@ -84,7 +85,6 @@ export class FontOverviewNavigation extends HTMLElement {
     );
 
     const groupByContainer = html.div({}, [
-      html.span({}, ["Group by"]),
       ...groupByProperties.map(({ key, label }) =>
         labeledCheckbox(label, groupByController, key)
       ),
@@ -95,9 +95,18 @@ export class FontOverviewNavigation extends HTMLElement {
       searchStringKey: "searchString",
     });
 
+    const accordion = new Accordion();
+    accordion.items = [
+      {
+        label: translate("sources.labels.location"),
+        content: this.fontSourceInput,
+        open: true,
+      },
+      { label: "Group by", content: groupByContainer, open: true },
+    ];
+
     this.appendChild(this.searchField);
-    this.appendChild(fontSourceSelector);
-    this.appendChild(groupByContainer);
+    this.appendChild(accordion);
   }
 
   _updateFontSourceInput() {
