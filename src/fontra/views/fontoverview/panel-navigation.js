@@ -102,7 +102,11 @@ export class FontOverviewNavigation extends HTMLElement {
         content: this.fontSourceInput,
         open: true,
       },
-      { label: "Group by", content: groupByContainer, open: true },
+      {
+        label: "Group by", // TODO: translate
+        content: groupByContainer,
+        open: true,
+      },
     ];
 
     this.appendChild(this.searchField);
