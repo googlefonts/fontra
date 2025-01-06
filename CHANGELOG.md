@@ -1,5 +1,14 @@
 # Changelog for Fontra
 
+## 2025-01-06
+
+- Added robots.txt to HTTP root folder [PR 1905](https://github.com/googlefonts/fontra/pull/1905)
+- Small improvements to Related Glyphs & Characters panel (selecting multiple glyphs, keyboard navigation) [PR 1906](https://github.com/googlefonts/fontra/pull/1906)
+- Accordion view: alt-click on a header folds/unfolds all items [PR 1901](https://github.com/googlefonts/fontra/pull/1901)
+- Implement finding glyph names for code points and code points for glyph names in JS, via a CSV version of GlyphData.xml. This is a performance improvement, and needed for the upcoming Font Overview [PR 1900](https://github.com/googlefonts/fontra/pull/1900)
+- Fixed a regression witb CJK Design Frame settings [PR 1883](https://github.com/googlefonts/fontra/pull/1883)
+- Fixed a regression with the Knife Tool [PR 1870](https://github.com/googlefonts/fontra/pull/1870)
+
 ## 2024-12-19
 
 - Making the interface between server and client more explicit [PR 1863](https://github.com/googlefonts/fontra/pull/1863)
