@@ -174,7 +174,7 @@ class FontHandler:
             self.projectManager, "getSupportedExportFormats"
         ):
             projectManagerFeatures["export-as"] = (
-                self.projectManager.getSupportedExportFormats()
+                self.projectManager.getSupportedExportFormats()  # type: ignore[union-attr]
             )
         return dict(
             name=self.backend.__class__.__name__,
