@@ -43,19 +43,6 @@ export class FontOverviewNavigation extends HTMLElement {
       );
     }
 
-    const fontSourceSelector = html.div(
-      {
-        class: "font-source-selector",
-      },
-      [
-        html.label(
-          { for: "font-source-select" },
-          translate("sidebar.font-overview.font-source")
-        ),
-        this.fontSourceInput,
-      ]
-    );
-
     this._updateFontSourceInput();
 
     const groupByController = new ObservableController(
