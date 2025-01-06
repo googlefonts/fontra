@@ -194,7 +194,6 @@ export default class ReferenceFontPanel extends Panel {
       padding: 1em;
       gap: 1em;
       height: 100%;
-      box-sizing: border-box;
       white-space: normal;
       align-content: start;
     }

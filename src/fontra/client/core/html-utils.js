@@ -15,6 +15,7 @@ export class SimpleElement extends HTMLElement {
   }
 
   _attachStyles() {
+    this._appendStyleSheetLink("/css/shared.css");
     if (this.constructor.styles) {
       this._appendStyle(this.constructor.styles);
     }
@@ -22,6 +23,10 @@ export class SimpleElement extends HTMLElement {
 
   _appendStyle(cssText) {
     addStyleSheet(cssText, this.shadowRoot);
+  }
+
+  _appendStyleSheetLink(href) {
+    addStyleSheetLink(href, this.shadowRoot);
   }
 
   appendStyle(cssText) {
@@ -147,8 +152,14 @@ export function addStyleSheet(cssText, element = null) {
   if (!element) {
     element = document.head;
   }
-  const styleElement = style({}, [cssText]);
-  element.appendChild(styleElement);
+  element.appendChild(style({}, [cssText]));
+}
+
+export function addStyleSheetLink(href, element = null) {
+  if (!element) {
+    element = document.head;
+  }
+  element.appendChild(link({ href, rel: "stylesheet" }));
 }
 
 // Convenience shortcuts

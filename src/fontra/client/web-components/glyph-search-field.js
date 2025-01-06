@@ -23,7 +23,6 @@ export class GlyphSearchField extends SimpleElement {
       resize: none;
       width: 100%;
       height: 1.8em;
-      box-sizing: border-box;
       padding: 0.2em 0.8em;
     }
   `;

@@ -115,7 +115,6 @@ body {
   height: 10rem;
   margin-top: -5rem;
   margin-left: -5rem;
-  box-sizing: border-box;
   border-radius: 50%;
   border: 0.6rem solid #fff8;
   border-top-color: #0005;
@@ -126,7 +125,6 @@ body {
 input[type="text"],
 input[type="number"],
 input[type="password"] {
-  box-sizing: border-box;
   background-color: var(--text-input-background-color);
   color: var(--text-input-foreground-color);
   border-radius: 0.25em;
