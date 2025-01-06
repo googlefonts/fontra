@@ -66,7 +66,7 @@ export class FileSystem {
       this._fsSupportsCreateWritable == undefined ||
       this._fsSupportsCreateWritable === true
     ) {
-      const error = await this._writeFileToOPFSAsync(path, file);
+      const error = await this._writeFile(path, file);
       if (this._fsSupportsCreateWritable == undefined) {
         this._fsSupportsCreateWritable = !error;
       }
@@ -109,7 +109,7 @@ export class FileSystem {
     return { dirHandle, name };
   }
 
-  async _writeFileToOPFSAsync(path, file) {
+  async _writeFile(path, file) {
     const { dirHandle, name } = await this._getParentDirectoryHandle(path);
     const fileHandle = await dirHandle.getFileHandle(name, { create: true });
     if (!fileHandle.createWritable) {
