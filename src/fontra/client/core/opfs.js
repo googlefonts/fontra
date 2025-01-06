@@ -114,7 +114,7 @@ export class FileSystem {
     const fileHandle = await dirHandle.getFileHandle(name, { create: true });
     if (!fileHandle.createWritable) {
       // This is the case in Safari (as of august 2023)
-      return "OPFS does not support fileHandle.createWritable()";
+      return "file system does not support fileHandle.createWritable()";
     }
     const writable = await fileHandle.createWritable();
     await writable.write(file);
@@ -139,6 +139,9 @@ async function isFile(dirHandle, name) {
   }
   return true;
 }
+
+// Safari only supports the async file write API in Web Workers, so we do that
+// when needed. See opfs-write-worker.js for more comments.
 
 let worker;
 
