@@ -5,7 +5,6 @@ import { enumerate } from "/core/utils.js";
 export class Accordion extends UnlitElement {
   static styles = `
   .ui-accordion-contents {
-    padding: 1em;
     display: grid;
     grid-template-rows: auto;
     align-content: start;
