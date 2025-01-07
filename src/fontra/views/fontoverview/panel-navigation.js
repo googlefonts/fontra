@@ -83,6 +83,7 @@ export class FontOverviewNavigation extends HTMLElement {
     });
 
     const accordion = new Accordion();
+
     accordion.items = [
       {
         label: translate("sources.labels.location"),
@@ -92,6 +93,16 @@ export class FontOverviewNavigation extends HTMLElement {
       {
         label: "Group by", // TODO: translate
         content: groupByContainer,
+        open: true,
+      },
+      {
+        label: "Project glyph sets", // TODO: translate
+        content: html.div({ class: "glyph-sets-container" }, []),
+        open: true,
+      },
+      {
+        label: "My glyph sets", // TODO: translate
+        content: html.div({ class: "glyph-sets-container" }, []),
         open: true,
       },
     ];
