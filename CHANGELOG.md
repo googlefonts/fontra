@@ -2,6 +2,7 @@
 
 ## 2025-01-06
 
+- Fixed bug related to deleting points [Issue 1910](https://github.com/googlefonts/fontra/issues/1910), [PR 1916](https://github.com/googlefonts/fontra/pull/1916)
 - Added robots.txt to HTTP root folder [PR 1905](https://github.com/googlefonts/fontra/pull/1905)
 - Small improvements to Related Glyphs & Characters panel (selecting multiple glyphs, keyboard navigation) [PR 1906](https://github.com/googlefonts/fontra/pull/1906)
 - Accordion view: alt-click on a header folds/unfolds all items [PR 1901](https://github.com/googlefonts/fontra/pull/1901)
