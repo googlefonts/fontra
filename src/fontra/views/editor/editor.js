@@ -531,15 +531,6 @@ export class EditorController extends ViewController {
       );
 
       registerAction(
-        "action.find-glyphs-that-use",
-        {
-          topic,
-          titleKey: "menubar.view.find-glyphs-that-use",
-        },
-        () => this.doFindGlyphsThatUseGlyph()
-      );
-
-      registerAction(
         "action.replace-selected-glyph-on-canvas",
         {
           topic,
@@ -700,6 +691,17 @@ export class EditorController extends ViewController {
           topic: "0035-action-topics.export-as",
         },
         (event) => this.fontController.exportAs({ format })
+      );
+    }
+    if (this.fontController.backendInfo.features["find-glyphs-that-use-glyph"]) {
+      registerAction(
+        "action.find-glyphs-that-use",
+        {
+          topic: "0030-action-topics.menu.edit",
+          titleKey: "menubar.view.find-glyphs-that-use",
+          disabled: true,
+        },
+        () => this.doFindGlyphsThatUseGlyph()
       );
     }
   }
