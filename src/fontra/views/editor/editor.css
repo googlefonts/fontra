@@ -265,7 +265,7 @@ body {
 
 .sidebar-content {
   display: none;
-  height: 100%;
+  height: calc(100vh - var(--menu-top-bar-height));
   width: 100%;
 }
 

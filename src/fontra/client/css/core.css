@@ -18,6 +18,7 @@
 :root {
   /* https://css-tricks.com/the-css-custom-property-toggle-trick/ */
   --fontra-theme-marker: ; /* a space, which is valid */
+  --menu-top-bar-height: 35px;
 }
 
 :root.dark-theme {
