@@ -1,3 +1,4 @@
+import * as html from "./html-utils.js";
 import { translate } from "/core/localization.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 
@@ -18,7 +19,15 @@ export function makeFontraMenuBar(menuItemKeys, delegate) {
   }
 
   menuBarArray.push(getHelpMenuItems()); // Help-Menu at the end.
-  return new MenuBar(menuBarArray);
+  const menuBar = new MenuBar(menuBarArray);
+
+  // add project file name to the right side of the menu bar
+  const projectNameWrapper = html.div();
+  projectNameWrapper.textContent = delegate.projectFileName;
+  projectNameWrapper.style.marginLeft = "auto";
+  menuBar.contentElement.appendChild(projectNameWrapper);
+
+  return menuBar;
 }
 
 function getFontraMenuItems() {
