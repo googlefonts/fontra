@@ -98,32 +98,18 @@ function getFileMenuItems() {
   return {
     title: translate("menubar.file"),
     getItems: () => {
-      let exportFormats =
-        this.fontController.backendInfo.projectManagerFeatures["export-as"] || [];
-      if (exportFormats.length > 0) {
-        return [
-          {
-            title: translate("menubar.file.export-as"),
-            getItems: () =>
-              exportFormats.map((format) => ({
-                actionIdentifier: `action.export-as.${format}`,
-              })),
-          },
-        ];
-      } else {
-        return [
-          {
-            title: translate("menubar.file.new"),
-            enabled: () => false,
-            callback: () => {},
-          },
-          {
-            title: translate("menubar.file.open"),
-            enabled: () => false,
-            callback: () => {},
-          },
-        ];
-      }
+      return [
+        {
+          title: translate("menubar.file.new"),
+          enabled: () => false,
+          callback: () => {},
+        },
+        {
+          title: translate("menubar.file.open"),
+          enabled: () => false,
+          callback: () => {},
+        },
+      ];
     },
   };
 }

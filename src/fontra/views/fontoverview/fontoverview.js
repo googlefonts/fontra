@@ -1,4 +1,6 @@
+import { registerAction } from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
@@ -42,12 +44,90 @@ export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
+    this.basicContextMenuItems = [];
+    this.initActions();
+    this.initContextMenuItems();
+
+    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font", "Glyph"], this);
+    document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
+
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
 
     this.updateWindowLocation = scheduleCalls(
       (event) => this._updateWindowLocation(),
       200
     );
+  }
+
+  getFileMenuItems() {
+    return {
+      title: translate("menubar.file"),
+      getItems: () => {
+        let exportFormats =
+          this.fontController.backendInfo.projectManagerFeatures["export-as"] || [];
+        if (exportFormats.length > 0) {
+          return [
+            {
+              title: translate("menubar.file.export-as"),
+              getItems: () =>
+                exportFormats.map((format) => ({
+                  actionIdentifier: `action.export-as.${format}`,
+                })),
+            },
+          ];
+        } else {
+          return [
+            {
+              title: translate("menubar.file.new"),
+              enabled: () => false,
+              callback: () => {},
+            },
+            {
+              title: translate("menubar.file.open"),
+              enabled: () => false,
+              callback: () => {},
+            },
+          ];
+        }
+      },
+    };
+  }
+
+  getEditMenuItems() {
+    return {
+      title: translate("menubar.edit"),
+      getItems: () => {
+        return [...this.basicContextMenuItems];
+      },
+    };
+  }
+
+  getViewMenuItems() {
+    return {
+      title: translate("menubar.view"),
+      getItems: () => {
+        const items = [
+          {
+            actionIdentifier: "action.zoom-in",
+          },
+          {
+            actionIdentifier: "action.zoom-out",
+          },
+        ];
+        return items;
+      },
+    };
+  }
+
+  getGlyphMenuItems() {
+    return {
+      title: translate("menubar.glyph"),
+      enabled: () => true,
+      getItems: () => [
+        { actionIdentifier: "action.glyph.duplicate" },
+        { actionIdentifier: "action.glyph.delete" },
+      ],
+    };
   }
 
   async start() {
@@ -234,6 +314,104 @@ export class FontOverviewController extends ViewController {
 
   handleRemoteError(event) {
     //
+  }
+
+  initContextMenuItems() {
+    // TODO: Implement the actions + how to handle them?
+    this.basicContextMenuItems.push({
+      actionIdentifier: "action.undo",
+    });
+    this.basicContextMenuItems.push({
+      actionIdentifier: "action.redo",
+    });
+  }
+
+  initActions() {
+    {
+      const topic = "0030-action-topics.menu.edit";
+
+      registerAction(
+        "action.undo",
+        {
+          topic,
+          sortIndex: 0,
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
+        },
+        () => this.doUndoRedo(false),
+        () => this.canUndoRedo(false)
+      );
+
+      registerAction(
+        "action.redo",
+        {
+          topic,
+          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
+        },
+        () => this.doUndoRedo(true),
+        () => this.canUndoRedo(true)
+      );
+    }
+    {
+      const topic = "0020-action-topics.menu.view";
+
+      registerAction(
+        "action.zoom-in",
+        {
+          topic,
+          titleKey: "zoom-in",
+          defaultShortCuts: [
+            { baseKey: "+", commandKey: true },
+            { baseKey: "=", commandKey: true },
+          ],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomIn()
+      );
+
+      registerAction(
+        "action.zoom-out",
+        {
+          topic,
+          titleKey: "zoom-out",
+          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
+          allowGlobalOverride: true,
+        },
+        () => this.zoomOut()
+      );
+    }
+    {
+      const topic = "0035-action-topics.menu.glyph";
+      registerAction("action.glyph.duplicate", { topic }, () => this.duplicateGlyph());
+      registerAction("action.glyph.delete", { topic }, () => this.deleteGlyphs());
+    }
+  }
+
+  async canUndoRedo(isRedo) {
+    // TODO: Do we really need this here? Or is it always true anyway?
+    return true;
+  }
+
+  async doUndoRedo(isRedo) {
+    // TODO: Implement the undo/redo functionality.
+    console.log(isRedo ? "redo" : "undo");
+  }
+
+  async zoomIn() {
+    console.log("font overview zoom in");
+  }
+
+  async zoomOut() {
+    console.log("font overview zoom out");
+  }
+
+  async duplicateGlyph() {
+    // TODO: See doCopy and doPaste
+    console.log("duplicate glyph");
+  }
+
+  async deleteGlyphs() {
+    // TODO: delete one or more glyphs, based on selection. See _deleteCurrentGlyph(event)
+    console.log("delete glyphs");
   }
 }
 
