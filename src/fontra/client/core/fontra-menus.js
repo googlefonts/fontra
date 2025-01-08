@@ -25,6 +25,7 @@ export function makeFontraMenuBar(menuItemKeys, delegate) {
   const projectNameWrapper = html.div();
   projectNameWrapper.textContent = delegate.projectFileName;
   projectNameWrapper.style.marginLeft = "auto";
+  projectNameWrapper.style.marginRight = "0.5rem";
   menuBar.contentElement.appendChild(projectNameWrapper);
 
   return menuBar;
