@@ -1,4 +1,8 @@
-import { registerAction } from "../core/actions.js";
+import {
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+  registerAction,
+} from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
 import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
@@ -306,6 +310,15 @@ export class FontOverviewController extends ViewController {
       return;
     }
     this.glyphCellView.handleKeyDown(event);
+
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      // this.sceneController.updateContextMenuState(null);
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
+      return;
+    }
   }
 
   handleRemoteClose(event) {
