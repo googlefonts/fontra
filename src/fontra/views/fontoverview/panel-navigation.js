@@ -45,6 +45,47 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this._updateFontSourceInput();
 
+    this.searchField = new GlyphSearchField({
+      settingsController: this.fontOverviewSettingsController,
+      searchStringKey: "searchString",
+    });
+
+    const accordion = new Accordion();
+
+    accordion.items = [
+      {
+        label: translate("sources.labels.location"),
+        content: this.fontSourceInput,
+        open: true,
+      },
+      {
+        label: "Group by", // TODO: translate
+        content: this._setupGroupByUI(),
+        open: true,
+      },
+      {
+        label: "Project glyph sets", // TODO: translate
+        content: html.div(
+          { class: "glyph-sets-container" },
+          this._setupProjectGlyphSetsUI()
+        ),
+        open: true,
+      },
+      {
+        label: "My glyph sets", // TODO: translate
+        content: html.div(
+          { class: "glyph-sets-container" },
+          this._setupMyGlyphSetsUI()
+        ),
+        open: true,
+      },
+    ];
+
+    this.appendChild(this.searchField);
+    this.appendChild(accordion);
+  }
+
+  _setupGroupByUI() {
     const groupByController = new ObservableController(
       Object.fromEntries(
         this.fontOverviewSettings.groupByKeys.map((key) => [key, true])
@@ -71,50 +112,11 @@ export class FontOverviewNavigation extends HTMLElement {
       this._updateFontSourceInput()
     );
 
-    const groupByContainer = html.div({}, [
+    return html.div({}, [
       ...groupByProperties.map(({ key, label }) =>
         labeledCheckbox(label, groupByController, key)
       ),
     ]);
-
-    this.searchField = new GlyphSearchField({
-      settingsController: this.fontOverviewSettingsController,
-      searchStringKey: "searchString",
-    });
-
-    const accordion = new Accordion();
-
-    accordion.items = [
-      {
-        label: translate("sources.labels.location"),
-        content: this.fontSourceInput,
-        open: true,
-      },
-      {
-        label: "Group by", // TODO: translate
-        content: groupByContainer,
-        open: true,
-      },
-      {
-        label: "Project glyph sets", // TODO: translate
-        content: html.div(
-          { class: "glyph-sets-container" },
-          this._setupProjectGlyphSetsUI()
-        ),
-        open: true,
-      },
-      {
-        label: "My glyph sets", // TODO: translate
-        content: html.div(
-          { class: "glyph-sets-container" },
-          this._setupMyGlyphSetsUI()
-        ),
-        open: true,
-      },
-    ];
-
-    this.appendChild(this.searchField);
-    this.appendChild(accordion);
   }
 
   _setupProjectGlyphSetsUI() {
