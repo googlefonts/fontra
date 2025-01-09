@@ -105,6 +105,11 @@ body {
   width: 100%;
 }
 
+.top-bar-container {
+  grid-column: 1 / 4;
+  grid-row: 1;
+}
+
 .sidebar-container,
 .main-container {
   grid-row-start: 2;
