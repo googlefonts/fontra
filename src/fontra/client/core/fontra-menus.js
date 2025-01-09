@@ -11,7 +11,7 @@ const mapMenuItemKeyToFunction = {
 };
 
 export function makeFontraMenuBar(menuItemKeys, viewController) {
-  const menuBarArray = [getFontraMenuItems()]; // Fontra-Menu at the beginning.
+  const menuBarArray = [getFontraMenu()]; // Fontra-Menu at the beginning.
 
   for (const itemKey of menuItemKeys) {
     const methodName = `get${itemKey}MenuItems`;
@@ -24,12 +24,12 @@ export function makeFontraMenuBar(menuItemKeys, viewController) {
     }
   }
 
-  menuBarArray.push(getHelpMenuItems()); // Help-Menu at the end.
+  menuBarArray.push(getHelpMenu()); // Help-Menu at the end.
   const menuBar = new MenuBar(menuBarArray);
   return menuBar;
 }
 
-function getFontraMenuItems() {
+function getFontraMenu() {
   return {
     title: "Fontra",
     bold: true,
@@ -54,7 +54,7 @@ function getFontraMenuItems() {
   };
 }
 
-function getHelpMenuItems() {
+function getHelpMenu() {
   return {
     title: translate("menubar.help"),
     getItems: () => {
