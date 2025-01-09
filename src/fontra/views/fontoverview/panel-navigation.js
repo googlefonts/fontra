@@ -84,29 +84,20 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeGroupByUI() {
-    const checkboxController = makeCheckboxController(
-      this.fontOverviewSettingsController,
-      "groupByKeys"
-    );
-
-    return html.div({}, [
-      ...groupByProperties.map(({ key, label }) =>
-        labeledCheckbox(label, checkboxController, key)
-      ),
-    ]);
+    return this._makeCheckboxUI("groupByKeys", groupByProperties);
   }
 
   _makeProjectGlyphSetsUI() {
     const projectGlyphSets = [{ key: "__this_font__", label: "This font's glyph set" }];
-    return this._makeGlyphSetsUI("projectGlyphSets", projectGlyphSets);
+    return this._makeCheckboxUI("projectGlyphSets", projectGlyphSets);
   }
 
   _makeMyGlyphSetsUI() {
-    const myGlyphSets = [{ key: "floof", label: "Gloof" }];
-    return this._makeGlyphSetsUI("myGlyphSets", myGlyphSets);
+    const myGlyphSets = [];
+    return this._makeCheckboxUI("myGlyphSets", myGlyphSets);
   }
 
-  _makeGlyphSetsUI(settingsKey, glyphSets) {
+  _makeCheckboxUI(settingsKey, glyphSets) {
     const checkboxController = makeCheckboxController(
       this.fontOverviewSettingsController,
       settingsKey
