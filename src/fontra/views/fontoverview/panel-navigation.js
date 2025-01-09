@@ -65,18 +65,12 @@ export class FontOverviewNavigation extends HTMLElement {
       },
       {
         label: "Project glyph sets", // TODO: translate
-        content: html.div(
-          { class: "glyph-sets-container" },
-          this._setupProjectGlyphSetsUI()
-        ),
+        content: this._setupProjectGlyphSetsUI(),
         open: true,
       },
       {
         label: "My glyph sets", // TODO: translate
-        content: html.div(
-          { class: "glyph-sets-container" },
-          this._setupMyGlyphSetsUI()
-        ),
+        content: this._setupMyGlyphSetsUI(),
         open: true,
       },
     ];
@@ -122,17 +116,17 @@ export class FontOverviewNavigation extends HTMLElement {
   _setupProjectGlyphSetsUI() {
     const projectGlyphSetsController = new ObservableController({});
 
-    return [
+    return html.div({ class: "glyph-sets-container" }, [
       labeledCheckbox(
         "This font's glyph set",
         projectGlyphSetsController,
         "__this_font__"
       ),
-    ];
+    ]);
   }
 
   _setupMyGlyphSetsUI() {
-    return [];
+    return html.div({ class: "glyph-sets-container" }, []);
   }
 
   _updateFontSourceInput() {
