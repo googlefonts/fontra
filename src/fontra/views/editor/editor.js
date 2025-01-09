@@ -228,8 +228,8 @@ export class EditorController extends ViewController {
     this.initSidebars();
     this.initTools();
     this.initActions();
+    this.initContextMenuItems(); // NOTE: need to be build before initTopBar.
     this.initTopBar();
-    this.initContextMenuItems();
     this.initMiniConsole();
 
     // If a stored active panel is not a plug-in, we can restore it before the plug-ins
@@ -717,76 +717,56 @@ export class EditorController extends ViewController {
   }
 
   getEditMenuItems() {
-    return {
-      title: translate("menubar.edit"),
-      getItems: () => {
-        const menuItems = [...this.basicContextMenuItems];
-        if (this.sceneSettings.selectedGlyph?.isEditing) {
-          this.sceneController.updateContextMenuState(event);
-          menuItems.push(MenuItemDivider);
-          menuItems.push(...this.glyphEditContextMenuItems);
-        }
-        return menuItems;
-      },
-    };
+    const menuItems = [...this.basicContextMenuItems];
+    if (this.sceneSettings.selectedGlyph?.isEditing) {
+      this.sceneController.updateContextMenuState(event);
+      menuItems.push(MenuItemDivider);
+      menuItems.push(...this.glyphEditContextMenuItems);
+    }
+    return menuItems;
   }
 
   getViewMenuItems() {
-    return {
-      title: translate("menubar.view"),
+    const items = [
+      { actionIdentifier: "action.zoom-in" },
+      { actionIdentifier: "action.zoom-out" },
+      { actionIdentifier: "action.zoom-fit-selection" },
+    ];
+
+    if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+      this.sceneController.updateContextMenuState();
+      items.push(MenuItemDivider);
+      items.push(...this.glyphSelectedContextMenuItems);
+    }
+
+    items.push(MenuItemDivider);
+    items.push({
+      title: translate("action-topics.glyph-editor-appearance"),
       getItems: () => {
-        const items = [
-          {
-            actionIdentifier: "action.zoom-in",
-          },
-          {
-            actionIdentifier: "action.zoom-out",
-          },
-          {
-            actionIdentifier: "action.zoom-fit-selection",
-          },
-        ];
+        const layerDefs = this.visualizationLayers.definitions.filter(
+          (layer) => layer.userSwitchable
+        );
 
-        if (typeof this.sceneModel.selectedGlyph !== "undefined") {
-          this.sceneController.updateContextMenuState();
-          items.push(MenuItemDivider);
-          items.push(...this.glyphSelectedContextMenuItems);
-        }
-
-        items.push(MenuItemDivider);
-        items.push({
-          title: translate("action-topics.glyph-editor-appearance"),
-          getItems: () => {
-            const layerDefs = this.visualizationLayers.definitions.filter(
-              (layer) => layer.userSwitchable
-            );
-
-            return layerDefs.map((layerDef) => {
-              return {
-                actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
-                checked: this.visualizationLayersSettings.model[layerDef.identifier],
-              };
-            });
-          },
+        return layerDefs.map((layerDef) => {
+          return {
+            actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
+            checked: this.visualizationLayersSettings.model[layerDef.identifier],
+          };
         });
-
-        return items;
       },
-    };
+    });
+
+    return items;
   }
 
   getGlyphMenuItems() {
-    return {
-      title: translate("menubar.glyph"),
-      enabled: () => true,
-      getItems: () => [
-        { actionIdentifier: "action.glyph.add-source" },
-        { actionIdentifier: "action.glyph.delete-source" },
-        { actionIdentifier: "action.glyph.edit-glyph-axes" },
-        MenuItemDivider,
-        { actionIdentifier: "action.glyph.add-background-image" },
-      ],
-    };
+    return [
+      { actionIdentifier: "action.glyph.add-source" },
+      { actionIdentifier: "action.glyph.delete-source" },
+      { actionIdentifier: "action.glyph.edit-glyph-axes" },
+      MenuItemDivider,
+      { actionIdentifier: "action.glyph.add-background-image" },
+    ];
   }
 
   restoreOpenTabs(sidebarName) {

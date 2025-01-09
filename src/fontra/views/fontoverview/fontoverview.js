@@ -48,7 +48,6 @@ export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
 
-    this.basicContextMenuItems = [];
     this.initActions();
     this.initContextMenuItems();
 
@@ -63,41 +62,15 @@ export class FontOverviewController extends ViewController {
     );
   }
 
-  getEditMenuItems() {
-    return {
-      title: translate("menubar.edit"),
-      getItems: () => {
-        return [...this.basicContextMenuItems];
-      },
-    };
-  }
-
   getViewMenuItems() {
-    return {
-      title: translate("menubar.view"),
-      getItems: () => {
-        const items = [
-          {
-            actionIdentifier: "action.zoom-in",
-          },
-          {
-            actionIdentifier: "action.zoom-out",
-          },
-        ];
-        return items;
-      },
-    };
+    return [
+      { actionIdentifier: "action.zoom-in" },
+      { actionIdentifier: "action.zoom-out" },
+    ];
   }
 
   getGlyphMenuItems() {
-    return {
-      title: translate("menubar.glyph"),
-      enabled: () => true,
-      getItems: () => [
-        { actionIdentifier: "action.glyph.duplicate" },
-        { actionIdentifier: "action.glyph.delete" },
-      ],
-    };
+    return [{ actionIdentifier: "action.glyph.delete" }];
   }
 
   async start() {
@@ -296,13 +269,7 @@ export class FontOverviewController extends ViewController {
   }
 
   initContextMenuItems() {
-    // TODO: Implement the actions + how to handle them?
-    this.basicContextMenuItems.push({
-      actionIdentifier: "action.undo",
-    });
-    this.basicContextMenuItems.push({
-      actionIdentifier: "action.redo",
-    });
+    // TODO: Need to implement this.
   }
 
   initActions() {
