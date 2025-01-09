@@ -15,6 +15,8 @@ export class FontOverviewNavigation extends HTMLElement {
       fontOverviewController.fontOverviewSettingsController;
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
+    this._checkboxControllers = {};
+
     this._setupUI();
   }
 
@@ -57,6 +59,20 @@ export class FontOverviewNavigation extends HTMLElement {
 
     const accordion = new Accordion();
 
+    this._projectGlyphSetsItem = {
+      label: "Project glyph sets", // TODO: translate
+      id: "project-glyph-sets",
+      content: html.div(),
+      open: true,
+    };
+
+    this._myGlyphSetsItem = {
+      label: "My glyph sets", // TODO: translate
+      id: "my-glyph-sets",
+      content: html.div(),
+      open: true,
+    };
+
     accordion.items = [
       {
         label: translate("sources.labels.location"),
@@ -68,23 +84,32 @@ export class FontOverviewNavigation extends HTMLElement {
         content: this._makeGroupByUI(),
         open: true,
       },
-      {
-        label: "Project glyph sets", // TODO: translate
-        content: this._makeProjectGlyphSetsUI(),
-        open: true,
-      },
-      {
-        label: "My glyph sets", // TODO: translate
-        content: this._makeMyGlyphSetsUI(),
-        open: true,
-      },
+      this._projectGlyphSetsItem,
+      this._myGlyphSetsItem,
     ];
 
     this.appendChild(accordion);
+
+    this.fontOverviewSettingsController.addKeyListener("projectGlyphSets", (event) =>
+      this._updateProjectGlyphSets()
+    );
+    this.fontOverviewSettingsController.addKeyListener("myGlyphSets", (event) =>
+      this._updateMyGlyphSets()
+    );
+    this._updateProjectGlyphSets();
+    this._updateMyGlyphSets();
   }
 
   _makeGroupByUI() {
     return this._makeCheckboxUI("groupByKeys", groupByProperties);
+  }
+
+  _updateProjectGlyphSets() {
+    this._projectGlyphSetsItem.content = this._makeProjectGlyphSetsUI();
+  }
+
+  _updateMyGlyphSets() {
+    this._myGlyphSetsItem.content = this._makeMyGlyphSetsUI();
   }
 
   _makeProjectGlyphSetsUI() {
@@ -94,6 +119,7 @@ export class FontOverviewNavigation extends HTMLElement {
       key,
       label: value.label,
     }));
+
     return this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets);
   }
 
@@ -103,10 +129,14 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {
-    const checkboxController = makeCheckboxController(
-      this.fontOverviewSettingsController,
-      settingsKey
-    );
+    let checkboxController = this._checkboxControllers[settingsKey];
+    if (!checkboxController) {
+      checkboxController = makeCheckboxController(
+        this.fontOverviewSettingsController,
+        settingsKey
+      );
+      this._checkboxControllers[settingsKey] = checkboxController;
+    }
 
     return html.div({}, [
       ...glyphSets.map(({ key, label }) =>
