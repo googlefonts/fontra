@@ -88,13 +88,18 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeProjectGlyphSetsUI() {
-    const projectGlyphSets = [{ key: "__this_font__", label: "This font's glyph set" }];
-    return this._makeCheckboxUI("projectGlyphSets", projectGlyphSets);
+    const projectGlyphSets = Object.entries(
+      this.fontOverviewSettings.projectGlyphSets
+    ).map(([key, value]) => ({
+      key,
+      label: value.label,
+    }));
+    return this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets);
   }
 
   _makeMyGlyphSetsUI() {
     const myGlyphSets = [];
-    return this._makeCheckboxUI("myGlyphSets", myGlyphSets);
+    return this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets);
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {

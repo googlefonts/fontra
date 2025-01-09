@@ -25,9 +25,11 @@ const persistentSettings = [
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "groupByKeys" },
-  { key: "projectGlyphSets" },
-  { key: "myGlyphSets" },
+  { key: "projectGlyphSetSelection" },
+  { key: "myGlyphSetSelection" },
 ];
+
+const THIS_FONTS_GLYPHSET = "";
 
 function getDefaultFontOverviewSettings() {
   return {
@@ -37,8 +39,10 @@ function getDefaultFontOverviewSettings() {
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
     groupByKeys: [],
-    projectGlyphSets: ["__this_font__"],
+    projectGlyphSets: { [THIS_FONTS_GLYPHSET]: { label: "This font's glyphs" } },
     myGlyphSets: [],
+    projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
+    myGlyphSetSelection: [],
   };
 }
 
