@@ -97,19 +97,26 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeProjectGlyphSetsUI() {
-    const projectGlyphSetsController = new ObservableController({});
-
-    return html.div({ class: "glyph-sets-container" }, [
-      labeledCheckbox(
-        "This font's glyph set",
-        projectGlyphSetsController,
-        "__this_font__"
-      ),
-    ]);
+    const projectGlyphSets = [{ key: "__this_font__", label: "This font's glyph set" }];
+    return this._makeGlyphSetsUI("projectGlyphSets", projectGlyphSets);
   }
 
   _makeMyGlyphSetsUI() {
-    return html.div({ class: "glyph-sets-container" }, []);
+    const myGlyphSets = [{ key: "floof", label: "Gloof" }];
+    return this._makeGlyphSetsUI("myGlyphSets", myGlyphSets);
+  }
+
+  _makeGlyphSetsUI(settingsKey, glyphSets) {
+    const checkboxController = makeCheckboxController(
+      this.fontOverviewSettingsController,
+      settingsKey
+    );
+
+    return html.div({}, [
+      ...glyphSets.map(({ key, label }) =>
+        labeledCheckbox(label, checkboxController, key)
+      ),
+    ]);
   }
 
   _updateFontSourceInput() {
