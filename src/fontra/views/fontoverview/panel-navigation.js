@@ -53,6 +53,8 @@ export class FontOverviewNavigation extends HTMLElement {
       searchStringKey: "searchString",
     });
 
+    this.appendChild(this.searchField);
+
     const accordion = new Accordion();
 
     accordion.items = [
@@ -78,7 +80,6 @@ export class FontOverviewNavigation extends HTMLElement {
       },
     ];
 
-    this.appendChild(this.searchField);
     this.appendChild(accordion);
   }
 
