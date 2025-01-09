@@ -3,7 +3,7 @@ import { translate } from "/core/localization.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 
 const mapMenuItemKeyToFunction = {
-  // File: getFileMenuItems, // TODO: this does not work, becuase viewController.fontController?.backendInfo is undefined. And I don't know why.
+  File: getFileMenuItems,
   Font: getFontMenuItems,
   Edit: getEditMenuItems,
   View: getViewMenuItems,
@@ -14,24 +14,17 @@ export function makeFontraMenuBar(menuItemKeys, viewController) {
   const menuBarArray = [getFontraMenu()]; // Fontra-Menu at the beginning.
 
   for (const itemKey of menuItemKeys) {
-    const methodName = `get${itemKey}MenuItems`;
-    let menuItems = [];
-    if (typeof viewController[methodName] === "function") {
-      menuItems = viewController[methodName]();
-    } else if (mapMenuItemKeyToFunction[itemKey]) {
-      menuItems = mapMenuItemKeyToFunction[itemKey](viewController);
-    } else if (menuItems.length === 0) {
-      console.log("Menu has not items, skip: ", itemKey);
-      continue;
-    } else {
-      console.log("Method/Function does not exist, skip: ", itemKey, methodName);
+    const getMenuItemsFunc =
+      viewController[`get${itemKey}MenuItems`] || mapMenuItemKeyToFunction[itemKey];
+    if (!getMenuItemsFunc) {
+      console.log("Method/Function does not exist, skip: ", itemKey);
       continue;
     }
 
     const menu = {
       title: translate(`menubar.${itemKey.toLowerCase()}`),
       getItems: () => {
-        return menuItems;
+        return getMenuItemsFunc(viewController);
       },
     };
     menuBarArray.push(menu);
