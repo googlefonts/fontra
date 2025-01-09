@@ -707,12 +707,7 @@ export class EditorController extends ViewController {
   }
 
   initTopBar() {
-    // The keys will be used to call the methods like: "File" -> getFileMenuItems()
-    // "Bullshit" is there only for testing, that this will be ignored.
-    this.myMenuBar = makeFontraMenuBar(
-      ["File", "Edit", "View", "Font", "Glyph", "Bullshit"],
-      this
-    );
+    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font", "Glyph"], this);
     document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
   }
 

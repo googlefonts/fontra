@@ -14,17 +14,13 @@ export function makeFontraMenuBar(menuItemKeys, viewController) {
   const menuBarArray = [getFontraMenu()]; // Fontra-Menu at the beginning.
 
   for (const itemKey of menuItemKeys) {
-    const getMenuItemsFunc =
-      viewController[`get${itemKey}MenuItems`] || mapMenuItemKeyToFunction[itemKey];
-    if (!getMenuItemsFunc) {
-      console.log("Method/Function does not exist, skip: ", itemKey);
-      continue;
-    }
-
+    const methodName = `get${itemKey}MenuItems`;
     const menu = {
       title: translate(`menubar.${itemKey.toLowerCase()}`),
       getItems: () => {
-        return getMenuItemsFunc(viewController);
+        return viewController[methodName]
+          ? viewController[methodName]()
+          : mapMenuItemKeyToFunction[itemKey](viewController);
       },
     };
     menuBarArray.push(menu);
