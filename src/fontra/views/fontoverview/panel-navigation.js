@@ -43,6 +43,9 @@ export class FontOverviewNavigation extends HTMLElement {
       );
     }
 
+    this.fontOverviewSettingsController.addKeyListener("fontLocationSource", (event) =>
+      this._updateFontSourceInput()
+    );
     this._updateFontSourceInput();
 
     this.searchField = new GlyphSearchField({
@@ -101,10 +104,6 @@ export class FontOverviewNavigation extends HTMLElement {
         }
       });
     });
-
-    this.fontOverviewSettingsController.addKeyListener("fontLocationSource", (event) =>
-      this._updateFontSourceInput()
-    );
 
     return html.div({}, [
       ...groupByProperties.map(({ key, label }) =>
