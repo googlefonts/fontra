@@ -70,7 +70,12 @@ export class FontOverviewController extends ViewController {
   }
 
   getGlyphMenuItems() {
-    return [{ actionIdentifier: "action.glyph.delete" }];
+    return [
+      {
+        title: translate("Delete Selection"),
+        actionIdentifier: "action.glyph.delete",
+      },
+    ];
   }
 
   async start() {
