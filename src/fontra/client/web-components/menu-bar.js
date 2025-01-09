@@ -4,9 +4,8 @@ import { MenuPanel } from "./menu-panel.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
-  "menu-top-bar-background-color": ["#eee", "#444"],
-  "menu-top-bar-border-color": ["#d3d3d3", "#2e2e2e"],
-  "menu-top-bar-link-hover": ["#e1e1e1", "rgb(47, 47, 47)"],
+  "menu-bar-background-color": ["#eee", "#444"],
+  "menu-bar-link-hover": ["#e1e1e1", "rgb(47, 47, 47)"],
 };
 
 export class MenuBar extends SimpleElement {
@@ -30,7 +29,7 @@ export class MenuBar extends SimpleElement {
 
   .menu-item.hovered,
   .menu-item.current {
-    background: var(--menu-top-bar-link-hover);
+    background: var(--menu-bar-link-hover);
     border-radius: 5px;
   }
 
@@ -206,7 +205,7 @@ export class MenuBar extends SimpleElement {
       );
     }
     this.contentElement.appendChild(fragment);
-    this.contentElement.style.background = "var(--menu-top-bar-background-color)";
+    this.contentElement.style.background = "var(--menu-bar-background-color)";
   }
 }
 
