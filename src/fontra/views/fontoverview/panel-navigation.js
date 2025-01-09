@@ -84,14 +84,14 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeGroupByUI() {
-    const groupByController = makeCheckBoxController(
+    const checkboxController = makeCheckboxController(
       this.fontOverviewSettingsController,
       "groupByKeys"
     );
 
     return html.div({}, [
       ...groupByProperties.map(({ key, label }) =>
-        labeledCheckbox(label, groupByController, key)
+        labeledCheckbox(label, checkboxController, key)
       ),
     ]);
   }
@@ -125,7 +125,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
 customElements.define("font-overview-navigation", FontOverviewNavigation);
 
-function makeCheckBoxController(settingsController, settingsKey) {
+function makeCheckboxController(settingsController, settingsKey) {
   const settings = settingsController.model;
 
   const checkboxController = new ObservableController(
