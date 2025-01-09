@@ -77,32 +77,39 @@ export default class TextEntryPanel extends Panel {
   getContentElement() {
     return html.div(
       {
-        class: "sidebar-text-entry",
+        class: "panel",
       },
       [
-        html.createDomElement("textarea", {
-          rows: 1,
-          wrap: "off",
-          id: "text-entry-textarea",
-        }),
         html.div(
           {
-            id: "text-align-menu",
+            class: "panel-section",
           },
           [
-            html.createDomElement("inline-svg", {
-              "data-align": "left",
-              "src": "/images/alignleft.svg",
+            html.createDomElement("textarea", {
+              rows: 1,
+              wrap: "off",
+              id: "text-entry-textarea",
             }),
-            html.createDomElement("inline-svg", {
-              "class": "selected",
-              "data-align": "center",
-              "src": "/images/aligncenter.svg",
-            }),
-            html.createDomElement("inline-svg", {
-              "data-align": "right",
-              "src": "/images/alignright.svg",
-            }),
+            html.div(
+              {
+                id: "text-align-menu",
+              },
+              [
+                html.createDomElement("inline-svg", {
+                  "data-align": "left",
+                  "src": "/images/alignleft.svg",
+                }),
+                html.createDomElement("inline-svg", {
+                  "class": "selected",
+                  "data-align": "center",
+                  "src": "/images/aligncenter.svg",
+                }),
+                html.createDomElement("inline-svg", {
+                  "data-align": "right",
+                  "src": "/images/alignright.svg",
+                }),
+              ]
+            ),
           ]
         ),
       ]
