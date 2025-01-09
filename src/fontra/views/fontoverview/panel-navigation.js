@@ -60,17 +60,17 @@ export class FontOverviewNavigation extends HTMLElement {
       },
       {
         label: "Group by", // TODO: translate
-        content: this._setupGroupByUI(),
+        content: this._makeGroupByUI(),
         open: true,
       },
       {
         label: "Project glyph sets", // TODO: translate
-        content: this._setupProjectGlyphSetsUI(),
+        content: this._makeProjectGlyphSetsUI(),
         open: true,
       },
       {
         label: "My glyph sets", // TODO: translate
-        content: this._setupMyGlyphSetsUI(),
+        content: this._makeMyGlyphSetsUI(),
         open: true,
       },
     ];
@@ -79,7 +79,7 @@ export class FontOverviewNavigation extends HTMLElement {
     this.appendChild(accordion);
   }
 
-  _setupGroupByUI() {
+  _makeGroupByUI() {
     const groupByController = new ObservableController(
       Object.fromEntries(
         this.fontOverviewSettings.groupByKeys.map((key) => [key, true])
@@ -113,7 +113,7 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  _setupProjectGlyphSetsUI() {
+  _makeProjectGlyphSetsUI() {
     const projectGlyphSetsController = new ObservableController({});
 
     return html.div({ class: "glyph-sets-container" }, [
@@ -125,7 +125,7 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  _setupMyGlyphSetsUI() {
+  _makeMyGlyphSetsUI() {
     return html.div({ class: "glyph-sets-container" }, []);
   }
 
