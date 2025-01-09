@@ -10,15 +10,15 @@ const mapMenuItemKeyToFunction = {
   // "Glyph": getGlyphMenuItems,
 };
 
-export function makeFontraMenuBar(menuItemKeys, delegate) {
+export function makeFontraMenuBar(menuItemKeys, viewController) {
   const menuBarArray = [getFontraMenuItems()]; // Fontra-Menu at the beginning.
 
   for (const itemKey of menuItemKeys) {
     const methodName = `get${itemKey}MenuItems`;
-    if (typeof delegate[methodName] === "function") {
-      menuBarArray.push(delegate[methodName]());
+    if (typeof viewController[methodName] === "function") {
+      menuBarArray.push(viewController[methodName]());
     } else if (mapMenuItemKeyToFunction[itemKey]) {
-      menuBarArray.push(mapMenuItemKeyToFunction[itemKey](delegate));
+      menuBarArray.push(mapMenuItemKeyToFunction[itemKey](viewController));
     } else {
       console.log("Method/Function does not exist, skip: ", itemKey, methodName);
     }
@@ -92,12 +92,14 @@ function getHelpMenuItems() {
   };
 }
 
-function getFileMenuItems(delegate) {
+function getFileMenuItems(viewController) {
   return {
     title: translate("menubar.file"),
     getItems: () => {
       let exportFormats =
-        delegate.fontController?.backendInfo.projectManagerFeatures["export-as"] || [];
+        viewController.fontController?.backendInfo.projectManagerFeatures[
+          "export-as"
+        ] || [];
       if (exportFormats.length > 0) {
         return [
           {
