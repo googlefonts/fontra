@@ -2,6 +2,14 @@ import * as html from "./html-utils.js";
 import { translate } from "/core/localization.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 
+const mapMenuItemKeyToFunction = {
+  File: getFileMenuItems,
+  Font: getFontMenuItems,
+  // "Edit": getEditMenuItems,
+  // "View": getViewMenuItems,
+  // "Glyph": getGlyphMenuItems,
+};
+
 export function makeFontraMenuBar(menuItemKeys, delegate) {
   const menuBarArray = [getFontraMenuItems()]; // Fontra-Menu at the beginning.
 
@@ -9,12 +17,10 @@ export function makeFontraMenuBar(menuItemKeys, delegate) {
     const methodName = `get${itemKey}MenuItems`;
     if (typeof delegate[methodName] === "function") {
       menuBarArray.push(delegate[methodName]());
+    } else if (mapMenuItemKeyToFunction[itemKey]) {
+      menuBarArray.push(mapMenuItemKeyToFunction[itemKey](delegate));
     } else {
-      try {
-        menuBarArray.push(eval(`${methodName}()`));
-      } catch (error) {
-        console.log("Method/Function does not exist, skip: ", itemKey, methodName);
-      }
+      console.log("Method/Function does not exist, skip: ", itemKey, methodName);
     }
   }
 
@@ -86,22 +92,36 @@ function getHelpMenuItems() {
   };
 }
 
-function getFileMenuItems() {
+function getFileMenuItems(delegate) {
   return {
     title: translate("menubar.file"),
     getItems: () => {
-      return [
-        {
-          title: translate("menubar.file.new"),
-          enabled: () => false,
-          callback: () => {},
-        },
-        {
-          title: translate("menubar.file.open"),
-          enabled: () => false,
-          callback: () => {},
-        },
-      ];
+      let exportFormats =
+        delegate.fontController?.backendInfo.projectManagerFeatures["export-as"] || [];
+      if (exportFormats.length > 0) {
+        return [
+          {
+            title: translate("menubar.file.export-as"),
+            getItems: () =>
+              exportFormats.map((format) => ({
+                actionIdentifier: `action.export-as.${format}`,
+              })),
+          },
+        ];
+      } else {
+        return [
+          {
+            title: translate("menubar.file.new"),
+            enabled: () => false,
+            callback: () => {},
+          },
+          {
+            title: translate("menubar.file.open"),
+            enabled: () => false,
+            callback: () => {},
+          },
+        ];
+      }
     },
   };
 }
