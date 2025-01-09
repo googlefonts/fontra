@@ -37,7 +37,6 @@ export class ViewController {
 
   constructor(font) {
     this.fontController = new FontController(font);
-    this.projectFileName = font.wsURL.split("/").slice(-1)[0];
   }
 
   async start() {

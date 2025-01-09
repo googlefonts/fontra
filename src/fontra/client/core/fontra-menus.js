@@ -20,14 +20,6 @@ export function makeFontraMenuBar(menuItemKeys, delegate) {
 
   menuBarArray.push(getHelpMenuItems()); // Help-Menu at the end.
   const menuBar = new MenuBar(menuBarArray);
-
-  // add project file name to the right side of the menu bar
-  const projectNameWrapper = html.div();
-  projectNameWrapper.textContent = delegate.projectFileName;
-  projectNameWrapper.style.marginLeft = "auto";
-  projectNameWrapper.style.marginRight = "0.5rem";
-  menuBar.contentElement.appendChild(projectNameWrapper);
-
   return menuBar;
 }
 
