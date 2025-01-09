@@ -84,27 +84,10 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeGroupByUI() {
-    const groupByController = new ObservableController(
-      Object.fromEntries(
-        this.fontOverviewSettings.groupByKeys.map((key) => [key, true])
-      )
+    const groupByController = makeCheckBoxController(
+      this.fontOverviewSettingsController,
+      "groupByKeys"
     );
-
-    groupByController.addListener((event) => {
-      if (event.senderInfo?.senderID !== this) {
-        this.fontOverviewSettings.groupByKeys = groupByKeys.filter(
-          (key) => groupByController.model[key]
-        );
-      }
-    });
-
-    this.fontOverviewSettingsController.addKeyListener("groupByKeys", (event) => {
-      groupByController.withSenderInfo({ senderID: this }, () => {
-        for (const key of groupByKeys) {
-          groupByController.model[key] = event.newValue.includes(key);
-        }
-      });
-    });
 
     return html.div({}, [
       ...groupByProperties.map(({ key, label }) =>
@@ -141,3 +124,29 @@ export class FontOverviewNavigation extends HTMLElement {
 }
 
 customElements.define("font-overview-navigation", FontOverviewNavigation);
+
+function makeCheckBoxController(settingsController, settingsKey) {
+  const settings = settingsController.model;
+
+  const checkboxController = new ObservableController(
+    Object.fromEntries(settings[settingsKey].map((key) => [key, true]))
+  );
+
+  checkboxController.addListener((event) => {
+    if (!event.senderInfo?.sentFromSettings) {
+      settings[settingsKey] = Object.entries(checkboxController.model)
+        .filter(([key, value]) => value)
+        .map(([key, value]) => key);
+    }
+  });
+
+  settingsController.addKeyListener(settingsKey, (event) => {
+    checkboxController.withSenderInfo({ sentFromSettings: true }, () => {
+      Object.entries(checkboxController.model).forEach(([key, value]) => {
+        checkboxController.model[key] = event.newValue.includes(key);
+      });
+    });
+  });
+
+  return checkboxController;
+}
