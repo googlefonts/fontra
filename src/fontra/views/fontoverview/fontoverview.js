@@ -49,9 +49,8 @@ export class FontOverviewController extends ViewController {
     super(font);
 
     this.initActions();
-    this.initContextMenuItems();
 
-    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font", "Glyph"], this);
+    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font"], this);
     document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
 
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
@@ -66,15 +65,6 @@ export class FontOverviewController extends ViewController {
     return [
       { actionIdentifier: "action.zoom-in" },
       { actionIdentifier: "action.zoom-out" },
-    ];
-  }
-
-  getGlyphMenuItems() {
-    return [
-      {
-        title: translate("Delete Selection"),
-        actionIdentifier: "action.glyph.delete",
-      },
     ];
   }
 
@@ -273,10 +263,6 @@ export class FontOverviewController extends ViewController {
     //
   }
 
-  initContextMenuItems() {
-    // TODO: Need to implement this.
-  }
-
   initActions() {
     {
       const topic = "0030-action-topics.menu.edit";
@@ -330,15 +316,11 @@ export class FontOverviewController extends ViewController {
         () => this.zoomOut()
       );
     }
-    {
-      const topic = "0035-action-topics.menu.glyph";
-      registerAction("action.glyph.delete", { topic }, () => this.deleteGlyphs());
-    }
   }
 
   async canUndoRedo(isRedo) {
     // TODO: Do we really need this here? Or is it always true anyway?
-    return true;
+    return false;
   }
 
   async doUndoRedo(isRedo) {
