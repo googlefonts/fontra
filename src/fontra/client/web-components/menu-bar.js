@@ -18,7 +18,7 @@ export class MenuBar extends SimpleElement {
     display: flex;
     align-items: center;
     font-size: 1rem;
-    height: var(--menu-top-bar-height);
+    height: 100%;
     padding: 0 0.5rem;
   }
 
