@@ -25,6 +25,8 @@ const persistentSettings = [
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "groupByKeys" },
+  { key: "projectGlyphSets" },
+  { key: "myGlyphSets" },
 ];
 
 function getDefaultFontOverviewSettings() {
@@ -35,6 +37,8 @@ function getDefaultFontOverviewSettings() {
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
     groupByKeys: [],
+    projectGlyphSets: ["__this_font__"],
+    myGlyphSets: [],
   };
 }
 
