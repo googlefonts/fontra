@@ -360,7 +360,6 @@ export class FontOverviewController extends ViewController {
     }
     {
       const topic = "0035-action-topics.menu.glyph";
-      registerAction("action.glyph.duplicate", { topic }, () => this.duplicateGlyph());
       registerAction("action.glyph.delete", { topic }, () => this.deleteGlyphs());
     }
   }
@@ -381,11 +380,6 @@ export class FontOverviewController extends ViewController {
 
   async zoomOut() {
     console.log("font overview zoom out");
-  }
-
-  async duplicateGlyph() {
-    // TODO: See doCopy and doPaste
-    console.log("duplicate glyph");
   }
 
   async deleteGlyphs() {
