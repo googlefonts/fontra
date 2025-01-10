@@ -47,8 +47,8 @@ function getDefaultFontOverviewSettings() {
 }
 
 const CELL_MAGNIFICATION_FACTOR = 2 ** (1 / 4);
-const CELL_MAGNIFICATION_MIN = 0.5;
-const CELL_MAGNIFICATION_MAX = 5;
+const CELL_MAGNIFICATION_MIN = 0.25;
+const CELL_MAGNIFICATION_MAX = 4;
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
