@@ -297,11 +297,6 @@ export class FontOverviewController extends ViewController {
   async zoomOut() {
     console.log("font overview zoom out");
   }
-
-  async deleteGlyphs() {
-    // TODO: delete one or more glyphs, based on selection. See _deleteCurrentGlyph(event)
-    console.log("delete glyphs");
-  }
 }
 
 function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
