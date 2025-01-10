@@ -56,8 +56,8 @@ export class FontOverviewController extends ViewController {
 
     this.initActions();
 
-    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font"], this);
-    document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
+    const myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font"], this);
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
 
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
 

@@ -656,8 +656,11 @@ export class EditorController extends ViewController {
   }
 
   initTopBar() {
-    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font", "Glyph"], this);
-    document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
+    const myMenuBar = makeFontraMenuBar(
+      ["File", "Edit", "View", "Font", "Glyph"],
+      this
+    );
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
   }
 
   getEditMenuItems() {
