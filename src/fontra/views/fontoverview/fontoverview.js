@@ -284,24 +284,25 @@ export class FontOverviewController extends ViewController {
     registerActionCallbacks("action.zoom-out", () => this.zoomOut());
   }
 
-  async canUndoRedo(isRedo) {
+  canUndoRedo(isRedo) {
     // For now we have no undo
+    console.log("hey undo???");
     return false;
   }
 
-  async doUndoRedo(isRedo) {
+  doUndoRedo(isRedo) {
     // Stub
     console.log(isRedo ? "redo" : "undo");
   }
 
-  async zoomIn() {
+  zoomIn() {
     this.glyphCellView.magnification = Math.min(
       this.glyphCellView.magnification * CELL_MAGNIFICATION_FACTOR,
       CELL_MAGNIFICATION_MAX
     );
   }
 
-  async zoomOut() {
+  zoomOut() {
     this.glyphCellView.magnification = Math.max(
       this.glyphCellView.magnification / CELL_MAGNIFICATION_FACTOR,
       CELL_MAGNIFICATION_MIN
