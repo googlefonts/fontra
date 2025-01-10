@@ -281,12 +281,12 @@ export class FontOverviewController extends ViewController {
   }
 
   async canUndoRedo(isRedo) {
-    // TODO: Do we really need this here? Or is it always true anyway?
+    // For now we have no undo
     return false;
   }
 
   async doUndoRedo(isRedo) {
-    // TODO: Implement the undo/redo functionality.
+    // Stub
     console.log(isRedo ? "redo" : "undo");
   }
 
