@@ -28,9 +28,15 @@ actionInfoController.addListener((event) => {
   actionsByBaseKey = undefined;
 });
 
-export function registerAction(actionIdentifier, actionInfo, callback, enabled = null) {
+export function registerAction(
+  actionIdentifier,
+  actionInfo,
+  callback,
+  enabled = null,
+  title = null
+) {
   registerActionInfo(actionIdentifier, actionInfo);
-  registerActionCallbacks(actionIdentifier, callback, enabled);
+  registerActionCallbacks(actionIdentifier, callback, enabled, title);
 }
 
 const topicSortIndices = {};
@@ -55,8 +61,13 @@ export function registerActionInfo(actionIdentifier, actionInfo) {
   topicSortIndices[actionInfo.topic] = sortIndex + 1;
 }
 
-export function registerActionCallbacks(actionIdentifier, callback, enabled = null) {
-  actionCallbacks[actionIdentifier] = { callback, enabled };
+export function registerActionCallbacks(
+  actionIdentifier,
+  callback,
+  enabled = null,
+  title = null
+) {
+  actionCallbacks[actionIdentifier] = { callback, enabled, title };
 }
 
 export function setCustomShortCuts(actionIdentifier, customShortCuts) {
@@ -75,7 +86,11 @@ export function getActionInfo(actionIdentifier) {
 
 export function getActionTitle(actionIdentifier, args = "") {
   const actionInfo = getActionInfo(actionIdentifier);
-  return translate(actionInfo?.titleKey || actionIdentifier, args);
+  const callbacks = actionCallbacks[actionIdentifier];
+  return translate(
+    callbacks?.title?.() || actionInfo?.titleKey || actionIdentifier,
+    args
+  );
 }
 
 // reference: https://www.toptal.com/developers/keycode/table
