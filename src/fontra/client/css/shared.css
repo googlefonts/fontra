@@ -3,3 +3,28 @@
 *::after {
   box-sizing: border-box;
 }
+
+button,
+input[type="button"] {
+  cursor: pointer;
+  background-color: #ddd;
+
+  border-radius: 1em;
+  padding: 0.35em 2em 0.35em 2em;
+
+  border: none;
+  font-family: fontra-ui-regular, sans-serif;
+  font-size: 1em;
+  text-align: center;
+  transition: 100ms;
+}
+
+button:hover,
+input[type="button"]:hover {
+  background-color: #ccc;
+}
+
+button:active,
+input[type="button"]:active {
+  background-color: #bbb;
+}
