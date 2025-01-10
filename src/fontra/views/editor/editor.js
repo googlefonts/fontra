@@ -708,7 +708,13 @@ export class EditorController extends ViewController {
           titleKey: "menubar.view.find-glyphs-that-use",
           disabled: true,
         },
-        () => this.doFindGlyphsThatUseGlyph()
+        () => this.doFindGlyphsThatUseGlyph(),
+        null,
+        () =>
+          translate(
+            "menubar.view.find-glyphs-that-use",
+            this.sceneSettings.selectedGlyphName
+          )
       );
     }
   }
@@ -1458,11 +1464,6 @@ export class EditorController extends ViewController {
     });
 
     this.glyphSelectedContextMenuItems.push({
-      title: () =>
-        translate(
-          "menubar.view.find-glyphs-that-use",
-          this.sceneSettings.selectedGlyphName
-        ),
       actionIdentifier: "action.find-glyphs-that-use",
     });
     this.glyphSelectedContextMenuItems.push(MenuItemDivider);
