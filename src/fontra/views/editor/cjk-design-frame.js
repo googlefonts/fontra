@@ -2,13 +2,38 @@ import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
-import { translate } from "/core/localization.js";
-import { range } from "/core/utils.js";
+import { assert, range } from "/core/utils.js";
 
 const cjkDesignFrameGlyphName = "_cjkDesignFrame";
 
+let _theCJKDesignFrame;
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.cjk.design.frame",
+  name: "sidebar.user-settings.glyph.cjkframe",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 200,
+  screenParameters: { strokeWidth: 1 },
+  colors: {
+    strokeColor: "#0004",
+    overshootColor: "#00BFFF26",
+    secondLineColor: "#A6296344",
+  },
+  colorsDarkMode: {
+    strokeColor: "#FFF6",
+    secondLineColor: "#A62963AA",
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) =>
+    _theCJKDesignFrame.draw(context, positionedGlyph, parameters, model, controller),
+});
+
 export class CJKDesignFrame {
   constructor(editor) {
+    assert(!_theCJKDesignFrame, "CJKDesignFrame can't be instantiated multiple times");
+    _theCJKDesignFrame = this;
+
     this.editor = editor;
     this.fontController = editor.fontController;
     this.fontController.addGlyphChangeListener(cjkDesignFrameGlyphName, () =>
@@ -22,26 +47,6 @@ export class CJKDesignFrame {
       }
     );
 
-    registerVisualizationLayerDefinition({
-      identifier: "fontra.cjk.design.frame",
-      name: "sidebar.user-settings.glyph.cjkframe",
-      selectionMode: "editing",
-      userSwitchable: true,
-      defaultOn: false,
-      zIndex: 200,
-      screenParameters: { strokeWidth: 1 },
-      colors: {
-        strokeColor: "#0004",
-        overshootColor: "#00BFFF26",
-        secondLineColor: "#A6296344",
-      },
-      colorsDarkMode: {
-        strokeColor: "#FFF6",
-        secondLineColor: "#A62963AA",
-      },
-      draw: (context, positionedGlyph, parameters, model, controller) =>
-        this.draw(context, positionedGlyph, parameters, model, controller),
-    });
     this.fontController.ensureInitialized.then(() => {
       this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
     });

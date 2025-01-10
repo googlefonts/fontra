@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import itertools
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, replace
+from enum import Enum
 from typing import Any
 
+from fontTools.cu2qu.ufo import glyphs_to_quadratic
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
+from fontTools.pens.pointPen import SegmentToPointPen
 
+from ...core.async_property import async_cached_property
 from ...core.classes import (
     Component,
     FontSource,
@@ -17,8 +22,17 @@ from ...core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
-from ...core.path import PackedPath
+from ...core.glyphdependencies import GlyphDependencies
+from ...core.instancer import FontInstancer, GlyphInstancer
+from ...core.path import PackedPath, PackedPathPointPen
 from ...core.varutils import locationToTuple
+from .axes import (
+    AxisRange,
+    moveDefaultLocations,
+    subsetLocationKeep,
+    trimLocations,
+    updateGlyphSourcesAndLayers,
+)
 from .base import (
     BaseFilter,
     getActiveSources,
@@ -164,54 +178,60 @@ class DecomposeComposites(BaseFilter):
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
-        glyph = instancer.glyph
-        defaultFontSourceLocation = instancer.defaultFontSourceLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
-            return glyph
+            glyph = instancer.glyph
+        else:
+            glyph = await decomposeComposites(self.fontInstancer, instancer)
 
-        haveLocations = getFontSourceLocationsFromSources(
-            self.fontInstancer, instancer.activeSources, defaultFontSourceLocation
+        return glyph
+
+
+async def decomposeComposites(
+    fontInstancer: FontInstancer, instancer: GlyphInstancer
+) -> VariableGlyph:
+    defaultFontSourceLocation = instancer.defaultFontSourceLocation
+
+    haveLocations = getFontSourceLocationsFromSources(
+        fontInstancer, instancer.activeSources, defaultFontSourceLocation
+    )
+
+    needLocations = await getFontSourceLocationsFromBaseGlyphs(
+        fontInstancer,
+        instancer.glyph,
+        fontInstancer.backend,
+        defaultFontSourceLocation,
+    )
+
+    needLocations = multiplyLocations(
+        haveLocations, needLocations, defaultFontSourceLocation
+    )
+
+    locationsToAdd = [
+        dict(location) for location in sorted(needLocations - haveLocations)
+    ]
+    layerNames = [locationToString(location) for location in locationsToAdd]
+
+    newSources = instancer.activeSources + [
+        GlyphSource(name=name, location=location, layerName=name)
+        for location, name in zip(locationsToAdd, layerNames, strict=True)
+    ]
+    newLayers = {}
+
+    for source in newSources:
+        instance = instancer.instantiate(fontInstancer.getGlyphSourceLocation(source))
+
+        newLayers[source.layerName] = Layer(
+            glyph=replace(
+                instance.glyph,
+                path=await instance.getDecomposedPath(),
+                components=[],
+            ),
         )
 
-        needLocations = await getFontSourceLocationsFromBaseGlyphs(
-            self.fontInstancer,
-            glyph,
-            self.fontInstancer.backend,
-            defaultFontSourceLocation,
-        )
-
-        needLocations = multiplyLocations(
-            haveLocations, needLocations, defaultFontSourceLocation
-        )
-
-        locationsToAdd = [
-            dict(location) for location in sorted(needLocations - haveLocations)
-        ]
-        layerNames = [locationToString(location) for location in locationsToAdd]
-
-        newSources = instancer.activeSources + [
-            GlyphSource(name=name, location=location, layerName=name)
-            for location, name in zip(locationsToAdd, layerNames, strict=True)
-        ]
-        newLayers = {}
-
-        for source in newSources:
-            instance = instancer.instantiate(
-                self.fontInstancer.getGlyphSourceLocation(source)
-            )
-
-            newLayers[source.layerName] = Layer(
-                glyph=replace(
-                    instance.glyph,
-                    path=await instance.getDecomposedPath(),
-                    components=[],
-                ),
-            )
-
-        return replace(glyph, sources=newSources, layers=newLayers)
+    return replace(instancer.glyph, sources=newSources, layers=newLayers)
 
 
 async def getFontSourceLocationsFromBaseGlyphs(
@@ -294,6 +314,182 @@ def multiplyLocations(
         for haveLoc, needLoc in itertools.product(haveLocations, needLocations)
     ]
     return {locationToTuple(loc) for loc in needLocations}
+
+
+class MoveDefaultBehavior(Enum):
+    none = "none"  # Don't move any default axis positions
+    empty = "empty"  # Only move the default for axes that will be dropped, as a way to instantiate
+    any = "any"  # Move the default for axes if the needed range does not include the default
+
+
+@registerFilterAction("trim-variable-glyphs")
+@dataclass(kw_only=True)
+class TrimVariableGlyphs(BaseFilter):
+    moveDefaultBehavior: MoveDefaultBehavior = MoveDefaultBehavior.any
+
+    @async_cached_property
+    async def trimmedGlyphs(self) -> dict[str, VariableGlyph]:
+        fontInstancer = self.fontInstancer
+
+        dependencies = GlyphDependencies()
+        glyphsToTrim = {}
+        glyphAxisRanges = {}
+
+        for glyphName in await self.inputGlyphMap:
+            instancer = await fontInstancer.getGlyphInstancer(glyphName, True)
+
+            glyph = instancer.glyph
+
+            glyphAxisRanges[glyphName] = await getComponentAxisRanges(
+                fontInstancer, instancer
+            )
+
+            if instancer.componentNames:
+                dependencies.update(glyphName, instancer.componentNames)
+
+            if glyph.axes:
+                glyphsToTrim[glyphName] = instancer
+            else:
+                fontInstancer.dropGlyphInstancerFromCache(glyphName)
+
+        axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        trimmedGlyphs = {}
+
+        while glyphsToTrim:
+            # We want to trim those glyphs first, that are not *used* in
+            # a glyph to be trimmed
+            nextBatch = {
+                glyphName: instancer
+                for glyphName, instancer in glyphsToTrim.items()
+                if not any(
+                    parentGlyphName in glyphsToTrim
+                    for parentGlyphName in dependencies.usedBy.get(glyphName, ())
+                )
+            }
+            assert nextBatch, list(glyphsToTrim)
+
+            for glyphName, instancer in nextBatch.items():
+                del glyphsToTrim[glyphName]
+                trimmedGlyphs[glyphName] = trimGlyphByAxisRanges(
+                    fontInstancer,
+                    instancer,
+                    axisRanges.get(glyphName, {}),
+                    MoveDefaultBehavior(self.moveDefaultBehavior),
+                )
+                trimmedInstancer = GlyphInstancer(
+                    trimmedGlyphs[glyphName], fontInstancer
+                )
+                glyphAxisRanges[glyphName] = await getComponentAxisRanges(
+                    fontInstancer, trimmedInstancer
+                )
+
+            axisRanges = mergeAxisRanges(glyphAxisRanges.values())
+
+        return trimmedGlyphs
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        glyph = (await self.trimmedGlyphs).get(glyphName)
+        if glyph is None:
+            glyph = await self.validatedInput.getGlyph(glyphName)
+        return glyph
+
+
+async def getComponentAxisRanges(
+    fontInstancer: FontInstancer, instancer: GlyphInstancer
+) -> dict[str, dict[str, AxisRange]]:
+    with fontInstancer.collectVariableGlyphAxisRanges() as axisRanges:
+        _ = await decomposeComposites(fontInstancer, instancer)
+        # axisRanges will also contain the full ranges for *this*
+        # glyph, which defeats the purpose, so we drop that.
+        del axisRanges[instancer.glyph.name]
+        return axisRanges
+
+
+def mergeAxisRanges(glyphAxisRanges):
+    mergedAxisRanges = defaultdict(lambda: defaultdict(AxisRange))
+    for axisRanges in glyphAxisRanges:
+        for baseGlyphName, ranges in axisRanges.items():
+            for axisName, axisRange in ranges.items():
+                mergedAxisRanges[baseGlyphName][axisName].updateRange(axisRange)
+    return mergedAxisRanges
+
+
+def trimGlyphByAxisRanges(
+    fontInstancer: FontInstancer,
+    instancer: GlyphInstancer,
+    axisRanges,
+    moveDefaultBehavior,
+) -> VariableGlyph:
+    glyph = instancer.glyph
+    glyphAxisNames = {axis.name for axis in glyph.axes}
+
+    # Drop unknown axes
+    axisRanges = subsetLocationKeep(axisRanges, glyphAxisNames)
+
+    newDefaultSourceLocation = {}
+    axesToDrop = set()
+    newAxes = []
+    for axis in glyph.axes:
+        axisRange = axisRanges.get(axis.name)
+        if axisRange is None:
+            axisRange = AxisRange(axis.defaultValue, axis.defaultValue)
+            axisRanges[axis.name] = axisRange
+
+        # Ensure the range is within the original axis' range
+        axisRange.clipRange(axis.minValue, axis.maxValue)
+
+        if not (
+            moveDefaultBehavior == MoveDefaultBehavior.any
+            or (
+                moveDefaultBehavior == MoveDefaultBehavior.empty and axisRange.isEmpty()
+            )
+        ):
+            axisRange.update(axis.defaultValue)
+
+        if axisRange.isEmpty():
+            if axisRange.minValue != axis.defaultValue:
+                newDefaultSourceLocation[axis.name] = axisRange.minValue
+            axesToDrop.add(axis.name)
+        else:
+            newAxis = replace(
+                axis,
+                minValue=axisRange.minValue,
+                defaultValue=axisRange.clipValue(axis.defaultValue),
+                maxValue=axisRange.maxValue,
+            )
+            newAxes.append(newAxis)
+            if axis.defaultValue != newAxis.defaultValue:
+                newDefaultSourceLocation[axis.name] = newAxis.defaultValue
+
+    originalDefaultSourceLocation = instancer.defaultSourceLocation
+
+    locations = [
+        originalDefaultSourceLocation | fontInstancer.getGlyphSourceLocation(source)
+        for source in instancer.activeSources
+    ]
+
+    newLocations = (
+        locations
+        if not newDefaultSourceLocation
+        else moveDefaultLocations(
+            locations,
+            originalDefaultSourceLocation,
+            newDefaultSourceLocation,
+            glyphAxisNames,
+        )
+    )
+
+    trimmedLocations = trimLocations(newLocations, axisRanges)
+
+    remainingAxisNames = instancer.combinedAxisNames - axesToDrop
+
+    glyph = updateGlyphSourcesAndLayers(instancer, trimmedLocations, remainingAxisNames)
+    glyph = replace(
+        glyph,
+        axes=newAxes,
+    )
+    return glyph
 
 
 @registerFilterAction("drop-shapes")
@@ -532,4 +728,57 @@ class DropBackgroundImages(BaseFilter):
                     for layerName, layer in glyph.layers.items()
                 },
             )
+        return glyph
+
+
+@dataclass(kw_only=True)
+class Cu2QuGlyphGlue:
+    path: PackedPath
+
+    def __post_init__(self):
+        self._pen = None
+
+    def clearContours(self):
+        pass
+
+    def drawPoints(self, pen):
+        self.path.drawPoints(pen)
+
+    def getPen(self):
+        self._pen = PackedPathPointPen()
+        return SegmentToPointPen(self._pen)
+
+    @property
+    def modifiedPath(self):
+        return self._pen.getPath() if self._pen is not None else self.path
+
+
+@registerFilterAction("convert-to-quadratics")
+@dataclass(kw_only=True)
+class ConvertToQuadratics(BaseFilter):
+    maximumError: float | None = None
+    reverseDirection: bool = False
+
+    async def processGlyph(self, glyph):
+        # TODO: we should split by discrete subspace so we can support discrete axes
+        layers = {
+            source.layerName: glyph.layers[source.layerName]
+            for source in getActiveSources(glyph.sources)
+        }
+        wrappedPaths = [
+            Cu2QuGlyphGlue(path=layer.glyph.path) for layer in layers.values()
+        ]
+        if glyphs_to_quadratic(
+            wrappedPaths,
+            max_err=self.maximumError,
+            reverse_direction=self.reverseDirection,
+        ):
+            newLayers = dict(glyph.layers)
+            for (layerName, layer), wrappedPath in zip(layers.items(), wrappedPaths):
+                newLayers[layerName] = replace(
+                    layer, glyph=replace(layer.glyph, path=wrappedPath.modifiedPath)
+                )
+
+            glyph = replace(glyph, layers=newLayers)
+
         return glyph

@@ -7,7 +7,6 @@ export default class GlyphSearchPanel extends Panel {
 
   static styles = `
     .glyph-search {
-      box-sizing: border-box;
       height: 100%;
       width: 100%;
       display: grid;
@@ -18,15 +17,15 @@ export default class GlyphSearchPanel extends Panel {
 
   constructor(editorController) {
     super(editorController);
-    this.glyphsSearch = this.contentElement.querySelector("#glyphs-search");
-    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
+    this.glyphSearch = this.contentElement.querySelector("#glyph-search-list");
+    this.glyphSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
     this.editorController.fontController.addChangeListener({ glyphMap: null }, () => {
-      this.glyphsSearch.updateGlyphNamesListContent();
+      this.glyphSearch.updateGlyphNamesListContent();
     });
     this.editorController.fontController.ensureInitialized.then(() => {
-      this.glyphsSearch.glyphMap = this.editorController.fontController.glyphMap;
+      this.glyphSearch.glyphMap = this.editorController.fontController.glyphMap;
     });
   }
 
@@ -65,8 +64,8 @@ export default class GlyphSearchPanel extends Panel {
         class: "glyph-search",
       },
       [
-        html.createDomElement("glyphs-search", {
-          id: "glyphs-search",
+        html.createDomElement("glyph-search-list", {
+          id: "glyph-search-list",
         }),
       ]
     );
@@ -74,8 +73,7 @@ export default class GlyphSearchPanel extends Panel {
 
   async toggle(on, focus) {
     if (on && focus) {
-      const glyphsSearch = this.contentElement.querySelector("#glyphs-search");
-      glyphsSearch.focusSearchField();
+      this.glyphSearch.focusSearchField();
     }
   }
 }

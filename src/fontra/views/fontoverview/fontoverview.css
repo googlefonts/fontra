@@ -1,0 +1,47 @@
+body {
+  overflow: auto;
+  user-select: none;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: 22em 1fr;
+  padding: 0em;
+  gap: 0em;
+  width: 100vw;
+  height: calc(100vh - var(--top-bar-height));
+}
+
+#sidebar-container {
+  display: grid;
+  align-content: start;
+  gap: 1em;
+  padding: 1em 1em 1em 1em;
+  background-color: var(--ui-element-background-color);
+  height: calc(100vh - var(--top-bar-height));
+}
+
+.font-overview-sidebar-shadow-box {
+  box-shadow: 0px 0px 8px #0006;
+}
+
+font-overview-navigation {
+  display: grid;
+  gap: 1em;
+}
+
+#glyph-cell-view-container {
+  overflow: auto;
+  padding: 1em;
+}
+
+.font-source-selector {
+  display: grid;
+  grid-template-columns: max-content auto;
+  align-items: center;
+  gap: 0.666em;
+}
+
+.font-overview-section-header {
+  font-weight: bold;
+}

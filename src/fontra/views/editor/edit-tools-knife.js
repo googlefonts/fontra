@@ -1,3 +1,4 @@
+import { translate } from "../core/localization.js";
 import { slicePaths } from "../core/path-functions.js";
 import { mapObjectValues, zip } from "../core/utils.js";
 import * as vector from "../core/vector.js";

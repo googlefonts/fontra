@@ -12,6 +12,7 @@ import {
   span,
 } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
+import { getOPFS } from "/core/opfs.js";
 import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
 import { dialog, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
@@ -119,6 +120,17 @@ function readSupportedLanguages(fontItem, languageMapping) {
   });
 }
 
+const referenceFontsFolderName = "reference-fonts";
+
+let _opfs;
+
+async function _getOPFS() {
+  if (!_opfs) {
+    _opfs = await getOPFS();
+  }
+  return _opfs;
+}
+
 async function garbageCollectUnusedFiles(fontItems) {
   const usedFontIdentifiers = new Set(
     fontItems.map((fontItem) => fontItem.fontIdentifier)
@@ -141,82 +153,28 @@ function garbageCollectFontItem(fontItem) {
   }
 }
 
-async function getOPFSFontsDir() {
-  const root = await navigator.storage.getDirectory();
-  return await root.getDirectoryHandle("reference-fonts", { create: true });
-}
-
 async function listFontFileNamesInOPFS() {
-  const fontsDir = await getOPFSFontsDir();
+  const opfs = await _getOPFS();
   const fileNames = [];
-  for await (const [name, handle] of fontsDir.entries()) {
+  for await (const name of opfs.iterDirectory([referenceFontsFolderName])) {
     fileNames.push(name);
   }
   return fileNames;
 }
 
 async function readFontFileFromOPFS(fileName) {
-  const fontsDir = await getOPFSFontsDir();
-  const fileHandle = await fontsDir.getFileHandle(fileName);
-  return await fileHandle.getFile();
+  const opfs = await _getOPFS();
+  return await opfs.readFile([referenceFontsFolderName, fileName]);
 }
 
 async function deleteFontFileFromOPFS(fileName) {
-  const fontsDir = await getOPFSFontsDir();
-  await fontsDir.removeEntry(fileName);
+  const opfs = await _getOPFS();
+  await opfs.deleteFile([referenceFontsFolderName, fileName]);
 }
-
-let opfsSupportsCreateWritable;
 
 async function writeFontFileToOPFS(fileName, file) {
-  if (opfsSupportsCreateWritable == undefined || opfsSupportsCreateWritable === true) {
-    const error = await writeFontFileToOPFSAsync(fileName, file);
-    if (opfsSupportsCreateWritable == undefined) {
-      opfsSupportsCreateWritable = !error;
-    }
-  }
-  if (opfsSupportsCreateWritable === false) {
-    await writeFontFileToOPFSInWorker(fileName, file);
-  }
-}
-
-async function writeFontFileToOPFSAsync(fileName, file) {
-  const fontsDir = await getOPFSFontsDir();
-  const fileHandle = await fontsDir.getFileHandle(fileName, { create: true });
-  if (!fileHandle.createWritable) {
-    // This is the case in Safari (as of august 2023)
-    return "OPFS does not support fileHandle.createWritable()";
-  }
-  const writable = await fileHandle.createWritable();
-  await writable.write(file);
-  await writable.close();
-}
-
-let worker;
-
-function getWriteWorker() {
-  if (!worker) {
-    const path = "/core/opfs-write-worker.js"; // + `?${Math.random()}`;
-    worker = new Worker(path);
-  }
-  return worker;
-}
-
-async function writeFontFileToOPFSInWorker(fileName, file) {
-  return await withTimeout(
-    new Promise((resolve, reject) => {
-      const worker = getWriteWorker();
-      worker.onmessage = (event) => {
-        if (event.data.error) {
-          reject(event.data.error);
-        } else {
-          resolve(event.data.returnValue);
-        }
-      };
-      worker.postMessage({ path: ["reference-fonts", fileName], file });
-    }),
-    5000
-  );
+  const opfs = await _getOPFS();
+  await opfs.writeFile([referenceFontsFolderName, fileName], file);
 }
 
 export default class ReferenceFontPanel extends Panel {
@@ -236,7 +194,6 @@ export default class ReferenceFontPanel extends Panel {
       padding: 1em;
       gap: 1em;
       height: 100%;
-      box-sizing: border-box;
       white-space: normal;
       align-content: start;
     }
@@ -274,7 +231,7 @@ export default class ReferenceFontPanel extends Panel {
   constructor(editorController) {
     super(editorController);
 
-    fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
+    fetchJSON("/data/language-mapping.json").then((languageMapping) => {
       this.languageMapping = languageMapping;
     });
 

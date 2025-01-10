@@ -7,7 +7,7 @@ from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from functools import singledispatch
 from importlib.metadata import entry_points
-from typing import Any, AsyncGenerator, ClassVar
+from typing import Any, AsyncGenerator, Protocol
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
@@ -56,47 +56,49 @@ class WorkflowEndPoints:
     outputs: list[OutputProcessorProtocol]
 
 
-@dataclass(kw_only=True)
-class ActionStep:
-    actionName: str
-    arguments: dict
-    steps: list[ActionStep] = field(default_factory=list)
-    actionType: ClassVar[str]
-
-    def getAction(
-        self,
-    ) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
-        actionClass = getActionClass(self.actionType, self.actionName)
-        action = actionClass(**self.arguments)
-        assert isinstance(
-            action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
-        )
-        return action
-
+class ActionStep(Protocol):
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        raise NotImplementedError
+        pass
+
+
+def getAction(
+    actionType,
+    actionName,
+    actionArguments,
+) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
+    actionClass = getActionClass(actionType, actionName)
+    action = actionClass(**actionArguments)
+    assert isinstance(
+        action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
+    )
+    return action
 
 
 _actionStepClasses = {}
 
 
-def registerActionStepClass(cls):
-    assert cls.actionType not in _actionStepClasses
-    _actionStepClasses[cls.actionType] = cls
-    return cls
+def registerActionStepClass(actionType):
+    def register(cls):
+        assert actionType not in _actionStepClasses
+        _actionStepClasses[actionType] = cls
+        return cls
+
+    return register
 
 
-@registerActionStepClass
+@registerActionStepClass("input")
 @dataclass(kw_only=True)
-class InputActionStep(ActionStep):
-    actionType = "input"
+class InputActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        action = self.getAction()
+        action = getAction("input", self.actionName, self.arguments)
         assert isinstance(action, InputActionProtocol)
 
         backend = await exitStack.enter_async_context(action.prepare())
@@ -109,15 +111,17 @@ class InputActionStep(ActionStep):
         return WorkflowEndPoints(endPoint=endPoint, outputs=endPoints.outputs)
 
 
-@registerActionStepClass
+@registerActionStepClass("filter")
 @dataclass(kw_only=True)
-class FilterActionStep(ActionStep):
-    actionType = "filter"
+class FilterActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
-        action = self.getAction()
+        action = getAction("filter", self.actionName, self.arguments)
         assert isinstance(action, FilterActionProtocol)
 
         backend = await exitStack.enter_async_context(action.connect(currentInput))
@@ -126,16 +130,18 @@ class FilterActionStep(ActionStep):
         return await _prepareEndPoints(backend, self.steps, exitStack)
 
 
-@registerActionStepClass
+@registerActionStepClass("output")
 @dataclass(kw_only=True)
-class OutputActionStep(ActionStep):
-    actionType = "output"
+class OutputActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
 
     async def setup(
         self, currentInput: ReadableFontBackend, exitStack
     ) -> WorkflowEndPoints:
         assert currentInput is not None
-        action = self.getAction()
+        action = getAction("output", self.actionName, self.arguments)
         assert isinstance(action, OutputActionProtocol)
 
         outputs = []
@@ -154,17 +160,72 @@ class OutputActionStep(ActionStep):
         return WorkflowEndPoints(endPoint=currentInput, outputs=outputs)
 
 
+@registerActionStepClass("fork")
+@dataclass(kw_only=True)
+class ForkActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.actionName:
+            raise WorkflowError(
+                "fork 'value' needs to be empty; use 'fork:', "
+                + "instead of 'fork: <something>'"
+            )
+        if self.arguments:
+            raise WorkflowError("fork does not expect arguments")
+
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
+        # set up nested steps
+        endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
+        return WorkflowEndPoints(endPoint=currentInput, outputs=endPoints.outputs)
+
+
+@registerActionStepClass("fork-merge")
+@dataclass(kw_only=True)
+class ForkMergeActionStep:
+    actionName: str
+    arguments: dict
+    steps: list[ActionStep] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.actionName:
+            raise WorkflowError(
+                "fork-merge 'value' needs to be empty; use 'fork-merge:', "
+                + "instead of 'fork-merge: <something>'"
+            )
+        if self.arguments:
+            raise WorkflowError("fork-merge does not expect arguments")
+
+    async def setup(
+        self, currentInput: ReadableFontBackend, exitStack
+    ) -> WorkflowEndPoints:
+        # set up nested steps
+        endPoints = await _prepareEndPoints(currentInput, self.steps, exitStack)
+
+        endPoint = FontBackendMerger(
+            inputA=currentInput, inputB=endPoints.endPoint, warnAboutDuplicates=False
+        )
+        return WorkflowEndPoints(endPoint=endPoint, outputs=endPoints.outputs)
+
+
+MISSING_ACTION_TYPE = object()
+
+
 def _structureSteps(rawSteps) -> list[ActionStep]:
     structured = []
 
     for rawStep in rawSteps:
         actionName = None
         for actionType in _actionStepClasses:
-            actionName = rawStep.get(actionType)
-            if actionName is None:
+            actionName = rawStep.get(actionType, MISSING_ACTION_TYPE)
+            if actionName is MISSING_ACTION_TYPE:
                 continue
             break
-        if actionName is None:
+        if actionName is MISSING_ACTION_TYPE:
             raise WorkflowError("no action type keyword found in step")
         arguments = dict(rawStep)
         del arguments[actionType]

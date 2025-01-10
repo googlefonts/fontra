@@ -15,13 +15,12 @@ export class Form extends SimpleElement {
     :host {
       --label-column-width: 32%;
     }
+
     .ui-form {
       display: grid;
       align-items: center;
       grid-template-columns: var(--label-column-width) auto;
-      box-sizing: border-box;
       gap: 0.35rem 0.35rem;
-      overflow-y: auto;
       margin: 0em;
       padding: 0em;
     }
@@ -64,7 +63,6 @@ export class Form extends SimpleElement {
     }
 
     input {
-      box-sizing: border-box;
       background-color: var(--text-input-background-color);
       color: var(--text-input-foreground-color);
       border-radius: 0.25em;
@@ -73,10 +71,6 @@ export class Form extends SimpleElement {
       padding: 0.1em 0.3em;
       font-family: "fontra-ui-regular";
       font-size: 100%;
-    }
-
-    .ui-form-value {
-      box-sizing: border-box;
     }
 
     .ui-form-value input {
@@ -441,12 +435,8 @@ export class Form extends SimpleElement {
           this._fieldChanging(fieldItem, value, valueStream);
         }
 
-        if (valueStream) {
-          valueStream.put(value);
-          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
-        } else {
-          this._fieldChanging(fieldItem, value, undefined);
-        }
+        valueStream.put(value);
+        this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
       }, fieldItem.continuousDelay || 0);
 
       let oninputTimer;
@@ -459,16 +449,17 @@ export class Form extends SimpleElement {
         if (checkboxElement) {
           checkboxElement.checked = true;
         }
+        if (oninputTimer) {
+          clearTimeout(oninputTimer);
+          oninputTimer = undefined;
+        }
         if (valueStream) {
           valueStream.done();
           valueStream = undefined;
-          if (oninputTimer) {
-            clearTimeout(oninputTimer);
-            oninputTimer = undefined;
-          }
           this._dispatchEvent("endChange", { key: fieldItem.key });
         } else {
-          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+          const value = parseColor(colorInputElement.value);
+          this._fieldChanging(fieldItem, value, undefined);
         }
       };
     }

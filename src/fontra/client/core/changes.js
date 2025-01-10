@@ -305,11 +305,7 @@ export function applyChange(subject, change, subjectClassDef) {
     ) {
       // Ensure we cast list/dict with typed elements
       const classDef = subjectClassDef?.getSubType(args[0]);
-      if (
-        classDef &&
-        (classDef.className == "list" || classDef.className == "dict") &&
-        !atomicTypes.has(classDef.subType)
-      ) {
+      if (classDef && !atomicTypes.has(classDef.subType)) {
         itemCast = classDef.cast.bind(classDef);
       }
     }

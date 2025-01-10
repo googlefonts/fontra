@@ -577,7 +577,11 @@ function unpackContours(path, selectedPointIndices) {
   // when no points from this contour are selected, or an object with contour info,
   const contours = new Array(path.contourInfo.length);
   let contourIndex = 0;
+  const numPoints = path.numPoints;
   for (const pointIndex of selectedPointIndices) {
+    if (pointIndex >= numPoints) {
+      break;
+    }
     while (path.contourInfo[contourIndex].endPoint < pointIndex) {
       contourIndex++;
     }

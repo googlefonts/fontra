@@ -493,6 +493,16 @@ export function splitGlyphNameExtension(glyphName) {
   return [baseGlyphName, extension];
 }
 
+export function getBaseGlyphName(glyphName) {
+  const i = glyphName.indexOf(".");
+  return i >= 1 ? glyphName.slice(0, i) : glyphName;
+}
+
+export function getGlyphNameExtension(glyphName) {
+  const i = glyphName.lastIndexOf(".");
+  return i >= 1 ? glyphName.slice(i) : "";
+}
+
 export function isObjectEmpty(obj) {
   // Return true if `obj` has no properties
   for (const _ in obj) {
@@ -532,6 +542,25 @@ export function loadURLFragment(fragment) {
 
 export function dumpURLFragment(obj) {
   return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
+}
+
+export function readObjectFromURLFragment() {
+  const url = new URL(window.location);
+  return url.hash ? loadURLFragment(url.hash) : {};
+}
+
+export function writeObjectToURLFragment(obj, replace = false) {
+  const newFragment = dumpURLFragment(obj);
+  const url = new URL(window.location);
+  if (url.hash === newFragment) {
+    return;
+  }
+  url.hash = newFragment;
+  if (replace) {
+    window.history.replaceState({}, "", url);
+  } else {
+    window.history.pushState({}, "", url);
+  }
 }
 
 export function areGuidelinesCompatible(parents) {
@@ -677,4 +706,66 @@ export function colorizeImage(inputImage, color) {
       outputImage.src = url;
     });
   });
+}
+
+export class FocusKeeper {
+  get save() {
+    // Return a bound method that can be used as an event handler
+    return (event) => {
+      this._focusedElement = findNestedActiveElement();
+    };
+  }
+
+  restore() {
+    this._focusedElement?.focus();
+  }
+}
+
+export function glyphMapToItemList(glyphMap) {
+  return Object.entries(glyphMap).map(([glyphName, codePoints]) => ({
+    glyphName,
+    codePoints,
+    associatedCodePoints: getAssociatedCodePoints(glyphName, glyphMap),
+  }));
+}
+
+export function getAssociatedCodePoints(glyphName, glyphMap) {
+  return getBaseGlyphName(glyphName)
+    .split("_")
+    .filter((baseGlyphName) => baseGlyphName !== glyphName)
+    .map((baseGlyphName) => glyphMap[baseGlyphName]?.[0])
+    .filter((codePoint) => codePoint);
+}
+
+export function getCodePointFromGlyphItem(glyphItem) {
+  return glyphItem.codePoints[0] || glyphItem.associatedCodePoints[0];
+}
+
+export function bisect_right(a, x) {
+  // Return the index where to insert item x in list a, assuming a is sorted.
+  //
+  // The return value i is such that all e in a[:i] have e <= x, and all e in
+  // a[i:] have e > x.  So if x already appears in the list, a.insert(i, x) will
+  // insert just after the rightmost x already there.
+  //
+  // Optional args lo (default 0) and hi (default len(a)) bound the
+  // slice of a to be searched.
+  //
+  // A custom key function can be supplied to customize the sort order.
+
+  // This is adapted from the Python implementation
+
+  let lo = 0;
+  let hi = a.length;
+
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (x < a[mid]) {
+      hi = mid;
+    } else {
+      lo = mid + 1;
+    }
+  }
+
+  return lo;
 }

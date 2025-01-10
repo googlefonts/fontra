@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Fontra</title>
+    <link href="/css/shared.css" rel="stylesheet" />
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/editor/editor.css" rel="stylesheet" />
     <link href="/css/tooltip.css" rel="stylesheet" />
@@ -16,7 +17,7 @@
     <script type="module" src="/core/theme-settings.js"></script>
     <script type="module" src="/web-components/add-remove-buttons.js"></script>
     <script type="module" src="/web-components/designspace-location.js"></script>
-    <script type="module" src="/web-components/glyphs-search.js"></script>
+    <script type="module" src="/web-components/glyph-search-list.js"></script>
     <script type="module" src="/web-components/grouped-settings.js"></script>
     <script type="module" src="/web-components/inline-svg.js"></script>
     <script type="module" src="/web-components/modal-dialog.js"></script>
@@ -106,7 +107,7 @@
     import { EditorController } from "/editor/editor.js";
 
     async function startApp() {
-      window.editorController = await EditorController.fromWebSocket();
+      window.editorController = await EditorController.fromBackend();
     }
 
     startApp();

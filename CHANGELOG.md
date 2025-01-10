@@ -1,5 +1,43 @@
 # Changelog for Fontra
 
+## 2025-01-06
+
+- Fixed bug related to deleting points [Issue 1910](https://github.com/googlefonts/fontra/issues/1910), [PR 1916](https://github.com/googlefonts/fontra/pull/1916)
+- Added robots.txt to HTTP root folder [PR 1905](https://github.com/googlefonts/fontra/pull/1905)
+- Small improvements to Related Glyphs & Characters panel (selecting multiple glyphs, keyboard navigation) [PR 1906](https://github.com/googlefonts/fontra/pull/1906)
+- Accordion view: alt-click on a header folds/unfolds all items [PR 1901](https://github.com/googlefonts/fontra/pull/1901)
+- Implement finding glyph names for code points and code points for glyph names in JS, via a CSV version of GlyphData.xml. This is a performance improvement, and needed for the upcoming Font Overview [PR 1900](https://github.com/googlefonts/fontra/pull/1900)
+- Fixed a regression witb CJK Design Frame settings [PR 1883](https://github.com/googlefonts/fontra/pull/1883)
+- Fixed a regression with the Knife Tool [PR 1870](https://github.com/googlefonts/fontra/pull/1870)
+
+## 2024-12-19
+
+- Making the interface between server and client more explicit [PR 1863](https://github.com/googlefonts/fontra/pull/1863)
+- Fixed editing bug with multiple edit views [PR 1870](https://github.com/googlefonts/fontra/pull/1870)
+- Prevent `fontra-copy` and Fontra Pak's "Export as..." to write on top of the source data (as this destroyed the data)
+  - `fontra-copy`: [PR 1860](https://github.com/googlefonts/fontra/pull/1860)
+  - Fontra Pak: [PR 148](https://github.com/googlefonts/fontra-pak/pull/148)
+- Fontra Pak: add button with link to documentation [PR 143](https://github.com/googlefonts/fontra-pak/pull/143)
+
+## 2024-12-04
+
+- Fixes "clean view" (space bar) on Safari [PR 1835](https://github.com/googlefonts/fontra/pull/1835)
+
+## 2024-11-29
+
+- Japanese UI translation (thanks Masaki Ando!)
+
+## 2024-11-28
+
+- Keep the focus on the canvas when clicking icon buttons and (some) list cell buttons [PR 1829](https://github.com/googlefonts/fontra/pull/1829)
+
+## 2024-11-27
+
+- Add 'Add background image' menu to context menu [PR 1827](https://github.com/googlefonts/fontra/pull/1827)
+- Fixed bug with colorizing the background image on Safari [PR 1825](https://github.com/googlefonts/fontra/pull/1825)
+- Reorganize context menu: put "Edit" items under a sub menu [PR 1824](https://github.com/googlefonts/fontra/pull/1824)
+- Fix the Knife tool [PR 1823](https://github.com/googlefonts/fontra/pull/1823)
+
 ## 2024-11-20
 
 - Add support for background image colorization [PR 1815](https://github.com/googlefonts/fontra/pull/1815)
@@ -33,7 +71,7 @@ Caveat: support for background images is limited to the `.designspace`/`.ufo` an
 ## 2024-11-13
 
 - Improved UI translations [PR 1764](https://github.com/googlefonts/fontra/pull/1764)
-- Added "Selecte previous/next glyph" menu items [PR 1706](https://github.com/googlefonts/fontra/pull/1706)
+- Added "Select previous/next glyph" menu items [PR 1706](https://github.com/googlefonts/fontra/pull/1706)
 - Partial support for background images (more to come) [PR 1775](https://github.com/googlefonts/fontra/pull/1775)
 - Add support for many UFO font info fields, so they won't get lost during round-tripping [PR 1770](https://github.com/googlefonts/fontra/pull/1770)
 - Fixed cosmetic issue with scrollbars on Windows [PR 1767](https://github.com/googlefonts/fontra/pull/1767)

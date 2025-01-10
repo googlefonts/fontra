@@ -5,18 +5,58 @@ import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
 import * as svg from "/core/svg-utils.js";
 import { Transform } from "/core/transform.js";
-import { getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
+import { assert, getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],
-  "cell-hover-color": ["#E0E0E0", "#606060"],
-  "cell-active-color": ["#D8D8D8", "#686868"],
+  "cell-hover-color": ["#E5E5E5", "#606060"],
+  "cell-active-color": ["#D8D8D8", "#6F6F6F"],
+  "cell-selected-color": ["#C8C8C8", "#8F8F8F"],
   "glyph-shape-placeholder-color": ["#AAA", "#AAA"],
 };
+
+const UNSCALED_CELL_HEIGHT = 75;
+
+const cellObserver = new IntersectionObserver(
+  (entries, observer) => {
+    entries.forEach((entry) => {
+      const cell = entry.target;
+      if (entry.intersectionRatio > 0) {
+        cell.locationController.addKeyListener(cell.locationKey, cell.throttledUpdate);
+        cell.fontController.addGlyphChangeListener(
+          cell.glyphName,
+          cell.throttledUpdate
+        );
+        cell.throttledUpdate();
+      } else {
+        if (cell._glyphInstanceRequestID) {
+          cell.fontController.cancelGlyphInstanceRequest(cell._glyphInstanceRequestID);
+          delete cell._glyphInstanceRequestID;
+        }
+        cell.locationController.removeKeyListener(
+          cell.locationKey,
+          cell.throttledUpdate
+        );
+        cell.fontController.removeGlyphChangeListener(
+          cell.glyphName,
+          cell.throttledUpdate
+        );
+      }
+    });
+  },
+  {
+    root: document.documentElement, // Maybe use a more nearby clipping element?
+  }
+);
 
 export class GlyphCell extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
+
+  :host {
+    display: inline-block;
+    --glyph-cell-scale-factor: calc(var(--glyph-cell-scale-factor-override, 1));
+  }
 
   #glyph-cell-container {
     background-color: var(--cell-background-color);
@@ -36,10 +76,16 @@ export class GlyphCell extends UnlitElement {
     background-color: var(--cell-active-color);
   }
 
+  #glyph-cell-container.selected {
+    background-color: var(--cell-selected-color);
+  }
+
   #glyph-cell-content {
     display: grid;
+    grid-template-rows: calc(${UNSCALED_CELL_HEIGHT}px * var(--glyph-cell-scale-factor, 1)) auto auto;
     justify-items: center;
     gap: 0;
+    user-select: none;
   }
 
   .glyph-shape-placeholder {
@@ -51,8 +97,6 @@ export class GlyphCell extends UnlitElement {
 
   .glyph-name-label {
     font-size: 0.85em;
-    padding-left: 0.3em;
-    padding-right: 0.3em;
     overflow-x: hidden;
     text-overflow: ellipsis;
     text-overflow: ellipsis;
@@ -80,59 +124,22 @@ export class GlyphCell extends UnlitElement {
     this.marginSide = 0;
     this.size = 60;
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
+    assert(this.height === UNSCALED_CELL_HEIGHT, "manual size dependency incorrect");
     this.width = this.height;
     this._glyphCharacter = this.codePoints?.[0]
       ? getCharFromCodePoint(this.codePoints[0]) || ""
       : "";
+    this._selected = false;
   }
 
   connectedCallback() {
     super.connectedCallback();
-
-    const observer = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio > 0) {
-            this.locationController.addKeyListener(
-              this.locationKey,
-              this.throttledUpdate
-            );
-            this.fontController.addGlyphChangeListener(
-              this.glyphName,
-              this.throttledUpdate
-            );
-            this.throttledUpdate();
-          } else {
-            if (this._glyphInstanceRequestID) {
-              this.fontController.cancelGlyphInstanceRequest(
-                this._glyphInstanceRequestID
-              );
-              delete this._glyphInstanceRequestID;
-            }
-            this.locationController.removeKeyListener(
-              this.locationKey,
-              this.throttledUpdate
-            );
-            this.fontController.removeGlyphChangeListener(
-              this.glyphName,
-              this.throttledUpdate
-            );
-          }
-        });
-      },
-      {
-        root: this.parentElement,
-        // Somehow our cell is only seen as intersecting if the glyph name / status
-        // color is visible: it seems to ignore the SVG cell. Let's use the cell
-        // height as the bottom root margin.
-        rootMargin: `0px 0px ${this.height}px 0px`, // (top, right, bottom, left).
-      }
-    );
-    observer.observe(this);
+    cellObserver.observe(this);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
+    cellObserver.unobserve(this);
     this.locationController.removeKeyListener(this.locationKey, this.throttledUpdate);
     this.fontController.removeGlyphChangeListener(this.glyphName, this.throttledUpdate);
   }
@@ -173,11 +180,11 @@ export class GlyphCell extends UnlitElement {
         viewBox: svg.viewBox(
           -this.marginSide * unitsPerEm,
           -(ascender + this.marginTop * unitsPerEm),
-          glyphController.xAdvance + 2 * this.marginSide * unitsPerEm,
+          Math.max(glyphController.xAdvance + 2 * this.marginSide * unitsPerEm, 1), // a width of 0 is problematic
           ascender - descender + (this.marginTop + this.marginBottom) * unitsPerEm
         ),
-        width: this.width,
-        height,
+        width: "100%",
+        height: "100%",
       },
       [
         svg.path({
@@ -199,31 +206,57 @@ export class GlyphCell extends UnlitElement {
   render() {
     const fallbackFontSize = this.height / 2;
     this._glyphCellContent = html.div({ id: "glyph-cell-container" }, [
-      html.div({ id: "glyph-cell-content" }, [
-        this._glyphSVG
-          ? this._glyphSVG
-          : html.div(
-              {
-                class: "glyph-shape-placeholder",
-                style: `
-                  width: ${this.width}px;
-                  height: ${this.height}px;
-                  font-size: ${fallbackFontSize}px;
+      html.div(
+        {
+          id: "glyph-cell-content",
+          style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
+        },
+        [
+          this._glyphSVG
+            ? this._glyphSVG
+            : html.div(
+                {
+                  class: "glyph-shape-placeholder",
+                  style: `
+                  width: calc(${this.width}px * var(--glyph-cell-scale-factor));
+                  font-size: calc(${fallbackFontSize}px * var(--glyph-cell-scale-factor));
                   line-height: ${fallbackFontSize}px;
                 `,
-              },
-              [this._glyphCharacter]
-            ),
-        html.div({ class: "glyph-name-label", style: `width: ${this.width}px;` }, [
-          this.glyphName,
-        ]),
-        html.div({
-          class: "glyph-status-color",
-          style: `background-color: ${this._glyphStatusColor};`,
-        }),
-      ]),
+                },
+                [this._glyphCharacter]
+              ),
+          html.div(
+            {
+              class: "glyph-name-label",
+              style: `width: calc(${this.width}px * var(--glyph-cell-scale-factor));`,
+            },
+            [this.glyphName]
+          ),
+          html.div({
+            class: "glyph-status-color",
+            style: `background-color: ${this._glyphStatusColor};`,
+          }),
+        ]
+      ),
     ]);
+
+    // update the selected state when rebuilding the cell contents
+    this._updateSelectedState();
+
     return this._glyphCellContent;
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(onOff) {
+    this._selected = onOff;
+    this._updateSelectedState();
+  }
+
+  _updateSelectedState() {
+    this._glyphCellContent?.classList.toggle("selected", this._selected);
   }
 }
 

@@ -120,28 +120,31 @@ class RemoteObjectConnection:
     async def sendMessage(self, message):
         await self.websocket.send_json(message)
 
+    async def callMethod(self, methodName, *args):
+        serverCallID = next(self.getNextServerCallID)
+        message = {
+            "server-call-id": serverCallID,
+            "method-name": methodName,
+            "arguments": args,
+        }
+        returnFuture = asyncio.get_running_loop().create_future()
+        self.callReturnFutures[serverCallID] = returnFuture
+        await self.sendMessage(message)
+        return await returnFuture
+
 
 class RemoteClientProxy:
     def __init__(self, connection):
         self._connection = connection
 
-    def __getattr__(self, methodName):
-        if methodName.startswith("_"):
-            return super().__getattr__(methodName)
+    async def messageFromServer(self, text):
+        return await self._connection.callMethod("messageFromServer", text)
 
-        async def methodWrapper(*args):
-            serverCallID = next(self._connection.getNextServerCallID)
-            message = {
-                "server-call-id": serverCallID,
-                "method-name": methodName,
-                "arguments": args,
-            }
-            returnFuture = asyncio.get_running_loop().create_future()
-            self._connection.callReturnFutures[serverCallID] = returnFuture
-            await self._connection.sendMessage(message)
-            return await returnFuture
+    async def externalChange(self, change, isLiveChange):
+        return await self._connection.callMethod("externalChange", change, isLiveChange)
 
-        return methodWrapper
+    async def reloadData(self, reloadPattern):
+        return await self._connection.callMethod("reloadData", reloadPattern)
 
 
 def _genNextServerCallID() -> Generator[int, None, None]:

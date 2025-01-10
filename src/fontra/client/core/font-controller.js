@@ -23,13 +23,24 @@ import {
   uniqueID,
 } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
-import { locationToString, mapBackward, mapForward } from "./var-model.js";
+import {
+  locationToString,
+  mapAxesFromUserSpaceToSourceSpace,
+  mapBackward,
+  mapForward,
+} from "./var-model.js";
+/**
+ * @import { RemoteFont, FontSource } from 'remotefont';
+ * */
 
 const GLYPH_CACHE_SIZE = 2000;
 const BACKGROUND_IMAGE_CACHE_SIZE = 100;
 const NUM_TASKS = 12;
 
 export class FontController {
+  /**
+   * @param {RemoteFont} font
+   */
   constructor(font) {
     this.font = font;
     this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // glyph name -> var-glyph promise
@@ -73,12 +84,12 @@ export class FontController {
     this._resolveInitialized();
   }
 
-  subscribeChanges(change, wantLiveChanges) {
-    this.font.subscribeChanges(change, wantLiveChanges);
+  subscribeChanges(pathOrPattern, wantLiveChanges) {
+    this.font.subscribeChanges(pathOrPattern, wantLiveChanges);
   }
 
-  unsubscribeChanges(change, wantLiveChanges) {
-    this.font.unsubscribeChanges(change, wantLiveChanges);
+  unsubscribeChanges(pathOrPattern, wantLiveChanges) {
+    this.font.unsubscribeChanges(pathOrPattern, wantLiveChanges);
   }
 
   getRootKeys() {
@@ -130,6 +141,22 @@ export class FontController {
   async getSources() {
     // backwards compat, this.sources is the same
     return this._rootObject.sources;
+  }
+
+  getSortedSourceIdentifiers() {
+    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    const sortFunc = (identifierA, identifierB) => {
+      for (const axis of fontAxesSourceSpace) {
+        const valueA = this.sources[identifierA].location[axis.name];
+        const valueB = this.sources[identifierB].location[axis.name];
+        if (valueA === valueB) {
+          continue;
+        }
+        return valueA < valueB ? -1 : 0;
+      }
+      return 0;
+    };
+    return Object.keys(this.sources).sort(sortFunc);
   }
 
   getBackgroundImage(imageIdentifier) {
@@ -500,7 +527,7 @@ export class FontController {
       return;
     }
     const getGlyphFunc = this.getGlyph.bind(this);
-    return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+    return await varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
   requestGlyphInstance(glyphName, sourceLocation) {
@@ -560,11 +587,6 @@ export class FontController {
   getDummyGlyphInstanceController(glyphName = "<dummy>") {
     const dummyGlyph = StaticGlyph.fromObject({ xAdvance: this.unitsPerEm / 2 });
     return new StaticGlyphController(glyphName, dummyGlyph, undefined);
-  }
-
-  async getSourceIndex(glyphName, sourceLocation) {
-    const glyph = await this.getGlyph(glyphName);
-    return glyph?.getSourceIndex(sourceLocation);
   }
 
   addGlyphChangeListener(glyphName, listener) {
@@ -1065,6 +1087,10 @@ function ensureDenseAxes(axes) {
   return { ...axes, axes: axes.axes || [], mappings: axes.mappings || [] };
 }
 
+/**
+ * @param {Record<string, FontSource>} sources
+ * @returns {Record<string, FontSource>}
+ */
 function ensureDenseSources(sources) {
   return mapObjectValues(sources, (source) => {
     return {

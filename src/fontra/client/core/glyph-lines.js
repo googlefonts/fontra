@@ -1,17 +1,17 @@
-import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./server-utils.js";
+import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
-export async function glyphLinesFromText(text, characterMap, glyphMap) {
+export function glyphLinesFromText(text, characterMap, glyphMap) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(await glyphNamesFromText(line, characterMap, glyphMap));
+    glyphLines.push(glyphNamesFromText(line, characterMap, glyphMap));
   }
   return glyphLines;
 }
 
 const glyphNameRE = /[//\s]/g;
 
-async function glyphNamesFromText(text, characterMap, glyphMap) {
+function glyphNamesFromText(text, characterMap, glyphMap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -56,7 +56,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
             // a glyph name associated with that character
             let properBaseGlyphName = characterMap[baseCharCode];
             if (!properBaseGlyphName) {
-              properBaseGlyphName = await getSuggestedGlyphName(baseCharCode);
+              properBaseGlyphName = getSuggestedGlyphName(baseCharCode);
             }
             if (properBaseGlyphName) {
               glyphName = properBaseGlyphName + extension;
@@ -67,7 +67,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           } else {
             // This is a regular glyph name, but it doesn't exist in the font.
             // Try to see if there's a code point associated with it.
-            const codePoint = await getCodePointFromGlyphName(glyphName);
+            const codePoint = getCodePointFromGlyphName(glyphName);
             if (codePoint) {
               char = String.fromCodePoint(codePoint);
             }
@@ -85,7 +85,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
     if (glyphName !== "") {
       let isUndefined = false;
       if (!glyphName && char) {
-        glyphName = await getSuggestedGlyphName(char.codePointAt(0));
+        glyphName = getSuggestedGlyphName(char.codePointAt(0));
         isUndefined = true;
       } else if (glyphName) {
         isUndefined = !(glyphName in glyphMap);

@@ -3,7 +3,9 @@ import {
   doPerformAction,
   getActionIdentifierFromKeyEvent,
   registerAction,
+  registerActionCallbacks,
 } from "../core/actions.js";
+import { Backend } from "../core/backend-api.js";
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { applyChange } from "../core/changes.js";
@@ -26,14 +28,11 @@ import {
   rectSize,
   rectToArray,
 } from "../core/rectangle.js";
-import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
-import { parseClipboard } from "../core/server-utils.js";
 import { isSuperset } from "../core/set-ops.js";
 import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
-  dumpURLFragment,
   enumerate,
   fetchJSON,
   hyphenatedToCamelCase,
@@ -49,6 +48,7 @@ import {
   readFromClipboard,
   reversed,
   scheduleCalls,
+  writeObjectToURLFragment,
   writeToClipboard,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
@@ -70,10 +70,10 @@ import {
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import { VisualizationLayers } from "./visualization-layers.js";
+import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { getDecomposedIdentity } from "/core/transform.js";
-import { MenuBar } from "/web-components/menu-bar.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
@@ -93,36 +93,16 @@ import {
   translate,
   translatePlural,
 } from "/core/localization.js";
+import { ViewController } from "/core/view-controller.js";
 
 const MIN_CANVAS_SPACE = 200;
 
 const PASTE_BEHAVIOR_REPLACE = "replace";
 const PASTE_BEHAVIOR_ADD = "add";
 
-const EXPORT_FORMATS = ["ttf", "otf", "fontra", "designspace", "ufo", "rcjk"];
-
-export class EditorController {
-  static async fromWebSocket() {
-    const pathItems = window.location.pathname.split("/").slice(3);
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = `Fontra — ${decodeURI(displayPath)}`;
-    const projectPath = pathItems.join("/");
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
-
-    await ensureLanguageHasLoaded;
-
-    const remoteFontEngine = await getRemoteProxy(wsURL);
-    const editorController = new EditorController(remoteFontEngine);
-    remoteFontEngine.receiver = editorController;
-    remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
-    remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
-
-    await editorController.start();
-    return editorController;
-  }
-
+export class EditorController extends ViewController {
   constructor(font) {
+    super(font);
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
@@ -168,6 +148,8 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
+        "editLayerName",
+        "editingLayers",
         "fontLocationUser",
         "glyphLocation",
         "fontAxesUseSourceCoordinates",
@@ -311,25 +293,18 @@ export class EditorController {
     {
       const topic = "0030-action-topics.menu.edit";
 
-      registerAction(
+      registerActionCallbacks(
         "action.undo",
-        {
-          topic,
-          sortIndex: 0,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
-        },
         () => this.doUndoRedo(false),
-        () => this.canUndoRedo(false)
+        () => this.canUndoRedo(false),
+        () => this.getUndoRedoLabel(false)
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.redo",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
-        },
         () => this.doUndoRedo(true),
-        () => this.canUndoRedo(true)
+        () => this.canUndoRedo(true),
+        () => this.getUndoRedoLabel(true)
       );
 
       if (insecureSafariConnection()) {
@@ -338,68 +313,43 @@ export class EditorController {
         // only in Safari, and when in an HTTP context
         this.initFallbackClipboardEventListeners();
       } else {
-        registerAction(
+        registerActionCallbacks(
           "action.cut",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "x", commandKey: true }],
-          },
           () => this.doCut(),
           () => this.canCut()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.copy",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "c", commandKey: true }],
-          },
           () => this.doCopy(),
           () => this.canCopy()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.paste",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "v", commandKey: true }],
-          },
           () => this.doPaste(),
           () => this.canPaste()
         );
       }
 
-      registerAction(
+      registerActionCallbacks(
         "action.delete",
-        {
-          topic,
-          defaultShortCuts: [
-            { baseKey: "Delete" },
-            { baseKey: "Delete", altKey: true },
-            { baseKey: "Backspace" },
-            { baseKey: "Backspace", altKey: true },
-          ],
-        },
         (event) => this.doDelete(event),
-        () => this.canDelete()
+        () => this.canDelete(),
+        () =>
+          this.sceneSettings.selectedGlyph?.isEditing
+            ? translate("action.delete-selection")
+            : translate("action.delete-glyph")
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-all",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true }],
-        },
         () => this.doSelectAllNone(false),
         () => this.sceneSettings.selectedGlyph?.isEditing
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-none",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
-        },
         () => this.doSelectAllNone(true),
         () =>
           this.sceneSettings.selectedGlyph?.isEditing &&
@@ -431,46 +381,20 @@ export class EditorController {
         "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
-        () => this.canLockGuideline()
+        () => this.canLockGuideline(),
+        () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines())
       );
     }
 
     {
       const topic = "0020-action-topics.menu.view";
 
-      registerAction(
-        "action.zoom-in",
-        {
-          topic,
-          titleKey: "zoom-in",
-          defaultShortCuts: [
-            { baseKey: "+", commandKey: true },
-            { baseKey: "=", commandKey: true },
-          ],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomIn()
-      );
+      registerActionCallbacks("action.zoom-in", () => this.zoomIn());
 
-      registerAction(
-        "action.zoom-out",
-        {
-          topic,
-          titleKey: "zoom-out",
-          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomOut()
-      );
+      registerActionCallbacks("action.zoom-out", () => this.zoomOut());
 
-      registerAction(
+      registerActionCallbacks(
         "action.zoom-fit-selection",
-        {
-          topic,
-          titleKey: "zoom-fit-selection",
-          defaultShortCuts: [{ baseKey: "0", commandKey: true }],
-          allowGlobalOverride: true,
-        },
         () => this.zoomFit(),
         () => {
           let viewBox = this.sceneController.getSelectionBounds();
@@ -510,6 +434,26 @@ export class EditorController {
       );
 
       registerAction(
+        "action.select-previous-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-previous-source-layer",
+          defaultShortCuts: [{ baseKey: "ArrowUp", commandKey: true, altKey: true }],
+        },
+        () => this.doSelectPreviousNextSourceLayer(true)
+      );
+
+      registerAction(
+        "action.select-next-source-layer",
+        {
+          topic,
+          titleKey: "menubar.view.select-next-source-layer",
+          defaultShortCuts: [{ baseKey: "ArrowDown", commandKey: true, altKey: true }],
+        },
+        () => this.doSelectPreviousNextSourceLayer(false)
+      );
+
+      registerAction(
         "action.select-previous-glyph",
         {
           topic,
@@ -527,15 +471,6 @@ export class EditorController {
           defaultShortCuts: [{ baseKey: "ArrowRight", commandKey: true }],
         },
         () => this.doSelectPreviousNextGlyph(false)
-      );
-
-      registerAction(
-        "action.find-glyphs-that-use",
-        {
-          topic,
-          titleKey: "menubar.view.find-glyphs-that-use",
-        },
-        () => this.doFindGlyphsThatUseGlyph()
       );
 
       registerAction(
@@ -690,203 +625,95 @@ export class EditorController {
   }
 
   initActionsAfterStart() {
-    if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-      for (const format of EXPORT_FORMATS) {
-        registerAction(
-          `action.export-as.${format}`,
-          {
-            topic: "0035-action-topics.export-as",
-          },
-          (event) => this.fontController.exportAs({ format })
-        );
-      }
+    for (const format of this.fontController.backendInfo.projectManagerFeatures[
+      "export-as"
+    ] || []) {
+      registerAction(
+        `action.export-as.${format}`,
+        {
+          topic: "0035-action-topics.export-as",
+        },
+        (event) => this.fontController.exportAs({ format })
+      );
+    }
+    if (this.fontController.backendInfo.features["find-glyphs-that-use-glyph"]) {
+      registerAction(
+        "action.find-glyphs-that-use",
+        {
+          topic: "0030-action-topics.menu.edit",
+          titleKey: "menubar.view.find-glyphs-that-use",
+          disabled: true,
+        },
+        () => this.doFindGlyphsThatUseGlyph(),
+        null,
+        () =>
+          translate(
+            "menubar.view.find-glyphs-that-use",
+            this.sceneSettings.selectedGlyphName
+          )
+      );
     }
   }
 
   initTopBar() {
-    const menuBar = new MenuBar([
-      {
-        title: "Fontra",
-        bold: true,
-        getItems: () => {
-          const menuItems = [
-            "shortcuts",
-            "theme-settings",
-            "display-language",
-            "clipboard",
-            "editor-behavior",
-            "plugins-manager",
-            "server-info",
-          ];
-          return menuItems.map((panelID) => ({
-            title: translate(`application-settings.${panelID}.title`),
-            enabled: () => true,
-            callback: () => {
-              window.open(
-                `/applicationsettings/applicationsettings.html#${panelID}-panel`
-              );
-            },
-          }));
-        },
-      },
-      {
-        title: translate("menubar.file"),
-        getItems: () => {
-          if (this.fontController.backendInfo.projectManagerFeatures["export-as"]) {
-            return [
-              {
-                title: translate("menubar.file.export-as"),
-                getItems: () =>
-                  EXPORT_FORMATS.map((format) => ({
-                    actionIdentifier: `action.export-as.${format}`,
-                  })),
-              },
-            ];
-          } else {
-            return [
-              {
-                title: translate("menubar.file.new"),
-                enabled: () => false,
-                callback: () => {},
-              },
-              {
-                title: translate("menubar.file.open"),
-                enabled: () => false,
-                callback: () => {},
-              },
-            ];
-          }
-        },
-      },
-      {
-        title: translate("menubar.edit"),
-        getItems: () => {
-          const menuItems = [...this.basicContextMenuItems];
-          if (this.sceneSettings.selectedGlyph?.isEditing) {
-            this.sceneController.updateContextMenuState(event);
-            menuItems.push(MenuItemDivider);
-            menuItems.push(...this.glyphEditContextMenuItems);
-          }
-          return menuItems;
-        },
-      },
-      {
-        title: translate("menubar.view"),
-        getItems: () => {
-          const items = [
-            {
-              actionIdentifier: "action.zoom-in",
-            },
-            {
-              actionIdentifier: "action.zoom-out",
-            },
-            {
-              actionIdentifier: "action.zoom-fit-selection",
-            },
-          ];
+    const myMenuBar = makeFontraMenuBar(
+      ["File", "Edit", "View", "Font", "Glyph"],
+      this
+    );
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
+  }
 
-          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
-            this.sceneController.updateContextMenuState();
-            items.push(MenuItemDivider);
-            items.push(...this.glyphSelectedContextMenuItems);
-          }
+  getEditMenuItems() {
+    const menuItems = [...this.basicContextMenuItems];
+    if (this.sceneSettings.selectedGlyph?.isEditing) {
+      this.sceneController.updateContextMenuState(event);
+      menuItems.push(MenuItemDivider);
+      menuItems.push(...this.glyphEditContextMenuItems);
+    }
+    return menuItems;
+  }
 
-          items.push(MenuItemDivider);
-          items.push({
-            title: translate("action-topics.glyph-editor-appearance"),
-            getItems: () => {
-              const layerDefs = this.visualizationLayers.definitions.filter(
-                (layer) => layer.userSwitchable
-              );
+  getViewMenuItems() {
+    const items = [
+      { actionIdentifier: "action.zoom-in" },
+      { actionIdentifier: "action.zoom-out" },
+      { actionIdentifier: "action.zoom-fit-selection" },
+    ];
 
-              return layerDefs.map((layerDef) => {
-                return {
-                  actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
-                  checked: this.visualizationLayersSettings.model[layerDef.identifier],
-                };
-              });
-            },
-          });
+    if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+      this.sceneController.updateContextMenuState();
+      items.push(MenuItemDivider);
+      items.push(...this.glyphSelectedContextMenuItems);
+    }
 
-          return items;
-        },
+    items.push(MenuItemDivider);
+    items.push({
+      title: translate("action-topics.glyph-editor-appearance"),
+      getItems: () => {
+        const layerDefs = this.visualizationLayers.definitions.filter(
+          (layer) => layer.userSwitchable
+        );
+
+        return layerDefs.map((layerDef) => {
+          return {
+            actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
+            checked: this.visualizationLayersSettings.model[layerDef.identifier],
+          };
+        });
       },
-      {
-        title: translate("menubar.font"),
-        enabled: () => true,
-        getItems: () => {
-          const menuItems = [
-            [translate("font-info.title"), "#font-info-panel", true],
-            [translate("axes.title"), "#axes-panel", true],
-            [translate("cross-axis-mapping.title"), "#cross-axis-mapping-panel", true],
-            [translate("sources.title"), "#sources-panel", true],
-            [
-              translate("development-status-definitions.title"),
-              "#development-status-definitions-panel",
-              true,
-            ],
-          ];
-          return menuItems.map(([title, panelID, enabled]) => ({
-            title,
-            enabled: () => enabled,
-            callback: () => {
-              const url = new URL(window.location);
-              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
-              url.hash = panelID;
-              window.open(url.toString());
-            },
-          }));
-        },
-      },
-      {
-        title: translate("menubar.glyph"),
-        enabled: () => true,
-        getItems: () => [
-          { actionIdentifier: "action.glyph.add-source" },
-          { actionIdentifier: "action.glyph.delete-source" },
-          { actionIdentifier: "action.glyph.edit-glyph-axes" },
-          MenuItemDivider,
-          { actionIdentifier: "action.glyph.add-background-image" },
-        ],
-      },
-      {
-        title: translate("menubar.help"),
-        enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.help.homepage"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://fontra.xyz/");
-              },
-            },
-            {
-              title: translate("menubar.help.documentation"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://docs.fontra.xyz");
-              },
-            },
-            {
-              title: translate("menubar.help.changelog"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://fontra.xyz/changelog.html");
-              },
-            },
-            {
-              title: "GitHub",
-              enabled: () => true,
-              callback: () => {
-                window.open("https://github.com/googlefonts/fontra");
-              },
-            },
-          ];
-        },
-      },
-    ]);
-    document.querySelector(".top-bar-container").appendChild(menuBar);
+    });
+
+    return items;
+  }
+
+  getGlyphMenuItems() {
+    return [
+      { actionIdentifier: "action.glyph.add-source" },
+      { actionIdentifier: "action.glyph.delete-source" },
+      { actionIdentifier: "action.glyph.edit-glyph-axes" },
+      MenuItemDivider,
+      { actionIdentifier: "action.glyph.add-background-image" },
+    ];
   }
 
   restoreOpenTabs(sidebarName) {
@@ -1064,7 +891,7 @@ export class EditorController {
       case "goToNearestSource":
         const glyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceFromSourceLocation(
+        const nearestSourceIndex = glyphController.findNearestSourceForSourceLocation(
           {
             ...this.sceneSettings.fontLocationSourceMapped,
             ...this.sceneSettings.glyphLocation,
@@ -1194,6 +1021,10 @@ export class EditorController {
             window.addEventListener("mousedown", globalListener, false);
             window.addEventListener("keydown", globalListener, false);
           }, 650);
+          if (toolButton !== editToolsElement.children[0]) {
+            // ensure the multi-tool mousedown timer only affects the first child
+            event.stopImmediatePropagation();
+          }
         };
 
         toolButton.onmouseup = () => {
@@ -1517,14 +1348,8 @@ export class EditorController {
 
   initContextMenuItems() {
     this.basicContextMenuItems = [];
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(false),
-      actionIdentifier: "action.undo",
-    });
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(true),
-      actionIdentifier: "action.redo",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.undo" });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.redo" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1535,28 +1360,13 @@ export class EditorController {
       // So, since the "actions" versions of cut/copy/paste won't work, we
       // do not add their menu items.
       this.basicContextMenuItems.push(
-        {
-          title: translate("action.cut"),
-          actionIdentifier: "action.cut",
-        },
-        {
-          title: translate("action.copy"),
-          actionIdentifier: "action.copy",
-        },
-        {
-          title: translate("action.paste"),
-          actionIdentifier: "action.paste",
-        }
+        { actionIdentifier: "action.cut" },
+        { actionIdentifier: "action.copy" },
+        { actionIdentifier: "action.paste" }
       );
     }
 
-    this.basicContextMenuItems.push({
-      title: () =>
-        this.sceneSettings.selectedGlyph?.isEditing
-          ? translate("action.delete-selection")
-          : translate("action.delete-glyph"),
-      actionIdentifier: "action.delete",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.delete" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1574,33 +1384,25 @@ export class EditorController {
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
 
-    this.glyphEditContextMenuItems.push({
-      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      actionIdentifier: "action.lock-guideline",
-    });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.lock-guideline" });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
 
     this.glyphSelectedContextMenuItems = [];
 
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-source",
+      title: translate("menubar.view.select-glyph-source-layer"),
+      getItems: () => [
+        { actionIdentifier: "action.select-previous-glyph" },
+        { actionIdentifier: "action.select-next-glyph" },
+        { actionIdentifier: "action.select-previous-source" },
+        { actionIdentifier: "action.select-next-source" },
+        // { actionIdentifier: "action.select-previous-source-layer" },
+        // { actionIdentifier: "action.select-next-source-layer" },
+      ],
     });
+
     this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-source",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-previous-glyph",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      actionIdentifier: "action.select-next-glyph",
-    });
-    this.glyphSelectedContextMenuItems.push({
-      title: () =>
-        translate(
-          "menubar.view.find-glyphs-that-use",
-          this.sceneSettings.selectedGlyphName
-        ),
       actionIdentifier: "action.find-glyphs-that-use",
     });
     this.glyphSelectedContextMenuItems.push(MenuItemDivider);
@@ -1648,7 +1450,6 @@ export class EditorController {
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
-      return;
     }
   }
 
@@ -2181,7 +1982,7 @@ export class EditorController {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
-      const glyph = await this.parseClipboard(plainText);
+      const glyph = await Backend.parseClipboard(plainText);
       if (glyph) {
         pasteLayerGlyphs = [{ glyph }];
       }
@@ -2342,11 +2143,6 @@ export class EditorController {
       undefined,
       true
     );
-  }
-
-  async parseClipboard(data) {
-    const result = await parseClipboard(data);
-    return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
   canDelete() {
@@ -3063,7 +2859,7 @@ export class EditorController {
     const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceFromSourceLocation({
+      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
         ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
@@ -3077,9 +2873,14 @@ export class EditorController {
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
+  async doSelectPreviousNextSourceLayer(selectPrevious) {
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.doSelectPreviousNextSourceLayer(selectPrevious);
+  }
+
   async doSelectPreviousNextGlyph(selectPrevious) {
     const panel = this.getSidebarPanel("glyph-search");
-    const glyphNames = panel.glyphsSearch.getFilteredGlyphNames();
+    const glyphNames = panel.glyphSearch.getFilteredGlyphNames();
     if (!glyphNames.length) {
       return;
     }
@@ -3121,10 +2922,10 @@ export class EditorController {
       usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
     );
 
-    const glyphsSearch = document.createElement("glyphs-search");
-    glyphsSearch.glyphMap = glyphMap;
+    const glyphSearch = document.createElement("glyph-search-list");
+    glyphSearch.glyphMap = glyphMap;
 
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
       theDialog.defaultButton.click();
     });
 
@@ -3145,9 +2946,9 @@ export class EditorController {
       ]
     );
 
-    theDialog.setContent(glyphsSearch);
+    theDialog.setContent(glyphSearch);
 
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+    setTimeout(() => glyphSearch.focusSearchField(), 0); // next event loop iteration
 
     switch (await theDialog.run()) {
       case "copy": {
@@ -3161,7 +2962,7 @@ export class EditorController {
         break;
       }
       case "add": {
-        const glyphName = glyphsSearch.getSelectedGlyphName();
+        const glyphName = glyphSearch.getSelectedGlyphName();
         const MAX_NUM_GLYPHS = 100;
         const truncate = !glyphName && usedBy.length > MAX_NUM_GLYPHS;
         const glyphNames = glyphName
@@ -3196,17 +2997,17 @@ export class EditorController {
     titleLabel = translate("dialog.glyphs.search"),
     okLabel = translate("dialog.add")
   ) {
-    const glyphsSearch = document.createElement("glyphs-search");
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
+    const glyphSearch = document.createElement("glyph-search-list");
+    glyphSearch.glyphMap = this.fontController.glyphMap;
 
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameChanged", (event) => {
       dialog.defaultButton.classList.toggle(
         "disabled",
-        !glyphsSearch.getSelectedGlyphName()
+        !glyphSearch.getSelectedGlyphName()
       );
     });
 
-    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+    glyphSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
       dialog.defaultButton.click();
     });
 
@@ -3215,16 +3016,16 @@ export class EditorController {
       { title: okLabel, isDefaultButton: true, resultValue: "ok", disabled: true },
     ]);
 
-    dialog.setContent(glyphsSearch);
+    dialog.setContent(glyphSearch);
 
-    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+    setTimeout(() => glyphSearch.focusSearchField(), 0); // next event loop iteration
 
     if (!(await dialog.run())) {
       // User cancelled
       return;
     }
 
-    const glyphName = glyphsSearch.getSelectedGlyphName();
+    const glyphName = glyphSearch.getSelectedGlyphName();
     if (!glyphName) {
       // Invalid selection
       return;
@@ -3274,7 +3075,9 @@ export class EditorController {
   }
 
   buildContextMenuItems(event) {
-    const menuItems = [...this.basicContextMenuItems];
+    const menuItems = [
+      { title: translate("menubar.edit"), getItems: () => this.basicContextMenuItems },
+    ];
     if (this.sceneSettings.selectedGlyph?.isEditing) {
       this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
@@ -3354,11 +3157,6 @@ export class EditorController {
     this.canvasController.requestUpdate();
   }
 
-  async messageFromServer(headline, msg) {
-    // don't await the dialog result, the server doesn't need an answer
-    message(headline, msg);
-  }
-
   async setupFromWindowLocation() {
     this.sceneSettingsController.withSenderInfo({ senderID: this }, () =>
       this._setupFromWindowLocation()
@@ -3412,15 +3210,44 @@ export class EditorController {
     if (viewInfo["fontAxesSkipMapping"]) {
       this.sceneSettings.fontAxesSkipMapping = true;
     }
+
     if (viewInfo["location"]) {
       this.sceneSettings.fontLocationUser = viewInfo["location"];
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
 
+    if (viewInfo["editLayerName"]) {
+      this.sceneSettings.editLayerName = viewInfo["editLayerName"];
+    }
+    if (viewInfo["editingLayers"]) {
+      this.sceneSettings.editingLayers = viewInfo["editingLayers"];
+    }
+
     if (viewInfo["selection"]) {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
     }
+
+    if (
+      this.sceneController.autoViewBox &&
+      this.sceneSettings.selectedGlyph?.isEditing
+    ) {
+      // This is a bit of a hack: if isEditing is true, the autoViewBox
+      // doesn't work. Also, autoViewBox *needs* to be off in edit mode,
+      // or the canvas behaves really weirdly (it resizes as you drag points)
+      // We can't call .zoomFit() right away as the scene isn't done setting
+      // up. We add a temporary listener to do .zoomFit() once the scene is
+      // there.
+      const delayedZoomFit = () => {
+        this.sceneSettingsController.removeKeyListener(
+          "positionedLines",
+          delayedZoomFit
+        );
+        this.zoomFit(false);
+      };
+      this.sceneSettingsController.addKeyListener("positionedLines", delayedZoomFit);
+    }
+
     this.canvasController.requestUpdate();
     this._didFirstSetup = true;
   }
@@ -3456,6 +3283,17 @@ export class EditorController {
     if (this.sceneSettings.fontAxesSkipMapping) {
       viewInfo["fontAxesSkipMapping"] = true;
     }
+
+    if (this.sceneSettings.editLayerName) {
+      viewInfo["editLayerName"] = this.sceneSettings.editLayerName;
+    }
+    if (
+      this.sceneSettings.editingLayers &&
+      Object.keys(this.sceneSettings.editingLayers).length
+    ) {
+      viewInfo["editingLayers"] = this.sceneSettings.editingLayers;
+    }
+
     const glyphLocations = this.sceneController.getGlyphLocations(true);
     if (Object.keys(glyphLocations).length) {
       viewInfo["glyphLocations"] = glyphLocations;
@@ -3470,14 +3308,8 @@ export class EditorController {
 
     const url = new URL(window.location);
     clearSearchParams(url.searchParams); /* clear legacy URL format */
-    url.hash = dumpURLFragment(viewInfo);
-    if (this._previousURLText !== viewInfo["text"]) {
-      window.history.pushState({}, "", url);
-    } else if (this._previousURLHash !== url.hash) {
-      window.history.replaceState({}, "", url);
-    }
+    writeObjectToURLFragment(viewInfo, this._previousURLText === viewInfo["text"]);
     this._previousURLText = viewInfo["text"];
-    this._previousURLHash = url.hash;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -3515,7 +3347,7 @@ export class EditorController {
     this.sceneController.autoViewBox = false;
   }
 
-  zoomFit() {
+  zoomFit(animate = true) {
     let viewBox = this.sceneController.getSelectionBounds();
     if (viewBox) {
       let size = rectSize(viewBox);
@@ -3525,7 +3357,11 @@ export class EditorController {
       } else {
         viewBox = rectAddMargin(viewBox, 0.1);
       }
-      this.animateToViewBox(viewBox);
+      if (animate) {
+        this.animateToViewBox(viewBox);
+      } else {
+        this.sceneSettings.viewBox = viewBox;
+      }
     }
     this.sceneController.autoViewBox = false;
   }

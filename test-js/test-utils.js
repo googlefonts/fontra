@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import {
   arrayExtend,
+  bisect_right,
   boolInt,
   capitalizeFirstLetter,
   chain,
@@ -10,6 +11,7 @@ import {
   enumerate,
   fileNameExtension,
   getCharFromCodePoint,
+  glyphMapToItemList,
   guessCharFromGlyphName,
   hexToRgba,
   hyphenatedToCamelCase,
@@ -678,5 +680,71 @@ describe("mapObjectValues", () => {
     expect(await mapObjectValuesAsync(testCase.obj, testCase.func)).to.deep.equal(
       testCase.result
     );
+  });
+});
+
+describe("glyphMapToItemList", () => {
+  const testData = [
+    {
+      glyphMap: { "A.alt": [], "A": [65], "a": [97], "B": [66, 98] },
+      result: [
+        { glyphName: "A.alt", codePoints: [], associatedCodePoints: [65] },
+        { glyphName: "A", codePoints: [65], associatedCodePoints: [] },
+        { glyphName: "a", codePoints: [97], associatedCodePoints: [] },
+        { glyphName: "B", codePoints: [66, 98], associatedCodePoints: [] },
+      ],
+    },
+  ];
+
+  parametrize("glyphMapToItemList test", testData, (testCase) => {
+    expect(glyphMapToItemList(testCase.glyphMap)).to.deep.equal(testCase.result);
+  });
+});
+
+describe("bisect_right", () => {
+  const testData = [
+    { a: [], x: 1, i: 0 },
+    { a: [1], x: 0, i: 0 },
+    { a: [1], x: 1, i: 1 },
+    { a: [1], x: 2, i: 1 },
+    { a: [1, 1], x: 0, i: 0 },
+    { a: [1, 1], x: 1, i: 2 },
+    { a: [1, 1], x: 2, i: 2 },
+    { a: [1, 1, 1], x: 0, i: 0 },
+    { a: [1, 1, 1], x: 1, i: 3 },
+    { a: [1, 1, 1], x: 2, i: 3 },
+    { a: [1, 1, 1, 1], x: 0, i: 0 },
+    { a: [1, 1, 1, 1], x: 1, i: 4 },
+    { a: [1, 1, 1, 1], x: 2, i: 4 },
+    { a: [1, 2], x: 0, i: 0 },
+    { a: [1, 2], x: 1, i: 1 },
+    { a: [1, 2], x: 1.5, i: 1 },
+    { a: [1, 2], x: 2, i: 2 },
+    { a: [1, 2], x: 3, i: 2 },
+    { a: [1, 1, 2, 2], x: 0, i: 0 },
+    { a: [1, 1, 2, 2], x: 1, i: 2 },
+    { a: [1, 1, 2, 2], x: 1.5, i: 2 },
+    { a: [1, 1, 2, 2], x: 2, i: 4 },
+    { a: [1, 1, 2, 2], x: 3, i: 4 },
+    { a: [1, 2, 3], x: 0, i: 0 },
+    { a: [1, 2, 3], x: 1, i: 1 },
+    { a: [1, 2, 3], x: 1.5, i: 1 },
+    { a: [1, 2, 3], x: 2, i: 2 },
+    { a: [1, 2, 3], x: 2.5, i: 2 },
+    { a: [1, 2, 3], x: 3, i: 3 },
+    { a: [1, 2, 3], x: 4, i: 3 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 0, i: 0 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 1, i: 1 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 1.5, i: 1 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 2, i: 3 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 2.5, i: 3 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 3, i: 6 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 3.5, i: 6 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 4, i: 10 },
+    { a: [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], x: 5, i: 10 },
+  ];
+
+  parametrize("bisect_right test", testData, (testCase) => {
+    expect(bisect_right(testCase.a, testCase.x)).to.equal(testCase.i);
   });
 });

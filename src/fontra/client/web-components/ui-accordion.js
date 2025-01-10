@@ -5,7 +5,6 @@ import { enumerate } from "/core/utils.js";
 export class Accordion extends UnlitElement {
   static styles = `
   .ui-accordion-contents {
-    padding: 1em;
     display: grid;
     grid-template-rows: auto;
     align-content: start;
@@ -13,7 +12,6 @@ export class Accordion extends UnlitElement {
     text-wrap: wrap;
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item {
@@ -21,7 +19,6 @@ export class Accordion extends UnlitElement {
     grid-template-rows: auto 1fr;
     gap: 0.2em;
     min-height: 0;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item[hidden] {
@@ -35,7 +32,6 @@ export class Accordion extends UnlitElement {
     align-items: center;
     font-weight: bold;
     cursor: pointer;
-    box-sizing: border-box;
   }
 
   .ui-accordion-item .open-close-icon {
@@ -54,7 +50,6 @@ export class Accordion extends UnlitElement {
 
   .ui-accordion-item-content {
     display: block;
-    box-sizing: border-box;
     overflow: hidden;
   }
   `;
@@ -66,12 +61,16 @@ export class Accordion extends UnlitElement {
   render() {
     const itemElements = [];
     for (const [index, item] of enumerate(this.items || [])) {
+      if (item.hidden) {
+        continue;
+      }
+
       const id = item.id || `ui-accordion-item-${index}`;
 
       const headerElement = html.div(
         {
           class: "ui-accordion-item-header",
-          onclick: (event) => this._toggleItem(itemElement),
+          onclick: (event) => this._handleItemHeaderClick(event, item),
         },
         [
           html.createDomElement("inline-svg", {
@@ -111,9 +110,49 @@ export class Accordion extends UnlitElement {
     return this.shadowRoot.querySelector(selector);
   }
 
-  _toggleItem(itemElement) {
-    itemElement.classList.toggle("ui-accordion-item-closed");
+  querySelectorAll(selector) {
+    return this.shadowRoot.querySelectorAll(selector);
+  }
+
+  _handleItemHeaderClick(event, item) {
+    if (event.altKey) {
+      // Toggle all items depending on the open/closed state of the clicked item
+      const doClose = item.open;
+      this.items.forEach((item) => {
+        this.openCloseAccordionItem(item, !doClose);
+      });
+    } else {
+      // Toggle single item
+      this.openCloseAccordionItem(item, !item.open);
+    }
+  }
+
+  openCloseAccordionItem(item, openClose) {
+    item.open = openClose;
+    const parent = parentWithClass(item.content, "ui-accordion-item");
+    if (parent) {
+      parent.classList.toggle("ui-accordion-item-closed", !openClose);
+    }
+    this.onItemOpenClose?.(item, item.open);
+  }
+
+  showHideAccordionItem(item, onOff) {
+    item.hidden = !onOff;
+
+    const parent = parentWithClass(item.content, "ui-accordion-item");
+
+    if (parent) {
+      parent.hidden = !onOff;
+    }
   }
 }
 
 customElements.define("ui-accordion", Accordion);
+
+function parentWithClass(element, className) {
+  let parent = element;
+  do {
+    parent = parent.parentElement;
+  } while (parent && !parent.classList.contains(className));
+  return parent;
+}

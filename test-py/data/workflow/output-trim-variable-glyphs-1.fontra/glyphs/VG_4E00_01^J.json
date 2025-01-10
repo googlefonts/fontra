@@ -1,0 +1,138 @@
+{
+"name": "VG_4E00_01",
+"axes": [
+{
+"name": "width",
+"minValue": 353.2987250690735,
+"defaultValue": 415.8845441149383,
+"maxValue": 415.8845441149383
+},
+{
+"name": "weight",
+"minValue": 28,
+"defaultValue": 28,
+"maxValue": 30
+}
+],
+"sources": [
+{
+"name": "weight=28,wght=0,width=353.29873",
+"layerName": "weight=28,wght=0,width=353.29873",
+"location": {
+"weight": 28,
+"wght": 0,
+"width": 353.2987250690735
+}
+},
+{
+"name": "weight=28,wght=0,width=415.88454",
+"layerName": "weight=28,wght=0,width=415.88454",
+"location": {
+"weight": 28,
+"wght": 0,
+"width": 415.8845441149383
+}
+},
+{
+"name": "weight=30,wght=0,width=415.88454",
+"layerName": "weight=30,wght=0,width=415.88454",
+"location": {
+"weight": 30,
+"wght": 0,
+"width": 415.8845441149383
+}
+}
+],
+"layers": {
+"weight=28,wght=0,width=353.29873": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 380
+},
+{
+"x": 353.2987250690735,
+"y": 380
+},
+{
+"x": 353.2987250690735,
+"y": 408
+},
+{
+"x": 0,
+"y": 408
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"weight=28,wght=0,width=415.88454": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 380
+},
+{
+"x": 415.8845441149383,
+"y": 380
+},
+{
+"x": 415.8845441149383,
+"y": 408
+},
+{
+"x": 0,
+"y": 408
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"weight=30,wght=0,width=415.88454": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 380
+},
+{
+"x": 415.8845441149383,
+"y": 380
+},
+{
+"x": 415.8845441149383,
+"y": 410
+},
+{
+"x": 0,
+"y": 410
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+}
+}
+}
