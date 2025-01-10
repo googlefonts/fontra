@@ -258,7 +258,6 @@ export class FontOverviewController extends ViewController {
 
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
     if (actionIdentifier) {
-      // this.sceneController.updateContextMenuState(null);
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
