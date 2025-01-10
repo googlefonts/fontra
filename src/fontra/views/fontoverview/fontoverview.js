@@ -286,7 +286,6 @@ export class FontOverviewController extends ViewController {
 
   canUndoRedo(isRedo) {
     // For now we have no undo
-    console.log("hey undo???");
     return false;
   }
 
