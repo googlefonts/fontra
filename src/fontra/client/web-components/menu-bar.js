@@ -4,7 +4,6 @@ import { MenuPanel } from "./menu-panel.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
-  "menu-bar-background-color": ["#eee", "#444"],
   "menu-bar-link-hover": ["#e1e1e1", "rgb(47, 47, 47)"],
 };
 
@@ -205,7 +204,6 @@ export class MenuBar extends SimpleElement {
       );
     }
     this.contentElement.appendChild(fragment);
-    this.contentElement.style.background = "var(--menu-bar-background-color)";
   }
 }
 
