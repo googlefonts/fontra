@@ -229,8 +229,8 @@ export class EditorController extends ViewController {
     this.initSidebars();
     this.initTools();
     this.initActions();
-    this.initContextMenuItems(); // NOTE: need to be build before initTopBar.
     this.initTopBar();
+    this.initContextMenuItems();
     this.initMiniConsole();
 
     // If a stored active panel is not a plug-in, we can restore it before the plug-ins
