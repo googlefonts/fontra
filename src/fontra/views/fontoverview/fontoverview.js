@@ -31,6 +31,7 @@ const persistentSettings = [
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "groupByKeys" },
+  { key: "cellMagnification" },
 ];
 
 function getDefaultFontOverviewSettings() {
@@ -41,6 +42,7 @@ function getDefaultFontOverviewSettings() {
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
     groupByKeys: [],
+    cellMagnification: 1,
   };
 }
 
@@ -134,6 +136,11 @@ export class FontOverviewController extends ViewController {
       this.fontOverviewSettingsController,
       { locationKey: "fontLocationSource" }
     );
+
+    this.fontOverviewSettingsController.addKeyListener("cellMagnification", (event) => {
+      this.glyphCellView.magnification = event.newValue;
+    });
+    this.glyphCellView.magnification = this.fontOverviewSettings.cellMagnification;
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
@@ -295,15 +302,15 @@ export class FontOverviewController extends ViewController {
   }
 
   zoomIn() {
-    this.glyphCellView.magnification = Math.min(
-      this.glyphCellView.magnification * CELL_MAGNIFICATION_FACTOR,
+    this.fontOverviewSettings.cellMagnification = Math.min(
+      this.fontOverviewSettings.cellMagnification * CELL_MAGNIFICATION_FACTOR,
       CELL_MAGNIFICATION_MAX
     );
   }
 
   zoomOut() {
-    this.glyphCellView.magnification = Math.max(
-      this.glyphCellView.magnification / CELL_MAGNIFICATION_FACTOR,
+    this.fontOverviewSettings.cellMagnification = Math.max(
+      this.fontOverviewSettings.cellMagnification / CELL_MAGNIFICATION_FACTOR,
       CELL_MAGNIFICATION_MIN
     );
   }
