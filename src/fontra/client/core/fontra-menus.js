@@ -2,6 +2,7 @@ import { registerActionInfo } from "./actions.js";
 import * as html from "./html-utils.js";
 import { translate } from "./localization.js";
 import { MenuBar } from "/web-components/menu-bar.js";
+import { MenuItemDivider } from "/web-components/menu-panel.js";
 
 const mapMenuItemKeyToFunction = {
   File: getFileMenuItems,
@@ -127,7 +128,18 @@ function getFileMenuItems(viewController) {
 }
 
 function getEditMenuItems() {
-  return [{ actionIdentifier: "action.undo" }, { actionIdentifier: "action.redo" }];
+  return [
+    { actionIdentifier: "action.undo" },
+    { actionIdentifier: "action.redo" },
+    MenuItemDivider,
+    { actionIdentifier: "action.cut" },
+    { actionIdentifier: "action.copy" },
+    { actionIdentifier: "action.paste" },
+    { actionIdentifier: "action.delete" },
+    MenuItemDivider,
+    { actionIdentifier: "action.select-all" },
+    { actionIdentifier: "action.select-none" },
+  ];
 }
 
 function getViewMenuItems() {
