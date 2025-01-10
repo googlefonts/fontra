@@ -389,39 +389,12 @@ export class EditorController extends ViewController {
     {
       const topic = "0020-action-topics.menu.view";
 
-      registerAction(
-        "action.zoom-in",
-        {
-          topic,
-          titleKey: "zoom-in",
-          defaultShortCuts: [
-            { baseKey: "+", commandKey: true },
-            { baseKey: "=", commandKey: true },
-          ],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomIn()
-      );
+      registerActionCallbacks("action.zoom-in", () => this.zoomIn());
 
-      registerAction(
-        "action.zoom-out",
-        {
-          topic,
-          titleKey: "zoom-out",
-          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomOut()
-      );
+      registerActionCallbacks("action.zoom-out", () => this.zoomOut());
 
-      registerAction(
+      registerActionCallbacks(
         "action.zoom-fit-selection",
-        {
-          topic,
-          titleKey: "zoom-fit-selection",
-          defaultShortCuts: [{ baseKey: "0", commandKey: true }],
-          allowGlobalOverride: true,
-        },
         () => this.zoomFit(),
         () => {
           let viewBox = this.sceneController.getSelectionBounds();
@@ -683,7 +656,10 @@ export class EditorController extends ViewController {
   }
 
   initTopBar() {
-    this.myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font", "Glyph"], this);
+    this.myMenuBar = makeFontraMenuBar(
+      ["File", "Edit", "View", "Font", "Glyph", "View"],
+      this
+    );
     document.querySelector(".top-bar-container").appendChild(this.myMenuBar);
   }
 

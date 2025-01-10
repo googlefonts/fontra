@@ -241,3 +241,31 @@ function getWindowMenuItems() {
     defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
   });
 }
+
+{
+  const topic = "0020-action-topics.menu.view";
+
+  registerActionInfo("action.zoom-in", {
+    topic,
+    titleKey: "zoom-in",
+    defaultShortCuts: [
+      { baseKey: "+", commandKey: true },
+      { baseKey: "=", commandKey: true },
+    ],
+    allowGlobalOverride: true,
+  });
+
+  registerActionInfo("action.zoom-out", {
+    topic,
+    titleKey: "zoom-out",
+    defaultShortCuts: [{ baseKey: "-", commandKey: true }],
+    allowGlobalOverride: true,
+  });
+
+  registerActionInfo("action.zoom-fit-selection", {
+    topic,
+    titleKey: "zoom-fit-selection",
+    defaultShortCuts: [{ baseKey: "0", commandKey: true }],
+    allowGlobalOverride: true,
+  });
+}
