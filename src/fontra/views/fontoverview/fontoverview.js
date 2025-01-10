@@ -44,6 +44,10 @@ function getDefaultFontOverviewSettings() {
   };
 }
 
+const CELL_MAGNIFICATION_FACTOR = 2 ** (1 / 4);
+const CELL_MAGNIFICATION_MIN = 0.5;
+const CELL_MAGNIFICATION_MAX = 5;
+
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
@@ -291,11 +295,17 @@ export class FontOverviewController extends ViewController {
   }
 
   async zoomIn() {
-    console.log("font overview zoom in");
+    this.glyphCellView.magnification = Math.min(
+      this.glyphCellView.magnification * CELL_MAGNIFICATION_FACTOR,
+      CELL_MAGNIFICATION_MAX
+    );
   }
 
   async zoomOut() {
-    console.log("font overview zoom out");
+    this.glyphCellView.magnification = Math.max(
+      this.glyphCellView.magnification / CELL_MAGNIFICATION_FACTOR,
+      CELL_MAGNIFICATION_MIN
+    );
   }
 }
 
