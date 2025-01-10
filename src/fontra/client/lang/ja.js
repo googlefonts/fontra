@@ -29,6 +29,7 @@ export const strings = {
   "action.edit-guideline": "ガイドラインを編集",
   "action.export-as.designspace": "Designspace + UFO (*.designspace)",
   "action.export-as.fontra": "Fontra (*.fontra)",
+  "action.export-as.glyphs": "Glyphs (*.glyphs)",
   "action.export-as.otf": "OpenType (*.otf)",
   "action.export-as.rcjk": "RCJK (*.rcjk)",
   "action.export-as.ttf": "TrueType (*.ttf)",
