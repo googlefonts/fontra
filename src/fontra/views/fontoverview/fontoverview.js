@@ -1,4 +1,10 @@
+import {
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+  registerActionCallbacks,
+} from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
@@ -25,6 +31,7 @@ const persistentSettings = [
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "groupByKeys" },
+  { key: "cellMagnification" },
 ];
 
 function getDefaultFontOverviewSettings() {
@@ -35,12 +42,22 @@ function getDefaultFontOverviewSettings() {
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
     groupByKeys: [],
+    cellMagnification: 1,
   };
 }
+
+const CELL_MAGNIFICATION_FACTOR = 2 ** (1 / 4);
+const CELL_MAGNIFICATION_MIN = 0.25;
+const CELL_MAGNIFICATION_MAX = 4;
 
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
+
+    this.initActions();
+
+    const myMenuBar = makeFontraMenuBar(["File", "Edit", "View", "Font"], this);
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
 
     this.updateGlyphSelection = throttleCalls(() => this._updateGlyphSelection(), 50);
 
@@ -48,6 +65,13 @@ export class FontOverviewController extends ViewController {
       (event) => this._updateWindowLocation(),
       200
     );
+  }
+
+  getViewMenuItems() {
+    return [
+      { actionIdentifier: "action.zoom-in" },
+      { actionIdentifier: "action.zoom-out" },
+    ];
   }
 
   async start() {
@@ -112,6 +136,11 @@ export class FontOverviewController extends ViewController {
       this.fontOverviewSettingsController,
       { locationKey: "fontLocationSource" }
     );
+
+    this.fontOverviewSettingsController.addKeyListener("cellMagnification", (event) => {
+      this.glyphCellView.magnification = event.newValue;
+    });
+    this.glyphCellView.magnification = this.fontOverviewSettings.cellMagnification;
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
@@ -221,11 +250,18 @@ export class FontOverviewController extends ViewController {
   }
 
   handleKeyDown(event) {
-    if (isActiveElementTypeable()) {
-      // The cell area for sure doesn't have the focus
-      return;
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
+    } else {
+      if (isActiveElementTypeable()) {
+        // The cell area for sure doesn't have the focus
+        return;
+      }
+      this.glyphCellView.handleKeyDown(event);
     }
-    this.glyphCellView.handleKeyDown(event);
   }
 
   handleRemoteClose(event) {
@@ -234,6 +270,47 @@ export class FontOverviewController extends ViewController {
 
   handleRemoteError(event) {
     //
+  }
+
+  initActions() {
+    registerActionCallbacks(
+      "action.undo",
+      () => this.doUndoRedo(false),
+      () => this.canUndoRedo(false)
+    );
+
+    registerActionCallbacks(
+      "action.redo",
+      () => this.doUndoRedo(true),
+      () => this.canUndoRedo(true)
+    );
+
+    registerActionCallbacks("action.zoom-in", () => this.zoomIn());
+    registerActionCallbacks("action.zoom-out", () => this.zoomOut());
+  }
+
+  canUndoRedo(isRedo) {
+    // For now we have no undo
+    return false;
+  }
+
+  doUndoRedo(isRedo) {
+    // Stub
+    console.log(isRedo ? "redo" : "undo");
+  }
+
+  zoomIn() {
+    this.fontOverviewSettings.cellMagnification = Math.min(
+      this.fontOverviewSettings.cellMagnification * CELL_MAGNIFICATION_FACTOR,
+      CELL_MAGNIFICATION_MAX
+    );
+  }
+
+  zoomOut() {
+    this.fontOverviewSettings.cellMagnification = Math.max(
+      this.fontOverviewSettings.cellMagnification / CELL_MAGNIFICATION_FACTOR,
+      CELL_MAGNIFICATION_MIN
+    );
   }
 }
 

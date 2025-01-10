@@ -3,6 +3,7 @@ import {
   doPerformAction,
   getActionIdentifierFromKeyEvent,
   registerAction,
+  registerActionCallbacks,
 } from "../core/actions.js";
 import { Backend } from "../core/backend-api.js";
 import { CanvasController } from "../core/canvas-controller.js";
@@ -69,10 +70,10 @@ import {
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import { VisualizationLayers } from "./visualization-layers.js";
+import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { getDecomposedIdentity } from "/core/transform.js";
-import { MenuBar } from "/web-components/menu-bar.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
@@ -292,25 +293,18 @@ export class EditorController extends ViewController {
     {
       const topic = "0030-action-topics.menu.edit";
 
-      registerAction(
+      registerActionCallbacks(
         "action.undo",
-        {
-          topic,
-          sortIndex: 0,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
-        },
         () => this.doUndoRedo(false),
-        () => this.canUndoRedo(false)
+        () => this.canUndoRedo(false),
+        () => this.getUndoRedoLabel(false)
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.redo",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
-        },
         () => this.doUndoRedo(true),
-        () => this.canUndoRedo(true)
+        () => this.canUndoRedo(true),
+        () => this.getUndoRedoLabel(true)
       );
 
       if (insecureSafariConnection()) {
@@ -319,68 +313,43 @@ export class EditorController extends ViewController {
         // only in Safari, and when in an HTTP context
         this.initFallbackClipboardEventListeners();
       } else {
-        registerAction(
+        registerActionCallbacks(
           "action.cut",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "x", commandKey: true }],
-          },
           () => this.doCut(),
           () => this.canCut()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.copy",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "c", commandKey: true }],
-          },
           () => this.doCopy(),
           () => this.canCopy()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.paste",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "v", commandKey: true }],
-          },
           () => this.doPaste(),
           () => this.canPaste()
         );
       }
 
-      registerAction(
+      registerActionCallbacks(
         "action.delete",
-        {
-          topic,
-          defaultShortCuts: [
-            { baseKey: "Delete" },
-            { baseKey: "Delete", altKey: true },
-            { baseKey: "Backspace" },
-            { baseKey: "Backspace", altKey: true },
-          ],
-        },
         (event) => this.doDelete(event),
-        () => this.canDelete()
+        () => this.canDelete(),
+        () =>
+          this.sceneSettings.selectedGlyph?.isEditing
+            ? translate("action.delete-selection")
+            : translate("action.delete-glyph")
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-all",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true }],
-        },
         () => this.doSelectAllNone(false),
         () => this.sceneSettings.selectedGlyph?.isEditing
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-none",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
-        },
         () => this.doSelectAllNone(true),
         () =>
           this.sceneSettings.selectedGlyph?.isEditing &&
@@ -412,46 +381,20 @@ export class EditorController extends ViewController {
         "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
-        () => this.canLockGuideline()
+        () => this.canLockGuideline(),
+        () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines())
       );
     }
 
     {
       const topic = "0020-action-topics.menu.view";
 
-      registerAction(
-        "action.zoom-in",
-        {
-          topic,
-          titleKey: "zoom-in",
-          defaultShortCuts: [
-            { baseKey: "+", commandKey: true },
-            { baseKey: "=", commandKey: true },
-          ],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomIn()
-      );
+      registerActionCallbacks("action.zoom-in", () => this.zoomIn());
 
-      registerAction(
-        "action.zoom-out",
-        {
-          topic,
-          titleKey: "zoom-out",
-          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomOut()
-      );
+      registerActionCallbacks("action.zoom-out", () => this.zoomOut());
 
-      registerAction(
+      registerActionCallbacks(
         "action.zoom-fit-selection",
-        {
-          topic,
-          titleKey: "zoom-fit-selection",
-          defaultShortCuts: [{ baseKey: "0", commandKey: true }],
-          allowGlobalOverride: true,
-        },
         () => this.zoomFit(),
         () => {
           let viewBox = this.sceneController.getSelectionBounds();
@@ -701,216 +644,76 @@ export class EditorController extends ViewController {
           titleKey: "menubar.view.find-glyphs-that-use",
           disabled: true,
         },
-        () => this.doFindGlyphsThatUseGlyph()
+        () => this.doFindGlyphsThatUseGlyph(),
+        null,
+        () =>
+          translate(
+            "menubar.view.find-glyphs-that-use",
+            this.sceneSettings.selectedGlyphName
+          )
       );
     }
   }
 
   initTopBar() {
-    const menuBar = new MenuBar([
-      {
-        title: "Fontra",
-        bold: true,
-        getItems: () => {
-          const menuItems = [
-            "shortcuts",
-            "theme-settings",
-            "display-language",
-            "clipboard",
-            "editor-behavior",
-            "plugins-manager",
-            "server-info",
-          ];
-          return menuItems.map((panelID) => ({
-            title: translate(`application-settings.${panelID}.title`),
-            enabled: () => true,
-            callback: () => {
-              window.open(
-                `/applicationsettings/applicationsettings.html#${panelID}-panel`
-              );
-            },
-          }));
-        },
-      },
-      {
-        title: translate("menubar.file"),
-        getItems: () => {
-          let exportFormats =
-            this.fontController.backendInfo.projectManagerFeatures["export-as"] || [];
-          if (exportFormats.length > 0) {
-            return [
-              {
-                title: translate("menubar.file.export-as"),
-                getItems: () =>
-                  exportFormats.map((format) => ({
-                    actionIdentifier: `action.export-as.${format}`,
-                  })),
-              },
-            ];
-          } else {
-            return [
-              {
-                title: translate("menubar.file.new"),
-                enabled: () => false,
-                callback: () => {},
-              },
-              {
-                title: translate("menubar.file.open"),
-                enabled: () => false,
-                callback: () => {},
-              },
-            ];
-          }
-        },
-      },
-      {
-        title: translate("menubar.edit"),
-        getItems: () => {
-          const menuItems = [...this.basicContextMenuItems];
-          if (this.sceneSettings.selectedGlyph?.isEditing) {
-            this.sceneController.updateContextMenuState(event);
-            menuItems.push(MenuItemDivider);
-            menuItems.push(...this.glyphEditContextMenuItems);
-          }
-          return menuItems;
-        },
-      },
-      {
-        title: translate("menubar.view"),
-        getItems: () => {
-          const items = [
-            {
-              actionIdentifier: "action.zoom-in",
-            },
-            {
-              actionIdentifier: "action.zoom-out",
-            },
-            {
-              actionIdentifier: "action.zoom-fit-selection",
-            },
-          ];
+    const myMenuBar = makeFontraMenuBar(
+      ["File", "Edit", "View", "Font", "Glyph"],
+      this
+    );
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
+  }
 
-          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
-            this.sceneController.updateContextMenuState();
-            items.push(MenuItemDivider);
-            items.push(...this.glyphSelectedContextMenuItems);
-          }
+  getEditMenuItems() {
+    const menuItems = [...this.basicContextMenuItems];
+    if (this.sceneSettings.selectedGlyph?.isEditing) {
+      this.sceneController.updateContextMenuState(event);
+      menuItems.push(MenuItemDivider);
+      menuItems.push(...this.glyphEditContextMenuItems);
+    }
+    return menuItems;
+  }
 
-          items.push(MenuItemDivider);
-          items.push({
-            title: translate("action-topics.glyph-editor-appearance"),
-            getItems: () => {
-              const layerDefs = this.visualizationLayers.definitions.filter(
-                (layer) => layer.userSwitchable
-              );
+  getViewMenuItems() {
+    const items = [
+      { actionIdentifier: "action.zoom-in" },
+      { actionIdentifier: "action.zoom-out" },
+      { actionIdentifier: "action.zoom-fit-selection" },
+    ];
 
-              return layerDefs.map((layerDef) => {
-                return {
-                  actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
-                  checked: this.visualizationLayersSettings.model[layerDef.identifier],
-                };
-              });
-            },
-          });
+    if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+      this.sceneController.updateContextMenuState();
+      items.push(MenuItemDivider);
+      items.push(...this.glyphSelectedContextMenuItems);
+    }
 
-          return items;
-        },
+    items.push(MenuItemDivider);
+    items.push({
+      title: translate("action-topics.glyph-editor-appearance"),
+      getItems: () => {
+        const layerDefs = this.visualizationLayers.definitions.filter(
+          (layer) => layer.userSwitchable
+        );
+
+        return layerDefs.map((layerDef) => {
+          return {
+            actionIdentifier: `actions.glyph-editor-appearance.${layerDef.identifier}`,
+            checked: this.visualizationLayersSettings.model[layerDef.identifier],
+          };
+        });
       },
-      {
-        title: translate("menubar.font"),
-        enabled: () => true,
-        getItems: () => {
-          const menuItems = [
-            [translate("font-info.title"), "#font-info-panel", true],
-            [translate("axes.title"), "#axes-panel", true],
-            [translate("cross-axis-mapping.title"), "#cross-axis-mapping-panel", true],
-            [translate("sources.title"), "#sources-panel", true],
-            [
-              translate("development-status-definitions.title"),
-              "#development-status-definitions-panel",
-              true,
-            ],
-          ];
-          return menuItems.map(([title, panelID, enabled]) => ({
-            title,
-            enabled: () => enabled,
-            callback: () => {
-              const url = new URL(window.location);
-              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
-              url.hash = panelID;
-              window.open(url.toString());
-            },
-          }));
-        },
-      },
-      {
-        title: translate("menubar.glyph"),
-        enabled: () => true,
-        getItems: () => [
-          { actionIdentifier: "action.glyph.add-source" },
-          { actionIdentifier: "action.glyph.delete-source" },
-          { actionIdentifier: "action.glyph.edit-glyph-axes" },
-          MenuItemDivider,
-          { actionIdentifier: "action.glyph.add-background-image" },
-        ],
-      },
-      // // Disable for now, as the font overview isn't yet minimally feature-complete
-      // {
-      //   title: translate("menubar.window"),
-      //   enabled: () => true,
-      //   getItems: () => {
-      //     return [
-      //       {
-      //         title: translate("font-overview.title"),
-      //         enabled: () => true,
-      //         callback: () => {
-      //           const url = new URL(window.location);
-      //           url.pathname = url.pathname.replace("/editor/", "/fontoverview/");
-      //           url.hash = ""; // remove any hash
-      //           window.open(url.toString());
-      //         },
-      //       },
-      //     ];
-      //   },
-      // },
-      {
-        title: translate("menubar.help"),
-        enabled: () => true,
-        getItems: () => {
-          return [
-            {
-              title: translate("menubar.help.homepage"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://fontra.xyz/");
-              },
-            },
-            {
-              title: translate("menubar.help.documentation"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://docs.fontra.xyz");
-              },
-            },
-            {
-              title: translate("menubar.help.changelog"),
-              enabled: () => true,
-              callback: () => {
-                window.open("https://fontra.xyz/changelog.html");
-              },
-            },
-            {
-              title: "GitHub",
-              enabled: () => true,
-              callback: () => {
-                window.open("https://github.com/googlefonts/fontra");
-              },
-            },
-          ];
-        },
-      },
-    ]);
-    document.querySelector(".top-bar-container").appendChild(menuBar);
+    });
+
+    return items;
+  }
+
+  getGlyphMenuItems() {
+    return [
+      { actionIdentifier: "action.glyph.add-source" },
+      { actionIdentifier: "action.glyph.delete-source" },
+      { actionIdentifier: "action.glyph.edit-glyph-axes" },
+      MenuItemDivider,
+      { actionIdentifier: "action.glyph.add-background-image" },
+    ];
   }
 
   restoreOpenTabs(sidebarName) {
@@ -1545,14 +1348,8 @@ export class EditorController extends ViewController {
 
   initContextMenuItems() {
     this.basicContextMenuItems = [];
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(false),
-      actionIdentifier: "action.undo",
-    });
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(true),
-      actionIdentifier: "action.redo",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.undo" });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.redo" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1563,28 +1360,13 @@ export class EditorController extends ViewController {
       // So, since the "actions" versions of cut/copy/paste won't work, we
       // do not add their menu items.
       this.basicContextMenuItems.push(
-        {
-          title: translate("action.cut"),
-          actionIdentifier: "action.cut",
-        },
-        {
-          title: translate("action.copy"),
-          actionIdentifier: "action.copy",
-        },
-        {
-          title: translate("action.paste"),
-          actionIdentifier: "action.paste",
-        }
+        { actionIdentifier: "action.cut" },
+        { actionIdentifier: "action.copy" },
+        { actionIdentifier: "action.paste" }
       );
     }
 
-    this.basicContextMenuItems.push({
-      title: () =>
-        this.sceneSettings.selectedGlyph?.isEditing
-          ? translate("action.delete-selection")
-          : translate("action.delete-glyph"),
-      actionIdentifier: "action.delete",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.delete" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1602,10 +1384,7 @@ export class EditorController extends ViewController {
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
 
-    this.glyphEditContextMenuItems.push({
-      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      actionIdentifier: "action.lock-guideline",
-    });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.lock-guideline" });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
 
@@ -1624,11 +1403,6 @@ export class EditorController extends ViewController {
     });
 
     this.glyphSelectedContextMenuItems.push({
-      title: () =>
-        translate(
-          "menubar.view.find-glyphs-that-use",
-          this.sceneSettings.selectedGlyphName
-        ),
       actionIdentifier: "action.find-glyphs-that-use",
     });
     this.glyphSelectedContextMenuItems.push(MenuItemDivider);
@@ -1676,7 +1450,6 @@ export class EditorController extends ViewController {
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
-      return;
     }
   }
 
