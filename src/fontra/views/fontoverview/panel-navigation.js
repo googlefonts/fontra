@@ -2,6 +2,7 @@ import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
+import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import { labeledCheckbox } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { Accordion } from "/web-components/ui-accordion.js";
@@ -59,34 +60,61 @@ export class FontOverviewNavigation extends HTMLElement {
 
     const accordion = new Accordion();
 
+    accordion.onItemOpenClose = (item, openClose) => {
+      const setOp = openClose ? difference : union;
+      this.fontOverviewSettingsController.setItem(
+        "closedNavigationSections",
+        setOp(this.fontOverviewSettings.closedNavigationSections, [item.id]),
+        { sentFromUserClick: true }
+      );
+    };
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "closedNavigationSections",
+      (event) => {
+        if (!event.senderInfo?.sentFromUserClick) {
+          const diff = symmetricDifference(event.newValue, event.oldValue);
+          for (const id of diff) {
+            const item = accordion.items.find((item) => item.id == id);
+            accordion.openCloseAccordionItem(item, !event.newValue.has(id));
+          }
+        }
+      }
+    );
+
     this._projectGlyphSetsItem = {
       label: "Project glyph sets", // TODO: translate
       id: "project-glyph-sets",
       content: html.div(),
-      open: true,
     };
 
     this._myGlyphSetsItem = {
       label: "My glyph sets", // TODO: translate
       id: "my-glyph-sets",
       content: html.div(),
-      open: true,
     };
 
-    accordion.items = [
+    const accordionItems = [
       {
         label: translate("sources.labels.location"),
+        id: "location",
         content: this.fontSourceInput,
-        open: true,
       },
       {
         label: "Group by", // TODO: translate
+        id: "group-by",
         content: this._makeGroupByUI(),
-        open: true,
       },
       this._projectGlyphSetsItem,
       this._myGlyphSetsItem,
     ];
+
+    accordionItems.forEach(
+      (item) =>
+        (item.open = !this.fontOverviewSettings.closedNavigationSections.has(item.id))
+    );
+
+    accordion.items = accordionItems;
 
     this.appendChild(accordion);
 
