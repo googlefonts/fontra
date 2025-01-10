@@ -1,7 +1,7 @@
 import {
   doPerformAction,
   getActionIdentifierFromKeyEvent,
-  registerAction,
+  registerActionCallbacks,
 } from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
 import { makeFontraMenuBar } from "/core/fontra-menus.js";
@@ -264,58 +264,21 @@ export class FontOverviewController extends ViewController {
   }
 
   initActions() {
-    {
-      const topic = "0030-action-topics.menu.edit";
+    registerActionCallbacks(
+      "action.undo",
+      () => this.doUndoRedo(false),
+      () => this.canUndoRedo(false)
+    );
 
-      registerAction(
-        "action.undo",
-        {
-          topic,
-          sortIndex: 0,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
-        },
-        () => this.doUndoRedo(false),
-        () => this.canUndoRedo(false)
-      );
+    registerActionCallbacks(
+      "action.redo",
+      () => this.doUndoRedo(true),
+      () => this.canUndoRedo(true)
+    );
 
-      registerAction(
-        "action.redo",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
-        },
-        () => this.doUndoRedo(true),
-        () => this.canUndoRedo(true)
-      );
-    }
-    {
-      const topic = "0020-action-topics.menu.view";
+    registerActionCallbacks("action.zoom-in", () => this.zoomIn());
 
-      registerAction(
-        "action.zoom-in",
-        {
-          topic,
-          titleKey: "zoom-in",
-          defaultShortCuts: [
-            { baseKey: "+", commandKey: true },
-            { baseKey: "=", commandKey: true },
-          ],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomIn()
-      );
-
-      registerAction(
-        "action.zoom-out",
-        {
-          topic,
-          titleKey: "zoom-out",
-          defaultShortCuts: [{ baseKey: "-", commandKey: true }],
-          allowGlobalOverride: true,
-        },
-        () => this.zoomOut()
-      );
-    }
+    registerActionCallbacks("action.zoom-out", () => this.zoomOut());
   }
 
   async canUndoRedo(isRedo) {
