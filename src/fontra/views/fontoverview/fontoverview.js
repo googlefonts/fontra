@@ -277,7 +277,6 @@ export class FontOverviewController extends ViewController {
     );
 
     registerActionCallbacks("action.zoom-in", () => this.zoomIn());
-
     registerActionCallbacks("action.zoom-out", () => this.zoomOut());
   }
 
