@@ -60,6 +60,19 @@ export class FontOverviewNavigation extends HTMLElement {
 
     const accordion = new Accordion();
 
+    accordion.appendStyle(`
+      .glyph-set-container {
+        display: grid;
+        justify-items: left;
+        gap: 0.5em;
+      }
+
+      .add-glyph-set-button {
+        padding: 0.3em 1em 0.3em 1em;
+        font-size: 0.9em;
+      }
+    `);
+
     accordion.onItemOpenClose = (item, openClose) => {
       const setOp = openClose ? difference : union;
       this.fontOverviewSettingsController.setItem(
@@ -148,12 +161,30 @@ export class FontOverviewNavigation extends HTMLElement {
       label: value.label,
     }));
 
-    return this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets);
+    return html.div({ class: "glyph-set-container" }, [
+      this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets),
+      html.button(
+        {
+          class: "add-glyph-set-button",
+          onclick: (event) => this._addProjectGlyphSet(event),
+        },
+        ["Add glyph set"]
+      ),
+    ]);
   }
 
   _makeMyGlyphSetsUI() {
     const myGlyphSets = [];
-    return this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets);
+    return html.div({ class: "glyph-set-container" }, [
+      this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
+      html.button(
+        {
+          class: "add-glyph-set-button",
+          onclick: (event) => this._addMyGlyphSet(event),
+        },
+        ["Add glyph set"]
+      ),
+    ]);
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {
@@ -171,6 +202,14 @@ export class FontOverviewNavigation extends HTMLElement {
         labeledCheckbox(label, checkboxController, key)
       ),
     ]);
+  }
+
+  _addProjectGlyphSet(event) {
+    console.log("add project gs");
+  }
+
+  _addMyGlyphSet(event) {
+    console.log("add user gs");
   }
 
   _updateFontSourceInput() {
