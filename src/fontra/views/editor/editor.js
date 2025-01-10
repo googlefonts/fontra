@@ -3,6 +3,7 @@ import {
   doPerformAction,
   getActionIdentifierFromKeyEvent,
   registerAction,
+  registerActionCallbacks,
 } from "../core/actions.js";
 import { Backend } from "../core/backend-api.js";
 import { CanvasController } from "../core/canvas-controller.js";
@@ -292,24 +293,15 @@ export class EditorController extends ViewController {
     {
       const topic = "0030-action-topics.menu.edit";
 
-      registerAction(
+      registerActionCallbacks(
         "action.undo",
-        {
-          topic,
-          sortIndex: 0,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
-        },
         () => this.doUndoRedo(false),
         () => this.canUndoRedo(false),
         () => this.getUndoRedoLabel(false)
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.redo",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
-        },
         () => this.doUndoRedo(true),
         () => this.canUndoRedo(true),
         () => this.getUndoRedoLabel(true)
@@ -321,48 +313,27 @@ export class EditorController extends ViewController {
         // only in Safari, and when in an HTTP context
         this.initFallbackClipboardEventListeners();
       } else {
-        registerAction(
+        registerActionCallbacks(
           "action.cut",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "x", commandKey: true }],
-          },
           () => this.doCut(),
           () => this.canCut()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.copy",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "c", commandKey: true }],
-          },
           () => this.doCopy(),
           () => this.canCopy()
         );
 
-        registerAction(
+        registerActionCallbacks(
           "action.paste",
-          {
-            topic,
-            defaultShortCuts: [{ baseKey: "v", commandKey: true }],
-          },
           () => this.doPaste(),
           () => this.canPaste()
         );
       }
 
-      registerAction(
+      registerActionCallbacks(
         "action.delete",
-        {
-          topic,
-          defaultShortCuts: [
-            { baseKey: "Delete" },
-            { baseKey: "Delete", altKey: true },
-            { baseKey: "Backspace" },
-            { baseKey: "Backspace", altKey: true },
-          ],
-        },
         (event) => this.doDelete(event),
         () => this.canDelete(),
         () =>
@@ -371,22 +342,14 @@ export class EditorController extends ViewController {
             : translate("action.delete-glyph")
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-all",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true }],
-        },
         () => this.doSelectAllNone(false),
         () => this.sceneSettings.selectedGlyph?.isEditing
       );
 
-      registerAction(
+      registerActionCallbacks(
         "action.select-none",
-        {
-          topic,
-          defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
-        },
         () => this.doSelectAllNone(true),
         () =>
           this.sceneSettings.selectedGlyph?.isEditing &&

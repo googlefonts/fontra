@@ -1,5 +1,6 @@
+import { registerActionInfo } from "./actions.js";
 import * as html from "./html-utils.js";
-import { translate } from "/core/localization.js";
+import { translate } from "./localization.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 
 const mapMenuItemKeyToFunction = {
@@ -187,4 +188,56 @@ function getWindowMenuItems() {
       },
     },
   ];
+}
+
+// Default action infos
+
+{
+  const topic = "0030-action-topics.menu.edit";
+
+  registerActionInfo("action.undo", {
+    topic,
+    sortIndex: 0,
+    defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
+  });
+
+  registerActionInfo("action.redo", {
+    topic,
+    defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
+  });
+
+  registerActionInfo("action.cut", {
+    topic,
+    defaultShortCuts: [{ baseKey: "x", commandKey: true }],
+  });
+
+  registerActionInfo("action.copy", {
+    topic,
+    defaultShortCuts: [{ baseKey: "c", commandKey: true }],
+  });
+
+  registerActionInfo("action.paste", {
+    topic,
+    defaultShortCuts: [{ baseKey: "v", commandKey: true }],
+  });
+
+  registerActionInfo("action.delete", {
+    topic,
+    defaultShortCuts: [
+      { baseKey: "Delete" },
+      { baseKey: "Delete", altKey: true },
+      { baseKey: "Backspace" },
+      { baseKey: "Backspace", altKey: true },
+    ],
+  });
+
+  registerActionInfo("action.select-all", {
+    topic,
+    defaultShortCuts: [{ baseKey: "a", commandKey: true }],
+  });
+
+  registerActionInfo("action.select-none", {
+    topic,
+    defaultShortCuts: [{ baseKey: "a", commandKey: true, shiftKey: true }],
+  });
 }
