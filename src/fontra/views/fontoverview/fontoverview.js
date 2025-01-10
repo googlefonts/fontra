@@ -250,18 +250,17 @@ export class FontOverviewController extends ViewController {
   }
 
   handleKeyDown(event) {
-    if (isActiveElementTypeable()) {
-      // The cell area for sure doesn't have the focus
-      return;
-    }
-    this.glyphCellView.handleKeyDown(event);
-
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
     if (actionIdentifier) {
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
-      return;
+    } else {
+      if (isActiveElementTypeable()) {
+        // The cell area for sure doesn't have the focus
+        return;
+      }
+      this.glyphCellView.handleKeyDown(event);
     }
   }
 
