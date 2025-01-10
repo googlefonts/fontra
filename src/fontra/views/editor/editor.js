@@ -300,7 +300,8 @@ export class EditorController extends ViewController {
           defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: false }],
         },
         () => this.doUndoRedo(false),
-        () => this.canUndoRedo(false)
+        () => this.canUndoRedo(false),
+        () => this.getUndoRedoLabel(false)
       );
 
       registerAction(
@@ -310,7 +311,8 @@ export class EditorController extends ViewController {
           defaultShortCuts: [{ baseKey: "z", commandKey: true, shiftKey: true }],
         },
         () => this.doUndoRedo(true),
-        () => this.canUndoRedo(true)
+        () => this.canUndoRedo(true),
+        () => this.getUndoRedoLabel(true)
       );
 
       if (insecureSafariConnection()) {
@@ -362,7 +364,11 @@ export class EditorController extends ViewController {
           ],
         },
         (event) => this.doDelete(event),
-        () => this.canDelete()
+        () => this.canDelete(),
+        () =>
+          this.sceneSettings.selectedGlyph?.isEditing
+            ? translate("action.delete-selection")
+            : translate("action.delete-glyph")
       );
 
       registerAction(
@@ -412,7 +418,8 @@ export class EditorController extends ViewController {
         "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
-        () => this.canLockGuideline()
+        () => this.canLockGuideline(),
+        () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines())
       );
     }
 
@@ -1396,14 +1403,8 @@ export class EditorController extends ViewController {
 
   initContextMenuItems() {
     this.basicContextMenuItems = [];
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(false),
-      actionIdentifier: "action.undo",
-    });
-    this.basicContextMenuItems.push({
-      title: () => this.getUndoRedoLabel(true),
-      actionIdentifier: "action.redo",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.undo" });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.redo" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1414,28 +1415,13 @@ export class EditorController extends ViewController {
       // So, since the "actions" versions of cut/copy/paste won't work, we
       // do not add their menu items.
       this.basicContextMenuItems.push(
-        {
-          title: translate("action.cut"),
-          actionIdentifier: "action.cut",
-        },
-        {
-          title: translate("action.copy"),
-          actionIdentifier: "action.copy",
-        },
-        {
-          title: translate("action.paste"),
-          actionIdentifier: "action.paste",
-        }
+        { actionIdentifier: "action.cut" },
+        { actionIdentifier: "action.copy" },
+        { actionIdentifier: "action.paste" }
       );
     }
 
-    this.basicContextMenuItems.push({
-      title: () =>
-        this.sceneSettings.selectedGlyph?.isEditing
-          ? translate("action.delete-selection")
-          : translate("action.delete-glyph"),
-      actionIdentifier: "action.delete",
-    });
+    this.basicContextMenuItems.push({ actionIdentifier: "action.delete" });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1453,10 +1439,7 @@ export class EditorController extends ViewController {
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
 
-    this.glyphEditContextMenuItems.push({
-      title: () => this.getLockGuidelineLabel(this.selectionHasLockedGuidelines()),
-      actionIdentifier: "action.lock-guideline",
-    });
+    this.glyphEditContextMenuItems.push({ actionIdentifier: "action.lock-guideline" });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
 
