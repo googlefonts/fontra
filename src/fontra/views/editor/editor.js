@@ -1447,7 +1447,6 @@ export class EditorController extends ViewController {
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
-      return;
     }
   }
 
