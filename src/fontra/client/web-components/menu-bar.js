@@ -1,14 +1,22 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { MenuPanel } from "./menu-panel.js";
+import { themeColorCSS } from "./theme-support.js";
+
+const colors = {
+  "menu-bar-link-hover": ["#e1e1e1", "rgb(47, 47, 47)"],
+};
 
 export class MenuBar extends SimpleElement {
   static styles = `
+
+  ${themeColorCSS(colors)}
+
   .menu-bar {
     display: flex;
     align-items: center;
     font-size: 1rem;
-    height:100%;
+    height: 100%;
     padding: 0 0.5rem;
   }
 
@@ -20,7 +28,7 @@ export class MenuBar extends SimpleElement {
 
   .menu-item.hovered,
   .menu-item.current {
-    background: var(--editor-top-bar-link-hover);
+    background: var(--menu-bar-link-hover);
     border-radius: 5px;
   }
 
