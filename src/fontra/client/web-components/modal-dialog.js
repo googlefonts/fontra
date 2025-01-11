@@ -304,6 +304,10 @@ export class ModalDialog extends SimpleElement {
 
     this._resolveDialogResult(result);
   }
+
+  isActive() {
+    return !!this.dialogContent;
+  }
 }
 
 customElements.define("modal-dialog", ModalDialog);
