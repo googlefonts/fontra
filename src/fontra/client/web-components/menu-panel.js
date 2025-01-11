@@ -12,12 +12,13 @@ import { InlineSVG } from "/web-components/inline-svg.js";
 
 export const MenuItemDivider = { title: "-" };
 
-export function showMenu(menuItems, position, positionContainer, container) {
-  if (!container) {
-    container = document.querySelector("#menu-panel-container");
-  }
-  const menu = new MenuPanel(menuItems, { position, positionContainer });
+export function showMenu(menuItems, position, options) {
+  const container = getMenuContainer();
+  const { left, top } = container.getBoundingClientRect();
+  position = { x: position.x - left, y: position.y - top };
+  const menu = new MenuPanel(menuItems, { position, ...options });
   container.appendChild(menu);
+  return menu;
 }
 
 export class MenuPanel extends SimpleElement {
@@ -212,17 +213,18 @@ export class MenuPanel extends SimpleElement {
     this._savedActiveElement = document.activeElement;
     const position = { ...this.position };
     this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
-    if (this.positionContainer) {
-      const containerRect = this.positionContainer.getBoundingClientRect();
-      const thisRect = this.getBoundingClientRect();
-      if (thisRect.right > containerRect.right) {
-        position.x -= thisRect.width + 2;
-      }
-      if (thisRect.bottom > containerRect.bottom) {
-        position.y -= thisRect.bottom - containerRect.bottom + 2;
-      }
-      this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+
+    // Ensure the whole menu is visible, and not cropped by the window
+    const containerRect = document.body.getBoundingClientRect();
+    const thisRect = this.getBoundingClientRect();
+    if (thisRect.right > containerRect.right) {
+      position.x -= thisRect.width + 2;
     }
+    if (thisRect.bottom > containerRect.bottom) {
+      position.y -= thisRect.bottom - containerRect.bottom + 2;
+    }
+    this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+
     this.focus();
   }
 
@@ -381,3 +383,14 @@ customElements.define("menu-panel", MenuPanel);
 
 window.addEventListener("mousedown", (event) => MenuPanel.closeAllMenus(event));
 window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
+
+function getMenuContainer() {
+  // This is tightly coupled to modal-dialog.js
+  // We need to return a different container if the menu is opened from a dialog
+  const dialogContainer =
+    document.activeElement.tagName === "MODAL-DIALOG"
+      ? document.activeElement.shadowRoot.querySelector(".dialog-box")
+      : null;
+
+  return dialogContainer || document.body;
+}
