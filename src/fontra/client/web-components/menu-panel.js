@@ -26,7 +26,7 @@ export class MenuPanel extends SimpleElement {
 
   static closeAllMenus(event) {
     for (const element of MenuPanel.openMenuPanels) {
-      element.parentElement?.removeChild(element);
+      element.dismiss();
     }
     MenuPanel.openMenuPanels.splice(0, MenuPanel.openMenuPanels.length);
   }
@@ -283,6 +283,8 @@ export class MenuPanel extends SimpleElement {
   }
 
   handleKeyDown(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
     this.searchMenuItems(event.key);
     switch (event.key) {
       case "Escape":
@@ -387,10 +389,11 @@ window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
 function getMenuContainer() {
   // This is tightly coupled to modal-dialog.js
   // We need to return a different container if the menu is opened from a dialog
-  const dialogContainer =
-    document.activeElement.tagName === "MODAL-DIALOG"
-      ? document.activeElement.shadowRoot.querySelector(".dialog-box")
-      : null;
+  const dialog = document.querySelector("modal-dialog");
+
+  const dialogContainer = dialog?.isActive()
+    ? dialog.shadowRoot.querySelector(".dialog-box")
+    : null;
 
   return dialogContainer || document.body;
 }
