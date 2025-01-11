@@ -222,7 +222,7 @@ export default class RelatedGlyphPanel extends Panel {
       },
     ];
     const { x, y } = event;
-    showMenu(items, { x: x + 1, y: y - 1 }, document.documentElement);
+    showMenu(items, { x: x + 1, y: y - 1 });
   }
 
   async toggle(on, focus) {
