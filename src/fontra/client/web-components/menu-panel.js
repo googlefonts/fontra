@@ -93,6 +93,7 @@ export class MenuPanel extends SimpleElement {
       display: flex;
       gap: 0.5em;
       justify-content: space-between;
+      text-wrap: nowrap;
     }
 
     .submenu-icon {
