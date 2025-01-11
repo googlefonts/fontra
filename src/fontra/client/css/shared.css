@@ -28,3 +28,14 @@ button:active,
 input[type="button"]:active {
   background-color: #bbb;
 }
+
+/*
+This is a workaround. We don't necessarily want to suppress the focus ring,
+but we're running into a (Chrome) bug where a button gets focus when it
+shouldn't: when a dialog gets dismissed with a key event, the button that
+caused the dialog to *open* wrongly gets the focus.
+*/
+button:focus,
+input[type="button"]:active {
+  outline: none;
+}
