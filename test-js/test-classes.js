@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { getClassSchema } from "../src/fontra/client/core/classes.js";
 // prettier-ignore
-import classesSchema from "../src/fontra/client/core/classes.json" assert { type: "json" };
+import classesSchema from "../src/fontra/client/core/classes.json" with { type: "json" };
 import { enumerate, range } from "../src/fontra/client/core/utils.js";
 import {
   Layer,
