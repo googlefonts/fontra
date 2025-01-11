@@ -259,8 +259,114 @@ const glyphSetPresets = [
   {
     provider: "Google Fonts",
     glyphSets: [
-      { name: "Basic Latin", url: "https://xxxxx" },
-      { name: "Greek", url: "https://yyyy" },
+      {
+        name: "GF Arabic Core",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Core.txt",
+      },
+      {
+        name: "GF Arabic Plus",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Plus.txt",
+      },
+      {
+        name: "GF Cyrillic Core",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Core.txt",
+      },
+      {
+        name: "GF Cyrillic Historical",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Historical.txt",
+      },
+      {
+        name: "GF Cyrillic Plus",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Plus.txt",
+      },
+      {
+        name: "GF Cyrillic Pro",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Pro.txt",
+      },
+      {
+        name: "GF Greek AncientMusicalSymbols",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_AncientMusicalSymbols.txt",
+      },
+      {
+        name: "GF Greek Archaic",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Archaic.txt",
+      },
+      {
+        name: "GF Greek Coptic",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Coptic.txt",
+      },
+      {
+        name: "GF Greek Core",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Core.txt",
+      },
+      {
+        name: "GF Greek Expert",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Expert.txt",
+      },
+      {
+        name: "GF Greek Plus",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Plus.txt",
+      },
+      {
+        name: "GF Greek Pro",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Pro.txt",
+      },
+      {
+        name: "GF Latin African",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_African.txt",
+      },
+      {
+        name: "GF Latin Beyond",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Beyond.txt",
+      },
+      {
+        name: "GF Latin Core",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Core.txt",
+      },
+      {
+        name: "GF Latin Kernel",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Kernel.txt",
+      },
+      {
+        name: "GF Latin Plus",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Plus.txt",
+      },
+      {
+        name: "GF Latin PriAfrican",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_PriAfrican.txt",
+      },
+      {
+        name: "GF Latin Vietnamese",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Vietnamese.txt",
+      },
+      {
+        name: "GF Phonetics APA",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_APA.txt",
+      },
+      {
+        name: "GF Phonetics DisorderedSpeech",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_DisorderedSpeech.txt",
+      },
+      {
+        name: "GF Phonetics IPAHistorical",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAHistorical.txt",
+      },
+      {
+        name: "GF Phonetics IPAStandard",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAStandard.txt",
+      },
+      {
+        name: "GF Phonetics SinoExt",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_SinoExt.txt",
+      },
+      {
+        name: "GF TransLatin Arabic",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Arabic.txt",
+      },
+      {
+        name: "GF TransLatin Pinyin",
+        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Pinyin.txt",
+      },
     ],
   },
 ];
