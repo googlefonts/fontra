@@ -3,8 +3,10 @@ import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
-import { labeledCheckbox } from "/core/ui-utils.js";
+import { labeledCheckbox, labeledTextInput } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
+import { dialogSetup } from "/web-components/modal-dialog.js";
+import { PopupMenu } from "/web-components/popup-menu.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
 export class FontOverviewNavigation extends HTMLElement {
@@ -204,12 +206,14 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  _addProjectGlyphSet(event) {
-    console.log("add project gs");
+  async _addProjectGlyphSet(event) {
+    const glyphSet = await runGlyphSetDialog();
+    // XXXX
   }
 
-  _addMyGlyphSet(event) {
-    console.log("add user gs");
+  async _addMyGlyphSet(event) {
+    const glyphSet = await runGlyphSetDialog();
+    // XXXX
   }
 
   _updateFontSourceInput() {
@@ -249,4 +253,61 @@ function makeCheckboxController(settingsController, settingsKey) {
   });
 
   return checkboxController;
+}
+
+const glyphSetPresets = [
+  {
+    provider: "Google Fonts",
+    glyphSets: [
+      { name: "Basic Latin", url: "https://xxxxx" },
+      { name: "Greek", url: "https://yyyy" },
+    ],
+  },
+];
+
+async function runGlyphSetDialog() {
+  const dialog = await dialogSetup("Add glyph set", "", [
+    { title: translate("dialog.cancel"), isCancelButton: true },
+    { title: translate("dialog.add"), isDefaultButton: true },
+  ]);
+
+  const contentStyle = `
+  .glyph-set-dialog-content {
+    display: grid;
+    gap: 0.5em;
+    grid-template-columns: max-content auto;
+    align-items: center;
+    width: 30em;
+  }
+  `;
+
+  dialog.appendStyle(contentStyle);
+
+  const dialogController = new ObservableController();
+
+  const presetMenuItems = glyphSetPresets.map((providerGroup) => ({
+    title: providerGroup.provider,
+    getItems: () =>
+      providerGroup.glyphSets.map((glyphSet) => ({
+        title: glyphSet.name,
+        callback: () => {
+          dialogController.model.name = glyphSet.name;
+          dialogController.model.url = glyphSet.url;
+          dialogController.model.fileType = glyphSet.fileType || "auto-detect";
+        },
+      })),
+  }));
+
+  dialog.setContent(
+    html.div({ class: "glyph-set-dialog-content" }, [
+      html.div(),
+      new PopupMenu("Choose preset", () => presetMenuItems),
+      ...labeledTextInput("Name", dialogController, "name"),
+      ...labeledTextInput("URL", dialogController, "url"),
+      ...labeledTextInput("File type", dialogController, "fileType"), // XXXX should be popu
+      ...labeledTextInput("Note", dialogController, "note"),
+    ])
+  );
+  const result = await dialog.run();
+  console.log(result);
 }
