@@ -257,7 +257,7 @@ function makeCheckboxController(settingsController, settingsKey) {
 
 const glyphSetPresets = [
   {
-    provider: "Google Fonts",
+    curator: "Google Fonts",
     glyphSets: [
       {
         name: "GF Arabic Core",
@@ -391,10 +391,10 @@ async function runGlyphSetDialog() {
 
   const dialogController = new ObservableController();
 
-  const presetMenuItems = glyphSetPresets.map((providerGroup) => ({
-    title: providerGroup.provider,
+  const presetMenuItems = glyphSetPresets.map((curatorGroup) => ({
+    title: curatorGroup.curator,
     getItems: () =>
-      providerGroup.glyphSets.map((glyphSet) => ({
+      curatorGroup.glyphSets.map((glyphSet) => ({
         title: glyphSet.name,
         callback: () => {
           dialogController.model.name = glyphSet.name;
