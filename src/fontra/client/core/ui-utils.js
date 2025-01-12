@@ -1,5 +1,6 @@
 import * as html from "./html-utils.js";
 import { uniqueID, zip } from "./utils.js";
+import { PopupMenu } from "/web-components/popup-menu.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";
@@ -169,6 +170,34 @@ export function labeledTextInput(label, controller, key, options) {
     items.push(choicesForInput(options.choices, inputElement));
   }
   return items;
+}
+
+export function popupSelect(controller, key, options) {
+  function findLabel() {
+    const option = options.find(({ value }) => value === controller.model[key]);
+    return option?.label || "";
+  }
+
+  controller.addKeyListener(key, (event) => {
+    menu.valueLabel = findLabel();
+  });
+
+  const menu = new PopupMenu(findLabel(), () =>
+    options.map(({ value, label }) => ({
+      title: label,
+      checked: value === controller.model[key],
+      callback: () => {
+        controller.model[key] = value;
+        menu.valueLabel = label;
+      },
+    }))
+  );
+  return menu;
+}
+
+export function labeledPopupSelect(label, controller, key, options) {
+  const inputElement = popupSelect(controller, key, options);
+  return [labelForElement(label, inputElement), inputElement];
 }
 
 export const DefaultFormatter = {
