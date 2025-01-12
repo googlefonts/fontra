@@ -110,6 +110,7 @@ export class FontOverviewController extends ViewController {
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
+    this._setupProjectGlyphSetsDependencies();
     this._setupMyGlyphSetsDependencies();
     this._setupLocationDependencies();
 
@@ -173,6 +174,26 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _setupProjectGlyphSetsDependencies() {
+    this.fontOverviewSettingsController.addKeyListener(
+      "projectGlyphSets",
+      async (event) => {
+        const changes = await this.fontController.performEdit(
+          "edit glyph sets",
+          "customData",
+          (root) => {
+            const projectGlyphSets = Object.values(event.newValue).filter(
+              (glyphSet) => glyphSet.url
+            );
+            root.customData["fontra.projectGlyphSets"] = projectGlyphSets;
+          },
+          this
+        );
+        console.log(changes);
+      }
+    );
   }
 
   _setupMyGlyphSetsDependencies() {
