@@ -167,11 +167,13 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _updateProjectGlyphSets() {
-    this._projectGlyphSetsItem.content = this._makeProjectGlyphSetsUI();
+    this._projectGlyphSetsItem.content.innerHTML = "";
+    this._projectGlyphSetsItem.content.appendChild(this._makeProjectGlyphSetsUI());
   }
 
   _updateMyGlyphSets() {
-    this._myGlyphSetsItem.content = this._makeMyGlyphSetsUI();
+    this._myGlyphSetsItem.content.innerHTML = "";
+    this._myGlyphSetsItem.content.appendChild(this._makeMyGlyphSetsUI());
   }
 
   _makeProjectGlyphSetsUI() {
@@ -179,7 +181,7 @@ export class FontOverviewNavigation extends HTMLElement {
       this.fontOverviewSettings.projectGlyphSets
     ).map(([key, value]) => ({
       key,
-      label: value.label,
+      label: value.name,
     }));
 
     return html.div({ class: "glyph-set-container" }, [
@@ -195,7 +197,13 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeMyGlyphSetsUI() {
-    const myGlyphSets = [];
+    const myGlyphSets = Object.entries(this.fontOverviewSettings.myGlyphSets).map(
+      ([key, value]) => ({
+        key,
+        label: value.name,
+      })
+    );
+
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
       html.button(
@@ -227,12 +235,24 @@ export class FontOverviewNavigation extends HTMLElement {
 
   async _addProjectGlyphSet(event) {
     const glyphSet = await runGlyphSetDialog();
-    // XXXX
+    if (!glyphSet) {
+      return;
+    }
+    this.fontOverviewSettings.projectGlyphSets = {
+      ...this.fontOverviewSettings.projectGlyphSets,
+      [glyphSet.url]: glyphSet,
+    };
   }
 
   async _addMyGlyphSet(event) {
     const glyphSet = await runGlyphSetDialog();
-    // XXXX
+    if (!glyphSet) {
+      return;
+    }
+    this.fontOverviewSettings.myGlyphSets = {
+      ...this.fontOverviewSettings.myGlyphSets,
+      [glyphSet.url]: glyphSet,
+    };
   }
 }
 
@@ -381,9 +401,32 @@ const glyphSetPresets = [
 ];
 
 async function runGlyphSetDialog() {
+  const glyphSetInfo = { fileType: "auto-detect" };
+  const dialogController = new ObservableController(glyphSetInfo);
+
+  const validateInput = () => {
+    let valid = true;
+    let url;
+    try {
+      url = new URL(dialogController.model.url);
+    } catch (e) {
+      valid = false;
+    }
+    if (url?.pathname.length <= 1 || !url?.hostname.includes(".")) {
+      valid = false;
+    }
+    if (!dialogController.model.name) {
+      valid;
+    }
+    // TODO: warningsElement: say what/why it's invalid
+    dialog.defaultButton.classList.toggle("disabled", !valid);
+  };
+
+  dialogController.addListener((event) => validateInput());
+
   const dialog = await dialogSetup("Add glyph set", "", [
     { title: translate("dialog.cancel"), isCancelButton: true },
-    { title: translate("dialog.add"), isDefaultButton: true },
+    { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
   ]);
 
   const contentStyle = `
@@ -397,8 +440,6 @@ async function runGlyphSetDialog() {
   `;
 
   dialog.appendStyle(contentStyle);
-
-  const dialogController = new ObservableController();
 
   const presetMenuItems = glyphSetPresets.map((curatorGroup) => ({
     title: curatorGroup.curator,
@@ -431,5 +472,5 @@ async function runGlyphSetDialog() {
     ])
   );
   const result = await dialog.run();
-  console.log(result);
+  return !!(result && glyphSetInfo.name && glyphSetInfo.url) ? glyphSetInfo : null;
 }

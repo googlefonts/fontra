@@ -52,7 +52,7 @@ function getDefaultFontOverviewSettings() {
     closedGlyphSections: new Set(),
     closedNavigationSections: new Set(),
     groupByKeys: [],
-    projectGlyphSets: { [THIS_FONTS_GLYPHSET]: { label: "This font's glyphs" } },
+    projectGlyphSets: { [THIS_FONTS_GLYPHSET]: { name: "This font's glyphs" } },
     myGlyphSets: [],
     projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
     myGlyphSetSelection: [],
