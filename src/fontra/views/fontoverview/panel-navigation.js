@@ -7,6 +7,7 @@ import {
   labeledCheckbox,
   labeledPopupSelect,
   labeledTextInput,
+  popupSelect,
 } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
@@ -28,35 +29,6 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   async _setupUI() {
-    this.fontSources = await this.fontController.getSources();
-
-    this.fontSourceInput = html.select(
-      {
-        id: "font-source-select",
-        style: "width: 100%;",
-        onchange: (event) => {
-          const fontSourceIdentifier = event.target.value;
-          const sourceLocation = {
-            ...this.fontSources[fontSourceIdentifier]?.location,
-          }; // A font may not have any font sources, therefore the ?-check
-          this.fontOverviewSettings.fontLocationSource = sourceLocation;
-        },
-      },
-      []
-    );
-
-    for (const fontSourceIdentifier of this.fontController.getSortedSourceIdentifiers()) {
-      const sourceName = this.fontSources[fontSourceIdentifier].name;
-      this.fontSourceInput.appendChild(
-        html.option({ value: fontSourceIdentifier }, [sourceName])
-      );
-    }
-
-    this.fontOverviewSettingsController.addKeyListener("fontLocationSource", (event) =>
-      this._updateFontSourceInput()
-    );
-    this._updateFontSourceInput();
-
     this.searchField = new GlyphSearchField({
       settingsController: this.fontOverviewSettingsController,
       searchStringKey: "searchString",
@@ -117,7 +89,7 @@ export class FontOverviewNavigation extends HTMLElement {
       {
         label: translate("sources.labels.location"),
         id: "location",
-        content: this.fontSourceInput,
+        content: await this._makeFontSourcePopup(),
       },
       {
         label: "Group by", // TODO: translate
@@ -145,6 +117,49 @@ export class FontOverviewNavigation extends HTMLElement {
     );
     this._updateProjectGlyphSets();
     this._updateMyGlyphSets();
+  }
+
+  async _makeFontSourcePopup() {
+    const fontSources = await this.fontController.getSources();
+
+    const selectedSourceIdentifier = () =>
+      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+        this.fontOverviewSettings.fontLocationSource
+      );
+
+    const options = this.fontController
+      .getSortedSourceIdentifiers()
+      .map((fontSourceIdentifier) => ({
+        value: fontSourceIdentifier,
+        label: fontSources[fontSourceIdentifier].name,
+      }));
+
+    const controller = new ObservableController({
+      value: selectedSourceIdentifier(),
+    });
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "fontLocationSource",
+      (event) => {
+        if (!event.senderInfo?.sentFromInput) {
+          controller.model.value = selectedSourceIdentifier();
+        }
+      }
+    );
+
+    controller.addKeyListener("value", (event) => {
+      const fontSourceIdentifier = event.newValue;
+      const sourceLocation = {
+        ...fontSources[fontSourceIdentifier]?.location,
+      }; // A font may not have any font sources, therefore the ?-check
+      this.fontOverviewSettingsController.setItem(
+        "fontLocationSource",
+        sourceLocation,
+        { sentFromInput: true }
+      );
+    });
+
+    return popupSelect(controller, "value", options);
   }
 
   _makeGroupByUI() {
@@ -218,16 +233,6 @@ export class FontOverviewNavigation extends HTMLElement {
   async _addMyGlyphSet(event) {
     const glyphSet = await runGlyphSetDialog();
     // XXXX
-  }
-
-  _updateFontSourceInput() {
-    const fontSourceIdentifier =
-      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
-        this.fontOverviewSettings.fontLocationSource
-      );
-    for (const optionElement of this.fontSourceInput.children) {
-      optionElement.selected = optionElement.value === fontSourceIdentifier;
-    }
   }
 }
 
