@@ -193,7 +193,6 @@ export class FontOverviewController extends ViewController {
           },
           this
         );
-        console.log(changes);
       }
     );
   }
