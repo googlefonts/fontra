@@ -3,7 +3,11 @@ import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
-import { labeledCheckbox, labeledTextInput } from "/core/ui-utils.js";
+import {
+  labeledCheckbox,
+  labeledPopupSelect,
+  labeledTextInput,
+} from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { PopupMenu } from "/web-components/popup-menu.js";
@@ -404,13 +408,20 @@ async function runGlyphSetDialog() {
       })),
   }));
 
+  const fileTypeOptions = [
+    { value: "auto-detect", label: "auto-detect" },
+    { value: "glyph-names", label: "Glyph names (whitespace-separated)" },
+    { value: "csv", label: "CSV (comma- or semicolon-separated)" },
+    { value: "tsv", label: "TSV (tab-separated)" },
+  ];
+
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
       html.div(),
       new PopupMenu("Choose preset", () => presetMenuItems),
       ...labeledTextInput("Name", dialogController, "name"),
       ...labeledTextInput("URL", dialogController, "url"),
-      ...labeledTextInput("File type", dialogController, "fileType"), // XXXX should be popu
+      ...labeledPopupSelect("File type", dialogController, "fileType", fileTypeOptions),
       ...labeledTextInput("Note", dialogController, "note"),
     ])
   );
