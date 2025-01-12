@@ -173,6 +173,12 @@ export class FontOverviewController extends ViewController {
       this._updateGlyphItemList();
     });
 
+    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
+
+    this._updateGlyphItemList();
+  }
+
+  _setupProjectGlyphSetsDependencies() {
     this.fontController.addChangeListener(
       { customData: { [PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY]: null } },
       (change, isExternalChange) => {
@@ -186,12 +192,6 @@ export class FontOverviewController extends ViewController {
       }
     );
 
-    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
-
-    this._updateGlyphItemList();
-  }
-
-  _setupProjectGlyphSetsDependencies() {
     this.fontOverviewSettingsController.addKeyListener(
       "projectGlyphSets",
       async (event) => {
