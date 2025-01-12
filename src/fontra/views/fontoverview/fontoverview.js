@@ -53,7 +53,7 @@ function getDefaultFontOverviewSettings() {
     closedNavigationSections: new Set(),
     groupByKeys: [],
     projectGlyphSets: { [THIS_FONTS_GLYPHSET]: { name: "This font's glyphs" } },
-    myGlyphSets: [],
+    myGlyphSets: {},
     projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
     myGlyphSetSelection: [],
     cellMagnification: 1,
@@ -101,11 +101,16 @@ export class FontOverviewController extends ViewController {
       this._updateFromWindowLocation();
     });
 
-    this.fontOverviewSettingsController = new ObservableController(
-      getDefaultFontOverviewSettings()
-    );
+    this.myGlyphSetsController = new ObservableController({ settings: {} });
+    this.myGlyphSetsController.synchronizeWithLocalStorage("fontra-my-glyph-sets-");
+
+    this.fontOverviewSettingsController = new ObservableController({
+      ...getDefaultFontOverviewSettings(),
+      myGlyphSets: this.myGlyphSetsController.model.settings,
+    });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
+    this._setupMyGlyphSetsDependencies();
     this._setupLocationDependencies();
 
     this._updateFromWindowLocation();
@@ -168,6 +173,25 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _setupMyGlyphSetsDependencies() {
+    // This synchronizes the myGlyphSets object with local storage
+    this.fontOverviewSettingsController.addKeyListener("myGlyphSets", (event) => {
+      if (!event.senderInfo?.sentFromLocalStorage) {
+        this.myGlyphSetsController.setItem("settings", event.newValue, {
+          sentFromSettings: true,
+        });
+      }
+    });
+
+    this.myGlyphSetsController.addKeyListener("settings", (event) => {
+      if (!event.senderInfo?.sentFromSettings) {
+        this.fontOverviewSettingsController.setItem("myGlyphSets", event.newValue, {
+          sentFromLocalStorage: true,
+        });
+      }
+    });
   }
 
   _setupLocationDependencies() {
