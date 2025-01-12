@@ -177,12 +177,9 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeProjectGlyphSetsUI() {
-    const projectGlyphSets = Object.entries(
+    const projectGlyphSets = sortedGlyphSets(
       this.fontOverviewSettings.projectGlyphSets
-    ).map(([key, value]) => ({
-      key,
-      label: value.name,
-    }));
+    );
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets),
@@ -197,12 +194,7 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeMyGlyphSetsUI() {
-    const myGlyphSets = Object.entries(this.fontOverviewSettings.myGlyphSets).map(
-      ([key, value]) => ({
-        key,
-        label: value.name,
-      })
-    );
+    const myGlyphSets = sortedGlyphSets(this.fontOverviewSettings.myGlyphSets);
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
@@ -473,4 +465,23 @@ async function runGlyphSetDialog() {
   );
   const result = await dialog.run();
   return !!(result && glyphSetInfo.name && glyphSetInfo.url) ? glyphSetInfo : null;
+}
+
+function sortedGlyphSets(glyphSets) {
+  return Object.entries(glyphSets)
+    .map(([key, value]) => ({
+      key,
+      label: value.name,
+    }))
+    .sort((a, b) => {
+      if (a.label == b.label) {
+        return 0;
+      }
+      if (!a.key) {
+        return -1;
+      } else if (!b.key) {
+        return 1;
+      }
+      return a.label < b.label ? -1 : 1;
+    });
 }
