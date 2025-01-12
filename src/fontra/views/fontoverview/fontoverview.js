@@ -42,6 +42,7 @@ const persistentSettings = [
 ];
 
 const THIS_FONTS_GLYPHSET = "";
+const PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY = "fontra.projectGlyphSets";
 
 function getDefaultFontOverviewSettings() {
   return {
@@ -52,7 +53,7 @@ function getDefaultFontOverviewSettings() {
     closedGlyphSections: new Set(),
     closedNavigationSections: new Set(),
     groupByKeys: [],
-    projectGlyphSets: { [THIS_FONTS_GLYPHSET]: { name: "This font's glyphs" } },
+    projectGlyphSets: {},
     myGlyphSets: {},
     projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
     myGlyphSetSelection: [],
@@ -106,6 +107,7 @@ export class FontOverviewController extends ViewController {
 
     this.fontOverviewSettingsController = new ObservableController({
       ...getDefaultFontOverviewSettings(),
+      projectGlyphSets: readProjectGlyphSets(this.fontController),
       myGlyphSets: this.myGlyphSetsController.model.settings,
     });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
@@ -187,7 +189,7 @@ export class FontOverviewController extends ViewController {
             const projectGlyphSets = Object.values(event.newValue).filter(
               (glyphSet) => glyphSet.url
             );
-            root.customData["fontra.projectGlyphSets"] = projectGlyphSets;
+            root.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] = projectGlyphSets;
           },
           this
         );
@@ -401,4 +403,13 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 
   url.hash = dumpURLFragment(viewInfo);
   window.open(url.toString());
+}
+
+function readProjectGlyphSets(fontController) {
+  return Object.fromEntries(
+    [
+      { name: "This font's glyphs", url: "" },
+      ...(fontController.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] || []),
+    ].map((glyphSet) => [glyphSet.url, glyphSet])
+  );
 }
