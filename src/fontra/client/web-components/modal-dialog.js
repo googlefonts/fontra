@@ -162,6 +162,10 @@ export class ModalDialog extends SimpleElement {
     this.shadowRoot.append(this.dialogElement);
   }
 
+  focus() {
+    this.dialogBox?.focus();
+  }
+
   setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
     buttonDefs = buttonDefs.map((bd) => {
       return { ...bd };
