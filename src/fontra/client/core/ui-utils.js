@@ -102,6 +102,13 @@ export function labeledCheckbox(label, controller, key, options) {
   inputElement.checked = controller.model[key];
   inputWrapper.appendChild(inputElement);
   if (label) {
+    inputWrapper.style = `
+      display: grid;
+      grid-template-columns: auto max-content;
+      justify-content: left;
+      gap: 0.1em;
+      align-items: center;
+    `;
     inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
   }
 
