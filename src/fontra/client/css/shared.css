@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-input[type="button"].fontra-button {
+.fontra-button {
   cursor: pointer;
   background-color: #ddd;
 
@@ -18,11 +18,11 @@ input[type="button"].fontra-button {
   transition: 100ms;
 }
 
-input[type="button"].fontra-button:hover {
+.fontra-button:hover {
   background-color: #ccc;
 }
 
-input[type="button"].fontra-button:active {
+.fontra-button:active {
   background-color: #bbb;
 }
 
@@ -32,6 +32,7 @@ but we're running into a (Chrome) bug where a button gets focus when it
 shouldn't: when a dialog gets dismissed with a key event, the button that
 caused the dialog to *open* wrongly gets the focus.
 */
+button,
 input[type="button"]:focus {
   outline: none;
 }
