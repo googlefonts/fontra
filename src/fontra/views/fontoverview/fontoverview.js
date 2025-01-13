@@ -209,6 +209,11 @@ export class FontOverviewController extends ViewController {
           },
           this
         );
+
+        this.fontOverviewSettings.projectGlyphSetSelection =
+          this.fontOverviewSettings.projectGlyphSetSelection.filter(
+            (name) => !!event.newValue[name]
+          );
       }
     );
   }
@@ -220,6 +225,11 @@ export class FontOverviewController extends ViewController {
         this.myGlyphSetsController.setItem("settings", event.newValue, {
           sentFromSettings: true,
         });
+
+        this.fontOverviewSettings.myGlyphSetSelection =
+          this.fontOverviewSettings.myGlyphSetSelection.filter(
+            (name) => !!event.newValue[name]
+          );
       }
     });
 
