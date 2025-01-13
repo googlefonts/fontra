@@ -60,8 +60,8 @@ export class FontOverviewNavigation extends HTMLElement {
       }
 
       icon-button {
-        width: 1.4em;
-        height: 1.4em;
+        width: 1.3em;
+        height: 1.3em;
       }
     `);
 
