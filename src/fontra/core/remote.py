@@ -137,8 +137,8 @@ class RemoteClientProxy:
     def __init__(self, connection):
         self._connection = connection
 
-    async def messageFromServer(self, text):
-        return await self._connection.callMethod("messageFromServer", text)
+    async def messageFromServer(self, headline, message):
+        return await self._connection.callMethod("messageFromServer", headline, message)
 
     async def externalChange(self, change, isLiveChange):
         return await self._connection.callMethod("externalChange", change, isLiveChange)
