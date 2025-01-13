@@ -192,7 +192,8 @@ export class FontOverviewNavigation extends HTMLElement {
 
   _makeProjectGlyphSetsUI() {
     const projectGlyphSets = this._prepareGlyphSets(
-      this.fontOverviewSettings.projectGlyphSets
+      this.fontOverviewSettings.projectGlyphSets,
+      true
     );
 
     return html.div({ class: "glyph-set-container" }, [
@@ -201,13 +202,16 @@ export class FontOverviewNavigation extends HTMLElement {
         type: "button",
         class: "add-glyph-set-button",
         value: "Add glyph set",
-        onclick: (event) => this._addGlyphSet(event, true),
+        onclick: (event) => this._editGlyphSet(event, true),
       }),
     ]);
   }
 
   _makeMyGlyphSetsUI() {
-    const myGlyphSets = this._prepareGlyphSets(this.fontOverviewSettings.myGlyphSets);
+    const myGlyphSets = this._prepareGlyphSets(
+      this.fontOverviewSettings.myGlyphSets,
+      false
+    );
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
@@ -215,12 +219,12 @@ export class FontOverviewNavigation extends HTMLElement {
         type: "button",
         class: "add-glyph-set-button",
         value: "Add glyph set",
-        onclick: (event) => this._addGlyphSet(event, false),
+        onclick: (event) => this._editGlyphSet(event, false),
       }),
     ]);
   }
 
-  _prepareGlyphSets(glyphSets) {
+  _prepareGlyphSets(glyphSets, isProjectGlyphSet) {
     return Object.entries(glyphSets)
       .map(([key, value]) => ({
         key,
@@ -230,10 +234,26 @@ export class FontOverviewNavigation extends HTMLElement {
               src: "/tabler-icons/menu-2.svg",
               onclick: (event) => {
                 const buttonRect = event.target.getBoundingClientRect();
-                showMenu([{ title: "Edit" }, { title: "Delete" }], {
-                  x: buttonRect.left,
-                  y: buttonRect.bottom,
-                });
+                showMenu(
+                  [
+                    {
+                      title: "Edit",
+                      callback: (event) => {
+                        this._editGlyphSet(event, isProjectGlyphSet, value);
+                      },
+                    },
+                    {
+                      title: "Delete",
+                      callback: (event) => {
+                        this._deleteGlyphSet(event, isProjectGlyphSet, value);
+                      },
+                    },
+                  ],
+                  {
+                    x: buttonRect.left,
+                    y: buttonRect.bottom,
+                  }
+                );
               },
               // "data-tooltip": "------",
               // "data-tooltipposition": "left",
@@ -273,8 +293,8 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  async _addGlyphSet(event, isProjectGlyphSet) {
-    const glyphSet = await runGlyphSetDialog();
+  async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
+    const glyphSet = await runGlyphSetDialog(glyphSetInfo);
     if (!glyphSet) {
       return;
     }
@@ -284,6 +304,15 @@ export class FontOverviewNavigation extends HTMLElement {
       ...this.fontOverviewSettings[key],
       [glyphSet.url]: glyphSet,
     };
+  }
+
+  _deleteGlyphSet(event, isProjectGlyphSet, glyphSetInfo) {
+    const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
+    const glyphSets = {
+      ...this.fontOverviewSettings[key],
+    };
+    delete glyphSets[glyphSetInfo.url];
+    this.fontOverviewSettings[key] = glyphSets;
   }
 }
 
@@ -431,8 +460,8 @@ const glyphSetPresets = [
   },
 ];
 
-async function runGlyphSetDialog() {
-  const glyphSetInfo = { fileType: "auto-detect" };
+async function runGlyphSetDialog(glyphSetInfo) {
+  glyphSetInfo = { fileType: "auto-detect", ...glyphSetInfo };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
