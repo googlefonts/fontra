@@ -312,10 +312,14 @@ export class FontOverviewNavigation extends HTMLElement {
     }
 
     const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
-    this.fontOverviewSettings[key] = {
+    const glyphSets = {
       ...this.fontOverviewSettings[key],
-      [glyphSet.url]: glyphSet,
     };
+    if (glyphSetInfo?.url) {
+      delete glyphSets[glyphSetInfo.url];
+    }
+    glyphSets[glyphSet.url] = glyphSet;
+    this.fontOverviewSettings[key] = glyphSets;
   }
 
   _deleteGlyphSet(event, isProjectGlyphSet, glyphSetInfo) {
