@@ -10,6 +10,7 @@ import {
   popupSelect,
 } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
+import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { PopupMenu } from "/web-components/popup-menu.js";
 import { Accordion } from "/web-components/ui-accordion.js";
@@ -48,6 +49,18 @@ export class FontOverviewNavigation extends HTMLElement {
       .add-glyph-set-button {
         padding: 0.25em 1em 0.3em 1em;
         font-size: 0.9em;
+      }
+
+      .checkbox-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+      }
+
+      icon-button {
+        width: 1.4em;
+        height: 1.4em;
       }
     `);
 
@@ -183,13 +196,12 @@ export class FontOverviewNavigation extends HTMLElement {
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets),
-      html.button(
-        {
-          class: "add-glyph-set-button",
-          onclick: (event) => this._addProjectGlyphSet(event),
-        },
-        ["Add glyph set"]
-      ),
+      html.input({
+        type: "button",
+        class: "add-glyph-set-button",
+        value: "Add glyph set",
+        onclick: (event) => this._addProjectGlyphSet(event),
+      }),
     ]);
   }
 
@@ -198,13 +210,12 @@ export class FontOverviewNavigation extends HTMLElement {
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
-      html.button(
-        {
-          class: "add-glyph-set-button",
-          onclick: (event) => this._addMyGlyphSet(event),
-        },
-        ["Add glyph set"]
-      ),
+      html.input({
+        type: "button",
+        class: "add-glyph-set-button",
+        value: "Add glyph set",
+        onclick: (event) => this._addMyGlyphSet(event),
+      }),
     ]);
   }
 
@@ -218,10 +229,13 @@ export class FontOverviewNavigation extends HTMLElement {
       this._checkboxControllers[settingsKey] = checkboxController;
     }
 
-    return html.div({}, [
-      ...glyphSets.map(({ key, label }) =>
-        labeledCheckbox(label, checkboxController, key)
-      ),
+    return html.div({ class: "checkbox-group" }, [
+      ...glyphSets
+        .map(({ key, label, extraItem }) => [
+          labeledCheckbox(label, checkboxController, key),
+          extraItem ? extraItem : html.div(),
+        ])
+        .flat(),
     ]);
   }
 
@@ -472,6 +486,14 @@ function sortedGlyphSets(glyphSets) {
     .map(([key, value]) => ({
       key,
       label: value.name,
+      extraItem: value.url
+        ? html.createDomElement("icon-button", {
+            src: "/tabler-icons/menu-2.svg",
+            onclick: (event) => console.log("---", value),
+            // "data-tooltip": "XXXXX",
+            // "data-tooltipposition": "left",
+          })
+        : null,
     }))
     .sort((a, b) => {
       if (a.label == b.label) {
