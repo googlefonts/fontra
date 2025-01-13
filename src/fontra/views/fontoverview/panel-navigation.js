@@ -226,10 +226,10 @@ export class FontOverviewNavigation extends HTMLElement {
 
   _prepareGlyphSets(glyphSets, isProjectGlyphSet) {
     return Object.entries(glyphSets)
-      .map(([key, value]) => ({
+      .map(([key, glyphSet]) => ({
         key,
-        label: value.name,
-        extraItem: value.url
+        label: glyphSet.name,
+        extraItem: glyphSet.url
           ? html.createDomElement("icon-button", {
               src: "/tabler-icons/menu-2.svg",
               onclick: (event) => {
@@ -239,13 +239,13 @@ export class FontOverviewNavigation extends HTMLElement {
                     {
                       title: "Edit",
                       callback: (event) => {
-                        this._editGlyphSet(event, isProjectGlyphSet, value);
+                        this._editGlyphSet(event, isProjectGlyphSet, glyphSet);
                       },
                     },
                     {
                       title: "Delete",
                       callback: (event) => {
-                        this._deleteGlyphSet(event, isProjectGlyphSet, value);
+                        this._deleteGlyphSet(event, isProjectGlyphSet, glyphSet);
                       },
                     },
                   ],
