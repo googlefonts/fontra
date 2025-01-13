@@ -10,13 +10,7 @@ import {
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
 import { readRepoPathAsJSON } from "./test-support.js";
 
-const classesSchema = readRepoPathAsJSON(
-  "src",
-  "fontra",
-  "client",
-  "core",
-  "classes.json"
-);
+const classesSchema = readRepoPathAsJSON("src/fontra/client/core/classes.json");
 
 describe("schema tests", () => {
   const testPaths = [

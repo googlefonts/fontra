@@ -18,7 +18,7 @@ export function getTestData(fileName) {
   return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
-export function readRepoPathAsJSON(...pathComponents) {
-  const path = join(dirname(__dirname), ...pathComponents);
+export function readRepoPathAsJSON(path) {
+  path = join(dirname(__dirname), path);
   return JSON.parse(fs.readFileSync(path, "utf8"));
 }
