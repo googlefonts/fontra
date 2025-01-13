@@ -104,7 +104,7 @@ export function labeledCheckbox(label, controller, key, options) {
   if (label) {
     inputWrapper.style = `
       display: grid;
-      grid-template-columns: auto max-content;
+      grid-template-columns: auto auto;
       justify-content: left;
       gap: 0.1em;
       align-items: center;
