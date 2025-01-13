@@ -48,7 +48,7 @@ export class FontOverviewNavigation extends HTMLElement {
       }
 
       .add-glyph-set-button {
-        padding: 0.25em 1em 0.3em 1em;
+        padding: 0.1em 1em 0.2em 1em;
         font-size: 0.9em;
       }
 
