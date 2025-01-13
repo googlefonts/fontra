@@ -11,6 +11,7 @@ import {
 } from "/core/ui-utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
+import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { PopupMenu } from "/web-components/popup-menu.js";
 import { Accordion } from "/web-components/ui-accordion.js";
@@ -190,7 +191,7 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   _makeProjectGlyphSetsUI() {
-    const projectGlyphSets = sortedGlyphSets(
+    const projectGlyphSets = this._prepareGlyphSets(
       this.fontOverviewSettings.projectGlyphSets
     );
 
@@ -200,13 +201,13 @@ export class FontOverviewNavigation extends HTMLElement {
         type: "button",
         class: "add-glyph-set-button",
         value: "Add glyph set",
-        onclick: (event) => this._addProjectGlyphSet(event),
+        onclick: (event) => this._addGlyphSet(event, true),
       }),
     ]);
   }
 
   _makeMyGlyphSetsUI() {
-    const myGlyphSets = sortedGlyphSets(this.fontOverviewSettings.myGlyphSets);
+    const myGlyphSets = this._prepareGlyphSets(this.fontOverviewSettings.myGlyphSets);
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
@@ -214,9 +215,42 @@ export class FontOverviewNavigation extends HTMLElement {
         type: "button",
         class: "add-glyph-set-button",
         value: "Add glyph set",
-        onclick: (event) => this._addMyGlyphSet(event),
+        onclick: (event) => this._addGlyphSet(event, false),
       }),
     ]);
+  }
+
+  _prepareGlyphSets(glyphSets) {
+    return Object.entries(glyphSets)
+      .map(([key, value]) => ({
+        key,
+        label: value.name,
+        extraItem: value.url
+          ? html.createDomElement("icon-button", {
+              src: "/tabler-icons/menu-2.svg",
+              onclick: (event) => {
+                const buttonRect = event.target.getBoundingClientRect();
+                showMenu([{ title: "Edit" }, { title: "Delete" }], {
+                  x: buttonRect.left,
+                  y: buttonRect.bottom,
+                });
+              },
+              // "data-tooltip": "------",
+              // "data-tooltipposition": "left",
+            })
+          : null,
+      }))
+      .sort((a, b) => {
+        if (a.label == b.label) {
+          return 0;
+        }
+        if (!a.key) {
+          return -1;
+        } else if (!b.key) {
+          return 1;
+        }
+        return a.label < b.label ? -1 : 1;
+      });
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {
@@ -239,24 +273,15 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  async _addProjectGlyphSet(event) {
+  async _addGlyphSet(event, isProjectGlyphSet) {
     const glyphSet = await runGlyphSetDialog();
     if (!glyphSet) {
       return;
     }
-    this.fontOverviewSettings.projectGlyphSets = {
-      ...this.fontOverviewSettings.projectGlyphSets,
-      [glyphSet.url]: glyphSet,
-    };
-  }
 
-  async _addMyGlyphSet(event) {
-    const glyphSet = await runGlyphSetDialog();
-    if (!glyphSet) {
-      return;
-    }
-    this.fontOverviewSettings.myGlyphSets = {
-      ...this.fontOverviewSettings.myGlyphSets,
+    const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
+    this.fontOverviewSettings[key] = {
+      ...this.fontOverviewSettings[key],
       [glyphSet.url]: glyphSet,
     };
   }
@@ -479,31 +504,4 @@ async function runGlyphSetDialog() {
   );
   const result = await dialog.run();
   return !!(result && glyphSetInfo.name && glyphSetInfo.url) ? glyphSetInfo : null;
-}
-
-function sortedGlyphSets(glyphSets) {
-  return Object.entries(glyphSets)
-    .map(([key, value]) => ({
-      key,
-      label: value.name,
-      extraItem: value.url
-        ? html.createDomElement("icon-button", {
-            src: "/tabler-icons/menu-2.svg",
-            onclick: (event) => console.log("---", value),
-            // "data-tooltip": "XXXXX",
-            // "data-tooltipposition": "left",
-          })
-        : null,
-    }))
-    .sort((a, b) => {
-      if (a.label == b.label) {
-        return 0;
-      }
-      if (!a.key) {
-        return -1;
-      } else if (!b.key) {
-        return 1;
-      }
-      return a.label < b.label ? -1 : 1;
-    });
 }
