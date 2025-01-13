@@ -230,34 +230,7 @@ export class FontOverviewNavigation extends HTMLElement {
         key,
         label: glyphSet.name,
         extraItem: glyphSet.url
-          ? html.createDomElement("icon-button", {
-              src: "/tabler-icons/menu-2.svg",
-              onclick: (event) => {
-                const buttonRect = event.target.getBoundingClientRect();
-                showMenu(
-                  [
-                    {
-                      title: "Edit",
-                      callback: (event) => {
-                        this._editGlyphSet(event, isProjectGlyphSet, glyphSet);
-                      },
-                    },
-                    {
-                      title: "Delete",
-                      callback: (event) => {
-                        this._deleteGlyphSet(event, isProjectGlyphSet, glyphSet);
-                      },
-                    },
-                  ],
-                  {
-                    x: buttonRect.left,
-                    y: buttonRect.bottom,
-                  }
-                );
-              },
-              // "data-tooltip": "------",
-              // "data-tooltipposition": "left",
-            })
+          ? this._makeGlyphSetMenuButton(glyphSet, isProjectGlyphSet)
           : null,
       }))
       .sort((a, b) => {
@@ -271,6 +244,37 @@ export class FontOverviewNavigation extends HTMLElement {
         }
         return a.label < b.label ? -1 : 1;
       });
+  }
+
+  _makeGlyphSetMenuButton(glyphSet, isProjectGlyphSet) {
+    return html.createDomElement("icon-button", {
+      src: "/tabler-icons/menu-2.svg",
+      onclick: (event) => {
+        const buttonRect = event.target.getBoundingClientRect();
+        showMenu(
+          [
+            {
+              title: "Edit",
+              callback: (event) => {
+                this._editGlyphSet(event, isProjectGlyphSet, glyphSet);
+              },
+            },
+            {
+              title: "Delete",
+              callback: (event) => {
+                this._deleteGlyphSet(event, isProjectGlyphSet, glyphSet);
+              },
+            },
+          ],
+          {
+            x: buttonRect.left,
+            y: buttonRect.bottom,
+          }
+        );
+      },
+      // "data-tooltip": "------",
+      // "data-tooltipposition": "left",
+    });
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {
