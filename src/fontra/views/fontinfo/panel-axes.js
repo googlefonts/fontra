@@ -106,6 +106,7 @@ export class AxesPanel extends BaseInfoPanel {
     this.panelElement.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("axes.new"),
         onclick: (event) => this.newAxis(),

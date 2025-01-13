@@ -200,7 +200,7 @@ export class FontOverviewNavigation extends HTMLElement {
       this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets),
       html.input({
         type: "button",
-        class: "add-glyph-set-button",
+        class: "fontra-button add-glyph-set-button",
         value: "Add glyph set",
         onclick: (event) => this._editGlyphSet(event, true),
       }),
@@ -217,7 +217,7 @@ export class FontOverviewNavigation extends HTMLElement {
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
       html.input({
         type: "button",
-        class: "add-glyph-set-button",
+        class: "fontra-button add-glyph-set-button",
         value: "Add glyph set",
         onclick: (event) => this._editGlyphSet(event, false),
       }),
@@ -509,6 +509,8 @@ async function runGlyphSetDialog(glyphSetInfo) {
     { title: translate("dialog.cancel"), isCancelButton: true },
     { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
   ]);
+
+  validateInput();
 
   const contentStyle = `
   .glyph-set-dialog-content {

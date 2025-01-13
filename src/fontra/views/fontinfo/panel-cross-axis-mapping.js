@@ -81,6 +81,7 @@ export class CrossAxisMappingPanel extends BaseInfoPanel {
     this.panelElement.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("cross-axis-mapping.new"),
         onclick: (event) => this.newCrossAxisMapping(),

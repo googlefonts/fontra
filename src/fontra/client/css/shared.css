@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-input[type="button"] {
+input[type="button"].fontra-button {
   cursor: pointer;
   background-color: #ddd;
 
@@ -18,11 +18,11 @@ input[type="button"] {
   transition: 100ms;
 }
 
-input[type="button"]:hover {
+input[type="button"].fontra-button:hover {
   background-color: #ccc;
 }
 
-input[type="button"]:active {
+input[type="button"].fontra-button:active {
   background-color: #bbb;
 }
 
