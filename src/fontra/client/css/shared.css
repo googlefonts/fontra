@@ -4,7 +4,6 @@
   box-sizing: border-box;
 }
 
-button,
 input[type="button"] {
   cursor: pointer;
   background-color: #ddd;
@@ -19,12 +18,10 @@ input[type="button"] {
   transition: 100ms;
 }
 
-button:hover,
 input[type="button"]:hover {
   background-color: #ccc;
 }
 
-button:active,
 input[type="button"]:active {
   background-color: #bbb;
 }
@@ -35,7 +32,6 @@ but we're running into a (Chrome) bug where a button gets focus when it
 shouldn't: when a dialog gets dismissed with a key event, the button that
 caused the dialog to *open* wrongly gets the focus.
 */
-button:focus,
-input[type="button"]:active {
+input[type="button"]:focus {
   outline: none;
 }
