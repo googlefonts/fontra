@@ -41,6 +41,7 @@ export class FontOverviewNavigation extends HTMLElement {
     this.appendChild(this.searchField);
 
     const accordion = new Accordion();
+    this.accordion = accordion;
 
     accordion.appendStyle(`
       .glyph-set-container {
@@ -359,6 +360,12 @@ export class FontOverviewNavigation extends HTMLElement {
     const glyphSet = await runGlyphSetDialog(glyphSetInfo);
     if (!glyphSet) {
       return;
+    }
+
+    if (isProjectGlyphSet) {
+      this.accordion.openCloseAccordionItem(this._projectGlyphSetsItem, true);
+    } else {
+      this.accordion.openCloseAccordionItem(this._myGlyphSetsItem, true);
     }
 
     const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
