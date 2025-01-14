@@ -24,6 +24,7 @@ export class MenuBar extends SimpleElement {
     padding: 0.4rem 0.6rem;
     cursor: default;
     user-select: none;
+    -webkit-user-select: none;
   }
 
   .menu-item.hovered,
