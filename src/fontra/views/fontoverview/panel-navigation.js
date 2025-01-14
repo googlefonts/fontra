@@ -49,11 +49,6 @@ export class FontOverviewNavigation extends HTMLElement {
         gap: 0.5em;
       }
 
-      .add-glyph-set-button {
-        padding: 0.1em 1em 0.2em 1em;
-        font-size: 0.9em;
-      }
-
       .checkbox-group {
         width: 100%;
         display: grid;
@@ -110,12 +105,20 @@ export class FontOverviewNavigation extends HTMLElement {
       label: "Project glyph sets", // TODO: translate
       id: "project-glyph-sets",
       content: html.div(),
+      auxiliaryHeaderElement: this._makeAddGlyphSetButton(
+        true,
+        "Add a glyph set to the project"
+      ),
     };
 
     this._myGlyphSetsItem = {
       label: "My glyph sets", // TODO: translate
       id: "my-glyph-sets",
       content: html.div(),
+      auxiliaryHeaderElement: this._makeAddGlyphSetButton(
+        false,
+        "Add a glyph set to my sets"
+      ),
     };
 
     const accordionItems = [
@@ -210,6 +213,15 @@ export class FontOverviewNavigation extends HTMLElement {
     return this._makeCheckboxUI("groupByKeys", groupByProperties);
   }
 
+  _makeAddGlyphSetButton(isProjectGlyphSet, toolTip) {
+    return html.createDomElement("icon-button", {
+      "src": "/images/plus.svg",
+      "onclick": (event) => this._editGlyphSet(event, isProjectGlyphSet),
+      "data-tooltip": toolTip,
+      "data-tooltipposition": "bottom",
+    });
+  }
+
   _updateProjectGlyphSets() {
     this._projectGlyphSetsItem.content.innerHTML = "";
     this._projectGlyphSetsItem.content.appendChild(this._makeProjectGlyphSetsUI());
@@ -228,12 +240,6 @@ export class FontOverviewNavigation extends HTMLElement {
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("projectGlyphSetSelection", projectGlyphSets),
-      html.input({
-        type: "button",
-        class: "fontra-button add-glyph-set-button",
-        value: "Add glyph set",
-        onclick: (event) => this._editGlyphSet(event, true),
-      }),
     ]);
   }
 
@@ -245,12 +251,6 @@ export class FontOverviewNavigation extends HTMLElement {
 
     return html.div({ class: "glyph-set-container" }, [
       this._makeCheckboxUI("myGlyphSetSelection", myGlyphSets),
-      html.input({
-        type: "button",
-        class: "fontra-button add-glyph-set-button",
-        value: "Add glyph set",
-        onclick: (event) => this._editGlyphSet(event, false),
-      }),
     ]);
   }
 
