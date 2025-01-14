@@ -4,13 +4,16 @@ import {
   registerActionCallbacks,
 } from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { getGlyphMapProxy } from "/core/cmap.js";
 import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
+import { parseGlyphSet } from "/core/parse-glyph-set.js";
 import {
+  assert,
   dumpURLFragment,
   glyphMapToItemList,
   isActiveElementTypeable,
@@ -68,6 +71,8 @@ const CELL_MAGNIFICATION_MAX = 4;
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
+
+    this._loadedGlyphSets = {};
 
     this.initActions();
 
@@ -136,6 +141,18 @@ export class FontOverviewController extends ViewController {
       this.glyphOrganizer.setGroupByKeys(event.newValue);
       this.updateGlyphSelection();
     });
+
+    this.fontOverviewSettingsController.addKeyListener(
+      [
+        "projectGlyphSets",
+        "myGlyphSets",
+        "projectGlyphSetSelection",
+        "myGlyphSetSelection",
+      ],
+      (event) => {
+        this.updateGlyphSelection();
+      }
+    );
 
     this.glyphOrganizer = new GlyphOrganizer();
     this.glyphOrganizer.setSearchString(this.fontOverviewSettings.searchString);
@@ -314,13 +331,72 @@ export class FontOverviewController extends ViewController {
     this._updateGlyphSelection();
   }
 
-  _updateGlyphSelection() {
+  async _updateGlyphSelection() {
     // We possibly need to be smarter about this:
     this.glyphCellView.parentElement.scrollTop = 0;
 
-    const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
+    const combinedGlyphItemList = await this._getCombineGlyphItemList();
+    const glyphItemList = this.glyphOrganizer.filterGlyphs(combinedGlyphItemList);
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
+  }
+
+  async _getCombineGlyphItemList() {
+    const combinedCharacterMap = {};
+    const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
+
+    const glyphSetKeys = [
+      ...this.fontOverviewSettings.projectGlyphSetSelection,
+      ...this.fontOverviewSettings.myGlyphSetSelection,
+    ];
+    glyphSetKeys.sort();
+
+    for (const glyphSetKey of glyphSetKeys) {
+      let glyphSet;
+      if (glyphSetKey === "") {
+        glyphSet = this._glyphItemList;
+      } else {
+        const glyphSetInfo =
+          this.fontOverviewSettings.projectGlyphSets[glyphSetKey] ||
+          this.fontOverviewSettings.myGlyphSets[glyphSetKey];
+
+        if (!glyphSetInfo) {
+          console.log(`can't find glyph set info for ${glyphSetKey}`);
+          continue;
+        }
+
+        glyphSet = await this._loadGlyphSet(glyphSetInfo);
+      }
+
+      for (const { glyphName, codePoints } of glyphSet) {
+        if (!combinedGlyphMap[glyphName]) {
+          combinedGlyphMap[glyphName] = codePoints;
+        }
+      }
+    }
+
+    return glyphMapToItemList(combinedGlyphMap);
+  }
+
+  async _loadGlyphSet(glyphSetInfo) {
+    assert(glyphSetInfo.url);
+    let glyphSet = this._loadedGlyphSets[glyphSetInfo.url];
+    if (!glyphSet) {
+      let glyphSetData;
+      try {
+        const response = await fetch(glyphSetInfo.url);
+        glyphSetData = await response.text();
+      } catch (e) {
+        console.error(`can't load ${glyphSetInfo.url}`);
+        return [];
+      }
+
+      glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat);
+
+      this._loadedGlyphSets[glyphSetInfo.url] = glyphSet;
+    }
+
+    return glyphSet;
   }
 
   openSelectedGlyphs() {
