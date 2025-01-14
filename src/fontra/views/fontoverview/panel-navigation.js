@@ -2,6 +2,7 @@ import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
+import { glyphSetDataFormats } from "/core/parse-glyph-set.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import {
   labeledCheckbox,
@@ -486,7 +487,7 @@ const glyphSetPresets = [
 ];
 
 async function runGlyphSetDialog(glyphSetInfo) {
-  glyphSetInfo = { fileType: "auto-detect", ...glyphSetInfo };
+  glyphSetInfo = { dataFormat: "auto-detect", ...glyphSetInfo };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
@@ -536,17 +537,10 @@ async function runGlyphSetDialog(glyphSetInfo) {
         callback: () => {
           dialogController.model.name = glyphSet.name;
           dialogController.model.url = glyphSet.url;
-          dialogController.model.fileType = glyphSet.fileType || "auto-detect";
+          dialogController.model.dataFormat = glyphSet.dataFormat || "auto-detect";
         },
       })),
   }));
-
-  const fileTypeOptions = [
-    { value: "auto-detect", label: "auto-detect" },
-    { value: "glyph-names", label: "Glyph names (whitespace-separated)" },
-    { value: "csv", label: "CSV (comma- or semicolon-separated)" },
-    { value: "tsv", label: "TSV (tab-separated)" },
-  ];
 
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
@@ -554,7 +548,12 @@ async function runGlyphSetDialog(glyphSetInfo) {
       new PopupMenu("Choose preset", () => presetMenuItems),
       ...labeledTextInput("Name", dialogController, "name"),
       ...labeledTextInput("URL", dialogController, "url"),
-      ...labeledPopupSelect("File type", dialogController, "fileType", fileTypeOptions),
+      ...labeledPopupSelect(
+        "Data format",
+        dialogController,
+        "dataFormat",
+        glyphSetDataFormats
+      ),
       ...labeledTextInput("Note", dialogController, "note"),
     ])
   );
