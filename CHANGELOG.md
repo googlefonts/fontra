@@ -1,5 +1,10 @@
 # Changelog for Fontra
 
+## 2025-01-14
+
+- Fixed a regression with the Font menu [Issue 1941](https://github.com/googlefonts/fontra/issues/1941), [PR 1942](https://github.com/googlefonts/fontra/pull/1942)
+- Fixed a regression with messages from server [PR 1939](https://github.com/googlefonts/fontra/pull/1939)
+
 ## 2025-01-06
 
 - Fixed bug related to deleting points [Issue 1910](https://github.com/googlefonts/fontra/issues/1910), [PR 1916](https://github.com/googlefonts/fontra/pull/1916)
