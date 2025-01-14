@@ -59,6 +59,10 @@ export class MenuPanel extends SimpleElement {
       margin: 0.2em 0em 0.3em 0em; /* top, right, bottom, left */
     }
 
+    .menu-container:focus {
+      outline: none;
+    }
+
     .menu-item-divider {
       border: none;
       border-top: 1px solid #80808080;
@@ -197,6 +201,7 @@ export class MenuPanel extends SimpleElement {
     this.shadowRoot.appendChild(this.menuElement);
     this.tabIndex = 0;
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    setTimeout(() => this.menuElement.focus(), 0);
     MenuPanel.openMenuPanels.push(this);
   }
 
