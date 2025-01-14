@@ -13,7 +13,7 @@ import {
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { showMenu } from "/web-components/menu-panel.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
+import { dialogSetup, message } from "/web-components/modal-dialog.js";
 import { PopupMenu } from "/web-components/popup-menu.js";
 import { Accordion } from "/web-components/ui-accordion.js";
 
@@ -27,6 +27,7 @@ export class FontOverviewNavigation extends HTMLElement {
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
     this._checkboxControllers = {};
+    this._glyphSetErrorButtons = {};
 
     this._setupUI();
   }
@@ -60,10 +61,27 @@ export class FontOverviewNavigation extends HTMLElement {
         justify-content: space-between;
       }
 
+      .glyphset-button-group {
+        justify-self: end;
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 0.2em;
+      }
+
       icon-button {
         width: 1.3em;
         height: 1.3em;
       }
+
+      .glyphset-error-button {
+        color: var(--fontra-light-red-color);
+        opacity: 0;
+      }
+
+      .glyphset-error-button.glyphset-error {
+        opacity: 1;
+      }
+
     `);
 
     accordion.onItemOpenClose = (item, openClose) => {
@@ -132,6 +150,17 @@ export class FontOverviewNavigation extends HTMLElement {
     );
     this._updateProjectGlyphSets();
     this._updateMyGlyphSets();
+
+    this.fontOverviewSettingsController.addKeyListener("glyphSetErrors", (event) => {
+      const diffKeys = symmetricDifference(
+        new Set(Object.keys(event.oldValue)),
+        Object.keys(event.newValue)
+      );
+      for (const key of diffKeys) {
+        const errorButton = this._glyphSetErrorButtons[key];
+        errorButton.classList.toggle("glyphset-error", !!event.newValue[key]);
+      }
+    });
   }
 
   async _makeFontSourcePopup() {
@@ -231,7 +260,10 @@ export class FontOverviewNavigation extends HTMLElement {
         key,
         label: glyphSet.name,
         extraItem: glyphSet.url
-          ? this._makeGlyphSetMenuButton(glyphSet, isProjectGlyphSet)
+          ? html.div({ class: "glyphset-button-group" }, [
+              this._makeGlyphSetErrorButton(glyphSet, isProjectGlyphSet),
+              this._makeGlyphSetMenuButton(glyphSet, isProjectGlyphSet),
+            ])
           : null,
       }))
       .sort((a, b) => {
@@ -284,6 +316,23 @@ export class FontOverviewNavigation extends HTMLElement {
       // "data-tooltip": "------",
       // "data-tooltipposition": "left",
     });
+  }
+
+  _makeGlyphSetErrorButton(glyphSet, isProjectGlyphSet) {
+    const errorButton = html.createDomElement("icon-button", {
+      class: "glyphset-error-button",
+      src: "/tabler-icons/alert-triangle.svg",
+      onclick: (event) => {
+        const errorMessage = this.fontOverviewSettings.glyphSetErrors[glyphSet.url];
+        if (errorMessage) {
+          message(`The glyph set “${glyphSet.name}” could not be loaded`, errorMessage);
+        }
+      },
+    });
+
+    this._glyphSetErrorButtons[glyphSet.url] = errorButton;
+
+    return errorButton;
   }
 
   _makeCheckboxUI(settingsKey, glyphSets) {
