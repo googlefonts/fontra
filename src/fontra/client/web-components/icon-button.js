@@ -10,7 +10,6 @@ export class IconButton extends UnlitElement {
       border: none;
       padding: 0;
       margin: 0;
-      color: var(--foreground-color);
       width: 100%;
       height: 100%;
       cursor: pointer;
@@ -78,6 +77,7 @@ export class IconButton extends UnlitElement {
           focus.restore();
         },
         disabled: this._buttonDisabled,
+        style: `color: undefined var(--foreground-color);`, // TODO: huh.
       },
       [html.createDomElement("inline-svg", { src: this.src })]
     );
