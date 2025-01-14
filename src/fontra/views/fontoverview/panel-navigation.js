@@ -249,7 +249,7 @@ export class FontOverviewNavigation extends HTMLElement {
 
   _makeGlyphSetMenuButton(glyphSet, isProjectGlyphSet) {
     return html.createDomElement("icon-button", {
-      src: "/tabler-icons/menu-2.svg",
+      src: "/tabler-icons/pencil.svg",
       onclick: (event) => {
         const buttonRect = event.target.getBoundingClientRect();
         showMenu(
