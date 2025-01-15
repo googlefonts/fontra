@@ -167,7 +167,13 @@ export class FontOverviewController extends ViewController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
 
     const sidebarContainer = document.querySelector("#sidebar-container");
-    this.glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
+    const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
+
+    glyphCellViewContainer.appendChild(
+      html.div({ id: "font-overview-no-glyphs", class: "hidden" }, [
+        translate("(No glyphs found)"), // TODO: translation
+      ])
+    );
 
     this.navigation = new FontOverviewNavigation(this);
 
@@ -185,7 +191,7 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
     sidebarContainer.appendChild(this.navigation);
-    this.glyphCellViewContainer.appendChild(this.glyphCellView);
+    glyphCellViewContainer.appendChild(this.glyphCellView);
 
     this.fontController.addChangeListener({ glyphMap: null }, () => {
       this._updateGlyphItemList();
@@ -341,17 +347,14 @@ export class FontOverviewController extends ViewController {
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
 
-    // Add placeholder if no glyphs are found
+    // Show placeholder if no glyphs are found
+    const fontOverviewNoGlyphsContainer = document.querySelector(
+      "#font-overview-no-glyphs"
+    );
     if (glyphSections.length === 0) {
-      if (!this.glyphCellViewContainer.querySelector(".font-overview-no-glyphs")) {
-        this.glyphCellViewContainer.appendChild(
-          html.div({ class: "font-overview-no-glyphs" }, [
-            translate("(No glyphs found)"), // TODO: translation
-          ])
-        );
-      }
+      fontOverviewNoGlyphsContainer.classList = "";
     } else {
-      this.glyphCellViewContainer.querySelector(".font-overview-no-glyphs")?.remove();
+      fontOverviewNoGlyphsContainer.classList = "hidden";
     }
   }
 

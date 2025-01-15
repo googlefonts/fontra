@@ -45,8 +45,12 @@ font-overview-navigation {
   font-weight: bold;
 }
 
-.font-overview-no-glyphs {
+#font-overview-no-glyphs {
   color: #aaa;
-  display: grid;
-  place-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
 }
