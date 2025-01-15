@@ -170,7 +170,7 @@ export class FontOverviewController extends ViewController {
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
     glyphCellViewContainer.appendChild(
-      html.div({ id: "font-overview-no-glyphs", class: "hidden" }, [
+      html.div({ id: "font-overview-no-glyphs" }, [
         translate("(No glyphs found)"), // TODO: translation
       ])
     );
