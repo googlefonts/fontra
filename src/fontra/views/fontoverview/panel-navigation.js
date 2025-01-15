@@ -213,7 +213,7 @@ export class FontOverviewNavigation extends HTMLElement {
         ...fontSources[fontSourceIdentifier]?.location,
       }; // A font may not have any font sources, therefore the ?-check
       // TODO: set the sliders controller. The following does not work:
-      // this.locationControllerSilders.setItem(this.sourceLocation);
+      //this.locationControllerSliders.setItem(this.sourceLocation);
       this.fontOverviewSettingsController.setItem(
         "fontLocationSource",
         this.sourceLocation,
@@ -229,7 +229,7 @@ export class FontOverviewNavigation extends HTMLElement {
       this.fontController.axes.axes
     );
 
-    this.locationControllerSilders = new ObservableController({
+    this.locationControllerSliders = new ObservableController({
       ...this.sourceLocation,
     });
 
@@ -241,10 +241,10 @@ export class FontOverviewNavigation extends HTMLElement {
       `,
     });
     locationElement.axes = locationAxes;
-    locationElement.controller = this.locationControllerSilders;
+    locationElement.controller = this.locationControllerSliders;
 
-    this.locationControllerSilders.addListener((event) => {
-      const sourceLocation = { ...this.locationControllerSilders.model };
+    this.locationControllerSliders.addListener((event) => {
+      const sourceLocation = { ...this.locationControllerSliders.model };
       const fontSourceIdentifier =
         this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
           sourceLocation
