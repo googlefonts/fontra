@@ -604,10 +604,10 @@ async function runGlyphSetDialog(glyphSetInfo) {
       html.createDomElement("inline-svg", {
         style: `
           display: inline-block;
-          height: 1.2em;
-          width: 1.2em;
-          margin-left: 0.4em;
-          transform: translate(0, 0.25em);
+          height: 1em;
+          width: 1em;
+          margin-left: 0.5em;
+          transform: translate(0, 0.15em);
         `,
         src: "/tabler-icons/external-link.svg",
       }),
