@@ -77,6 +77,12 @@ The following steps are needed if you want to run the automated tests and if you
 
   `fontra --launch rcjk some-robocjk-server.some-domain.com`
 
+- To use Fontra in development mode, add `--dev` to the command line:
+
+  `fontra --dev --launch filesystem /path/to/a/folder`
+
+With this option in place, a separate process will be spawned which watches for any changes made to the Javascript files, and automatically bundles these into the client directory on save. Additionally, in developer mode, Javascript errors report a more human-readable traceback.
+
 ## Roadmap
 
 The following list of features is not complete, but gives you a rough idea of where we are now, and where we are headed. A green checkmark means: “This feature has been implemented”.
