@@ -343,6 +343,18 @@ export class FontOverviewController extends ViewController {
   }
 
   async _getCombineGlyphItemList() {
+    /*
+      Merge selected glyph sets. When multiple glyph sets define a character
+      but the glyph name does not match:
+      - If the font defines this character, take the font's glyph name for it
+      - Else take the glyph name from the first glyph set that defines the
+        character
+      The latter is arbitrary, but should still be deterministic, as glyph sets
+      should be sorted.
+      If the conflicting glyph name references multiple code points, we bail,
+      as it is not clear how to resolve.
+    */
+    const fontCharacterMap = this.fontController.characterMap;
     const combinedCharacterMap = {};
     const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
 
@@ -370,7 +382,17 @@ export class FontOverviewController extends ViewController {
       }
 
       for (const { glyphName, codePoints } of glyphSet) {
-        if (!combinedGlyphMap[glyphName]) {
+        const singleCodePoint = codePoints.length === 1 ? codePoints[0] : null;
+        const foundGlyphName =
+          singleCodePoint !== null
+            ? combinedCharacterMap[singleCodePoint] || fontCharacterMap[singleCodePoint]
+            : null;
+
+        if (foundGlyphName) {
+          if (!combinedGlyphMap[foundGlyphName]) {
+            combinedGlyphMap[foundGlyphName] = codePoints;
+          }
+        } else if (!combinedGlyphMap[glyphName]) {
           combinedGlyphMap[glyphName] = codePoints;
         }
       }
