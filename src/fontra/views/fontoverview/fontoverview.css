@@ -46,11 +46,12 @@ font-overview-navigation {
 }
 
 #font-overview-no-glyphs {
-  color: #aaa;
+  display: none;
+  color: #999;
   width: 100%;
   text-align: center;
 }
 
-.hidden {
-  display: none;
+#font-overview-no-glyphs.shown {
+  display: block;
 }

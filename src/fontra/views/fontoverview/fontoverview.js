@@ -348,10 +348,8 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.setGlyphSections(glyphSections);
 
     // Show placeholder if no glyphs are found
-    const fontOverviewNoGlyphsContainer = document.querySelector(
-      "#font-overview-no-glyphs"
-    );
-    fontOverviewNoGlyphsContainer.classList.toggle("hidden", glyphSections.length > 0);
+    const noGlyphsElement = document.querySelector("#font-overview-no-glyphs");
+    noGlyphsElement.classList.toggle("shown", !glyphSections.length);
   }
 
   async _getCombineGlyphItemList() {
