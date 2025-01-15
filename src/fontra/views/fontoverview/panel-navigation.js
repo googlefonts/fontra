@@ -1,3 +1,7 @@
+import {
+  makeSparseLocation,
+  mapAxesFromUserSpaceToSourceSpace,
+} from "../core/var-model.js";
 import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
@@ -78,6 +82,11 @@ export class FontOverviewNavigation extends HTMLElement {
         opacity: 1;
       }
 
+      .font-source-location-container {
+        display: grid;
+        gap: 0.5em;
+      }
+
     `);
 
     accordion.onItemOpenClose = (item, openClose) => {
@@ -126,7 +135,10 @@ export class FontOverviewNavigation extends HTMLElement {
       {
         label: translate("sources.labels.location"),
         id: "location",
-        content: await this._makeFontSourcePopup(),
+        content: html.div({ class: "font-source-location-container" }, [
+          await this._makeFontSourcePopup(),
+          await this._makeFontSourceSliders(),
+        ]),
       },
       {
         label: "Group by", // TODO: translate
@@ -182,7 +194,7 @@ export class FontOverviewNavigation extends HTMLElement {
         label: fontSources[fontSourceIdentifier].name,
       }));
 
-    const controller = new ObservableController({
+    this.locationControllerPopup = new ObservableController({
       value: selectedSourceIdentifier(),
     });
 
@@ -190,16 +202,56 @@ export class FontOverviewNavigation extends HTMLElement {
       "fontLocationSource",
       (event) => {
         if (!event.senderInfo?.sentFromInput) {
-          controller.model.value = selectedSourceIdentifier();
+          this.locationControllerPopup.model.value = selectedSourceIdentifier();
         }
       }
     );
 
-    controller.addKeyListener("value", (event) => {
+    this.locationControllerPopup.addKeyListener("value", (event) => {
       const fontSourceIdentifier = event.newValue;
-      const sourceLocation = {
+      this.sourceLocation = {
         ...fontSources[fontSourceIdentifier]?.location,
       }; // A font may not have any font sources, therefore the ?-check
+      // TODO: set the sliders controller. The following does not work:
+      // this.locationControllerSilders.setItem(this.sourceLocation);
+      this.fontOverviewSettingsController.setItem(
+        "fontLocationSource",
+        this.sourceLocation,
+        { sentFromInput: true }
+      );
+    });
+
+    return popupSelect(this.locationControllerPopup, "value", options);
+  }
+
+  async _makeFontSourceSliders() {
+    const locationAxes = mapAxesFromUserSpaceToSourceSpace(
+      this.fontController.axes.axes
+    );
+
+    this.locationControllerSilders = new ObservableController({
+      ...this.sourceLocation,
+    });
+
+    const locationElement = html.createDomElement("designspace-location", {
+      style: `grid-column: 1 / -1;
+        min-height: 0;
+        overflow: auto;
+        height: 100%;
+      `,
+    });
+    locationElement.axes = locationAxes;
+    locationElement.controller = this.locationControllerSilders;
+
+    this.locationControllerSilders.addListener((event) => {
+      const sourceLocation = { ...this.locationControllerSilders.model };
+      const fontSourceIdentifier =
+        this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+          sourceLocation
+        );
+      this.locationControllerPopup.setItem("value", fontSourceIdentifier, {
+        sentBySlider: true,
+      });
       this.fontOverviewSettingsController.setItem(
         "fontLocationSource",
         sourceLocation,
@@ -207,7 +259,7 @@ export class FontOverviewNavigation extends HTMLElement {
       );
     });
 
-    return popupSelect(controller, "value", options);
+    return locationElement;
   }
 
   _makeGroupByUI() {
