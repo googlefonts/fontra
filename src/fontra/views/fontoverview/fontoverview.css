@@ -44,3 +44,9 @@ font-overview-navigation {
 .font-overview-section-header {
   font-weight: bold;
 }
+
+.font-overview-no-glyphs {
+  color: #aaa;
+  display: grid;
+  place-items: center;
+}

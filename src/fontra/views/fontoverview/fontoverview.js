@@ -167,7 +167,7 @@ export class FontOverviewController extends ViewController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
 
     const sidebarContainer = document.querySelector("#sidebar-container");
-    const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
+    this.glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
     this.navigation = new FontOverviewNavigation(this);
 
@@ -185,7 +185,7 @@ export class FontOverviewController extends ViewController {
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs();
 
     sidebarContainer.appendChild(this.navigation);
-    glyphCellViewContainer.appendChild(this.glyphCellView);
+    this.glyphCellViewContainer.appendChild(this.glyphCellView);
 
     this.fontController.addChangeListener({ glyphMap: null }, () => {
       this._updateGlyphItemList();
@@ -340,6 +340,19 @@ export class FontOverviewController extends ViewController {
     const glyphItemList = this.glyphOrganizer.filterGlyphs(combinedGlyphItemList);
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
+
+    // Add placeholder if no glyphs are found
+    if (glyphSections.length === 0) {
+      if (!this.glyphCellViewContainer.querySelector(".font-overview-no-glyphs")) {
+        this.glyphCellViewContainer.appendChild(
+          html.div({ class: "font-overview-no-glyphs" }, [
+            translate("(No glyphs found)"), // TODO: translation
+          ])
+        );
+      }
+    } else {
+      this.glyphCellViewContainer.querySelector(".font-overview-no-glyphs")?.remove();
+    }
   }
 
   async _getCombineGlyphItemList() {
