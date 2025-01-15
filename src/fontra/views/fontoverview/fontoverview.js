@@ -351,11 +351,7 @@ export class FontOverviewController extends ViewController {
     const fontOverviewNoGlyphsContainer = document.querySelector(
       "#font-overview-no-glyphs"
     );
-    if (glyphSections.length === 0) {
-      fontOverviewNoGlyphsContainer.classList = "";
-    } else {
-      fontOverviewNoGlyphsContainer.classList = "hidden";
-    }
+    fontOverviewNoGlyphsContainer.classList.toggle("hidden", glyphSections.length);
   }
 
   async _getCombineGlyphItemList() {
