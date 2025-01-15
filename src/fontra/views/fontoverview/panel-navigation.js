@@ -598,6 +598,25 @@ async function runGlyphSetDialog(glyphSetInfo) {
       })),
   }));
 
+  presetMenuItems.push({
+    title: html.span({}, [
+      "Suggest glyph set collections",
+      html.createDomElement("inline-svg", {
+        style: `
+          display: inline-block;
+          height: 1.2em;
+          width: 1.2em;
+          margin-left: 0.4em;
+          transform: translate(0, 0.25em);
+        `,
+        src: "/tabler-icons/external-link.svg",
+      }),
+    ]),
+    callback: () => {
+      window.open("https://github.com/googlefonts/fontra/discussions/1943");
+    },
+  });
+
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
       html.div(),
