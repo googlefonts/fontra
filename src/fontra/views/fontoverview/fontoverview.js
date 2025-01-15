@@ -169,6 +169,12 @@ export class FontOverviewController extends ViewController {
     const sidebarContainer = document.querySelector("#sidebar-container");
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
 
+    glyphCellViewContainer.appendChild(
+      html.div({ id: "font-overview-no-glyphs" }, [
+        translate("(No glyphs found)"), // TODO: translation
+      ])
+    );
+
     this.navigation = new FontOverviewNavigation(this);
 
     this.glyphCellView = new GlyphCellView(
@@ -340,6 +346,12 @@ export class FontOverviewController extends ViewController {
     const glyphItemList = this.glyphOrganizer.filterGlyphs(combinedGlyphItemList);
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
+
+    // Show placeholder if no glyphs are found
+    const fontOverviewNoGlyphsContainer = document.querySelector(
+      "#font-overview-no-glyphs"
+    );
+    fontOverviewNoGlyphsContainer.classList.toggle("hidden", glyphSections.length > 0);
   }
 
   async _getCombineGlyphItemList() {
