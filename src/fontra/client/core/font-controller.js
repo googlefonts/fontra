@@ -1,4 +1,4 @@
-import { getClassSchema } from "../core/classes.js";
+import { recordChanges } from "./change-recorder.js";
 import {
   applyChange,
   collectChangePaths,
@@ -6,6 +6,7 @@ import {
   filterChangePattern,
   matchChangePattern,
 } from "./changes.js";
+import { getClassSchema } from "./classes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { CrossAxisMapping } from "./cross-axis-mapping.js";
 import { FontSourcesInstancer } from "./font-sources-instancer.js";
@@ -679,6 +680,20 @@ export class FontController {
     const editContext = new GlyphEditContext(this, glyphName, baseChangePath, senderID);
     await editContext.setup();
     return editContext;
+  }
+
+  async performEdit(editLabel, rootKey, editFunc, senderID) {
+    // This is a convenience for non-continuous non-glyph changes
+    const root = { [rootKey]: await this.getData(rootKey) };
+    const changes = recordChanges(root, editFunc);
+    await this.postChange(changes.change, changes.rollbackChange, editLabel, senderID);
+    return changes;
+  }
+
+  async postChange(change, rollbackChange, editLabel, senderID) {
+    const error = await this.editFinal(change, rollbackChange, editLabel, true);
+    // TODO handle error
+    this.notifyEditListeners("editFinal", senderID);
   }
 
   async applyChange(change, isExternalChange) {

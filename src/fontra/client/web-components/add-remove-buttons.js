@@ -55,6 +55,10 @@ class AddRemoveButtons extends html.UnlitElement {
       background-color: var(--button-active-color);
       cursor: pointer;
     }
+
+    button:focus {
+      outline: none;
+    }
   `;
 
   static properties = {

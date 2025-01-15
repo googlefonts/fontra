@@ -86,6 +86,7 @@ export class GlyphCell extends UnlitElement {
     justify-items: center;
     gap: 0;
     user-select: none;
+    -webkit-user-select: none;
   }
 
   .glyph-shape-placeholder {

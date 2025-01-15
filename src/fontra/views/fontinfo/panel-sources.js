@@ -72,6 +72,7 @@ export class SourcesPanel extends BaseInfoPanel {
     this.panelElement.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("sources.button.new-font-source"),
         onclick: (event) => this.newSource(),

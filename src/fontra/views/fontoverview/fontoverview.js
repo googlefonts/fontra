@@ -4,13 +4,16 @@ import {
   registerActionCallbacks,
 } from "../core/actions.js";
 import { FontOverviewNavigation } from "./panel-navigation.js";
+import { getGlyphMapProxy } from "/core/cmap.js";
 import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { GlyphOrganizer } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
+import { parseGlyphSet } from "/core/parse-glyph-set.js";
 import {
+  assert,
   dumpURLFragment,
   glyphMapToItemList,
   isActiveElementTypeable,
@@ -30,9 +33,19 @@ const persistentSettings = [
   { key: "fontLocationUser" },
   { key: "glyphSelection", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
   { key: "closedGlyphSections", toJSON: (v) => [...v], fromJSON: (v) => new Set(v) },
+  {
+    key: "closedNavigationSections",
+    toJSON: (v) => [...v],
+    fromJSON: (v) => new Set(v),
+  },
   { key: "groupByKeys" },
+  { key: "projectGlyphSetSelection" },
+  { key: "myGlyphSetSelection" },
   { key: "cellMagnification" },
 ];
+
+const THIS_FONTS_GLYPHSET = "";
+const PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY = "fontra.projectGlyphSets";
 
 function getDefaultFontOverviewSettings() {
   return {
@@ -41,7 +54,13 @@ function getDefaultFontOverviewSettings() {
     fontLocationSource: {},
     glyphSelection: new Set(),
     closedGlyphSections: new Set(),
+    closedNavigationSections: new Set(),
     groupByKeys: [],
+    projectGlyphSets: {},
+    myGlyphSets: {},
+    projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
+    myGlyphSetSelection: [],
+    glyphSetErrors: {},
     cellMagnification: 1,
   };
 }
@@ -53,6 +72,8 @@ const CELL_MAGNIFICATION_MAX = 4;
 export class FontOverviewController extends ViewController {
   constructor(font) {
     super(font);
+
+    this._loadedGlyphSets = {};
 
     this.initActions();
 
@@ -87,11 +108,18 @@ export class FontOverviewController extends ViewController {
       this._updateFromWindowLocation();
     });
 
-    this.fontOverviewSettingsController = new ObservableController(
-      getDefaultFontOverviewSettings()
-    );
+    this.myGlyphSetsController = new ObservableController({ settings: {} });
+    this.myGlyphSetsController.synchronizeWithLocalStorage("fontra-my-glyph-sets-");
+
+    this.fontOverviewSettingsController = new ObservableController({
+      ...getDefaultFontOverviewSettings(),
+      projectGlyphSets: readProjectGlyphSets(this.fontController),
+      myGlyphSets: this.myGlyphSetsController.model.settings,
+    });
     this.fontOverviewSettings = this.fontOverviewSettingsController.model;
 
+    this._setupProjectGlyphSetsDependencies();
+    this._setupMyGlyphSetsDependencies();
     this._setupLocationDependencies();
 
     this._updateFromWindowLocation();
@@ -114,6 +142,18 @@ export class FontOverviewController extends ViewController {
       this.glyphOrganizer.setGroupByKeys(event.newValue);
       this.updateGlyphSelection();
     });
+
+    this.fontOverviewSettingsController.addKeyListener(
+      [
+        "projectGlyphSets",
+        "myGlyphSets",
+        "projectGlyphSetSelection",
+        "myGlyphSetSelection",
+      ],
+      (event) => {
+        this.updateGlyphSelection();
+      }
+    );
 
     this.glyphOrganizer = new GlyphOrganizer();
     this.glyphOrganizer.setSearchString(this.fontOverviewSettings.searchString);
@@ -154,6 +194,70 @@ export class FontOverviewController extends ViewController {
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
+  }
+
+  _setupProjectGlyphSetsDependencies() {
+    this.fontController.addChangeListener(
+      { customData: { [PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY]: null } },
+      (change, isExternalChange) => {
+        if (isExternalChange) {
+          this.fontOverviewSettingsController.setItem(
+            "projectGlyphSets",
+            readProjectGlyphSets(this.fontController),
+            { sentFromExternalChange: true }
+          );
+        }
+      }
+    );
+
+    this.fontOverviewSettingsController.addKeyListener(
+      "projectGlyphSets",
+      async (event) => {
+        if (event.senderInfo?.sentFromExternalChange) {
+          return;
+        }
+        const changes = await this.fontController.performEdit(
+          "edit glyph sets",
+          "customData",
+          (root) => {
+            const projectGlyphSets = Object.values(event.newValue).filter(
+              (glyphSet) => glyphSet.url
+            );
+            root.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] = projectGlyphSets;
+          },
+          this
+        );
+
+        this.fontOverviewSettings.projectGlyphSetSelection =
+          this.fontOverviewSettings.projectGlyphSetSelection.filter(
+            (name) => !!event.newValue[name]
+          );
+      }
+    );
+  }
+
+  _setupMyGlyphSetsDependencies() {
+    // This synchronizes the myGlyphSets object with local storage
+    this.fontOverviewSettingsController.addKeyListener("myGlyphSets", (event) => {
+      if (!event.senderInfo?.sentFromLocalStorage) {
+        this.myGlyphSetsController.setItem("settings", event.newValue, {
+          sentFromSettings: true,
+        });
+
+        this.fontOverviewSettings.myGlyphSetSelection =
+          this.fontOverviewSettings.myGlyphSetSelection.filter(
+            (name) => !!event.newValue[name]
+          );
+      }
+    });
+
+    this.myGlyphSetsController.addKeyListener("settings", (event) => {
+      if (!event.senderInfo?.sentFromSettings) {
+        this.fontOverviewSettingsController.setItem("myGlyphSets", event.newValue, {
+          sentFromLocalStorage: true,
+        });
+      }
+    });
   }
 
   _setupLocationDependencies() {
@@ -228,13 +332,88 @@ export class FontOverviewController extends ViewController {
     this._updateGlyphSelection();
   }
 
-  _updateGlyphSelection() {
+  async _updateGlyphSelection() {
     // We possibly need to be smarter about this:
     this.glyphCellView.parentElement.scrollTop = 0;
 
-    const glyphItemList = this.glyphOrganizer.filterGlyphs(this._glyphItemList);
+    const combinedGlyphItemList = await this._getCombineGlyphItemList();
+    const glyphItemList = this.glyphOrganizer.filterGlyphs(combinedGlyphItemList);
     const glyphSections = this.glyphOrganizer.groupGlyphs(glyphItemList);
     this.glyphCellView.setGlyphSections(glyphSections);
+  }
+
+  async _getCombineGlyphItemList() {
+    const combinedCharacterMap = {};
+    const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
+
+    const glyphSetKeys = [
+      ...this.fontOverviewSettings.projectGlyphSetSelection,
+      ...this.fontOverviewSettings.myGlyphSetSelection,
+    ];
+    glyphSetKeys.sort();
+
+    for (const glyphSetKey of glyphSetKeys) {
+      let glyphSet;
+      if (glyphSetKey === "") {
+        glyphSet = this._glyphItemList;
+      } else {
+        const glyphSetInfo =
+          this.fontOverviewSettings.projectGlyphSets[glyphSetKey] ||
+          this.fontOverviewSettings.myGlyphSets[glyphSetKey];
+
+        if (!glyphSetInfo) {
+          console.log(`can't find glyph set info for ${glyphSetKey}`);
+          continue;
+        }
+
+        glyphSet = await this._loadGlyphSet(glyphSetInfo);
+      }
+
+      for (const { glyphName, codePoints } of glyphSet) {
+        if (!combinedGlyphMap[glyphName]) {
+          combinedGlyphMap[glyphName] = codePoints;
+        }
+      }
+    }
+
+    return glyphMapToItemList(combinedGlyphMap);
+  }
+
+  async _loadGlyphSet(glyphSetInfo) {
+    assert(glyphSetInfo.url);
+    const glyphSetErrors = { ...this.fontOverviewSettings.glyphSetErrors };
+
+    let glyphSet = this._loadedGlyphSets[glyphSetInfo.url];
+    if (!glyphSet) {
+      let glyphSetData;
+      try {
+        const response = await fetch(glyphSetInfo.url);
+        glyphSetData = await response.text();
+        delete glyphSetErrors[glyphSetInfo.url];
+      } catch (e) {
+        console.log(`can't load ${glyphSetInfo.url}`);
+        console.error();
+        glyphSetErrors[glyphSetInfo.url] = `Could not load glyph set: ${e.toString()}`;
+      }
+
+      if (glyphSetData) {
+        try {
+          glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat);
+        } catch (e) {
+          glyphSetErrors[
+            glyphSetInfo.url
+          ] = `Could not parse glyph set: ${e.toString()}`;
+        }
+      }
+
+      this.fontOverviewSettings.glyphSetErrors = glyphSetErrors;
+
+      if (glyphSet) {
+        this._loadedGlyphSets[glyphSetInfo.url] = glyphSet;
+      }
+    }
+
+    return glyphSet || [];
   }
 
   openSelectedGlyphs() {
@@ -342,4 +521,13 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 
   url.hash = dumpURLFragment(viewInfo);
   window.open(url.toString());
+}
+
+function readProjectGlyphSets(fontController) {
+  return Object.fromEntries(
+    [
+      { name: "This font's glyphs", url: "" },
+      ...(fontController.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] || []),
+    ].map((glyphSet) => [glyphSet.url, glyphSet])
+  );
 }

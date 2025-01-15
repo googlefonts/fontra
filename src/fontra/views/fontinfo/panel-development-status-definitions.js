@@ -74,6 +74,7 @@ export class DevelopmentStatusDefinitionsPanel extends BaseInfoPanel {
     this.panelElement.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: "justify-self: start;",
         value: translate("development-status-definitions.button.new"),
         onclick: (event) => this.newStatusDefinition(),
