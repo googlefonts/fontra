@@ -32,7 +32,7 @@ export default class RelatedGlyphPanel extends Panel {
     }
 
     .no-related-glyphs {
-      color: #AAA;
+      color: #999;
       padding-top: 1em;
     }
   `;
