@@ -135,7 +135,7 @@ export class FontOverviewNavigation extends HTMLElement {
         id: "location",
         content: html.div({ class: "font-source-location-container" }, [
           await this._makeFontSourcePopup(),
-          await this._makeFontSourceSliders(),
+          this._makeFontSourceSliders(),
         ]),
       },
       {
@@ -224,7 +224,7 @@ export class FontOverviewNavigation extends HTMLElement {
     return popupSelect(controller, "value", options);
   }
 
-  async _makeFontSourceSliders() {
+  _makeFontSourceSliders() {
     const locationElement = new DesignspaceLocation();
     locationElement.axes = this.fontController.axes.axes;
     locationElement.values = { ...this.fontOverviewSettings.fontLocationUser };
