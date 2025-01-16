@@ -83,7 +83,7 @@ class FontraServer:
             routes.append(
                 web.get(
                     f"/{viewName}/{{path:.*}}",
-                    partial(self.staticContentHandler, viewPackage),
+                    partial(self.viewPathHandler, viewName),
                 )
             )
         routes.append(
@@ -277,8 +277,13 @@ class FontraServer:
             qs = quote(request.path_qs, safe="")
             raise web.HTTPFound(f"/?ref={qs}")
 
-        path = request.match_info["path"]
-        if not await self.projectManager.projectAvailable(path, authToken):
+        if not request.query:
+            return await self.staticContentHandler(
+                self.viewEntryPoints[viewName], request
+            )
+
+        project = request.query.get("project")
+        if not await self.projectManager.projectAvailable(project, authToken):
             raise web.HTTPNotFound()
 
         try:
