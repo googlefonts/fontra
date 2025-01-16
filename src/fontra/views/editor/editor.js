@@ -1002,6 +1002,7 @@ export class EditorController extends ViewController {
           this.setSelectedTool(tool.identifier);
           this.canvasController.canvas.focus();
         };
+        toolButton.oncontextmenu = (event) => event.preventDefault();
       } else {
         const globalListener = {
           handleEvent: (event) => {
