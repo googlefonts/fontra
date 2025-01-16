@@ -4,7 +4,7 @@ import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { controllerKey, ObservableController } from "/core/observable-object.js";
-import { labeledPopUpMenu, labeledTextInput } from "/core/ui-utils.js";
+import { labeledPopupSelect, labeledTextInput } from "/core/ui-utils.js";
 import {
   boolInt,
   enumerate,
@@ -1249,10 +1249,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     const fontSourceMenuItems = [
-      { identifier: "", value: "None" },
+      { value: "", label: "None" },
       ...Object.entries(this.fontController.sources).map(
         ([sourceIdentifier, source]) => {
-          return { identifier: sourceIdentifier, value: source.name };
+          return { value: sourceIdentifier, label: source.name };
         }
       ),
     ];
@@ -1343,7 +1343,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         `,
       },
       [
-        ...labeledPopUpMenu(
+        ...labeledPopupSelect(
           "Location Base:",
           nameController,
           "locationBase",
