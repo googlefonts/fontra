@@ -625,17 +625,6 @@ export class EditorController extends ViewController {
   }
 
   initActionsAfterStart() {
-    for (const format of this.fontController.backendInfo.projectManagerFeatures[
-      "export-as"
-    ] || []) {
-      registerAction(
-        `action.export-as.${format}`,
-        {
-          topic: "0035-action-topics.export-as",
-        },
-        (event) => this.fontController.exportAs({ format })
-      );
-    }
     if (this.fontController.backendInfo.features["find-glyphs-that-use-glyph"]) {
       registerAction(
         "action.find-glyphs-that-use",
@@ -773,7 +762,7 @@ export class EditorController extends ViewController {
   }
 
   async _start() {
-    await this.fontController.initialize();
+    await super.start();
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
       rootSubscriptionPattern[rootKey] = null;

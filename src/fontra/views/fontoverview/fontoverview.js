@@ -100,7 +100,7 @@ export class FontOverviewController extends ViewController {
   }
 
   async _start() {
-    await this.fontController.initialize();
+    await super.start();
 
     this.fontSources = await this.fontController.getSources();
 
