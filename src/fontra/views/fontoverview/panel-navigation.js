@@ -185,7 +185,7 @@ export class FontOverviewNavigation extends HTMLElement {
         this.fontOverviewSettings.fontLocationSource
       );
 
-    const options = this.fontController
+    const popupItems = this.fontController
       .getSortedSourceIdentifiers()
       .map((fontSourceIdentifier) => ({
         value: fontSourceIdentifier,
@@ -221,7 +221,7 @@ export class FontOverviewNavigation extends HTMLElement {
       }
     });
 
-    return popupSelect(controller, "value", options);
+    return popupSelect(controller, "value", popupItems);
   }
 
   _makeFontSourceSliders() {
