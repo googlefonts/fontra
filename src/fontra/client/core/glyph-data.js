@@ -77,6 +77,8 @@ export function getSuggestedGlyphName(codePoint) {
 }
 
 export function getCodePointFromGlyphName(glyphName) {
+  parseGlyphDataCSV();
+
   const glyphInfo = glyphDataByName.get(glyphName);
 
   let codePoint = null;

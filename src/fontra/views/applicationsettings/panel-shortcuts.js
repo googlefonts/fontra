@@ -72,6 +72,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
     containerButtons.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("shortcuts.reset-all"),
         onclick: (event) => this.resetToDefault(),
@@ -81,6 +82,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
     containerButtons.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("shortcuts.export"),
         onclick: (event) => this.exportShortCuts(),
@@ -90,6 +92,7 @@ export class ShortCutsPanel extends BaseInfoPanel {
     containerButtons.appendChild(
       html.input({
         type: "button",
+        class: "fontra-button",
         style: `justify-self: start;`,
         value: translate("shortcuts.import"),
         onclick: (event) => this.importShortCuts(),

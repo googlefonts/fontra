@@ -6,5 +6,5 @@ pillow==11.1.0
 pyyaml==6.0.2
 ufomerge==1.8.2
 unicodedata2==15.1.0
-watchfiles==1.0.3
+watchfiles==1.0.4
 skia-pathops==0.8.0.post2

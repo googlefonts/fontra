@@ -61,7 +61,7 @@ export class ModalDialog extends SimpleElement {
       gap: 1em;
 
       outline: none; /* to catch key events we need to focus, but we don't want a focus border */
-      max-width: 32em;
+      max-width: 38em;
       max-height: 80vh;
       overflow-wrap: normal;
       font-size: 1.15em;
@@ -160,6 +160,10 @@ export class ModalDialog extends SimpleElement {
     });
     this.dialogElement.appendChild(this.dialogBox);
     this.shadowRoot.append(this.dialogElement);
+  }
+
+  focus() {
+    this.dialogBox?.focus();
   }
 
   setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
@@ -303,6 +307,10 @@ export class ModalDialog extends SimpleElement {
     this.hide();
 
     this._resolveDialogResult(result);
+  }
+
+  isActive() {
+    return !!this.dialogContent;
   }
 }
 

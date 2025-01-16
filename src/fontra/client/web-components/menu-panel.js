@@ -12,12 +12,13 @@ import { InlineSVG } from "/web-components/inline-svg.js";
 
 export const MenuItemDivider = { title: "-" };
 
-export function showMenu(menuItems, position, positionContainer, container) {
-  if (!container) {
-    container = document.querySelector("#menu-panel-container");
-  }
-  const menu = new MenuPanel(menuItems, { position, positionContainer });
+export function showMenu(menuItems, position, options) {
+  const container = getMenuContainer();
+  const { left, top } = container.getBoundingClientRect();
+  position = { x: position.x - left, y: position.y - top };
+  const menu = new MenuPanel(menuItems, { position, ...options });
   container.appendChild(menu);
+  return menu;
 }
 
 export class MenuPanel extends SimpleElement {
@@ -25,7 +26,7 @@ export class MenuPanel extends SimpleElement {
 
   static closeAllMenus(event) {
     for (const element of MenuPanel.openMenuPanels) {
-      element.parentElement?.removeChild(element);
+      element.dismiss();
     }
     MenuPanel.openMenuPanels.splice(0, MenuPanel.openMenuPanels.length);
   }
@@ -56,6 +57,10 @@ export class MenuPanel extends SimpleElement {
 
     .menu-container {
       margin: 0.2em 0em 0.3em 0em; /* top, right, bottom, left */
+    }
+
+    .menu-container:focus {
+      outline: none;
     }
 
     .menu-item-divider {
@@ -92,6 +97,7 @@ export class MenuPanel extends SimpleElement {
       display: flex;
       gap: 0.5em;
       justify-content: space-between;
+      text-wrap: nowrap;
     }
 
     .submenu-icon {
@@ -195,6 +201,7 @@ export class MenuPanel extends SimpleElement {
     this.shadowRoot.appendChild(this.menuElement);
     this.tabIndex = 0;
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    setTimeout(() => this.menuElement.focus(), 0);
     MenuPanel.openMenuPanels.push(this);
   }
 
@@ -212,17 +219,18 @@ export class MenuPanel extends SimpleElement {
     this._savedActiveElement = document.activeElement;
     const position = { ...this.position };
     this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
-    if (this.positionContainer) {
-      const containerRect = this.positionContainer.getBoundingClientRect();
-      const thisRect = this.getBoundingClientRect();
-      if (thisRect.right > containerRect.right) {
-        position.x -= thisRect.width + 2;
-      }
-      if (thisRect.bottom > containerRect.bottom) {
-        position.y -= thisRect.bottom - containerRect.bottom + 2;
-      }
-      this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+
+    // Ensure the whole menu is visible, and not cropped by the window
+    const containerRect = document.body.getBoundingClientRect();
+    const thisRect = this.getBoundingClientRect();
+    if (thisRect.right > containerRect.right) {
+      position.x -= thisRect.width + 2;
     }
+    if (thisRect.bottom > containerRect.bottom) {
+      position.y -= thisRect.bottom - containerRect.bottom + 2;
+    }
+    this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+
     this.focus();
   }
 
@@ -281,6 +289,8 @@ export class MenuPanel extends SimpleElement {
   }
 
   handleKeyDown(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
     this.searchMenuItems(event.key);
     switch (event.key) {
       case "Escape":
@@ -381,3 +391,15 @@ customElements.define("menu-panel", MenuPanel);
 
 window.addEventListener("mousedown", (event) => MenuPanel.closeAllMenus(event));
 window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
+
+function getMenuContainer() {
+  // This is tightly coupled to modal-dialog.js
+  // We need to return a different container if the menu is opened from a dialog
+  const dialog = document.querySelector("modal-dialog");
+
+  const dialogContainer = dialog?.isActive()
+    ? dialog.shadowRoot.querySelector(".dialog-box")
+    : null;
+
+  return dialogContainer || document.body;
+}

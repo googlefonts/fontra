@@ -96,6 +96,8 @@ export class GlyphCellView extends HTMLElement {
     this.accordion.appendStyle(`
     :host {
       display: ${this.displayMode};
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .placeholder-label {

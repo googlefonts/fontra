@@ -1,8 +1,6 @@
 import { expect } from "chai";
 
 import { getClassSchema } from "../src/fontra/client/core/classes.js";
-// prettier-ignore
-import classesSchema from "../src/fontra/client/core/classes.json" assert { type: "json" };
 import { enumerate, range } from "../src/fontra/client/core/utils.js";
 import {
   Layer,
@@ -10,6 +8,9 @@ import {
   VariableGlyph,
 } from "../src/fontra/client/core/var-glyph.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { readRepoPathAsJSON } from "./test-support.js";
+
+const classesSchema = readRepoPathAsJSON("src/fontra/client/core/classes.json");
 
 describe("schema tests", () => {
   const testPaths = [

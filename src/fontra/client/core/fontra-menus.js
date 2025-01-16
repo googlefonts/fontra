@@ -1,6 +1,7 @@
 import { registerActionInfo } from "./actions.js";
 import * as html from "./html-utils.js";
 import { translate } from "./localization.js";
+import { assert } from "./utils.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 import { MenuItemDivider } from "/web-components/menu-panel.js";
 
@@ -166,7 +167,7 @@ function getFontMenuItems() {
     enabled: () => enabled,
     callback: () => {
       const url = new URL(window.location);
-      url.pathname = `/fontinfo/-/${url.pathname.split("/").slice(-1)[0]}`;
+      url.pathname = rerouteViewPath(url.pathname, "fontinfo");
       url.hash = panelID;
       window.open(url.toString());
     },
@@ -184,7 +185,7 @@ function getWindowMenuItems() {
       enabled: () => true,
       callback: () => {
         const url = new URL(window.location);
-        url.pathname = `/fontoverview/-/${url.pathname.split("/").slice(-1)[0]}`;
+        url.pathname = rerouteViewPath(url.pathname, "fontoverview");
         url.hash = ""; // remove any hash
         window.open(url.toString());
       },
@@ -194,12 +195,21 @@ function getWindowMenuItems() {
       enabled: () => true,
       callback: () => {
         const url = new URL(window.location);
-        url.pathname = `/editor/-/${url.pathname.split("/").slice(-1)[0]}`;
+        url.pathname = rerouteViewPath(url.pathname, "editor");
         url.hash = ""; // remove any hash
         window.open(url.toString());
       },
     },
   ];
+}
+
+function rerouteViewPath(path, targetView) {
+  assert(path[0] === "/");
+  const parts = path.split("/");
+  assert(parts.length >= 3);
+  assert(parts[1].length > 0);
+  parts[1] = targetView;
+  return parts.join("/");
 }
 
 // Default action infos

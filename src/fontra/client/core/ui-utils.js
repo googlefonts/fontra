@@ -1,5 +1,6 @@
 import * as html from "./html-utils.js";
 import { uniqueID, zip } from "./utils.js";
+import { PopupMenu } from "/web-components/popup-menu.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";
@@ -101,6 +102,13 @@ export function labeledCheckbox(label, controller, key, options) {
   inputElement.checked = controller.model[key];
   inputWrapper.appendChild(inputElement);
   if (label) {
+    inputWrapper.style = `
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: left;
+      gap: 0.1em;
+      align-items: center;
+    `;
     inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
   }
 
@@ -171,37 +179,32 @@ export function labeledTextInput(label, controller, key, options) {
   return items;
 }
 
-export function popUpMenu(controller, key, menuItems, options) {
-  const popUpID = options?.id || `pop-up-${uniqueID()}-${key}`;
-
-  const selectElement = html.select(
-    {
-      id: popUpID,
-      onchange: (event) => {
-        controller.model[key] = event.target.value;
-      },
-    },
-    menuItems.map((menuItem) =>
-      html.option({ value: menuItem.identifier }, [menuItem.value])
-    )
-  );
-  selectElement.value = controller.model[key];
-
-  controller.addKeyListener(key, (event) => {
-    selectElement.value = event.newValue;
-  });
-
-  if (options?.class) {
-    selectElement.className = options.class;
+export function popupSelect(controller, key, popupItems) {
+  function findLabel() {
+    const option = popupItems.find(({ value }) => value === controller.model[key]);
+    return option?.label || "";
   }
 
-  return selectElement;
+  controller.addKeyListener(key, (event) => {
+    menu.valueLabel = findLabel();
+  });
+
+  const menu = new PopupMenu(findLabel(), () =>
+    popupItems.map(({ value, label }) => ({
+      title: label,
+      checked: value === controller.model[key],
+      callback: () => {
+        controller.model[key] = value;
+        menu.valueLabel = label;
+      },
+    }))
+  );
+  return menu;
 }
 
-export function labeledPopUpMenu(label, controller, key, menuItems, options) {
-  const popUpMenuElement = popUpMenu(controller, key, menuItems, options);
-  const items = [labelForElement(label, popUpMenuElement), popUpMenuElement];
-  return items;
+export function labeledPopupSelect(label, controller, key, popupItems) {
+  const inputElement = popupSelect(controller, key, popupItems);
+  return [labelForElement(label, inputElement), inputElement];
 }
 
 export const DefaultFormatter = {
