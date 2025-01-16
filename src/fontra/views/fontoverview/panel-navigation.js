@@ -10,6 +10,8 @@ import {
   labeledTextInput,
   popupSelect,
 } from "/core/ui-utils.js";
+import { scheduleCalls } from "/core/utils.js";
+import { DesignspaceLocation } from "/web-components/designspace-location.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { showMenu } from "/web-components/menu-panel.js";
@@ -78,6 +80,11 @@ export class FontOverviewNavigation extends HTMLElement {
         opacity: 1;
       }
 
+      .font-source-location-container {
+        display: grid;
+        gap: 0.5em;
+      }
+
     `);
 
     accordion.onItemOpenClose = (item, openClose) => {
@@ -126,7 +133,10 @@ export class FontOverviewNavigation extends HTMLElement {
       {
         label: translate("sources.labels.location"),
         id: "location",
-        content: await this._makeFontSourcePopup(),
+        content: html.div({ class: "font-source-location-container" }, [
+          await this._makeFontSourcePopup(),
+          this._makeFontSourceSliders(),
+        ]),
       },
       {
         label: "Group by", // TODO: translate
@@ -190,7 +200,9 @@ export class FontOverviewNavigation extends HTMLElement {
       "fontLocationSource",
       (event) => {
         if (!event.senderInfo?.sentFromInput) {
-          controller.model.value = selectedSourceIdentifier();
+          controller.setItem("value", selectedSourceIdentifier(), {
+            sentFromSourceLocationListener: true,
+          });
         }
       }
     );
@@ -200,14 +212,41 @@ export class FontOverviewNavigation extends HTMLElement {
       const sourceLocation = {
         ...fontSources[fontSourceIdentifier]?.location,
       }; // A font may not have any font sources, therefore the ?-check
-      this.fontOverviewSettingsController.setItem(
-        "fontLocationSource",
-        sourceLocation,
-        { sentFromInput: true }
-      );
+      if (!event.senderInfo?.sentFromSourceLocationListener) {
+        this.fontOverviewSettingsController.setItem(
+          "fontLocationSource",
+          sourceLocation,
+          { sentFromInput: true }
+        );
+      }
     });
 
     return popupSelect(controller, "value", options);
+  }
+
+  _makeFontSourceSliders() {
+    const locationElement = new DesignspaceLocation();
+    locationElement.axes = this.fontController.axes.axes;
+    locationElement.values = { ...this.fontOverviewSettings.fontLocationUser };
+
+    this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
+      if (!event.senderInfo?.sentFromSliders) {
+        locationElement.values = { ...event.newValue };
+      }
+    });
+
+    locationElement.addEventListener(
+      "locationChanged",
+      scheduleCalls((event) => {
+        this.fontOverviewSettingsController.setItem(
+          "fontLocationUser",
+          { ...locationElement.values },
+          { sentFromSliders: true }
+        );
+      })
+    );
+
+    return locationElement;
   }
 
   _makeGroupByUI() {
