@@ -1006,26 +1006,39 @@ export class EditorController extends ViewController {
         const globalListener = {
           handleEvent: (event) => {
             if (event.type != "keydown" || event.key == "Escape") {
-              collapseSubTools(editToolsElement);
+              collapseSubtoolsAndCleanUp(editToolsElement);
             }
           },
         };
 
-        toolButton.onmousedown = () => {
+        const collapseSubtoolsAndCleanUp = (editToolsElement) => {
+          window.removeEventListener("mousedown", globalListener);
+          window.removeEventListener("keydown", globalListener);
+          collapseSubTools(editToolsElement);
+        };
+
+        const showSubTools = (event, withTimeOut) => {
           clearTimeout(this._multiToolMouseDownTimer);
-          this._multiToolMouseDownTimer = setTimeout(function () {
-            // Show sub tools
-            for (const child of editToolsElement.children) {
-              child.style.visibility = "visible";
-            }
-            window.addEventListener("mousedown", globalListener, false);
-            window.addEventListener("keydown", globalListener, false);
-          }, 650);
-          if (toolButton !== editToolsElement.children[0]) {
+          this._multiToolMouseDownTimer = setTimeout(
+            () => {
+              // Show sub tools
+              for (const child of editToolsElement.children) {
+                child.style.visibility = "visible";
+              }
+              window.addEventListener("mousedown", globalListener);
+              window.addEventListener("keydown", globalListener);
+            },
+            withTimeOut ? 500 : 0
+          );
+          if (!withTimeOut || toolButton !== editToolsElement.children[0]) {
             // ensure the multi-tool mousedown timer only affects the first child
+            event.preventDefault();
             event.stopImmediatePropagation();
           }
         };
+
+        toolButton.oncontextmenu = (event) => showSubTools(event, false);
+        toolButton.onmousedown = (event) => showSubTools(event, true);
 
         toolButton.onmouseup = () => {
           event.stopImmediatePropagation();
@@ -1041,9 +1054,7 @@ export class EditorController extends ViewController {
           }
 
           editToolsElement.prepend(toolButton);
-          collapseSubTools(editToolsElement);
-          window.removeEventListener("mousedown", globalListener, false);
-          window.removeEventListener("keydown", globalListener, false);
+          collapseSubtoolsAndCleanUp(editToolsElement);
         };
       }
       editToolsElement.appendChild(toolButton);
