@@ -1,7 +1,3 @@
-import {
-  makeSparseLocation,
-  mapAxesFromUserSpaceToSourceSpace,
-} from "../core/var-model.js";
 import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
