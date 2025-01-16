@@ -78,10 +78,7 @@ class FontraServer:
             )
         for viewName, viewPackage in self.viewEntryPoints.items():
             routes.append(
-                web.get(
-                    f"/{viewName}/-/{{path:.*}}",
-                    partial(self.viewPathHandler, viewName),
-                )
+                web.get(f"/{viewName}/-/{{path:.*}}", self.viewRedirectHandler)
             )
             routes.append(
                 web.get(
@@ -294,6 +291,9 @@ class FontraServer:
         html = self._addVersionTokenToReferences(html, "text/html")
 
         return web.Response(body=html, content_type="text/html")
+
+    async def viewRedirectHandler(self, request: web.Request) -> web.Response:
+        raise web.HTTPFound(request.path.replace("/-/", "/?project="))
 
     def _addVersionTokenToReferences(self, data: bytes, contentType: str) -> bytes:
         if self.versionToken is None:
