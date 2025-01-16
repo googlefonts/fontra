@@ -209,14 +209,14 @@ export class FontOverviewNavigation extends HTMLElement {
 
     this.locationControllerPopup.addKeyListener("value", (event) => {
       const fontSourceIdentifier = event.newValue;
-      this.sourceLocation = {
+      const sourceLocation = {
         ...fontSources[fontSourceIdentifier]?.location,
       }; // A font may not have any font sources, therefore the ?-check
       // TODO: set the sliders controller. The following does not work:
-      //this.locationControllerSliders.setItem(this.sourceLocation);
+      // this.locationControllerSliders.setItem(sourceLocation);
       this.fontOverviewSettingsController.setItem(
         "fontLocationSource",
-        this.sourceLocation,
+        sourceLocation,
         { sentFromInput: true }
       );
     });
@@ -229,9 +229,7 @@ export class FontOverviewNavigation extends HTMLElement {
       this.fontController.axes.axes
     );
 
-    this.locationControllerSliders = new ObservableController({
-      ...this.sourceLocation,
-    });
+    this.locationControllerSliders = new ObservableController({});
 
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
