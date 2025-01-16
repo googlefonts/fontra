@@ -14,6 +14,7 @@ import {
   labeledTextInput,
   popupSelect,
 } from "/core/ui-utils.js";
+import { scheduleCalls } from "/core/utils.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { showMenu } from "/web-components/menu-panel.js";
@@ -194,7 +195,7 @@ export class FontOverviewNavigation extends HTMLElement {
         label: fontSources[fontSourceIdentifier].name,
       }));
 
-    this.locationControllerPopup = new ObservableController({
+    const controller = new ObservableController({
       value: selectedSourceIdentifier(),
     });
 
@@ -202,35 +203,31 @@ export class FontOverviewNavigation extends HTMLElement {
       "fontLocationSource",
       (event) => {
         if (!event.senderInfo?.sentFromInput) {
-          this.locationControllerPopup.model.value = selectedSourceIdentifier();
+          controller.setItem("value", selectedSourceIdentifier(), {
+            sentFromSourceLocationListener: true,
+          });
         }
       }
     );
 
-    this.locationControllerPopup.addKeyListener("value", (event) => {
+    controller.addKeyListener("value", (event) => {
       const fontSourceIdentifier = event.newValue;
       const sourceLocation = {
         ...fontSources[fontSourceIdentifier]?.location,
       }; // A font may not have any font sources, therefore the ?-check
-      // TODO: set the sliders controller. The following does not work:
-      // this.locationControllerSliders.setItem(sourceLocation);
-      this.fontOverviewSettingsController.setItem(
-        "fontLocationSource",
-        sourceLocation,
-        { sentFromInput: true }
-      );
+      if (!event.senderInfo?.sentFromSourceLocationListener) {
+        this.fontOverviewSettingsController.setItem(
+          "fontLocationSource",
+          sourceLocation,
+          { sentFromInput: true }
+        );
+      }
     });
 
-    return popupSelect(this.locationControllerPopup, "value", options);
+    return popupSelect(controller, "value", options);
   }
 
   async _makeFontSourceSliders() {
-    const locationAxes = mapAxesFromUserSpaceToSourceSpace(
-      this.fontController.axes.axes
-    );
-
-    this.locationControllerSliders = new ObservableController({});
-
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
@@ -238,24 +235,25 @@ export class FontOverviewNavigation extends HTMLElement {
         height: 100%;
       `,
     });
-    locationElement.axes = locationAxes;
-    locationElement.controller = this.locationControllerSliders;
+    locationElement.axes = this.fontController.axes.axes;
+    locationElement.values = { ...this.fontOverviewSettings.fontLocationUser };
 
-    this.locationControllerSliders.addListener((event) => {
-      const sourceLocation = { ...this.locationControllerSliders.model };
-      const fontSourceIdentifier =
-        this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
-          sourceLocation
-        );
-      this.locationControllerPopup.setItem("value", fontSourceIdentifier, {
-        sentBySlider: true,
-      });
-      this.fontOverviewSettingsController.setItem(
-        "fontLocationSource",
-        sourceLocation,
-        { sentFromInput: true }
-      );
+    this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
+      if (!event.senderInfo?.sentFromSliders) {
+        locationElement.values = { ...event.newValue };
+      }
     });
+
+    locationElement.addEventListener(
+      "locationChanged",
+      scheduleCalls((event) => {
+        this.fontOverviewSettingsController.setItem(
+          "fontLocationUser",
+          { ...locationElement.values },
+          { sentFromSliders: true }
+        );
+      })
+    );
 
     return locationElement;
   }
