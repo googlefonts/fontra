@@ -1,3 +1,4 @@
+import { registerAction } from "./actions.js";
 import { Backend } from "./backend-api.js";
 import { FontController } from "./font-controller.js";
 import { getRemoteProxy } from "./remote.js";
@@ -32,6 +33,7 @@ export class ViewController {
     );
 
     await controller.start();
+    controller.afterStart();
     return controller;
   }
 
@@ -40,7 +42,21 @@ export class ViewController {
   }
 
   async start() {
-    console.error("ViewController.start() not implemented");
+    await this.fontController.initialize();
+  }
+
+  afterStart() {
+    for (const format of this.fontController.backendInfo.projectManagerFeatures[
+      "export-as"
+    ] || []) {
+      registerAction(
+        `action.export-as.${format}`,
+        {
+          topic: "0035-action-topics.export-as",
+        },
+        (event) => this.fontController.exportAs({ format })
+      );
+    }
   }
 
   /**

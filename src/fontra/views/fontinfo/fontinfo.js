@@ -13,7 +13,7 @@ export class FontInfoController extends ViewController {
   }
 
   async start() {
-    await this.fontController.initialize();
+    await super.start();
 
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
