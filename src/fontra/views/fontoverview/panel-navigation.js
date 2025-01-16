@@ -15,6 +15,7 @@ import {
   popupSelect,
 } from "/core/ui-utils.js";
 import { scheduleCalls } from "/core/utils.js";
+import { DesignspaceLocation } from "/web-components/designspace-location.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
 import { showMenu } from "/web-components/menu-panel.js";
@@ -228,13 +229,7 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   async _makeFontSourceSliders() {
-    const locationElement = html.createDomElement("designspace-location", {
-      style: `grid-column: 1 / -1;
-        min-height: 0;
-        overflow: auto;
-        height: 100%;
-      `,
-    });
+    const locationElement = new DesignspaceLocation();
     locationElement.axes = this.fontController.axes.axes;
     locationElement.values = { ...this.fontOverviewSettings.fontLocationUser };
 
