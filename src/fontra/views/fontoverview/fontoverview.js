@@ -278,12 +278,10 @@ export class FontOverviewController extends ViewController {
       "fontLocationSource",
       (event) => {
         if (!event.senderInfo?.fromFontLocationUser) {
-          this.fontOverviewSettingsController.withSenderInfo(
-            { fromFontLocationSource: true },
-            () => {
-              this.fontOverviewSettingsController.model.fontLocationUser =
-                this.fontController.mapSourceLocationToUserLocation(event.newValue);
-            }
+          this.fontOverviewSettingsController.setItem(
+            "fontLocationUser",
+            this.fontController.mapSourceLocationToUserLocation(event.newValue),
+            { fromFontLocationSource: true }
           );
         }
       }
@@ -291,12 +289,10 @@ export class FontOverviewController extends ViewController {
 
     this.fontOverviewSettingsController.addKeyListener("fontLocationUser", (event) => {
       if (!event.senderInfo?.fromFontLocationSource) {
-        this.fontOverviewSettingsController.withSenderInfo(
-          { fromFontLocationUser: true },
-          () => {
-            this.fontOverviewSettingsController.model.fontLocationSource =
-              this.fontController.mapUserLocationToSourceLocation(event.newValue);
-          }
+        this.fontOverviewSettingsController.setItem(
+          "fontLocationSource",
+          this.fontController.mapUserLocationToSourceLocation(event.newValue),
+          { fromFontLocationUser: true }
         );
       }
     });
