@@ -283,7 +283,9 @@ class FontraServer:
             )
 
         project = request.query.get("project")
-        if not await self.projectManager.projectAvailable(project, authToken):
+        if project and not await self.projectManager.projectAvailable(
+            project, authToken
+        ):
             raise web.HTTPNotFound()
 
         try:
