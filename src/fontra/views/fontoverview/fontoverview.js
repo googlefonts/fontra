@@ -58,7 +58,7 @@ function getDefaultFontOverviewSettings() {
     groupByKeys: [],
     projectGlyphSets: {},
     myGlyphSets: {},
-    projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
+    projectGlyphSetSelection: [],
     myGlyphSetSelection: [],
     glyphSetErrors: {},
     cellMagnification: 1,
@@ -315,6 +315,16 @@ export class FontOverviewController extends ViewController {
         }
       }
     });
+    if (
+      !this.fontOverviewSettings.myGlyphSetSelection.length &&
+      !this.fontOverviewSettings.projectGlyphSetSelection.length
+    ) {
+      this.fontOverviewSettings.projectGlyphSetSelection = [
+        THIS_FONTS_GLYPHSET,
+        ...Object.keys(this.fontOverviewSettings.projectGlyphSets),
+      ];
+      console.log("maybe enable some glyph sets");
+    }
   }
 
   _updateWindowLocation() {
@@ -554,7 +564,7 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 function readProjectGlyphSets(fontController) {
   return Object.fromEntries(
     [
-      { name: "This font's glyphs", url: "" },
+      { name: "This font's glyphs", url: THIS_FONTS_GLYPHSET },
       ...(fontController.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] || []),
     ].map((glyphSet) => [glyphSet.url, glyphSet])
   );
