@@ -227,7 +227,7 @@ export class FontOverviewController extends ViewController {
           "customData",
           (root) => {
             const projectGlyphSets = Object.values(event.newValue).filter(
-              (glyphSet) => glyphSet.url
+              (glyphSet) => glyphSet.url !== THIS_FONTS_GLYPHSET
             );
             root.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] = projectGlyphSets;
           },
