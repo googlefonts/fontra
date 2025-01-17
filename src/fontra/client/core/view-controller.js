@@ -11,7 +11,7 @@ export class ViewController {
     return `Fontra — ${decodeURI(displayPath)}`;
   }
   static async fromBackend() {
-    const pathItems = window.location.pathname.split("/").slice(3);
+    const pathItems = new URL(window.location).searchParams.get("project").split("/");
     const displayPath = makeDisplayPath(pathItems);
     document.title = this.titlePattern(displayPath);
     const projectPath = pathItems.join("/");

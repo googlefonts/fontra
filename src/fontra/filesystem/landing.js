@@ -13,7 +13,7 @@ export async function startupLandingPage(authenticateFunc) {
 
   for (const project of projectList) {
     const projectElement = document.createElement("a");
-    projectElement.href = "/fontoverview/-/" + project;
+    projectElement.href = "/fontoverview/?project=" + project;
     projectElement.className = "project-item";
     projectElement.append(project);
     projectListContainer.appendChild(projectElement);
