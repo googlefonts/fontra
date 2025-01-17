@@ -323,7 +323,6 @@ export class FontOverviewController extends ViewController {
         THIS_FONTS_GLYPHSET,
         ...Object.keys(this.fontOverviewSettings.projectGlyphSets),
       ];
-      console.log("maybe enable some glyph sets");
     }
   }
 
