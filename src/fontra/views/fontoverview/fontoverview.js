@@ -321,7 +321,9 @@ export class FontOverviewController extends ViewController {
     ) {
       this.fontOverviewSettings.projectGlyphSetSelection = [
         THIS_FONTS_GLYPHSET,
-        ...Object.keys(this.fontOverviewSettings.projectGlyphSets),
+        ...Object.values(this.fontOverviewSettings.projectGlyphSets).map(
+          ({ url }) => url
+        ),
       ];
     }
   }
