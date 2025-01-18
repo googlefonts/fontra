@@ -68,7 +68,7 @@ class AbstractBackend {
 
 class PythonBackend extends AbstractBackend {
   static async getProjects() {
-    return fetchJSON("/projectlist");
+    return await fetchJSON("/projectlist");
   }
 
   static async _callServerAPI(functionName, kwargs) {
