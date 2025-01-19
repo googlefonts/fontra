@@ -13,6 +13,10 @@ export class PopupMenu extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
+    :host {
+      cursor: pointer;
+    }
+
     #popup-menu {
       background-color: var(--text-input-background-color);
       border-radius: 0.25em;
