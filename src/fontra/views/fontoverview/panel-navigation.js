@@ -256,9 +256,9 @@ export class FontOverviewNavigation extends HTMLElement {
   _makeAddGlyphSetButton(isProjectGlyphSet, toolTip) {
     return html.createDomElement("icon-button", {
       "src": "/images/plus.svg",
-      "onclick": (event) => this._editGlyphSet(event, isProjectGlyphSet),
+      "onclick": (event) => this._addGlyphSet(event, isProjectGlyphSet),
       "data-tooltip": toolTip,
-      "data-tooltipposition": "bottom",
+      "data-tooltipposition": "left",
     });
   }
 
@@ -395,6 +395,20 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
+  async _addGlyphSet(event, isProjectGlyphSet) {
+    const { glyphSets, custom } = await runAddGlyphSetDialog(
+      isProjectGlyphSet
+        ? this.fontOverviewSettings.projectGlyphSets
+        : this.fontOverviewSettings.myGlyphSets
+    );
+    if (custom) {
+      console.log("add custom glyph set");
+    } else if (glyphSets) {
+      const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
+      this.fontOverviewSettings[key] = glyphSets;
+    }
+  }
+
   async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
     const glyphSet = await runGlyphSetDialog(glyphSetInfo);
     if (!glyphSet) {
@@ -468,6 +482,7 @@ function makeCheckboxController(settingsController, settingsKey) {
 const glyphSetPresets = [
   {
     curator: "Google Fonts",
+    sourceURL: "https://github.com/googlefonts/glyphsets",
     glyphSets: [
       {
         name: "GF Arabic Core",
@@ -580,6 +595,143 @@ const glyphSetPresets = [
     ],
   },
 ];
+
+async function runAddGlyphSetDialog(initialGlyphSets) {
+  const dialog = new AddPresetGlyphSetDialog(initialGlyphSets);
+  return await dialog.run();
+}
+
+const CHECKBOX_PREFIX = "checkbox-";
+
+class AddPresetGlyphSetDialog {
+  static styles = `
+    .content-container {
+      display: grid;
+      grid-template-columns: max-content auto;
+      align-items: center;
+      align-content: start;
+      gap: 0.5em;
+      height: calc(80vh - 10em); /* Nasty: the 10em value depends on the rest of the contents */
+    }
+
+    .checkbox-container {
+      height: 100%;
+      overflow: scroll;
+    }
+
+    .checkbox-group {
+      display: grid;
+    }
+
+    #info-link {
+      color: var(--foreground-color);
+      text-decoration: underline;
+    }
+
+    .align-right {
+      text-align: right;
+    }
+  `;
+
+  constructor(initialGlyphSets) {
+    this.initialGlyphSets = initialGlyphSets;
+    this.dialogController = new ObservableController({
+      ...Object.fromEntries(
+        Object.values(initialGlyphSets).map((glyphSet) => [
+          CHECKBOX_PREFIX + glyphSet.url,
+          true,
+        ])
+      ),
+    });
+
+    this.sourceURLElement = html.a(
+      {
+        id: "info-link",
+        target: "_blank",
+      },
+      [this.dialogController.model.sourceURL || ""]
+    );
+    this.checkboxContainer = html.div({ class: "checkbox-container" });
+
+    this.dialogContent = html.div({ class: "content-container" }, [
+      ...labeledPopupSelect(
+        "Curator:",
+        this.dialogController,
+        "curator",
+        glyphSetPresets.map((group) => ({ value: group.curator, label: group.curator }))
+      ),
+      html.label({ for: "info-link" }, ["Source:"]),
+      this.sourceURLElement,
+      html.div(), // grid cell filler
+      this.checkboxContainer,
+    ]);
+
+    this.dialogController.addKeyListener("curator", (event) => {
+      this.setSelectedGlyphsetGroup(event.newValue);
+    });
+
+    this.dialogController.model.curator = glyphSetPresets[0].curator;
+  }
+
+  setSelectedGlyphsetGroup(groupName) {
+    const group = glyphSetPresets.find((group) => group.curator === groupName);
+    this.sourceURLElement.href = group.sourceURL;
+    this.sourceURLElement.innerText = group.sourceURL;
+    this.checkboxContainer.innerHTML = "";
+    this.checkboxContainer.appendChild(this.checkboxesForGroup(group));
+  }
+
+  checkboxesForGroup(group) {
+    const checkboxes = group.glyphSets.map((glyphSet) => {
+      const key = CHECKBOX_PREFIX + glyphSet.url;
+      return labeledCheckbox(glyphSet.name, this.dialogController, key);
+    });
+    return html.div({}, checkboxes);
+  }
+
+  async run() {
+    const dialog = await dialogSetup("Add/remove preset glyph sets", "", [
+      { title: "Add custom glyph set...", resultValue: "custom" }, // TODO: translate
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: translate("dialog.add"), isDefaultButton: true, resultValue: "add" },
+    ]);
+
+    dialog.appendStyle(this.constructor.styles);
+    dialog.setContent(this.dialogContent);
+
+    const result = await dialog.run();
+    if (result === "custom") {
+      return { custom: true };
+    } else if (result !== "add") {
+      return {};
+    }
+
+    const allGlyphSetsByURL = {};
+    for (const group of glyphSetPresets) {
+      for (const glyphSet of group.glyphSets) {
+        allGlyphSetsByURL[glyphSet.url] = glyphSet;
+      }
+    }
+    const glyphSets = { ...this.initialGlyphSets };
+    for (const [key, value] of Object.entries(this.dialogController.model)) {
+      if (!key.startsWith(CHECKBOX_PREFIX)) {
+        continue;
+      }
+      const url = key.slice(CHECKBOX_PREFIX.length);
+      if (!url) {
+        continue;
+      }
+      if (value) {
+        if (allGlyphSetsByURL[url]) {
+          glyphSets[url] = allGlyphSetsByURL[url];
+        }
+      } else {
+        delete glyphSets[url];
+      }
+    }
+    return { glyphSets };
+  }
+}
 
 async function runGlyphSetDialog(glyphSetInfo) {
   glyphSetInfo = { dataFormat: "auto-detect", ...glyphSetInfo };
