@@ -15,6 +15,7 @@ import { parseGlyphSet } from "/core/parse-glyph-set.js";
 import {
   assert,
   dumpURLFragment,
+  friendlyHttpStatus,
   glyphMapToItemList,
   isActiveElementTypeable,
   modulo,
@@ -391,7 +392,7 @@ export class FontOverviewController extends ViewController {
           this.fontOverviewSettings.myGlyphSets[glyphSetKey];
 
         if (!glyphSetInfo) {
-          console.log(`can't find glyph set info for ${glyphSetKey}`);
+          // console.log(`can't find glyph set info for ${glyphSetKey}`);
           continue;
         }
 
@@ -427,12 +428,18 @@ export class FontOverviewController extends ViewController {
       let glyphSetData;
       try {
         const response = await fetch(glyphSetInfo.url);
-        glyphSetData = await response.text();
-        delete glyphSetErrors[glyphSetInfo.url];
+        if (response.ok) {
+          glyphSetData = await response.text();
+          delete glyphSetErrors[glyphSetInfo.url];
+        } else {
+          glyphSetErrors[glyphSetInfo.url] = `Could not fetch glyph set: ${
+            friendlyHttpStatus[response.status]
+          } (${response.status})`;
+        }
       } catch (e) {
-        console.log(`can't load ${glyphSetInfo.url}`);
+        console.log(`could not fetch ${glyphSetInfo.url}`);
         console.error();
-        glyphSetErrors[glyphSetInfo.url] = `Could not load glyph set: ${e.toString()}`;
+        glyphSetErrors[glyphSetInfo.url] = `Could not fetch glyph set: ${e.toString()}`;
       }
 
       if (glyphSetData) {
