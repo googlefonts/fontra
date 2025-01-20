@@ -10,7 +10,7 @@ import {
   labeledTextInput,
   popupSelect,
 } from "/core/ui-utils.js";
-import { scheduleCalls } from "/core/utils.js";
+import { fetchJSON, scheduleCalls } from "/core/utils.js";
 import { DesignspaceLocation } from "/web-components/designspace-location.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
@@ -479,122 +479,11 @@ function makeCheckboxController(settingsController, settingsKey) {
   return checkboxController;
 }
 
-const glyphSetPresets = [
-  {
-    curator: "Google Fonts",
-    sourceURL: "https://github.com/googlefonts/glyphsets",
-    glyphSets: [
-      {
-        name: "GF Arabic Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Core.txt",
-      },
-      {
-        name: "GF Arabic Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Plus.txt",
-      },
-      {
-        name: "GF Cyrillic Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Core.txt",
-      },
-      {
-        name: "GF Cyrillic Historical",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Historical.txt",
-      },
-      {
-        name: "GF Cyrillic Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Plus.txt",
-      },
-      {
-        name: "GF Cyrillic Pro",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Pro.txt",
-      },
-      {
-        name: "GF Greek AncientMusicalSymbols",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_AncientMusicalSymbols.txt",
-      },
-      {
-        name: "GF Greek Archaic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Archaic.txt",
-      },
-      {
-        name: "GF Greek Coptic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Coptic.txt",
-      },
-      {
-        name: "GF Greek Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Core.txt",
-      },
-      {
-        name: "GF Greek Expert",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Expert.txt",
-      },
-      {
-        name: "GF Greek Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Plus.txt",
-      },
-      {
-        name: "GF Greek Pro",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Pro.txt",
-      },
-      {
-        name: "GF Latin African",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_African.txt",
-      },
-      {
-        name: "GF Latin Beyond",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Beyond.txt",
-      },
-      {
-        name: "GF Latin Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Core.txt",
-      },
-      {
-        name: "GF Latin Kernel",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Kernel.txt",
-      },
-      {
-        name: "GF Latin Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Plus.txt",
-      },
-      {
-        name: "GF Latin PriAfrican",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_PriAfrican.txt",
-      },
-      {
-        name: "GF Latin Vietnamese",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Vietnamese.txt",
-      },
-      {
-        name: "GF Phonetics APA",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_APA.txt",
-      },
-      {
-        name: "GF Phonetics DisorderedSpeech",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_DisorderedSpeech.txt",
-      },
-      {
-        name: "GF Phonetics IPAHistorical",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAHistorical.txt",
-      },
-      {
-        name: "GF Phonetics IPAStandard",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAStandard.txt",
-      },
-      {
-        name: "GF Phonetics SinoExt",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_SinoExt.txt",
-      },
-      {
-        name: "GF TransLatin Arabic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Arabic.txt",
-      },
-      {
-        name: "GF TransLatin Pinyin",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Pinyin.txt",
-      },
-    ],
-  },
-];
+let glyphSetPresets;
+
+fetchJSON("/data/glyphset-presets.json").then((result) => {
+  glyphSetPresets = result;
+});
 
 async function runAddGlyphSetDialog(initialGlyphSets) {
   const dialog = new AddPresetGlyphSetDialog(initialGlyphSets);
@@ -655,10 +544,13 @@ class AddPresetGlyphSetDialog {
 
     this.dialogContent = html.div({ class: "content-container" }, [
       ...labeledPopupSelect(
-        "Curator:",
+        "Collection:",
         this.dialogController,
-        "curator",
-        glyphSetPresets.map((group) => ({ value: group.curator, label: group.curator }))
+        "collectionName",
+        glyphSetPresets.map((collection) => ({
+          value: collection.name,
+          label: collection.name,
+        }))
       ),
       html.label({ for: "info-link" }, ["Source:"]),
       this.sourceURLElement,
@@ -674,23 +566,25 @@ class AddPresetGlyphSetDialog {
       ),
     ]);
 
-    this.dialogController.addKeyListener("curator", (event) => {
-      this.setSelectedGlyphsetGroup(event.newValue);
+    this.dialogController.addKeyListener("collectionName", (event) => {
+      this.setSelectedGlyphsetCollection(event.newValue);
     });
 
-    this.dialogController.model.curator = glyphSetPresets[0].curator;
+    this.dialogController.model.collectionName = glyphSetPresets[0].name;
   }
 
-  setSelectedGlyphsetGroup(groupName) {
-    const group = glyphSetPresets.find((group) => group.curator === groupName);
-    this.sourceURLElement.href = group.sourceURL;
-    this.sourceURLElement.innerText = group.sourceURL;
+  setSelectedGlyphsetCollection(collectionName) {
+    const collection = glyphSetPresets.find(
+      (collection) => collection.name === collectionName
+    );
+    this.sourceURLElement.href = collection.sourceURL;
+    this.sourceURLElement.innerText = collection.sourceURL;
     this.checkboxContainer.innerHTML = "";
-    this.checkboxContainer.appendChild(this.checkboxesForGroup(group));
+    this.checkboxContainer.appendChild(this.checkboxesForCollection(collection));
   }
 
-  checkboxesForGroup(group) {
-    const checkboxes = group.glyphSets.map((glyphSet) => {
+  checkboxesForCollection(collection) {
+    const checkboxes = collection.glyphSets.map((glyphSet) => {
       const key = CHECKBOX_PREFIX + glyphSet.url;
       return labeledCheckbox(glyphSet.name, this.dialogController, key);
     });
@@ -715,8 +609,8 @@ class AddPresetGlyphSetDialog {
     }
 
     const allGlyphSetsByURL = {};
-    for (const group of glyphSetPresets) {
-      for (const glyphSet of group.glyphSets) {
+    for (const collection of glyphSetPresets) {
+      for (const glyphSet of collection.glyphSets) {
         allGlyphSetsByURL[glyphSet.url] = glyphSet;
       }
     }
