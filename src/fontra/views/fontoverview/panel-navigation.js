@@ -523,6 +523,7 @@ async function runAddGlyphSetDialog(initialGlyphSets) {
 }
 
 const CHECKBOX_PREFIX = "checkbox-";
+const SELECTED_GLYPHSET_LOCAL_STORAGE_KEY = "fontra-selected-glyphset-collection";
 
 class AddPresetGlyphSetDialog {
   static styles = `
@@ -600,9 +601,11 @@ class AddPresetGlyphSetDialog {
 
     this.dialogController.addKeyListener("collectionName", (event) => {
       this.setSelectedGlyphsetCollection(event.newValue);
+      localStorage.setItem(SELECTED_GLYPHSET_LOCAL_STORAGE_KEY, event.newValue);
     });
 
-    this.dialogController.model.collectionName = glyphSetPresets[0].name;
+    this.dialogController.model.collectionName =
+      localStorage.getItem(SELECTED_GLYPHSET_LOCAL_STORAGE_KEY) || "Google Fonts";
   }
 
   setSelectedGlyphsetCollection(collectionName) {
