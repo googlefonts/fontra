@@ -304,7 +304,7 @@ export function guessCharFromGlyphName(glyphName) {
 }
 
 export async function fetchJSON(url, options) {
-  const response = await fetch(url, options || { cache: "no-cache" });
+  const response = await fetch(url, options);
   return await response.json();
 }
 
