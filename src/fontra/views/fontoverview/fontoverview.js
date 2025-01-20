@@ -223,6 +223,8 @@ export class FontOverviewController extends ViewController {
         if (event.senderInfo?.sentFromExternalChange) {
           return;
         }
+        this._updateLoadedGlyphSets(event.oldValue, event.newValue);
+
         const changes = await this.fontController.performEdit(
           "edit glyph sets",
           "customData",
@@ -246,6 +248,8 @@ export class FontOverviewController extends ViewController {
   _setupMyGlyphSetsDependencies() {
     // This synchronizes the myGlyphSets object with local storage
     this.fontOverviewSettingsController.addKeyListener("myGlyphSets", (event) => {
+      this._updateLoadedGlyphSets(event.oldValue, event.newValue);
+
       if (!event.senderInfo?.sentFromLocalStorage) {
         this.myGlyphSetsController.setItem("settings", event.newValue, {
           sentFromSettings: true,
@@ -265,6 +269,21 @@ export class FontOverviewController extends ViewController {
         });
       }
     });
+  }
+
+  _updateLoadedGlyphSets(oldGlyphSets, newGlyphSets) {
+    const oldAndNewGlyphSets = { ...oldGlyphSets, ...newGlyphSets };
+
+    for (const key of Object.keys(oldAndNewGlyphSets)) {
+      if (oldGlyphSets[key] !== newGlyphSets[key]) {
+        if (oldGlyphSets[key]) {
+          delete this._loadedGlyphSets[oldGlyphSets[key].url];
+        }
+        if (newGlyphSets[key]) {
+          delete this._loadedGlyphSets[newGlyphSets[key].url];
+        }
+      }
+    }
   }
 
   _setupLocationDependencies() {
@@ -444,7 +463,13 @@ export class FontOverviewController extends ViewController {
 
       if (glyphSetData) {
         try {
-          glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat);
+          glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat, {
+            commentChars: glyphSetInfo.commentChars,
+            hasHeader: glyphSetInfo.hasHeader,
+            glyphNameColumn: glyphSetInfo.glyphNameColumn,
+            codePointColumn: glyphSetInfo.codePointColumn,
+            codePointIsDecimal: glyphSetInfo.codePointIsDecimal,
+          });
         } catch (e) {
           glyphSetErrors[
             glyphSetInfo.url
