@@ -402,7 +402,7 @@ export class FontOverviewNavigation extends HTMLElement {
         : this.fontOverviewSettings.myGlyphSets
     );
     if (custom) {
-      console.log("add custom glyph set");
+      await this._editGlyphSet(event, isProjectGlyphSet);
     } else if (glyphSets) {
       const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
       this.fontOverviewSettings[key] = glyphSets;
