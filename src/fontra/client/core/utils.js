@@ -303,8 +303,8 @@ export function guessCharFromGlyphName(glyphName) {
   return match ? String.fromCodePoint(parseInt(match[2], 16)) : "";
 }
 
-export async function fetchJSON(url) {
-  const response = await fetch(url);
+export async function fetchJSON(url, options) {
+  const response = await fetch(url, options || { cache: "no-cache" });
   return await response.json();
 }
 
