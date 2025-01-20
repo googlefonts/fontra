@@ -368,5 +368,57 @@
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_symbols.csv"
       }
     ]
+  },
+  {
+    "name": "Adobe Latin, Cyrillic, Greek",
+    "sourceURL": "https://github.com/orgs/adobe-type-tools/repositories?q=charsets",
+    "dataOptions": {
+      "dataFormat": "tsv/csv",
+      "hasHeader": true,
+      "codePointColumn": "Unicode",
+      "glyphNameColumn": "Glyph name"
+    },
+    "glyphSets": [
+      {
+        "name": "Adobe Latin 1",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-latin-charsets/adobe-latin-1.txt"
+      },
+      {
+        "name": "Adobe Latin 2",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-latin-charsets/adobe-latin-2.txt"
+      },
+      {
+        "name": "Adobe Latin 3",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-latin-charsets/adobe-latin-3.txt"
+      },
+      {
+        "name": "Adobe Latin 4 Precomposed",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-latin-charsets/adobe-latin-4-precomposed.txt"
+      },
+      {
+        "name": "Adobe Latin 5 Precomposed",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-latin-charsets/adobe-latin-5-precomposed.txt"
+      },
+      {
+        "name": "Adobe Cyrillic 1",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-cyrillic-charsets/adobe-cyrillic-1.txt"
+      },
+      {
+        "name": "Adobe Cyrillic 2",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-cyrillic-charsets/adobe-cyrillic-2.txt"
+      },
+      {
+        "name": "Adobe Cyrillic 3 Precomposed",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-cyrillic-charsets/adobe-cyrillic-3-precomposed.txt"
+      },
+      {
+        "name": "Adobe Greek 1",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-greek-charsets/adobe-greek-1.txt"
+      },
+      {
+        "name": "Adobe Greek 2",
+        "url": "https://cdn.jsdelivr.net/gh/adobe-type-tools/adobe-greek-charsets/adobe-greek-2.txt"
+      }
+    ]
   }
 ]
