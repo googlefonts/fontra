@@ -1,4 +1,4 @@
-import { getCodePointFromGlyphName } from "./glyph-data.js";
+import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
 
 export const glyphSetDataFormats = [
   {
@@ -23,8 +23,9 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
   let glyphNameColumnIndex = parseInt(dataOptions.glyphNameColumn);
   let codePointColumnIndex = parseInt(dataOptions.codePointColumn);
   if (!dataOptions.hasHeader) {
-    assert(!isNaN(glyphNameColumnIndex));
-    assert(!isNaN(codePointColumnIndex));
+    // If we don't have a header, we should at least have an index for the
+    // code point column OR the glyph name column
+    assert(!(isNaN(glyphNameColumnIndex) && isNaN(codePointColumnIndex)));
   }
 
   const glyphSet = [];
@@ -46,14 +47,14 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
       if (!tableHeader && dataOptions.hasHeader) {
         tableHeader = row;
 
-        if (isNaN(glyphNameColumnIndex)) {
+        if (isNaN(glyphNameColumnIndex) && dataOptions.glyphNameColumn) {
           glyphNameColumnIndex = tableHeader.indexOf(dataOptions.glyphNameColumn);
           if (glyphNameColumnIndex < 0) {
             throw new Error(`invalid glyphNameColumn: ${dataOptions.glyphNameColumn}`);
           }
         }
 
-        if (isNaN(codePointColumnIndex)) {
+        if (isNaN(codePointColumnIndex) && dataOptions.codePointColumn) {
           codePointColumnIndex = tableHeader.indexOf(dataOptions.codePointColumn);
           if (codePointColumnIndex < 0) {
             throw new Error(`invalid codePointColumn: ${dataOptions.codePointColumn}`);
@@ -63,9 +64,6 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
       }
 
       const glyphName = row[glyphNameColumnIndex];
-      if (!glyphName) {
-        continue;
-      }
 
       let codePointCell = row[codePointColumnIndex];
       let codePoint;
@@ -80,6 +78,16 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
           codePoint = parseInt(codePointCell, 16);
         }
       }
+
+      if (!glyphName && !codePoint) {
+        continue;
+      }
+      if (!glyphName) {
+        glyphName = getSuggestedGlyphName(codePoint);
+      } else if (!codePoint) {
+        codePoint = getCodePointFromGlyphName(glyphName);
+      }
+
       glyphSet.push({ glyphName, codePoints: codePoint ? [codePoint] : [] });
     }
   }
