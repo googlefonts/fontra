@@ -96,7 +96,6 @@ export class FontOverviewNavigation extends HTMLElement {
         display: grid;
         gap: 0.5em;
       }
-
     `);
 
     accordion.onItemOpenClose = (item, openClose) => {
@@ -585,7 +584,7 @@ class AddPresetGlyphSetDialog {
           label: collection.name,
         }))
       ),
-      html.label({ for: "info-link" }, ["Source:"]),
+      html.label({ for: "info-link", style: "text-align: right;" }, ["Source:"]),
       this.sourceURLElement,
       html.div(), // grid cell filler
       this.checkboxContainer,
