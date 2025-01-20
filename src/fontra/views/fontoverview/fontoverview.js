@@ -474,6 +474,7 @@ export class FontOverviewController extends ViewController {
           glyphSetErrors[
             glyphSetInfo.url
           ] = `Could not parse glyph set: ${e.toString()}`;
+          console.error(e);
         }
       }
 
