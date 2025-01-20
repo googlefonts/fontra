@@ -611,7 +611,7 @@ class AddPresetGlyphSetDialog {
     const allGlyphSetsByURL = {};
     for (const collection of glyphSetPresets) {
       for (const glyphSet of collection.glyphSets) {
-        allGlyphSetsByURL[glyphSet.url] = glyphSet;
+        allGlyphSetsByURL[glyphSet.url] = { glyphSet, collection };
       }
     }
     const glyphSets = { ...this.initialGlyphSets };
@@ -625,7 +625,8 @@ class AddPresetGlyphSetDialog {
       }
       if (value) {
         if (allGlyphSetsByURL[url]) {
-          glyphSets[url] = allGlyphSetsByURL[url];
+          const { glyphSet, collection } = allGlyphSetsByURL[url];
+          glyphSets[url] = { ...collection.dataOptions, ...glyphSet };
         }
       } else {
         delete glyphSets[url];
@@ -637,7 +638,7 @@ class AddPresetGlyphSetDialog {
 
 async function runEditGlyphSetDialog(glyphSetInfo) {
   const isEditing = !!glyphSetInfo;
-  glyphSetInfo = { dataFormat: "auto-detect", ...glyphSetInfo };
+  glyphSetInfo = { ...glyphSetInfo };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
