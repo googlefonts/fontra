@@ -410,7 +410,7 @@ export class FontOverviewNavigation extends HTMLElement {
   }
 
   async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
-    const glyphSet = await runGlyphSetDialog(glyphSetInfo);
+    const glyphSet = await runEditGlyphSetDialog(glyphSetInfo);
     if (!glyphSet) {
       return;
     }
@@ -741,7 +741,8 @@ class AddPresetGlyphSetDialog {
   }
 }
 
-async function runGlyphSetDialog(glyphSetInfo) {
+async function runEditGlyphSetDialog(glyphSetInfo) {
+  const isEditing = !!glyphSetInfo;
   glyphSetInfo = { dataFormat: "auto-detect", ...glyphSetInfo };
   const dialogController = new ObservableController(glyphSetInfo);
 
@@ -765,10 +766,14 @@ async function runGlyphSetDialog(glyphSetInfo) {
 
   dialogController.addListener((event) => validateInput());
 
-  const dialog = await dialogSetup("Add glyph set", "", [
-    { title: translate("dialog.cancel"), isCancelButton: true },
-    { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
-  ]);
+  const dialog = await dialogSetup(
+    isEditing ? "Edit glyph set" : "Add custom glyph set",
+    "",
+    [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
+    ]
+  );
 
   validateInput();
 
