@@ -429,9 +429,12 @@ export class FontOverviewNavigation extends HTMLElement {
         ? this.fontOverviewSettings.projectGlyphSets
         : this.fontOverviewSettings.myGlyphSets
     );
+
     if (custom) {
       await this._editGlyphSet(event, isProjectGlyphSet);
     } else if (glyphSets) {
+      this._openGlyphSetsItem(isProjectGlyphSet);
+
       const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
       this.fontOverviewSettings[key] = glyphSets;
     }
@@ -443,11 +446,7 @@ export class FontOverviewNavigation extends HTMLElement {
       return;
     }
 
-    if (isProjectGlyphSet) {
-      this.accordion.openCloseAccordionItem(this._projectGlyphSetsItem, true);
-    } else {
-      this.accordion.openCloseAccordionItem(this._myGlyphSetsItem, true);
-    }
+    this._openGlyphSetsItem(isProjectGlyphSet);
 
     const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
     const glyphSets = {
@@ -458,6 +457,14 @@ export class FontOverviewNavigation extends HTMLElement {
     }
     glyphSets[glyphSet.url] = glyphSet;
     this.fontOverviewSettings[key] = glyphSets;
+  }
+
+  _openGlyphSetsItem(isProjectGlyphSet) {
+    if (isProjectGlyphSet) {
+      this.accordion.openCloseAccordionItem(this._projectGlyphSetsItem, true);
+    } else {
+      this.accordion.openCloseAccordionItem(this._myGlyphSetsItem, true);
+    }
   }
 
   _deleteGlyphSet(event, isProjectGlyphSet, glyphSetInfo) {
