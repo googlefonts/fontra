@@ -549,10 +549,6 @@ class AddPresetGlyphSetDialog {
       color: var(--foreground-color);
       text-decoration: underline;
     }
-
-    .align-right {
-      text-align: right;
-    }
   `;
 
   constructor(initialGlyphSets) {
@@ -595,7 +591,7 @@ class AddPresetGlyphSetDialog {
           href: "https://github.com/googlefonts/fontra/discussions/1943",
           target: "_blank",
         },
-        ["Suggest glyph set collections"]
+        ["Suggest more glyph set collections"]
       ),
     ]);
 
