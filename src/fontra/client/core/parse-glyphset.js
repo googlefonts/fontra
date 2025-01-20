@@ -1,4 +1,5 @@
 import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
+import { assert } from "./utils.js";
 
 export const glyphSetDataFormats = [
   {
@@ -14,10 +15,37 @@ export const glyphSetDataFormats = [
 export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
   const sourceLines = sourceData.split(/\r?\n/);
 
-  const isTableFormat = dataFormat === "tsv/csv";
-  if (!isTableFormat && dataFormat !== "glyph-names") {
-    console.log("unknown data format:", dataFormat);
+  switch (dataFormat) {
+    case "glyph-names":
+      return parseGlyphSetGlyphNames(sourceLines, dataOptions);
+    case "tsv/csv":
+      return parseGlyphSetGlyphTable(sourceLines, dataOptions);
+    default:
+      throw new Error(`unknow data format: ${dataFormat}`);
   }
+}
+
+function parseGlyphSetGlyphNames(sourceLines, dataOptions) {
+  const glyphSet = [];
+
+  for (let line of sourceLines) {
+    line = stripLineComments(line, dataOptions?.commentChars);
+    line = line.trim();
+    if (!line) {
+      continue;
+    }
+
+    for (const glyphName of line.split(/\s+/)) {
+      const codePoint = getCodePointFromGlyphName(glyphName);
+      glyphSet.push({ glyphName, codePoints: codePoint ? [codePoint] : [] });
+    }
+  }
+
+  return glyphSet;
+}
+
+function parseGlyphSetGlyphTable(sourceLines, dataOptions) {
+  const rowSeparator = guessRowSeparator(sourceLines.slice(0, 200));
 
   let tableHeader;
   let glyphNameColumnIndex = parseInt(dataOptions.glyphNameColumn);
@@ -25,71 +53,62 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
   if (!dataOptions.hasHeader) {
     // If we don't have a header, we should at least have an index for the
     // code point column OR the glyph name column
-    assert(!(isNaN(glyphNameColumnIndex) && isNaN(codePointColumnIndex)));
+    assert(
+      !(isNaN(glyphNameColumnIndex) && isNaN(codePointColumnIndex)),
+      `${dataOptions.glyphNameColumn}/${dataOptions.codePointColumn}`
+    );
   }
 
   const glyphSet = [];
   for (let line of sourceLines) {
     line = stripLineComments(line, dataOptions?.commentChars);
 
-    if (dataFormat === "glyph-names") {
-      line = line.trim();
-      if (!line) {
-        continue;
-      }
+    const row = line.split(rowSeparator).map((item) => item.trim());
+    if (!tableHeader && dataOptions.hasHeader) {
+      tableHeader = row;
 
-      for (const glyphName of line.split(/\s+/)) {
-        const codePoint = getCodePointFromGlyphName(glyphName);
-        glyphSet.push({ glyphName, codePoints: codePoint ? [codePoint] : [] });
-      }
-    } else if (dataFormat === "tsv/csv") {
-      const row = line.split(/\t|,|;/).map((item) => item.trim());
-      if (!tableHeader && dataOptions.hasHeader) {
-        tableHeader = row;
-
-        if (isNaN(glyphNameColumnIndex) && dataOptions.glyphNameColumn) {
-          glyphNameColumnIndex = tableHeader.indexOf(dataOptions.glyphNameColumn);
-          if (glyphNameColumnIndex < 0) {
-            throw new Error(`invalid glyphNameColumn: ${dataOptions.glyphNameColumn}`);
-          }
-        }
-
-        if (isNaN(codePointColumnIndex) && dataOptions.codePointColumn) {
-          codePointColumnIndex = tableHeader.indexOf(dataOptions.codePointColumn);
-          if (codePointColumnIndex < 0) {
-            throw new Error(`invalid codePointColumn: ${dataOptions.codePointColumn}`);
-          }
-        }
-        continue;
-      }
-
-      const glyphName = row[glyphNameColumnIndex];
-
-      let codePointCell = row[codePointColumnIndex];
-      let codePoint;
-      if (codePointCell) {
-        if (dataOptions.codePointIsDecimal) {
-          codePoint = parseInt(codePointCell);
-        } else {
-          // Hex
-          if (codePointCell.startsWith("U+") || codePointCell.startsWith("0x")) {
-            codePointCell = codePointCell.slice(2);
-          }
-          codePoint = parseInt(codePointCell, 16);
+      if (isNaN(glyphNameColumnIndex) && dataOptions.glyphNameColumn) {
+        glyphNameColumnIndex = tableHeader.indexOf(dataOptions.glyphNameColumn);
+        if (glyphNameColumnIndex < 0) {
+          throw new Error(`invalid glyphNameColumn: ${dataOptions.glyphNameColumn}`);
         }
       }
 
-      if (!glyphName && !codePoint) {
-        continue;
+      if (isNaN(codePointColumnIndex) && dataOptions.codePointColumn) {
+        codePointColumnIndex = tableHeader.indexOf(dataOptions.codePointColumn);
+        if (codePointColumnIndex < 0) {
+          throw new Error(`invalid codePointColumn: ${dataOptions.codePointColumn}`);
+        }
       }
-      if (!glyphName) {
-        glyphName = getSuggestedGlyphName(codePoint);
-      } else if (!codePoint) {
-        codePoint = getCodePointFromGlyphName(glyphName);
-      }
-
-      glyphSet.push({ glyphName, codePoints: codePoint ? [codePoint] : [] });
+      continue;
     }
+
+    let glyphName = row[glyphNameColumnIndex];
+    let codePoint;
+
+    let codePointCell = row[codePointColumnIndex];
+    if (codePointCell) {
+      if (dataOptions.codePointIsDecimal) {
+        codePoint = parseInt(codePointCell);
+      } else {
+        // Hex
+        if (codePointCell.startsWith("U+") || codePointCell.startsWith("0x")) {
+          codePointCell = codePointCell.slice(2);
+        }
+        codePoint = parseInt(codePointCell, 16);
+      }
+    }
+
+    if (!glyphName && !codePoint) {
+      continue;
+    }
+    if (!glyphName) {
+      glyphName = getSuggestedGlyphName(codePoint);
+    } else if (!codePoint) {
+      codePoint = getCodePointFromGlyphName(glyphName);
+    }
+
+    glyphSet.push({ glyphName, codePoints: codePoint ? [codePoint] : [] });
   }
 
   return glyphSet;
@@ -103,4 +122,31 @@ function stripLineComments(line, commentChars) {
     }
   }
   return line;
+}
+
+function guessRowSeparator(lines) {
+  let tabCount = 0;
+  let commaCount = 0;
+  let semiColonCount = 0;
+  for (const line of lines) {
+    for (const char of line) {
+      switch (char) {
+        case "\t":
+          tabCount++;
+          break;
+        case ",":
+          commaCount++;
+          break;
+        case ";":
+          semiColonCount++;
+          break;
+      }
+    }
+  }
+  if (tabCount > commaCount && tabCount > semiColonCount) {
+    return "\t";
+  } else if (commaCount > semiColonCount) {
+    return ",";
+  }
+  return ";";
 }
