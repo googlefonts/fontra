@@ -433,11 +433,11 @@ export class FontOverviewNavigation extends HTMLElement {
     if (custom) {
       await this._editGlyphSet(event, isProjectGlyphSet);
     } else if (glyphSets) {
-      this._openGlyphSetsItem(isProjectGlyphSet);
-
       const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
       this.fontOverviewSettings[key] = glyphSets;
     }
+
+    this._openGlyphSetsItem(isProjectGlyphSet);
   }
 
   async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
@@ -445,8 +445,6 @@ export class FontOverviewNavigation extends HTMLElement {
     if (!glyphSet) {
       return;
     }
-
-    this._openGlyphSetsItem(isProjectGlyphSet);
 
     const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
     const glyphSets = {
