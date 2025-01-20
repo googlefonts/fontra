@@ -574,15 +574,15 @@ class AddPresetGlyphSetDialog {
     );
     this.checkboxContainer = html.div({ class: "checkbox-container" });
 
+    const collectionNames = glyphSetPresets.map((collection) => collection.name);
+    collectionNames.sort();
+
     this.dialogContent = html.div({ class: "content-container" }, [
       ...labeledPopupSelect(
         "Collection:",
         this.dialogController,
         "collectionName",
-        glyphSetPresets.map((collection) => ({
-          value: collection.name,
-          label: collection.name,
-        }))
+        collectionNames.map((name) => ({ value: name, label: name }))
       ),
       html.label({ for: "info-link", style: "text-align: right;" }, ["Source:"]),
       this.sourceURLElement,
