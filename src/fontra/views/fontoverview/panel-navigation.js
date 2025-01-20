@@ -80,6 +80,18 @@ export class FontOverviewNavigation extends HTMLElement {
         opacity: 1;
       }
 
+      .glyphset-error-button.loading {
+        opacity: 1;
+        color: #8888;
+        animation: loading-spinner 0.8s linear infinite;
+      }
+
+      @keyframes loading-spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       .font-source-location-container {
         display: grid;
         gap: 0.5em;
@@ -165,16 +177,32 @@ export class FontOverviewNavigation extends HTMLElement {
     this._updateProjectGlyphSets();
     this._updateMyGlyphSets();
 
-    this.fontOverviewSettingsController.addKeyListener("glyphSetErrors", (event) => {
-      const diffKeys = symmetricDifference(
-        new Set(Object.keys(event.oldValue)),
-        Object.keys(event.newValue)
-      );
-      for (const key of diffKeys) {
-        const errorButton = this._glyphSetErrorButtons[key];
-        errorButton.classList.toggle("glyphset-error", !!event.newValue[key]);
-      }
-    });
+    this.fontOverviewSettingsController.addKeyListener(
+      "glyphSetErrors",
+      (event) => {
+        const diffKeys = symmetricDifference(
+          new Set(Object.keys(event.oldValue)),
+          Object.keys(event.newValue)
+        );
+        for (const key of diffKeys) {
+          const isLoading = event.newValue[key] === "...";
+
+          const errorButton = this._glyphSetErrorButtons[key];
+
+          errorButton.src = isLoading
+            ? "/tabler-icons/loader-2.svg"
+            : "/tabler-icons/alert-triangle.svg";
+
+          errorButton.classList.toggle(
+            "glyphset-error",
+            !!(event.newValue[key] && event.newValue[key] !== "...")
+          );
+
+          errorButton.classList.toggle("loading", event.newValue[key] === "...");
+        }
+      },
+      true
+    );
   }
 
   async _makeFontSourcePopup() {
