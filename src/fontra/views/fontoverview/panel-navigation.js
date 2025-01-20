@@ -2,7 +2,7 @@ import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { glyphSetDataFormats } from "/core/parse-glyph-set.js";
+import { glyphSetDataFormats } from "/core/parse-glyphset.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import {
   labeledCheckbox,

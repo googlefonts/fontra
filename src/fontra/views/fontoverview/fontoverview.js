@@ -11,7 +11,7 @@ import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { parseGlyphSet } from "/core/parse-glyph-set.js";
+import { parseGlyphSet } from "/core/parse-glyphset.js";
 import {
   assert,
   dumpURLFragment,
