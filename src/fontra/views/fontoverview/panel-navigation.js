@@ -595,7 +595,7 @@ class AddPresetGlyphSetDialog {
     const dialog = await dialogSetup("Add/remove preset glyph sets", "", [
       { title: "Add custom glyph set...", resultValue: "custom" }, // TODO: translate
       { title: translate("dialog.cancel"), isCancelButton: true },
-      { title: translate("dialog.add"), isDefaultButton: true, resultValue: "add" },
+      { title: "Save", isDefaultButton: true, resultValue: "add" }, // TODO: translate
     ]);
 
     dialog.appendStyle(this.constructor.styles);
