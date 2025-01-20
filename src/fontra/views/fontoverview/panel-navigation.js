@@ -623,7 +623,7 @@ class AddPresetGlyphSetDialog {
       display: grid;
     }
 
-    #info-link {
+    a {
       color: var(--foreground-color);
       text-decoration: underline;
     }
@@ -664,6 +664,14 @@ class AddPresetGlyphSetDialog {
       this.sourceURLElement,
       html.div(), // grid cell filler
       this.checkboxContainer,
+      html.div(),
+      html.a(
+        {
+          href: "https://github.com/googlefonts/fontra/discussions/1943",
+          target: "_blank",
+        },
+        ["Suggest glyph set collections"]
+      ),
     ]);
 
     this.dialogController.addKeyListener("curator", (event) => {
@@ -776,42 +784,8 @@ async function runGlyphSetDialog(glyphSetInfo) {
 
   dialog.appendStyle(contentStyle);
 
-  const presetMenuItems = glyphSetPresets.map((curatorGroup) => ({
-    title: curatorGroup.curator,
-    getItems: () =>
-      curatorGroup.glyphSets.map((glyphSet) => ({
-        title: glyphSet.name,
-        callback: () => {
-          dialogController.model.name = glyphSet.name;
-          dialogController.model.url = glyphSet.url;
-          dialogController.model.dataFormat = glyphSet.dataFormat || "auto-detect";
-        },
-      })),
-  }));
-
-  presetMenuItems.push({
-    title: html.span({}, [
-      "Suggest glyph set collections",
-      html.createDomElement("inline-svg", {
-        style: `
-          display: inline-block;
-          height: 1em;
-          width: 1em;
-          margin-left: 0.5em;
-          transform: translate(0, 0.15em);
-        `,
-        src: "/tabler-icons/external-link.svg",
-      }),
-    ]),
-    callback: () => {
-      window.open("https://github.com/googlefonts/fontra/discussions/1943");
-    },
-  });
-
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
-      html.div(),
-      new PopupMenu("Choose preset", () => presetMenuItems),
       ...labeledTextInput("Name", dialogController, "name"),
       ...labeledTextInput("URL", dialogController, "url"),
       ...labeledPopupSelect(
