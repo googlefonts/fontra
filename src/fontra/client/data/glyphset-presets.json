@@ -128,243 +128,243 @@
     },
     "glyphSets": [
       {
-        "name": "Accent comb",
+        "name": "BF Accent comb",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Accents/accent_comb.csv"
       },
       {
-        "name": "Accent core",
+        "name": "BF Accent core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Accents/accent_core.csv"
       },
       {
-        "name": "Accent extended",
+        "name": "BF Accent extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Accents/accent_extended.csv"
       },
       {
-        "name": "Arabic accents",
+        "name": "BF Arabic accents",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_accents.csv"
       },
       {
-        "name": "Arabic core",
+        "name": "BF Arabic core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_core.csv"
       },
       {
-        "name": "Arabic figures",
+        "name": "BF Arabic figures",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_figures.csv"
       },
       {
-        "name": "Arabic misc",
+        "name": "BF Arabic misc",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_misc.csv"
       },
       {
-        "name": "Arabic punctuations",
+        "name": "BF Arabic punctuations",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_punctuations.csv"
       },
       {
-        "name": "Arabic translitteration",
+        "name": "BF Arabic translitteration",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_translitteration.csv"
       },
       {
-        "name": "Arabic urdu",
+        "name": "BF Arabic urdu",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Arabic/arabic_urdu.csv"
       },
       {
-        "name": "Bopomofo core",
+        "name": "BF Bopomofo core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Bopomofo/bopomofo_core.csv"
       },
       {
-        "name": "Chinese punctuations",
+        "name": "BF Chinese punctuations",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Chinese/chinese_punctuations.csv"
       },
       {
-        "name": "Hanzi core",
+        "name": "BF Hanzi core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Chinese/hanzi_core.csv"
       },
       {
-        "name": "Hanzi unicode",
+        "name": "BF Hanzi unicode",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Chinese/hanzi_unicode.csv"
       },
       {
-        "name": "Currencies core",
+        "name": "BF Currencies core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Currencies/currencies_core.csv"
       },
       {
-        "name": "Currencies extended",
+        "name": "BF Currencies extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Currencies/currencies_extended.csv"
       },
       {
-        "name": "Cyrillic bulgarian",
+        "name": "BF Cyrillic bulgarian",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Cyrillic/cyrillic_bulgarian.csv"
       },
       {
-        "name": "Cyrillic core",
+        "name": "BF Cyrillic core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Cyrillic/cyrillic_core.csv"
       },
       {
-        "name": "Cyrillic extra",
+        "name": "BF Cyrillic extra",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Cyrillic/cyrillic_extra.csv"
       },
       {
-        "name": "Cyrillic serbian",
+        "name": "BF Cyrillic serbian",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Cyrillic/cyrillic_serbian.csv"
       },
       {
-        "name": "Deva accents",
+        "name": "BF Deva accents",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Devanagari/deva_accents.csv"
       },
       {
-        "name": "Deva core",
+        "name": "BF Deva core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Devanagari/deva_core.csv"
       },
       {
-        "name": "Deva figures",
+        "name": "BF Deva figures",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Devanagari/deva_figures.csv"
       },
       {
-        "name": "Deva punctuation",
+        "name": "BF Deva punctuation",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Devanagari/deva_punctuation.csv"
       },
       {
-        "name": "Figures fractions core",
+        "name": "BF Figures fractions core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_fractions_core.csv"
       },
       {
-        "name": "Figures fractions extended",
+        "name": "BF Figures fractions extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_fractions_extended.csv"
       },
       {
-        "name": "Figures plf",
+        "name": "BF Figures plf",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_plf.csv"
       },
       {
-        "name": "Figures posf",
+        "name": "BF Figures posf",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_posf.csv"
       },
       {
-        "name": "Figures sind",
+        "name": "BF Figures sind",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_sind.csv"
       },
       {
-        "name": "Figures sup",
+        "name": "BF Figures sup",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_sup.csv"
       },
       {
-        "name": "Figures tlf",
+        "name": "BF Figures tlf",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Figures/figures_tlf.csv"
       },
       {
-        "name": "Greek accents",
+        "name": "BF Greek accents",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Greek/greek_accents.csv"
       },
       {
-        "name": "Greek core",
+        "name": "BF Greek core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Greek/greek_core.csv"
       },
       {
-        "name": "Greek punctuations",
+        "name": "BF Greek punctuations",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Greek/greek_punctuations.csv"
       },
       {
-        "name": "Hebrew core",
+        "name": "BF Hebrew core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Hebrew/hebrew_core.csv"
       },
       {
-        "name": "Japanese extra",
+        "name": "BF Japanese extra",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Japanese/japanese_extra.csv"
       },
       {
-        "name": "Japanese kanji",
+        "name": "BF Japanese kanji",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Japanese/japanese_kanji.csv"
       },
       {
-        "name": "Japanese must",
+        "name": "BF Japanese must",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Japanese/japanese_must.csv"
       },
       {
-        "name": "Japanese need",
+        "name": "BF Japanese need",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Japanese/japanese_need.csv"
       },
       {
-        "name": "Japanese vertical",
+        "name": "BF Japanese vertical",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Japanese/japanese_vertical.csv"
       },
       {
-        "name": "Korean hangul core",
+        "name": "BF Korean hangul core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Korean/korean_hangul_core.csv"
       },
       {
-        "name": "Korean hangul extended",
+        "name": "BF Korean hangul extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Korean/korean_hangul_extended.csv"
       },
       {
-        "name": "Korean jamo",
+        "name": "BF Korean jamo",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Korean/korean_jamo.csv"
       },
       {
-        "name": "Latin base",
+        "name": "BF Latin base",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Latin/latin_base.csv"
       },
       {
-        "name": "Latin core",
+        "name": "BF Latin core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Latin/latin_core.csv"
       },
       {
-        "name": "Latin extended",
+        "name": "BF Latin extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Latin/latin_extended.csv"
       },
       {
-        "name": "Math core",
+        "name": "BF Math core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Maths/math_core.csv"
       },
       {
-        "name": "Math extended",
+        "name": "BF Math extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Maths/math_extended.csv"
       },
       {
-        "name": "Punctuation case",
+        "name": "BF Punctuation case",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Punctuations/punctuation_case.csv"
       },
       {
-        "name": "Punctuation core",
+        "name": "BF Punctuation core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Punctuations/punctuation_core.csv"
       },
       {
-        "name": "Punctuation extended",
+        "name": "BF Punctuation extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Punctuations/punctuation_extended.csv"
       },
       {
-        "name": "Space core",
+        "name": "BF Space core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Space/space_core.csv"
       },
       {
-        "name": "Symbols case",
+        "name": "BF Symbols case",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Symbols/symbols_case.csv"
       },
       {
-        "name": "Symbols core",
+        "name": "BF Symbols core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Symbols/symbols_core.csv"
       },
       {
-        "name": "Symbols extended",
+        "name": "BF Symbols extended",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Symbols/symbols_extended.csv"
       },
       {
-        "name": "Thai accents",
+        "name": "BF Thai accents",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_accents.csv"
       },
       {
-        "name": "Thai core",
+        "name": "BF Thai core",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_core.csv"
       },
       {
-        "name": "Thai currency",
+        "name": "BF Thai currency",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_currency.csv"
       },
       {
-        "name": "Thai figures",
+        "name": "BF Thai figures",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_figures.csv"
       },
       {
-        "name": "Thai symbols",
+        "name": "BF Thai symbols",
         "url": "https://cdn.jsdelivr.net/gh/BlackFoundryCom/BF_font_standard/Thai/thai_symbols.csv"
       }
     ]
