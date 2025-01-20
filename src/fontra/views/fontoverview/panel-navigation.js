@@ -697,7 +697,11 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
     "",
     [
       { title: translate("dialog.cancel"), isCancelButton: true },
-      { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
+      {
+        title: translate(isEditing ? "Save" : "dialog.add"), // TODO: translate dialog.save
+        isDefaultButton: true,
+        disabled: true,
+      },
     ]
   );
 
