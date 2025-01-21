@@ -549,6 +549,14 @@ class AddPresetGlyphSetDialog {
       color: var(--foreground-color);
       text-decoration: underline;
     }
+
+    a.suggest-link {
+      font-style: italic;
+    }
+
+    .collection-popup {
+      width: 18em;
+    }
   `;
 
   constructor(initialGlyphSets) {
@@ -576,23 +584,25 @@ class AddPresetGlyphSetDialog {
 
     this.dialogContent = html.div({ class: "content-container" }, [
       ...labeledPopupSelect(
-        "Collection:",
+        "Collection",
         this.dialogController,
         "collectionName",
-        collectionNames.map((name) => ({ value: name, label: name }))
+        collectionNames.map((name) => ({ value: name, label: name })),
+        { class: "collection-popup" }
       ),
-      html.label({ for: "info-link", style: "text-align: right;" }, ["Source:"]),
-      this.sourceURLElement,
-      html.div(), // grid cell filler
-      this.checkboxContainer,
       html.div(),
       html.a(
         {
           href: "https://github.com/googlefonts/fontra/discussions/1943",
           target: "_blank",
+          class: "suggest-link",
         },
         ["Suggest more glyph set collections"]
       ),
+      html.label({ for: "info-link", style: "text-align: right;" }, ["Source"]),
+      this.sourceURLElement,
+      html.div(), // grid cell filler
+      this.checkboxContainer,
     ]);
 
     this.dialogController.addKeyListener("collectionName", (event) => {
