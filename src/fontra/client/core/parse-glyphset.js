@@ -153,3 +153,56 @@ function guessRowSeparator(lines) {
   }
   return ";";
 }
+
+function redirectGoogleSheets(url) {
+  return redirectGoogleDocsOrSheets(url, "spreadsheets", "csv");
+}
+
+function redirectGoogleDocs(url) {
+  return redirectGoogleDocsOrSheets(url, "document", "txt");
+}
+
+function redirectGoogleDocsOrSheets(url, kind, exportFormat) {
+  const pathItems = url.pathname.split("/");
+  if (
+    url.hostname === "docs.google.com" &&
+    pathItems[1] === kind &&
+    pathItems.at(-1) === "edit"
+  ) {
+    pathItems.pop();
+    pathItems.push("export");
+    url.pathname = pathItems.join("/");
+    url.searchParams.set("format", exportFormat);
+    return url;
+  }
+  return null;
+}
+
+function redirectGitHubToJSDelivr(url) {
+  const pathItems = url.pathname.split("/");
+  if (url.hostname === "github.com" && pathItems[3] === "blob") {
+    const org = pathItems[1];
+    const repo = pathItems[2];
+    const version = pathItems[4];
+    const path = pathItems.slice(5).join("/");
+    return new URL(`https://cdn.jsdelivr.net/gh/${org}/${repo}@${version}/${path}`);
+  }
+  return null;
+}
+
+const redirectors = [
+  redirectGoogleSheets,
+  redirectGoogleDocs,
+  redirectGitHubToJSDelivr,
+];
+
+export function redirectGlyphSetURL(url) {
+  url = new URL(url);
+  for (const redirect of redirectors) {
+    const newURL = redirect(url);
+    if (newURL) {
+      return newURL;
+    }
+  }
+  return url;
+}

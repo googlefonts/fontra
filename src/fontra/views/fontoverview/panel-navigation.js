@@ -370,6 +370,12 @@ export class FontOverviewNavigation extends HTMLElement {
               },
             },
             {
+              title: "Reload",
+              callback: (event) => {
+                this._reloadGlyphSet(event, isProjectGlyphSet, glyphSet);
+              },
+            },
+            {
               title: `Copy to ${
                 isProjectGlyphSet ? "my glyph sets" : "project glyph sets"
               }`,
@@ -475,6 +481,15 @@ export class FontOverviewNavigation extends HTMLElement {
     };
     delete glyphSets[glyphSetInfo.url];
     this.fontOverviewSettings[key] = glyphSets;
+  }
+
+  _reloadGlyphSet(event, isProjectGlyphSet, glyphSet) {
+    const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
+
+    this.fontOverviewSettings[key] = {
+      ...this.fontOverviewSettings[key],
+      [glyphSet.url]: { ...glyphSet },
+    };
   }
 
   _copyGlyphSet(event, isProjectGlyphSet, glyphSet) {

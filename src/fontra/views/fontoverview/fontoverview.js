@@ -11,7 +11,7 @@ import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { parseGlyphSet } from "/core/parse-glyphset.js";
+import { parseGlyphSet, redirectGlyphSetURL } from "/core/parse-glyphset.js";
 import {
   assert,
   dumpURLFragment,
@@ -458,8 +458,9 @@ export class FontOverviewController extends ViewController {
     if (!glyphSet) {
       let glyphSetData;
       this._setErrorMessageForGlyphSet(glyphSetInfo.url, "...");
+      const redirectedURL = redirectGlyphSetURL(glyphSetInfo.url);
       try {
-        const response = await fetch(glyphSetInfo.url);
+        const response = await fetch(redirectedURL);
         if (response.ok) {
           glyphSetData = await response.text();
           this._setErrorMessageForGlyphSet(glyphSetInfo.url, null);
