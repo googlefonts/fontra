@@ -679,7 +679,11 @@ class AddPresetGlyphSetDialog {
 
 async function runEditGlyphSetDialog(glyphSetInfo) {
   const isEditing = !!glyphSetInfo;
-  glyphSetInfo = { codePointIsDecimal: false, ...glyphSetInfo };
+  glyphSetInfo = {
+    dataFormat: "glyph-names",
+    codePointIsDecimal: false,
+    ...glyphSetInfo,
+  };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
