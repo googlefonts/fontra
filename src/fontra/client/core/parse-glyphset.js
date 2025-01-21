@@ -153,3 +153,47 @@ function guessRowSeparator(lines) {
   }
   return ";";
 }
+
+function redirectGoogleSheets(url) {
+  const pathItems = url.pathname.split("/");
+  if (
+    url.hostname === "docs.google.com" &&
+    pathItems[1] === "spreadsheets" &&
+    pathItems.at(-1) === "edit"
+  ) {
+    pathItems.pop();
+    pathItems.push("export");
+    url.pathname = pathItems.join("/");
+    url.searchParams.set("format", "csv");
+    return true;
+  }
+  return false;
+}
+
+function redirectGoogleDocs(url) {
+  const pathItems = url.pathname.split("/");
+  if (
+    url.hostname === "docs.google.com" &&
+    pathItems[1] === "document" &&
+    pathItems.at(-1) === "edit"
+  ) {
+    pathItems.pop();
+    pathItems.push("export");
+    url.pathname = pathItems.join("/");
+    url.searchParams.set("format", "txt");
+    return true;
+  }
+  return false;
+}
+
+const redirectors = [redirectGoogleSheets, redirectGoogleDocs];
+
+export function redirectGlyphSetURL(url) {
+  url = new URL(url);
+  for (const redirect of redirectors) {
+    if (redirect(url)) {
+      break;
+    }
+  }
+  return url;
+}
