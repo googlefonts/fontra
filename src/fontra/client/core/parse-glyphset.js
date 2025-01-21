@@ -1,5 +1,4 @@
 import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
-import { assert } from "./utils.js";
 
 export const glyphSetDataFormats = [
   {
@@ -53,10 +52,14 @@ function parseGlyphSetGlyphTable(sourceLines, dataOptions) {
   if (!dataOptions.hasHeader) {
     // If we don't have a header, we should at least have an index for the
     // code point column OR the glyph name column
-    assert(
-      !(isNaN(glyphNameColumnIndex) && isNaN(codePointColumnIndex)),
-      `${dataOptions.glyphNameColumn}/${dataOptions.codePointColumn}`
-    );
+    if (isNaN(glyphNameColumnIndex) && isNaN(codePointColumnIndex)) {
+      throw new Error(
+        `invalid glyph name column and/or code point column:
+        “${dataOptions.glyphNameColumn}” / “${dataOptions.codePointColumn}”.
+
+        Without a table header, these values must be zero-based indices.`
+      );
+    }
   }
 
   const glyphSet = [];
