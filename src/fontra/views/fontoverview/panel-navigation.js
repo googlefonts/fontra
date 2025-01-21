@@ -679,7 +679,7 @@ class AddPresetGlyphSetDialog {
 
 async function runEditGlyphSetDialog(glyphSetInfo) {
   const isEditing = !!glyphSetInfo;
-  glyphSetInfo = { ...glyphSetInfo };
+  glyphSetInfo = { codePointIsDecimal: false, ...glyphSetInfo };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
@@ -723,11 +723,20 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
     gap: 0.5em;
     grid-template-columns: max-content auto;
     align-items: center;
-    width: 30em;
+    width: 38em;
+  }
+
+  .code-point-popup {
+    width: 8em;
   }
   `;
 
   dialog.appendStyle(contentStyle);
+
+  const codePointIsDecimal = [
+    { value: false, label: "Hexadecimal" },
+    { value: true, label: "Decimal" },
+  ];
 
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
@@ -738,6 +747,18 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
         dialogController,
         "dataFormat",
         glyphSetDataFormats
+      ),
+      ...labeledTextInput("Comment characters", dialogController, "commentChars"),
+      html.div(), // grid cell filler
+      labeledCheckbox("Has header", dialogController, "hasHeader"),
+      ...labeledTextInput("Glyph name column", dialogController, "glyphNameColumn"),
+      ...labeledTextInput("Code point column", dialogController, "codePointColumn"),
+      ...labeledPopupSelect(
+        "Code point",
+        dialogController,
+        "codePointIsDecimal",
+        codePointIsDecimal,
+        { class: "code-point-popup" }
       ),
       ...labeledTextInput("Note", dialogController, "note"),
     ])

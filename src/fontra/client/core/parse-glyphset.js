@@ -8,7 +8,7 @@ export const glyphSetDataFormats = [
   },
   {
     value: "tsv/csv",
-    label: "TSV or CSV (tab-, comma-, or semicolon-separated)",
+    label: "TSV/CSV (tab-, comma-, or semicolon-separated)",
   },
 ];
 
