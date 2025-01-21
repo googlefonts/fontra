@@ -87,7 +87,37 @@ export class ViewController {
    *
    * @param {*} reloadPattern
    */
-  async reloadData(reloadPattern) {}
+  async reloadData(reloadPattern) {
+    if (!reloadPattern) {
+      // A reloadPattern of undefined or null means: reload all the things
+      await this.reloadEverything();
+      return;
+    }
+
+    for (const rootKey of Object.keys(reloadPattern)) {
+      if (rootKey == "glyphs") {
+        const glyphNames = Object.keys(reloadPattern["glyphs"] || {});
+        if (glyphNames.length) {
+          await this.reloadGlyphs(glyphNames);
+        }
+      } else {
+        // TODO
+        // console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
+        await this.reloadEverything();
+        return;
+      }
+    }
+  }
+
+  /* called by reloadData */
+  async reloadEverything() {
+    await this.fontController.reloadEverything();
+  }
+
+  /* called by reloadData */
+  async reloadGlyphs(glyphNames) {
+    await this.fontController.reloadGlyphs(glyphNames);
+  }
 
   /**
    *

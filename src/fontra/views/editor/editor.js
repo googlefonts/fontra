@@ -3117,30 +3117,8 @@ export class EditorController extends ViewController {
     this.canvasController.requestUpdate();
   }
 
-  async reloadData(reloadPattern) {
-    if (!reloadPattern) {
-      // A reloadPattern of undefined or null means: reload all the things
-      await this.reloadEverything();
-      return;
-    }
-
-    for (const rootKey of Object.keys(reloadPattern)) {
-      if (rootKey == "glyphs") {
-        const glyphNames = Object.keys(reloadPattern["glyphs"] || {});
-        if (glyphNames.length) {
-          await this.reloadGlyphs(glyphNames);
-        }
-      } else {
-        // TODO
-        // console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
-        await this.reloadEverything();
-        return;
-      }
-    }
-  }
-
   async reloadEverything() {
-    await this.fontController.reloadEverything();
+    await super.reloadEverything();
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
@@ -3153,7 +3131,7 @@ export class EditorController extends ViewController {
       // will be out of sync.
       await this.sceneController.cancelEditing(translate("message.cancel-editing"));
     }
-    await this.fontController.reloadGlyphs(glyphNames);
+    await super.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
