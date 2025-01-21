@@ -700,7 +700,15 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
     dialog.defaultButton.classList.toggle("disabled", !valid);
   };
 
+  const updateDataFormat = () => {
+    dialog.style.setProperty(
+      "--glyphset-data-format-tsv-csv-display",
+      dialogController.model.dataFormat === "tsv/csv" ? "initial" : "none"
+    );
+  };
+
   dialogController.addListener((event) => validateInput());
+  dialogController.addKeyListener("dataFormat", (event) => updateDataFormat());
 
   const dialog = await dialogSetup(
     isEditing ? "Edit glyph set" : "Add custom glyph set",
@@ -716,6 +724,7 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
   );
 
   validateInput();
+  updateDataFormat();
 
   const contentStyle = `
   .glyph-set-dialog-content {
@@ -728,6 +737,10 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
 
   .code-point-popup {
     width: 8em;
+  }
+
+  .tsv-csv-only {
+    display: var(--glyphset-data-format-tsv-csv-display, initial);
   }
   `;
 
@@ -749,16 +762,24 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
         glyphSetDataFormats
       ),
       ...labeledTextInput("Comment characters", dialogController, "commentChars"),
-      html.div(), // grid cell filler
-      labeledCheckbox("Has header", dialogController, "hasHeader"),
-      ...labeledTextInput("Glyph name column", dialogController, "glyphNameColumn"),
-      ...labeledTextInput("Code point column", dialogController, "codePointColumn"),
+      html.div({ class: "tsv-csv-only" }), // grid cell filler
+      labeledCheckbox("Has header", dialogController, "hasHeader", {
+        class: "tsv-csv-only",
+      }),
+      ...labeledTextInput("Glyph name column", dialogController, "glyphNameColumn", {
+        class: "tsv-csv-only",
+        labelClass: "tsv-csv-only",
+      }),
+      ...labeledTextInput("Code point column", dialogController, "codePointColumn", {
+        class: "tsv-csv-only",
+        labelClass: "tsv-csv-only",
+      }),
       ...labeledPopupSelect(
         "Code point",
         dialogController,
         "codePointIsDecimal",
         codePointIsDecimal,
-        { class: "code-point-popup" }
+        { class: "code-point-popup tsv-csv-only", labelClass: "tsv-csv-only" }
       ),
       ...labeledTextInput("Note", dialogController, "note"),
     ])
