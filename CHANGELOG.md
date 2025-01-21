@@ -1,5 +1,11 @@
 # Changelog for Fontra
 
+## 2025-01-21
+
+- The Font Overview is ready to be used everywhere, including in Fontra Pak. Documentation will follow soon.
+  - It has support for "template glyphsets", that can be chosen from collections of presets, or made from any publically hosted text, .tsv or .csv data. This includes files on GitHub and publically readable Google Docs or Sheets.
+  - There will be further improvements and additions. Ongoing work: [Issue 1886](https://github.com/googlefonts/fontra/issues/1886)
+
 ## 2025-01-17
 
 - A change the URL format: the project identifier is now in the URL query, instead of part of the URL path [Issue 1960](https://github.com/googlefonts/fontra/issues/1960), [PR 1959](https://github.com/googlefonts/fontra/pull/1959)
