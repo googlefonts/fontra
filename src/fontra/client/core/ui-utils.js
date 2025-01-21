@@ -99,6 +99,9 @@ export function labeledCheckbox(label, controller, key, options) {
   const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
   const inputWrapper = html.div();
   const inputElement = html.input({ type: "checkbox", id: checkboxID });
+  if (options?.class) {
+    inputElement.className = options.class;
+  }
   inputElement.checked = controller.model[key];
   inputWrapper.appendChild(inputElement);
   if (label) {
@@ -123,8 +126,14 @@ export function labeledCheckbox(label, controller, key, options) {
   return inputWrapper;
 }
 
-export function labelForElement(label, element) {
-  return html.label({ for: element.id, style: "text-align: right;" }, [label]);
+export function labelForElement(label, element, options) {
+  const labelElement = html.label({ for: element.id, style: "text-align: right;" }, [
+    label,
+  ]);
+  if (options?.labelClass) {
+    labelElement.className = options.labelClass;
+  }
+  return labelElement;
 }
 
 export function choicesForInput(choices, inputElement) {
@@ -171,7 +180,7 @@ export function textInput(controller, key, options) {
 
 export function labeledTextInput(label, controller, key, options) {
   const inputElement = textInput(controller, key, options);
-  const items = [labelForElement(label, inputElement), inputElement];
+  const items = [labelForElement(label, inputElement, options), inputElement];
 
   if (options?.choices) {
     items.push(choicesForInput(options.choices, inputElement));
@@ -179,7 +188,7 @@ export function labeledTextInput(label, controller, key, options) {
   return items;
 }
 
-export function popupSelect(controller, key, popupItems) {
+export function popupSelect(controller, key, popupItems, options) {
   function findLabel() {
     const option = popupItems.find(({ value }) => value === controller.model[key]);
     return option?.label || "";
@@ -199,12 +208,17 @@ export function popupSelect(controller, key, popupItems) {
       },
     }))
   );
+
+  if (options?.class) {
+    menu.className = options.class;
+  }
+
   return menu;
 }
 
-export function labeledPopupSelect(label, controller, key, popupItems) {
-  const inputElement = popupSelect(controller, key, popupItems);
-  return [labelForElement(label, inputElement), inputElement];
+export function labeledPopupSelect(label, controller, key, popupItems, options) {
+  const inputElement = popupSelect(controller, key, popupItems, options);
+  return [labelForElement(label, inputElement, options), inputElement];
 }
 
 export const DefaultFormatter = {
