@@ -179,11 +179,15 @@ export class FontOverviewNavigation extends HTMLElement {
     this.fontOverviewSettingsController.addKeyListener(
       "glyphSetErrors",
       (event) => {
-        const diffKeys = symmetricDifference(
+        const allKeys = union(
           new Set(Object.keys(event.oldValue)),
           Object.keys(event.newValue)
         );
-        for (const key of diffKeys) {
+        for (const key of allKeys) {
+          if (event.oldValue[key] === event.newValue[key]) {
+            continue;
+          }
+
           const isLoading = event.newValue[key] === "...";
 
           const errorButton = this._glyphSetErrorButtons[key];
