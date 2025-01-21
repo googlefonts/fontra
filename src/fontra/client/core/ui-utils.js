@@ -97,22 +97,35 @@ function didReorder(a, b) {
 
 export function labeledCheckbox(label, controller, key, options) {
   const checkboxID = options?.id || `checkbox-${uniqueID()}-${key}`;
-  const inputWrapper = html.div();
   const inputElement = html.input({ type: "checkbox", id: checkboxID });
-  if (options?.class) {
-    inputElement.className = options.class;
-  }
   inputElement.checked = controller.model[key];
-  inputWrapper.appendChild(inputElement);
+
+  const inputWrapper = html.div();
+  if (options?.class) {
+    inputWrapper.className = options.class;
+  }
+
   if (label) {
-    inputWrapper.style = `
-      display: grid;
-      grid-template-columns: auto auto;
-      justify-content: left;
-      gap: 0.1em;
-      align-items: center;
-    `;
-    inputWrapper.appendChild(html.label({ for: checkboxID }, [label]));
+    const labelElement = html.label({ for: checkboxID }, [label]);
+    if (options?.labelClass) {
+      labelElement.className = options.labelClass;
+    }
+
+    const labeledCheckBoxElement = html.div(
+      {
+        style: `
+          display: grid;
+          grid-template-columns: auto auto;
+          justify-content: left;
+          gap: 0.1em;
+          align-items: center;
+        `,
+      },
+      [inputElement, labelElement]
+    );
+    inputWrapper.appendChild(labeledCheckBoxElement);
+  } else {
+    inputWrapper.appendChild(inputElement);
   }
 
   inputElement.onchange = () => {
