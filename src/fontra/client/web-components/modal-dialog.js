@@ -61,7 +61,7 @@ export class ModalDialog extends SimpleElement {
       gap: 1em;
 
       outline: none; /* to catch key events we need to focus, but we don't want a focus border */
-      max-width: 38em;
+      max-width: 44em;
       max-height: 80vh;
       overflow-wrap: normal;
       font-size: 1.15em;

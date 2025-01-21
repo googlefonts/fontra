@@ -2,7 +2,7 @@ import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
 import * as html from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { glyphSetDataFormats } from "/core/parse-glyph-set.js";
+import { glyphSetDataFormats } from "/core/parse-glyphset.js";
 import { difference, symmetricDifference, union } from "/core/set-ops.js";
 import {
   labeledCheckbox,
@@ -10,7 +10,7 @@ import {
   labeledTextInput,
   popupSelect,
 } from "/core/ui-utils.js";
-import { scheduleCalls } from "/core/utils.js";
+import { fetchJSON, scheduleCalls } from "/core/utils.js";
 import { DesignspaceLocation } from "/web-components/designspace-location.js";
 import { GlyphSearchField } from "/web-components/glyph-search-field.js";
 import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
@@ -80,11 +80,22 @@ export class FontOverviewNavigation extends HTMLElement {
         opacity: 1;
       }
 
+      .glyphset-error-button.loading {
+        opacity: 1;
+        color: #8888;
+        animation: loading-spinner 0.8s linear infinite;
+      }
+
+      @keyframes loading-spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       .font-source-location-container {
         display: grid;
         gap: 0.5em;
       }
-
     `);
 
     accordion.onItemOpenClose = (item, openClose) => {
@@ -165,16 +176,32 @@ export class FontOverviewNavigation extends HTMLElement {
     this._updateProjectGlyphSets();
     this._updateMyGlyphSets();
 
-    this.fontOverviewSettingsController.addKeyListener("glyphSetErrors", (event) => {
-      const diffKeys = symmetricDifference(
-        new Set(Object.keys(event.oldValue)),
-        Object.keys(event.newValue)
-      );
-      for (const key of diffKeys) {
-        const errorButton = this._glyphSetErrorButtons[key];
-        errorButton.classList.toggle("glyphset-error", !!event.newValue[key]);
-      }
-    });
+    this.fontOverviewSettingsController.addKeyListener(
+      "glyphSetErrors",
+      (event) => {
+        const diffKeys = symmetricDifference(
+          new Set(Object.keys(event.oldValue)),
+          Object.keys(event.newValue)
+        );
+        for (const key of diffKeys) {
+          const isLoading = event.newValue[key] === "...";
+
+          const errorButton = this._glyphSetErrorButtons[key];
+
+          errorButton.src = isLoading
+            ? "/tabler-icons/loader-2.svg"
+            : "/tabler-icons/alert-triangle.svg";
+
+          errorButton.classList.toggle(
+            "glyphset-error",
+            !!(event.newValue[key] && event.newValue[key] !== "...")
+          );
+
+          errorButton.classList.toggle("loading", event.newValue[key] === "...");
+        }
+      },
+      true
+    );
   }
 
   async _makeFontSourcePopup() {
@@ -256,9 +283,9 @@ export class FontOverviewNavigation extends HTMLElement {
   _makeAddGlyphSetButton(isProjectGlyphSet, toolTip) {
     return html.createDomElement("icon-button", {
       "src": "/images/plus.svg",
-      "onclick": (event) => this._editGlyphSet(event, isProjectGlyphSet),
+      "onclick": (event) => this._addGlyphSet(event, isProjectGlyphSet),
       "data-tooltip": toolTip,
-      "data-tooltipposition": "bottom",
+      "data-tooltipposition": "left",
     });
   }
 
@@ -395,16 +422,27 @@ export class FontOverviewNavigation extends HTMLElement {
     ]);
   }
 
-  async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
-    const glyphSet = await runGlyphSetDialog(glyphSetInfo);
-    if (!glyphSet) {
-      return;
+  async _addGlyphSet(event, isProjectGlyphSet) {
+    const { glyphSets, custom } = await runAddGlyphSetDialog(
+      isProjectGlyphSet
+        ? this.fontOverviewSettings.projectGlyphSets
+        : this.fontOverviewSettings.myGlyphSets
+    );
+
+    if (custom) {
+      await this._editGlyphSet(event, isProjectGlyphSet);
+    } else if (glyphSets) {
+      const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
+      this.fontOverviewSettings[key] = glyphSets;
     }
 
-    if (isProjectGlyphSet) {
-      this.accordion.openCloseAccordionItem(this._projectGlyphSetsItem, true);
-    } else {
-      this.accordion.openCloseAccordionItem(this._myGlyphSetsItem, true);
+    this._openGlyphSetsItem(isProjectGlyphSet);
+  }
+
+  async _editGlyphSet(event, isProjectGlyphSet, glyphSetInfo = null) {
+    const glyphSet = await runEditGlyphSetDialog(glyphSetInfo);
+    if (!glyphSet) {
+      return;
     }
 
     const key = isProjectGlyphSet ? "projectGlyphSets" : "myGlyphSets";
@@ -416,6 +454,14 @@ export class FontOverviewNavigation extends HTMLElement {
     }
     glyphSets[glyphSet.url] = glyphSet;
     this.fontOverviewSettings[key] = glyphSets;
+  }
+
+  _openGlyphSetsItem(isProjectGlyphSet) {
+    if (isProjectGlyphSet) {
+      this.accordion.openCloseAccordionItem(this._projectGlyphSetsItem, true);
+    } else {
+      this.accordion.openCloseAccordionItem(this._myGlyphSetsItem, true);
+    }
   }
 
   _deleteGlyphSet(event, isProjectGlyphSet, glyphSetInfo) {
@@ -465,124 +511,179 @@ function makeCheckboxController(settingsController, settingsKey) {
   return checkboxController;
 }
 
-const glyphSetPresets = [
-  {
-    curator: "Google Fonts",
-    glyphSets: [
-      {
-        name: "GF Arabic Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Core.txt",
-      },
-      {
-        name: "GF Arabic Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Arabic_Plus.txt",
-      },
-      {
-        name: "GF Cyrillic Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Core.txt",
-      },
-      {
-        name: "GF Cyrillic Historical",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Historical.txt",
-      },
-      {
-        name: "GF Cyrillic Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Plus.txt",
-      },
-      {
-        name: "GF Cyrillic Pro",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Cyrillic_Pro.txt",
-      },
-      {
-        name: "GF Greek AncientMusicalSymbols",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_AncientMusicalSymbols.txt",
-      },
-      {
-        name: "GF Greek Archaic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Archaic.txt",
-      },
-      {
-        name: "GF Greek Coptic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Coptic.txt",
-      },
-      {
-        name: "GF Greek Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Core.txt",
-      },
-      {
-        name: "GF Greek Expert",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Expert.txt",
-      },
-      {
-        name: "GF Greek Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Plus.txt",
-      },
-      {
-        name: "GF Greek Pro",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Greek_Pro.txt",
-      },
-      {
-        name: "GF Latin African",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_African.txt",
-      },
-      {
-        name: "GF Latin Beyond",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Beyond.txt",
-      },
-      {
-        name: "GF Latin Core",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Core.txt",
-      },
-      {
-        name: "GF Latin Kernel",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Kernel.txt",
-      },
-      {
-        name: "GF Latin Plus",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Plus.txt",
-      },
-      {
-        name: "GF Latin PriAfrican",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_PriAfrican.txt",
-      },
-      {
-        name: "GF Latin Vietnamese",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Latin_Vietnamese.txt",
-      },
-      {
-        name: "GF Phonetics APA",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_APA.txt",
-      },
-      {
-        name: "GF Phonetics DisorderedSpeech",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_DisorderedSpeech.txt",
-      },
-      {
-        name: "GF Phonetics IPAHistorical",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAHistorical.txt",
-      },
-      {
-        name: "GF Phonetics IPAStandard",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_IPAStandard.txt",
-      },
-      {
-        name: "GF Phonetics SinoExt",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_Phonetics_SinoExt.txt",
-      },
-      {
-        name: "GF TransLatin Arabic",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Arabic.txt",
-      },
-      {
-        name: "GF TransLatin Pinyin",
-        url: "https://raw.githubusercontent.com/googlefonts/glyphsets/main/data/results/txt/nice-names/GF_TransLatin_Pinyin.txt",
-      },
-    ],
-  },
-];
+let glyphSetPresets;
 
-async function runGlyphSetDialog(glyphSetInfo) {
-  glyphSetInfo = { dataFormat: "auto-detect", ...glyphSetInfo };
+fetchJSON("/data/glyphset-presets.json").then((result) => {
+  glyphSetPresets = result;
+});
+
+async function runAddGlyphSetDialog(initialGlyphSets) {
+  const dialog = new AddPresetGlyphSetDialog(initialGlyphSets);
+  return await dialog.run();
+}
+
+const CHECKBOX_PREFIX = "checkbox-";
+const SELECTED_GLYPHSET_LOCAL_STORAGE_KEY = "fontra-selected-glyphset-collection";
+
+class AddPresetGlyphSetDialog {
+  static styles = `
+    .content-container {
+      display: grid;
+      grid-template-columns: max-content auto;
+      align-items: center;
+      align-content: start;
+      gap: 0.5em;
+      height: calc(80vh - 10em); /* Nasty: the 10em value depends on the rest of the contents */
+    }
+
+    .checkbox-container {
+      height: 100%;
+      overflow: scroll;
+    }
+
+    .checkbox-group {
+      display: grid;
+    }
+
+    a {
+      color: var(--foreground-color);
+      text-decoration: underline;
+    }
+
+    a.suggest-link {
+      font-style: italic;
+    }
+
+    .collection-popup {
+      width: 18em;
+    }
+  `;
+
+  constructor(initialGlyphSets) {
+    this.initialGlyphSets = initialGlyphSets;
+    this.dialogController = new ObservableController({
+      ...Object.fromEntries(
+        Object.values(initialGlyphSets).map((glyphSet) => [
+          CHECKBOX_PREFIX + glyphSet.url,
+          true,
+        ])
+      ),
+    });
+
+    this.sourceURLElement = html.a(
+      {
+        id: "info-link",
+        target: "_blank",
+      },
+      [this.dialogController.model.sourceURL || ""]
+    );
+    this.checkboxContainer = html.div({ class: "checkbox-container" });
+
+    const collectionNames = glyphSetPresets.map((collection) => collection.name);
+    collectionNames.sort();
+
+    this.dialogContent = html.div({ class: "content-container" }, [
+      ...labeledPopupSelect(
+        "Collection",
+        this.dialogController,
+        "collectionName",
+        collectionNames.map((name) => ({ value: name, label: name })),
+        { class: "collection-popup" }
+      ),
+      html.div(),
+      html.a(
+        {
+          href: "https://github.com/googlefonts/fontra/discussions/1943",
+          target: "_blank",
+          class: "suggest-link",
+        },
+        ["Suggest more glyph set collections"]
+      ),
+      html.label({ for: "info-link", style: "text-align: right;" }, ["Source"]),
+      this.sourceURLElement,
+      html.div(), // grid cell filler
+      this.checkboxContainer,
+    ]);
+
+    this.dialogController.addKeyListener("collectionName", (event) => {
+      this.setSelectedGlyphsetCollection(event.newValue);
+      localStorage.setItem(SELECTED_GLYPHSET_LOCAL_STORAGE_KEY, event.newValue);
+    });
+
+    this.dialogController.model.collectionName =
+      localStorage.getItem(SELECTED_GLYPHSET_LOCAL_STORAGE_KEY) || "Google Fonts";
+  }
+
+  setSelectedGlyphsetCollection(collectionName) {
+    const collection = glyphSetPresets.find(
+      (collection) => collection.name === collectionName
+    );
+    this.sourceURLElement.href = collection.sourceURL;
+    this.sourceURLElement.innerText = collection.sourceURL;
+    this.checkboxContainer.innerHTML = "";
+    this.checkboxContainer.appendChild(this.checkboxesForCollection(collection));
+  }
+
+  checkboxesForCollection(collection) {
+    const checkboxes = collection.glyphSets.map((glyphSet) => {
+      const key = CHECKBOX_PREFIX + glyphSet.url;
+      return labeledCheckbox(glyphSet.name, this.dialogController, key);
+    });
+    return html.div({}, checkboxes);
+  }
+
+  async run() {
+    const dialog = await dialogSetup("Add/remove preset glyph sets", "", [
+      { title: "Add custom glyph set...", resultValue: "custom" }, // TODO: translate
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: "Save", isDefaultButton: true, resultValue: "add" }, // TODO: translate
+    ]);
+
+    dialog.appendStyle(this.constructor.styles);
+    dialog.setContent(this.dialogContent);
+
+    const result = await dialog.run();
+    if (result === "custom") {
+      return { custom: true };
+    } else if (result !== "add") {
+      return {};
+    }
+
+    const allGlyphSetsByURL = {};
+    for (const collection of glyphSetPresets) {
+      for (const glyphSet of collection.glyphSets) {
+        allGlyphSetsByURL[glyphSet.url] = { glyphSet, collection };
+      }
+    }
+    const glyphSets = { ...this.initialGlyphSets };
+    for (const [key, value] of Object.entries(this.dialogController.model)) {
+      if (!key.startsWith(CHECKBOX_PREFIX)) {
+        continue;
+      }
+      const url = key.slice(CHECKBOX_PREFIX.length);
+      if (!url) {
+        continue;
+      }
+      if (value) {
+        if (allGlyphSetsByURL[url]) {
+          const { glyphSet, collection } = allGlyphSetsByURL[url];
+          glyphSets[url] = { ...collection.dataOptions, ...glyphSet };
+        }
+      } else {
+        delete glyphSets[url];
+      }
+    }
+    return { glyphSets };
+  }
+}
+
+async function runEditGlyphSetDialog(glyphSetInfo) {
+  const isEditing = !!glyphSetInfo;
+  glyphSetInfo = {
+    dataFormat: "glyph-names",
+    codePointIsDecimal: false,
+    ...glyphSetInfo,
+  };
   const dialogController = new ObservableController(glyphSetInfo);
 
   const validateInput = () => {
@@ -603,14 +704,31 @@ async function runGlyphSetDialog(glyphSetInfo) {
     dialog.defaultButton.classList.toggle("disabled", !valid);
   };
 
-  dialogController.addListener((event) => validateInput());
+  const updateDataFormat = () => {
+    dialog.style.setProperty(
+      "--glyphset-data-format-tsv-csv-display",
+      dialogController.model.dataFormat === "tsv/csv" ? "initial" : "none"
+    );
+  };
 
-  const dialog = await dialogSetup("Add glyph set", "", [
-    { title: translate("dialog.cancel"), isCancelButton: true },
-    { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
-  ]);
+  dialogController.addListener((event) => validateInput());
+  dialogController.addKeyListener("dataFormat", (event) => updateDataFormat());
+
+  const dialog = await dialogSetup(
+    isEditing ? "Edit glyph set" : "Add custom glyph set",
+    "",
+    [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      {
+        title: translate(isEditing ? "Save" : "dialog.add"), // TODO: translate dialog.save
+        isDefaultButton: true,
+        disabled: true,
+      },
+    ]
+  );
 
   validateInput();
+  updateDataFormat();
 
   const contentStyle = `
   .glyph-set-dialog-content {
@@ -618,57 +736,56 @@ async function runGlyphSetDialog(glyphSetInfo) {
     gap: 0.5em;
     grid-template-columns: max-content auto;
     align-items: center;
-    width: 30em;
+    width: 38em;
+  }
+
+  .code-point-popup {
+    width: 8em;
+  }
+
+  .tsv-csv-only {
+    display: var(--glyphset-data-format-tsv-csv-display, initial);
   }
   `;
 
   dialog.appendStyle(contentStyle);
 
-  const presetMenuItems = glyphSetPresets.map((curatorGroup) => ({
-    title: curatorGroup.curator,
-    getItems: () =>
-      curatorGroup.glyphSets.map((glyphSet) => ({
-        title: glyphSet.name,
-        callback: () => {
-          dialogController.model.name = glyphSet.name;
-          dialogController.model.url = glyphSet.url;
-          dialogController.model.dataFormat = glyphSet.dataFormat || "auto-detect";
-        },
-      })),
-  }));
-
-  presetMenuItems.push({
-    title: html.span({}, [
-      "Suggest glyph set collections",
-      html.createDomElement("inline-svg", {
-        style: `
-          display: inline-block;
-          height: 1em;
-          width: 1em;
-          margin-left: 0.5em;
-          transform: translate(0, 0.15em);
-        `,
-        src: "/tabler-icons/external-link.svg",
-      }),
-    ]),
-    callback: () => {
-      window.open("https://github.com/googlefonts/fontra/discussions/1943");
-    },
-  });
+  const codePointIsDecimal = [
+    { value: false, label: "Hexadecimal" },
+    { value: true, label: "Decimal" },
+  ];
 
   dialog.setContent(
     html.div({ class: "glyph-set-dialog-content" }, [
-      html.div(),
-      new PopupMenu("Choose preset", () => presetMenuItems),
       ...labeledTextInput("Name", dialogController, "name"),
       ...labeledTextInput("URL", dialogController, "url"),
+      ...labeledTextInput("Note", dialogController, "note"),
       ...labeledPopupSelect(
         "Data format",
         dialogController,
         "dataFormat",
         glyphSetDataFormats
       ),
-      ...labeledTextInput("Note", dialogController, "note"),
+      ...labeledTextInput("Comment characters", dialogController, "commentChars"),
+      html.div({ class: "tsv-csv-only" }), // grid cell filler
+      labeledCheckbox("Has header", dialogController, "hasHeader", {
+        class: "tsv-csv-only",
+      }),
+      ...labeledTextInput("Glyph name column", dialogController, "glyphNameColumn", {
+        class: "tsv-csv-only",
+        labelClass: "tsv-csv-only",
+      }),
+      ...labeledTextInput("Code point column", dialogController, "codePointColumn", {
+        class: "tsv-csv-only",
+        labelClass: "tsv-csv-only",
+      }),
+      ...labeledPopupSelect(
+        "Code point",
+        dialogController,
+        "codePointIsDecimal",
+        codePointIsDecimal,
+        { class: "code-point-popup tsv-csv-only", labelClass: "tsv-csv-only" }
+      ),
     ])
   );
   const result = await dialog.run();
