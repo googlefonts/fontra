@@ -755,6 +755,7 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
     html.div({ class: "glyph-set-dialog-content" }, [
       ...labeledTextInput("Name", dialogController, "name"),
       ...labeledTextInput("URL", dialogController, "url"),
+      ...labeledTextInput("Note", dialogController, "note"),
       ...labeledPopupSelect(
         "Data format",
         dialogController,
@@ -781,7 +782,6 @@ async function runEditGlyphSetDialog(glyphSetInfo) {
         codePointIsDecimal,
         { class: "code-point-popup tsv-csv-only", labelClass: "tsv-csv-only" }
       ),
-      ...labeledTextInput("Note", dialogController, "note"),
     ])
   );
   const result = await dialog.run();
