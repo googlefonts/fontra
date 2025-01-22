@@ -1510,7 +1510,7 @@ class UFOBackend(DesignspaceBackend):
         self.defaultReader.writeLib(lib)
 
     async def putAxes(self, axes):
-        if axes.axes:
+        if axes.axes or axes.mappings:
             raise ValueError("The single-UFO backend does not support variation axes")
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:
