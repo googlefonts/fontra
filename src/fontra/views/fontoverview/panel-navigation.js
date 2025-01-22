@@ -210,18 +210,27 @@ export class FontOverviewNavigation extends HTMLElement {
 
   async _makeFontSourcePopup() {
     const fontSources = await this.fontController.getSources();
+    const popupItems = [];
 
     const selectedSourceIdentifier = () =>
       this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
         this.fontOverviewSettings.fontLocationSource
       );
 
-    const popupItems = this.fontController
-      .getSortedSourceIdentifiers()
-      .map((fontSourceIdentifier) => ({
-        value: fontSourceIdentifier,
-        label: fontSources[fontSourceIdentifier].name,
-      }));
+    const updatePopupItems = () => {
+      popupItems.splice(
+        0,
+        popupItems.length,
+        ...this.fontController
+          .getSortedSourceIdentifiers()
+          .map((fontSourceIdentifier) => ({
+            value: fontSourceIdentifier,
+            label: fontSources[fontSourceIdentifier].name,
+          }))
+      );
+    };
+
+    updatePopupItems();
 
     const controller = new ObservableController({
       value: selectedSourceIdentifier(),
@@ -240,17 +249,26 @@ export class FontOverviewNavigation extends HTMLElement {
 
     controller.addKeyListener("value", (event) => {
       const fontSourceIdentifier = event.newValue;
-      const sourceLocation = {
-        ...fontSources[fontSourceIdentifier]?.location,
-      }; // A font may not have any font sources, therefore the ?-check
-      if (!event.senderInfo?.sentFromSourceLocationListener) {
+      const sourceLocation = fontSources[fontSourceIdentifier]?.location;
+      if (sourceLocation && !event.senderInfo?.sentFromSourceLocationListener) {
         this.fontOverviewSettingsController.setItem(
           "fontLocationSource",
-          sourceLocation,
+          { ...sourceLocation },
           { sentFromInput: true }
         );
       }
     });
+
+    this.fontController.addChangeListener(
+      { sources: null },
+      (change, isExternalChange) => {
+        updatePopupItems();
+        // Trigger *label* refresh. The *value* may not have changed, so we'll
+        // briefly set it to null to ensure the listeners get triggered
+        controller.model.value = null;
+        controller.model.value = selectedSourceIdentifier();
+      }
+    );
 
     return popupSelect(controller, "value", popupItems);
   }
