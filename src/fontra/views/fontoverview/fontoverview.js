@@ -199,6 +199,22 @@ export class FontOverviewController extends ViewController {
       this._updateGlyphItemList();
     });
 
+    this.fontController.addChangeListener(
+      { sources: null, customData: { "fontra.sourceStatusFieldDefinitions": null } },
+      () => {
+        /*
+         * The glyph cells may need updating because of changes in the font sources
+         * (eg. the ascender/descender values determine the relative glyph size in
+         * the cells) or because the status definitions changed.
+         * Trigger active cell update by setting the location again. It has to be
+         * a distinct object, as the ObservableController ignores "same" objects
+         */
+        this.fontOverviewSettings.fontLocationUser = {
+          ...this.fontOverviewSettings.fontLocationUser,
+        };
+      }
+    );
+
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
