@@ -4,7 +4,7 @@ import { FontController } from "./font-controller.js";
 import { getRemoteProxy } from "./remote.js";
 import { makeDisplayPath } from "./view-utils.js";
 import { ensureLanguageHasLoaded } from "/core/localization.js";
-import { message } from "/web-components/modal-dialog.js";
+import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
 export class ViewController {
   static titlePattern(displayPath) {
@@ -39,6 +39,16 @@ export class ViewController {
 
   constructor(font) {
     this.fontController = new FontController(font);
+
+    document.addEventListener("visibilitychange", (event) => {
+      if (this._reconnectDialog) {
+        if (document.visibilityState === "visible") {
+          this._reconnectDialog.cancel();
+        } else {
+          this._reconnectDialog.hide();
+        }
+      }
+    });
   }
 
   async start() {
@@ -131,11 +141,52 @@ export class ViewController {
     message(headline, msg);
   }
 
-  handleRemoteClose(event) {
-    //
+  async handleRemoteClose(event) {
+    this._reconnectDialog = await dialogSetup(
+      "Connection closed", // TODO: translation
+      "The connection to the server closed unexpectedly.",
+      [{ title: "Reconnect", resultValue: "ok" }]
+    );
+    const result = await this._reconnectDialog.run();
+    delete this._reconnectDialog;
+
+    if (!result && location.hostname === "localhost") {
+      // The dialog was cancelled by the "wake" event handler
+      // Dubious assumption:
+      // Running from localhost most likely means were looking at local data,
+      // which unlikely changed while we were away. So let's not bother reloading
+      // anything.
+      return;
+    }
+
+    if (this.fontController.font.websocket.readyState > 1) {
+      // The websocket isn't currently working, let's try to do a page reload
+      location.reload();
+      return;
+    }
+
+    // Reload only the data, not the UI (the page)
+    const reloadPattern = { glyphs: {} };
+    const glyphReloadPattern = reloadPattern.glyphs;
+    for (const glyphName of this.fontController.getCachedGlyphNames()) {
+      glyphReloadPattern[glyphName] = null;
+    }
+    // TODO: fix reloadData so we can do this:
+    //   reloadPattern["glyphMap"] = null; // etc.
+    // so we won't have to re-initialize the font controller to reload
+    // all non-glyph data:
+    await this.fontController.initialize();
+    await this.reloadData(reloadPattern);
   }
 
-  handleRemoteError(event) {
-    //
+  async handleRemoteError(event) {
+    console.log("remote error", event);
+    await dialog(
+      "Connection problem", // TODO: translation
+      `There was a problem with the connection to the server.
+      See the JavaScript Console for details.`,
+      [{ title: "Reconnect", resultValue: "ok" }]
+    );
+    location.reload();
   }
 }
