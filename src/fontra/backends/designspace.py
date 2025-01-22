@@ -923,7 +923,7 @@ class DesignspaceBackend:
         self._updateGlobalFontInfo(infoDict)
 
     async def getAxes(self) -> Axes:
-        return Axes(axes=self.axes, mappings=self.axisMappings)
+        return Axes(axes=deepcopy(self.axes), mappings=deepcopy(self.axisMappings))
 
     async def putAxes(self, axes: Axes) -> None:
         self.dsDoc.axes = []
@@ -1510,7 +1510,7 @@ class UFOBackend(DesignspaceBackend):
         self.defaultReader.writeLib(lib)
 
     async def putAxes(self, axes):
-        if axes.axes:
+        if axes.axes or axes.mappings:
             raise ValueError("The single-UFO backend does not support variation axes")
 
     async def putSources(self, sources: dict[str, FontSource]) -> None:

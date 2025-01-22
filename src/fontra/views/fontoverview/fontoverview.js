@@ -545,14 +545,6 @@ export class FontOverviewController extends ViewController {
     }
   }
 
-  handleRemoteClose(event) {
-    //
-  }
-
-  handleRemoteError(event) {
-    //
-  }
-
   initActions() {
     registerActionCallbacks(
       "action.undo",

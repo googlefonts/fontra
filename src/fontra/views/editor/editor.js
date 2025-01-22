@@ -276,16 +276,6 @@ export class EditorController extends ViewController {
       this.setupFromWindowLocation();
     });
 
-    document.addEventListener("visibilitychange", (event) => {
-      if (this._reconnectDialog) {
-        if (document.visibilityState === "visible") {
-          this._reconnectDialog.cancel();
-        } else {
-          this._reconnectDialog.hide();
-        }
-      }
-    });
-
     this.updateWithDelay();
   }
 
@@ -3104,8 +3094,7 @@ export class EditorController extends ViewController {
   }
 
   async externalChange(change, isLiveChange) {
-    await this.fontController.applyChange(change, true);
-    this.fontController.notifyChangeListeners(change, isLiveChange, true);
+    await super.externalChange(change, isLiveChange);
 
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
@@ -3407,55 +3396,6 @@ export class EditorController extends ViewController {
       }
     };
     requestAnimationFrame(animate);
-  }
-
-  async handleRemoteClose(event) {
-    this._reconnectDialog = await dialogSetup(
-      "Connection closed", // TODO: translation
-      "The connection to the server closed unexpectedly.",
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    const result = await this._reconnectDialog.run();
-    delete this._reconnectDialog;
-
-    if (!result && location.hostname === "localhost") {
-      // The dialog was cancelled by the "wake" event handler
-      // Dubious assumption:
-      // Running from localhost most likely means were looking at local data,
-      // which unlikely changed while we were away. So let's not bother reloading
-      // anything.
-      return;
-    }
-
-    if (this.fontController.font.websocket.readyState > 1) {
-      // The websocket isn't currently working, let's try to do a page reload
-      location.reload();
-      return;
-    }
-
-    // Reload only the data, not the UI (the page)
-    const reloadPattern = { glyphs: {} };
-    const glyphReloadPattern = reloadPattern.glyphs;
-    for (const glyphName of this.fontController.getCachedGlyphNames()) {
-      glyphReloadPattern[glyphName] = null;
-    }
-    // TODO: fix reloadData so we can do this:
-    //   reloadPattern["glyphMap"] = null; // etc.
-    // so we won't have to re-initialize the font controller to reload
-    // all non-glyph data:
-    await this.fontController.initialize();
-    await this.reloadData(reloadPattern);
-  }
-
-  async handleRemoteError(event) {
-    console.log("remote error", event);
-    await dialog(
-      "Connection problem", // TODO: translation
-      `There was a problem with the connection to the server.
-      See the JavaScript Console for details.`,
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    location.reload();
   }
 
   canPlaceBackgroundImage() {
