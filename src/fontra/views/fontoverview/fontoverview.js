@@ -445,6 +445,8 @@ export class FontOverviewController extends ViewController {
     }
 
     const combinedItemList = glyphMapToItemList(combinedGlyphMap);
+    // When overlaying multiple glyph sets, sort the list, or else we
+    // may end up with a garbled mess of ordering
     return glyphSetKeys.length > 1
       ? this.glyphOrganizer.sortGlyphs(combinedItemList)
       : combinedItemList;
