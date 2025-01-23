@@ -20,7 +20,7 @@ export function parseGlyphSet(sourceData, dataFormat, dataOptions) {
     case "tsv/csv":
       return parseGlyphSetGlyphTable(sourceLines, dataOptions);
     default:
-      throw new Error(`unknow data format: ${dataFormat}`);
+      throw new Error(`unknown data format: ${dataFormat}`);
   }
 }
 
