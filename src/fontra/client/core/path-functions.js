@@ -425,12 +425,8 @@ export function deleteSelectedPoints(path, pointIndices) {
         newPoints = computeHandlesFromFragment(curveType, fragment.contour);
       } else {
         newPoints = [];
-        path.setPointType(indices[0] + startPoint + indexBias, points[0].type, false);
-        path.setPointType(
-          indices.at(-1) + startPoint + indexBias,
-          points.at(-1).type,
-          false
-        );
+        path.setPointType(indices[0] + startPoint + 0, points[0].type, false);
+        path.setPointType(indices.at(-1) + startPoint + 0, points.at(-1).type, false);
       }
       for (const newPoint of newPoints) {
         path.insertPoint(contourIndex, insertIndex, newPoint);
