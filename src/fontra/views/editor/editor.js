@@ -2161,14 +2161,18 @@ export class EditorController extends ViewController {
 
   async _deleteCurrentGlyph(event) {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const result = await dialog(translate("dialog.delete-current-glyph.title"), "", [
-      { title: translate("dialog.cancel"), isCancelButton: true },
-      {
-        title: translate("action.delete-glyph"),
-        isDefaultButton: true,
-        resultValue: "ok",
-      },
-    ]);
+    const result = await dialog(
+      translate("dialog.delete-current-glyph.title", glyphName),
+      "",
+      [
+        { title: translate("dialog.cancel"), isCancelButton: true },
+        {
+          title: translate("action.delete-glyph"),
+          isDefaultButton: true,
+          resultValue: "ok",
+        },
+      ]
+    );
     if (!result) {
       return;
     }
