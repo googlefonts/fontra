@@ -444,7 +444,10 @@ export class FontOverviewController extends ViewController {
       }
     }
 
-    return glyphMapToItemList(combinedGlyphMap);
+    const combinedItemList = glyphMapToItemList(combinedGlyphMap);
+    return glyphSetKeys.length > 1
+      ? this.glyphOrganizer.sortGlyphs(combinedItemList)
+      : combinedItemList;
   }
 
   async _loadGlyphSet(glyphSetKey) {
