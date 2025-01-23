@@ -413,8 +413,10 @@ export class FontOverviewController extends ViewController {
     const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
 
     const glyphSetKeys = [
-      ...this.fontOverviewSettings.projectGlyphSetSelection,
-      ...this.fontOverviewSettings.myGlyphSetSelection,
+      ...new Set([
+        ...this.fontOverviewSettings.projectGlyphSetSelection,
+        ...this.fontOverviewSettings.myGlyphSetSelection,
+      ]),
     ];
     glyphSetKeys.sort();
 
