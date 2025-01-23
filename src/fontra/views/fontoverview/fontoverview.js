@@ -358,9 +358,9 @@ export class FontOverviewController extends ViewController {
     ) {
       this.fontOverviewSettings.projectGlyphSetSelection = [
         THIS_FONTS_GLYPHSET,
-        ...Object.values(this.fontOverviewSettings.projectGlyphSets).map(
-          ({ url }) => url
-        ),
+        ...Object.values(this.fontOverviewSettings.projectGlyphSets)
+          .map(({ url }) => url)
+          .filter((url) => url),
       ];
     }
   }
@@ -413,20 +413,20 @@ export class FontOverviewController extends ViewController {
     const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
 
     const glyphSetKeys = [
-      ...this.fontOverviewSettings.projectGlyphSetSelection,
-      ...this.fontOverviewSettings.myGlyphSetSelection,
+      ...new Set([
+        ...this.fontOverviewSettings.projectGlyphSetSelection,
+        ...this.fontOverviewSettings.myGlyphSetSelection,
+      ]),
     ];
     glyphSetKeys.sort();
 
-    const glyphSets = await Promise.all(
-      glyphSetKeys.map((glyphSetKey) => this._loadGlyphSet(glyphSetKey))
-    );
+    const glyphSets = (
+      await Promise.all(
+        glyphSetKeys.map((glyphSetKey) => this._loadGlyphSet(glyphSetKey))
+      )
+    ).filter((glyphSet) => glyphSet);
 
     for (const glyphSet of glyphSets) {
-      if (!glyphSet) {
-        continue;
-      }
-
       for (const { glyphName, codePoints } of glyphSet) {
         const singleCodePoint = codePoints.length === 1 ? codePoints[0] : null;
         const foundGlyphName =
@@ -444,7 +444,12 @@ export class FontOverviewController extends ViewController {
       }
     }
 
-    return glyphMapToItemList(combinedGlyphMap);
+    const combinedItemList = glyphMapToItemList(combinedGlyphMap);
+    // When overlaying multiple glyph sets, sort the list, or else we
+    // may end up with a garbled mess of ordering
+    return glyphSetKeys.length > 1
+      ? this.glyphOrganizer.sortGlyphs(combinedItemList)
+      : combinedItemList;
   }
 
   async _loadGlyphSet(glyphSetKey) {
