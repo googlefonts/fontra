@@ -74,6 +74,7 @@ import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { getDecomposedIdentity } from "/core/transform.js";
+import "/web-components/inline-svg.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
