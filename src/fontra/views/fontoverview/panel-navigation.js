@@ -295,6 +295,15 @@ export class FontOverviewNavigation extends HTMLElement {
       })
     );
 
+    this.fontController.addChangeListener(
+      { axes: null },
+      (change, isExternalChange) => {
+        console.log("yeah axessss");
+        locationElement.axes = this.fontController.axes.axes;
+        locationElement.values = { ...this.fontOverviewSettings.fontLocationUser };
+      }
+    );
+
     return locationElement;
   }
 
