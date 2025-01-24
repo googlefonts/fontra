@@ -17,6 +17,9 @@ export default class Panel extends SimpleElement {
     .panel-section--scrollable {
       overflow: hidden auto;
     }
+    .panel-section--noscroll {
+      overflow: hidden;
+    }
   `;
 
   constructor(editorController) {
