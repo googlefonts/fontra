@@ -204,12 +204,7 @@ function getWindowMenuItems() {
 }
 
 function rerouteViewPath(path, targetView) {
-  assert(path[0] === "/");
-  const parts = path.split("/");
-  assert(parts.length >= 3);
-  assert(parts[1].length > 0);
-  parts[1] = targetView;
-  return parts.join("/");
+  return targetView + ".html";
 }
 
 // Default action infos
