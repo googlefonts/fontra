@@ -21,6 +21,7 @@
   "workspaces": [
     "src-js/fontra-core",
     "src-js/fontra-webcomponents",
+    "src-js/projectmanager-filesystem",
     "src-js/views-applicationsettings",
     "src-js/views-editor",
     "src-js/views-fontinfo",
