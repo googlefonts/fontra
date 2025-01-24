@@ -14,14 +14,6 @@
         }
       }
     </script>
-    <script type="module" src="/core/theme-settings.js"></script>
-    <script type="module" src="/web-components/add-remove-buttons.js"></script>
-    <script type="module" src="/web-components/designspace-location.js"></script>
-    <script type="module" src="/web-components/glyph-search-list.js"></script>
-    <script type="module" src="/web-components/grouped-settings.js"></script>
-    <script type="module" src="/web-components/inline-svg.js"></script>
-    <script type="module" src="/web-components/modal-dialog.js"></script>
-    <script type="module" src="/web-components/ui-list.js"></script>
   </head>
   <body>
     <modal-dialog></modal-dialog>
@@ -101,13 +93,5 @@
     </div>
   </body>
 
-  <script type="module">
-    import { EditorController } from "/editor/editor.js";
-
-    async function startApp() {
-      window.editorController = await EditorController.fromBackend();
-    }
-
-    startApp();
-  </script>
+  <script type="module" src="/editor/start.js"></script>
 </html>
