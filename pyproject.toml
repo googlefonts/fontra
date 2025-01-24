@@ -94,7 +94,7 @@ source = "vcs"
 
 
 [tool.hatch.build.hooks.custom]
-path = "scripts/rollup_build_hook.py"
+path = "scripts/bundler_build_hook.py"
 
 
 [tool.hatch.build.hooks.vcs]
