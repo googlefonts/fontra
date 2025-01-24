@@ -1,5 +1,6 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import "/web-components/glyph-search-list.js";
 
 export default class GlyphSearchPanel extends Panel {
   identifier = "glyph-search";

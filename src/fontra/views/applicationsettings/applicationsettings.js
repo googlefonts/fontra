@@ -7,7 +7,9 @@ import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
 import { ThemeSettingsPanel } from "./panel-theme-settings.js";
 import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
+import "/web-components/grouped-settings.js";
 import { message } from "/web-components/modal-dialog.js";
+import "/web-components/plugin-manager.js";
 
 export class ApplicationSettingsController {
   async start() {

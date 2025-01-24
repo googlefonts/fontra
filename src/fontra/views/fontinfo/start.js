@@ -1,5 +1,4 @@
 import "/core/theme-settings.js";
-import "/web-components/modal-dialog.js";
 
 import { FontInfoController } from "/fontinfo/fontinfo.js";
 
