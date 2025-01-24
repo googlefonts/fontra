@@ -31,7 +31,7 @@ function languageChanged(locale) {
   // and backtick strings don't work.
   const translationsPath = "/lang/locale.js".replace("locale", locale);
 
-  import(translationsPath)
+  import(/*webpackIgnore: true*/ translationsPath)
     .then((mod) => {
       localizationData = mod.strings;
       resolveLanguageHasLoaded();

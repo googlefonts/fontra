@@ -1,3 +1,4 @@
+import coreClasses from "./classes.json";
 import { fetchJSON, mapObjectValues } from "./utils.js";
 import { Layer, StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { VarPackedPath } from "./var-path.js";
@@ -14,10 +15,8 @@ export function getClassSchema(rawSchema) {
       populateSchema(rawSchema);
       resolvePromise(classSchema);
     } else {
-      fetchJSON("/core/classes.json").then((result) => {
-        populateSchema(result);
-        resolvePromise(classSchema);
-      });
+      populateSchema(coreClasses);
+      resolvePromise(classSchema);
     }
   }
   return schemaPromise;
