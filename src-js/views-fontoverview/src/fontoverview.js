@@ -610,7 +610,7 @@ export class FontOverviewController extends ViewController {
 
 function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
   const url = new URL(window.location);
-  url.pathname = url.pathname.replace("/fontoverview/", "/editor/");
+  url.pathname = url.pathname.replace("/fontoverview.html", "/editor.html");
 
   const viewInfo = {
     location: userLocation,

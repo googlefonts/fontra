@@ -5,8 +5,7 @@
     <title>Fontra</title>
     <link href="/css/shared.css" rel="stylesheet" />
     <link href="/css/core.css" rel="stylesheet" />
-    <link href="/filesystem/landing.css" rel="stylesheet" />
-    <script type="module" src="/core/theme-settings.js"></script>
+    <link href="./assets/landing.css" rel="stylesheet" />
   </head>
   <body class="landing-body">
     <div id="global-loader-spinner"></div>
@@ -19,8 +18,5 @@
       <div class="landing-item" id="project-list" tabindex="3"></div>
     </div>
   </body>
-  <script type="module">
-    import { startupLandingPage } from "/filesystem/landing.js";
-    startupLandingPage();
-  </script>
+  <script type="module" src="@fontra/projectmanager-filesystem/landing.js"></script>
 </html>

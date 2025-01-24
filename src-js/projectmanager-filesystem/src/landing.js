@@ -1,5 +1,6 @@
-import { Backend } from "/core/backend-api.js";
-import { loaderSpinner } from "/core/loader-spinner.js";
+import { Backend } from "@fontra/core/backend-api.js";
+import { loaderSpinner } from "@fontra/core/loader-spinner.js";
+import "@fontra/core/theme-settings.js";
 
 export async function startupLandingPage(authenticateFunc) {
   if (authenticateFunc) {
@@ -13,9 +14,11 @@ export async function startupLandingPage(authenticateFunc) {
 
   for (const project of projectList) {
     const projectElement = document.createElement("a");
-    projectElement.href = "/fontoverview/?project=" + project;
+    projectElement.href = "/fontoverview.html?project=" + project;
     projectElement.className = "project-item";
     projectElement.append(project);
     projectListContainer.appendChild(projectElement);
   }
 }
+
+startupLandingPage();
