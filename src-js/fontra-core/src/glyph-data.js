@@ -10,6 +10,7 @@ if (typeof process !== "undefined") {
 
   const path = join(
     dirname(dirname(fileURLToPath(import.meta.url))),
+    "assets",
     "data",
     "glyph-data.csv"
   );
