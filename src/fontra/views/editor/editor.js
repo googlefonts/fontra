@@ -1268,10 +1268,14 @@ export class EditorController extends ViewController {
       selectedGlyphInfo.glyphIndex +
       (select ? (where == 1 ? 1 : 0) : where == -1 ? glyphInfos.length : 0);
 
+    const canEdit = !!this.fontController.glyphMap[glyphInfos.glyphName];
+
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
       glyphIndex: glyphIndex,
-      isEditing: where && select ? false : this.sceneSettings.selectedGlyph.isEditing,
+      isEditing:
+        canEdit &&
+        (where && select ? false : this.sceneSettings.selectedGlyph.isEditing),
     };
   }
 
