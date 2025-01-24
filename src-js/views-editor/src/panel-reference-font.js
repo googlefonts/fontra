@@ -24,11 +24,6 @@ import "@fontra/web-components/range-slider.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
 import { getSelectedGlyphInfo } from "./scene-model.js";
 
-import "lib-font/inflate";
-import "lib-font/lib/unbrotli.js";
-
-// lib-font expects its dependencies to be imported first. Prettier moves the imports.
-// prettier-ignore: organizeImportsSkipDestructiveCodeActions
 import { Font } from "lib-font";
 
 import { translate, translatePlural } from "@fontra/core/localization.js";
