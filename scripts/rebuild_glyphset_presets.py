@@ -135,11 +135,45 @@ def getAdobeLatinCyrGreekGlyphSets():
     }
 
 
+def getKoeberlinLatinGlyphSets():
+    sourceURL = "https://github.com/koeberlin/Latin-Character-Sets"
+
+    dirContents = getGitHubDirectoryInfo(
+        "koeberlin", "Latin-Character-Sets", "CharacterSets/Glyphs/"
+    )
+
+    glyphSets = []
+
+    for dirInfo in dirContents:
+        name = dirInfo["name"]
+        if not name.endswith(".txt"):
+            continue
+        name = name.split("_")[0]
+        assert name[:5] == "Latin"
+        name = f"Koeberlin {name[:5]} {name[5:]}"
+        glyphSets.append(
+            {
+                "name": name,
+                "url": jsDelivrURL(
+                    "koeberlin", "Latin-Character-Sets", dirInfo["path"]
+                ),
+            }
+        )
+
+    return {
+        "name": "Koeberlin Latin",
+        "sourceURL": sourceURL,
+        "dataOptions": {"dataFormat": "glyph-names"},
+        "glyphSets": glyphSets,
+    }
+
+
 def collectCollections():
     collections = []
     collections.append(getGoogleFontsGlyphSets())
     collections.append(getBlackFoundryGlyphSets())
     collections.append(getAdobeLatinCyrGreekGlyphSets())
+    collections.append(getKoeberlinLatinGlyphSets())
     return collections
 
 
