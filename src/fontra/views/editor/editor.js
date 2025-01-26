@@ -55,7 +55,6 @@ import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
 import { locationToString, makeSparseLocation } from "../core/var-model.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
-import { makeDisplayPath } from "../core/view-utils.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { KnifeTool } from "./edit-tools-knife.js";
