@@ -129,10 +129,10 @@ class ProjectManager(Protocol):
     async def authorize(self, request: web.Request) -> str | None:
         pass
 
-    async def projectAvailable(self, path: str, token: str) -> bool:
+    async def projectAvailable(self, projectIdentifier: str, token: str) -> bool:
         pass
 
-    async def getRemoteSubject(self, path: str, token: str) -> Any:
+    async def getRemoteSubject(self, projectIdentifier: str, token: str) -> Any:
         pass
 
     async def getProjectList(self, token: str) -> list[str]:

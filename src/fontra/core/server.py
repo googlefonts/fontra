@@ -65,7 +65,7 @@ class FontraServer:
         self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
+        routes.append(web.get("/websocket", self.websocketHandler))
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
         routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
@@ -140,9 +140,12 @@ class FontraServer:
         shutdownProcessPool()
 
     async def websocketHandler(self, request: web.Request) -> web.WebSocketResponse:
-        path = "/" + request.match_info["path"]
+        projectIdentifier = request.query.get("project")
+        if projectIdentifier is None:
+            raise web.HTTPNotFound()
+
         remote = request.headers.get("X-FORWARDED-FOR", request.remote)
-        logger.info(f"incoming connection from {remote} for {path!r}")
+        logger.info(f"incoming connection from {remote} for {projectIdentifier!r}")
 
         cookies = SimpleCookie()
         cookies.load(request.headers.get("Cookie", ""))
@@ -153,7 +156,7 @@ class FontraServer:
         await websocket.prepare(request)
         self._activeWebsockets.add(websocket)
         try:
-            subject = await self.getSubject(websocket, path, token)
+            subject = await self.getSubject(websocket, projectIdentifier, token)
         except RemoteObjectConnectionException as e:
             logger.info("refused websocket request: %s", e)
             await websocket.close()
@@ -162,7 +165,9 @@ class FontraServer:
             traceback.print_exc()
             await websocket.close()
         else:
-            connection = RemoteObjectConnection(websocket, path, subject, True)
+            connection = RemoteObjectConnection(
+                websocket, projectIdentifier, subject, True
+            )
             async with subject.useConnection(connection):
                 await connection.handleConnection()
         finally:
@@ -171,9 +176,9 @@ class FontraServer:
         return websocket
 
     async def getSubject(
-        self, websocket: web.WebSocketResponse, path: str, token: str
+        self, websocket: web.WebSocketResponse, projectIdentifier: str, token: str
     ) -> Any:
-        subject = await self.projectManager.getRemoteSubject(path, token)
+        subject = await self.projectManager.getRemoteSubject(projectIdentifier, token)
         if subject is None:
             raise RemoteObjectConnectionException("unauthorized")
         return subject
@@ -282,9 +287,9 @@ class FontraServer:
                 self.viewEntryPoints[viewName], request
             )
 
-        project = request.query.get("project")
-        if project is None or not await self.projectManager.projectAvailable(
-            project, authToken
+        projectIdentifier = request.query.get("project")
+        if projectIdentifier is None or not await self.projectManager.projectAvailable(
+            projectIdentifier, authToken
         ):
             raise web.HTTPNotFound()
 

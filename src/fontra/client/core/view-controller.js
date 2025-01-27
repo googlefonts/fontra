@@ -2,23 +2,37 @@ import { registerAction } from "./actions.js";
 import { Backend } from "./backend-api.js";
 import { FontController } from "./font-controller.js";
 import { getRemoteProxy } from "./remote.js";
-import { makeDisplayPath } from "./view-utils.js";
 import { ensureLanguageHasLoaded } from "/core/localization.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
 export class ViewController {
-  static titlePattern(displayPath) {
-    return `Fontra — ${decodeURI(displayPath)}`;
+  static titlePattern(displayName) {
+    return `Fontra — ${displayName}`;
   }
+
+  static displayName(projectIdentifier) {
+    // TODO: this should be delegated to the project manager, which should then
+    // properly maintain a (user editable) "display name" for a project.
+    //
+    // For now, just shorten the projectIdentifier in case it is long and contains
+    // slash characters.
+    const displayNameItems = projectIdentifier.split("/");
+    let displayName = displayNameItems.join("/");
+    while (displayNameItems.length > 2 && displayName.length > 60) {
+      displayNameItems.splice(0, 1);
+      displayName = ["...", ...displayNameItems].join("/");
+    }
+    return displayName;
+  }
+
   static async fromBackend() {
-    const pathItems = new URL(window.location).searchParams.get("project").split("/");
-    const displayPath = makeDisplayPath(pathItems);
-    document.title = this.titlePattern(displayPath);
-    const projectPath = pathItems.join("/");
+    const projectIdentifier = new URL(window.location).searchParams.get("project");
+    const displayName = this.displayName(projectIdentifier);
+    document.title = this.titlePattern(displayName);
 
     await ensureLanguageHasLoaded;
 
-    const remoteFontEngine = await Backend.remoteFont(projectPath);
+    const remoteFontEngine = await Backend.remoteFont(projectIdentifier);
     const controller = new this(remoteFontEngine);
     remoteFontEngine.on("close", (event) => controller.handleRemoteClose(event));
     remoteFontEngine.on("error", (event) => controller.handleRemoteError(event));
