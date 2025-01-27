@@ -88,8 +88,8 @@ class FileSystemProjectManager:
             html = filterContent(html, "text/html")
         return web.Response(body=html, content_type="text/html")
 
-    async def projectAvailable(self, path: str, token: str) -> bool:
-        return bool(self._getProjectPath(path))
+    async def projectAvailable(self, projectIdentifier: str, token: str) -> bool:
+        return bool(self._getProjectPath(projectIdentifier))
 
     async def getRemoteSubject(self, projectIdentifier: str, token: str) -> FontHandler:
         fontHandler = self.fontHandlers.get(projectIdentifier)
