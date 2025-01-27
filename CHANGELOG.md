@@ -1,5 +1,11 @@
 # Changelog for Fontra
 
+## 2025-01-27
+
+- Misc improvements to the Font Overview
+- Added preset glyph sets from Google Fonts, Black Foundry, Adobe and Christoph Koeberlin
+- Fixed a bug with point deletion [Issue 1980](https://github.com/googlefonts/fontra/issues/1980), [PR 1981](https://github.com/googlefonts/fontra/pull/1981)
+
 ## 2025-01-21
 
 The Font Overview is ready to be used everywhere, including in Fontra Pak. Documentation will follow soon.
