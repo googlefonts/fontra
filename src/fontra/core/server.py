@@ -287,9 +287,9 @@ class FontraServer:
                 self.viewEntryPoints[viewName], request
             )
 
-        project = request.query.get("project")
-        if project is None or not await self.projectManager.projectAvailable(
-            project, authToken
+        projectIdentifier = request.query.get("project")
+        if projectIdentifier is None or not await self.projectManager.projectAvailable(
+            projectIdentifier, authToken
         ):
             raise web.HTTPNotFound()
 
