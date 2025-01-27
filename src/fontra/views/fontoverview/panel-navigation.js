@@ -165,7 +165,9 @@ export class FontOverviewNavigation extends HTMLElement {
 
     accordion.items = accordionItems;
 
-    this.appendChild(accordion);
+    this.appendChild(
+      html.div({ class: "font-overview-navigation-section" }, [accordion])
+    );
 
     this.fontOverviewSettingsController.addKeyListener("projectGlyphSets", (event) =>
       this._updateProjectGlyphSets()
