@@ -11,14 +11,13 @@ export class ViewController {
     return `Fontra — ${decodeURI(displayPath)}`;
   }
   static async fromBackend() {
-    const pathItems = new URL(window.location).searchParams.get("project").split("/");
-    const displayPath = makeDisplayPath(pathItems);
+    const projectIdentifier = new URL(window.location).searchParams.get("project");
+    const displayPath = makeDisplayPath(projectIdentifier.split("/"));
     document.title = this.titlePattern(displayPath);
-    const projectPath = pathItems.join("/");
 
     await ensureLanguageHasLoaded;
 
-    const remoteFontEngine = await Backend.remoteFont(projectPath);
+    const remoteFontEngine = await Backend.remoteFont(projectIdentifier);
     const controller = new this(remoteFontEngine);
     remoteFontEngine.on("close", (event) => controller.handleRemoteClose(event));
     remoteFontEngine.on("error", (event) => controller.handleRemoteError(event));

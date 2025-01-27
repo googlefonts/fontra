@@ -91,22 +91,20 @@ class FileSystemProjectManager:
     async def projectAvailable(self, path: str, token: str) -> bool:
         return bool(self._getProjectPath(path))
 
-    async def getRemoteSubject(self, path: str, token: str) -> FontHandler:
-        assert path[0] == "/"
-        path = path[1:]
-        fontHandler = self.fontHandlers.get(path)
+    async def getRemoteSubject(self, projectIdentifier: str, token: str) -> FontHandler:
+        fontHandler = self.fontHandlers.get(projectIdentifier)
         if fontHandler is None:
-            projectPath = self._getProjectPath(path)
+            projectPath = self._getProjectPath(projectIdentifier)
             if projectPath is None:
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
 
             async def closeFontHandler():
-                logger.info(f"closing FontHandler for '{path}'")
-                del self.fontHandlers[path]
+                logger.info(f"closing FontHandler for '{projectIdentifier}'")
+                del self.fontHandlers[projectIdentifier]
                 await fontHandler.aclose()
 
-            logger.info(f"new FontHandler for '{path}'")
+            logger.info(f"new FontHandler for '{projectIdentifier}'")
             fontHandler = FontHandler(
                 backend,
                 readOnly=self.readOnly,
@@ -115,7 +113,7 @@ class FileSystemProjectManager:
                 projectIdentifier=fspath(projectPath),
             )
             await fontHandler.startTasks()
-            self.fontHandlers[path] = fontHandler
+            self.fontHandlers[projectIdentifier] = fontHandler
         return fontHandler
 
     def _getProjectPath(self, path: str) -> PathLike | None:
