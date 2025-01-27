@@ -98,7 +98,7 @@ export default class SelectionInfoPanel extends Panel {
         },
       }),
       html.label(
-        { for: "behavior-checkbox" },
+        { for: "behavior-checkbox", class: "text-wrap" },
         translate("sidebar.selection-info.multi-source")
       ),
     ];
