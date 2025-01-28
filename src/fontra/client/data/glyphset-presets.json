@@ -429,16 +429,16 @@
     },
     "glyphSets": [
       {
-        "name": "Koeberlin Latin L",
-        "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinL_glyphs.txt"
+        "name": "Koeberlin Latin S",
+        "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinS_glyphs.txt"
       },
       {
         "name": "Koeberlin Latin M",
         "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinM_glyphs.txt"
       },
       {
-        "name": "Koeberlin Latin S",
-        "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinS_glyphs.txt"
+        "name": "Koeberlin Latin L",
+        "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinL_glyphs.txt"
       },
       {
         "name": "Koeberlin Latin XL",
