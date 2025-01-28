@@ -29,6 +29,7 @@ export default class RelatedGlyphPanel extends Panel {
     glyph-cell-view {
       flex: 1;
       overflow: hidden;
+      height: 100%;
     }
 
     .no-related-glyphs {
@@ -59,7 +60,7 @@ export default class RelatedGlyphPanel extends Panel {
     this.glyphCellView = new GlyphCellView(
       this.editorController.fontController,
       this.editorController.sceneSettingsController,
-      { glyphSelectionKey: "relatedGlyphsGlyphSelection", displayMode: "inline" }
+      { glyphSelectionKey: "relatedGlyphsGlyphSelection" }
     );
 
     this.glyphCellView.onOpenSelectedGlyphs = (event) => this.openSelectedGlyphs(event);
