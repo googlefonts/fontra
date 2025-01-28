@@ -261,40 +261,7 @@ class FontraServer:
         response = await self.projectManager.projectPageHandler(request)
         return response
 
-<<<<<<< HEAD
-    async def viewPathHandler(
-        self, viewName: str, request: web.Request
-    ) -> web.Response:
-        authToken = await self.projectManager.authorize(request)
-        if not authToken:
-            qs = quote(request.path_qs, safe="")
-            raise web.HTTPFound(f"/?ref={qs}")
-
-        if not request.query:
-            return await self.staticContentHandler(
-                self.viewEntryPoints[viewName], request
-            )
-
-        projectIdentifier = request.query.get("project")
-        if projectIdentifier is None or not await self.projectManager.projectAvailable(
-            projectIdentifier, authToken
-        ):
-            raise web.HTTPNotFound()
-
-        try:
-            html = getResourcePath(
-                self.viewEntryPoints[viewName], f"{viewName}.html"
-            ).read_bytes()
-        except (FileNotFoundError, ModuleNotFoundError):
-            raise web.HTTPNotFound()
-
-        html = self._addVersionTokenToReferences(html, "text/html")
-
-        return web.Response(body=html, content_type="text/html")
-
-=======
     # Support pre-2025 paths
->>>>>>> 97f2f4b3c (Changes to server to serve everything from fontra.client)
     async def viewRedirectHandler(self, request: web.Request) -> web.Response:
         raise web.HTTPFound(request.path.replace("/-/", ".html?project="))
 
