@@ -9,7 +9,8 @@
   },
   "exports": {
     "./webpack.config.cjs": "./webpack.config.cjs",
-    "./*": "./src/*"
+    "./*": "./src/*",
+    "./assets/*": "./assets/*"
   },
   "scripts": {
     "test": "mocha tests --reporter spec"
