@@ -1,12 +1,11 @@
 import { expect } from "chai";
 
 import { getClassSchema } from "@fontra/core/classes.js";
+import coreClasses from "@fontra/core/classes.json" with { type: "json" };
 import { enumerate, range } from "@fontra/core/utils.js";
 import { Layer, StaticGlyph, VariableGlyph } from "@fontra/core/var-glyph.js";
 import { VarPackedPath } from "@fontra/core/var-path.js";
 import { readRepoPathAsJSON } from "./test-support.js";
-
-const classesSchema = readRepoPathAsJSON("src/fontra/client/core/classes.json");
 
 describe("schema tests", () => {
   const testPaths = [
@@ -45,7 +44,7 @@ describe("schema tests", () => {
 
   for (const [testIndex, testPath] of enumerate(testPaths)) {
     it(`test path ${testIndex}`, async () => {
-      const schema = await getClassSchema(classesSchema);
+      const schema = await getClassSchema(coreClasses);
       let subjectType = schema["Font"]; // Root
       expect(subjectType.className).to.equal("Font");
       expect(subjectType.compositeName).to.equal("Font");
@@ -111,7 +110,7 @@ describe("schema tests", () => {
 
   for (const [testIndex, testCase] of enumerate(castTestCases)) {
     it(`cast test ${testIndex}`, async () => {
-      const schema = await getClassSchema(classesSchema);
+      const schema = await getClassSchema(coreClasses);
       let subjectType = schema[testCase.rootClass]; // Root
       for (const pathElement of testCase.path) {
         subjectType = subjectType.getSubType(pathElement);

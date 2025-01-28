@@ -12,6 +12,8 @@ const __dirname = dirname(__filename);
 describe("Path Changes Tests", () => {
   const test_data_path = join(
     dirname(__dirname),
+    "..",
+    "..",
     "test-common",
     "path-change-test-data.json"
   );
