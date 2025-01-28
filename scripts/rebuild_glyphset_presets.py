@@ -161,14 +161,10 @@ def getKoeberlinLatinGlyphSets():
             }
         )
 
-    order = ["XS", "S", "M", "L", "XL", "XXL"]
+    order = {k: i for i, k in enumerate(["XS", "S", "M", "L", "XL", "XXL"])}
     glyphSets.sort(
         key=lambda glyphSet: (
-            (
-                order.index(glyphSet["name"].split()[-1])
-                if glyphSet["name"].split()[-1] in order
-                else len(order) - 1
-            ),
+            order.get(glyphSet["name"].split()[-1], len(order)),
             glyphSet["name"],
         )
     )
