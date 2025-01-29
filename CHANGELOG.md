@@ -16,7 +16,7 @@ There will be further improvements and additions. Ongoing work: [Issue 1886](htt
 
 ## 2025-01-17
 
-- A change the URL format: the project identifier is now in the URL query, instead of part of the URL path [Issue 1960](https://github.com/googlefonts/fontra/issues/1960), [PR 1959](https://github.com/googlefonts/fontra/pull/1959)
+- A change in the URL format: the project identifier is now in the URL query, instead of part of the URL path [Issue 1960](https://github.com/googlefonts/fontra/issues/1960), [PR 1959](https://github.com/googlefonts/fontra/pull/1959)
 - Editor tools: right-clicking or control-clicking on a tool with sub-tools will now show the subtools instead of the browser's context menu [Issue 1953](https://github.com/googlefonts/fontra/issues/1953), [PR 1956](https://github.com/googlefonts/fontra/pull/1956)
 
 ## 2025-01-14
