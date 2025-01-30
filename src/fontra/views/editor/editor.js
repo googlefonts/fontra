@@ -1267,7 +1267,7 @@ export class EditorController extends ViewController {
       selectedGlyphInfo.glyphIndex +
       (select ? (where == 1 ? 1 : 0) : where == -1 ? glyphInfos.length : 0);
 
-    const glyphExists = !!this.fontController.glyphMap[glyphInfos.glyphName];
+    const glyphExists = !!this.fontController.glyphMap[glyphInfos[0]?.glyphName];
 
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
