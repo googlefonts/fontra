@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-01-30
+
+- Support reading .woff and .woff2 [PR 1999](https://github.com/googlefonts/fontra/pull/1999)
+
 ## 2025-01-27
 
 - Misc improvements to the Font Overview
