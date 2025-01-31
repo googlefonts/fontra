@@ -133,7 +133,7 @@ unicode;name;category;subCategory;case;direction;script;description;production
 00A9;copyright;Symbol;;;;;COPYRIGHT SIGN;
 2117;published;Symbol;;;;;SOUND RECORDING COPYRIGHT;uni2117
 00AE;registered;Symbol;;;;;REGISTERED SIGN;
-00AA;ordfeminine;Letter;Superscript;;;latin;FEMININE ORDINAL INDICATOR;
+00AA;ordfeminine;Letter;Superscript;minor;;latin;FEMININE ORDINAL INDICATOR;
 00AB;guillemetleft;Punctuation;Quote;;;;LEFT-POINTING DOUBLE ANGLE QUOTATION MARK;guillemotleft
 00AC;logicalnot;Symbol;Math;;;;NOT SIGN;
 00AD;softhyphen;Punctuation;Dash;;;;SOFT HYPHEN;uni00AD
@@ -143,7 +143,7 @@ unicode;name;category;subCategory;case;direction;script;description;production
 00B5;micro;Symbol;Math;;;;MICRO SIGN;uni00B5
 00B6;paragraph;Symbol;;;;;PILCROW SIGN;
 00B7;periodcentered;Punctuation;;;;;MIDDLE DOT;
-00BA;ordmasculine;Letter;Superscript;;;latin;MASCULINE ORDINAL INDICATOR;
+00BA;ordmasculine;Letter;Superscript;minor;;latin;MASCULINE ORDINAL INDICATOR;
 00BB;guillemetright;Punctuation;Quote;;;;RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK;guillemotright
 2080;zeroinferior;Number;Small;minor;;;SUBSCRIPT ZERO;uni2080
 2081;oneinferior;Number;Small;minor;;;SUBSCRIPT ONE;uni2081
@@ -480,6 +480,13 @@ unicode;name;category;subCategory;case;direction;script;description;production
 015D;scircumflex;Letter;;lower;;latin;LATIN SMALL LETTER S WITH CIRCUMFLEX;
 015E;Scedilla;Letter;;upper;;latin;LATIN CAPITAL LETTER S WITH CEDILLA;
 015F;scedilla;Letter;;lower;;latin;LATIN SMALL LETTER S WITH CEDILLA;
+1DF1E;scurl;Letter;;lower;;latin;LATIN SMALL LETTER S WITH CURL;u1DF1E
+1DF25;dleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER D WITH MID-HEIGHT LEFT HOOK;u1DF25
+1DF26;lleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER L WITH MID-HEIGHT LEFT HOOK;u1DF26
+1DF27;nleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER N WITH MID-HEIGHT LEFT HOOK;u1DF27
+1DF28;rleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER R WITH MID-HEIGHT LEFT HOOK;u1DF28
+1DF29;sleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER S WITH MID-HEIGHT LEFT HOOK;u1DF29
+1DF2A;tleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER T WITH MID-HEIGHT LEFT HOOK;u1DF2A
 0160;Scaron;Letter;;upper;;latin;LATIN CAPITAL LETTER S WITH CARON;
 0161;scaron;Letter;;lower;;latin;LATIN SMALL LETTER S WITH CARON;
 0162;Tcedilla;Letter;;upper;;latin;LATIN CAPITAL LETTER T WITH CEDILLA;uni0162
@@ -530,7 +537,7 @@ unicode;name;category;subCategory;case;direction;script;description;production
 018F;Schwa;Letter;;upper;;latin;LATIN CAPITAL LETTER SCHWA;uni018F
 0190;Eopen;Letter;;upper;;latin;LATIN CAPITAL LETTER OPEN E;uni0190
 0191;Fhook;Letter;;upper;;latin;LATIN CAPITAL LETTER F WITH HOOK;uni0191
-0192;florin;Symbol;Currency;;;latin;LATIN SMALL LETTER F WITH HOOK;
+0192;fhook;Letter;;lower;;latin;LATIN SMALL LETTER F WITH HOOK;florin
 0193;Ghook;Letter;;upper;;latin;LATIN CAPITAL LETTER G WITH HOOK;uni0193
 0194;Gamma-latin;Letter;;upper;;latin;LATIN CAPITAL LETTER GAMMA;uni0194
 0195;hwair;Letter;;lower;;latin;LATIN SMALL LETTER HV;uni0195
@@ -539,7 +546,7 @@ unicode;name;category;subCategory;case;direction;script;description;production
 0198;Khook;Letter;;upper;;latin;LATIN CAPITAL LETTER K WITH HOOK;uni0198
 0199;khook;Letter;;lower;;latin;LATIN SMALL LETTER K WITH HOOK;uni0199
 019A;lbar;Letter;;lower;;latin;LATIN SMALL LETTER L WITH BAR;uni019A
-019B;lambdastroke;Letter;;lower;;latin;LATIN SMALL LETTER LAMBDA WITH STROKE;uni019B
+019B;lambdastroke-latin;Letter;;lower;;latin;LATIN SMALL LETTER LAMBDA WITH STROKE;uni019B
 019C;Mturned;Letter;;upper;;latin;LATIN CAPITAL LETTER TURNED M;uni019C
 019D;Nhookleft;Letter;;upper;;latin;LATIN CAPITAL LETTER N WITH LEFT HOOK;uni019D
 019E;nlongrightleg;Letter;;lower;;latin;LATIN SMALL LETTER N WITH LONG RIGHT LEG;uni019E
@@ -1586,8 +1593,8 @@ unicode;name;category;subCategory;case;direction;script;description;production
 040E;Ushort-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SHORT U;uni040E
 0424;Ef-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER EF;uni0424
 0425;Ha-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER HA;uni0425
-0427;Che-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CHE;uni0427
 0426;Tse-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TSE;uni0426
+0427;Che-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CHE;uni0427
 0428;Sha-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SHA;uni0428
 0429;Shcha-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SHCHA;uni0429
 040F;Dzhe-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DZHE;uni040F
@@ -1639,8 +1646,8 @@ unicode;name;category;subCategory;case;direction;script;description;production
 045E;ushort-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SHORT U;uni045E
 0444;ef-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER EF;uni0444
 0445;ha-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER HA;uni0445
-0447;che-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER CHE;uni0447
 0446;tse-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TSE;uni0446
+0447;che-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER CHE;uni0447
 0448;sha-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SHA;uni0448
 0449;shcha-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SHCHA;uni0449
 045F;dzhe-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DZHE;uni045F
@@ -1837,6 +1844,12 @@ unicode;name;category;subCategory;case;direction;script;description;production
 0521;elmiddlehook-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER EL WITH MIDDLE HOOK;uni0521
 0522;Enmiddlehook-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER EN WITH MIDDLE HOOK;uni0522
 0523;enmiddlehook-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER EN WITH MIDDLE HOOK;uni0523
+047A;Omegaround-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER ROUND OMEGA;uni047A
+047B;omegaround-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER ROUND OMEGA;uni047B
+047C;Omegatitlo-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER OMEGA WITH TITLO;uni047C
+047D;omegatitlo-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER OMEGA WITH TITLO;uni047D
+047E;Ot-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER OT;uni047E
+047F;ot-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER OT;uni047F
 0480;Koppa-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER KOPPA;uni0480
 0481;koppa-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER KOPPA;uni0481
 0482;thousand-cy;Symbol;;;;cyrillic;CYRILLIC THOUSANDS SIGN;uni0482
@@ -1859,8 +1872,8 @@ A640;Zemlya-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER ZEMLYA;uniA640
 A641;zemlya-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER ZEMLYA;uniA641
 A642;Dzelo-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DZELO;uniA642
 A643;dzelo-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DZELO;uniA643
-A644;DzeReversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED DZE;uniA644
-A645;dzeReversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED DZE;uniA645
+A644;Dzereversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED DZE;uniA644
+A645;dzereversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED DZE;uniA645
 A646;Iota-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER IOTA;uniA646
 A647;iota-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER IOTA;uniA647
 A648;Djerv-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DJERV;uniA648
@@ -1875,8 +1888,8 @@ A650;YeruBackYer-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER YERU WITH BA
 A651;yeruBackyer-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER YERU WITH BACK YER;uniA651
 A652;YatIotified-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER IOTIFIED YAT;uniA652
 A653;yatIotified-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER IOTIFIED YAT;uniA653
-A654;YuReversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED YU;uniA654
-A655;yuReversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED YU;uniA655
+A654;Yureversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED YU;uniA654
+A655;yureversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED YU;uniA655
 A656;IotifiedA-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER IOTIFIED A;uniA656
 A657;iotifieda-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER IOTIFIED A;uniA657
 A658;YusClosedlittle-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CLOSED LITTLE YUS;uniA658
@@ -1887,20 +1900,20 @@ A65C;YusiotifiedClosedLittle-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER 
 A65D;yusiotifiedClosedLittle-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER IOTIFIED CLOSED LITTLE YUS;uniA65D
 A65E;Yn-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER YN;uniA65E
 A65F;yn-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER YN;uniA65F
-A660;TseReversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED TSE;uniA660
-A661;tseReversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED TSE;uniA661
+A660;Tsereversed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER REVERSED TSE;uniA660
+A661;tsereversed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER REVERSED TSE;uniA661
 A662;DeSoft-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SOFT DE;uniA662
 A663;deSoft-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SOFT DE;uniA663
 A664;ElSoft-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SOFT EL;uniA664
 A665;elSoft-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SOFT EL;uniA665
 A666;EmSoft-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SOFT EM;uniA666
 A667;emSoft-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SOFT EM;uniA667
-A668;OMonocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER MONOCULAR O;uniA668
+A668;Omonocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER MONOCULAR O;uniA668
 A669;oMonocular-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER MONOCULAR O;uniA669
-A66A;OBinocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER BINOCULAR O;uniA66A
-A66B;oBinocular-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER BINOCULAR O;uniA66B
-A66C;ODoubleMonocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DOUBLE MONOCULAR O;uniA66C
-A66D;oDoubleMonocular-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DOUBLE MONOCULAR O;uniA66D
+A66A;Obinocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER BINOCULAR O;uniA66A
+A66B;obinocular-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER BINOCULAR O;uniA66B
+A66C;Odoublemonocular-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DOUBLE MONOCULAR O;uniA66C
+A66D;odoublemonocular-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DOUBLE MONOCULAR O;uniA66D
 A66E;omultiocular-cy;Letter;;;;cyrillic;CYRILLIC LETTER MULTIOCULAR O;uniA66E
 A66F;vzmetcomb-cy;Mark;Nonspacing;;;cyrillic;COMBINING CYRILLIC VZMET;uniA66F
 A670;tenmillionscomb-cy;Mark;Enclosing;;;cyrillic;COMBINING CYRILLIC TEN MILLIONS SIGN;uniA670
@@ -1929,8 +1942,8 @@ A686;Cche-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CCHE;uniA686
 A687;cche-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER CCHE;uniA687
 A688;Dzze-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DZZE;uniA688
 A689;dzze-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DZZE;uniA689
-A68A;TeWithMiddleHook-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TE WITH MIDDLE HOOK;uniA68A
-A68B;tewithmiddlehook-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TE WITH MIDDLE HOOK;uniA68B
+A68A;Temiddlehook-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TE WITH MIDDLE HOOK;uniA68A
+A68B;temiddlehook-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TE WITH MIDDLE HOOK;uniA68B
 A68C;Twe-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TWE;uniA68C
 A68D;twe-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER TWE;uniA68D
 A68E;Tswe-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER TSWE;uniA68E
@@ -1943,10 +1956,10 @@ A694;Hwe-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER HWE;uniA694
 A695;hwe-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER HWE;uniA695
 A696;Shwe-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER SHWE;uniA696
 A697;shwe-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER SHWE;uniA697
-A698;DoubleO-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DOUBLE O;uniA698
-A699;doubleo-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DOUBLE O;uniA699
-A69A;CrossedO-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CROSSED O;uniA69A
-A69B;crossedo-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER CROSSED O;uniA69B
+A698;Odouble-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER DOUBLE O;uniA698
+A699;odouble-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER DOUBLE O;uniA699
+A69A;Ocrossed-cy;Letter;;upper;;cyrillic;CYRILLIC CAPITAL LETTER CROSSED O;uniA69A
+A69B;ocrossed-cy;Letter;;lower;;cyrillic;CYRILLIC SMALL LETTER CROSSED O;uniA69B
 A69C;modifierhardsign-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC HARD SIGN;uniA69C
 A69D;modifiersoftsign-cy;Letter;Modifier;;;cyrillic;MODIFIER LETTER CYRILLIC SOFT SIGN;uniA69D
 A69E;efcomb-cy;Mark;Nonspacing;;;cyrillic;COMBINING CYRILLIC LETTER EF;uniA69E
@@ -3979,7 +3992,49 @@ AB65;Omegasmall;Letter;;lower;;greek;GREEK LETTER SMALL CAPITAL OMEGA;uniAB65
 1D9C;cmod;Letter;Modifier;;;;MODIFIER LETTER SMALL C;uni1D9C
 1D9D;ccurlmod;Letter;Modifier;;;;MODIFIER LETTER SMALL C WITH CURL;uni1D9D
 1D9E;ethmod;Letter;Modifier;;;;MODIFIER LETTER SMALL ETH;uni1D9E
-1D9F;eReversedopenmod;Letter;Modifier;;;;MODIFIER LETTER SMALL REVERSED OPEN E;uni1D9F
+1D9F;eopenreversedmod;Letter;Modifier;;;;MODIFIER LETTER SMALL REVERSED OPEN E;uni1D9F
+10790;fengdigraphmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL FENG DIGRAPH;u10790
+10791;ramshornmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL RAMS HORN;u10791
+10792;Gsmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL G;u10792
+10793;ghookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER G WITH HOOK;u10793
+10794;Gsmallhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL G WITH HOOK;u10794
+10795;hbarmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL H WITH STROKE;u10795
+10796;Hsmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL H;u10796
+10797;henghookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL HENG WITH HOOK;u10797
+10798;jdotlessstrokehookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL DOTLESS J WITH STROKE AND HOOK;u10798
+10799;lsdigraphmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL LS DIGRAPH;u10799
+1079A;lzdigraphmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL LZ DIGRAPH;u1079A
+1079B;lbeltmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL L WITH BELT;u1079B
+1079C;Lsmallbeltmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL L WITH BELT;u1079C
+1079D;lretroflexhookandbeltmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL L WITH RETROFLEX HOOK AND BELT;u1079D
+1079E;lezhmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL LEZH;u1079E
+1079F;lezhhookretroflexmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL LEZH WITH RETROFLEX HOOK;u1079F
+107A0;yturnedmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TURNED Y;u107A0
+107A1;yturnedbeltmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TURNED Y WITH BELT;u107A1
+107A2;oslashmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL O WITH STROKE;u107A2
+107A3;OEsmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL OE;u107A3
+107A4;omegaclosedmod-latin;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CLOSED OMEGA;u107A4
+107A5;qmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL Q;u107A5
+107A6;rlonglegmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TURNED R WITH LONG LEG;u107A6
+107A7;rlonglegturnedhookretroflexmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TURNED R WITH LONG LEG AND RETROFLEX HOOK;u107A7
+107A8;rtailmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL R WITH TAIL;u107A8
+107A9;rfishhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL R WITH FISHHOOK;u107A9
+107AA;Rsmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL R;u107AA
+107AB;tccurlmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TC DIGRAPH WITH CURL;u107AB
+107AC;tsmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TS DIGRAPH;u107AC
+107AD;tsretroflexhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TS DIGRAPH WITH RETROFLEX HOOK;u107AD
+107AE;teshmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TESH DIGRAPH;u107AE
+107AF;tretroflexhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL T WITH RETROFLEX HOOK;u107AF
+107B0;vrighthookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL V WITH RIGHT HOOK;u107B0
+107B2;Ysmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL Y;u107B2
+107B3;glottalstopstrokemod;Letter;Modifier;minor;;latin;MODIFIER LETTER GLOTTAL STOP WITH STROKE;u107B3
+107B4;glottalstopstrokereversedmod;Letter;Modifier;minor;;latin;MODIFIER LETTER REVERSED GLOTTAL STOP WITH STROKE;u107B4
+107B5;bilabialclickmod;Letter;Modifier;minor;;latin;MODIFIER LETTER BILABIAL CLICK;u107B5
+107B6;clickdentalmod;Letter;Modifier;minor;;latin;MODIFIER LETTER DENTAL CLICK;u107B6
+107B7;clicklateralmod;Letter;Modifier;minor;;latin;MODIFIER LETTER LATERAL CLICK;u107B7
+107B8;clickalveolarmod;Letter;Modifier;minor;;latin;MODIFIER LETTER ALVEOLAR CLICK;u107B8
+107B9;clickretroflexhookretroflexmod;Letter;Modifier;minor;;latin;MODIFIER LETTER RETROFLEX CLICK WITH RETROFLEX HOOK;u107B9
+107BA;scurlmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL S WITH CURL;u107BA
 1DA0;fmod;Letter;Modifier;;;;MODIFIER LETTER SMALL F;uni1DA0
 1DA1;jdotlessstrokemod;Letter;Modifier;;;;MODIFIER LETTER SMALL DOTLESS J WITH STROKE;uni1DA1
 1DA2;scriptgmod;Letter;Modifier;;;;MODIFIER LETTER SMALL SCRIPT G;uni1DA2
@@ -4343,7 +4398,7 @@ AB3E;ostroke-blackletter;Letter;;lower;;Black Letter;LATIN SMALL LETTER BLACKLET
 AB3F;oopenstroke-blackletter;Letter;;lower;;Black Letter;LATIN SMALL LETTER OPEN O WITH STROKE;uniAB3F
 AB40;oeinverted;Letter;;lower;;latin;LATIN SMALL LETTER INVERTED OE;uniAB40
 AB41;oeturnedstroke;Letter;;lower;;latin;LATIN SMALL LETTER TURNED OE WITH STROKE;uniAB41
-AB42;oeturnedwithhorizontalstroke;Letter;;lower;;latin;LATIN SMALL LETTER TURNED OE WITH HORIZONTAL STROKE;uniAB42
+AB42;oeturnedhorizontalstroke;Letter;;lower;;latin;LATIN SMALL LETTER TURNED OE WITH HORIZONTAL STROKE;uniAB42
 AB43;oopenoturned;Letter;;lower;;latin;LATIN SMALL LETTER TURNED O OPEN-O;uniAB43
 AB44;ostrokeopenoturned;Letter;;lower;;latin;LATIN SMALL LETTER TURNED O OPEN-O WITH STROKE;uniAB44
 AB45;rstirrup;Letter;;lower;;latin;LATIN SMALL LETTER STIRRUP R;uniAB45
@@ -4381,102 +4436,24 @@ AB64;alphainverted-latin;Letter;;lower;;latin;LATIN SMALL LETTER INVERTED ALPHA;
 AB66;dzretroflexhook;Letter;;lower;;latin;LATIN SMALL LETTER DZ DIGRAPH WITH RETROFLEX HOOK;uniAB66
 AB67;tsretroflexhook;Letter;;lower;;latin;LATIN SMALL LETTER TS DIGRAPH WITH RETROFLEX HOOK;uniAB67
 AB68;rmiddletildeturned;Letter;;lower;;latin;LATIN SMALL LETTER TURNED R WITH MIDDLE TILDE;uniAB68
-AB69;wturnedmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TURNED W;uniAB69
+AB69;wturnedmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL TURNED W;uniAB69
 AB6A;tackleftmod;Letter;Modifier;;;latin;MODIFIER LETTER LEFT TACK;uniAB6A
 AB6B;tackrightmod;Letter;Modifier;;;latin;MODIFIER LETTER RIGHT TACK;uniAB6B
-10780;AAmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL AA;uni10780
-10781;colontriangularsuperior;Mark;Modifier;;;;MODIFIER LETTER SUPERSCRIPT TRIANGULAR COLON;uni10781
-10782;colontriangularhalfsuperior;Mark;Modifier;;;;MODIFIER LETTER SUPERSCRIPT HALF TRIANGULAR COLON;uni10782
-10783;aemod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL AE;uni10783
-10784;Bsmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL B;uni10784
-10785;bhookmod;Letter;Modifier;;;latin;MODIFIER LETTER B WITH HOOK;uni10785
-10787;dzaltonemod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL DZ DIGRAPH;uni10787
-10788;dzretroflexhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL DZ DIGRAPH WITH RETROFLEX HOOK;uni10788
-10789;dzcurlmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL DZ DIGRAPH WITH CURL;uni10789
-1078A;dezhmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL DEZH DIGRAPH;uni1078A
-1078B;dtailmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL D WITH TAIL;uni1078B
-1078C;dhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL D WITH HOOK;uni1078C
-1078D;dhookandtailmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL D WITH HOOK AND TAIL;uni1078D
-1078E;ereversedmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL REVERSED E;uni1078E
-1078F;eopenreversedmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CLOSED REVERSED OPEN E;uni1078F
-10790;fengdigraphmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL FENG DIGRAPH;uni10790
-10791;ramshornmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL RAMS HORN;uni10791
-10792;Gsmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL G;uni10792
-10793;ghookmod;Letter;Modifier;;;latin;MODIFIER LETTER G WITH HOOK;uni10793
-10794;Gsmallhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL G WITH HOOK;uni10794
-10795;hbarmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL H WITH STROKE;uni10795
-10796;Hsmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL H;uni10796
-10797;henghookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL HENG WITH HOOK;uni10797
-10798;jdotlessstrokehookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL DOTLESS J WITH STROKE AND HOOK;uni10798
-10799;lsdigraphmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL LS DIGRAPH;uni10799
-1079A;lzdigraphmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL LZ DIGRAPH;uni1079A
-1079B;lbeltmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL L WITH BELT;uni1079B
-1079C;Lsmallbeltmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL L WITH BELT;uni1079C
-1079D;lretroflexhookandbeltmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL L WITH RETROFLEX HOOK AND BELT;uni1079D
-1079E;lezhmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL LEZH;uni1079E
-1079F;lezhhookretroflexmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL LEZH WITH RETROFLEX HOOK;uni1079F
-107A0;yturnedmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TURNED Y;uni107A0
-107A1;yturnedbeltmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TURNED Y WITH BELT;uni107A1
-107A2;oslashmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL O WITH STROKE;uni107A2
-107A3;OEsmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL OE;uni107A3
-107A4;omegaclosedmod-latin;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CLOSED OMEGA;uni107A4
-107A5;qmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL Q;uni107A5
-107A6;rlonglegmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TURNED R WITH LONG LEG;uni107A6
-107A7;rlonglegturnedhookretroflexmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TURNED R WITH LONG LEG AND RETROFLEX HOOK;uni107A7
-107A8;rtailmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL R WITH TAIL;uni107A8
-107A9;rfishhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL R WITH FISHHOOK;uni107A9
-107AA;Rsmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL R;uni107AA
-107AB;tccurlmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TC DIGRAPH WITH CURL;uni107AB
-107AC;tsmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TS DIGRAPH;uni107AC
-107AD;tsretroflexhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TS DIGRAPH WITH RETROFLEX HOOK;uni107AD
-107AE;teshmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL TESH DIGRAPH;uni107AE
-107AF;tretroflexhookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL T WITH RETROFLEX HOOK;uni107AF
-107B0;vrighthookmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL V WITH RIGHT HOOK;uni107B0
-107B2;Ysmallmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL CAPITAL Y;uni107B2
-107B3;glottalstopstrokemod;Letter;Modifier;;;latin;MODIFIER LETTER GLOTTAL STOP WITH STROKE;uni107B3
-107B4;glottalstopstrokereversedmod;Letter;Modifier;;;latin;MODIFIER LETTER REVERSED GLOTTAL STOP WITH STROKE;uni107B4
-107B5;bilabialclickmod;Letter;Modifier;;;latin;MODIFIER LETTER BILABIAL CLICK;uni107B5
-107B6;clickdentalmod;Letter;Modifier;;;latin;MODIFIER LETTER DENTAL CLICK;uni107B6
-107B7;clicklateralmod;Letter;Modifier;;;latin;MODIFIER LETTER LATERAL CLICK;uni107B7
-107B8;clickalveolarmod;Letter;Modifier;;;latin;MODIFIER LETTER ALVEOLAR CLICK;uni107B8
-107B9;clickretroflexhookretroflexmod;Letter;Modifier;;;latin;MODIFIER LETTER RETROFLEX CLICK WITH RETROFLEX HOOK;uni107B9
-107BA;scurlmod;Letter;Modifier;;;latin;MODIFIER LETTER SMALL S WITH CURL;uni107BA
-1DF00;fengdigraphetrill;Letter;;lower;;latin;LATIN SMALL LETTER FENG DIGRAPH WITH TRILL;uni1DF00
-1DF01;gscriptreversed;Letter;;lower;;latin;LATIN SMALL LETTER REVERSED SCRIPT G;uni1DF01
-1DF02;Gsmallturned;Letter;;lower;;latin;LATIN LETTER SMALL CAPITAL TURNED G;uni1DF02
-1DF03;kreversed;Letter;;lower;;latin;LATIN SMALL LETTER REVERSED K;uni1DF03
-1DF04;Lsmallbelt;Letter;;lower;;latin;LATIN LETTER SMALL CAPITAL L WITH BELT;uni1DF04
-1DF05;lezhhookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER LEZH WITH RETROFLEX HOOK;uni1DF05
-1DF06;yturnedbeld;Letter;;lower;;latin;LATIN SMALL LETTER TURNED Y WITH BELT;uni1DF06
-1DF07;engreversed;Letter;;lower;;latin;LATIN SMALL LETTER REVERSED ENG;uni1DF07
-1DF08;rlonglegturnedhookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER TURNED R WITH LONG LEG AND RETROFLEX HOOK;uni1DF08
-1DF09;thookandhookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER T WITH HOOK AND RETROFLEX HOOK;uni1DF09
-1DF0A;clickretroflexhookretroflex;Letter;;lower;;latin;LATIN LETTER RETROFLEX CLICK WITH RETROFLEX HOOK;uni1DF0A
-1DF0B;eshdoublebar;Letter;;lower;;latin;LATIN SMALL LETTER ESH WITH DOUBLE BAR;uni1DF0B
-1DF0C;eshdoublebarandcurl;Letter;;lower;;latin;LATIN SMALL LETTER ESH WITH DOUBLE BAR AND CURL;uni1DF0C
-1DF0D;tturnedcurl;Letter;;lower;;latin;LATIN SMALL LETTER TURNED T WITH CURL;uni1DF0D
-1DF0F;cstretchedcurl;Letter;;lower;;latin;LATIN LETTER STRETCHED C WITH CURL;uni1DF0F
-1DF10;Ksmallturned;Letter;;lower;;latin;LATIN LETTER SMALL CAPITAL TURNED K;uni1DF10
-1DF11;lfishhook;Letter;;lower;;latin;LATIN SMALL LETTER L WITH FISHHOOK;uni1DF11
-1DF12;dezhpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER DEZH DIGRAPH WITH PALATAL HOOK;uni1DF12
-1DF13;lbeltpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER L WITH BELT AND PALATAL HOOK;uni1DF13
-1DF14;engpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER ENG WITH PALATAL HOOK;uni1DF14
-1DF15;rturnedpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER TURNED R WITH PALATAL HOOK;uni1DF15
-1DF16;rfishhookpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER R WITH FISHHOOK AND PALATAL HOOK;uni1DF16
-1DF17;teshpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER TESH DIGRAPH WITH PALATAL HOOK;uni1DF17
-1DF18;ezhpalatalhook;Letter;;lower;;latin;LATIN SMALL LETTER EZH WITH PALATAL HOOK;uni1DF18
-1DF19;dezhhookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER DEZH DIGRAPH WITH RETROFLEX HOOK;uni1DF19
-1DF1A;istrokehookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER I WITH STROKE AND RETROFLEX HOOK;uni1DF1A
-1DF1B;ohookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER O WITH RETROFLEX HOOK;uni1DF1B
-1DF1C;teshhookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER TESH DIGRAPH WITH RETROFLEX HOOK;uni1DF1C
-1DF1D;chookretroflex;Letter;;lower;;latin;LATIN SMALL LETTER C WITH RETROFLEX HOOK;uni1DF1D
-1DF1E;scurl;Letter;;lower;;latin;LATIN SMALL LETTER S WITH CURL;uni1DF1E
-1DF25;dleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER D WITH MID-HEIGHT LEFT HOOK;uni1DF25
-1DF26;lleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER L WITH MID-HEIGHT LEFT HOOK;uni1DF26
-1DF27;nleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER N WITH MID-HEIGHT LEFT HOOK;uni1DF27
-1DF28;rleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER R WITH MID-HEIGHT LEFT HOOK;uni1DF28
-1DF29;sleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER S WITH MID-HEIGHT LEFT HOOK;uni1DF29
-1DF2A;tleftmidhook;Letter;;lower;;latin;LATIN SMALL LETTER T WITH MID-HEIGHT LEFT HOOK;uni1DF2A
+10780;AAmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL AA;u10780
+10781;colontriangularsuperior;Mark;Modifier;minor;;;MODIFIER LETTER SUPERSCRIPT TRIANGULAR COLON;u10781
+10782;colontriangularhalfsuperior;Mark;Modifier;minor;;;MODIFIER LETTER SUPERSCRIPT HALF TRIANGULAR COLON;u10782
+10783;aemod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL AE;u10783
+10784;Bsmallmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CAPITAL B;u10784
+10785;bhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER B WITH HOOK;u10785
+10787;dzaltonemod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL DZ DIGRAPH;u10787
+10788;dzretroflexhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL DZ DIGRAPH WITH RETROFLEX HOOK;u10788
+10789;dzcurlmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL DZ DIGRAPH WITH CURL;u10789
+1078A;dezhmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL DEZH DIGRAPH;u1078A
+1078B;dtailmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL D WITH TAIL;u1078B
+1078C;dhookmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL D WITH HOOK;u1078C
+1078D;dhookandtailmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL D WITH HOOK AND TAIL;u1078D
+1078E;ereversedmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL REVERSED E;u1078E
+1078F;eopenreversedclosedmod;Letter;Modifier;minor;;latin;MODIFIER LETTER SMALL CLOSED REVERSED OPEN E;u1078F
 05D0;alef-hb;Letter;;;RTL;hebrew;HEBREW LETTER ALEF;uni05D0
 05D1;bet-hb;Letter;;;RTL;hebrew;HEBREW LETTER BET;uni05D1
 05D2;gimel-hb;Letter;;;RTL;hebrew;HEBREW LETTER GIMEL;uni05D2
@@ -5970,153 +5947,157 @@ FDFD;bismillah-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE BISMILLAH AR-RAHMA
 07AE;obofili-thaana;Mark;Nonspacing;;RTL;thaana;THAANA OBOFILI;uni07AE
 07AF;oaboafili-thaana;Mark;Nonspacing;;RTL;thaana;THAANA OABOAFILI;uni07AF
 07B0;sukun-thaana;Mark;Nonspacing;;RTL;thaana;THAANA SUKUN;uni07B0
-07C0;zero-nko;Number;Decimal Digit;;;nko;NKO DIGIT ZERO;uni07C0
-07C1;one-nko;Number;Decimal Digit;;;nko;NKO DIGIT ONE;uni07C1
-07C2;two-nko;Number;Decimal Digit;;;nko;NKO DIGIT TWO;uni07C2
-07C3;three-nko;Number;Decimal Digit;;;nko;NKO DIGIT THREE;uni07C3
-07C4;four-nko;Number;Decimal Digit;;;nko;NKO DIGIT FOUR;uni07C4
-07C5;five-nko;Number;Decimal Digit;;;nko;NKO DIGIT FIVE;uni07C5
-07C6;six-nko;Number;Decimal Digit;;;nko;NKO DIGIT SIX;uni07C6
-07C7;seven-nko;Number;Decimal Digit;;;nko;NKO DIGIT SEVEN;uni07C7
-07C8;eight-nko;Number;Decimal Digit;;;nko;NKO DIGIT EIGHT;uni07C8
-07C9;nine-nko;Number;Decimal Digit;;;nko;NKO DIGIT NINE;uni07C9
-07CA;a-nko;Letter;;;;nko;NKO LETTER A;uni07CA
-07CB;ee-nko;Letter;;;;nko;NKO LETTER EE;uni07CB
-07CC;i-nko;Letter;;;;nko;NKO LETTER I;uni07CC
-07CD;e-nko;Letter;;;;nko;NKO LETTER E;uni07CD
-07CE;u-nko;Letter;;;;nko;NKO LETTER U;uni07CE
-07CF;oo-nko;Letter;;;;nko;NKO LETTER OO;uni07CF
-07D0;o-nko;Letter;;;;nko;NKO LETTER O;uni07D0
-07D1;dagbasinna-nko;Letter;;;;nko;NKO LETTER DAGBASINNA;uni07D1
-07D2;n-nko;Letter;;;;nko;NKO LETTER N;uni07D2
-07D3;ba-nko;Letter;;;;nko;NKO LETTER BA;uni07D3
-07D4;pa-nko;Letter;;;;nko;NKO LETTER PA;uni07D4
-07D5;ta-nko;Letter;;;;nko;NKO LETTER TA;uni07D5
-07D6;ja-nko;Letter;;;;nko;NKO LETTER JA;uni07D6
-07D7;cha-nko;Letter;;;;nko;NKO LETTER CHA;uni07D7
-07D8;da-nko;Letter;;;;nko;NKO LETTER DA;uni07D8
-07D9;ra-nko;Letter;;;;nko;NKO LETTER RA;uni07D9
-07DA;rra-nko;Letter;;;;nko;NKO LETTER RRA;uni07DA
-07DB;sa-nko;Letter;;;;nko;NKO LETTER SA;uni07DB
-07DC;gba-nko;Letter;;;;nko;NKO LETTER GBA;uni07DC
-07DD;fa-nko;Letter;;;;nko;NKO LETTER FA;uni07DD
-07DE;ka-nko;Letter;;;;nko;NKO LETTER KA;uni07DE
-07DF;la-nko;Letter;;;;nko;NKO LETTER LA;uni07DF
-07E0;nawoloso-nko;Letter;;;;nko;NKO LETTER NA WOLOSO;uni07E0
-07E1;ma-nko;Letter;;;;nko;NKO LETTER MA;uni07E1
-07E2;nya-nko;Letter;;;;nko;NKO LETTER NYA;uni07E2
-07E3;na-nko;Letter;;;;nko;NKO LETTER NA;uni07E3
-07E4;ha-nko;Letter;;;;nko;NKO LETTER HA;uni07E4
-07E5;wa-nko;Letter;;;;nko;NKO LETTER WA;uni07E5
-07E6;ya-nko;Letter;;;;nko;NKO LETTER YA;uni07E6
-07E7;nyawoloso-nko;Letter;;;;nko;NKO LETTER NYA WOLOSO;uni07E7
-07E8;jonaja-nko;Letter;;;;nko;NKO LETTER JONA JA;uni07E8
-07E9;jonacha-nko;Letter;;;;nko;NKO LETTER JONA CHA;uni07E9
-07EA;jonara-nko;Letter;;;;nko;NKO LETTER JONA RA;uni07EA
-07EB;shorthightonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING SHORT HIGH TONE;uni07EB
-07EC;shortlowtonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING SHORT LOW TONE;uni07EC
-07ED;shortrisingtonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING SHORT RISING TONE;uni07ED
-07EE;longdescendingtonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING LONG DESCENDING TONE;uni07EE
-07EF;longhightonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING LONG HIGH TONE;uni07EF
-07F0;longlowtonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING LONG LOW TONE;uni07F0
-07F1;longrisingtonecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING LONG RISING TONE;uni07F1
-07F2;nasalizationcomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING NASALIZATION MARK;uni07F2
-07F3;doubledotabovecomb-nko;Mark;Nonspacing;;;nko;NKO COMBINING DOUBLE DOT ABOVE;uni07F3
-07F4;hightoneapostrophe-nko;Letter;Modifier;;;nko;NKO HIGH TONE APOSTROPHE;uni07F4
-07F5;lowtoneapostrophe-nko;Letter;Modifier;;;nko;NKO LOW TONE APOSTROPHE;uni07F5
-07F6;ooDennen-nko;Symbol;;;;nko;NKO SYMBOL OO DENNEN;uni07F6
-07F7;gbakurunen-nko;Punctuation;;;;nko;NKO SYMBOL GBAKURUNEN;uni07F7
-07F8;comma-nko;Punctuation;;;;nko;NKO COMMA;uni07F8
-07F9;exclam-nko;Punctuation;;;;nko;NKO EXCLAMATION MARK;uni07F9
-07FA;lajanyalan-nko;Letter;Modifier;;;nko;NKO LAJANYALAN;uni07FA
-1E900;Alif-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER ALIF;u1E900
-1E901;Daali-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER DAALI;u1E901
-1E902;Laam-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER LAAM;u1E902
-1E903;Miim-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER MIIM;u1E903
-1E904;Ba-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER BA;u1E904
-1E905;Sinnyiiyhe-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER SINNYIIYHE;u1E905
-1E906;Pe-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER PE;u1E906
-1E907;Bhe-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER BHE;u1E907
-1E908;Ra-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER RA;u1E908
-1E909;E-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER E;u1E909
-1E90A;Fa-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER FA;u1E90A
-1E90B;I-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER I;u1E90B
-1E90C;O-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER O;u1E90C
-1E90D;Dha-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER DHA;u1E90D
-1E90E;Yhe-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER YHE;u1E90E
-1E90F;Waw-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER WAW;u1E90F
-1E910;Nun-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER NUN;u1E910
-1E911;Kaf-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER KAF;u1E911
-1E912;Ya-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER YA;u1E912
-1E913;U-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER U;u1E913
-1E914;Jiim-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER JIIM;u1E914
-1E915;Chi-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER CHI;u1E915
-1E916;Ha-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER HA;u1E916
-1E917;Qaaf-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER QAAF;u1E917
-1E918;Ga-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER GA;u1E918
-1E919;Nya-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER NYA;u1E919
-1E91A;Tu-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER TU;u1E91A
-1E91B;Nha-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER NHA;u1E91B
-1E91C;Va-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER VA;u1E91C
-1E91D;Kha-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER KHA;u1E91D
-1E91E;Gbe-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER GBE;u1E91E
-1E91F;Zal-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER ZAL;u1E91F
-1E920;Kpo-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER KPO;u1E920
-1E921;Sha-adlam;Letter;;upper;;adlam;ADLAM CAPITAL LETTER SHA;u1E921
-1E922;alif-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER ALIF;u1E922
-1E923;daali-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER DAALI;u1E923
-1E924;laam-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER LAAM;u1E924
-1E925;miim-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER MIIM;u1E925
-1E926;ba-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER BA;u1E926
-1E927;sinnyiiyhe-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER SINNYIIYHE;u1E927
-1E928;pe-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER PE;u1E928
-1E929;bhe-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER BHE;u1E929
-1E92A;ra-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER RA;u1E92A
-1E92B;e-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER E;u1E92B
-1E92C;fa-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER FA;u1E92C
-1E92D;i-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER I;u1E92D
-1E92E;o-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER O;u1E92E
-1E92F;dha-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER DHA;u1E92F
-1E930;yhe-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER YHE;u1E930
-1E931;waw-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER WAW;u1E931
-1E932;nun-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER NUN;u1E932
-1E933;kaf-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER KAF;u1E933
-1E934;ya-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER YA;u1E934
-1E935;u-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER U;u1E935
-1E936;jiim-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER JIIM;u1E936
-1E937;chi-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER CHI;u1E937
-1E938;ha-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER HA;u1E938
-1E939;qaaf-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER QAAF;u1E939
-1E93A;ga-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER GA;u1E93A
-1E93B;nya-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER NYA;u1E93B
-1E93C;tu-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER TU;u1E93C
-1E93D;nha-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER NHA;u1E93D
-1E93E;va-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER VA;u1E93E
-1E93F;kha-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER KHA;u1E93F
-1E940;gbe-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER GBE;u1E940
-1E941;zal-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER ZAL;u1E941
-1E942;kpo-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER KPO;u1E942
-1E943;sha-adlam;Letter;;lower;;adlam;ADLAM SMALL LETTER SHA;u1E943
-1E950;zero-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT ZERO;u1E950
-1E951;one-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT ONE;u1E951
-1E952;two-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT TWO;u1E952
-1E953;three-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT THREE;u1E953
-1E954;four-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT FOUR;u1E954
-1E955;five-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT FIVE;u1E955
-1E956;six-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT SIX;u1E956
-1E957;seven-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT SEVEN;u1E957
-1E958;eight-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT EIGHT;u1E958
-1E959;nine-adlam;Number;Decimal Digit;;;adlam;ADLAM DIGIT NINE;u1E959
-1E95E;exclam-adlam;Punctuation;;;;adlam;ADLAM INITIAL EXCLAMATION MARK;u1E95E
-1E95F;question-adlam;Punctuation;;;;adlam;ADLAM INITIAL QUESTION MARK;u1E95F
-1E944;aliflengthencomb-adlam;Mark;Nonspacing;;;adlam;ADLAM ALIF LENGTHENER;u1E944
-1E945;vowellengthencomb-adlam;Mark;Nonspacing;;;adlam;ADLAM VOWEL LENGTHENER;u1E945
-1E946;gemination-adlam;Mark;Nonspacing;;;adlam;ADLAM GEMINATION MARK;u1E946
-1E947;hamza-adlam;Mark;Nonspacing;;;adlam;ADLAM HAMZA;u1E947
-1E948;consonantmodcomb-adlam;Mark;Nonspacing;;;adlam;ADLAM CONSONANT MODIFIER;u1E948
-1E949;gemconsonantmodcomb-adlam;Mark;Nonspacing;;;adlam;ADLAM GERMINATE CONSONANT MODIFIER;u1E949
-1E94A;hoortobbhere-adlam;Mark;Nonspacing;;;adlam;ADLAM HOORTOBBHERE;u1E94A
-1E94B;lestobbhere-adlam;Mark;Nonspacing;;;adlam;ADLAM LESTOBBHERE;u1E94B
+07C0;zero-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT ZERO;uni07C0
+07C1;one-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT ONE;uni07C1
+07C2;two-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT TWO;uni07C2
+07C3;three-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT THREE;uni07C3
+07C4;four-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT FOUR;uni07C4
+07C5;five-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT FIVE;uni07C5
+07C6;six-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT SIX;uni07C6
+07C7;seven-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT SEVEN;uni07C7
+07C8;eight-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT EIGHT;uni07C8
+07C9;nine-nko;Number;Decimal Digit;;RTL;nko;NKO DIGIT NINE;uni07C9
+07CA;a-nko;Letter;;;RTL;nko;NKO LETTER A;uni07CA
+07CB;ee-nko;Letter;;;RTL;nko;NKO LETTER EE;uni07CB
+07CC;i-nko;Letter;;;RTL;nko;NKO LETTER I;uni07CC
+07CD;e-nko;Letter;;;RTL;nko;NKO LETTER E;uni07CD
+07CE;u-nko;Letter;;;RTL;nko;NKO LETTER U;uni07CE
+07CF;oo-nko;Letter;;;RTL;nko;NKO LETTER OO;uni07CF
+07D0;o-nko;Letter;;;RTL;nko;NKO LETTER O;uni07D0
+07D1;dagbasinna-nko;Letter;;;RTL;nko;NKO LETTER DAGBASINNA;uni07D1
+07D2;n-nko;Letter;;;RTL;nko;NKO LETTER N;uni07D2
+07D3;ba-nko;Letter;;;RTL;nko;NKO LETTER BA;uni07D3
+07D4;pa-nko;Letter;;;RTL;nko;NKO LETTER PA;uni07D4
+07D5;ta-nko;Letter;;;RTL;nko;NKO LETTER TA;uni07D5
+07D6;ja-nko;Letter;;;RTL;nko;NKO LETTER JA;uni07D6
+07D7;cha-nko;Letter;;;RTL;nko;NKO LETTER CHA;uni07D7
+07D8;da-nko;Letter;;;RTL;nko;NKO LETTER DA;uni07D8
+07D9;ra-nko;Letter;;;RTL;nko;NKO LETTER RA;uni07D9
+07DA;rra-nko;Letter;;;RTL;nko;NKO LETTER RRA;uni07DA
+07DB;sa-nko;Letter;;;RTL;nko;NKO LETTER SA;uni07DB
+07DC;gba-nko;Letter;;;RTL;nko;NKO LETTER GBA;uni07DC
+07DD;fa-nko;Letter;;;RTL;nko;NKO LETTER FA;uni07DD
+07DE;ka-nko;Letter;;;RTL;nko;NKO LETTER KA;uni07DE
+07DF;la-nko;Letter;;;RTL;nko;NKO LETTER LA;uni07DF
+07E0;nawoloso-nko;Letter;;;RTL;nko;NKO LETTER NA WOLOSO;uni07E0
+07E1;ma-nko;Letter;;;RTL;nko;NKO LETTER MA;uni07E1
+07E2;nya-nko;Letter;;;RTL;nko;NKO LETTER NYA;uni07E2
+07E3;na-nko;Letter;;;RTL;nko;NKO LETTER NA;uni07E3
+07E4;ha-nko;Letter;;;RTL;nko;NKO LETTER HA;uni07E4
+07E5;wa-nko;Letter;;;RTL;nko;NKO LETTER WA;uni07E5
+07E6;ya-nko;Letter;;;RTL;nko;NKO LETTER YA;uni07E6
+07E7;nyawoloso-nko;Letter;;;RTL;nko;NKO LETTER NYA WOLOSO;uni07E7
+07E8;jonaja-nko;Letter;;;RTL;nko;NKO LETTER JONA JA;uni07E8
+07E9;jonacha-nko;Letter;;;RTL;nko;NKO LETTER JONA CHA;uni07E9
+07EA;jonara-nko;Letter;;;RTL;nko;NKO LETTER JONA RA;uni07EA
+07EB;shorthightonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING SHORT HIGH TONE;uni07EB
+07EC;shortlowtonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING SHORT LOW TONE;uni07EC
+07ED;shortrisingtonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING SHORT RISING TONE;uni07ED
+07EE;longdescendingtonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING LONG DESCENDING TONE;uni07EE
+07EF;longhightonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING LONG HIGH TONE;uni07EF
+07F0;longlowtonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING LONG LOW TONE;uni07F0
+07F1;longrisingtonecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING LONG RISING TONE;uni07F1
+07F2;nasalizationcomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING NASALIZATION MARK;uni07F2
+07F3;doubledotabovecomb-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING DOUBLE DOT ABOVE;uni07F3
+07F4;hightoneapostrophe-nko;Letter;Modifier;;RTL;nko;NKO HIGH TONE APOSTROPHE;uni07F4
+07F5;lowtoneapostrophe-nko;Letter;Modifier;;RTL;nko;NKO LOW TONE APOSTROPHE;uni07F5
+07F6;ooDennen-nko;Symbol;;;RTL;nko;NKO SYMBOL OO DENNEN;uni07F6
+07F7;gbakurunen-nko;Punctuation;;;RTL;nko;NKO SYMBOL GBAKURUNEN;uni07F7
+07F8;comma-nko;Punctuation;;;RTL;nko;NKO COMMA;uni07F8
+07F9;exclam-nko;Punctuation;;;RTL;nko;NKO EXCLAMATION MARK;uni07F9
+07FA;lajanyalan-nko;Letter;Modifier;;RTL;nko;NKO LAJANYALAN;uni07FA
+07FD;dantayalan-nko;Mark;Nonspacing;;RTL;nko;NKO COMBINING DANTAYALAN;uni07FD
+07FE;dorome-nko;Symbol;Currency;;RTL;nko;NKO DOROME SIGN;uni07FE
+07FF;taman-nko;Symbol;Currency;;RTL;nko;NKO TAMAN SIGN;uni07FF
+1E900;Alif-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER ALIF;u1E900
+1E901;Daali-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER DAALI;u1E901
+1E902;Laam-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER LAAM;u1E902
+1E903;Miim-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER MIIM;u1E903
+1E904;Ba-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER BA;u1E904
+1E905;Sinnyiiyhe-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER SINNYIIYHE;u1E905
+1E906;Pe-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER PE;u1E906
+1E907;Bhe-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER BHE;u1E907
+1E908;Ra-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER RA;u1E908
+1E909;E-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER E;u1E909
+1E90A;Fa-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER FA;u1E90A
+1E90B;I-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER I;u1E90B
+1E90C;O-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER O;u1E90C
+1E90D;Dha-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER DHA;u1E90D
+1E90E;Yhe-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER YHE;u1E90E
+1E90F;Waw-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER WAW;u1E90F
+1E910;Nun-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER NUN;u1E910
+1E911;Kaf-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER KAF;u1E911
+1E912;Ya-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER YA;u1E912
+1E913;U-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER U;u1E913
+1E914;Jiim-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER JIIM;u1E914
+1E915;Chi-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER CHI;u1E915
+1E916;Ha-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER HA;u1E916
+1E917;Qaaf-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER QAAF;u1E917
+1E918;Ga-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER GA;u1E918
+1E919;Nya-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER NYA;u1E919
+1E91A;Tu-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER TU;u1E91A
+1E91B;Nha-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER NHA;u1E91B
+1E91C;Va-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER VA;u1E91C
+1E91D;Kha-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER KHA;u1E91D
+1E91E;Gbe-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER GBE;u1E91E
+1E91F;Zal-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER ZAL;u1E91F
+1E920;Kpo-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER KPO;u1E920
+1E921;Sha-adlam;Letter;;upper;RTL;adlam;ADLAM CAPITAL LETTER SHA;u1E921
+1E922;alif-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER ALIF;u1E922
+1E923;daali-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER DAALI;u1E923
+1E924;laam-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER LAAM;u1E924
+1E925;miim-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER MIIM;u1E925
+1E926;ba-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER BA;u1E926
+1E927;sinnyiiyhe-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER SINNYIIYHE;u1E927
+1E928;pe-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER PE;u1E928
+1E929;bhe-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER BHE;u1E929
+1E92A;ra-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER RA;u1E92A
+1E92B;e-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER E;u1E92B
+1E92C;fa-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER FA;u1E92C
+1E92D;i-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER I;u1E92D
+1E92E;o-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER O;u1E92E
+1E92F;dha-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER DHA;u1E92F
+1E930;yhe-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER YHE;u1E930
+1E931;waw-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER WAW;u1E931
+1E932;nun-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER NUN;u1E932
+1E933;kaf-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER KAF;u1E933
+1E934;ya-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER YA;u1E934
+1E935;u-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER U;u1E935
+1E936;jiim-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER JIIM;u1E936
+1E937;chi-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER CHI;u1E937
+1E938;ha-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER HA;u1E938
+1E939;qaaf-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER QAAF;u1E939
+1E93A;ga-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER GA;u1E93A
+1E93B;nya-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER NYA;u1E93B
+1E93C;tu-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER TU;u1E93C
+1E93D;nha-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER NHA;u1E93D
+1E93E;va-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER VA;u1E93E
+1E93F;kha-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER KHA;u1E93F
+1E940;gbe-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER GBE;u1E940
+1E941;zal-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER ZAL;u1E941
+1E942;kpo-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER KPO;u1E942
+1E943;sha-adlam;Letter;;lower;RTL;adlam;ADLAM SMALL LETTER SHA;u1E943
+1E950;zero-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT ZERO;u1E950
+1E951;one-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT ONE;u1E951
+1E952;two-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT TWO;u1E952
+1E953;three-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT THREE;u1E953
+1E954;four-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT FOUR;u1E954
+1E955;five-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT FIVE;u1E955
+1E956;six-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT SIX;u1E956
+1E957;seven-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT SEVEN;u1E957
+1E958;eight-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT EIGHT;u1E958
+1E959;nine-adlam;Number;Decimal Digit;;RTL;adlam;ADLAM DIGIT NINE;u1E959
+1E95E;exclam-adlam;Punctuation;;;RTL;adlam;ADLAM INITIAL EXCLAMATION MARK;u1E95E
+1E95F;question-adlam;Punctuation;;;RTL;adlam;ADLAM INITIAL QUESTION MARK;u1E95F
+1E944;aliflengthencomb-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM ALIF LENGTHENER;u1E944
+1E945;vowellengthencomb-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM VOWEL LENGTHENER;u1E945
+1E946;gemination-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM GEMINATION MARK;u1E946
+1E947;hamza-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM HAMZA;u1E947
+1E948;consonantmodcomb-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM CONSONANT MODIFIER;u1E948
+1E949;gemconsonantmodcomb-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM GERMINATE CONSONANT MODIFIER;u1E949
+1E94A;hoortobbhere-adlam;Mark;Nonspacing;;RTL;adlam;ADLAM HOORTOBBHERE;u1E94A
+;hoortobbhere-adlam.below;Mark;Nonspacing;;RTL;adlam;ADLAM HOORTOBBHERE BELOW FORM;u1E94A.below
+1E94B;nasalization-adlam;Letter;Modifier;;RTL;adlam;ADLAM NASALIZATION MARK;u1E94B
 0800;alaf-samaritan;Letter;;;;samaritan;SAMARITAN LETTER ALAF;uni0800
 0801;bit-samaritan;Letter;;;;samaritan;SAMARITAN LETTER BIT;uni0801
 0802;gaman-samaritan;Letter;;;;samaritan;SAMARITAN LETTER GAMAN;uni0802
@@ -6665,6 +6646,9 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 09F9;sixteenDnom-beng;Number;;;;bengali;BENGALI CURRENCY DENOMINATOR SIXTEEN;uni09F9
 09FA;isshar-beng;Symbol;;;;bengali;BENGALI ISSHAR;uni09FA
 09FB;ganda-beng;Symbol;;;;bengali;BENGALI GANDA MARK;uni09FB
+09FC;anusvaraVedic-beng;Letter;;;;bengali;BENGALI LETTER VEDIC ANUSVARA;uni09FC
+09FD;abbreviation-beng;Punctuation;;;;bengali;BENGALI ABBREVIATION SIGN;uni09FD
+09FE;sandhi-beng;Mark;Nonspacing;;;bengali;BENGALI SANDHI MARK;uni09FE
 0A05;a-gurmukhi;Letter;;;;gurmukhi;GURMUKHI LETTER A;uni0A05
 0A06;aa-gurmukhi;Letter;;;;gurmukhi;GURMUKHI LETTER AA;uni0A06
 0A07;i-gurmukhi;Letter;;;;gurmukhi;GURMUKHI LETTER I;uni0A07
@@ -7138,6 +7122,7 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 0C01;candraBindu-telugu;Mark;Spacing Combining;;;telugu;TELUGU SIGN CANDRABINDU;uni0C01
 0C02;anusvara-telugu;Mark;Spacing Combining;;;telugu;TELUGU SIGN ANUSVARA;uni0C02
 0C03;visarga-telugu;Mark;Spacing Combining;;;telugu;TELUGU SIGN VISARGA;uni0C03
+0C04;anusvaraabove-telugu;Mark;Nonspacing;;;telugu;TELUGU SIGN COMBINING ANUSVARA ABOVE;uni0C04
 0C05;a-telugu;Letter;;;;telugu;TELUGU LETTER A;uni0C05
 0C06;aa-telugu;Letter;;;;telugu;TELUGU LETTER AA;uni0C06
 0C07;i-telugu;Letter;;;;telugu;TELUGU LETTER I;uni0C07
@@ -7259,6 +7244,7 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 0C6D;seven-telugu;Number;Decimal Digit;;;telugu;TELUGU DIGIT SEVEN;uni0C6D
 0C6E;eight-telugu;Number;Decimal Digit;;;telugu;TELUGU DIGIT EIGHT;uni0C6E
 0C6F;nine-telugu;Number;Decimal Digit;;;telugu;TELUGU DIGIT NINE;uni0C6F
+0C77;siddham-telugu;Punctuation;;;;telugu;TELUGU SIGN SIDDHAM;uni0C77
 0C78;fractionzeroforoddpowersoffour-telugu;Number;;;;telugu;TELUGU FRACTION DIGIT ZERO FOR ODD POWERS OF FOUR;uni0C78
 0C79;fractiononeforoddpowersoffour-telugu;Number;;;;telugu;TELUGU FRACTION DIGIT ONE FOR ODD POWERS OF FOUR;uni0C79
 0C7A;fractiontwoforoddpowersoffour-telugu;Number;;;;telugu;TELUGU FRACTION DIGIT TWO FOR ODD POWERS OF FOUR;uni0C7A
@@ -8255,13 +8241,10 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 1009;nya-myanmar;Letter;;;;myanmar;MYANMAR LETTER NYA;uni1009
 100A;nnya-myanmar;Letter;;;;myanmar;MYANMAR LETTER NNYA;uni100A
 100B;tta-myanmar;Letter;;;;myanmar;MYANMAR LETTER TTA;uni100B
-;tt-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER TT;uni100B1039
 100C;ttha-myanmar;Letter;;;;myanmar;MYANMAR LETTER TTHA;uni100C
 100D;dda-myanmar;Letter;;;;myanmar;MYANMAR LETTER DDA;uni100D
-;dd-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER DD;uni100D1039
 100E;ddha-myanmar;Letter;;;;myanmar;MYANMAR LETTER DDHA;uni100E
 100F;nna-myanmar;Letter;;;;myanmar;MYANMAR LETTER NNA;uni100F
-;nn-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER NN;uni100F1039
 1010;ta-myanmar;Letter;;;;myanmar;MYANMAR LETTER TA;uni1010
 1011;tha-myanmar;Letter;;;;myanmar;MYANMAR LETTER THA;uni1011
 1012;da-myanmar;Letter;;;;myanmar;MYANMAR LETTER DA;uni1012
@@ -8279,10 +8262,8 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 101E;sa-myanmar;Letter;;;;myanmar;MYANMAR LETTER SA;uni101E
 101F;ha-myanmar;Letter;;;;myanmar;MYANMAR LETTER HA;uni101F
 1020;lla-myanmar;Letter;;;;myanmar;MYANMAR LETTER LLA;uni1020
-;ll-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER LL;uni10201039
 1050;sha-myanmar;Letter;;;;myanmar;MYANMAR LETTER SHA;uni1050
 1051;ssa-myanmar;Letter;;;;myanmar;MYANMAR LETTER SSA;uni1051
-;ss-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER SSA;uni10511039
 1021;a-myanmar;Letter;;;;myanmar;MYANMAR LETTER A;uni1021
 1022;a-shan;Letter;;;;myanmar;MYANMAR LETTER SHAN A;uni1022
 1023;i-myanmar;Letter;;;;myanmar;MYANMAR LETTER I;uni1023
@@ -8295,6 +8276,46 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 105A;nga-mon;Letter;;;;myanmar;MYANMAR LETTER MON NGA;uni105A
 105B;jha-mon;Letter;;;;myanmar;MYANMAR LETTER MON JHA;uni105B
 105C;bba-mon;Letter;;;;myanmar;MYANMAR LETTER MON BBA;uni105C
+;tt-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER TT;uni100B1039
+;dd-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER DD;uni100D1039
+;nn-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER NN;uni100F1039
+;ll-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER LL;uni10201039
+;ss-myanmar;Letter;Halfform;;;myanmar;MYANMAR LETTER SSA;uni10511039
+;ka-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER KA BELOW;uni1000.below
+;kha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER KHA BELOW;uni1001.below
+;ga-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER GA BELOW;uni1002.below
+;gha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER GHA BELOW;uni1003.below
+;nga-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER NGA BELOW;uni1004.below
+;ca-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER CA BELOW;uni1005.below
+;cha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER CHA BELOW;uni1006.below
+;ja-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER JA BELOW;uni1007.below
+;nya-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER NYA BELOW;uni1009.below
+;nnya-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER NNYA BELOW;uni100A.below
+;tta-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER TTA BELOW;uni100B.below
+;ttha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER TTHA BELOW;uni100C.below
+;dda-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER DDA BELOW;uni100D.below
+;ddha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER DDHA BELOW;uni100E.below
+;nna-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER NNA BELOW;uni100F.below
+;ta-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER TA BELOW;uni1010.below
+;tha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER THA BELOW;uni1011.below
+;da-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER DA BELOW;uni1012.below
+;dha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER DHA BELOW;uni1013.below
+;na-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER NA BELOW;uni1014.below
+;pa-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER PA BELOW;uni1015.below
+;pha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER PHA BELOW;uni1016.below
+;ba-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER BA BELOW;uni1017.below
+;bha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER BHA BELOW;uni1018.below
+;ma-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER MA BELOW;uni1019.below
+;ya-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER YA BELOW;uni101A.below
+;la-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER LA BELOW;uni101C.below
+;sa-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER SA BELOW;uni101E.below
+;ha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER HA BELOW;uni101F.below
+;lla-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER LLA BELOW;uni1020.below
+;sha-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER SHA BELOW;uni1050.below
+;ssa-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER SSA BELOW;uni1051.below
+;a-myanmar.below;Mark;Nonspacing;;;myanmar;MYANMAR LETTER A BELOW;uni1021.below
+;nga-mon.below;Mark;;;;myanmar;MYANMAR LETTER MON NGA BELOW;uni105A.below
+;bba-mon.below;Mark;;;;myanmar;MYANMAR LETTER MON BBA BELOW;uni105C.below
 105D;bbe-mon;Letter;;;;myanmar;MYANMAR LETTER MON BBE;uni105D
 102B;aaTall-myanmar;Letter;;;;myanmar;MYANMAR VOWEL SIGN TALL AA;uni102B
 102C;aaSign-myanmar;Letter;;;;myanmar;MYANMAR VOWEL SIGN AA;uni102C
@@ -9146,6 +9167,131 @@ A9FE;bha-tailaing;Letter;;;;myanmar;MYANMAR LETTER TAI LAING BHA;uniA9FE
 ;nga_uSign-batak;Letter;;;;batak;;uni1BDD1BEE
 ;la_uSign-batak;Letter;;;;batak;;uni1BDE1BEE
 ;nya_uSign-batak;Letter;;;;batak;;uni1BE01BEE
+11F00;candrabindu-kawi;Mark;Nonspacing;;;kawi;KAWI SIGN CANDRABINDU;u11F00
+11F01;anusvara-kawi;Mark;Nonspacing;;;kawi;KAWI SIGN ANUSVARA;u11F01
+11F02;repha-kawi;Mark;Nonspacing;;;kawi;KAWI SIGN REPHA;u11F02
+11F03;visarga-kawi;Mark;Spacing;;;kawi;KAWI SIGN VISARGA;u11F03
+11F04;a-kawi;Letter;;;;kawi;KAWI LETTER A;u11F04
+11F05;aa-kawi;Letter;;;;kawi;KAWI LETTER AA;u11F05
+11F06;i-kawi;Letter;;;;kawi;KAWI LETTER I;u11F06
+11F07;ii-kawi;Letter;;;;kawi;KAWI LETTER II;u11F07
+11F08;u-kawi;Letter;;;;kawi;KAWI LETTER U;u11F08
+11F09;uu-kawi;Letter;;;;kawi;KAWI LETTER UU;u11F09
+11F0A;rVocalic-kawi;Letter;;;;kawi;KAWI LETTER VOCALIC R;u11F0A
+11F0B;rrVocalic-kawi;Letter;;;;kawi;KAWI LETTER VOCALIC RR;u11F0B
+11F0C;lVocalic-kawi;Letter;;;;kawi;KAWI LETTER VOCALIC L;u11F0C
+11F0D;llVocalic-kawi;Letter;;;;kawi;KAWI LETTER VOCALIC LL;u11F0D
+11F0E;e-kawi;Letter;;;;kawi;KAWI LETTER E;u11F0E
+11F0F;ai-kawi;Letter;;;;kawi;KAWI LETTER AI;u11F0F
+11F10;o-kawi;Letter;;;;kawi;KAWI LETTER O;u11F10
+11F12;ka-kawi;Letter;;;;kawi;KAWI LETTER KA;u11F12
+11F13;kha-kawi;Letter;;;;kawi;KAWI LETTER KHA;u11F13
+11F14;ga-kawi;Letter;;;;kawi;KAWI LETTER GA;u11F14
+11F15;gha-kawi;Letter;;;;kawi;KAWI LETTER GHA;u11F15
+11F16;nga-kawi;Letter;;;;kawi;KAWI LETTER NGA;u11F16
+11F17;ca-kawi;Letter;;;;kawi;KAWI LETTER CA;u11F17
+11F18;cha-kawi;Letter;;;;kawi;KAWI LETTER CHA;u11F18
+11F19;ja-kawi;Letter;;;;kawi;KAWI LETTER JA;u11F19
+11F1A;jha-kawi;Letter;;;;kawi;KAWI LETTER JHA;u11F1A
+11F1B;nya-kawi;Letter;;;;kawi;KAWI LETTER NYA;u11F1B
+11F1C;tta-kawi;Letter;;;;kawi;KAWI LETTER TTA;u11F1C
+11F1D;ttha-kawi;Letter;;;;kawi;KAWI LETTER TTHA;u11F1D
+11F1E;dda-kawi;Letter;;;;kawi;KAWI LETTER DDA;u11F1E
+11F1F;ddha-kawi;Letter;;;;kawi;KAWI LETTER DDHA;u11F1F
+11F20;nna-kawi;Letter;;;;kawi;KAWI LETTER NNA;u11F20
+11F21;ta-kawi;Letter;;;;kawi;KAWI LETTER TA;u11F21
+11F22;tha-kawi;Letter;;;;kawi;KAWI LETTER THA;u11F22
+11F23;da-kawi;Letter;;;;kawi;KAWI LETTER DA;u11F23
+11F24;dha-kawi;Letter;;;;kawi;KAWI LETTER DHA;u11F24
+11F25;na-kawi;Letter;;;;kawi;KAWI LETTER NA;u11F25
+11F26;pa-kawi;Letter;;;;kawi;KAWI LETTER PA;u11F26
+11F27;pha-kawi;Letter;;;;kawi;KAWI LETTER PHA;u11F27
+11F28;ba-kawi;Letter;;;;kawi;KAWI LETTER BA;u11F28
+11F29;bha-kawi;Letter;;;;kawi;KAWI LETTER BHA;u11F29
+11F2A;ma-kawi;Letter;;;;kawi;KAWI LETTER MA;u11F2A
+11F2B;ya-kawi;Letter;;;;kawi;KAWI LETTER YA;u11F2B
+11F2C;ra-kawi;Letter;;;;kawi;KAWI LETTER RA;u11F2C
+11F2D;la-kawi;Letter;;;;kawi;KAWI LETTER LA;u11F2D
+11F2E;wa-kawi;Letter;;;;kawi;KAWI LETTER WA;u11F2E
+11F2F;sha-kawi;Letter;;;;kawi;KAWI LETTER SHA;u11F2F
+11F30;ssa-kawi;Letter;;;;kawi;KAWI LETTER SSA;u11F30
+11F31;sa-kawi;Letter;;;;kawi;KAWI LETTER SA;u11F31
+11F32;ha-kawi;Letter;;;;kawi;KAWI LETTER HA;u11F32
+11F33;jnya-kawi;Letter;;;;kawi;KAWI LETTER JNYA;u11F33
+11F34;aaSign-kawi;Mark;Spacing;;;kawi;KAWI VOWEL SIGN AA;u11F34
+11F35;aaSignAlternate-kawi;Mark;Spacing;;;kawi;KAWI VOWEL SIGN ALTERNATE AA;u11F35
+11F36;iSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN I;u11F36
+11F37;iiSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN II;u11F37
+11F38;uSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN U;u11F38
+11F39;uuSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN UU;u11F39
+11F3A;rVocalicSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN VOCALIC R;u11F3A
+11F3E;eSign-kawi;Mark;Spacing;;;kawi;KAWI VOWEL SIGN E;u11F3E
+11F3F;aiSign-kawi;Mark;Spacing;;;kawi;KAWI VOWEL SIGN AI;u11F3F
+11F40;euSign-kawi;Mark;Nonspacing;;;kawi;KAWI VOWEL SIGN EU;u11F40
+11F41;killer-kawi;Mark;Spacing;;;kawi;KAWI SIGN KILLER;u11F41
+11F42;conjoiner-kawi;Mark;Nonspacing;;;kawi;KAWI CONJOINER;u11F42
+11F43;danda-kawi;Punctuation;;;;kawi;KAWI DANDA;u11F43
+11F44;doubleDanda-kawi;Punctuation;;;;kawi;KAWI DOUBLE DANDA;u11F44
+11F45;section-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION SECTION MARKER;u11F45
+11F46;sectionAlternate-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION ALTERNATE SECTION MARKER;u11F46
+11F47;flower-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION FLOWER;u11F47
+11F48;spaceFiller-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION SPACE FILLER;u11F48
+11F49;dot-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION DOT;u11F49
+11F4A;doubleDot-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION DOUBLE DOT;u11F4A
+11F4B;tripleDot-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION TRIPLE DOT;u11F4B
+11F4C;circle-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION CIRCLE;u11F4C
+11F4D;filledCircle-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION FILLED CIRCLE;u11F4D
+11F4E;spiral-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION SPIRAL;u11F4E
+11F4F;closingSpiral-kawi;Punctuation;;;;kawi;KAWI PUNCTUATION CLOSING SPIRAL;u11F4F
+11F50;zero-kawi;Number;;;;kawi;KAWI DIGIT ZERO;u11F50
+11F51;one-kawi;Number;;;;kawi;KAWI DIGIT ONE;u11F51
+11F52;two-kawi;Number;;;;kawi;KAWI DIGIT TWO;u11F52
+11F53;three-kawi;Number;;;;kawi;KAWI DIGIT THREE;u11F53
+11F54;four-kawi;Number;;;;kawi;KAWI DIGIT FOUR;u11F54
+11F55;five-kawi;Number;;;;kawi;KAWI DIGIT FIVE;u11F55
+11F56;six-kawi;Number;;;;kawi;KAWI DIGIT SIX;u11F56
+11F57;seven-kawi;Number;;;;kawi;KAWI DIGIT SEVEN;u11F57
+11F58;eight-kawi;Number;;;;kawi;KAWI DIGIT EIGHT;u11F58
+11F59;nine-kawi;Number;;;;kawi;KAWI DIGIT NINE;u11F59
+;rVocalicConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER VOCALIC R CONJUNCT;u11F4211F0A
+;lVocalicConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER VOCALIC L CONJUNCT;u11F4211F0C
+;kaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER KA CONJUNCT;u11F4211F12
+;khaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER KHA CONJUNCT;u11F4211F13
+;gaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER GA CONJUNCT;u11F4211F14
+;ghaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER GHA CONJUNCT;u11F4211F15
+;ngaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER NGA CONJUNCT;u11F4211F16
+;caConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER CA CONJUNCT;u11F4211F17
+;chaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER CHA CONJUNCT;u11F4211F18
+;jaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER JA CONJUNCT;u11F4211F19
+;jhaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER JHA CONJUNCT;u11F4211F1A
+;nyaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER NYA CONJUNCT;u11F4211F1B
+;ttaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER TTA CONJUNCT;u11F4211F1C
+;tthaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER TTHA CONJUNCT;u11F4211F1D
+;ddaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER DDA CONJUNCT;u11F4211F1E
+;ddhaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER DDHA CONJUNCT;u11F4211F1F
+;nnaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER NNA CONJUNCT;u11F4211F20
+;taConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER TA CONJUNCT;u11F4211F21
+;thaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER THA CONJUNCT;u11F4211F22
+;daConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER DA CONJUNCT;u11F4211F23
+;dhaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER DHA CONJUNCT;u11F4211F24
+;naConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER NA CONJUNCT;u11F4211F25
+;paConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER PA CONJUNCT;u11F4211F26
+;phaConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER PHA CONJUNCT;u11F4211F27
+;baConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER BA CONJUNCT;u11F4211F28
+;bhaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER BHA CONJUNCT;u11F4211F29
+;maConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER MA CONJUNCT;u11F4211F2A
+;yaConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER YA CONJUNCT;u11F4211F2B
+;raConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER RA CONJUNCT;u11F4211F2C
+;raConj-kawi.below;Mark;Nonspacing;;;kawi;KAWI LETTER RA CONJUNCT BELOW FORM;u11F4211F2C.below
+;laConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER LA CONJUNCT;u11F4211F2D
+;waConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER WA CONJUNCT;u11F4211F2E
+;shaConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER SHA CONJUNCT;u11F4211F2F
+;ssaConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER SSA CONJUNCT;u11F4211F30
+;ssaConj-kawi.below;Mark;Nonspacing;;;kawi;KAWI LETTER SSA CONJUNCT BELOW FORM;u11F4211F30.below
+;saConj-kawi;Mark;Spacing;;;kawi;KAWI LETTER SA CONJUNCT;u11F4211F31
+;haConj-kawi;Mark;Nonspacing;;;kawi;KAWI LETTER HA CONJUNCT;u11F4211F32
+;haConj-kawi.post;Mark;Spacing;;;kawi;KAWI LETTER HA CONJUNCT POST FORM;u11F4211F32.post
+;repha_aaSignAlternate-kawi;Mark;Spacing;;;kawi;;u11F0211F35
 0F00;om-tibet;Letter;;;;tibet;TIBETAN SYLLABLE OM;uni0F00
 0F01;gterYigMgoTruncatedA-tibet;Symbol;;;;tibet;TIBETAN MARK GTER YIG MGO TRUNCATED A;uni0F01
 0F02;gterYigMgoUmRnamBcadMa-tibet;Symbol;;;;tibet;TIBETAN MARK GTER YIG MGO -UM RNAM BCAD MA;uni0F02
@@ -25011,6 +25157,306 @@ A4C3;cheRadical-yi;Symbol;;;;yi;YI RADICAL CHE;uniA4C3
 A4C4;zzietRadical-yi;Symbol;;;;yi;YI RADICAL ZZIET;uniA4C4
 A4C5;nbieRadical-yi;Symbol;;;;yi;YI RADICAL NBIE;uniA4C5
 A4C6;keRadical-yi;Symbol;;;;yi;YI RADICAL KE;uniA4C6
+A500;ee-vai;Letter;Syllable;;;vai;VAI SYLLABLE EE;uniA500
+A501;een-vai;Letter;Syllable;;;vai;VAI SYLLABLE EEN;uniA501
+A502;hee-vai;Letter;Syllable;;;vai;VAI SYLLABLE HEE;uniA502
+A503;wee-vai;Letter;Syllable;;;vai;VAI SYLLABLE WEE;uniA503
+A504;ween-vai;Letter;Syllable;;;vai;VAI SYLLABLE WEEN;uniA504
+A505;pee-vai;Letter;Syllable;;;vai;VAI SYLLABLE PEE;uniA505
+A506;bhee-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHEE;uniA506
+A507;bee-vai;Letter;Syllable;;;vai;VAI SYLLABLE BEE;uniA507
+A508;mbee-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBEE;uniA508
+A509;kpee-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPEE;uniA509
+A50A;mgbee-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBEE;uniA50A
+A50B;gbee-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBEE;uniA50B
+A50C;fee-vai;Letter;Syllable;;;vai;VAI SYLLABLE FEE;uniA50C
+A50D;vee-vai;Letter;Syllable;;;vai;VAI SYLLABLE VEE;uniA50D
+A50E;tee-vai;Letter;Syllable;;;vai;VAI SYLLABLE TEE;uniA50E
+A50F;thee-vai;Letter;Syllable;;;vai;VAI SYLLABLE THEE;uniA50F
+A510;dhee-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHEE;uniA510
+A511;dhhee-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHEE;uniA511
+A512;lee-vai;Letter;Syllable;;;vai;VAI SYLLABLE LEE;uniA512
+A513;ree-vai;Letter;Syllable;;;vai;VAI SYLLABLE REE;uniA513
+A514;dee-vai;Letter;Syllable;;;vai;VAI SYLLABLE DEE;uniA514
+A515;ndee-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDEE;uniA515
+A516;see-vai;Letter;Syllable;;;vai;VAI SYLLABLE SEE;uniA516
+A517;shee-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHEE;uniA517
+A518;zee-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZEE;uniA518
+A519;zhee-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHEE;uniA519
+A51A;cee-vai;Letter;Syllable;;;vai;VAI SYLLABLE CEE;uniA51A
+A51B;jee-vai;Letter;Syllable;;;vai;VAI SYLLABLE JEE;uniA51B
+A51C;njee-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJEE;uniA51C
+A51D;yee-vai;Letter;Syllable;;;vai;VAI SYLLABLE YEE;uniA51D
+A51E;kee-vai;Letter;Syllable;;;vai;VAI SYLLABLE KEE;uniA51E
+A51F;nggee-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGEE;uniA51F
+A520;gee-vai;Letter;Syllable;;;vai;VAI SYLLABLE GEE;uniA520
+A521;mee-vai;Letter;Syllable;;;vai;VAI SYLLABLE MEE;uniA521
+A522;nee-vai;Letter;Syllable;;;vai;VAI SYLLABLE NEE;uniA522
+A523;nyee-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYEE;uniA523
+A524;i-vai;Letter;Syllable;;;vai;VAI SYLLABLE I;uniA524
+A525;in-vai;Letter;Syllable;;;vai;VAI SYLLABLE IN;uniA525
+A526;hi-vai;Letter;Syllable;;;vai;VAI SYLLABLE HI;uniA526
+A527;hin-vai;Letter;Syllable;;;vai;VAI SYLLABLE HIN;uniA527
+A528;wi-vai;Letter;Syllable;;;vai;VAI SYLLABLE WI;uniA528
+A529;win-vai;Letter;Syllable;;;vai;VAI SYLLABLE WIN;uniA529
+A52A;pi-vai;Letter;Syllable;;;vai;VAI SYLLABLE PI;uniA52A
+A52B;bhi-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHI;uniA52B
+A52C;bi-vai;Letter;Syllable;;;vai;VAI SYLLABLE BI;uniA52C
+A52D;mbi-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBI;uniA52D
+A52E;kpi-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPI;uniA52E
+A52F;mgbi-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBI;uniA52F
+A530;gbi-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBI;uniA530
+A531;fi-vai;Letter;Syllable;;;vai;VAI SYLLABLE FI;uniA531
+A532;vi-vai;Letter;Syllable;;;vai;VAI SYLLABLE VI;uniA532
+A533;ti-vai;Letter;Syllable;;;vai;VAI SYLLABLE TI;uniA533
+A534;thi-vai;Letter;Syllable;;;vai;VAI SYLLABLE THI;uniA534
+A535;dhi-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHI;uniA535
+A536;dhhi-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHI;uniA536
+A537;li-vai;Letter;Syllable;;;vai;VAI SYLLABLE LI;uniA537
+A538;ri-vai;Letter;Syllable;;;vai;VAI SYLLABLE RI;uniA538
+A539;di-vai;Letter;Syllable;;;vai;VAI SYLLABLE DI;uniA539
+A53A;ndi-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDI;uniA53A
+A53B;si-vai;Letter;Syllable;;;vai;VAI SYLLABLE SI;uniA53B
+A53C;shi-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHI;uniA53C
+A53D;zi-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZI;uniA53D
+A53E;zhi-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHI;uniA53E
+A53F;ci-vai;Letter;Syllable;;;vai;VAI SYLLABLE CI;uniA53F
+A540;ji-vai;Letter;Syllable;;;vai;VAI SYLLABLE JI;uniA540
+A541;nji-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJI;uniA541
+A542;yi-vai;Letter;Syllable;;;vai;VAI SYLLABLE YI;uniA542
+A543;ki-vai;Letter;Syllable;;;vai;VAI SYLLABLE KI;uniA543
+A544;nggi-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGI;uniA544
+A545;gi-vai;Letter;Syllable;;;vai;VAI SYLLABLE GI;uniA545
+A546;mi-vai;Letter;Syllable;;;vai;VAI SYLLABLE MI;uniA546
+A547;ni-vai;Letter;Syllable;;;vai;VAI SYLLABLE NI;uniA547
+A548;nyi-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYI;uniA548
+A549;a-vai;Letter;Syllable;;;vai;VAI SYLLABLE A;uniA549
+A54A;an-vai;Letter;Syllable;;;vai;VAI SYLLABLE AN;uniA54A
+A54B;ngan-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGAN;uniA54B
+A54C;ha-vai;Letter;Syllable;;;vai;VAI SYLLABLE HA;uniA54C
+A54D;han-vai;Letter;Syllable;;;vai;VAI SYLLABLE HAN;uniA54D
+A54E;wa-vai;Letter;Syllable;;;vai;VAI SYLLABLE WA;uniA54E
+A54F;wan-vai;Letter;Syllable;;;vai;VAI SYLLABLE WAN;uniA54F
+A550;pa-vai;Letter;Syllable;;;vai;VAI SYLLABLE PA;uniA550
+A551;bha-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHA;uniA551
+A552;ba-vai;Letter;Syllable;;;vai;VAI SYLLABLE BA;uniA552
+A553;mba-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBA;uniA553
+A554;kpa-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPA;uniA554
+A555;kpan-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPAN;uniA555
+A556;mgba-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBA;uniA556
+A557;gba-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBA;uniA557
+A558;fa-vai;Letter;Syllable;;;vai;VAI SYLLABLE FA;uniA558
+A559;va-vai;Letter;Syllable;;;vai;VAI SYLLABLE VA;uniA559
+A55A;ta-vai;Letter;Syllable;;;vai;VAI SYLLABLE TA;uniA55A
+A55B;tha-vai;Letter;Syllable;;;vai;VAI SYLLABLE THA;uniA55B
+A55C;dha-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHA;uniA55C
+A55D;dhha-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHA;uniA55D
+A55E;la-vai;Letter;Syllable;;;vai;VAI SYLLABLE LA;uniA55E
+A55F;ra-vai;Letter;Syllable;;;vai;VAI SYLLABLE RA;uniA55F
+A560;da-vai;Letter;Syllable;;;vai;VAI SYLLABLE DA;uniA560
+A561;nda-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDA;uniA561
+A562;sa-vai;Letter;Syllable;;;vai;VAI SYLLABLE SA;uniA562
+A563;sha-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHA;uniA563
+A564;za-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZA;uniA564
+A565;zha-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHA;uniA565
+A566;ca-vai;Letter;Syllable;;;vai;VAI SYLLABLE CA;uniA566
+A567;ja-vai;Letter;Syllable;;;vai;VAI SYLLABLE JA;uniA567
+A568;nja-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJA;uniA568
+A569;ya-vai;Letter;Syllable;;;vai;VAI SYLLABLE YA;uniA569
+A56A;ka-vai;Letter;Syllable;;;vai;VAI SYLLABLE KA;uniA56A
+A56B;kan-vai;Letter;Syllable;;;vai;VAI SYLLABLE KAN;uniA56B
+A56C;ngga-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGA;uniA56C
+A56D;ga-vai;Letter;Syllable;;;vai;VAI SYLLABLE GA;uniA56D
+A56E;ma-vai;Letter;Syllable;;;vai;VAI SYLLABLE MA;uniA56E
+A56F;na-vai;Letter;Syllable;;;vai;VAI SYLLABLE NA;uniA56F
+A570;nya-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYA;uniA570
+A571;oo-vai;Letter;Syllable;;;vai;VAI SYLLABLE OO;uniA571
+A572;oon-vai;Letter;Syllable;;;vai;VAI SYLLABLE OON;uniA572
+A573;hoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE HOO;uniA573
+A574;woo-vai;Letter;Syllable;;;vai;VAI SYLLABLE WOO;uniA574
+A575;woon-vai;Letter;Syllable;;;vai;VAI SYLLABLE WOON;uniA575
+A576;poo-vai;Letter;Syllable;;;vai;VAI SYLLABLE POO;uniA576
+A577;bhoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHOO;uniA577
+A578;boo-vai;Letter;Syllable;;;vai;VAI SYLLABLE BOO;uniA578
+A579;mboo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBOO;uniA579
+A57A;kpoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPOO;uniA57A
+A57B;mgboo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBOO;uniA57B
+A57C;gboo-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBOO;uniA57C
+A57D;foo-vai;Letter;Syllable;;;vai;VAI SYLLABLE FOO;uniA57D
+A57E;voo-vai;Letter;Syllable;;;vai;VAI SYLLABLE VOO;uniA57E
+A57F;too-vai;Letter;Syllable;;;vai;VAI SYLLABLE TOO;uniA57F
+A580;thoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE THOO;uniA580
+A581;dhoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHOO;uniA581
+A582;dhhoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHOO;uniA582
+A583;loo-vai;Letter;Syllable;;;vai;VAI SYLLABLE LOO;uniA583
+A584;roo-vai;Letter;Syllable;;;vai;VAI SYLLABLE ROO;uniA584
+A585;doo-vai;Letter;Syllable;;;vai;VAI SYLLABLE DOO;uniA585
+A586;ndoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOO;uniA586
+A587;soo-vai;Letter;Syllable;;;vai;VAI SYLLABLE SOO;uniA587
+A588;shoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHOO;uniA588
+A589;zoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZOO;uniA589
+A58A;zhoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHOO;uniA58A
+A58B;coo-vai;Letter;Syllable;;;vai;VAI SYLLABLE COO;uniA58B
+A58C;joo-vai;Letter;Syllable;;;vai;VAI SYLLABLE JOO;uniA58C
+A58D;njoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJOO;uniA58D
+A58E;yoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE YOO;uniA58E
+A58F;koo-vai;Letter;Syllable;;;vai;VAI SYLLABLE KOO;uniA58F
+A590;nggoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGOO;uniA590
+A591;goo-vai;Letter;Syllable;;;vai;VAI SYLLABLE GOO;uniA591
+A592;moo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MOO;uniA592
+A593;noo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NOO;uniA593
+A594;nyoo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYOO;uniA594
+A595;u-vai;Letter;Syllable;;;vai;VAI SYLLABLE U;uniA595
+A596;un-vai;Letter;Syllable;;;vai;VAI SYLLABLE UN;uniA596
+A597;hu-vai;Letter;Syllable;;;vai;VAI SYLLABLE HU;uniA597
+A598;hun-vai;Letter;Syllable;;;vai;VAI SYLLABLE HUN;uniA598
+A599;wu-vai;Letter;Syllable;;;vai;VAI SYLLABLE WU;uniA599
+A59A;wun-vai;Letter;Syllable;;;vai;VAI SYLLABLE WUN;uniA59A
+A59B;pu-vai;Letter;Syllable;;;vai;VAI SYLLABLE PU;uniA59B
+A59C;bhu-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHU;uniA59C
+A59D;bu-vai;Letter;Syllable;;;vai;VAI SYLLABLE BU;uniA59D
+A59E;mbu-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBU;uniA59E
+A59F;kpu-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPU;uniA59F
+A5A0;mgbu-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBU;uniA5A0
+A5A1;gbu-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBU;uniA5A1
+A5A2;fu-vai;Letter;Syllable;;;vai;VAI SYLLABLE FU;uniA5A2
+A5A3;vu-vai;Letter;Syllable;;;vai;VAI SYLLABLE VU;uniA5A3
+A5A4;tu-vai;Letter;Syllable;;;vai;VAI SYLLABLE TU;uniA5A4
+A5A5;thu-vai;Letter;Syllable;;;vai;VAI SYLLABLE THU;uniA5A5
+A5A6;dhu-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHU;uniA5A6
+A5A7;dhhu-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHU;uniA5A7
+A5A8;lu-vai;Letter;Syllable;;;vai;VAI SYLLABLE LU;uniA5A8
+A5A9;ru-vai;Letter;Syllable;;;vai;VAI SYLLABLE RU;uniA5A9
+A5AA;du-vai;Letter;Syllable;;;vai;VAI SYLLABLE DU;uniA5AA
+A5AB;ndu-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDU;uniA5AB
+A5AC;su-vai;Letter;Syllable;;;vai;VAI SYLLABLE SU;uniA5AC
+A5AD;shu-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHU;uniA5AD
+A5AE;zu-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZU;uniA5AE
+A5AF;zhu-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHU;uniA5AF
+A5B0;cu-vai;Letter;Syllable;;;vai;VAI SYLLABLE CU;uniA5B0
+A5B1;ju-vai;Letter;Syllable;;;vai;VAI SYLLABLE JU;uniA5B1
+A5B2;nuu-vai;Letter;Syllable;;;vai;VAI SYLLABLE NUU;uniA5B2
+A5B3;yu-vai;Letter;Syllable;;;vai;VAI SYLLABLE YU;uniA5B3
+A5B4;ku-vai;Letter;Syllable;;;vai;VAI SYLLABLE KU;uniA5B4
+A5B5;nggu-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGU;uniA5B5
+A5B6;gu-vai;Letter;Syllable;;;vai;VAI SYLLABLE GU;uniA5B6
+A5B7;mu-vai;Letter;Syllable;;;vai;VAI SYLLABLE MU;uniA5B7
+A5B8;nu-vai;Letter;Syllable;;;vai;VAI SYLLABLE NU;uniA5B8
+A5B9;nyu-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYU;uniA5B9
+A5BA;o-vai;Letter;Syllable;;;vai;VAI SYLLABLE O;uniA5BA
+A5BB;on-vai;Letter;Syllable;;;vai;VAI SYLLABLE ON;uniA5BB
+A5BC;ngon-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGON;uniA5BC
+A5BD;ho-vai;Letter;Syllable;;;vai;VAI SYLLABLE HO;uniA5BD
+A5BE;hon-vai;Letter;Syllable;;;vai;VAI SYLLABLE HON;uniA5BE
+A5BF;wo-vai;Letter;Syllable;;;vai;VAI SYLLABLE WO;uniA5BF
+A5C0;won-vai;Letter;Syllable;;;vai;VAI SYLLABLE WON;uniA5C0
+A5C1;po-vai;Letter;Syllable;;;vai;VAI SYLLABLE PO;uniA5C1
+A5C2;bho-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHO;uniA5C2
+A5C3;bo-vai;Letter;Syllable;;;vai;VAI SYLLABLE BO;uniA5C3
+A5C4;mbo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBO;uniA5C4
+A5C5;kpo-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPO;uniA5C5
+A5C6;mgbo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBO;uniA5C6
+A5C7;gbo-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBO;uniA5C7
+A5C8;gbon-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBON;uniA5C8
+A5C9;fo-vai;Letter;Syllable;;;vai;VAI SYLLABLE FO;uniA5C9
+A5CA;vo-vai;Letter;Syllable;;;vai;VAI SYLLABLE VO;uniA5CA
+A5CB;to-vai;Letter;Syllable;;;vai;VAI SYLLABLE TO;uniA5CB
+A5CC;tho-vai;Letter;Syllable;;;vai;VAI SYLLABLE THO;uniA5CC
+A5CD;dho-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHO;uniA5CD
+A5CE;dhho-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHO;uniA5CE
+A5CF;lo-vai;Letter;Syllable;;;vai;VAI SYLLABLE LO;uniA5CF
+A5D0;ro-vai;Letter;Syllable;;;vai;VAI SYLLABLE RO;uniA5D0
+A5D1;do-vai;Letter;Syllable;;;vai;VAI SYLLABLE DO;uniA5D1
+A5D2;ndo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDO;uniA5D2
+A5D3;so-vai;Letter;Syllable;;;vai;VAI SYLLABLE SO;uniA5D3
+A5D4;sho-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHO;uniA5D4
+A5D5;zo-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZO;uniA5D5
+A5D6;zho-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHO;uniA5D6
+A5D7;co-vai;Letter;Syllable;;;vai;VAI SYLLABLE CO;uniA5D7
+A5D8;jo-vai;Letter;Syllable;;;vai;VAI SYLLABLE JO;uniA5D8
+A5D9;njo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJO;uniA5D9
+A5DA;yo-vai;Letter;Syllable;;;vai;VAI SYLLABLE YO;uniA5DA
+A5DB;ko-vai;Letter;Syllable;;;vai;VAI SYLLABLE KO;uniA5DB
+A5DC;nggo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGO;uniA5DC
+A5DD;go-vai;Letter;Syllable;;;vai;VAI SYLLABLE GO;uniA5DD
+A5DE;mo-vai;Letter;Syllable;;;vai;VAI SYLLABLE MO;uniA5DE
+A5DF;no-vai;Letter;Syllable;;;vai;VAI SYLLABLE NO;uniA5DF
+A5E0;nyo-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYO;uniA5E0
+A5E1;e-vai;Letter;Syllable;;;vai;VAI SYLLABLE E;uniA5E1
+A5E2;en-vai;Letter;Syllable;;;vai;VAI SYLLABLE EN;uniA5E2
+A5E3;ngen-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGEN;uniA5E3
+A5E4;he-vai;Letter;Syllable;;;vai;VAI SYLLABLE HE;uniA5E4
+A5E5;hen-vai;Letter;Syllable;;;vai;VAI SYLLABLE HEN;uniA5E5
+A5E6;we-vai;Letter;Syllable;;;vai;VAI SYLLABLE WE;uniA5E6
+A5E7;wen-vai;Letter;Syllable;;;vai;VAI SYLLABLE WEN;uniA5E7
+A5E8;pe-vai;Letter;Syllable;;;vai;VAI SYLLABLE PE;uniA5E8
+A5E9;bhe-vai;Letter;Syllable;;;vai;VAI SYLLABLE BHE;uniA5E9
+A5EA;be-vai;Letter;Syllable;;;vai;VAI SYLLABLE BE;uniA5EA
+A5EB;mbe-vai;Letter;Syllable;;;vai;VAI SYLLABLE MBE;uniA5EB
+A5EC;kpe-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPE;uniA5EC
+A5ED;kpen-vai;Letter;Syllable;;;vai;VAI SYLLABLE KPEN;uniA5ED
+A5EE;mgbe-vai;Letter;Syllable;;;vai;VAI SYLLABLE MGBE;uniA5EE
+A5EF;gbe-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBE;uniA5EF
+A5F0;gben-vai;Letter;Syllable;;;vai;VAI SYLLABLE GBEN;uniA5F0
+A5F1;fe-vai;Letter;Syllable;;;vai;VAI SYLLABLE FE;uniA5F1
+A5F2;ve-vai;Letter;Syllable;;;vai;VAI SYLLABLE VE;uniA5F2
+A5F3;te-vai;Letter;Syllable;;;vai;VAI SYLLABLE TE;uniA5F3
+A5F4;the-vai;Letter;Syllable;;;vai;VAI SYLLABLE THE;uniA5F4
+A5F5;dhe-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHE;uniA5F5
+A5F6;dhhe-vai;Letter;Syllable;;;vai;VAI SYLLABLE DHHE;uniA5F6
+A5F7;le-vai;Letter;Syllable;;;vai;VAI SYLLABLE LE;uniA5F7
+A5F8;re-vai;Letter;Syllable;;;vai;VAI SYLLABLE RE;uniA5F8
+A5F9;de-vai;Letter;Syllable;;;vai;VAI SYLLABLE DE;uniA5F9
+A5FA;nde-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDE;uniA5FA
+A5FB;se-vai;Letter;Syllable;;;vai;VAI SYLLABLE SE;uniA5FB
+A5FC;she-vai;Letter;Syllable;;;vai;VAI SYLLABLE SHE;uniA5FC
+A5FD;ze-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZE;uniA5FD
+A5FE;zhe-vai;Letter;Syllable;;;vai;VAI SYLLABLE ZHE;uniA5FE
+A5FF;ce-vai;Letter;Syllable;;;vai;VAI SYLLABLE CE;uniA5FF
+A600;je-vai;Letter;Syllable;;;vai;VAI SYLLABLE JE;uniA600
+A601;nje-vai;Letter;Syllable;;;vai;VAI SYLLABLE NJE;uniA601
+A602;ye-vai;Letter;Syllable;;;vai;VAI SYLLABLE YE;uniA602
+A603;ke-vai;Letter;Syllable;;;vai;VAI SYLLABLE KE;uniA603
+A604;ngge-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGE;uniA604
+A605;nggen-vai;Letter;Syllable;;;vai;VAI SYLLABLE NGGEN;uniA605
+A606;ge-vai;Letter;Syllable;;;vai;VAI SYLLABLE GE;uniA606
+A607;gen-vai;Letter;Syllable;;;vai;VAI SYLLABLE GEN;uniA607
+A608;me-vai;Letter;Syllable;;;vai;VAI SYLLABLE ME;uniA608
+A609;ne-vai;Letter;Syllable;;;vai;VAI SYLLABLE NE;uniA609
+A60A;nye-vai;Letter;Syllable;;;vai;VAI SYLLABLE NYE;uniA60A
+A60B;ng-vai;Letter;Syllable;;;vai;VAI SYLLABLE NG;uniA60B
+A60C;lengthener-vai;Letter;Syllable;;;vai;VAI SYLLABLE LENGTHENER;uniA60C
+A60D;comma-vai;Punctuation;;;;vai;VAI COMMA;uniA60D
+A60E;period-vai;Punctuation;;;;vai;VAI FULL STOP;uniA60E
+A60F;question-vai;Punctuation;;;;vai;VAI QUESTION MARK;uniA60F
+A610;faNdole-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOLE FA;uniA610
+A611;kaNdole-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOLE KA;uniA611
+A612;sooNdole-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOLE SOO;uniA612
+A62A;maNdole-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOLE MA;uniA62A
+A62B;doNdole-vai;Letter;Syllable;;;vai;VAI SYLLABLE NDOLE DO;uniA62B
+A613;feeng-vai;Symbol;;;;vai;VAI SYMBOL FEENG;uniA613
+A614;keeng-vai;Symbol;;;;vai;VAI SYMBOL KEENG;uniA614
+A615;ting-vai;Symbol;;;;vai;VAI SYMBOL TING;uniA615
+A616;nii-vai;Symbol;;;;vai;VAI SYMBOL NII;uniA616
+A617;bang-vai;Symbol;;;;vai;VAI SYMBOL BANG;uniA617
+A618;faa-vai;Symbol;;;;vai;VAI SYMBOL FAA;uniA618
+A619;taa-vai;Symbol;;;;vai;VAI SYMBOL TAA;uniA619
+A61A;dang-vai;Symbol;;;;vai;VAI SYMBOL DANG;uniA61A
+A61B;doong-vai;Symbol;;;;vai;VAI SYMBOL DOONG;uniA61B
+A61C;kung-vai;Symbol;;;;vai;VAI SYMBOL KUNG;uniA61C
+A61D;tong-vai;Symbol;;;;vai;VAI SYMBOL TONG;uniA61D
+A61E;doO-vai;Symbol;;;;vai;VAI SYMBOL DO-O;uniA61E
+A61F;jong-vai;Symbol;;;;vai;VAI SYMBOL JONG;uniA61F
+A620;zero-vai;Number;;;;vai;VAI DIGIT ZERO;uniA620
+A621;one-vai;Number;;;;vai;VAI DIGIT ONE;uniA621
+A622;two-vai;Number;;;;vai;VAI DIGIT TWO;uniA622
+A623;three-vai;Number;;;;vai;VAI DIGIT THREE;uniA623
+A624;four-vai;Number;;;;vai;VAI DIGIT FOUR;uniA624
+A625;five-vai;Number;;;;vai;VAI DIGIT FIVE;uniA625
+A626;six-vai;Number;;;;vai;VAI DIGIT SIX;uniA626
+A627;seven-vai;Number;;;;vai;VAI DIGIT SEVEN;uniA627
+A628;eight-vai;Number;;;;vai;VAI DIGIT EIGHT;uniA628
+A629;nine-vai;Number;;;;vai;VAI DIGIT NINE;uniA629
 A6A0;a-bamum;Letter;;;;bamum;BAMUM LETTER A;uniA6A0
 A6A1;ka-bamum;Letter;;;;bamum;BAMUM LETTER KA;uniA6A1
 A6A2;u-bamum;Letter;;;;bamum;BAMUM LETTER U;uniA6A2
@@ -25864,9 +26310,9 @@ A7C0;Ooldpolish;Letter;;upper;;latin;LATIN CAPITAL LETTER OLD POLISH O;uniA7C0
 A7C1;ooldpolish;Letter;;lower;;latin;LATIN SMALL LETTER OLD POLISH O;uniA7C1
 A7C2;Wanglicana;Letter;;upper;;latin;LATIN CAPITAL LETTER W ANGLICANA;uniA7C2
 A7C3;wanglicana;Letter;;lower;;latin;LATIN SMALL LETTER W ANGLICANA;uniA7C3
-A7C4;CPalatalhook;Letter;;upper;;latin;LATIN CAPITAL LETTER C WITH PALATAL HOOK;uniA7C4
+A7C4;Cpalatalhook;Letter;;upper;;latin;LATIN CAPITAL LETTER C WITH PALATAL HOOK;uniA7C4
 A7C5;Shook;Letter;;upper;;latin;LATIN CAPITAL LETTER S WITH HOOK;uniA7C5
-A7C6;ZPalatalhook;Letter;;upper;;latin;LATIN CAPITAL LETTER Z WITH PALATAL HOOK;uniA7C6
+A7C6;Zpalatalhook;Letter;;upper;;latin;LATIN CAPITAL LETTER Z WITH PALATAL HOOK;uniA7C6
 A7C7;Dshortstrokeoverlay;Letter;;upper;;latin;LATIN CAPITAL LETTER D WITH SHORT STROKE OVERLAY;uniA7C7
 A7C8;dshortstrokeoverlay;Letter;;lower;;latin;LATIN SMALL LETTER D WITH SHORT STROKE OVERLAY;uniA7C8
 A7C9;Sbar;Letter;;upper;;latin;LATIN CAPITAL LETTER S WITH SHORT STROKE OVERLAY;uniA7C9
@@ -25878,16 +26324,15 @@ A7D0;Gclosedinsular;Letter;;upper;;latin;LATIN CAPITAL LETTER CLOSED INSULAR G;u
 A7D1;gclosedinsular;Letter;;lower;;latin;LATIN SMALL LETTER CLOSED INSULAR G;uniA7D1
 A7D3;thorndouble;Letter;;lower;;latin;LATIN SMALL LETTER DOUBLE THORN;uniA7D3
 A7D5;wynndouble;Letter;;lower;;latin;LATIN SMALL LETTER DOUBLE WYNN;uniA7D5
-A7D5;Smiddlescots;Letter;;upper;;latin;LATIN CAPITAL LETTER MIDDLE SCOTS S;uniA7D6
 A7D7;smiddlescots;Letter;;lower;;latin;LATIN SMALL LETTER MIDDLE SCOTS S;uniA7D7
 A7D8;Ssigmoid;Letter;;upper;;latin;LATIN CAPITAL LETTER SIGMOID S;uniA7D8
 A7D9;ssigmoid;Letter;;lower;;latin;LATIN SMALL LETTER SIGMOID S;uniA7D9
 A7DA;Lambda-latin;Letter;;upper;;latin;LATIN CAPITAL LETTER LAMBDA;uniA7DA
 A7DB;lambda-latin;Letter;;lower;;latin;LATIN SMALL LETTER LAMBDA;uniA7DB
-A7DC;Lambdastroke;Letter;;upper;;latin;LATIN CAPITAL LETTER LAMBDA WITH STROKE;uniA7DC
-A7F2;Cmod;Letter;Modifier;;;;MODIFIER LETTER CAPITAL C;uniA7F2
-A7F3;Fmod;Letter;Modifier;;;;MODIFIER LETTER CAPITAL F;uniA7F3
-A7F4;Qmod;Letter;Modifier;;;;MODIFIER LETTER CAPITAL Q;uniA7F4
+A7DC;Lambdastroke-latin;Letter;;upper;;latin;LATIN CAPITAL LETTER LAMBDA WITH STROKE;uniA7DC
+A7F2;Cmod;Letter;Modifier;minor;;latin;MODIFIER LETTER CAPITAL C;uniA7F2
+A7F3;Fmod;Letter;Modifier;minor;;latin;MODIFIER LETTER CAPITAL F;uniA7F3
+A7F4;Qmod;Letter;Modifier;minor;;latin;MODIFIER LETTER CAPITAL Q;uniA7F4
 A7F5;Halfhreversed;Letter;;upper;;latin;LATIN CAPITAL LETTER REVERSED HALF H;uniA7F5
 A7F6;halfhreversed;Letter;;lower;;latin;LATIN SMALL LETTER REVERSED HALF H;uniA7F6
 A7F7;Iepigraphicsideways;Letter;;;;latin;LATIN EPIGRAPHIC LETTER SIDEWAYS I;uniA7F7
@@ -25990,8 +26435,8 @@ FFFD;replacementCharacter;Symbol;;;;;REPLACEMENT CHARACTER;uniFFFD
 2042;asterism;Punctuation;;;;;ASTERISM;uni2042
 2043;hyphenbullet;Punctuation;;;;;HYPHEN BULLET;uni2043
 2044;fraction;Number;Fraction;;;;FRACTION SLASH;
-2045;bracketleftwithquill;Punctuation;;;;;LEFT SQUARE BRACKET WITH QUILL;uni2045
-2046;bracketrightwithquill;Punctuation;;;;;RIGHT SQUARE BRACKET WITH QUILL;uni2046
+2045;bracketleftquill;Punctuation;;;;;LEFT SQUARE BRACKET WITH QUILL;uni2045
+2046;bracketrightquill;Punctuation;;;;;RIGHT SQUARE BRACKET WITH QUILL;uni2046
 2047;doublequestion;Punctuation;;;;;DOUBLE QUESTION MARK;uni2047
 2048;questionexclamation;Punctuation;;;;;QUESTION EXCLAMATION MARK;uni2048
 2049;exclamationquestion;Punctuation;;;;;EXCLAMATION QUESTION MARK;uni2049
@@ -26116,8 +26561,8 @@ FFFD;replacementCharacter;Symbol;;;;;REPLACEMENT CHARACTER;uniFFFD
 20E9;widebridgeabovecomb;Mark;Nonspacing;;;;COMBINING WIDE BRIDGE ABOVE;uni20E9
 20EA;leftarrowoverlaycomb;Mark;Nonspacing;;;;COMBINING LEFTWARDS ARROW OVERLAY;uni20EA
 20EB;longdoublesolidusoverlaycomb;Mark;Nonspacing;;;;COMBINING LONG DOUBLE SOLIDUS OVERLAY;uni20EB
-20EC;rightharpoonwithbarbdowncomb;Mark;Nonspacing;;;;COMBINING RIGHTWARDS HARPOON WITH BARB DOWNWARDS;uni20EC
-20ED;leftharpoonwithbarbdowncomb;Mark;Nonspacing;;;;COMBINING LEFTWARDS HARPOON WITH BARB DOWNWARDS;uni20ED
+20EC;rightharpoonbarbdowncomb;Mark;Nonspacing;;;;COMBINING RIGHTWARDS HARPOON WITH BARB DOWNWARDS;uni20EC
+20ED;leftharpoonbarbdowncomb;Mark;Nonspacing;;;;COMBINING LEFTWARDS HARPOON WITH BARB DOWNWARDS;uni20ED
 20EE;leftarrowbelowcomb;Mark;Nonspacing;;;;COMBINING LEFT ARROW BELOW;uni20EE
 20EF;rightarrowbelowcomb;Mark;Nonspacing;;;;COMBINING RIGHT ARROW BELOW;uni20EF
 20F0;asteriskabovecomb;Mark;Nonspacing;;;;COMBINING ASTERISK ABOVE;uni20F0
@@ -27472,14 +27917,14 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2229;intersection;Symbol;Math;;;;INTERSECTION;
 222A;union;Symbol;Math;;;;UNION;
 222B;integral;Symbol;Math;;;;INTEGRAL;
-222C;dblintegral;Symbol;Math;;;;DOUBLE INTEGRAL;uni222C
-222D;tripleintegral;Symbol;Math;;;;TRIPLE INTEGRAL;uni222D
-222E;contourintegral;Symbol;Math;;;;CONTOUR INTEGRAL;uni222E
-222F;surfaceintegral;Symbol;Math;;;;SURFACE INTEGRAL;uni222F
-2230;volumeintegral;Symbol;Math;;;;VOLUME INTEGRAL;uni2230
-2231;clockwiseintegral;Symbol;Math;;;;CLOCKWISE INTEGRAL;uni2231
-2232;clockwisecontourintegral;Symbol;Math;;;;CLOCKWISE CONTOUR INTEGRAL;uni2232
-2233;anticlockwisecontourintegral;Symbol;Math;;;;ANTICLOCKWISE CONTOUR INTEGRAL;uni2233
+222C;dblIntegral;Symbol;Math;;;;DOUBLE INTEGRAL;uni222C
+222D;tripleIntegral;Symbol;Math;;;;TRIPLE INTEGRAL;uni222D
+222E;contourIntegral;Symbol;Math;;;;CONTOUR INTEGRAL;uni222E
+222F;surfaceIntegral;Symbol;Math;;;;SURFACE INTEGRAL;uni222F
+2230;volumeIntegral;Symbol;Math;;;;VOLUME INTEGRAL;uni2230
+2231;clockwiseIntegral;Symbol;Math;;;;CLOCKWISE INTEGRAL;uni2231
+2232;clockwiseContourIntegral;Symbol;Math;;;;CLOCKWISE CONTOUR INTEGRAL;uni2232
+2233;anticlockwiseContourIntegral;Symbol;Math;;;;ANTICLOCKWISE CONTOUR INTEGRAL;uni2233
 2234;therefore;Symbol;Math;;;;THEREFORE;
 2235;because;Symbol;Math;;;;BECAUSE;uni2235
 2236;ratio;Symbol;Math;;;;RATIO;uni2236
@@ -27712,7 +28157,7 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 231A;watch;Symbol;;;;;WATCH;uni231A
 231B;hourglass;Symbol;;;;;HOURGLASS;uni231B
 231C;topLeftCorner;Symbol;;;;;TOP LEFT CORNER;uni231C
-231D;topRightcorner;Symbol;;;;;TOP RIGHT CORNER;uni231D
+231D;topRightCorner;Symbol;;;;;TOP RIGHT CORNER;uni231D
 231E;bottomLeftCorner;Symbol;;;;;BOTTOM LEFT CORNER;uni231E
 231F;bottomRightCorner;Symbol;;;;;BOTTOM RIGHT CORNER;uni231F
 2320;integraltp;Symbol;Math;;;;TOP HALF INTEGRAL;
@@ -29296,7 +29741,7 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 29A8;measuredAngleWithOpenArmEndingInArrowPointingUpAndRight;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING UP AND RIGHT;uni29A8
 29A9;measuredAngleWithOpenArmEndingInArrowPointingUpAndLeft;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING UP AND LEFT;uni29A9
 29AA;measuredAngleWithOpenArmEndingInArrowPointingDownAndRight;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING DOWN AND RIGHT;uni29AA
-29AB;measuredAngleWithOpenArmEndingInArrowPointingDownAndLeft;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING DOWN AND LEFT;uni29AB
+29AB;measuredAngleOpenArmArrowPointingDownAndLeft;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING DOWN AND LEFT;uni29AB
 29AC;measuredAngleWithOpenArmEndingInArrowPointingRightAndUp;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING RIGHT AND UP;uni29AC
 29AD;measuredAngleWithOpenArmEndingInArrowPointingLeftAndUp;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING LEFT AND UP;uni29AD
 29AE;measuredAngleWithOpenArmEndingInArrowPointingRightAndDown;Symbol;Math;;;;MEASURED ANGLE WITH OPEN ARM ENDING IN ARROW POINTING RIGHT AND DOWN;uni29AE
@@ -29393,20 +29838,20 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2A09;nAryTimesOperator;Symbol;Math;;;;N-ARY TIMES OPERATOR;uni2A09
 2A0A;moduloTwoSum;Symbol;Math;;;;MODULO TWO SUM;uni2A0A
 2A0B;summationWithIntegral;Symbol;Math;;;;SUMMATION WITH INTEGRAL;uni2A0B
-2A0C;quadrupleIntegralOperator;Symbol;Math;;;;QUADRUPLE INTEGRAL OPERATOR;uni2A0C
+2A0C;quadrupleIntegral;Symbol;Math;;;;QUADRUPLE INTEGRAL OPERATOR;uni2A0C
 2A0D;finitePartIntegral;Symbol;Math;;;;FINITE PART INTEGRAL;uni2A0D
-2A0E;integralWithDoubleStroke;Symbol;Math;;;;INTEGRAL WITH DOUBLE STROKE;uni2A0E
-2A0F;integralAverageWithSlash;Symbol;Math;;;;INTEGRAL AVERAGE WITH SLASH;uni2A0F
+2A0E;doubleStrokeIntegral;Symbol;Math;;;;INTEGRAL WITH DOUBLE STROKE;uni2A0E
+2A0F;averageSlashIntegral;Symbol;Math;;;;INTEGRAL AVERAGE WITH SLASH;uni2A0F
 2A10;circulationFunction;Symbol;Math;;;;CIRCULATION FUNCTION;uni2A10
-2A11;anticlockwiseIntegration;Symbol;Math;;;;ANTICLOCKWISE INTEGRATION;uni2A11
-2A12;lineIntegrationWithRectangularPathAroundPole;Symbol;Math;;;;LINE INTEGRATION WITH RECTANGULAR PATH AROUND POLE;uni2A12
-2A13;lineIntegrationWithSemicircularPathAroundPole;Symbol;Math;;;;LINE INTEGRATION WITH SEMICIRCULAR PATH AROUND POLE;uni2A13
-2A14;lineIntegrationNotIncludingThePole;Symbol;Math;;;;LINE INTEGRATION NOT INCLUDING THE POLE;uni2A14
-2A15;integralAroundAPointOperator;Symbol;Math;;;;INTEGRAL AROUND A POINT OPERATOR;uni2A15
-2A16;quaternionIntegralOperator;Symbol;Math;;;;QUATERNION INTEGRAL OPERATOR;uni2A16
-2A17;integralWithLeftArrowWithHook;Symbol;Math;;;;INTEGRAL WITH LEFTWARDS ARROW WITH HOOK;uni2A17
-2A18;integralWithTimesSign;Symbol;Math;;;;INTEGRAL WITH TIMES SIGN;uni2A18
-2A19;integralWithIntersection;Symbol;Math;;;;INTEGRAL WITH INTERSECTION;uni2A19
+2A11;anticlockwiseIntegral;Symbol;Math;;;;ANTICLOCKWISE INTEGRATION;uni2A11
+2A12;rectangularLineIntegral;Symbol;Math;;;;LINE INTEGRATION WITH RECTANGULAR PATH AROUND POLE;uni2A12
+2A13;semicircularLineIntegral;Symbol;Math;;;;LINE INTEGRATION WITH SEMICIRCULAR PATH AROUND POLE;uni2A13
+2A14;nopoleLineIntegral;Symbol;Math;;;;LINE INTEGRATION NOT INCLUDING THE POLE;uni2A14
+2A15;pointIntegral;Symbol;Math;;;;INTEGRAL AROUND A POINT OPERATOR;uni2A15
+2A16;quaternionIntegral;Symbol;Math;;;;QUATERNION INTEGRAL OPERATOR;uni2A16
+2A17;leftarrowHookIntegral;Symbol;Math;;;;INTEGRAL WITH LEFTWARDS ARROW WITH HOOK;uni2A17
+2A18;timesIntegral;Symbol;Math;;;;INTEGRAL WITH TIMES SIGN;uni2A18
+2A19;intersectionIntegral;Symbol;Math;;;;INTEGRAL WITH INTERSECTION;uni2A19
 2A1A;integralWithUnion;Symbol;Math;;;;INTEGRAL WITH UNION;uni2A1A
 2A1B;integralWithOverbar;Symbol;Math;;;;INTEGRAL WITH OVERBAR;uni2A1B
 2A1C;integralWithUnderbar;Symbol;Math;;;;INTEGRAL WITH UNDERBAR;uni2A1C
@@ -29553,7 +29998,7 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2AA9;greaterThanClosedByCurveAboveSlantedEqual;Symbol;Math;;;;GREATER-THAN CLOSED BY CURVE ABOVE SLANTED EQUAL;uni2AA9
 2AAA;erthan;Symbol;Math;;;;SMALLER THAN;uni2AAA
 2AAB;largerThan;Symbol;Math;;;;LARGER THAN;uni2AAB
-2AAC;erthanorequalto;Symbol;Math;;;;SMALLER THAN OR EQUAL TO;uni2AAC
+2AAC;smallerthanorequalto;Symbol;Math;;;;SMALLER THAN OR EQUAL TO;uni2AAC
 2AAD;largerThanOrEqualTo;Symbol;Math;;;;LARGER THAN OR EQUAL TO;uni2AAD
 2AAE;equalsSignWithBumpyAbove;Symbol;Math;;;;EQUALS SIGN WITH BUMPY ABOVE;uni2AAE
 2AAF;precedesAboveSingleLineEqualsSign;Symbol;Math;;;;PRECEDES ABOVE SINGLE-LINE EQUALS SIGN;uni2AAF
@@ -29662,7 +30107,7 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2B2D;whiteHorizontalEllipse;Symbol;;;;;WHITE HORIZONTAL ELLIPSE;uni2B2D
 2B2E;blackVerticalEllipse;Symbol;;;;;BLACK VERTICAL ELLIPSE;uni2B2E
 2B2F;whiteVerticalEllipse;Symbol;;;;;WHITE VERTICAL ELLIPSE;uni2B2F
-2B30;leftarrowwithcircle;Symbol;Math;;;;LEFT ARROW WITH SMALL CIRCLE;uni2B30
+2B30;leftarrowcircle;Symbol;Math;;;;LEFT ARROW WITH SMALL CIRCLE;uni2B30
 2B31;threeLeftArrows;Symbol;Math;;;;THREE LEFTWARDS ARROWS;uni2B31
 2B32;leftArrowWithCircledPlus;Symbol;Math;;;;LEFT ARROW WITH CIRCLED PLUS;uni2B32
 2B33;longLeftSquiggleArrow;Symbol;Math;;;;LONG LEFTWARDS SQUIGGLE ARROW;uni2B33
@@ -29845,8 +30290,8 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2E1D;rightlowparaphrasebracket;Punctuation;;;;;RIGHT LOW PARAPHRASE BRACKET;uni2E1D
 2E1E;tildedotabove;Punctuation;;;;;TILDE WITH DOT ABOVE;uni2E1E
 2E1F;tildedotbelow;Punctuation;;;;;TILDE WITH DOT BELOW;uni2E1F
-2E20;leftverticalbarwithquill;Punctuation;;;;;LEFT VERTICAL BAR WITH QUILL;uni2E20
-2E21;rightverticalbarwithquill;Punctuation;;;;;RIGHT VERTICAL BAR WITH QUILL;uni2E21
+2E20;leftverticalbarquill;Punctuation;;;;;LEFT VERTICAL BAR WITH QUILL;uni2E20
+2E21;rightverticalbarquill;Punctuation;;;;;RIGHT VERTICAL BAR WITH QUILL;uni2E21
 2E22;topleftHalfBracket;Punctuation;Parenthesis;;;;TOP LEFT HALF BRACKET;uni2E22
 2E23;toprightHalfBracket;Punctuation;Parenthesis;;;;TOP RIGHT HALF BRACKET;uni2E23
 2E24;bottomleftHalfBracket;Punctuation;Parenthesis;;;;BOTTOM LEFT HALF BRACKET;uni2E24
@@ -29867,8 +30312,8 @@ F8FF;apple;Symbol;;;;;Apple SYMBOL;uniF8FF
 2E33;raiseddot;Punctuation;;;;;RAISED DOT;uni2E33
 2E34;raisedcomma;Punctuation;;;;;RAISED COMMA;uni2E34
 2E35;turnedsemicolon;Punctuation;;;;;TURNED SEMICOLON;uni2E35
-2E36;daggerwithleftguard;Punctuation;;;;;DAGGER WITH LEFT GUARD;uni2E36
-2E37;daggerwithrightguard;Punctuation;;;;;DAGGER WITH RIGHT GUARD;uni2E37
+2E36;daggerleftguard;Punctuation;;;;;DAGGER WITH LEFT GUARD;uni2E36
+2E37;daggerrightguard;Punctuation;;;;;DAGGER WITH RIGHT GUARD;uni2E37
 2E38;turneddagger;Punctuation;;;;;TURNED DAGGER;uni2E38
 2E39;tophalfsectionsign;Punctuation;;;;;TOP HALF SECTION SIGN;uni2E39
 2E3A;twoemdash;Punctuation;Dash;;;;TWO-EM DASH;uni2E3A
@@ -30503,7 +30948,7 @@ FB02;fl;Letter;Ligature;lower;;latin;LATIN SMALL LIGATURE FL;
 1F321;thermometer;Symbol;Emoji;;;;THERMOMETER;u1F321
 1F322;blackDroplet;Symbol;Emoji;;;;BLACK DROPLET;u1F322
 1F323;whiteSun;Symbol;Emoji;;;;WHITE SUN;u1F323
-1F324;whitesunwithcloud;Symbol;Emoji;;;;WHITE SUN WITH SMALL CLOUD;u1F324
+1F324;whitesuncloud;Symbol;Emoji;;;;WHITE SUN WITH SMALL CLOUD;u1F324
 1F325;whiteSunBehindCloud;Symbol;Emoji;;;;WHITE SUN BEHIND CLOUD;u1F325
 1F326;whiteSunBehindCloudRain;Symbol;Emoji;;;;WHITE SUN BEHIND CLOUD WITH RAIN;u1F326
 1F327;cloudRain;Symbol;Emoji;;;;CLOUD WITH RAIN;u1F327
@@ -32333,7 +32778,7 @@ FB02;fl;Letter;Ligature;lower;;latin;LATIN SMALL LIGATURE FL;
 1F927;sneezingFace;Symbol;Emoji;;;;SNEEZING FACE;u1F927
 1F928;faceWithOneEyebrowRaised;Symbol;Emoji;;;;FACE WITH ONE EYEBROW RAISED;u1F928
 1F929;grinningFaceWithStarEyes;Symbol;Emoji;;;;GRINNING FACE WITH STAR EYES;u1F929
-1F92A;grinningfacewithonelargeandoneeye;Symbol;Emoji;;;;GRINNING FACE WITH ONE LARGE AND ONE SMALL EYE;u1F92A
+1F92A;grinningfaceonelargeandoneeye;Symbol;Emoji;;;;GRINNING FACE WITH ONE LARGE AND ONE SMALL EYE;u1F92A
 1F92B;faceWithFingerCoveringClosedLips;Symbol;Emoji;;;;FACE WITH FINGER COVERING CLOSED LIPS;u1F92B
 1F92C;seriousFaceWithSymbolsCoveringMouth;Symbol;Emoji;;;;SERIOUS FACE WITH SYMBOLS COVERING MOUTH;u1F92C
 1F92D;smilingFaceWithSmilingEyesAndHandCoveringMouth;Symbol;Emoji;;;;SMILING FACE WITH SMILING EYES AND HAND COVERING MOUTH;u1F92D
