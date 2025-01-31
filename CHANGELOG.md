@@ -2,7 +2,7 @@
 
 ## 2025-01-30
 
-- Added support reading .woff and .woff2 [PR 1999](https://github.com/googlefonts/fontra/pull/1999)
+- Added support for reading .woff and .woff2 [PR 1999](https://github.com/googlefonts/fontra/pull/1999)
 
 ## 2025-01-27
 
