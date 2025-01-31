@@ -65,7 +65,7 @@ class FontraServer:
         self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
+        routes.append(web.get("/websocket", self.websocketHandler))
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
         routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
@@ -78,15 +78,12 @@ class FontraServer:
             )
         for viewName, viewPackage in self.viewEntryPoints.items():
             routes.append(
-                web.get(
-                    f"/{viewName}/-/{{path:.*}}",
-                    partial(self.viewPathHandler, viewName),
-                )
+                web.get(f"/{viewName}/-/{{path:.*}}", self.viewRedirectHandler)
             )
             routes.append(
                 web.get(
                     f"/{viewName}/{{path:.*}}",
-                    partial(self.staticContentHandler, viewPackage),
+                    partial(self.viewPathHandler, viewName),
                 )
             )
         routes.append(
@@ -143,9 +140,12 @@ class FontraServer:
         shutdownProcessPool()
 
     async def websocketHandler(self, request: web.Request) -> web.WebSocketResponse:
-        path = "/" + request.match_info["path"]
+        projectIdentifier = request.query.get("project")
+        if projectIdentifier is None:
+            raise web.HTTPNotFound()
+
         remote = request.headers.get("X-FORWARDED-FOR", request.remote)
-        logger.info(f"incoming connection from {remote} for {path!r}")
+        logger.info(f"incoming connection from {remote} for {projectIdentifier!r}")
 
         cookies = SimpleCookie()
         cookies.load(request.headers.get("Cookie", ""))
@@ -156,7 +156,7 @@ class FontraServer:
         await websocket.prepare(request)
         self._activeWebsockets.add(websocket)
         try:
-            subject = await self.getSubject(websocket, path, token)
+            subject = await self.getSubject(websocket, projectIdentifier, token)
         except RemoteObjectConnectionException as e:
             logger.info("refused websocket request: %s", e)
             await websocket.close()
@@ -165,7 +165,9 @@ class FontraServer:
             traceback.print_exc()
             await websocket.close()
         else:
-            connection = RemoteObjectConnection(websocket, path, subject, True)
+            connection = RemoteObjectConnection(
+                websocket, projectIdentifier, subject, True
+            )
             async with subject.useConnection(connection):
                 await connection.handleConnection()
         finally:
@@ -174,9 +176,9 @@ class FontraServer:
         return websocket
 
     async def getSubject(
-        self, websocket: web.WebSocketResponse, path: str, token: str
+        self, websocket: web.WebSocketResponse, projectIdentifier: str, token: str
     ) -> Any:
-        subject = await self.projectManager.getRemoteSubject(path, token)
+        subject = await self.projectManager.getRemoteSubject(projectIdentifier, token)
         if subject is None:
             raise RemoteObjectConnectionException("unauthorized")
         return subject
@@ -280,8 +282,15 @@ class FontraServer:
             qs = quote(request.path_qs, safe="")
             raise web.HTTPFound(f"/?ref={qs}")
 
-        path = request.match_info["path"]
-        if not await self.projectManager.projectAvailable(path, authToken):
+        if not request.query:
+            return await self.staticContentHandler(
+                self.viewEntryPoints[viewName], request
+            )
+
+        projectIdentifier = request.query.get("project")
+        if projectIdentifier is None or not await self.projectManager.projectAvailable(
+            projectIdentifier, authToken
+        ):
             raise web.HTTPNotFound()
 
         try:
@@ -294,6 +303,9 @@ class FontraServer:
         html = self._addVersionTokenToReferences(html, "text/html")
 
         return web.Response(body=html, content_type="text/html")
+
+    async def viewRedirectHandler(self, request: web.Request) -> web.Response:
+        raise web.HTTPFound(request.path.replace("/-/", "/?project="))
 
     def _addVersionTokenToReferences(self, data: bytes, contentType: str) -> bytes:
         if self.versionToken is None:

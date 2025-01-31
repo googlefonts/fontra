@@ -27,6 +27,7 @@ import {
   mapAxesFromUserSpaceToSourceSpace,
   piecewiseLinearMap,
 } from "/core/var-model.js";
+import "/web-components/designspace-location.js";
 import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
 import { showMenu } from "/web-components/menu-panel.js";

@@ -15,12 +15,10 @@ license = {text = "GNU General Public License v3"}
 dependencies = [
     "aiohttp>=3.8.1",
     "cattrs>=23.1.2",
-    "fonttools[ufo,unicode]>=4.40",
-    "glyphsLib>=6.0.4",
+    "fonttools[ufo,unicode,woff]>=4.40",
     "watchfiles>=0.10",
     "pyyaml>=6.0.1",
     "ufomerge>=1.8.0",
-    "unicodedata2>=15.1.0",
     "skia-pathops>=0.8.0.post1",
     "pillow>=11.0.0",
 ]
@@ -76,6 +74,8 @@ designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
 ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
+woff = "fontra.backends.opentype:OTFBackend"
+woff2 = "fontra.backends.opentype:OTFBackend"
 fontra = "fontra.backends.fontra:FontraBackend"
 yaml = "fontra.backends.workflow:WorkflowBackend"
 
@@ -94,7 +94,7 @@ source = "vcs"
 
 
 [tool.hatch.build.hooks.custom]
-path = "scripts/rollup_build_hook.py"
+path = "scripts/bundler_build_hook.py"
 
 
 [tool.hatch.build.hooks.vcs]

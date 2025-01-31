@@ -68,7 +68,7 @@ class AbstractBackend {
 
 class PythonBackend extends AbstractBackend {
   static async getProjects() {
-    return fetchJSON("/projectlist");
+    return await fetchJSON("/projectlist");
   }
 
   static async _callServerAPI(functionName, kwargs) {
@@ -111,12 +111,14 @@ class PythonBackend extends AbstractBackend {
 
   /**
    *
-   * @param {string} projectPath
+   * @param {string} projectIdentifier
    * @returns {Promise<RemoteFont>} Proxy object representing a font on the server.
    */
-  static async remoteFont(projectPath) {
+  static async remoteFont(projectIdentifier) {
     const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
+    const wsURL = `${protocol}://${
+      window.location.host
+    }/websocket?project=${encodeURIComponent(projectIdentifier)}`;
     return getRemoteProxy(wsURL);
   }
 }

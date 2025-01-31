@@ -55,7 +55,6 @@ import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
 import { locationToString, makeSparseLocation } from "../core/var-model.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
-import { makeDisplayPath } from "../core/view-utils.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { KnifeTool } from "./edit-tools-knife.js";
@@ -74,6 +73,7 @@ import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { getDecomposedIdentity } from "/core/transform.js";
+import "/web-components/inline-svg.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
@@ -274,16 +274,6 @@ export class EditorController extends ViewController {
 
     window.addEventListener("popstate", (event) => {
       this.setupFromWindowLocation();
-    });
-
-    document.addEventListener("visibilitychange", (event) => {
-      if (this._reconnectDialog) {
-        if (document.visibilityState === "visible") {
-          this._reconnectDialog.cancel();
-        } else {
-          this._reconnectDialog.hide();
-        }
-      }
     });
 
     this.updateWithDelay();
@@ -625,17 +615,6 @@ export class EditorController extends ViewController {
   }
 
   initActionsAfterStart() {
-    for (const format of this.fontController.backendInfo.projectManagerFeatures[
-      "export-as"
-    ] || []) {
-      registerAction(
-        `action.export-as.${format}`,
-        {
-          topic: "0035-action-topics.export-as",
-        },
-        (event) => this.fontController.exportAs({ format })
-      );
-    }
     if (this.fontController.backendInfo.features["find-glyphs-that-use-glyph"]) {
       registerAction(
         "action.find-glyphs-that-use",
@@ -773,7 +752,7 @@ export class EditorController extends ViewController {
   }
 
   async _start() {
-    await this.fontController.initialize();
+    await super.start();
     const rootSubscriptionPattern = {};
     for (const rootKey of this.fontController.getRootKeys()) {
       rootSubscriptionPattern[rootKey] = null;
@@ -1002,30 +981,44 @@ export class EditorController extends ViewController {
           this.setSelectedTool(tool.identifier);
           this.canvasController.canvas.focus();
         };
+        toolButton.oncontextmenu = (event) => event.preventDefault();
       } else {
         const globalListener = {
           handleEvent: (event) => {
             if (event.type != "keydown" || event.key == "Escape") {
-              collapseSubTools(editToolsElement);
+              collapseSubtoolsAndCleanUp(editToolsElement);
             }
           },
         };
 
-        toolButton.onmousedown = () => {
+        const collapseSubtoolsAndCleanUp = (editToolsElement) => {
+          window.removeEventListener("mousedown", globalListener);
+          window.removeEventListener("keydown", globalListener);
+          collapseSubTools(editToolsElement);
+        };
+
+        const showSubTools = (event, withTimeOut) => {
           clearTimeout(this._multiToolMouseDownTimer);
-          this._multiToolMouseDownTimer = setTimeout(function () {
-            // Show sub tools
-            for (const child of editToolsElement.children) {
-              child.style.visibility = "visible";
-            }
-            window.addEventListener("mousedown", globalListener, false);
-            window.addEventListener("keydown", globalListener, false);
-          }, 650);
-          if (toolButton !== editToolsElement.children[0]) {
+          this._multiToolMouseDownTimer = setTimeout(
+            () => {
+              // Show sub tools
+              for (const child of editToolsElement.children) {
+                child.style.visibility = "visible";
+              }
+              window.addEventListener("mousedown", globalListener);
+              window.addEventListener("keydown", globalListener);
+            },
+            withTimeOut ? 500 : 0
+          );
+          if (!withTimeOut || toolButton !== editToolsElement.children[0]) {
             // ensure the multi-tool mousedown timer only affects the first child
+            event.preventDefault();
             event.stopImmediatePropagation();
           }
         };
+
+        toolButton.oncontextmenu = (event) => showSubTools(event, false);
+        toolButton.onmousedown = (event) => showSubTools(event, true);
 
         toolButton.onmouseup = () => {
           event.stopImmediatePropagation();
@@ -1041,9 +1034,7 @@ export class EditorController extends ViewController {
           }
 
           editToolsElement.prepend(toolButton);
-          collapseSubTools(editToolsElement);
-          window.removeEventListener("mousedown", globalListener, false);
-          window.removeEventListener("keydown", globalListener, false);
+          collapseSubtoolsAndCleanUp(editToolsElement);
         };
       }
       editToolsElement.appendChild(toolButton);
@@ -1276,10 +1267,14 @@ export class EditorController extends ViewController {
       selectedGlyphInfo.glyphIndex +
       (select ? (where == 1 ? 1 : 0) : where == -1 ? glyphInfos.length : 0);
 
+    const glyphExists = !!this.fontController.glyphMap[glyphInfos[0]?.glyphName];
+
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
       glyphIndex: glyphIndex,
-      isEditing: where && select ? false : this.sceneSettings.selectedGlyph.isEditing,
+      isEditing:
+        glyphExists &&
+        (where && select ? false : this.sceneSettings.selectedGlyph.isEditing),
     };
   }
 
@@ -2170,14 +2165,18 @@ export class EditorController extends ViewController {
 
   async _deleteCurrentGlyph(event) {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const result = await dialog(translate("dialog.delete-current-glyph.title"), "", [
-      { title: translate("dialog.cancel"), isCancelButton: true },
-      {
-        title: translate("action.delete-glyph"),
-        isDefaultButton: true,
-        resultValue: "ok",
-      },
-    ]);
+    const result = await dialog(
+      translate("dialog.delete-current-glyph.title", glyphName),
+      "",
+      [
+        { title: translate("dialog.cancel"), isCancelButton: true },
+        {
+          title: translate("action.delete-glyph"),
+          isDefaultButton: true,
+          resultValue: "ok",
+        },
+      ]
+    );
     if (!result) {
       return;
     }
@@ -3103,8 +3102,7 @@ export class EditorController extends ViewController {
   }
 
   async externalChange(change, isLiveChange) {
-    await this.fontController.applyChange(change, true);
-    this.fontController.notifyChangeListeners(change, isLiveChange, true);
+    await super.externalChange(change, isLiveChange);
 
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
@@ -3116,30 +3114,8 @@ export class EditorController extends ViewController {
     this.canvasController.requestUpdate();
   }
 
-  async reloadData(reloadPattern) {
-    if (!reloadPattern) {
-      // A reloadPattern of undefined or null means: reload all the things
-      await this.reloadEverything();
-      return;
-    }
-
-    for (const rootKey of Object.keys(reloadPattern)) {
-      if (rootKey == "glyphs") {
-        const glyphNames = Object.keys(reloadPattern["glyphs"] || {});
-        if (glyphNames.length) {
-          await this.reloadGlyphs(glyphNames);
-        }
-      } else {
-        // TODO
-        // console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
-        await this.reloadEverything();
-        return;
-      }
-    }
-  }
-
   async reloadEverything() {
-    await this.fontController.reloadEverything();
+    await super.reloadEverything();
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
@@ -3152,7 +3128,7 @@ export class EditorController extends ViewController {
       // will be out of sync.
       await this.sceneController.cancelEditing(translate("message.cancel-editing"));
     }
-    await this.fontController.reloadGlyphs(glyphNames);
+    await super.reloadGlyphs(glyphNames);
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
@@ -3428,55 +3404,6 @@ export class EditorController extends ViewController {
       }
     };
     requestAnimationFrame(animate);
-  }
-
-  async handleRemoteClose(event) {
-    this._reconnectDialog = await dialogSetup(
-      "Connection closed", // TODO: translation
-      "The connection to the server closed unexpectedly.",
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    const result = await this._reconnectDialog.run();
-    delete this._reconnectDialog;
-
-    if (!result && location.hostname === "localhost") {
-      // The dialog was cancelled by the "wake" event handler
-      // Dubious assumption:
-      // Running from localhost most likely means were looking at local data,
-      // which unlikely changed while we were away. So let's not bother reloading
-      // anything.
-      return;
-    }
-
-    if (this.fontController.font.websocket.readyState > 1) {
-      // The websocket isn't currently working, let's try to do a page reload
-      location.reload();
-      return;
-    }
-
-    // Reload only the data, not the UI (the page)
-    const reloadPattern = { glyphs: {} };
-    const glyphReloadPattern = reloadPattern.glyphs;
-    for (const glyphName of this.fontController.getCachedGlyphNames()) {
-      glyphReloadPattern[glyphName] = null;
-    }
-    // TODO: fix reloadData so we can do this:
-    //   reloadPattern["glyphMap"] = null; // etc.
-    // so we won't have to re-initialize the font controller to reload
-    // all non-glyph data:
-    await this.fontController.initialize();
-    await this.reloadData(reloadPattern);
-  }
-
-  async handleRemoteError(event) {
-    console.log("remote error", event);
-    await dialog(
-      "Connection problem", // TODO: translation
-      `There was a problem with the connection to the server.
-      See the JavaScript Console for details.`,
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    location.reload();
   }
 
   canPlaceBackgroundImage() {

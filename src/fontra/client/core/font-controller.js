@@ -20,6 +20,7 @@ import {
   colorizeImage,
   getCharFromCodePoint,
   mapObjectValues,
+  sleepAsync,
   throttleCalls,
   uniqueID,
 } from "./utils.js";
@@ -146,17 +147,27 @@ export class FontController {
 
   getSortedSourceIdentifiers() {
     const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    const defaultSourceLocation = this.fontSourcesInstancer.defaultSourceLocation;
+
     const sortFunc = (identifierA, identifierB) => {
       for (const axis of fontAxesSourceSpace) {
-        const valueA = this.sources[identifierA].location[axis.name];
-        const valueB = this.sources[identifierB].location[axis.name];
+        const [valueA, valueB] = [identifierA, identifierB].map(
+          (identifier) =>
+            ({
+              ...defaultSourceLocation,
+              ...this.sources[identifier].location,
+            })[axis.name]
+        );
+
         if (valueA === valueB) {
           continue;
         }
+
         return valueA < valueB ? -1 : 0;
       }
       return 0;
     };
+
     return Object.keys(this.sources).sort(sortFunc);
   }
 
@@ -850,6 +861,12 @@ export class FontController {
 
   async reloadGlyphs(glyphNames) {
     for (const glyphName of glyphNames) {
+      if (!this.glyphMap[glyphName]) {
+        // Hmm, glyph deletion caused an error in the backend, now the
+        // glyphMap needs to be reloaded, too. We're running into a
+        // weird timing problem, and this sleepAsync() resolves that.
+        await sleepAsync(0);
+      }
       this._purgeGlyphCache(glyphName);
       // The undo stack is local, so any external change invalidates it
       delete this.undoStacks[glyphName];

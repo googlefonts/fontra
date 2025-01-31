@@ -144,7 +144,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Guidelines (local, glyph level) ✅
 - Guidelines (global, font level)
 - View background layers
-- Background image for tracing / reference
+- Background image for tracing / reference ✅
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
 - Built-in support for Non-Linear Interpolation
@@ -154,7 +154,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 ### Font-level viewing / editing
 
 - Create new font project ✅ (Fontra Pak)
-- Cell-based font overview
+- Cell-based font overview ✅
 - List-based font overview
 - Edit font meta data (“font info”) ✅
 - Edit kerning

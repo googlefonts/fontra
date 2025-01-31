@@ -13,7 +13,7 @@ export class FontInfoController extends ViewController {
   }
 
   async start() {
-    await this.fontController.initialize();
+    await super.start();
 
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
@@ -85,14 +85,6 @@ export class FontInfoController extends ViewController {
   handleKeyDown(event) {
     const panel = this.panels[this.selectedPanel];
     panel?.handleKeyDown?.(event);
-  }
-
-  async reloadData(reloadPattern) {
-    // We have currently no way to refine update behavior based on the
-    // reloadPattern.
-    //
-    // reloadEverything() will trigger the appropriate listeners
-    this.fontController.reloadEverything();
   }
 }
 

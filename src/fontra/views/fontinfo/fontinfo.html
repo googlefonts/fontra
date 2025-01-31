@@ -6,8 +6,6 @@
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/css/tooltip.css" rel="stylesheet" />
     <title>Fontra Font Info</title>
-    <script type="module" src="/web-components/modal-dialog.js"></script>
-    <script type="module" src="/core/theme-settings.js"></script>
     <style>
       body {
         overflow: auto;
@@ -65,13 +63,5 @@
       <div id="panel-container"></div>
     </div>
   </body>
-  <script type="module">
-    import { FontInfoController } from "/fontinfo/fontinfo.js";
-
-    async function startApp() {
-      window.fontInfoController = await FontInfoController.fromBackend();
-    }
-
-    startApp();
-  </script>
+  <script type="module" src="/fontinfo/start.js"></script>
 </html>

@@ -126,10 +126,9 @@ class FontHandler:
             [], Awaitable[None]
         ]  # inferencing with partial() goes wrong
         while self._dataScheduledForWriting:
-            writeKey, (writeFunc, connection) = popFirstItem(
+            writeKey, (writeFunc, connection, reloadPattern) = popFirstItem(
                 self._dataScheduledForWriting
             )
-            reloadPattern = _writeKeyToPattern(writeKey)
             logger.info(f"write {writeKey} to backend")
             try:
                 await writeFunc()
@@ -459,7 +458,14 @@ class FontHandler:
                     writeFunc = functools.partial(
                         self.writableBackend.deleteGlyph, glyphName
                     )
-                    await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
+                    # When deleting a glyph goes wrong, the glyphMap should *also* be reloaded
+                    reloadPattern = {"glyphMap": None} | _writeKeyToPattern(writeKey)
+                    await self.scheduleDataWrite(
+                        writeKey,
+                        writeFunc,
+                        sourceConnection,
+                        reloadPattern=reloadPattern,
+                    )
             else:
                 if rootKey in rootObject._assignedAttributeNames:
                     self.localData[rootKey] = getattr(rootObject, rootKey)
@@ -471,7 +477,9 @@ class FontHandler:
                 )
                 await self.scheduleDataWrite(rootKey, writeFunc, sourceConnection)
 
-    async def scheduleDataWrite(self, writeKey, writeFunc, connection):
+    async def scheduleDataWrite(
+        self, writeKey, writeFunc, connection, reloadPattern=None
+    ):
         if self._dataScheduledForWriting is None:
             # The write-"thread" is no longer running
             await self.reloadData(_writeKeyToPattern(writeKey))
@@ -482,7 +490,9 @@ class FontHandler:
             )
             return
         shouldSignal = not self._dataScheduledForWriting
-        self._dataScheduledForWriting[writeKey] = (writeFunc, connection)
+        if reloadPattern is None:
+            reloadPattern = _writeKeyToPattern(writeKey)
+        self._dataScheduledForWriting[writeKey] = (writeFunc, connection, reloadPattern)
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()

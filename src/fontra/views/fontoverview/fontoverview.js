@@ -11,16 +11,18 @@ import * as html from "/core/html-utils.js";
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { translate } from "/core/localization.js";
 import { ObservableController } from "/core/observable-object.js";
-import { parseGlyphSet } from "/core/parse-glyph-set.js";
+import { parseGlyphSet, redirectGlyphSetURL } from "/core/parse-glyphset.js";
 import {
   assert,
   dumpURLFragment,
+  friendlyHttpStatus,
   glyphMapToItemList,
   isActiveElementTypeable,
   modulo,
   range,
   readObjectFromURLFragment,
   scheduleCalls,
+  sleepAsync,
   throttleCalls,
   writeObjectToURLFragment,
 } from "/core/utils.js";
@@ -58,7 +60,7 @@ function getDefaultFontOverviewSettings() {
     groupByKeys: [],
     projectGlyphSets: {},
     myGlyphSets: {},
-    projectGlyphSetSelection: [THIS_FONTS_GLYPHSET],
+    projectGlyphSetSelection: [],
     myGlyphSetSelection: [],
     glyphSetErrors: {},
     cellMagnification: 1,
@@ -100,7 +102,7 @@ export class FontOverviewController extends ViewController {
   }
 
   async _start() {
-    await this.fontController.initialize();
+    await super.start();
 
     this.fontSources = await this.fontController.getSources();
 
@@ -197,6 +199,22 @@ export class FontOverviewController extends ViewController {
       this._updateGlyphItemList();
     });
 
+    this.fontController.addChangeListener(
+      { sources: null, customData: { "fontra.sourceStatusFieldDefinitions": null } },
+      () => {
+        /*
+         * The glyph cells may need updating because of changes in the font sources
+         * (eg. the ascender/descender values determine the relative glyph size in
+         * the cells) or because the status definitions changed.
+         * Trigger active cell update by setting the location again. It has to be
+         * a distinct object, as the ObservableController ignores "same" objects
+         */
+        this.fontOverviewSettings.fontLocationUser = {
+          ...this.fontOverviewSettings.fontLocationUser,
+        };
+      }
+    );
+
     document.addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
@@ -222,12 +240,14 @@ export class FontOverviewController extends ViewController {
         if (event.senderInfo?.sentFromExternalChange) {
           return;
         }
+        this._updateLoadedGlyphSets(event.oldValue, event.newValue);
+
         const changes = await this.fontController.performEdit(
           "edit glyph sets",
           "customData",
           (root) => {
             const projectGlyphSets = Object.values(event.newValue).filter(
-              (glyphSet) => glyphSet.url
+              (glyphSet) => glyphSet.url !== THIS_FONTS_GLYPHSET
             );
             root.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] = projectGlyphSets;
           },
@@ -245,6 +265,8 @@ export class FontOverviewController extends ViewController {
   _setupMyGlyphSetsDependencies() {
     // This synchronizes the myGlyphSets object with local storage
     this.fontOverviewSettingsController.addKeyListener("myGlyphSets", (event) => {
+      this._updateLoadedGlyphSets(event.oldValue, event.newValue);
+
       if (!event.senderInfo?.sentFromLocalStorage) {
         this.myGlyphSetsController.setItem("settings", event.newValue, {
           sentFromSettings: true,
@@ -264,6 +286,21 @@ export class FontOverviewController extends ViewController {
         });
       }
     });
+  }
+
+  _updateLoadedGlyphSets(oldGlyphSets, newGlyphSets) {
+    const oldAndNewGlyphSets = { ...oldGlyphSets, ...newGlyphSets };
+
+    for (const key of Object.keys(oldAndNewGlyphSets)) {
+      if (oldGlyphSets[key] !== newGlyphSets[key]) {
+        if (oldGlyphSets[key]) {
+          delete this._loadedGlyphSets[oldGlyphSets[key].url];
+        }
+        if (newGlyphSets[key]) {
+          delete this._loadedGlyphSets[newGlyphSets[key].url];
+        }
+      }
+    }
   }
 
   _setupLocationDependencies() {
@@ -315,6 +352,17 @@ export class FontOverviewController extends ViewController {
         }
       }
     });
+    if (
+      !this.fontOverviewSettings.myGlyphSetSelection.length &&
+      !this.fontOverviewSettings.projectGlyphSetSelection.length
+    ) {
+      this.fontOverviewSettings.projectGlyphSetSelection = [
+        THIS_FONTS_GLYPHSET,
+        ...Object.values(this.fontOverviewSettings.projectGlyphSets)
+          .map(({ url }) => url)
+          .filter((url) => url),
+      ];
+    }
   }
 
   _updateWindowLocation() {
@@ -365,28 +413,20 @@ export class FontOverviewController extends ViewController {
     const combinedGlyphMap = getGlyphMapProxy({}, combinedCharacterMap);
 
     const glyphSetKeys = [
-      ...this.fontOverviewSettings.projectGlyphSetSelection,
-      ...this.fontOverviewSettings.myGlyphSetSelection,
+      ...new Set([
+        ...this.fontOverviewSettings.projectGlyphSetSelection,
+        ...this.fontOverviewSettings.myGlyphSetSelection,
+      ]),
     ];
     glyphSetKeys.sort();
 
-    for (const glyphSetKey of glyphSetKeys) {
-      let glyphSet;
-      if (glyphSetKey === "") {
-        glyphSet = this._glyphItemList;
-      } else {
-        const glyphSetInfo =
-          this.fontOverviewSettings.projectGlyphSets[glyphSetKey] ||
-          this.fontOverviewSettings.myGlyphSets[glyphSetKey];
+    const glyphSets = (
+      await Promise.all(
+        glyphSetKeys.map((glyphSetKey) => this._loadGlyphSet(glyphSetKey))
+      )
+    ).filter((glyphSet) => glyphSet);
 
-        if (!glyphSetInfo) {
-          console.log(`can't find glyph set info for ${glyphSetKey}`);
-          continue;
-        }
-
-        glyphSet = await this._loadGlyphSet(glyphSetInfo);
-      }
-
+    for (const glyphSet of glyphSets) {
       for (const { glyphName, codePoints } of glyphSet) {
         const singleCodePoint = codePoints.length === 1 ? codePoints[0] : null;
         const foundGlyphName =
@@ -404,37 +444,81 @@ export class FontOverviewController extends ViewController {
       }
     }
 
-    return glyphMapToItemList(combinedGlyphMap);
+    const combinedItemList = glyphMapToItemList(combinedGlyphMap);
+    // When overlaying multiple glyph sets, sort the list, or else we
+    // may end up with a garbled mess of ordering
+    return glyphSetKeys.length > 1
+      ? this.glyphOrganizer.sortGlyphs(combinedItemList)
+      : combinedItemList;
   }
 
-  async _loadGlyphSet(glyphSetInfo) {
+  async _loadGlyphSet(glyphSetKey) {
+    await sleepAsync(0);
+    let glyphSet;
+    if (glyphSetKey === "") {
+      glyphSet = this._glyphItemList;
+    } else {
+      const glyphSetInfo =
+        this.fontOverviewSettings.projectGlyphSets[glyphSetKey] ||
+        this.fontOverviewSettings.myGlyphSets[glyphSetKey];
+
+      if (!glyphSetInfo) {
+        // console.log(`can't find glyph set info for ${glyphSetKey}`);
+        return;
+      }
+
+      glyphSet = await this._fetchGlyphSet(glyphSetInfo);
+    }
+    return glyphSet;
+  }
+
+  async _fetchGlyphSet(glyphSetInfo) {
     assert(glyphSetInfo.url);
-    const glyphSetErrors = { ...this.fontOverviewSettings.glyphSetErrors };
 
     let glyphSet = this._loadedGlyphSets[glyphSetInfo.url];
     if (!glyphSet) {
       let glyphSetData;
+      this._setErrorMessageForGlyphSet(glyphSetInfo.url, "...");
+      const redirectedURL = redirectGlyphSetURL(glyphSetInfo.url);
       try {
-        const response = await fetch(glyphSetInfo.url);
-        glyphSetData = await response.text();
-        delete glyphSetErrors[glyphSetInfo.url];
+        const response = await fetch(redirectedURL);
+        if (response.ok) {
+          glyphSetData = await response.text();
+          this._setErrorMessageForGlyphSet(glyphSetInfo.url, null);
+        } else {
+          this._setErrorMessageForGlyphSet(
+            glyphSetInfo.url,
+            `Could not fetch glyph set: ${friendlyHttpStatus[response.status]} (${
+              response.status
+            })`
+          );
+        }
       } catch (e) {
-        console.log(`can't load ${glyphSetInfo.url}`);
+        console.log(`could not fetch ${glyphSetInfo.url}`);
         console.error();
-        glyphSetErrors[glyphSetInfo.url] = `Could not load glyph set: ${e.toString()}`;
+        this._setErrorMessageForGlyphSet(
+          glyphSetInfo.url,
+          `Could not fetch glyph set: ${e.toString()}`
+        );
       }
 
       if (glyphSetData) {
         try {
-          glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat);
+          glyphSet = parseGlyphSet(glyphSetData, glyphSetInfo.dataFormat, {
+            commentChars: glyphSetInfo.commentChars,
+            hasHeader: glyphSetInfo.hasHeader,
+            glyphNameColumn: glyphSetInfo.glyphNameColumn,
+            codePointColumn: glyphSetInfo.codePointColumn,
+            codePointIsDecimal: glyphSetInfo.codePointIsDecimal,
+          });
         } catch (e) {
-          glyphSetErrors[
-            glyphSetInfo.url
-          ] = `Could not parse glyph set: ${e.toString()}`;
+          this._setErrorMessageForGlyphSet(
+            glyphSetInfo.url,
+            `Could not parse glyph set: ${e.toString()}`
+          );
+          console.error(e);
         }
       }
-
-      this.fontOverviewSettings.glyphSetErrors = glyphSetErrors;
 
       if (glyphSet) {
         this._loadedGlyphSets[glyphSetInfo.url] = glyphSet;
@@ -442,6 +526,17 @@ export class FontOverviewController extends ViewController {
     }
 
     return glyphSet || [];
+  }
+
+  _setErrorMessageForGlyphSet(url, message) {
+    const glyphSetErrors = { ...this.fontOverviewSettings.glyphSetErrors };
+    if (message) {
+      glyphSetErrors[url] = message;
+    } else {
+      delete glyphSetErrors[url];
+    }
+
+    this.fontOverviewSettings.glyphSetErrors = glyphSetErrors;
   }
 
   openSelectedGlyphs() {
@@ -469,14 +564,6 @@ export class FontOverviewController extends ViewController {
       }
       this.glyphCellView.handleKeyDown(event);
     }
-  }
-
-  handleRemoteClose(event) {
-    //
-  }
-
-  handleRemoteError(event) {
-    //
   }
 
   initActions() {
@@ -554,7 +641,7 @@ function openGlyphsInEditor(glyphsInfo, userLocation, glyphMap) {
 function readProjectGlyphSets(fontController) {
   return Object.fromEntries(
     [
-      { name: "This font's glyphs", url: "" },
+      { name: "This font's glyphs", url: THIS_FONTS_GLYPHSET },
       ...(fontController.customData[PROJECT_GLYPH_SETS_CUSTOM_DATA_KEY] || []),
     ].map((glyphSet) => [glyphSet.url, glyphSet])
   );
