@@ -1,5 +1,8 @@
 {
   "name": "@fontra/views-applicationsettings",
+  "scripts": {
+    "test": "echo \"No test specified for @fontra/views-applicationsettings\""
+  },
   "exports": {
     "./start.js": "./src/start.js",
     "./applicationsettings.js": "./src/applicationsettings.js",

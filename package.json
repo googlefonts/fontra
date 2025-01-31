@@ -1,7 +1,7 @@
 {
   "name": "fontra",
   "scripts": {
-    "test": "mocha test-js --reporter spec",
+    "test": "npm run --workspace src-js test",
     "bundle": "webpack --config webpack.config.cjs --mode production",
     "bundle-watch": "webpack --config webpack.config.cjs --watch"
   },
