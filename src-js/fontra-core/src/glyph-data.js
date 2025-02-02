@@ -1,4 +1,9 @@
-import { assert, enumerate } from "./utils.js";
+import {
+  assert,
+  enumerate,
+  getCharFromCodePoint,
+  splitGlyphNameExtension,
+} from "./utils.js";
 
 let glyphDataCSV;
 
@@ -110,4 +115,40 @@ export function getGlyphInfoFromCodePoint(codePoint) {
 export function getGlyphInfoFromGlyphName(glyphName) {
   parseGlyphDataCSV();
   return glyphDataByName.get(glyphName);
+}
+
+export function guessGlyphPlaceholderString(codePoints, glyphName) {
+  let glyphString = "";
+  if (codePoints?.[0]) {
+    glyphString = getCharFromCodePoint(codePoints[0]);
+  }
+
+  if (!glyphString && glyphName) {
+    const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
+    if (extension) {
+      const codePoint = getCodePointFromGlyphName(baseGlyphName);
+      if (codePoint) {
+        const baseChar = getCharFromCodePoint(codePoint);
+        const ZWJ = "\u200D";
+        switch (extension) {
+          case ".isol":
+            glyphString = baseChar;
+            break;
+          case ".init":
+            glyphString = baseChar + ZWJ;
+            break;
+          case ".medi":
+            glyphString = ZWJ + baseChar + ZWJ;
+            break;
+          case ".fina":
+            glyphString = ZWJ + baseChar;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  return glyphString;
 }
