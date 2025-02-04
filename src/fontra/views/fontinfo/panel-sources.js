@@ -393,6 +393,7 @@ class SourceNameBox extends HTMLElement {
     this.setupUI = setupUI;
     this.controllers = {};
     this._updateContents();
+    this.onclick = (event) => this.selectThis();
   }
 
   get source() {
@@ -439,12 +440,11 @@ class SourceNameBox extends HTMLElement {
   }
 
   _updateContents() {
-    (this.onclick = (event) => this.selectThis()),
-      this.append(
-        html.div({ id: `source-name-box-name-${this.sourceIdentifier}` }, [
-          this.source.name,
-        ])
-      );
+    this.append(
+      html.div({ id: `source-name-box-name-${this.sourceIdentifier}` }, [
+        this.source.name,
+      ])
+    );
 
     this.append(
       html.createDomElement("icon-button", {
@@ -647,14 +647,17 @@ class SourceBox extends HTMLElement {
     );
     this.append(buildElement(this.controllers.general));
 
-    this.append(
-      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-        getLabelFromKey("location"),
-      ])
-    );
-    this.append(
-      buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
-    );
+    // Don't add 'Location', if the font has no axes.
+    if (this.fontAxesSourceSpace.length > 0) {
+      this.append(
+        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+          getLabelFromKey("location"),
+        ])
+      );
+      this.append(
+        buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
+      );
+    }
 
     this.append(
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
