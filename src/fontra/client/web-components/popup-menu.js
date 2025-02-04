@@ -70,7 +70,7 @@ export class PopupMenu extends UnlitElement {
       return;
     }
 
-    const dialogParent = null; //this._findDialogParent();
+    const dialogParent = null;
     const thisRect = this.getBoundingClientRect();
     let pos;
 
@@ -93,17 +93,6 @@ export class PopupMenu extends UnlitElement {
         },
       }
     );
-  }
-
-  _findDialogParent() {
-    let parent = this;
-    while (parent) {
-      if (parent.classList.contains("dialog-box")) {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-    return null;
   }
 }
 
