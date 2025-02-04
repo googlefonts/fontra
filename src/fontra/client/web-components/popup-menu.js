@@ -70,7 +70,12 @@ export class PopupMenu extends UnlitElement {
       return;
     }
 
-    const dialogParent = null; //this._findDialogParent();
+    const menuItems = this._getMenuItems?.() || [];
+    if (!menuItems.length) {
+      return;
+    }
+
+    const dialogParent = null;
     const thisRect = this.getBoundingClientRect();
     let pos;
 
@@ -84,26 +89,11 @@ export class PopupMenu extends UnlitElement {
       pos = { x: thisRect.left, y: thisRect.bottom };
     }
 
-    this._menu = showMenu(
-      this._getMenuItems?.() || [{ title: "Oops, menu items were not provided" }],
-      pos,
-      {
-        onClose: () => {
-          delete this._menu;
-        },
-      }
-    );
-  }
-
-  _findDialogParent() {
-    let parent = this;
-    while (parent) {
-      if (parent.classList.contains("dialog-box")) {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-    return null;
+    this._menu = showMenu(menuItems, pos, {
+      onClose: () => {
+        delete this._menu;
+      },
+    });
   }
 }
 
