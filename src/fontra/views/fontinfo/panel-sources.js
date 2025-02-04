@@ -328,6 +328,11 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   handleArrowKeys(event) {
+    if (document.activeElement.id != "sources-panel") {
+      // The focus is somewhere else, for example on an input element.
+      // In this case arrow keys should be ignored.
+      return;
+    }
     if (!["ArrowUp", "ArrowDown"].includes(event.key)) {
       // We currently don't support any actions for left or right arrow.
       return;
