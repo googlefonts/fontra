@@ -1,7 +1,7 @@
 glyphsLib==6.10.1
 mypy==1.14.1
-pre-commit==4.0.1
+pre-commit==4.1.0
 pytest==8.3.4
-pytest-asyncio==0.25.2
+pytest-asyncio==0.25.3
 types-PyYAML==6.0.12.20241230
-unicodedata2==15.1.0
+unicodedata2==16.0.0
