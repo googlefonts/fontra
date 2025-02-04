@@ -10,7 +10,13 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import { arrowKeyDeltas, enumerate, modulo, round } from "../core/utils.js";
+import {
+  arrowKeyDeltas,
+  commandKeyProperty,
+  enumerate,
+  modulo,
+  round,
+} from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -20,6 +26,8 @@ import {
 import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
+
+let selectedSourceIdentifier = undefined;
 
 addStyleSheet(`
 .font-sources-container {
@@ -94,26 +102,28 @@ export class SourcesPanel extends BaseInfoPanel {
       if (i == 0) {
         // by default the first source is selected.
         sourceBoxNameElement.classList.add("selected");
+        selectedSourceIdentifier = identifier;
       }
       containerSourcesNames.appendChild(sourceBoxNameElement);
     }
 
-    containerSourcesNames.appendChild(
-      html.input({
-        type: "button",
-        class: "fontra-button",
-        style: `justify-self: start;`,
-        value: "+", //translate("sources.button.new-font-source") // TODO: do we want to remove not used tanslation keys in the google sheet, or do we keep them just in case we may need them again one day?
-        onclick: (event) => this.newSource(),
-      })
-    );
+    const addRemoveSourceButtons = html.createDomElement("add-remove-buttons", {
+      id: "axis-list-add-remove-buttons",
+    });
+    addRemoveSourceButtons.addButtonCallback = (event) => {
+      this.newSource();
+    };
+    addRemoveSourceButtons.removeButtonCallback = (event) => {
+      this.deleteSource();
+    };
+    containerSourcesNames.appendChild(addRemoveSourceButtons);
 
     // first source
     containerSourceContent.appendChild(
       new SourceBox(
         this.fontAxesSourceSpace,
         sources,
-        this.fontController.getSortedSourceIdentifiers()[0],
+        selectedSourceIdentifier,
         this.postChange.bind(this),
         this.setupUI.bind(this)
       )
@@ -123,6 +133,21 @@ export class SourcesPanel extends BaseInfoPanel {
     container.appendChild(containerSourceContent);
     this.panelElement.appendChild(container);
     this.panelElement.focus();
+  }
+
+  deleteSource() {
+    const undoLabel = translate(
+      "sources.undo.delete",
+      this.fontController.sources[selectedSourceIdentifier]
+    );
+    const root = { sources: this.fontController.sources };
+    const changes = recordChanges(root, (root) => {
+      delete root.sources[selectedSourceIdentifier];
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      this.setupUI();
+    }
   }
 
   async newSource() {
@@ -322,7 +347,13 @@ export class SourcesPanel extends BaseInfoPanel {
 
   // arrow keys
   handleKeyDown(event) {
-    if (event.key in arrowKeyDeltas) {
+    if (event[commandKeyProperty]) {
+      if (event.key == "z") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        this.doUndoRedo(event.shiftKey);
+      }
+    } else if (event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
     }
   }
@@ -396,7 +427,6 @@ class SourceNameBox extends HTMLElement {
     this.sourceIdentifier = sourceIdentifier;
     this.postChange = postChange;
     this.setupUI = setupUI;
-    this.controllers = {};
     this._updateContents();
     this.onclick = (event) => this.selectThis();
   }
@@ -405,19 +435,8 @@ class SourceNameBox extends HTMLElement {
     return this.sources[this.sourceIdentifier];
   }
 
-  deleteSource() {
-    const undoLabel = translate("sources.undo.delete", this.source.name);
-    const root = { sources: this.sources };
-    const changes = recordChanges(root, (root) => {
-      delete root.sources[this.sourceIdentifier];
-    });
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupUI();
-    }
-  }
-
   selectThis() {
+    selectedSourceIdentifier = this.sourceIdentifier;
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
@@ -449,16 +468,6 @@ class SourceNameBox extends HTMLElement {
       html.div({ id: `source-name-box-name-${this.sourceIdentifier}` }, [
         this.source.name,
       ])
-    );
-
-    this.append(
-      html.createDomElement("icon-button", {
-        "class": "fontra-ui-font-info-sources-panel-icon",
-        "src": "/tabler-icons/trash.svg",
-        "onclick": (event) => this.deleteSource(),
-        "data-tooltip": translate("sources.tooltip.delete-source"),
-        "data-tooltipposition": "right",
-      })
     );
   }
 }
