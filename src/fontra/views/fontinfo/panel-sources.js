@@ -23,23 +23,19 @@ import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
 addStyleSheet(`
 .font-sources-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   height: calc(100vh - var(--top-bar-height));
 }
 
-#font-sources-container-names {
+#font-sources-container-names,
+#font-sources-container-source-content {
   display: grid;
   align-content: start;
   gap: 0.5em;
   padding-top: 2em;
-}
-
-#font-sources-container-source-content {
-  display: grid;
-  gap: 0.5em;
-  width: 100%;
+  padding-bottom: 2em;
   overflow: auto;
-  padding-top: 2em;
 }
 
 #sources-panel.font-info-panel {
@@ -96,7 +92,7 @@ export class SourcesPanel extends BaseInfoPanel {
         this.setupUI.bind(this)
       );
       if (i == 0) {
-        // be default the first source is selected.
+        // by default the first source is selected.
         sourceBoxNameElement.classList.add("selected");
       }
       containerSourcesNames.appendChild(sourceBoxNameElement);
