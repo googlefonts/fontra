@@ -10,7 +10,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import { enumerate, round } from "../core/utils.js";
+import { arrowKeyDeltas, enumerate, modulo, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -319,6 +319,44 @@ export class SourcesPanel extends BaseInfoPanel {
 
     return { contentElement, warningElement };
   }
+
+  // arrow keys
+  handleKeyDown(event) {
+    if (event.key in arrowKeyDeltas) {
+      this.handleArrowKeys(event);
+    }
+  }
+
+  handleArrowKeys(event) {
+    if (!["ArrowUp", "ArrowDown"].includes(event.key)) {
+      // We currently don't support any actions for left or right arrow.
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const sourceNameBoxes = document.querySelectorAll(
+      ".fontra-ui-font-info-sources-panel-source-name-box"
+    );
+
+    let index = 0;
+    for (const [i, sourceBox] of enumerate(sourceNameBoxes)) {
+      if (sourceBox.classList.contains("selected")) {
+        index = i;
+        break;
+      }
+    }
+
+    const selectPrevious = "ArrowUp" == event.key;
+    const len = sourceNameBoxes.length;
+    const newIndex =
+      index == -1
+        ? selectPrevious
+          ? len - 1
+          : 0
+        : modulo(index + (selectPrevious ? -1 : 1), len);
+
+    sourceNameBoxes[newIndex].selectThis();
+  }
 }
 
 addStyleSheet(`
@@ -373,7 +411,7 @@ class SourceNameBox extends HTMLElement {
     }
   }
 
-  onclickFunc() {
+  selectThis() {
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
@@ -401,9 +439,7 @@ class SourceNameBox extends HTMLElement {
   }
 
   _updateContents() {
-    (this.onclick = (event) => this.onclickFunc()),
-      // this.innerHTML = `${this.source.name}`;
-
+    (this.onclick = (event) => this.selectThis()),
       this.append(
         html.div({ id: `source-name-box-name-${this.sourceIdentifier}` }, [
           this.source.name,
