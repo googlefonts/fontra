@@ -24,13 +24,14 @@ import { dialogSetup, message } from "/web-components/modal-dialog.js";
 addStyleSheet(`
 .font-sources-container {
   display: flex;
-  height: calc(100vh - 7em);
+  height: calc(100vh - var(--top-bar-height));
 }
 
 #font-sources-container-names {
   display: grid;
   align-content: start;
   gap: 0.5em;
+  padding-top: 2em;
 }
 
 #font-sources-container-source-content {
@@ -38,6 +39,12 @@ addStyleSheet(`
   gap: 0.5em;
   width: 100%;
   overflow: auto;
+  padding-top: 2em;
+}
+
+#sources-panel.font-info-panel {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 `);
 
