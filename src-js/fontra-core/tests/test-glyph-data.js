@@ -70,6 +70,14 @@ describe("glyph-data Tests", () => {
     { glyphName: "beh-ar.init", codePoints: [], glyphString: "\u0628\u200D" },
     { glyphName: "beh-ar.medi", codePoints: [], glyphString: "\u200D\u0628\u200D" },
     { glyphName: "uni0628.medi", codePoints: [], glyphString: "\u200D\u0628\u200D" },
+    { glyphName: "f_i", codePoints: [], glyphString: "fi" },
+    { glyphName: "lam_alef-ar", codePoints: [], glyphString: "\u0644\u0627" },
+    {
+      glyphName: "lam_alef-ar.fina",
+      codePoints: [],
+      glyphString: "\u200D\u0644\u0627",
+    },
+    { glyphName: "lam_lam_alef-ar", codePoints: [], glyphString: "\u0644\u0644\u0627" },
   ];
 
   parametrize(
