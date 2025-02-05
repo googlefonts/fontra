@@ -125,23 +125,32 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
 
   if (!glyphString && glyphName) {
     const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
-    if (extension) {
-      const codePoint = getCodePointFromGlyphName(baseGlyphName);
-      if (codePoint) {
-        const baseChar = getCharFromCodePoint(codePoint);
+
+    let baseGlyphNames = [baseGlyphName];
+    if (baseGlyphName.indexOf("_") != -1) {
+      const [base, suffix] = splitGlyphNameExtension(baseGlyphName, "-");
+      baseGlyphNames = base.split("_").map((name) => name + suffix);
+    }
+
+    const codePoints = baseGlyphNames.map((name) => getCodePointFromGlyphName(name));
+    if (codePoints.length == baseGlyphNames.length) {
+      glyphString = codePoints
+        .map((codePoint) => getCharFromCodePoint(codePoint))
+        .join("");
+
+      if (extension) {
         const ZWJ = "\u200D";
         switch (extension) {
           case ".isol":
-            glyphString = baseChar;
             break;
           case ".init":
-            glyphString = baseChar + ZWJ;
+            glyphString = glyphString + ZWJ;
             break;
           case ".medi":
-            glyphString = ZWJ + baseChar + ZWJ;
+            glyphString = ZWJ + glyphString + ZWJ;
             break;
           case ".fina":
-            glyphString = ZWJ + baseChar;
+            glyphString = ZWJ + glyphString;
             break;
           default:
             break;
