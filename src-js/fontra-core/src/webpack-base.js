@@ -53,7 +53,6 @@ export function makeConfig(options) {
     output: {
       path: destination,
       filename: options.production ? "[name].[contenthash].js" : "[name].js",
-      chunkFormat: false,
       clean: true,
     },
     devtool: options.production ? false : "eval-source-map",

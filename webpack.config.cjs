@@ -25,6 +25,32 @@ module.exports = (_env, argv) => {
     production: argv.mode === "production",
     custom: {
       extends: require.resolve("@fontra/core/webpack.config.cjs"), // This does the copy of core assets
+      optimization: {
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /\.(js|ts)$/, // <= IMPORTANT: split only script files
+              chunks: "all", // <= DEFINE it here only
+              name({ context }, chunks, groupName) {
+                // save split chunks of the node module under package name
+                if (/[\\/]node_modules[\\/]/.test(context)) {
+                  const moduleName = context
+                    .match(/[\\/]node_modules[\\/](.*?)(?:[\\/]|$)/)[1]
+                    .replace("@", "");
+                  return `npm.${moduleName}`;
+                } else if (/[\\/]src-js[\\/]/.test(context)) {
+                  return context
+                    .match(/[\\/]src-js[\\/](.*?)(?:[\\/]|$)/)[1]
+                    .replace("@", "");
+                  // return "fontra";
+                }
+                // save split chunks of the application
+                return groupName;
+              },
+            },
+          },
+        },
+      },
     },
   });
 };
