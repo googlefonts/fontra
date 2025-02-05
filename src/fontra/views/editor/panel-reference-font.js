@@ -182,20 +182,10 @@ export default class ReferenceFontPanel extends Panel {
   iconPath = "/images/reference.svg";
 
   static styles = `
-    .sidebar-reference-font {
-      width: 100%;
-      height: 100%;
-      display: flex;
-    }
-
-    #reference-font {
-      width: 100%;
+    .reference-font-section {
       display: grid;
-      padding: 1em;
       gap: 1em;
-      height: 100%;
       white-space: normal;
-      align-content: start;
     }
 
     .title {
@@ -657,12 +647,13 @@ export default class ReferenceFontPanel extends Panel {
 
     return div(
       {
-        class: "sidebar-reference-font",
+        class: "panel",
       },
       [
         div(
           {
-            id: "reference-font",
+            class:
+              "panel-section panel-section--flex panel-section--noscroll reference-font-section",
           },
           [
             div({ class: "title" }, [translate("sidebar.reference-font")]),

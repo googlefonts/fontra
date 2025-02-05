@@ -34,6 +34,7 @@ class AddRemoveButtons extends html.UnlitElement {
       background-color: var(--button-color);
       fill: var(--text-color);
       border: none;
+      line-height: 0;
     }
 
     button > inline-svg {
