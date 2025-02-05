@@ -21,7 +21,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
 - Ensure you have **Python >= 3.10** installed, preferably from [python.org](https://www.python.org/downloads/)
 
-- Ensure you have **Node.js >= 19** installed, preferably from [nodejs.org](https://nodejs.org/en/download/)
+- Ensure you have **Node.js >= 20** installed, preferably from [nodejs.org](https://nodejs.org/en/download/)
 
 #### Setup
 

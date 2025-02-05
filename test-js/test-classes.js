@@ -1,6 +1,13 @@
 import { expect } from "chai";
 
 import { getClassSchema } from "@fontra/core/classes.js";
+
+const [nodeMajor, nodeMinor, nodePatch] = process.versions.node.split(".").map(Number);
+
+if (nodeMajor < 20) {
+  throw new Error("This test requires Node.js 20 or later");
+}
+
 import coreClasses from "@fontra/core/classes.json" with { type: "json" };
 import { enumerate, range } from "@fontra/core/utils.js";
 import { Layer, StaticGlyph, VariableGlyph } from "@fontra/core/var-glyph.js";
