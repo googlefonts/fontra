@@ -292,7 +292,7 @@ export async function readFromClipboard(type, plainText = true) {
 }
 
 export function getCharFromCodePoint(codePoint) {
-  return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
+  return codePoint != undefined ? String.fromCodePoint(codePoint) : "";
 }
 
 export function guessCharFromGlyphName(glyphName) {
