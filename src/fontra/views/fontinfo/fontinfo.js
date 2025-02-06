@@ -112,16 +112,12 @@ export class FontInfoController extends ViewController {
 
   getUndoRedoLabel(isRedo) {
     const panel = this.panels[this.selectedPanel];
-    const info = panel?.undoStack?.getTopUndoRedoRecord(isRedo)?.info;
-    return (
-      (isRedo ? translate("action.redo") : translate("action.undo")) +
-      (info ? " " + info.label : "")
-    );
+    return panel.getUndoRedoLabel(isRedo);
   }
 
   canUndoRedo(isRedo) {
     const panel = this.panels[this.selectedPanel];
-    return panel?.undoStack?.getTopUndoRedoRecord(isRedo)?.info;
+    return panel.canUndoRedo(isRedo);
   }
 
   doUndoRedo(isRedo) {
