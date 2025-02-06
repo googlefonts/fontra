@@ -102,7 +102,7 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const sortedSourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
 
-    for (const [i, identifier] of enumerate(sortedSourceIdentifiers)) {
+    for (const identifier of sortedSourceIdentifiers) {
       const sourceNameBoxElement = new SourceNameBox(
         this.fontAxesSourceSpace,
         sources,
@@ -135,12 +135,8 @@ export class SourcesPanel extends BaseInfoPanel {
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
-    for (const sourceNameBox of sourceNameBoxes) {
-      if (sourceNameBox.sourceIdentifier == selectedSourceIdentifier) {
-        sourceNameBox.selected = true;
-        break;
-      }
-    }
+    const index = sortedSourceIdentifiers.indexOf(selectedSourceIdentifier);
+    sourceNameBoxes[index].selected = true;
   }
 
   deleteSource() {
