@@ -683,28 +683,22 @@ class SourceBox extends HTMLElement {
     this.append(
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
         getLabelFromKey("general"),
-      ])
+      ]),
+      buildElement(this.controllers.general)
     );
-    this.append(buildElement(this.controllers.general));
-
     // Don't add 'Location', if the font has no axes.
     if (this.fontAxesSourceSpace.length > 0) {
       this.append(
         html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
           getLabelFromKey("location"),
-        ])
-      );
-      this.append(
+        ]),
         buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
       );
     }
-
     this.append(
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
         getLabelFromKey("lineMetricsHorizontalLayout"),
-      ])
-    );
-    this.append(
+      ]),
       buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
     );
   }
