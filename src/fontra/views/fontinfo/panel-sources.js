@@ -11,7 +11,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import { arrowKeyDeltas, enumerate, modulo, round } from "../core/utils.js";
+import { arrowKeyDeltas, enumerate, modulo, range, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -378,22 +378,16 @@ export class SourcesPanel extends BaseInfoPanel {
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
 
-    let index = 0;
-    for (const [i, sourceNameBox] of enumerate(sourceNameBoxes)) {
-      if (sourceNameBox.selected) {
-        index = i;
-        break;
-      }
-    }
+    const sourcesLength = sourceNameBoxes.length;
+    const index = range(sourcesLength).find((i) => sourceNameBoxes[i].selected);
 
     const selectPrevious = "ArrowUp" == event.key;
-    const len = sourceNameBoxes.length;
     const newIndex =
       index == -1
         ? selectPrevious
-          ? len - 1
+          ? sourcesLength - 1
           : 0
-        : modulo(index + (selectPrevious ? -1 : 1), len);
+        : modulo(index + (selectPrevious ? -1 : 1), sourcesLength);
 
     sourceNameBoxes[newIndex].selected = true;
   }
