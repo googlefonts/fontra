@@ -155,7 +155,7 @@ export class SourcesPanel extends BaseInfoPanel {
   deleteSource() {
     const undoLabel = translate(
       "sources.undo.delete",
-      this.fontController.sources[selectedSourceIdentifier]
+      this.fontController.sources[selectedSourceIdentifier].name
     );
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
