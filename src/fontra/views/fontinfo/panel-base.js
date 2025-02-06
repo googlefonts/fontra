@@ -1,6 +1,7 @@
 import { UndoStack, reverseUndoRecord } from "../core/font-controller.js";
 import * as html from "../core/html-utils.js";
 import { commandKeyProperty } from "../core/utils.js";
+import { translate } from "/core/localization.js";
 
 export class BaseInfoPanel {
   constructor(fontInfoController, panelElement) {
@@ -44,6 +45,18 @@ export class BaseInfoPanel {
         this.doUndoRedo(event.shiftKey);
       }
     }
+  }
+
+  getUndoRedoLabel(isRedo) {
+    const info = this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
+    return (
+      (isRedo ? translate("action.redo") : translate("action.undo")) +
+      (info ? " " + info.label : "")
+    );
+  }
+
+  canUndoRedo(isRedo) {
+    return this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
   }
 
   async doUndoRedo(isRedo) {
