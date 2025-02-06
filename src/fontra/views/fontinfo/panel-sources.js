@@ -438,6 +438,7 @@ class SourceNameBox extends HTMLElement {
     this.classList.toggle("selected", this._selected);
     if (this._selected) {
       selectedSourceIdentifier = this.sourceIdentifier;
+      this.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
       this._deselectOtherSourceNameBoxs();
       this._updateSourceBox();
     }
