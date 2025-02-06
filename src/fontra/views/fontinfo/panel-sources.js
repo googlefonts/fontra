@@ -1,8 +1,4 @@
-import {
-  doPerformAction,
-  getActionIdentifierFromKeyEvent,
-  registerActionCallbacks,
-} from "../core/actions.js";
+import { doPerformAction, getActionIdentifierFromKeyEvent } from "../core/actions.js";
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
@@ -15,13 +11,7 @@ import {
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
-import {
-  arrowKeyDeltas,
-  commandKeyProperty,
-  enumerate,
-  modulo,
-  round,
-} from "../core/utils.js";
+import { arrowKeyDeltas, enumerate, modulo, round } from "../core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
