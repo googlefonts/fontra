@@ -100,9 +100,9 @@ export class SourcesPanel extends BaseInfoPanel {
       [containerSourceContent]
     );
 
-    for (const [i, identifier] of enumerate(
-      this.fontController.getSortedSourceIdentifiers()
-    )) {
+    const sortedSourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
+
+    for (const [i, identifier] of enumerate(sortedSourceIdentifiers)) {
       const sourceNameBoxElement = new SourceNameBox(
         this.fontAxesSourceSpace,
         sources,
@@ -110,10 +110,6 @@ export class SourcesPanel extends BaseInfoPanel {
         this.postChange.bind(this),
         this.setupUI.bind(this)
       );
-      if (selectedSourceIdentifier == undefined && i == 0) {
-        // by default the first source is selected.
-        selectedSourceIdentifier = identifier;
-      }
       containerSourcesNames.appendChild(sourceNameBoxElement);
     }
 
@@ -131,6 +127,11 @@ export class SourcesPanel extends BaseInfoPanel {
     this.panelElement.appendChild(container);
     this.panelElement.focus();
 
+    selectedSourceIdentifier = sortedSourceIdentifiers.includes(
+      selectedSourceIdentifier
+    )
+      ? selectedSourceIdentifier
+      : sortedSourceIdentifiers[0];
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
