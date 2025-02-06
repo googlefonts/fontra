@@ -1,3 +1,8 @@
+import {
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+  registerActionCallbacks,
+} from "../core/actions.js";
 import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
@@ -360,12 +365,11 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   handleKeyDown(event) {
-    if (event[commandKeyProperty]) {
-      if (event.key == "z") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        this.doUndoRedo(event.shiftKey);
-      }
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
     } else if (event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
     }

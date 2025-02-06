@@ -1,3 +1,4 @@
+import { registerActionCallbacks } from "../core/actions.js";
 import * as html from "../core/html-utils.js";
 import { AxesPanel } from "./panel-axes.js";
 import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
@@ -19,7 +20,9 @@ export class FontInfoController extends ViewController {
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
 
-    const myMenuBar = makeFontraMenuBar(["File", "Font"], this);
+    this.initActions();
+
+    const myMenuBar = makeFontraMenuBar(["File", "Edit", "Font"], this);
     document.querySelector(".top-bar-container").appendChild(myMenuBar);
 
     const panelContainer = document.querySelector("#panel-container");
@@ -89,6 +92,41 @@ export class FontInfoController extends ViewController {
   handleKeyDown(event) {
     const panel = this.panels[this.selectedPanel];
     panel?.handleKeyDown?.(event);
+  }
+
+  initActions() {
+    registerActionCallbacks(
+      "action.undo",
+      () => this.doUndoRedo(false),
+      () => this.canUndoRedo(false),
+      () => this.getUndoRedoLabel(false)
+    );
+
+    registerActionCallbacks(
+      "action.redo",
+      () => this.doUndoRedo(true),
+      () => this.canUndoRedo(true),
+      () => this.getUndoRedoLabel(true)
+    );
+  }
+
+  getUndoRedoLabel(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    const info = panel?.undoStack?.getTopUndoRedoRecord(isRedo)?.info;
+    return (
+      (isRedo ? translate("action.redo") : translate("action.undo")) +
+      (info ? " " + info.label : "")
+    );
+  }
+
+  canUndoRedo(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    return panel?.undoStack?.getTopUndoRedoRecord(isRedo)?.info;
+  }
+
+  doUndoRedo(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    return panel.doUndoRedo(isRedo);
   }
 }
 
