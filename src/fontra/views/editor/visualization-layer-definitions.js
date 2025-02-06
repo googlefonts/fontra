@@ -1419,6 +1419,9 @@ registerVisualizationLayerDefinition({
 
     for (const pointIndex of pointSelection || []) {
       const pt = glyph.path.getPoint(pointIndex);
+      if (!pt) {
+        continue;
+      }
       const xString = `${pointIndex}`;
       const width = context.measureText(xString).width + 2 * margin;
       context.fillStyle = parameters.boxColor;
