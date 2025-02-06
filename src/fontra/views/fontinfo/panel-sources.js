@@ -33,7 +33,7 @@ addStyleSheet(`
 .font-sources-container {
   display: grid;
   grid-template-columns: auto 1fr;
-  height: calc(100vh - var(--top-bar-height));
+  overflow: hidden;
 }
 
 #font-sources-container-names,
@@ -41,14 +41,18 @@ addStyleSheet(`
   display: grid;
   align-content: start;
   gap: 0.5em;
-  padding-top: 2em;
-  padding-bottom: 2em;
   overflow: auto;
 }
 
+.font-sources-container-wrapper {
+  display: grid;
+  align-content: start;
+  gap: 0.5em;
+  overflow: hidden;
+}
+
 #sources-panel.font-info-panel {
-  padding-top: 0;
-  padding-bottom: 0;
+  height: 100%;
 }
 `);
 
@@ -84,10 +88,22 @@ export class SourcesPanel extends BaseInfoPanel {
     const containerSourcesNames = html.div({
       id: "font-sources-container-names",
     });
+    const containerSourcesNamesWrapper = html.div(
+      {
+        class: "font-sources-container-wrapper",
+      },
+      [containerSourcesNames]
+    );
 
     const containerSourceContent = html.div({
       id: "font-sources-container-source-content",
     });
+    const containerSourceContentWrapper = html.div(
+      {
+        class: "font-sources-container-wrapper",
+      },
+      [containerSourceContent]
+    );
 
     for (const [i, identifier] of enumerate(
       this.fontController.getSortedSourceIdentifiers()
@@ -106,19 +122,17 @@ export class SourcesPanel extends BaseInfoPanel {
       containerSourcesNames.appendChild(sourceNameBoxElement);
     }
 
-    const addRemoveSourceButtons = html.createDomElement("add-remove-buttons", {
-      id: "axis-list-add-remove-buttons",
-    });
+    const addRemoveSourceButtons = html.createDomElement("add-remove-buttons");
     addRemoveSourceButtons.addButtonCallback = (event) => {
       this.newSource();
     };
     addRemoveSourceButtons.removeButtonCallback = (event) => {
       this.deleteSource();
     };
-    containerSourcesNames.appendChild(addRemoveSourceButtons);
+    containerSourcesNamesWrapper.appendChild(addRemoveSourceButtons);
 
-    container.appendChild(containerSourcesNames);
-    container.appendChild(containerSourceContent);
+    container.appendChild(containerSourcesNamesWrapper);
+    container.appendChild(containerSourceContentWrapper);
     this.panelElement.appendChild(container);
     this.panelElement.focus();
 
