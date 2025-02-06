@@ -508,12 +508,11 @@ addStyleSheet(`
 
 .fontra-ui-font-info-sources-panel-column {
   display: grid;
-  grid-template-columns: minmax(4.5em, max-content) minmax(40%, max-content);
+  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
   gap: 0.5em;
   align-items: start;
   align-content: start;
   padding-bottom: 2em;
-  justify-content: center;
 }
 
 .fontra-ui-font-info-sources-panel-line-metrics-hor {
