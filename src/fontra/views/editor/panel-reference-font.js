@@ -176,6 +176,7 @@ async function deleteFontFileFromOPFS(fileName) {
 
 async function writeFontFileToOPFS(fileName, file) {
   const opfs = await _getOPFS();
+  await opfs.createDirectory([referenceFontsFolderName]);
   await opfs.writeFile([referenceFontsFolderName, fileName], file);
 }
 
