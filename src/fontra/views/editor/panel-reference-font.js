@@ -156,8 +156,10 @@ function garbageCollectFontItem(fontItem) {
 async function listFontFileNamesInOPFS() {
   const opfs = await _getOPFS();
   const fileNames = [];
-  for await (const name of opfs.iterDirectory([referenceFontsFolderName])) {
-    fileNames.push(name);
+  if (await opfs.exists([referenceFontsFolderName])) {
+    for await (const name of opfs.iterDirectory([referenceFontsFolderName])) {
+      fileNames.push(name);
+    }
   }
   return fileNames;
 }
@@ -174,6 +176,7 @@ async function deleteFontFileFromOPFS(fileName) {
 
 async function writeFontFileToOPFS(fileName, file) {
   const opfs = await _getOPFS();
+  await opfs.createDirectory([referenceFontsFolderName]);
   await opfs.writeFile([referenceFontsFolderName, fileName], file);
 }
 
