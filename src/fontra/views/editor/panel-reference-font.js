@@ -186,6 +186,7 @@ export default class ReferenceFontPanel extends Panel {
       display: grid;
       gap: 1em;
       white-space: normal;
+      align-content: start;
     }
 
     .title {
