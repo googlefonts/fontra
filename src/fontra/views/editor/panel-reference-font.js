@@ -189,7 +189,6 @@ export default class ReferenceFontPanel extends Panel {
     .reference-font-section {
       display: grid;
       gap: 1em;
-      white-space: normal;
       align-content: start;
     }
 
