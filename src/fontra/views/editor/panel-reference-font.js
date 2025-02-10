@@ -511,23 +511,27 @@ export default class ReferenceFontPanel extends Panel {
     await this.ensureFontLoaded(fontItem);
     this.model.referenceFontName = fontItem.fontIdentifier;
 
-    if (fontItem.fontIdentifier in this.supportedLanguagesMemoized) {
-      this.setSupportedLanguages(
-        this.supportedLanguagesMemoized[fontItem.fontIdentifier],
-        this.model.languageCode
-      );
-    } else {
-      setTimeout(async () => {
-        // file is not resolved when it's read consecutively after creating object url
-        // I do not know the reason. I will investigate later, leaving it with a timeout
-        const supportedLanguages = await readSupportedLanguages(
-          fontItem,
-          this.languageMapping
+    await new Promise((resolve) => {
+      if (fontItem.fontIdentifier in this.supportedLanguagesMemoized) {
+        this.setSupportedLanguages(
+          this.supportedLanguagesMemoized[fontItem.fontIdentifier],
+          this.model.languageCode
         );
-        this.setSupportedLanguages(supportedLanguages, this.model.languageCode);
-        this.supportedLanguagesMemoized[fontItem.fontIdentifier] = supportedLanguages;
-      }, 100);
-    }
+        resolve();
+      } else {
+        setTimeout(async () => {
+          // file is not resolved when it's read consecutively after creating object url
+          // I do not know the reason. I will investigate later, leaving it with a timeout
+          const supportedLanguages = await readSupportedLanguages(
+            fontItem,
+            this.languageMapping
+          );
+          this.setSupportedLanguages(supportedLanguages, this.model.languageCode);
+          this.supportedLanguagesMemoized[fontItem.fontIdentifier] = supportedLanguages;
+          resolve();
+        }, 100);
+      }
+    });
   }
 
   async _deleteSelectedItemHandler() {
@@ -624,8 +628,13 @@ export default class ReferenceFontPanel extends Panel {
 
     this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
 
-    this.filesUIList.addEventListener("listSelectionChanged", () => {
-      this._listSelectionChangedHandler();
+    this.filesUIList.deleteItem = async () => {
+      await this._listSelectionChangedHandler();
+      this._deleteSelectedItemHandler();
+    };
+
+    this.filesUIList.addEventListener("listSelectionChanged", async () => {
+      await this._listSelectionChangedHandler();
     });
 
     this.filesUIList.addEventListener("deleteKey", () =>
