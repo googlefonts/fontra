@@ -624,6 +624,8 @@ export default class ReferenceFontPanel extends Panel {
 
     this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
 
+    this.filesUIList.deleteItem = (index) => this._deleteItemOrAll(index);
+
     this.filesUIList.addEventListener("listSelectionChanged", () => {
       this._listSelectionChangedHandler();
     });
