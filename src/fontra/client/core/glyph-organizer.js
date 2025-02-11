@@ -65,7 +65,15 @@ export class GlyphOrganizer {
     const searchItems = searchString.split(/\s+/).filter((item) => item.length);
     const hexSearchItems = searchItems
       .filter((item) => [...item].length === 1) // num chars, not utf16 units!
-      .map((item) => item.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"));
+      .map((item) => {
+        const hexCodePoint = item
+          .codePointAt(0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(4, "0");
+        // Only match if there are no hex digits before and after
+        return new RegExp(`([^0-9A-F]|^)${hexCodePoint}([^0-9A-F]|$)`);
+      });
     searchItems.push(...hexSearchItems);
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
   }
@@ -144,13 +152,13 @@ function glyphFilterFunc(item, searchItems) {
   if (!searchItems.length) {
     return true;
   }
-  for (const searchString of searchItems) {
-    if (item.glyphName.indexOf(searchString) >= 0) {
+  for (const searchItem of searchItems) {
+    if (item.glyphName.search(searchItem) >= 0) {
       return true;
     }
     if (item.codePoints[0] !== undefined) {
       const char = String.fromCodePoint(item.codePoints[0]);
-      if (searchString === char) {
+      if (searchItem === char) {
         return true;
       }
     }
