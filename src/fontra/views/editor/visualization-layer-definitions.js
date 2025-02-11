@@ -524,11 +524,17 @@ registerVisualizationLayerDefinition({
       _drawGuideline(context, parameters, guideline);
     }
 
-    // TODO: Font Guidelines
+    // Draw font guidelines
+    if (!model.fontSourceInstance) {
+      return;
+    }
+    for (const guideline of model.fontSourceInstance.guidelines || []) {
+      _drawGuideline(context, parameters, guideline, parameters.strokeDash / 2);
+    }
   },
 });
 
-function _drawGuideline(context, parameters, guideline) {
+function _drawGuideline(context, parameters, guideline, strokeDash) {
   withSavedState(context, () => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
@@ -574,7 +580,7 @@ function _drawGuideline(context, parameters, guideline) {
 
       // collect lines
       let lines = [[halfMarker, parameters.strokeLength]];
-      if (guideline.name !== undefined) {
+      if (guideline.name !== undefined && guideline.name.trim() !== "") {
         // with name
         lines.push([
           -textWidth / 2 + moveText - parameters.margin,
@@ -587,10 +593,7 @@ function _drawGuideline(context, parameters, guideline) {
       }
       // draw lines
       for (const [x1, x2] of lines) {
-        strokeLineDashed(context, x1, 0, x2, 0, [
-          parameters.strokeDash * 2,
-          parameters.strokeDash,
-        ]);
+        strokeLineDashed(context, x1, 0, x2, 0, [strokeDash * 2, strokeDash]);
       }
     });
   });
