@@ -45,7 +45,7 @@ export class FontInfoPanel extends BaseInfoPanel {
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       const [rootKey, itemKey] = JSON.parse(fieldItem.key);
-      const undoLabel = `change ${itemKey ? itemKey : rootKey}`;
+      const undoLabel = `change ${itemKey ? itemKey : rootKey}`; // TODO: translation
 
       const root = {
         fontInfo: await this.fontController.getFontInfo(),

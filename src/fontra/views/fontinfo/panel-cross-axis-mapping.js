@@ -352,7 +352,7 @@ class CrossAxisMappingBox extends HTMLElement {
           } else {
             mapping[`${prop}Location`][event.key] = defaultValue;
           }
-        }, `edit ${prop} location ${event.key}`);
+        }, `edit ${prop} location ${event.key}`); // TODO: translation
       });
     }
 
