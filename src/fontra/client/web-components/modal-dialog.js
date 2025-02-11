@@ -137,6 +137,13 @@ export class ModalDialog extends SimpleElement {
       font-size: 1.1rem;
       resize: none;
     }
+
+    dialog .content {
+      display: grid;
+      gap: 0.5em;
+      grid-template-columns: max-content auto;
+      align-items: center;
+    }
   `;
 
   constructor() {

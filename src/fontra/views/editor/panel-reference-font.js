@@ -5,6 +5,7 @@ import { getSelectedGlyphInfo } from "./scene-model.js";
 import {
   createDomElement,
   div,
+  form,
   input,
   label,
   option,
@@ -14,7 +15,7 @@ import {
 import { ObservableController } from "/core/observable-object.js";
 import { getOPFS } from "/core/opfs.js";
 import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
-import { dialog, message } from "/web-components/modal-dialog.js";
+import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
 
@@ -190,6 +191,16 @@ export default class ReferenceFontPanel extends Panel {
       gap: 1em;
       white-space: normal;
       align-content: start;
+    }
+
+    .reference-font-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+
+    .reference-font-list {
+      gap: 0;
     }
 
     .title {
@@ -419,7 +430,7 @@ export default class ReferenceFontPanel extends Panel {
     return this.controller.model;
   }
 
-  async _filesDropHandler(files) {
+  async _filesHandler(files) {
     const fontItemsInvalid = [];
     const fontItems = [...files]
       .filter((file) => {
@@ -621,10 +632,9 @@ export default class ReferenceFontPanel extends Panel {
     this.filesUIList.itemEqualFunc = (a, b) => a.fontIdentifier == b.fontIdentifier;
 
     this.filesUIList.minHeight = "6em";
+    this.filesUIList.classList.add("reference-font-list");
 
-    this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
-
-    this.filesUIList.deleteItem = (index) => this._deleteItemOrAll(index);
+    this.filesUIList.onFilesDrop = (files) => this._filesHandler(files);
 
     this.filesUIList.addEventListener("listSelectionChanged", () => {
       this._listSelectionChangedHandler();
@@ -651,6 +661,44 @@ export default class ReferenceFontPanel extends Panel {
       []
     );
 
+    const addRemoveButtons = createDomElement("add-remove-buttons");
+    addRemoveButtons.addButtonCallback = async () => {
+      // FIXME Add dialog title translation
+      const dialog = await dialogSetup("Upload", null, [
+        {
+          title: translate("dialog.cancel"),
+          resultValue: "cancel",
+          isCancelButton: true,
+        },
+        {
+          title: translate("dialog.add"),
+          resultValue: "ok",
+          isDefaultButton: true,
+        },
+      ]);
+      const fileInput = input({ type: "file", id: "reference-font-file" }, []);
+      dialog.setContent(
+        form({ enctype: "multipart/form-data", class: "content" }, [
+          label({ for: "reference-font-file", class: "reference-font-label" }, [
+            "Choose a file",
+          ]),
+          fileInput,
+        ])
+      );
+      const result = await dialog.run();
+      const { files } = fileInput;
+      if (result === "ok" && files.length === 1) {
+        await this._filesHandler(files);
+      }
+    };
+
+    addRemoveButtons.removeButtonCallback = () => {
+      const index = this.filesUIList.getSelectedItemIndex();
+      if (!isNaN(index) && index <= this.filesUIList.items.length - 1) {
+        this._deleteItemOrAll(index);
+      }
+    };
+
     return div(
       {
         class: "panel",
@@ -664,7 +712,10 @@ export default class ReferenceFontPanel extends Panel {
           [
             div({ class: "title" }, [translate("sidebar.reference-font")]),
             div({}, [translate("sidebar.reference-font.info")]),
-            this.filesUIList,
+            div({ class: "reference-font-items" }, [
+              this.filesUIList,
+              addRemoveButtons,
+            ]),
             div(
               {
                 style: `

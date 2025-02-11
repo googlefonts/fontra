@@ -1,4 +1,3 @@
-import { InlineSVG } from "./inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
@@ -8,17 +7,10 @@ const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
 const colors = {
   "border-color": ["lightgray", "darkgray"],
-  "button-color": ["#ddd", "#888"],
-  "button-hover-color": ["#ccc", "#999"],
-  "button-active-color": ["#bbb", "#bbb"],
   "row-border-color": ["#ddd", "#333"],
   "row-foreground-color": ["black", "white"],
   "row-background-color": ["white", "#333"],
   "row-selected-background-color": ["#ddd", "#555"],
-  "row-selected-button-color": ["white", "#333"],
-  "row-selected-button-hover-color": ["darkgray", "lightgray"],
-  "row-selected-button-active-color": ["#888", "#ddd"],
-  "text-color": ["#000", "#fff"],
 };
 
 export class UIList extends UnlitElement {
@@ -75,7 +67,6 @@ export class UIList extends UnlitElement {
 
     .row {
       display: flex;
-      justify-content: space-between;
       width: min-content;
       min-width: 100%;
       border-top: solid 1px var(--row-border-color);
@@ -88,7 +79,7 @@ export class UIList extends UnlitElement {
       user-select: none;
     }
 
-    .row.selected {
+    .contents > .selected {
       background-color: var(--row-selected-background-color);
     }
 
@@ -114,47 +105,6 @@ export class UIList extends UnlitElement {
 
     .text-cell.right, .text-cell-header.right {
       text-align: right;
-    }
-
-    .ui-list-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      width: 1rem;
-      height: 1rem;
-      line-height: 0;
-      cursor: pointer;
-      padding: 0;
-      border-radius: 0.5rem;
-      border: none;
-      background: var(--button-color);
-      color: var(--text-color);
-    }
-
-    .ui-list-button:hover {
-      background-color: var(--button-hover-color);
-    }
-
-    .ui-list-button:active {
-      background-color: var(--button-active-color);
-    }
-
-    .ui-list-button inline-svg {
-      display: block;
-      width: 0.6rem;
-    }
-
-    .row.selected .ui-list-button {
-      background-color: var(--row-selected-button-color);
-    }
-
-    .row.selected .ui-list-button:hover {
-      background-color: var(--row-selected-button-hover-color);
-    }
-
-    .row.selected .ui-list-button:active {
-      background-color: var(--row-selected-button-active-color);
     }
     `;
 
@@ -305,7 +255,8 @@ export class UIList extends UnlitElement {
     const items = this._itemsBackLog.splice(0, LIST_CHUNK_SIZE);
     let rowIndex = this.contents.childElementCount;
     for (const item of items) {
-      const row = html.div({ class: "row" }, []);
+      const row = document.createElement("div");
+      row.className = "row";
       row.dataset.rowIndex = rowIndex;
       if (rowIndex === this.selectedItemIndex) {
         row.classList.add("selected");
@@ -336,25 +287,6 @@ export class UIList extends UnlitElement {
           }
         }
         row.appendChild(cell);
-      }
-
-      if (this.deleteItem) {
-        row.appendChild(
-          html.div({}, [
-            html.button(
-              {
-                class: "ui-list-button",
-                onclick: (event) => {
-                  const index = this._getRowIndexFromTarget(event.target);
-                  if (!isNaN(index) && index >= this.contents.children.length - 1) {
-                    this.deleteItem(index);
-                  }
-                },
-              },
-              [new InlineSVG("/images/minus.svg")]
-            ),
-          ])
-        );
       }
 
       this.contents.appendChild(row);
