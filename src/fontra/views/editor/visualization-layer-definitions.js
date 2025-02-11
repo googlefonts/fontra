@@ -521,7 +521,7 @@ registerVisualizationLayerDefinition({
 
     // Draw glyph guidelines
     for (const guideline of positionedGlyph.glyph.guidelines) {
-      _drawGuideline(context, parameters, guideline);
+      _drawGuideline(context, parameters, guideline, parameters.strokeDash);
     }
 
     // Draw font guidelines
