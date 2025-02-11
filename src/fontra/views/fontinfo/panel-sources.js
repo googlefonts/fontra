@@ -637,7 +637,7 @@ class SourceBox extends HTMLElement {
           );
           element.innerHTML = source[event.key];
         }
-      }, `edit source general ${event.key}`);
+      }, `edit ${event.key}`);
     });
 
     this.controllers.location.addListener((event) => {
@@ -647,17 +647,18 @@ class SourceBox extends HTMLElement {
       }
       this.editSource((source) => {
         source.location[event.key] = event.newValue;
-      }, `edit source location ${event.key}`);
+      }, `edit location (“${event.key}” axis)`);
     });
 
     this.controllers.lineMetricsHorizontalLayout.addListener((event) => {
+      const [which, lineMetricName] = event.key.split("-");
       this.editSource((source) => {
-        if (event.key.startsWith("value-")) {
+        if (which === "value") {
           source.lineMetricsHorizontalLayout[event.key.slice(6)].value = event.newValue;
         } else {
           source.lineMetricsHorizontalLayout[event.key.slice(5)].zone = event.newValue;
         }
-      }, `edit source line metrics ${event.key}`);
+      }, `edit line metric ${which} “${lineMetricName}”`);
     });
 
     this.innerHTML = "";
