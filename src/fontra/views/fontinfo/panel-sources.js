@@ -161,7 +161,7 @@ export class SourcesPanel extends BaseInfoPanel {
       return;
     }
 
-    const undoLabel = `add source '${newSource.name}'`;
+    const undoLabel = `add source '${newSource.name}'`; // TODO: translation
 
     let sourceIdentifier;
     do {
@@ -637,7 +637,7 @@ class SourceBox extends HTMLElement {
           );
           element.innerHTML = source[event.key];
         }
-      }, `edit ${event.key}`);
+      }, `edit ${event.key}`); // TODO: translation
     });
 
     this.controllers.location.addListener((event) => {
@@ -647,7 +647,7 @@ class SourceBox extends HTMLElement {
       }
       this.editSource((source) => {
         source.location[event.key] = event.newValue;
-      }, `edit location (“${event.key}” axis)`);
+      }, `edit location (“${event.key}” axis)`); // TODO: translation
     });
 
     this.controllers.lineMetricsHorizontalLayout.addListener((event) => {
@@ -658,7 +658,7 @@ class SourceBox extends HTMLElement {
         } else {
           source.lineMetricsHorizontalLayout[event.key.slice(5)].zone = event.newValue;
         }
-      }, `edit line metric ${which} “${lineMetricName}”`);
+      }, `edit line metric ${which} “${lineMetricName}”`); // TODO: translation
     });
 
     this.innerHTML = "";
