@@ -6,12 +6,14 @@ import { translate } from "../core/localization.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   OptionalNumberFormatter,
+  checkboxListCell,
   labelForElement,
   labeledCheckbox,
   labeledTextInput,
   textInput,
 } from "../core/ui-utils.js";
 import { arrowKeyDeltas, enumerate, modulo, range, round } from "../core/utils.js";
+import { UIList } from "../web-components/ui-list.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -493,7 +495,7 @@ addStyleSheet(`
 
 .fontra-ui-font-info-sources-panel-column {
   display: grid;
-  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 28em);
+  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
   gap: 0.5em;
   align-items: start;
   align-content: start;
@@ -504,13 +506,15 @@ addStyleSheet(`
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
 }
 
-.fontra-ui-font-info-sources-panel-guidelines {
-  grid-template-columns: minmax(4em, 14em) 4em 4em 4em 4em;
-}
-
 .fontra-ui-font-info-sources-panel-header {
   font-weight: bold;
   padding-bottom: 1em;
+}
+
+.fontra-ui-font-info-sources-panel-guideline-list {
+  min-width: max-content;
+  max-width: 29.5em; // 4.5 + 25
+  max-height: 12em;
 }
 
 `);
@@ -545,12 +549,10 @@ class SourceBox extends HTMLElement {
       lineMetricsHorizontalLayout: prepareLineMetricsHorForController(
         source.lineMetricsHorizontalLayout
       ),
-      guidelines: prepareGuidelinesForController(source.guidelines),
+      guidelines: { ...source.guidelines },
       // TODO: hhea, OS/2 line metrics, etc
       // customData: { ...source.customData },
     };
-    // NOTE: Font guidelines could be read/write here,
-    // but makes more sense directly in the glyph editing window.
   }
 
   checkSourceLocation(axisName, value) {
@@ -667,11 +669,9 @@ class SourceBox extends HTMLElement {
     });
 
     this.controllers.guidelines.addListener((event) => {
-      const [which, guidelineKey] = event.key.split("-");
       this.editSource((source) => {
-        const guideline = source.guidelines[guidelineKey];
-        guideline[which] = event.newValue;
-      }, `edit guideline ${guideline.name} ${which}`); // TODO: translation
+        source.guidelines = event.newValue;
+      }, `edit guidelines`); // TODO: translation
     });
 
     this.innerHTML = "";
@@ -700,10 +700,7 @@ class SourceBox extends HTMLElement {
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
         getLabelFromKey("guidelines"),
       ]),
-      buildElementFontGuidelines(
-        this.controllers.guidelines,
-        this.source.guidelines.length
-      )
+      buildFontGuidelineList(this.controllers.guidelines)
     );
   }
 }
@@ -761,39 +758,126 @@ function buildElementLineMetricsHor(controller) {
   );
 }
 
-function buildElementFontGuidelines(controller, numGuidelines) {
-  let items = [];
-  for (const key of range(numGuidelines)) {
-    items.push([`Guideline ${key}`, key]);
-  }
+function buildFontGuidelineList(controller) {
+  const model = controller.model;
 
-  return html.div(
+  const makeItem = (label) => {
+    const item = new ObservableController({ ...label });
+    item.addListener((event) => {
+      const newGuidelines = labelList.items.map((guideline) => {
+        return { ...guideline };
+      });
+      model.guidelines = newGuidelines;
+    });
+    return item.model;
+  };
+
+  const items = Object.values(model)?.map(makeItem) || [];
+
+  const labelList = new UIList();
+  labelList.classList.add("fontra-ui-font-info-sources-panel-guideline-list");
+  labelList.style = `min-width: 12em;`;
+  labelList.columnDescriptions = [
     {
-      class:
-        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-guidelines",
+      key: "name",
+      title: translate("guideline.labels.name"),
+      width: "11em",
+      editable: true,
+      continuous: false,
     },
-    items
-      .map(([labelName, keyName]) => {
-        const opts = {
-          continuous: false,
-          formatter: OptionalNumberFormatter,
-          type: "number",
-        };
-        const xInput = textInput(controller, `x-${keyName}`, opts);
-        const yInput = textInput(controller, `y-${keyName}`, opts);
-        const angleInput = textInput(controller, `angle-${keyName}`, opts);
-        const lockedInput = labeledCheckbox(
-          "locked",
-          controller,
-          `locked-${keyName}`,
-          {}
-        );
-        const nameInput = textInput(controller, `name-${keyName}`);
+    {
+      key: "x",
+      title: "x",
+      width: "4em",
+      align: "right",
+      editable: true,
+      formatter: OptionalNumberFormatter,
+      continuous: false,
+    },
+    {
+      key: "y",
+      title: "y",
+      width: "4em",
+      align: "right",
+      editable: true,
+      formatter: OptionalNumberFormatter,
+      continuous: false,
+    },
+    {
+      key: "angle",
+      title: translate("guideline.labels.angle"),
+      width: "4em",
+      align: "right",
+      editable: true,
+      formatter: OptionalNumberFormatter,
+      continuous: false,
+    },
+    {
+      key: "dummy", // this is a spacer column
+      title: " ",
+      width: "0.25em",
+    },
+    {
+      key: "locked",
+      title: translate("guideline.labels.locked"),
+      width: "4em",
+      cellFactory: checkboxListCell,
+    },
+  ];
+  labelList.showHeader = true;
+  labelList.minHeight = "5em";
+  labelList.setItems(items);
 
-        return [nameInput, xInput, yInput, angleInput, lockedInput];
-      })
-      .flat()
-  );
+  const deleteSelectedItem = () => {
+    const index = labelList.getSelectedItemIndex();
+    if (index === undefined) {
+      return;
+    }
+    const items = [...labelList.items];
+    items.splice(index, 1);
+    labelList.setItems(items);
+    const newGuidelines = items.map((guideline) => {
+      return { ...guideline };
+    });
+    model.guidelines = newGuidelines;
+  };
+
+  labelList.addEventListener("deleteKey", deleteSelectedItem);
+
+  const addRemoveButton = html.createDomElement("add-remove-buttons", {
+    addButtonCallback: () => {
+      const newItem = makeItem({
+        name: `Guideline ${labelList.items.length + 1}`,
+        x: 0,
+        y: 0,
+        angle: 0,
+        locked: false,
+      });
+      const newItems = [...labelList.items, newItem];
+      model.guidelines = newItems.map((label) => {
+        return { ...label };
+      });
+      labelList.setItems(newItems);
+      labelList.editCell(newItems.length - 1, "name");
+    },
+    removeButtonCallback: deleteSelectedItem,
+    disableRemoveButton: true,
+  });
+
+  updateRemoveButton(labelList, addRemoveButton);
+
+  return html.div({ style: "display: grid; grid-gap: 0.3em;" }, [
+    labelList,
+    addRemoveButton,
+  ]);
+}
+
+// This is a copy of the function from panel-axes.js
+// TODO: refactor to avoid duplication.
+function updateRemoveButton(list, buttons) {
+  list.addEventListener("listSelectionChanged", (event) => {
+    buttons.disableRemoveButton = list.getSelectedItemIndex() === undefined;
+  });
 }
 
 function buildElementLocations(controller, fontAxes) {
@@ -854,18 +938,6 @@ function prepareLineMetricsHorForController(lineMetricsHorizontalLayout) {
   return newLineMetricsHorizontalLayout;
 }
 
-function prepareGuidelinesForController(guidelines) {
-  const newGuidelines = {};
-  for (const key in guidelines) {
-    newGuidelines[`x-${key}`] = guidelines[key].x;
-    newGuidelines[`y-${key}`] = guidelines[key].y;
-    newGuidelines[`angle-${key}`] = guidelines[key].angle;
-    newGuidelines[`locked-${key}`] = guidelines[key].locked;
-    newGuidelines[`name-${key}`] = guidelines[key].name;
-  }
-  return newGuidelines;
-}
-
 function getLineMetricsHorRounded(lineMetricsHorizontalLayout) {
   const newLineMetricsHorizontalLayout = {};
   for (const key in lineMetricsHorizontalLayout) {
@@ -890,7 +962,7 @@ function getLabelFromKey(key) {
     general: translate("sources.labels.general"),
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
-    guidelines: "Font guidelines", //translate("sources.labels.guidelines"),
+    guidelines: translate("sidebar.user-settings.guidelines"),
   };
   return keyLabelMap[key] || key;
 }
