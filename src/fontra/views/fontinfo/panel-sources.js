@@ -493,7 +493,7 @@ addStyleSheet(`
 
 .fontra-ui-font-info-sources-panel-column {
   display: grid;
-  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
+  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 28em);
   gap: 0.5em;
   align-items: start;
   align-content: start;
@@ -502,6 +502,10 @@ addStyleSheet(`
 
 .fontra-ui-font-info-sources-panel-line-metrics-hor {
   grid-template-columns: minmax(4.5em, max-content) 4em 4em;
+}
+
+.fontra-ui-font-info-sources-panel-guidelines {
+  grid-template-columns: minmax(4em, 14em) 4em 4em 4em 4em;
 }
 
 .fontra-ui-font-info-sources-panel-header {
@@ -541,6 +545,7 @@ class SourceBox extends HTMLElement {
       lineMetricsHorizontalLayout: prepareLineMetricsHorForController(
         source.lineMetricsHorizontalLayout
       ),
+      guidelines: prepareGuidelinesForController(source.guidelines),
       // TODO: hhea, OS/2 line metrics, etc
       // customData: { ...source.customData },
     };
@@ -661,6 +666,14 @@ class SourceBox extends HTMLElement {
       }, `edit line metric ${which} “${lineMetricName}”`); // TODO: translation
     });
 
+    this.controllers.guidelines.addListener((event) => {
+      const [which, guidelineKey] = event.key.split("-");
+      this.editSource((source) => {
+        const guideline = source.guidelines[guidelineKey];
+        guideline[which] = event.newValue;
+      }, `edit guideline ${guideline.name} ${which}`); // TODO: translation
+    });
+
     this.innerHTML = "";
     this.append(
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
@@ -682,6 +695,15 @@ class SourceBox extends HTMLElement {
         getLabelFromKey("lineMetricsHorizontalLayout"),
       ]),
       buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
+    );
+    this.append(
+      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+        getLabelFromKey("guidelines"),
+      ]),
+      buildElementFontGuidelines(
+        this.controllers.guidelines,
+        this.source.guidelines.length
+      )
     );
   }
 }
@@ -726,10 +748,49 @@ function buildElementLineMetricsHor(controller) {
     },
     items
       .map(([labelName, keyName]) => {
-        const opts = { continuous: false, formatter: OptionalNumberFormatter };
+        const opts = {
+          continuous: false,
+          formatter: OptionalNumberFormatter,
+          type: "number",
+        };
         const valueInput = textInput(controller, `value-${keyName}`, opts);
         const zoneInput = textInput(controller, `zone-${keyName}`, opts);
         return [labelForElement(labelName, valueInput), valueInput, zoneInput];
+      })
+      .flat()
+  );
+}
+
+function buildElementFontGuidelines(controller, numGuidelines) {
+  let items = [];
+  for (const key of range(numGuidelines)) {
+    items.push([`Guideline ${key}`, key]);
+  }
+
+  return html.div(
+    {
+      class:
+        "fontra-ui-font-info-sources-panel-column fontra-ui-font-info-sources-panel-guidelines",
+    },
+    items
+      .map(([labelName, keyName]) => {
+        const opts = {
+          continuous: false,
+          formatter: OptionalNumberFormatter,
+          type: "number",
+        };
+        const xInput = textInput(controller, `x-${keyName}`, opts);
+        const yInput = textInput(controller, `y-${keyName}`, opts);
+        const angleInput = textInput(controller, `angle-${keyName}`, opts);
+        const lockedInput = labeledCheckbox(
+          "locked",
+          controller,
+          `locked-${keyName}`,
+          {}
+        );
+        const nameInput = textInput(controller, `name-${keyName}`);
+
+        return [nameInput, xInput, yInput, angleInput, lockedInput];
       })
       .flat()
   );
@@ -793,6 +854,18 @@ function prepareLineMetricsHorForController(lineMetricsHorizontalLayout) {
   return newLineMetricsHorizontalLayout;
 }
 
+function prepareGuidelinesForController(guidelines) {
+  const newGuidelines = {};
+  for (const key in guidelines) {
+    newGuidelines[`x-${key}`] = guidelines[key].x;
+    newGuidelines[`y-${key}`] = guidelines[key].y;
+    newGuidelines[`angle-${key}`] = guidelines[key].angle;
+    newGuidelines[`locked-${key}`] = guidelines[key].locked;
+    newGuidelines[`name-${key}`] = guidelines[key].name;
+  }
+  return newGuidelines;
+}
+
 function getLineMetricsHorRounded(lineMetricsHorizontalLayout) {
   const newLineMetricsHorizontalLayout = {};
   for (const key in lineMetricsHorizontalLayout) {
@@ -817,6 +890,7 @@ function getLabelFromKey(key) {
     general: translate("sources.labels.general"),
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
+    guidelines: "Font guidelines", //translate("sources.labels.guidelines"),
   };
   return keyLabelMap[key] || key;
 }
