@@ -27,23 +27,6 @@ export default class TransformationPanel extends Panel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
 
-  static styles = `
-    .selection-transformation {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-      width: 100%;
-      white-space: normal;
-    }
-
-    .selection-transformation-section {
-      flex: 1;
-      padding: 1em;
-      overflow: hidden auto;
-    }
-  `;
-
   static stylesForm = `
   .ui-form-label {
     overflow-x: unset;
