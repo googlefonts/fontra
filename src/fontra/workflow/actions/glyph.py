@@ -25,6 +25,7 @@ from ...core.classes import (
 from ...core.glyphdependencies import GlyphDependencies
 from ...core.instancer import FontInstancer, GlyphInstancer
 from ...core.path import PackedPath, PackedPathPointPen
+from ...core.pathops import unionPath
 from ...core.varutils import locationToTuple
 from .axes import (
     AxisRange,
@@ -782,3 +783,16 @@ class ConvertToQuadratics(BaseFilter):
             glyph = replace(glyph, layers=newLayers)
 
         return glyph
+
+
+@registerFilterAction("remove-overlaps")
+@dataclass(kw_only=True)
+class RemoveOverlaps(BaseFilter):
+    async def processGlyph(self, glyph):
+        newLayers = {
+            layerName: replace(
+                layer, glyph=replace(layer.glyph, path=unionPath(layer.glyph.path))
+            )
+            for layerName, layer in glyph.layers.items()
+        }
+        return replace(glyph, layers=newLayers)
