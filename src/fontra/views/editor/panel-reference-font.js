@@ -463,10 +463,9 @@ export default class ReferenceFontPanel extends Panel {
       dialog(dialogTitle, dialogMessage, [{ title: translate("dialog.okay") }], 5000);
     }
 
-    const newSelectedItemIndex = this.filesUIList.items.length;
     const newItems = [...this.filesUIList.items, ...fontItems];
     this.filesUIList.setItems(newItems);
-    this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
+    this.filesUIList.setSelectedItemIndex(this.filesUIList.items.length - 1, true);
 
     const writtenFontItems = [...this.model.fontList];
     try {
@@ -636,9 +635,9 @@ export default class ReferenceFontPanel extends Panel {
 
     this.filesUIList.onFilesDrop = (files) => this._filesHandler(files);
 
-    this.filesUIList.addEventListener("listSelectionChanged", () => {
-      this._listSelectionChangedHandler();
-    });
+    this.filesUIList.addEventListener("listSelectionChanged", () =>
+      this._listSelectionChangedHandler()
+    );
 
     this.filesUIList.addEventListener("deleteKey", () =>
       this._deleteSelectedItemHandler()
@@ -663,7 +662,7 @@ export default class ReferenceFontPanel extends Panel {
 
     const addRemoveButtons = createDomElement("add-remove-buttons");
     addRemoveButtons.addButtonCallback = async () => {
-      // FIXME Add dialog title translation
+      // TODO: translation
       const dialog = await dialogSetup("Upload", null, [
         {
           title: translate("dialog.cancel"),
@@ -676,28 +675,44 @@ export default class ReferenceFontPanel extends Panel {
           isDefaultButton: true,
         },
       ]);
-      const fileInput = input({ type: "file", id: "reference-font-file" }, []);
+      const fileInput = input(
+        {
+          type: "file",
+          id: "reference-font-file",
+          accept: ".ttf,.otf,.woff,.woff2",
+          multiple: true,
+        },
+        []
+      );
       dialog.setContent(
         form({ enctype: "multipart/form-data", class: "content" }, [
           label({ for: "reference-font-file", class: "reference-font-label" }, [
-            "Choose a file",
+            "Choose a font", // TODO: translation
           ]),
           fileInput,
         ])
       );
       const result = await dialog.run();
       const { files } = fileInput;
-      if (result === "ok" && files.length === 1) {
+      if (result === "ok" && files.length > 0) {
         await this._filesHandler(files);
       }
     };
 
-    addRemoveButtons.removeButtonCallback = () => {
+    addRemoveButtons.removeButtonCallback = async () => {
       const index = this.filesUIList.getSelectedItemIndex();
-      if (!isNaN(index) && index <= this.filesUIList.items.length - 1) {
-        this._deleteItemOrAll(index);
+      const maxIndex = () => this.filesUIList.items.length - 1;
+      if (!isNaN(index) && index <= maxIndex()) {
+        await this._deleteItemOrAll(index);
+        this.filesUIList.setSelectedItemIndex(maxIndex(), true);
       }
     };
+
+    const disableRemoveButtonIfNeeded = () => {
+      addRemoveButtons.disableRemoveButton = this.filesUIList.items.length === 0;
+    };
+    this.filesUIList.addEventListener("itemsSet", () => disableRemoveButtonIfNeeded());
+    disableRemoveButtonIfNeeded(); // On load
 
     return div(
       {
