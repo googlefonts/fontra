@@ -700,6 +700,13 @@ export class StaticGlyphController {
       backgroundImage: backgroundImageIndices,
     } = parseSelection(selection);
 
+    if (selection.size == 1 && pointIndices?.length == 1) {
+      // Return if only one point is selected.
+      // NOTE: We need to check selection.size == 1 because otherwise we don't know
+      // if someone selected a single point + a different object like a component, anchor, etc.
+      return undefined;
+    }
+
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
     anchorIndices = anchorIndices || [];
