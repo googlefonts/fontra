@@ -504,11 +504,13 @@ registerVisualizationLayerDefinition({
     strokeColor: "#0006",
     boxColor: "#FFFB",
     color: "#000",
+    strokeColorFontGuideline: "#00BFFF80",
   },
   colorsDarkMode: {
     strokeColor: "#FFF8",
     boxColor: "#1118",
     color: "#FFF",
+    strokeColorFontGuideline: "#00BFFF70",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.font = `${parameters.fontSize}px fontra-ui-regular, sans-serif`;
@@ -521,7 +523,7 @@ registerVisualizationLayerDefinition({
 
     // Draw glyph guidelines
     for (const guideline of positionedGlyph.glyph.guidelines) {
-      _drawGuideline(context, parameters, guideline, parameters.strokeDash);
+      _drawGuideline(context, parameters, guideline, parameters.strokeColor);
     }
 
     // Draw font guidelines
@@ -529,14 +531,19 @@ registerVisualizationLayerDefinition({
       return;
     }
     for (const guideline of model.fontSourceInstance.guidelines || []) {
-      _drawGuideline(context, parameters, guideline, parameters.strokeDash / 2);
+      _drawGuideline(
+        context,
+        parameters,
+        guideline,
+        parameters.strokeColorFontGuideline
+      );
     }
   },
 });
 
-function _drawGuideline(context, parameters, guideline, strokeDash) {
+function _drawGuideline(context, parameters, guideline, strokeColor) {
   withSavedState(context, () => {
-    context.strokeStyle = parameters.strokeColor;
+    context.strokeStyle = strokeColor;
     context.lineWidth = parameters.strokeWidth;
     //translate to guideline origin
     context.translate(guideline.x, guideline.y);
@@ -547,7 +554,7 @@ function _drawGuideline(context, parameters, guideline, strokeDash) {
         context,
         -parameters.iconSize / 2,
         parameters.iconSize / 2,
-        parameters.strokeColor,
+        strokeColor,
         parameters.iconSize
       );
     } else {
@@ -568,7 +575,7 @@ function _drawGuideline(context, parameters, guideline, strokeDash) {
         textWidth = Math.max(context.measureText(strLine).width);
         textHeight = Math.max(getTextHeight(context, strLine));
 
-        context.fillStyle = parameters.strokeColor;
+        context.fillStyle = strokeColor;
         moveText =
           0 - // this is centered to the guideline origin
           textWidth / 2 - // move half width left -> right aligned to origin
@@ -593,7 +600,10 @@ function _drawGuideline(context, parameters, guideline, strokeDash) {
       }
       // draw lines
       for (const [x1, x2] of lines) {
-        strokeLineDashed(context, x1, 0, x2, 0, [strokeDash * 2, strokeDash]);
+        strokeLineDashed(context, x1, 0, x2, 0, [
+          parameters.strokeDash * 2,
+          parameters.strokeDash,
+        ]);
       }
     });
   });
