@@ -817,6 +817,11 @@ function getTransformHandles(transformBounds, margin) {
 }
 
 function getTransformSelectionBounds(glyph, selection, getBackgroundImageBoundsFunc) {
+  if (selection.size == 1 && parseSelection(selection).point?.length == 1) {
+    // Return if only a single point is selected, as in that case the "selection bounds"
+    // is not really useful for the user, and is distracting instead.
+    return undefined;
+  }
   const selectionBounds = glyph.getSelectionBounds(
     selection,
     getBackgroundImageBoundsFunc
