@@ -1366,6 +1366,19 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             [],
         ),
         (
+            "remove-overlaps",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+            - filter: remove-overlaps
+            - output: fontra-write
+              destination: "output-remove-overlaps.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "fork",
             """
             steps:
