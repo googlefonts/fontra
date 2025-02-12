@@ -692,7 +692,7 @@ class SourceBox extends HTMLElement {
       );
     }
     if (!this.source.isSparse) {
-      // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparce sources.
+      // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
       this.append(
         html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
           getLabelFromKey("lineMetricsHorizontalLayout"),
