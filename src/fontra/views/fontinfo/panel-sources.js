@@ -14,6 +14,7 @@ import {
 } from "../core/ui-utils.js";
 import { arrowKeyDeltas, enumerate, modulo, range, round } from "../core/utils.js";
 import { UIList } from "../web-components/ui-list.js";
+import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -873,14 +874,6 @@ function buildFontGuidelineList(controller) {
     labelList,
     addRemoveButton,
   ]);
-}
-
-// This is a copy of the function from panel-axes.js
-// TODO: refactor to avoid duplication.
-function updateRemoveButton(list, buttons) {
-  list.addEventListener("listSelectionChanged", (event) => {
-    buttons.disableRemoveButton = list.getSelectedItemIndex() === undefined;
-  });
 }
 
 function buildElementLocations(controller, fontAxes) {
