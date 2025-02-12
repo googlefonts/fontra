@@ -690,18 +690,21 @@ class SourceBox extends HTMLElement {
         buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
       );
     }
-    this.append(
-      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-        getLabelFromKey("lineMetricsHorizontalLayout"),
-      ]),
-      buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
-    );
-    this.append(
-      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-        getLabelFromKey("guidelines"),
-      ]),
-      buildFontGuidelineList(this.controllers.guidelines)
-    );
+    if (!this.source.isSparse) {
+      // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparce sources.
+      this.append(
+        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+          getLabelFromKey("lineMetricsHorizontalLayout"),
+        ]),
+        buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
+      );
+      this.append(
+        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+          getLabelFromKey("guidelines"),
+        ]),
+        buildFontGuidelineList(this.controllers.guidelines)
+      );
+    }
   }
 }
 
