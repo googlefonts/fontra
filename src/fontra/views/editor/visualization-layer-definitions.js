@@ -502,14 +502,10 @@ registerVisualizationLayerDefinition({
   },
   colors: {
     strokeColor: "#0006",
-    boxColor: "#FFFB",
-    color: "#000",
     strokeColorFontGuideline: "#00BFFF80",
   },
   colorsDarkMode: {
     strokeColor: "#FFF8",
-    boxColor: "#1118",
-    color: "#FFF",
     strokeColorFontGuideline: "#00BFFF70",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
@@ -530,7 +526,7 @@ registerVisualizationLayerDefinition({
     if (!model.fontSourceInstance) {
       return;
     }
-    for (const guideline of model.fontSourceInstance.guidelines || []) {
+    for (const guideline of model.fontSourceInstance.guidelines) {
       _drawGuideline(
         context,
         parameters,
