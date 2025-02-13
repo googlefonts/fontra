@@ -228,7 +228,7 @@ class StatusDefinitionBox extends HTMLElement {
   deleteStatusDef(statusIndex) {
     const undoLabel = translate(
       "development-status-definitions.undo.delete",
-      `'${this.statusDef.name}'`
+      `'${this.statusDef.label}'`
     );
     const root = { customData: this.fontController.customData };
     const changes = recordChanges(root, (root) => {

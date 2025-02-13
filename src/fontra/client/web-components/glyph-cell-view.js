@@ -18,7 +18,6 @@ export class GlyphCellView extends HTMLElement {
     this.glyphSelectionKey = options?.glyphSelectionKey || "glyphSelection";
     this.closedGlyphSectionsKey =
       options?.closedGlyphSectionsKey || "closedGlyphSections";
-    this.displayMode = options?.displayMode || "block";
 
     this._magnification = 1;
 
@@ -95,9 +94,10 @@ export class GlyphCellView extends HTMLElement {
 
     this.accordion.appendStyle(`
     :host {
-      display: ${this.displayMode};
+      display: block;
+      height: inherit;
       user-select: none;
-      -webkit-user-select: none;
+      -webkit-user-select: none; /* Safari */
     }
 
     .placeholder-label {

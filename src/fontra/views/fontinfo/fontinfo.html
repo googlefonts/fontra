@@ -16,14 +16,14 @@
         padding: 0em;
         gap: 0em;
         width: 100vw;
-        height: 100vh;
+        height: calc(100vh - var(--top-bar-height));
       }
 
       #header-container {
         display: grid;
         align-content: start;
         gap: 1em;
-        padding: 2em 1em 2em 2em;
+        padding: 1em 1em 1em 1em;
       }
 
       .header {
@@ -43,7 +43,7 @@
 
       .font-info-panel {
         display: grid;
-        padding: 2em 2em 2em 1em;
+        padding: 1em 1em 1em 0;
         outline: none;
       }
 
@@ -58,6 +58,7 @@
   </head>
   <body>
     <modal-dialog></modal-dialog>
+    <div class="top-bar-container"></div>
     <div class="main-container">
       <div id="header-container"></div>
       <div id="panel-container"></div>

@@ -27,23 +27,6 @@ export default class TransformationPanel extends Panel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
 
-  static styles = `
-    .selection-transformation {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-      width: 100%;
-      white-space: normal;
-    }
-
-    .selection-transformation-section {
-      flex: 1;
-      padding: 1em;
-      overflow: hidden auto;
-    }
-  `;
-
   static stylesForm = `
   .ui-form-label {
     overflow-x: unset;
@@ -82,7 +65,10 @@ export default class TransformationPanel extends Panel {
     this.infoForm = new Form();
     this.infoForm.appendStyle(TransformationPanel.stylesForm);
     this.contentElement.appendChild(
-      html.div({ class: "selection-transformation-section" }, [this.infoForm])
+      html.div(
+        { class: "panel-section panel-section--flex panel-section--scrollable" },
+        [this.infoForm]
+      )
     );
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
@@ -155,7 +141,7 @@ export default class TransformationPanel extends Panel {
   getContentElement() {
     return html.div(
       {
-        class: "selection-transformation",
+        class: "panel",
       },
       []
     );

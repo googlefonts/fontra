@@ -1,9 +1,11 @@
+import { registerActionCallbacks } from "../core/actions.js";
 import * as html from "../core/html-utils.js";
 import { AxesPanel } from "./panel-axes.js";
 import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
+import { makeFontraMenuBar } from "/core/fontra-menus.js";
 import { translate } from "/core/localization.js";
 import { ViewController } from "/core/view-controller.js";
 
@@ -17,6 +19,11 @@ export class FontInfoController extends ViewController {
 
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
+
+    this.initActions();
+
+    const myMenuBar = makeFontraMenuBar(["File", "Edit", "Font"], this);
+    document.querySelector(".top-bar-container").appendChild(myMenuBar);
 
     const panelContainer = document.querySelector("#panel-container");
     const headerContainer = document.querySelector("#header-container");
@@ -85,6 +92,37 @@ export class FontInfoController extends ViewController {
   handleKeyDown(event) {
     const panel = this.panels[this.selectedPanel];
     panel?.handleKeyDown?.(event);
+  }
+
+  initActions() {
+    registerActionCallbacks(
+      "action.undo",
+      () => this.doUndoRedo(false),
+      () => this.canUndoRedo(false),
+      () => this.getUndoRedoLabel(false)
+    );
+
+    registerActionCallbacks(
+      "action.redo",
+      () => this.doUndoRedo(true),
+      () => this.canUndoRedo(true),
+      () => this.getUndoRedoLabel(true)
+    );
+  }
+
+  getUndoRedoLabel(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    return panel.getUndoRedoLabel(isRedo);
+  }
+
+  canUndoRedo(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    return panel.canUndoRedo(isRedo);
+  }
+
+  doUndoRedo(isRedo) {
+    const panel = this.panels[this.selectedPanel];
+    return panel.doUndoRedo(isRedo);
   }
 }
 

@@ -5,6 +5,10 @@ import { FocusKeeper } from "/core/utils.js";
 
 export class IconButton extends UnlitElement {
   static styles = `
+    :host {
+      line-height: 0;
+    }
+
     button {
       background-color: transparent;
       border: none;
@@ -36,7 +40,6 @@ export class IconButton extends UnlitElement {
     button:disabled svg {
       transform: none;
     }
-
   `;
 
   constructor(src) {

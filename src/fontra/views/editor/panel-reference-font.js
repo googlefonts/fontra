@@ -156,8 +156,10 @@ function garbageCollectFontItem(fontItem) {
 async function listFontFileNamesInOPFS() {
   const opfs = await _getOPFS();
   const fileNames = [];
-  for await (const name of opfs.iterDirectory([referenceFontsFolderName])) {
-    fileNames.push(name);
+  if (await opfs.exists([referenceFontsFolderName])) {
+    for await (const name of opfs.iterDirectory([referenceFontsFolderName])) {
+      fileNames.push(name);
+    }
   }
   return fileNames;
 }
@@ -174,6 +176,7 @@ async function deleteFontFileFromOPFS(fileName) {
 
 async function writeFontFileToOPFS(fileName, file) {
   const opfs = await _getOPFS();
+  await opfs.createDirectory([referenceFontsFolderName]);
   await opfs.writeFile([referenceFontsFolderName, fileName], file);
 }
 
@@ -182,18 +185,9 @@ export default class ReferenceFontPanel extends Panel {
   iconPath = "/images/reference.svg";
 
   static styles = `
-    .sidebar-reference-font {
-      width: 100%;
-      height: 100%;
-      display: flex;
-    }
-
-    #reference-font {
-      width: 100%;
+    .reference-font-section {
       display: grid;
-      padding: 1em;
       gap: 1em;
-      height: 100%;
       white-space: normal;
       align-content: start;
     }
@@ -657,12 +651,13 @@ export default class ReferenceFontPanel extends Panel {
 
     return div(
       {
-        class: "sidebar-reference-font",
+        class: "panel",
       },
       [
         div(
           {
-            id: "reference-font",
+            class:
+              "panel-section panel-section--flex panel-section--noscroll reference-font-section",
           },
           [
             div({ class: "title" }, [translate("sidebar.reference-font")]),
