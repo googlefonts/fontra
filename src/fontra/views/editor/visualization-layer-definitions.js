@@ -502,11 +502,11 @@ registerVisualizationLayerDefinition({
   },
   colors: {
     strokeColor: "#0006",
-    strokeColorFontGuideline: "#00BFFF80",
+    strokeColorFontGuideline: "#00BFFF",
   },
   colorsDarkMode: {
     strokeColor: "#FFF8",
-    strokeColorFontGuideline: "#00BFFF70",
+    strokeColorFontGuideline: "#00BFFFC0",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.font = `${parameters.fontSize}px fontra-ui-regular, sans-serif`;
