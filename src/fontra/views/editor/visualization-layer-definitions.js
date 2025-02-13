@@ -562,14 +562,13 @@ function _drawGuideline(context, parameters, guideline, strokeColor) {
       context.scale(1, -1);
 
       let textWidth;
-      let textHeight;
       let moveText;
       const halfMarker = parameters.originMarkerRadius / 2 + parameters.strokeWidth * 2;
       // draw name
       if (guideline.name) {
         const strLine = `${guideline.name}`;
         textWidth = Math.max(context.measureText(strLine).width);
-        textHeight = Math.max(getTextHeight(context, strLine));
+        const textVerticalCenter = Math.max(getTextVerticalCenter(context, strLine));
 
         context.fillStyle = strokeColor;
         moveText =
@@ -578,7 +577,7 @@ function _drawGuideline(context, parameters, guideline, strokeColor) {
           halfMarker - // move half of the marker radius left + stroke width
           parameters.margin * // move one margin to left to get a short line on the left
             2; // move another margin left to get the margin on the right
-        context.fillText(strLine, moveText, textHeight / 2);
+        context.fillText(strLine, moveText, textVerticalCenter);
       }
 
       // collect lines
@@ -1867,7 +1866,7 @@ function drawRoundRect(context, x, y, width, height, radii) {
   context.fill();
 }
 
-function getTextHeight(context, text) {
+function getTextVerticalCenter(context, text) {
   const metrics = context.measureText(text);
-  return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+  return (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
 }
