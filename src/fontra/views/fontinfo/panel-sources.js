@@ -785,7 +785,7 @@ function buildFontGuidelineList(controller) {
     {
       key: "name",
       title: translate("guideline.labels.name"),
-      width: "11em",
+      width: "15em", // TODO: set to 11em once 'Locked' column is added
       editable: true,
       continuous: false,
     },
@@ -816,17 +816,19 @@ function buildFontGuidelineList(controller) {
       formatter: OptionalNumberFormatter,
       continuous: false,
     },
-    {
-      key: "dummy", // this is a spacer column
-      title: " ",
-      width: "0.25em",
-    },
-    {
-      key: "locked",
-      title: translate("guideline.labels.locked"),
-      width: "4em",
-      cellFactory: checkboxListCell,
-    },
+    // TODO: Font Guidelines
+    // Once the guidelines can be edited in the editor view, we want to add these columns
+    // {
+    //   key: "dummy", // this is a spacer column
+    //   title: " ",
+    //   width: "0.25em",
+    // },
+    // {
+    //   key: "locked",
+    //   title: translate("guideline.labels.locked"),
+    //   width: "4em",
+    //   cellFactory: checkboxListCell,
+    // },
   ];
   labelList.showHeader = true;
   labelList.minHeight = "5em";
