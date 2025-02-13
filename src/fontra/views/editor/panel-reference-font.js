@@ -15,7 +15,7 @@ import {
 import { ObservableController } from "/core/observable-object.js";
 import { getOPFS } from "/core/opfs.js";
 import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
-import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
+import { dialog, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
 
@@ -431,6 +431,8 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _filesHandler(files) {
+    if (files.length === 0) return;
+
     const fontItemsInvalid = [];
     const fontItems = [...files]
       .filter((file) => {
@@ -660,41 +662,20 @@ export default class ReferenceFontPanel extends Panel {
       []
     );
 
+    const fileInput = input(
+      {
+        type: "file",
+        accept: ".ttf,.otf,.woff,.woff2",
+        multiple: true,
+      },
+      []
+    );
+    fileInput.addEventListener("change", async () => {
+      await this._filesHandler(fileInput.files);
+      fileInput.value = null;
+    });
     const addRemoveButtons = createDomElement("add-remove-buttons");
-    addRemoveButtons.addButtonCallback = async () => {
-      // TODO: translation
-      const dialog = await dialogSetup("Add Reference Font(s)", null, [
-        {
-          title: translate("dialog.cancel"),
-          resultValue: "cancel",
-          isCancelButton: true,
-        },
-        {
-          title: translate("dialog.add"),
-          resultValue: "ok",
-          isDefaultButton: true,
-        },
-      ]);
-      const fileInput = input(
-        {
-          type: "file",
-          accept: ".ttf,.otf,.woff,.woff2",
-          multiple: true,
-        },
-        []
-      );
-      dialog.setContent(
-        form({ enctype: "multipart/form-data", class: "content" }, [
-          label({}, [fileInput]),
-        ])
-      );
-      const result = await dialog.run();
-      const { files } = fileInput;
-      if (result === "ok" && files.length > 0) {
-        await this._filesHandler(files);
-      }
-    };
-
+    addRemoveButtons.addButtonCallback = () => fileInput.click();
     addRemoveButtons.removeButtonCallback = async () => {
       const index = this.filesUIList.getSelectedItemIndex();
       const maxIndex = () => this.filesUIList.items.length - 1;
@@ -725,6 +706,7 @@ export default class ReferenceFontPanel extends Panel {
             div({}, [translate("sidebar.reference-font.info")]),
             div({ class: "reference-font-items" }, [
               this.filesUIList,
+              form({ enctype: "multipart/form-data", hidden: true }, [fileInput]),
               addRemoveButtons,
             ]),
             div(
