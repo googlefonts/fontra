@@ -663,7 +663,7 @@ export default class ReferenceFontPanel extends Panel {
     const addRemoveButtons = createDomElement("add-remove-buttons");
     addRemoveButtons.addButtonCallback = async () => {
       // TODO: translation
-      const dialog = await dialogSetup("Upload", null, [
+      const dialog = await dialogSetup("Add Reference Font(s)", null, [
         {
           title: translate("dialog.cancel"),
           resultValue: "cancel",
@@ -678,7 +678,6 @@ export default class ReferenceFontPanel extends Panel {
       const fileInput = input(
         {
           type: "file",
-          id: "reference-font-file",
           accept: ".ttf,.otf,.woff,.woff2",
           multiple: true,
         },
@@ -686,10 +685,7 @@ export default class ReferenceFontPanel extends Panel {
       );
       dialog.setContent(
         form({ enctype: "multipart/form-data", class: "content" }, [
-          label({ for: "reference-font-file", class: "reference-font-label" }, [
-            "Choose a font", // TODO: translation
-          ]),
-          fileInput,
+          label({}, [fileInput]),
         ])
       );
       const result = await dialog.run();
