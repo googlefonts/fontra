@@ -253,6 +253,7 @@ class Component:
     name: str
     transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
     location: Location = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -444,6 +445,7 @@ registerHook(
 )
 registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(Anchor, customData=_unstructureDictSortedRecursively)
+registerHook(Component, customData=_unstructureDictSortedRecursively)
 registerHook(Guideline, customData=_unstructureDictSortedRecursively)
 registerHook(
     BackgroundImage,
