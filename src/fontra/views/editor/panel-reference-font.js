@@ -630,7 +630,7 @@ export default class ReferenceFontPanel extends Panel {
     this.filesUIList.columnDescriptions = columnDescriptions;
     this.filesUIList.itemEqualFunc = (a, b) => a.fontIdentifier == b.fontIdentifier;
 
-    this.filesUIList.style.setProperty("--container-min-height", "6em");
+    this.filesUIList.minHeight = "6em";
     this.filesUIList.classList.add("reference-font-list");
 
     this.filesUIList.onFilesDrop = (files) => this._filesHandler(files);

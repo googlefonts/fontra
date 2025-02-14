@@ -27,7 +27,6 @@ export class UIList extends UnlitElement {
 
     .container {
       overflow: auto;
-      min-height: var(--container-min-height, auto);
       height: 100%;
       width: 100%;
       border: solid 1px var(--border-color);
@@ -158,6 +157,9 @@ export class UIList extends UnlitElement {
   }
 
   render() {
+    if (this.minHeight) {
+      this.container.style.minHeight = this.minHeight;
+    }
     const contents = [];
     if (this.showHeader) {
       contents.push(this._makeHeader());
@@ -168,6 +170,7 @@ export class UIList extends UnlitElement {
 
   static properties = {
     showHeader: { type: Boolean },
+    minHeight: { type: String },
   };
 
   get columnDescriptions() {

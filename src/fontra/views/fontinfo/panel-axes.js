@@ -740,7 +740,7 @@ function buildMappingList(axisController) {
     },
   ];
   mappingList.showHeader = true;
-  mappingList.style.setProperty("--container-min-height", "5em");
+  mappingList.minHeight = "5em";
   mappingList.setItems(items);
 
   const deleteSelectedItem = () => {
@@ -867,7 +867,7 @@ function buildValueLabelList(axisController) {
     // },
   ];
   labelList.showHeader = true;
-  labelList.style.setProperty("--container-min-height", "5em");
+  labelList.minHeight = "5em";
   labelList.setItems(items);
 
   const deleteSelectedItem = () => {
