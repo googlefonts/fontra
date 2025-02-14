@@ -235,6 +235,10 @@
     "location": {
       "type": "dict",
       "subtype": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "DecomposedTransform": {
