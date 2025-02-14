@@ -45,23 +45,23 @@ export class GlyphSource {
 
 export class StaticGlyph {
   static fromObject(obj, noCopy = false) {
-    const source = new StaticGlyph();
-    source.xAdvance = obj.xAdvance;
-    source.yAdvance = obj.yAdvance;
-    source.verticalOrigin = obj.verticalOrigin;
+    const glyph = new StaticGlyph();
+    glyph.xAdvance = obj.xAdvance;
+    glyph.yAdvance = obj.yAdvance;
+    glyph.verticalOrigin = obj.verticalOrigin;
     if (obj.path) {
-      source.path = noCopy ? obj.path : VarPackedPath.fromObject(obj.path);
+      glyph.path = noCopy ? obj.path : VarPackedPath.fromObject(obj.path);
     } else {
-      source.path = new VarPackedPath();
+      glyph.path = new VarPackedPath();
     }
-    source.components =
+    glyph.components =
       (noCopy ? obj.components : obj.components?.map(copyComponent)) || [];
-    source.anchors = noCopy ? obj.anchors || [] : copyCustomData(obj.anchors || []);
-    source.guidelines = noCopy
+    glyph.anchors = noCopy ? obj.anchors || [] : copyCustomData(obj.anchors || []);
+    glyph.guidelines = noCopy
       ? obj.guidelines || []
       : normalizeGuidelines(obj.guidelines || []);
-    source.backgroundImage = copyBackgroundImage(obj.backgroundImage);
-    return source;
+    glyph.backgroundImage = copyBackgroundImage(obj.backgroundImage);
+    return glyph;
   }
 
   copy() {
