@@ -465,9 +465,10 @@ export default class ReferenceFontPanel extends Panel {
       dialog(dialogTitle, dialogMessage, [{ title: translate("dialog.okay") }], 5000);
     }
 
+    const newSelectedItemIndex = this.filesUIList.items.length;
     const newItems = [...this.filesUIList.items, ...fontItems];
     this.filesUIList.setItems(newItems);
-    this.filesUIList.setSelectedItemIndex(this.filesUIList.items.length - 1, true);
+    this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
 
     const writtenFontItems = [...this.model.fontList];
     try {
@@ -543,7 +544,10 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _deleteSelectedItemHandler() {
-    await this._deleteItemOrAll(this.filesUIList.getSelectedItemIndex());
+    const index = this.filesUIList.getSelectedItemIndex();
+    if (index > -1 && index <= this.filesUIList.items.length - 1) {
+      await this._deleteItemOrAll(index);
+    }
   }
 
   async _deleteAllHandler() {
@@ -641,8 +645,9 @@ export default class ReferenceFontPanel extends Panel {
       this._listSelectionChangedHandler()
     );
 
-    this.filesUIList.addEventListener("deleteKey", () =>
-      this._deleteSelectedItemHandler()
+    this.filesUIList.addEventListener(
+      "deleteKey",
+      async () => await this._deleteSelectedItemHandler()
     );
     this.filesUIList.addEventListener("deleteKeyAlt", () => this._deleteAllHandler());
 
@@ -676,14 +681,8 @@ export default class ReferenceFontPanel extends Panel {
     });
     const addRemoveButtons = createDomElement("add-remove-buttons");
     addRemoveButtons.addButtonCallback = () => fileInput.click();
-    addRemoveButtons.removeButtonCallback = async () => {
-      const index = this.filesUIList.getSelectedItemIndex();
-      const maxIndex = () => this.filesUIList.items.length - 1;
-      if (!isNaN(index) && index <= maxIndex()) {
-        await this._deleteItemOrAll(index);
-        this.filesUIList.setSelectedItemIndex(maxIndex(), true);
-      }
-    };
+    addRemoveButtons.removeButtonCallback = async () =>
+      await this._deleteSelectedItemHandler();
 
     const disableRemoveButtonIfNeeded = () => {
       addRemoveButtons.disableRemoveButton = this.filesUIList.items.length === 0;
