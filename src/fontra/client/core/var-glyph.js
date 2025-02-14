@@ -74,6 +74,7 @@ export function copyComponent(component) {
     name: component.name,
     transformation: { ...getDecomposedIdentity(), ...component.transformation },
     location: { ...component.location },
+    customData: copyCustomData(component.customData || {}),
   };
 }
 
