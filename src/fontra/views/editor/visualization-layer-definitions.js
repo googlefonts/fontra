@@ -582,7 +582,7 @@ function _drawGuideline(context, parameters, guideline, strokeColor) {
 
       // collect lines
       let lines = [[halfMarker, parameters.strokeLength]];
-      if (guideline.name !== undefined && guideline.name.trim() !== "") {
+      if (guideline.name) {
         // with name
         lines.push([
           -textWidth / 2 + moveText - parameters.margin,
