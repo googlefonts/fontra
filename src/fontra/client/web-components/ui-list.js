@@ -326,7 +326,9 @@ export class UIList extends UnlitElement {
 
     const onchange = (event) => {
       const formatter = colDesc.formatter || DefaultFormatter;
-      const { value, error } = formatter.fromString(cell.innerText);
+      const { value, error } = formatter.fromString(
+        cell.innerText != "\n" ? cell.innerText : ""
+      );
       if (!error) {
         item[colDesc.key] = value;
       }
