@@ -390,7 +390,7 @@ registerVisualizationLayerDefinition({
       const pt = { x: anchor.x, y: anchor.y };
 
       const strLine = `${anchor.name}`;
-      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
+      const width = context.measureText(strLine).width + 2 * margin;
 
       context.fillStyle = parameters.boxColor;
       drawRoundRect(
@@ -567,8 +567,8 @@ function _drawGuideline(context, parameters, guideline, strokeColor) {
       // draw name
       if (guideline.name) {
         const strLine = `${guideline.name}`;
-        textWidth = Math.max(context.measureText(strLine).width);
-        const textVerticalCenter = Math.max(getTextVerticalCenter(context, strLine));
+        textWidth = context.measureText(strLine).width;
+        const textVerticalCenter = getTextVerticalCenter(context, strLine);
 
         context.fillStyle = strokeColor;
         moveText =
@@ -1121,7 +1121,7 @@ registerVisualizationLayerDefinition({
       const startPoint = glyph.path.getPoint(startPointIndex);
 
       const strLine = `${contourIndex}`;
-      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
+      const width = context.measureText(strLine).width + 2 * margin;
 
       context.fillStyle = parameters.boxColor;
       drawRoundRect(
