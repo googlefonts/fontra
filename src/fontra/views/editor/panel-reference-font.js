@@ -546,25 +546,16 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _deleteSelectedItemHandler() {
-    await this._deleteItemOrAll(this.filesUIList.getSelectedItemIndex());
+    await this._deleteItems(this.filesUIList.getSelectedItemIndex(), 1);
   }
 
-  async _deleteAllHandler() {
-    await this._deleteItemOrAll(undefined);
+  async _deleteAllItemsHandler() {
+    await this._deleteItems(0, this.filesUIList.items.length);
   }
 
-  async _deleteItemOrAll(index) {
-    const fontItems = [...this.filesUIList.items];
-
-    let itemsToDelete, newItems;
-    if (index !== undefined) {
-      itemsToDelete = [fontItems[index]];
-      fontItems.splice(index, 1);
-      newItems = fontItems;
-    } else {
-      itemsToDelete = fontItems;
-      newItems = [];
-    }
+  async _deleteItems(index, deleteCount) {
+    const newItems = [...this.filesUIList.items];
+    const deleteItems = newItems.splice(index, deleteCount);
 
     this.model.selectedFontIndex = -1;
     this.model.referenceFontName = "";
@@ -572,18 +563,19 @@ export default class ReferenceFontPanel extends Panel {
     this.filesUIList.setItems(newItems);
 
     // Only share those fonts that we successfully stored before
-    const storedFontIDs = new Set(
-      this.model.fontList.map((item) => item.fontIdentifier)
-    );
     this.controller.setItem(
       "fontList",
-      cleanFontItems(newItems.filter((item) => storedFontIDs.has(item.fontIdentifier))),
-      {
-        senderID: this,
-      }
+      cleanFontItems(
+        newItems.filter((item) =>
+          this.model.fontList.some(
+            (listItem) => listItem.identifier === item.identifier
+          )
+        )
+      ),
+      { senderID: this }
     );
 
-    for (const fontItem of itemsToDelete) {
+    for (const fontItem of deleteItems) {
       garbageCollectFontItem(fontItem);
       await deleteFontFileFromOPFS(fontItem.fontIdentifier);
     }
@@ -648,7 +640,10 @@ export default class ReferenceFontPanel extends Panel {
       "deleteKey",
       async () => await this._deleteSelectedItemHandler()
     );
-    this.filesUIList.addEventListener("deleteKeyAlt", () => this._deleteAllHandler());
+    this.filesUIList.addEventListener(
+      "deleteKeyAlt",
+      async () => await this._deleteAllItemsHandler()
+    );
 
     this.filesUIList.setItems([...this.model.fontList]);
     if (this.model.selectedFontIndex != -1) {
