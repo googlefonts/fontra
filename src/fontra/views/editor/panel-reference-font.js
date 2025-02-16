@@ -431,7 +431,9 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _filesHandler(files) {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      return;
+    }
 
     const fontItemsInvalid = [];
     const fontItems = [...files]
@@ -544,10 +546,7 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _deleteSelectedItemHandler() {
-    const index = this.filesUIList.getSelectedItemIndex();
-    if (index > -1 && index <= this.filesUIList.items.length - 1) {
-      await this._deleteItemOrAll(index);
-    }
+    await this._deleteItemOrAll(this.filesUIList.getSelectedItemIndex());
   }
 
   async _deleteAllHandler() {
@@ -670,7 +669,7 @@ export default class ReferenceFontPanel extends Panel {
     const fileInput = input(
       {
         type: "file",
-        accept: ".ttf,.otf,.woff,.woff2",
+        accept: [...fontFileExtensions].map((extension) => `.${extension}`).join(","),
         multiple: true,
       },
       []
