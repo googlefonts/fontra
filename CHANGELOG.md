@@ -1,5 +1,12 @@
 # Changelog for Fontra
 
+## 2025-02-16
+
+- Do not display the "selection bounds" handles if the selection is only a single point [Issue 2022](https://github.com/googlefonts/fontra/issues/2022) [PR 2024](https://github.com/googlefonts/fontra/pull/2024)
+- Fix bug in reference font panel [Issue 2011](https://github.com/googlefonts/fontra/issues/2011) [PR 2012](https://github.com/googlefonts/fontra/pull/2012)
+- Redesigned the Font Source panel [Issue 1997](https://github.com/googlefonts/fontra/issues/1997) [PR 2007](https://github.com/googlefonts/fontra/pull/2007)
+- Added initial support for global guidelines. For now they need to be set in the Font Sources panel. and Adding or edited global guidelines in the glyph editor will be implemented later. [Issue 909](https://github.com/googlefonts/fontra/issues/909) [Issue 1963](https://github.com/googlefonts/fontra/issues/1963) [PR 2021](https://github.com/googlefonts/fontra/pull/2021)
+
 ## 2025-01-30
 
 - Added support for reading .woff and .woff2 [PR 1999](https://github.com/googlefonts/fontra/pull/1999)
