@@ -343,7 +343,8 @@ def _unstructureFloat(v):
         if v.is_integer():
             return int(v)
     except AttributeError:
-        pass
+        if not isinstance(v, (int, float)):
+            raise TypeError(f"Expected int or float, got {type(v)}. ({v!r})")
     return v
 
 

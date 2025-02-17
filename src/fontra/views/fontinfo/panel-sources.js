@@ -5,6 +5,7 @@ import { addStyleSheet } from "../core/html-utils.js";
 import { translate } from "../core/localization.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
+  NumberFormatter,
   OptionalNumberFormatter,
   checkboxListCell,
   labelForElement,
@@ -723,6 +724,12 @@ function buildElement(controller) {
       .map(([labelName, keyName, value]) => {
         if (typeof value === "boolean") {
           return [html.div(), labeledCheckbox(labelName, controller, keyName, {})];
+        } else if (typeof value === "number") {
+          return labeledTextInput(labelName, controller, keyName, {
+            continuous: false,
+            type: "number",
+            formatter: NumberFormatter,
+          });
         } else {
           return labeledTextInput(labelName, controller, keyName, {
             continuous: false,
