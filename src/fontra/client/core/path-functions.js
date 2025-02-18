@@ -664,6 +664,7 @@ function computeHandlesFromFragment(curveType, contour) {
   }
   const leftTangent = getEndTangent(contour.points, true);
   const rightTangent = getEndTangent(contour.points, false);
+
   const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 0.5);
   let handle1, handle2;
   handle1 = bezier.points[1];
@@ -701,21 +702,9 @@ function simpleTangentDeletion(points) {
 }
 
 function getEndTangent(points, isStart) {
-  const numPoints = points.length;
-  const direction = isStart ? 1 : -1;
-  const firstIndex = isStart ? 0 : numPoints - 1;
-  const firstPoint = points[firstIndex];
-  let secondPoint = points[firstIndex + direction];
-
-  for (let i = firstIndex + direction; i >= 0 && i < numPoints; i += direction) {
-    const testPoint = points[i];
-    if (testPoint.x !== firstPoint.x || testPoint.y !== firstPoint.y) {
-      secondPoint = testPoint;
-      break;
-    }
-  }
-
-  return vector.normalizeVector(vector.subVectors(secondPoint, firstPoint));
+  return vector.normalizeVector(
+    vector.subVectors(points.at(isStart ? 1 : -2), points.at(isStart ? 0 : -1))
+  );
 }
 
 export function scalePoint(pinPoint, point, factor) {
