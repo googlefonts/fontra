@@ -645,6 +645,12 @@ function determineDominantCurveType(points) {
 }
 
 function computeHandlesFromFragment(curveType, contour) {
+  const betweenOffCurvePoints = simpleTangentDeletion(contour.points);
+  if (betweenOffCurvePoints) {
+    // Don't refit the curve, this is more intuitive in most cases
+    return betweenOffCurvePoints;
+  }
+
   const path = VarPackedPath.fromUnpackedContours([contour]);
   const samplePoints = [contour.points[0]];
   for (const segment of path.iterContourDecomposedSegments(0)) {
@@ -670,6 +676,28 @@ function computeHandlesFromFragment(curveType, contour) {
     { ...handle1, type: curveType },
     { ...handle2, type: curveType },
   ];
+}
+
+function simpleTangentDeletion(points) {
+  // See if either end segment is a straight line, and there are no other on-curve
+  // points. Just delete the tangent(s) in that case.
+  const betweenPoints = points.slice(1, -1);
+  const numOnCurvePoints = betweenPoints.reduce(
+    (acc, pt) => acc + (!pt.type ? 1 : 0),
+    0
+  );
+  const firstBetweenIsOnCurve = !betweenPoints[0].type;
+  const lastBetweenIsOnCurve = !betweenPoints.at(-1).type;
+
+  if (numOnCurvePoints === 2 && firstBetweenIsOnCurve && lastBetweenIsOnCurve) {
+    return betweenPoints.slice(1, -1);
+  } else if (numOnCurvePoints === 1) {
+    if (firstBetweenIsOnCurve) {
+      return betweenPoints.slice(1);
+    } else if (lastBetweenIsOnCurve) {
+      return betweenPoints.slice(0, -1);
+    }
+  }
 }
 
 function getEndTangent(points, isStart) {
