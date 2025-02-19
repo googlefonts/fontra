@@ -645,6 +645,12 @@ function determineDominantCurveType(points) {
 }
 
 function computeHandlesFromFragment(curveType, contour) {
+  const betweenOffCurvePoints = simpleTangentDeletion(contour.points);
+  if (betweenOffCurvePoints) {
+    // Don't refit the curve, this is more intuitive in most cases
+    return betweenOffCurvePoints;
+  }
+
   const path = VarPackedPath.fromUnpackedContours([contour]);
   const samplePoints = [contour.points[0]];
   for (const segment of path.iterContourDecomposedSegments(0)) {
@@ -658,6 +664,7 @@ function computeHandlesFromFragment(curveType, contour) {
   }
   const leftTangent = getEndTangent(contour.points, true);
   const rightTangent = getEndTangent(contour.points, false);
+
   const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 0.5);
   let handle1, handle2;
   handle1 = bezier.points[1];
@@ -672,22 +679,32 @@ function computeHandlesFromFragment(curveType, contour) {
   ];
 }
 
-function getEndTangent(points, isStart) {
-  const numPoints = points.length;
-  const direction = isStart ? 1 : -1;
-  const firstIndex = isStart ? 0 : numPoints - 1;
-  const firstPoint = points[firstIndex];
-  let secondPoint = points[firstIndex + direction];
+function simpleTangentDeletion(points) {
+  // See if either end segment is a straight line, and there are no other on-curve
+  // points. Just delete the tangent(s) in that case.
+  const betweenPoints = points.slice(1, -1);
+  const numOnCurvePoints = betweenPoints.reduce(
+    (acc, pt) => acc + (!pt.type ? 1 : 0),
+    0
+  );
+  const firstBetweenIsOnCurve = betweenPoints[0].smooth;
+  const lastBetweenIsOnCurve = betweenPoints.at(-1).smooth;
 
-  for (let i = firstIndex + direction; i >= 0 && i < numPoints; i += direction) {
-    const testPoint = points[i];
-    if (testPoint.x !== firstPoint.x || testPoint.y !== firstPoint.y) {
-      secondPoint = testPoint;
-      break;
+  if (numOnCurvePoints === 2 && firstBetweenIsOnCurve && lastBetweenIsOnCurve) {
+    return betweenPoints.slice(1, -1);
+  } else if (numOnCurvePoints === 1) {
+    if (firstBetweenIsOnCurve) {
+      return betweenPoints.slice(1);
+    } else if (lastBetweenIsOnCurve) {
+      return betweenPoints.slice(0, -1);
     }
   }
+}
 
-  return vector.normalizeVector(vector.subVectors(secondPoint, firstPoint));
+function getEndTangent(points, isStart) {
+  return vector.normalizeVector(
+    vector.subVectors(points.at(isStart ? 1 : -2), points.at(isStart ? 0 : -1))
+  );
 }
 
 export function scalePoint(pinPoint, point, factor) {
