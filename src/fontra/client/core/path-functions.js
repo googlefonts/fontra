@@ -687,8 +687,8 @@ function simpleTangentDeletion(points) {
     (acc, pt) => acc + (!pt.type ? 1 : 0),
     0
   );
-  const firstBetweenIsOnCurve = !betweenPoints[0].type;
-  const lastBetweenIsOnCurve = !betweenPoints.at(-1).type;
+  const firstBetweenIsOnCurve = betweenPoints[0].smooth;
+  const lastBetweenIsOnCurve = betweenPoints.at(-1).smooth;
 
   if (numOnCurvePoints === 2 && firstBetweenIsOnCurve && lastBetweenIsOnCurve) {
     return betweenPoints.slice(1, -1);
