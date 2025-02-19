@@ -697,6 +697,10 @@ class SourceBox extends HTMLElement {
         source.customData = {};
         for (const item of event.newValue) {
           const key = item["key"];
+          if (key === "attributeName") {
+            // Skip this, so people can edit this placeholder it.
+            continue;
+          }
           const formatter = customDataNameMapping[key]?.formatter || DefaultFormatter;
           const value = formatter.fromString(item["value"]).value;
           if (value !== undefined) {
@@ -1001,7 +1005,7 @@ function buildFontCustomDataList(controller, fontSource) {
       const currentKeys = labelList.items.map((customData) => {
         return customData.key;
       });
-      let nextKey = `attributeName${currentKeys.length}`;
+      let nextKey = "attributeName";
       for (const key of Object.keys(customDataNameMapping)) {
         if (!currentKeys.includes(key)) {
           nextKey = key;
