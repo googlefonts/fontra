@@ -562,7 +562,7 @@ export default class ReferenceFontPanel extends Panel {
     model.selectedFontIndex = -1;
     model.referenceFontName = "";
 
-    filesUIList.setItems(listItems);
+    filesUIList.setItems(listItems, false, true);
     if (!filesUIList.getSelectedItemIndex() && listItems.length > 0) {
       filesUIList.setSelectedItemIndex(index === 0 ? 0 : index - 1, true);
     }
