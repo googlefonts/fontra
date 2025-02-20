@@ -106,7 +106,7 @@ export function textFromGlyphLines(glyphLines) {
     let textLine = "";
     for (let i = 0; i < glyphLine.length; i++) {
       const glyphInfo = glyphLine[i];
-      if (glyphInfo.character) {
+      if (glyphInfo.character && glyphInfo.character !== "/") {
         textLine += glyphInfo.character;
       } else {
         textLine += "/" + glyphInfo.glyphName;
