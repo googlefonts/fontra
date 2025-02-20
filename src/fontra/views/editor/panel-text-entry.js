@@ -11,6 +11,8 @@ export default class TextEntryPanel extends Panel {
       display: flex;
       flex-direction: column;
       gap: 0.5em;
+      max-height: 100%;
+      overflow-y: auto;
     }
 
     #text-align-menu {
