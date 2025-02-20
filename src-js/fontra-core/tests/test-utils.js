@@ -1,5 +1,6 @@
 import {
   ArrayFormatter,
+  BooleanFormatter,
   NumberArrayFormatter,
   _NumberFormatter,
   arrayExtend,
@@ -815,10 +816,33 @@ describe("NumberArrayFormatter", () => {
     ],
     (testData) => {
       const [input, expectedResult, arrayLength] = testData;
-      console.log("arrayLength: ", arrayLength);
       expect(NumberArrayFormatter.fromString(input, arrayLength).value).to.deep.equal(
         expectedResult
       );
+    }
+  );
+});
+
+describe("BooleanFormatter", () => {
+  parametrize(
+    "BooleanFormatter fromString tests",
+    [
+      ["false", false],
+      ["true", true],
+      ["False", false],
+      ["True", true],
+      ["FALSE", false],
+      ["TRUE", true],
+      [false, false],
+      [true, true],
+      ["", undefined],
+      ["Hello", undefined],
+      ["   false    ", false],
+      ["   true    ", true],
+    ],
+    (testData) => {
+      const [input, expectedResult] = testData;
+      expect(BooleanFormatter.fromString(input).value).to.deep.equal(expectedResult);
     }
   );
 });
