@@ -20,10 +20,6 @@ export class GlyphSearchList extends SimpleElement {
       overflow: hidden;
       align-content: start;
     }
-
-    .glyph-names-list[hidden] {
-      display: none;
-    }
   `;
 
   constructor() {
@@ -33,7 +29,6 @@ export class GlyphSearchList extends SimpleElement {
 
     this.searchField = new GlyphSearchField();
     this.glyphNamesList = this._makeGlyphNamesList();
-    this.glyphNamesList.classList.add("glyph-names-list");
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
