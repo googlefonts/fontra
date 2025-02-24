@@ -20,6 +20,10 @@ export class GlyphSearchList extends SimpleElement {
       overflow: hidden;
       align-content: start;
     }
+
+    .glyph-names-list[hidden] {
+      display: none;
+    }
   `;
 
   constructor() {
@@ -29,6 +33,7 @@ export class GlyphSearchList extends SimpleElement {
 
     this.searchField = new GlyphSearchField();
     this.glyphNamesList = this._makeGlyphNamesList();
+    this.glyphNamesList.classList.add("glyph-names-list");
 
     this.throttledUpdate = throttleCalls(() => this.update(), 50);
 
@@ -113,7 +118,7 @@ export class GlyphSearchList extends SimpleElement {
   _setFilteredGlyphNamesListContent() {
     const filteredGlyphItems = this.glyphOrganizer.filterGlyphs(this.glyphsListItems);
     this.glyphNamesList.setItems(filteredGlyphItems);
-    this.glyphNamesList.style.display = filteredGlyphItems.length === 0 ? "none" : null;
+    this.glyphNamesList.hidden = filteredGlyphItems.length === 0;
   }
 
   getSelectedGlyphName() {
