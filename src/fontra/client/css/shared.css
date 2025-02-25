@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none;
+}
+
 .fontra-button {
   cursor: pointer;
   background-color: #ddd;

@@ -113,6 +113,7 @@ export class GlyphSearchList extends SimpleElement {
   _setFilteredGlyphNamesListContent() {
     const filteredGlyphItems = this.glyphOrganizer.filterGlyphs(this.glyphsListItems);
     this.glyphNamesList.setItems(filteredGlyphItems);
+    this.glyphNamesList.hidden = filteredGlyphItems.length === 0;
   }
 
   getSelectedGlyphName() {
