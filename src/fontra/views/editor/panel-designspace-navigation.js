@@ -1386,7 +1386,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     const newLayer = Layer.fromObject({
-      glyph: StaticGlyph.fromObject({ xAdvance: 488 }),
+      glyph: StaticGlyph.fromObject({
+        xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
+      }),
     });
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
