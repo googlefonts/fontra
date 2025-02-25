@@ -248,7 +248,10 @@ class FontraBackend:
         fontData.pop("glyphMap", None)
         fontData.pop("kerning", None)
 
-        if self.fontData.kerning:
+        if any(
+            kernTable.values or kernTable.groups
+            for kernTable in self.fontData.kerning.values()
+        ):
             writeKerningFile(self.kerningPath, self.fontData.kerning)
         elif self.kerningPath.exists():
             self.kerningPath.unlink()
@@ -339,6 +342,9 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
 
         isFirst = True
         for kernType, kerningTable in kerning.items():
+            if not kerningTable.values and not kerningTable.groups:
+                continue
+
             if not isFirst:
                 writer.writerow([])
             isFirst = False
