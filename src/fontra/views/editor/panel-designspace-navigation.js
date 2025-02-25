@@ -1397,8 +1397,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
   }
 
-  removeSourceLayer() {
-    console.log("remove source layer");
+  async removeSourceLayer() {
+    if (this.sourceLayersList.getSelectedItemIndex() === 0) {
+      // This assumes the first layer is the foreground layer, the "main" layer
+      return;
+    }
+    const selectedLayerItem = this.sourceLayersList.getSelectedItem();
+    if (!selectedLayerItem) {
+      return;
+    }
+
+    const layerName = selectedLayerItem.fullName;
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      delete glyph.layers[layerName];
+      return "remove source layer";
+    });
   }
 
   async editGlyphAxes() {
