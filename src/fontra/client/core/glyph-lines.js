@@ -109,7 +109,7 @@ export function textFromGlyphLines(glyphLines) {
       if (glyphInfo.character === "/") {
         // special-case slash, since it is the glyph name indicator character,
         // and needs to be escaped
-       textLine += "//";
+        textLine += "//";
       } else if (glyphInfo.character) {
         textLine += glyphInfo.character;
       } else {
