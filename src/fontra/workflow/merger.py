@@ -6,6 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
+from ..backends.null import NullBackend
 from ..core.async_property import async_cached_property
 from ..core.classes import (
     Axes,
@@ -210,7 +211,7 @@ class FontBackendMerger:
     async def getUnitsPerEm(self) -> int:
         unitsPerEmA = await self.inputA.getUnitsPerEm()
         unitsPerEmB = await self.inputB.getUnitsPerEm()
-        if unitsPerEmA != unitsPerEmB:
+        if unitsPerEmA != unitsPerEmB and self.inputA is not NullBackend():
             logger.warning(
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
