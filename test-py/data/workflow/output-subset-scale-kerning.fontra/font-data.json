@@ -69,24 +69,24 @@
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 600,
-"zone": 12
+"value": 800,
+"zone": 16
 },
 "capHeight": {
-"value": 600,
-"zone": 12
+"value": 800,
+"zone": 16
 },
 "xHeight": {
-"value": 375,
-"zone": 12
+"value": 500,
+"zone": 16
 },
 "descender": {
-"value": -150,
-"zone": -12
+"value": -200,
+"zone": -16
 },
 "baseline": {
 "value": 0,
-"zone": -12
+"zone": -16
 }
 }
 },
@@ -99,24 +99,24 @@
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 600,
-"zone": 12
+"value": 800,
+"zone": 16
 },
 "capHeight": {
-"value": 600,
-"zone": 12
+"value": 800,
+"zone": 16
 },
 "xHeight": {
-"value": 375,
-"zone": 12
+"value": 500,
+"zone": 16
 },
 "descender": {
-"value": -150,
-"zone": -12
+"value": -200,
+"zone": -16
 },
 "baseline": {
 "value": 0,
-"zone": -12
+"zone": -16
 }
 }
 },
@@ -129,24 +129,24 @@
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 525,
-"zone": 12
+"value": 700,
+"zone": 16
 },
 "capHeight": {
-"value": 525,
-"zone": 12
+"value": 700,
+"zone": 16
 },
 "xHeight": {
-"value": 375,
-"zone": 12
+"value": 500,
+"zone": 16
 },
 "descender": {
-"value": -150,
-"zone": -12
+"value": -200,
+"zone": -16
 },
 "baseline": {
 "value": 0,
-"zone": -12
+"zone": -16
 }
 },
 "guidelines": [
@@ -178,24 +178,24 @@
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 562,
-"zone": 12
+"value": 750,
+"zone": 16
 },
 "capHeight": {
-"value": 562,
-"zone": 12
+"value": 750,
+"zone": 16
 },
 "xHeight": {
-"value": 375,
-"zone": 12
+"value": 500,
+"zone": 16
 },
 "descender": {
-"value": -188,
-"zone": -12
+"value": -250,
+"zone": -16
 },
 "baseline": {
 "value": 0,
-"zone": -12
+"zone": -16
 }
 }
 },
@@ -208,24 +208,24 @@
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
-"value": 525,
-"zone": 12
+"value": 700,
+"zone": 16
 },
 "capHeight": {
-"value": 525,
-"zone": 12
+"value": 700,
+"zone": 16
 },
 "xHeight": {
-"value": 375,
-"zone": 12
+"value": 500,
+"zone": 16
 },
 "descender": {
-"value": -150,
-"zone": -12
+"value": -200,
+"zone": -16
 },
 "baseline": {
 "value": 0,
-"zone": -12
+"zone": -16
 }
 }
 },
