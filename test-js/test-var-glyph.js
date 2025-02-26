@@ -35,6 +35,7 @@ function makeTestGlyphObject() {
               name: "test",
               location: { a: 0.5 },
               transformation: getDecomposedIdentity(),
+              customData: {},
             },
           ],
           anchors: [],
@@ -70,6 +71,7 @@ describe("var-glyph Tests", () => {
           name: "test",
           transformation: getDecomposedIdentity(),
           location: {},
+          customData: {},
         },
       ],
       path: {

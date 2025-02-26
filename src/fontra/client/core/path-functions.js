@@ -656,12 +656,8 @@ function computeHandlesFromFragment(curveType, contour) {
     }
     samplePoints.push(points.at(-1));
   }
-  const leftTangent = vector.normalizeVector(
-    vector.subVectors(contour.points[1], contour.points[0])
-  );
-  const rightTangent = vector.normalizeVector(
-    vector.subVectors(contour.points.at(-2), contour.points.at(-1))
-  );
+  const leftTangent = getEndTangent(contour.points, true);
+  const rightTangent = getEndTangent(contour.points, false);
   const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 0.5);
   let handle1, handle2;
   handle1 = bezier.points[1];
@@ -674,6 +670,24 @@ function computeHandlesFromFragment(curveType, contour) {
     { ...handle1, type: curveType },
     { ...handle2, type: curveType },
   ];
+}
+
+function getEndTangent(points, isStart) {
+  const numPoints = points.length;
+  const direction = isStart ? 1 : -1;
+  const firstIndex = isStart ? 0 : numPoints - 1;
+  const firstPoint = points[firstIndex];
+  let secondPoint = points[firstIndex + direction];
+
+  for (let i = firstIndex + direction; i >= 0 && i < numPoints; i += direction) {
+    const testPoint = points[i];
+    if (testPoint.x !== firstPoint.x || testPoint.y !== firstPoint.y) {
+      secondPoint = testPoint;
+      break;
+    }
+  }
+
+  return vector.normalizeVector(vector.subVectors(secondPoint, firstPoint));
 }
 
 export function scalePoint(pinPoint, point, factor) {

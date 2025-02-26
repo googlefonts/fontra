@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none;
+}
+
 .fontra-button {
   cursor: pointer;
   background-color: #ddd;
@@ -35,8 +39,4 @@ caused the dialog to *open* wrongly gets the focus.
 button,
 input[type="button"]:focus {
   outline: none;
-}
-
-.text-wrap {
-  white-space: wrap;
 }

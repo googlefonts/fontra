@@ -18,7 +18,7 @@ export class UIList extends UnlitElement {
     ${themeColorCSS(colors)}
 
     :host {
-      display: grid;  /* also set by code below */
+      display: grid;
       grid-template-rows: auto 1fr;
       gap: 0.2em;
       min-height: 0;
@@ -83,11 +83,14 @@ export class UIList extends UnlitElement {
       background-color: var(--row-selected-background-color);
     }
 
-    .list-cell, .text-cell, .text-cell-header {
+    .list-cell,
+    .text-cell,
+    .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0 0.2em 0 0.1em;
-      box-sizing: content-box; /* FIXME: use border-box */
+      box-sizing: content-box; /* TODO: use border-box */
+      white-space: nowrap;
     }
 
     .list-cell.editing,
@@ -95,15 +98,18 @@ export class UIList extends UnlitElement {
       text-overflow: clip;
     }
 
-    .text-cell.left, .text-cell-header.left {
+    .text-cell.left,
+    .text-cell-header.left {
       text-align: left;
     }
 
-    .text-cell.center, .text-cell-header.center {
+    .text-cell.center,
+    .text-cell-header.center {
       text-align: center;
     }
 
-    .text-cell.right, .text-cell-header.right {
+    .text-cell.right,
+    .text-cell-header.right {
       text-align: right;
     }
     `;
@@ -157,8 +163,9 @@ export class UIList extends UnlitElement {
   }
 
   render() {
-    this._updateVisibility();
-    this.container.style = this.minHeight ? `min-height: ${this.minHeight};` : "";
+    if (this.minHeight) {
+      this.container.style.minHeight = this.minHeight;
+    }
     const contents = [];
     if (this.showHeader) {
       contents.push(this._makeHeader());
@@ -193,7 +200,6 @@ export class UIList extends UnlitElement {
     const selectedItem = this.getSelectedItem();
     this.contents.innerHTML = "";
     this.items = items;
-    this._updateVisibility();
     this._itemsBackLog = Array.from(items);
     this.setSelectedItem(selectedItem, shouldDispatchEvent);
     this._addMoreItemsIfNeeded();
@@ -201,10 +207,7 @@ export class UIList extends UnlitElement {
       this.container.scrollLeft = scrollLeft;
       this.container.scrollTop = scrollTop;
     }
-  }
-
-  _updateVisibility() {
-    this.style.display = this.items?.length || this.minHeight ? "grid" : "none";
+    this._dispatchEvent("itemsSet");
   }
 
   getSelectedItem() {
@@ -326,7 +329,9 @@ export class UIList extends UnlitElement {
 
     const onchange = (event) => {
       const formatter = colDesc.formatter || DefaultFormatter;
-      const { value, error } = formatter.fromString(cell.innerText);
+      const { value, error } = formatter.fromString(
+        cell.innerText != "\n" ? cell.innerText : ""
+      );
       if (!error) {
         item[colDesc.key] = value;
       }

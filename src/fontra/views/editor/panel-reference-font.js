@@ -5,6 +5,7 @@ import { getSelectedGlyphInfo } from "./scene-model.js";
 import {
   createDomElement,
   div,
+  form,
   input,
   label,
   option,
@@ -188,8 +189,18 @@ export default class ReferenceFontPanel extends Panel {
     .reference-font-section {
       display: grid;
       gap: 1em;
-      white-space: normal;
       align-content: start;
+    }
+
+    .reference-font-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      overflow-y: auto;
+    }
+
+    .reference-font-list {
+      gap: 0;
     }
 
     .title {
@@ -262,10 +273,10 @@ export default class ReferenceFontPanel extends Panel {
     editorController.sceneSettingsController.addKeyListener("fontLocationUser", () => {
       const fontVariationSettings = [];
       for (const axis of this.editorController.fontController.fontAxes) {
+        const axisValue =
+          this.editorController.sceneSettings.fontLocationUser[axis.name];
         fontVariationSettings.push(
-          `'${axis.tag}' ${
-            this.editorController.sceneSettings.fontLocationUser[axis.name]
-          }`
+          `'${axis.tag}' ${axisValue != undefined ? axisValue : axis.defaultValue}`
         );
       }
       const cssString = fontVariationSettings.join(",");
@@ -419,7 +430,11 @@ export default class ReferenceFontPanel extends Panel {
     return this.controller.model;
   }
 
-  async _filesDropHandler(files) {
+  async _filesHandler(files) {
+    if (files.length === 0) {
+      return;
+    }
+
     const fontItemsInvalid = [];
     const fontItems = [...files]
       .filter((file) => {
@@ -531,44 +546,38 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async _deleteSelectedItemHandler() {
-    await this._deleteItemOrAll(this.filesUIList.getSelectedItemIndex());
+    await this._deleteItems(this.filesUIList.getSelectedItemIndex(), 1);
   }
 
-  async _deleteAllHandler() {
-    await this._deleteItemOrAll(undefined);
+  async _deleteAllItemsHandler() {
+    await this._deleteItems(0, this.filesUIList.items.length);
   }
 
-  async _deleteItemOrAll(index) {
-    const fontItems = [...this.filesUIList.items];
+  async _deleteItems(index, deleteCount) {
+    const { filesUIList, model } = this;
+    const listItems = [...filesUIList.items];
+    const deletedItems = listItems.splice(index, deleteCount);
 
-    let itemsToDelete, newItems;
-    if (index !== undefined) {
-      itemsToDelete = [fontItems[index]];
-      fontItems.splice(index, 1);
-      newItems = fontItems;
-    } else {
-      itemsToDelete = fontItems;
-      newItems = [];
+    model.selectedFontIndex = -1;
+    model.referenceFontName = "";
+
+    filesUIList.setItems(listItems, false, true);
+    if (!filesUIList.getSelectedItemIndex() && listItems.length > 0) {
+      filesUIList.setSelectedItemIndex(index === 0 ? 0 : index - 1, true);
     }
 
-    this.model.selectedFontIndex = -1;
-    this.model.referenceFontName = "";
-
-    this.filesUIList.setItems(newItems);
-
     // Only share those fonts that we successfully stored before
-    const storedFontIDs = new Set(
-      this.model.fontList.map((item) => item.fontIdentifier)
-    );
     this.controller.setItem(
       "fontList",
-      cleanFontItems(newItems.filter((item) => storedFontIDs.has(item.fontIdentifier))),
-      {
-        senderID: this,
-      }
+      cleanFontItems(
+        listItems.filter((item) =>
+          model.fontList.some((fontItem) => fontItem.identifier === item.identifier)
+        )
+      ),
+      { senderID: this }
     );
 
-    for (const fontItem of itemsToDelete) {
+    for (const fontItem of deletedItems) {
       garbageCollectFontItem(fontItem);
       await deleteFontFileFromOPFS(fontItem.fontIdentifier);
     }
@@ -621,22 +630,22 @@ export default class ReferenceFontPanel extends Panel {
     this.filesUIList.itemEqualFunc = (a, b) => a.fontIdentifier == b.fontIdentifier;
 
     this.filesUIList.minHeight = "6em";
+    this.filesUIList.classList.add("reference-font-list");
 
-    this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
+    this.filesUIList.onFilesDrop = (files) => this._filesHandler(files);
 
-    this.filesUIList.addEventListener("listSelectionChanged", () => {
-      this._listSelectionChangedHandler();
-    });
-
-    this.filesUIList.addEventListener("deleteKey", () =>
-      this._deleteSelectedItemHandler()
+    this.filesUIList.addEventListener("listSelectionChanged", () =>
+      this._listSelectionChangedHandler()
     );
-    this.filesUIList.addEventListener("deleteKeyAlt", () => this._deleteAllHandler());
 
-    this.filesUIList.setItems([...this.model.fontList]);
-    if (this.model.selectedFontIndex != -1) {
-      this.filesUIList.setSelectedItemIndex(this.model.selectedFontIndex, true);
-    }
+    this.filesUIList.addEventListener(
+      "deleteKey",
+      async () => await this._deleteSelectedItemHandler()
+    );
+    this.filesUIList.addEventListener(
+      "deleteKeyAlt",
+      async () => await this._deleteAllItemsHandler()
+    );
 
     this.languageCodeInput = select(
       {
@@ -648,6 +657,34 @@ export default class ReferenceFontPanel extends Panel {
       },
       []
     );
+
+    const fileInput = input(
+      {
+        type: "file",
+        accept: [...fontFileExtensions].map((extension) => `.${extension}`).join(","),
+        multiple: true,
+      },
+      []
+    );
+    fileInput.addEventListener("change", async () => {
+      await this._filesHandler(fileInput.files);
+      fileInput.value = null;
+    });
+    const addRemoveButtons = createDomElement("add-remove-buttons");
+    const disableRemoveButton = () => {
+      const index = this.filesUIList.getSelectedItemIndex();
+      addRemoveButtons.disableRemoveButton = isNaN(index) || index < 0;
+    };
+    addRemoveButtons.addButtonCallback = () => fileInput.click();
+    addRemoveButtons.removeButtonCallback = async () =>
+      await this._deleteSelectedItemHandler();
+
+    this.filesUIList.addEventListener("listSelectionChanged", disableRemoveButton);
+    this.filesUIList.addEventListener("itemsSet", disableRemoveButton);
+    this.filesUIList.setItems([...this.model.fontList]);
+    if (this.model.selectedFontIndex != -1) {
+      this.filesUIList.setSelectedItemIndex(this.model.selectedFontIndex, true);
+    }
 
     return div(
       {
@@ -662,7 +699,11 @@ export default class ReferenceFontPanel extends Panel {
           [
             div({ class: "title" }, [translate("sidebar.reference-font")]),
             div({}, [translate("sidebar.reference-font.info")]),
-            this.filesUIList,
+            div({ class: "reference-font-items" }, [
+              this.filesUIList,
+              form({ enctype: "multipart/form-data", hidden: true }, [fileInput]),
+              addRemoveButtons,
+            ]),
             div(
               {
                 style: `

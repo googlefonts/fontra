@@ -106,7 +106,11 @@ export function textFromGlyphLines(glyphLines) {
     let textLine = "";
     for (let i = 0; i < glyphLine.length; i++) {
       const glyphInfo = glyphLine[i];
-      if (glyphInfo.character) {
+      if (glyphInfo.character === "/") {
+        // special-case slash, since it is the glyph name indicator character,
+        // and needs to be escaped
+        textLine += "//";
+      } else if (glyphInfo.character) {
         textLine += glyphInfo.character;
       } else {
         textLine += "/" + glyphInfo.glyphName;

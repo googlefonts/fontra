@@ -296,6 +296,23 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             [],
         ),
         (
+            "scale",
+            """
+            steps:
+
+            - input: fontra-read
+              source: "test-py/data/workflow/input1-A.fontra"
+              steps:
+              - filter: scale
+                scaleFactor: 0.75
+
+            - output: fontra-write
+              destination: "output-scale.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
             "subset-scale",
             """
             steps:
@@ -333,6 +350,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
               steps:
               - filter: scale
                 scaleFactor: 0.75
+                scaleFontMetrics: false
               - filter: drop-shapes
               - filter: subset-glyphs
                 glyphNames: ["A", "T", "V"]
@@ -1420,7 +1438,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
               destination: "output-fork-merge.fontra"
             """,
             False,
-            [],
+            [(30, "Merger: Fonts have different units-per-em; A: 1000, B: 500")],
         ),
         (
             "trim-variable-glyphs-1",
