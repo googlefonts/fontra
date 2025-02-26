@@ -29,6 +29,7 @@
   max-width: var(--tooltip-max-width);
   font-size: 0.9rem;
   font-weight: normal;
+  line-height: normal;
   text-align: center;
   position: absolute;
   display: block;
