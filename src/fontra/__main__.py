@@ -1,8 +1,8 @@
 import argparse
 import logging
 import secrets
-from importlib.metadata import entry_points
 import subprocess
+from importlib.metadata import entry_points
 
 from . import __version__ as fontraVersion
 from .core.protocols import ProjectManager, ProjectManagerFactory

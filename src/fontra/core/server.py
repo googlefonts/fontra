@@ -3,7 +3,6 @@ from __future__ import annotations
 import errno
 import json
 import logging
-import re
 import socket
 import sys
 import traceback
@@ -19,8 +18,7 @@ except ImportError:
     # < 3.11
     from importlib.abc import Traversable
 from importlib.metadata import entry_points
-from typing import Any, Collection, Optional
-from urllib.parse import quote
+from typing import Any, Optional
 
 from aiohttp import WSCloseCode, web
 
