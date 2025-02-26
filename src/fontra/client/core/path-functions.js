@@ -645,6 +645,12 @@ function determineDominantCurveType(points) {
 }
 
 function computeHandlesFromFragment(curveType, contour) {
+  const betweenOffCurvePoints = simpleTangentDeletion(contour.points);
+  if (betweenOffCurvePoints) {
+    // Don't refit the curve, this is more intuitive in most cases
+    return betweenOffCurvePoints;
+  }
+
   const path = VarPackedPath.fromUnpackedContours([contour]);
   const samplePoints = [contour.points[0]];
   for (const segment of path.iterContourDecomposedSegments(0)) {
@@ -658,6 +664,7 @@ function computeHandlesFromFragment(curveType, contour) {
   }
   const leftTangent = getEndTangent(contour.points, true);
   const rightTangent = getEndTangent(contour.points, false);
+
   const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 0.5);
   let handle1, handle2;
   handle1 = bezier.points[1];
@@ -672,22 +679,40 @@ function computeHandlesFromFragment(curveType, contour) {
   ];
 }
 
-function getEndTangent(points, isStart) {
-  const numPoints = points.length;
-  const direction = isStart ? 1 : -1;
-  const firstIndex = isStart ? 0 : numPoints - 1;
-  const firstPoint = points[firstIndex];
-  let secondPoint = points[firstIndex + direction];
+function simpleTangentDeletion(points) {
+  // See if either end segment is a straight line, and there are no other on-curve
+  // points. Just delete the tangent(s) in that case.
+  const betweenPoints = points.slice(1, -1);
+  const numOnCurvePoints = betweenPoints.reduce(
+    (acc, pt) => acc + (!pt.type ? 1 : 0),
+    0
+  );
 
-  for (let i = firstIndex + direction; i >= 0 && i < numPoints; i += direction) {
-    const testPoint = points[i];
-    if (testPoint.x !== firstPoint.x || testPoint.y !== firstPoint.y) {
-      secondPoint = testPoint;
-      break;
+  // If the first/last in-between point is either an on-curve that coincides with
+  // the first/last point, or it is a smooth on-curve point, then we can delete it
+  // without refitting the curve
+  const canDeleteFirstBetween =
+    !betweenPoints[0].type &&
+    (betweenPoints[0].smooth || pointsEqual(points[0], betweenPoints[0]));
+  const canDeleteLastBetween =
+    !betweenPoints.at(-1).type &&
+    (betweenPoints.at(-1).smooth || pointsEqual(points.at(-1), betweenPoints.at(-1)));
+
+  if (numOnCurvePoints === 2 && canDeleteFirstBetween && canDeleteLastBetween) {
+    return betweenPoints.slice(1, -1);
+  } else if (numOnCurvePoints === 1) {
+    if (canDeleteFirstBetween) {
+      return betweenPoints.slice(1);
+    } else if (canDeleteLastBetween) {
+      return betweenPoints.slice(0, -1);
     }
   }
+}
 
-  return vector.normalizeVector(vector.subVectors(secondPoint, firstPoint));
+function getEndTangent(points, isStart) {
+  return vector.normalizeVector(
+    vector.subVectors(points.at(isStart ? 1 : -2), points.at(isStart ? 0 : -1))
+  );
 }
 
 export function scalePoint(pinPoint, point, factor) {
@@ -695,6 +720,10 @@ export function scalePoint(pinPoint, point, factor) {
     pinPoint,
     vector.mulVectorScalar(vector.subVectors(point, pinPoint), factor)
   );
+}
+
+function pointsEqual(point1, point2) {
+  return point1.x === point2.x && point1.y === point2.y;
 }
 
 export function getSelectionByContour(path, pointIndices) {
