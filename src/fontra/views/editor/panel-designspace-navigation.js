@@ -880,9 +880,20 @@ export default class DesignspaceNavigationPanel extends Panel {
         fullName: layer.fullName,
         shortName: layer.shortName || "foreground",
         visible: false,
+        isMainLayer: !layer.shortName,
       });
       item.addKeyListener("visible", (event) => console.log(event.newValue));
       return item.model;
+    });
+
+    sourceLayerItems.sort((a, b) => {
+      let av = !a.isMainLayer;
+      let bv = !b.isMainLayer;
+      if (av == bv) {
+        av = a.shortName;
+        bv = b.shortName;
+      }
+      return (av > bv) - (av < bv);
     });
 
     this.sourceLayersList.setItems(sourceLayerItems);
@@ -1398,12 +1409,8 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async removeSourceLayer() {
-    if (this.sourceLayersList.getSelectedItemIndex() === 0) {
-      // This assumes the first layer is the foreground layer, the "main" layer
-      return;
-    }
     const selectedLayerItem = this.sourceLayersList.getSelectedItem();
-    if (!selectedLayerItem) {
+    if (!selectedLayerItem || selectedLayerItem.isMainLayer) {
       return;
     }
 
