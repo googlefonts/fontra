@@ -83,11 +83,14 @@ export class UIList extends UnlitElement {
       background-color: var(--row-selected-background-color);
     }
 
-    .list-cell, .text-cell, .text-cell-header {
+    .list-cell,
+    .text-cell,
+    .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0 0.2em 0 0.1em;
-      box-sizing: content-box; /* FIXME: use border-box */
+      box-sizing: content-box; /* TODO: use border-box */
+      white-space: nowrap;
     }
 
     .list-cell.editing,
@@ -95,15 +98,18 @@ export class UIList extends UnlitElement {
       text-overflow: clip;
     }
 
-    .text-cell.left, .text-cell-header.left {
+    .text-cell.left,
+    .text-cell-header.left {
       text-align: left;
     }
 
-    .text-cell.center, .text-cell-header.center {
+    .text-cell.center,
+    .text-cell-header.center {
       text-align: center;
     }
 
-    .text-cell.right, .text-cell-header.right {
+    .text-cell.right,
+    .text-cell-header.right {
       text-align: right;
     }
     `;
