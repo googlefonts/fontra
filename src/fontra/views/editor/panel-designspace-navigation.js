@@ -906,8 +906,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     if (itemMatch) {
       this.sourceLayersList.setSelectedItem(itemMatch);
     } else {
-      this.sourceLayersList.setSelectedItemIndex(0);
+      this.selectMainSourceLayer();
     }
+  }
+
+  selectMainSourceLayer() {
+    this.sourceLayersList.setSelectedItem(
+      this.sourceLayersList.items.find((item) => item.isMainLayer)
+    );
   }
 
   doSelectPreviousNextSourceLayer(selectPrevious) {
@@ -1406,6 +1412,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph.layers[newLayerName] = newLayer;
       return "add source layer";
     });
+
+    this.sceneSettings.editLayerName = newLayerName;
+    this.sceneSettings.editingLayers = {
+      [newLayerName]: selectedSourceItem.locationString,
+    };
   }
 
   async removeSourceLayer() {
@@ -1420,6 +1431,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       delete glyph.layers[layerName];
       return "remove source layer";
     });
+
+    this.selectMainSourceLayer();
   }
 
   async editGlyphAxes() {
