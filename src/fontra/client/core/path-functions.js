@@ -687,15 +687,23 @@ function simpleTangentDeletion(points) {
     (acc, pt) => acc + (!pt.type ? 1 : 0),
     0
   );
-  const firstBetweenIsOnCurve = betweenPoints[0].smooth;
-  const lastBetweenIsOnCurve = betweenPoints.at(-1).smooth;
 
-  if (numOnCurvePoints === 2 && firstBetweenIsOnCurve && lastBetweenIsOnCurve) {
+  // If the first/last in-between point is either an on-curve that coincides with
+  // the first/last point, or it is a smooth on-curve point, then we can delete it
+  // without refitting the curve
+  const canDeleteFirstBetween =
+    !betweenPoints[0].type &&
+    (betweenPoints[0].smooth || pointsEqual(points[0], betweenPoints[0]));
+  const canDeleteLastBetween =
+    !betweenPoints.at(-1).type &&
+    (betweenPoints.at(-1).smooth || pointsEqual(points.at(-1), betweenPoints.at(-1)));
+
+  if (numOnCurvePoints === 2 && canDeleteFirstBetween && canDeleteLastBetween) {
     return betweenPoints.slice(1, -1);
   } else if (numOnCurvePoints === 1) {
-    if (firstBetweenIsOnCurve) {
+    if (canDeleteFirstBetween) {
       return betweenPoints.slice(1);
-    } else if (lastBetweenIsOnCurve) {
+    } else if (canDeleteLastBetween) {
       return betweenPoints.slice(0, -1);
     }
   }
@@ -712,6 +720,10 @@ export function scalePoint(pinPoint, point, factor) {
     pinPoint,
     vector.mulVectorScalar(vector.subVectors(point, pinPoint), factor)
   );
+}
+
+function pointsEqual(point1, point2) {
+  return point1.x === point2.x && point1.y === point2.y;
 }
 
 export function getSelectionByContour(path, pointIndices) {
