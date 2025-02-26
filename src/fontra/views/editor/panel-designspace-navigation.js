@@ -879,10 +879,20 @@ export default class DesignspaceNavigationPanel extends Panel {
       const item = new ObservableController({
         fullName: layer.fullName,
         shortName: layer.shortName || "foreground",
-        visible: false,
+        visible: !!this.sceneSettings.backgroundLayers[layer.fullName],
         isMainLayer: !layer.shortName,
       });
       item.addKeyListener("visible", (event) => console.log(event.newValue));
+      item.addKeyListener("visible", async (event) => {
+        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
+        if (event.newValue) {
+          newBackgroundLayers[layer.fullName] =
+            varGlyphController.getSparseLocationStringForSource(source);
+        } else {
+          delete newBackgroundLayers[layer.fullName];
+        }
+        this.sceneSettings.backgroundLayers = newBackgroundLayers;
+      });
       return item.model;
     });
 
