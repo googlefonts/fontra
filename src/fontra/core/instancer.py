@@ -961,6 +961,8 @@ def prependTransformToDecomposed(
     `decomposed` transform are not lost.
     """
 
+    # Ported from prependTransformToDecomposed() in transform.js
+
     [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY]
 
     newTransform = (
