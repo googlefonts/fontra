@@ -515,6 +515,32 @@ class GlyphInstance:
             transform = parentTransform.transform(transform)
         return await instance.getDecomposedPath(transform)
 
+    async def shallowDecomposeComponent(self, component: Component) -> StaticGlyph:
+        try:
+            instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        except GlyphNotFoundError:
+            self.fontInstancer.glyphError(
+                f"glyph {self.glyphName} references non-existing glyph: {component.name}"
+            )
+            return StaticGlyph()
+
+        instance = instancer.instantiate(self.parentLocation | component.location)
+        transform = component.transformation.toTransform()
+        path = instance.glyph.path.transformed(transform)
+        components = [
+            transformComponent(compo, transform) for compo in instance.glyph.components
+        ]
+        return StaticGlyph(path=path, components=components)
+
+
+def transformComponent(component: Component, transform: Transform) -> Component:
+    return replace(
+        component,
+        transformation=prependTransformToDecomposed(
+            transform, component.transformation
+        ),
+    )
+
 
 @dataclass(kw_only=True)
 class FontSourcesInstancer:
