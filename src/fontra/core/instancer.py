@@ -920,3 +920,32 @@ def mapValueFromUserToSource(value, axis):
     if not axis.mapping:
         return value
     return piecewiseLinearMap(value, dict(axis.mapping))
+
+
+def prependTransformToDecomposed(
+    prependTransform: Transform, decomposed: DecomposedTransform
+) -> DecomposedTransform:
+    #
+    # Prepend `prependTransform` to `decomposed`
+    #
+    # `prependTransform` is a `Transform` instance
+    # `decomposed` is a decomposed transform
+    # The return value is a decomposed transform
+    #
+    # This operation ensures the `tCenterX` and `tCenterY` properties of the
+    # `decomposed` transform are not lost.
+    #
+    [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY]
+
+    newTransform = (
+        Transform()
+        .translate(-tCenterX, -tCenterY)
+        .transform(prependTransform)
+        .transform(decomposed.toTransform())
+        .translate(tCenterX, tCenterY)
+    )
+
+    newDecomposed = newTransform.toDecomposed()
+    newDecomposed.tCenterX = tCenterX
+    newDecomposed.tCenterY = tCenterY
+    return newDecomposed
