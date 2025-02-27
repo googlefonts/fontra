@@ -143,7 +143,20 @@ export class SourcesPanel extends BaseInfoPanel {
     sourceNameBoxes[index].selected = true;
   }
 
-  deleteSource() {
+  async deleteSource() {
+    const dialog = await dialogSetup(
+      "Are you sure you want to delete the selected font source?", // TODO: translation
+      "Deleting a font source may result in kerning being lost or glyphs to become invalid.", // TODO: translation
+      [
+        { title: translate("dialog.cancel"), isCancelButton: true },
+        { title: translate("dialog.delete"), isDefaultButton: true, result: "ok" },
+      ]
+    );
+
+    if (!(await dialog.run())) {
+      return;
+    }
+
     const undoLabel = translate(
       "sources.undo.delete",
       this.fontController.sources[selectedSourceIdentifier].name
