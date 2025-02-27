@@ -363,6 +363,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ["backgroundLayers", "editingLayers"],
       (event) => {
         this._updateSourceItems();
+        this._updateSourceLayersItems();
       }
     );
 
@@ -857,6 +858,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
   }
 
+  _updateSourceLayersItems() {
+    const backgroundLayers = this.sceneSettings.backgroundLayers;
+    for (const item of this.sourceLayersList.items) {
+      item.visible = backgroundLayers[item.fullName] === item.locationString;
+    }
+  }
+
   async _updateSourceLayersList() {
     const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
     const haveLayers =
@@ -872,6 +880,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       await this.sceneModel.getSelectedVariableGlyphController();
 
     const source = varGlyphController.glyph.sources[sourceIndex];
+    const locationString = varGlyphController.getSparseLocationStringForSource(source);
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
 
@@ -881,13 +890,13 @@ export default class DesignspaceNavigationPanel extends Panel {
         shortName: layer.shortName || "foreground",
         visible: !!this.sceneSettings.backgroundLayers[layer.fullName],
         isMainLayer: !layer.shortName,
+        locationString: locationString,
       });
       item.addKeyListener("visible", (event) => console.log(event.newValue));
       item.addKeyListener("visible", async (event) => {
         const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
         if (event.newValue) {
-          newBackgroundLayers[layer.fullName] =
-            varGlyphController.getSparseLocationStringForSource(source);
+          newBackgroundLayers[layer.fullName] = locationString;
         } else {
           delete newBackgroundLayers[layer.fullName];
         }
