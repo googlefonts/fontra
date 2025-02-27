@@ -389,7 +389,6 @@ export class MenuPanel extends SimpleElement {
 
 customElements.define("menu-panel", MenuPanel);
 
-window.addEventListener("mousedown", (event) => MenuPanel.closeAllMenus(event));
 window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
 
 function getMenuContainer() {
