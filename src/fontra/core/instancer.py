@@ -951,16 +951,16 @@ def mapValueFromUserToSource(value, axis):
 def prependTransformToDecomposed(
     prependTransform: Transform, decomposed: DecomposedTransform
 ) -> DecomposedTransform:
-    #
-    # Prepend `prependTransform` to `decomposed`
-    #
-    # `prependTransform` is a `Transform` instance
-    # `decomposed` is a decomposed transform
-    # The return value is a decomposed transform
-    #
-    # This operation ensures the `tCenterX` and `tCenterY` properties of the
-    # `decomposed` transform are not lost.
-    #
+    """Prepend `prependTransform` to `decomposed`
+
+    `prependTransform` is a `Transform` instance
+    `decomposed` is a `DecomposedTransform` instance
+    The return value is a `DecomposedTransform` instance
+
+    This operation ensures the `tCenterX` and `tCenterY` properties of the
+    `decomposed` transform are not lost.
+    """
+
     [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY]
 
     newTransform = (
