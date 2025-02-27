@@ -2173,10 +2173,19 @@ def updateFontInfoFromFontSource(reader, fontSource):
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
+    # set custom data
     for key, value in fontSource.customData.items():
         if key.startswith(ufoInfoPrefix):
             infoAttr = key[len(ufoInfoPrefix) :]
             setattr(fontInfo, infoAttr, value)
+
+    # delete custom data
+    for infoAttr in ufoInfoAttributesToRoundTrip:
+        customDataKey = f"{ufoInfoPrefix}{infoAttr}"
+        if customDataKey not in fontSource.customData.keys():
+            value = getattr(fontInfo, infoAttr, None)
+            if value is not None:
+                delattr(fontInfo, infoAttr)
 
     reader.writeInfo(fontInfo)
 

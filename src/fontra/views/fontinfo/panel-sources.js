@@ -1,10 +1,12 @@
 import { doPerformAction, getActionIdentifierFromKeyEvent } from "../core/actions.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { customDataNameMapping } from "../core/font-info-data.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { translate } from "../core/localization.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
+  DefaultFormatter,
   NumberFormatter,
   OptionalNumberFormatter,
   checkboxListCell,
@@ -15,7 +17,7 @@ import {
 } from "../core/ui-utils.js";
 import { arrowKeyDeltas, enumerate, modulo, range, round } from "../core/utils.js";
 import { UIList } from "../web-components/ui-list.js";
-import { updateRemoveButton } from "./panel-axes.js";
+import { arraysEqual, updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 import {
   locationToString,
@@ -26,6 +28,7 @@ import "/web-components/add-remove-buttons.js";
 import "/web-components/designspace-location.js";
 import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
+const ufoInfoPrefix = "ufo.info.";
 let selectedSourceIdentifier = undefined;
 
 addStyleSheet(`
@@ -526,7 +529,7 @@ addStyleSheet(`
   padding-bottom: 1em;
 }
 
-.fontra-ui-font-info-sources-panel-guideline-list {
+.fontra-ui-font-info-sources-panel-list-element {
   min-width: max-content;
   max-width: 29.5em; // 4.5 + 25
   max-height: 12em;
@@ -565,8 +568,7 @@ class SourceBox extends HTMLElement {
         source.lineMetricsHorizontalLayout
       ),
       guidelines: { ...source.guidelines },
-      // TODO: hhea, OS/2 line metrics, etc
-      // customData: { ...source.customData },
+      customData: { ...source.customData },
     };
   }
 
@@ -689,6 +691,37 @@ class SourceBox extends HTMLElement {
       }, `edit guidelines`); // TODO: translation
     });
 
+    this.controllers.customData.addListener((event) => {
+      this.editSource((source) => {
+        source.customData = {};
+        for (const item of event.newValue) {
+          const key = item["key"];
+          if (key === "attributeName") {
+            // Skip this, so people can edit this placeholder.
+            continue;
+          }
+          if (!customDataNameMapping[key]) {
+            message(
+              translate("sources.dialog.cannot-edit-source.title"),
+              `CustomData "${key}" not implemented, yet.`
+            );
+            continue;
+          }
+          const formatter = customDataNameMapping[key]?.formatter || DefaultFormatter;
+          const result = formatter.fromString(item["value"]);
+          if (result.value == undefined) {
+            const msg = result.error ? ` (${result.error})` : "";
+            message(
+              translate("sources.dialog.cannot-edit-source.title"),
+              `"${key}" invalid value: ${item["value"]}${msg}`
+            );
+          } else {
+            source.customData[`${ufoInfoPrefix}${key}`] = result.value;
+          }
+        }
+      }, `edit customData`); // TODO: translation
+    });
+
     this.innerHTML = "";
     this.append(
       html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
@@ -718,6 +751,12 @@ class SourceBox extends HTMLElement {
           getLabelFromKey("guidelines"),
         ]),
         buildFontGuidelineList(this.controllers.guidelines)
+      );
+      this.append(
+        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
+          getLabelFromKey("customData"),
+        ]),
+        buildFontCustomDataList(this.controllers.customData, this.source)
       );
     }
   }
@@ -799,7 +838,7 @@ function buildFontGuidelineList(controller) {
   const items = Object.values(model)?.map(makeItem) || [];
 
   const labelList = new UIList();
-  labelList.classList.add("fontra-ui-font-info-sources-panel-guideline-list");
+  labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
   labelList.style = `min-width: 12em;`;
   labelList.columnDescriptions = [
     {
@@ -885,6 +924,136 @@ function buildFontGuidelineList(controller) {
       });
       labelList.setItems(newItems);
       labelList.editCell(newItems.length - 1, "name");
+    },
+    removeButtonCallback: deleteSelectedItem,
+    disableRemoveButton: true,
+  });
+
+  updateRemoveButton(labelList, addRemoveButton);
+
+  return html.div({ style: "display: grid; grid-gap: 0.3em; padding-bottom: 2em;" }, [
+    labelList,
+    addRemoveButton,
+  ]);
+}
+
+function buildFontCustomDataList(controller, fontSource) {
+  const customDataNames = Object.keys(customDataNameMapping);
+  const model = controller.model;
+
+  const makeItem = ([key, value]) => {
+    const keyDisplayed = key.startsWith(ufoInfoPrefix)
+      ? key.slice(ufoInfoPrefix.length)
+      : key;
+    const item = new ObservableController({ key: keyDisplayed, value: value });
+    item.addListener((event) => {
+      const sortedItems = [...labelList.items];
+      sortedItems.sort(
+        (a, b) =>
+          (customDataNames.indexOf(a.key) != -1
+            ? customDataNames.indexOf(a.key)
+            : customDataNames.length) -
+          (customDataNames.indexOf(b.key) != -1
+            ? customDataNames.indexOf(b.key)
+            : customDataNames.length)
+      );
+
+      if (!arraysEqual(labelList.items, sortedItems)) {
+        labelList.setItems(sortedItems);
+      }
+
+      const newCustomData = sortedItems.map((customData) => {
+        return { ...customData };
+      });
+      model.customData = newCustomData;
+    });
+    return item.model;
+  };
+
+  const sortedItems = Object.entries(model);
+  sortedItems.sort(
+    (a, b) =>
+      (customDataNames.indexOf(a[0].slice(ufoInfoPrefix.length)) != -1
+        ? customDataNames.indexOf(a[0].slice(ufoInfoPrefix.length))
+        : customDataNames.length) -
+      (customDataNames.indexOf(b[0].slice(ufoInfoPrefix.length)) != -1
+        ? customDataNames.indexOf(b[0].slice(ufoInfoPrefix.length))
+        : customDataNames.length)
+  );
+  const items = sortedItems?.map(makeItem) || [];
+
+  const labelList = new UIList();
+  labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
+  labelList.style = `min-width: 12em;`;
+  labelList.columnDescriptions = [
+    {
+      key: "key",
+      title: "Key", // TODO: translation
+      width: "14em",
+      editable: true,
+      continuous: false,
+    },
+    {
+      key: "value",
+      title: "Value", // TODO: translation
+      width: "10em",
+      editable: true,
+      continuous: false,
+    },
+  ];
+  labelList.showHeader = true;
+  labelList.minHeight = "5em";
+  labelList.setItems(items);
+
+  const deleteSelectedItem = () => {
+    const index = labelList.getSelectedItemIndex();
+    if (index === undefined) {
+      return;
+    }
+    const items = [...labelList.items];
+    items.splice(index, 1);
+    labelList.setItems(items);
+    const newCustomData = items.map((customData) => {
+      return { ...customData };
+    });
+    model.customData = newCustomData;
+    addRemoveButton.scrollIntoView({
+      behavior: "auto",
+      block: "nearest",
+      inline: "nearest",
+    });
+    labelList.setSelectedItemIndex(items.length - 1);
+  };
+
+  labelList.addEventListener("deleteKey", deleteSelectedItem);
+  const addRemoveButton = html.createDomElement("add-remove-buttons", {
+    addButtonCallback: () => {
+      // TODO: Maybe open a dialog with a list of possible keys?
+      const currentKeys = labelList.items.map((customData) => {
+        return customData.key;
+      });
+      let nextKey = "attributeName";
+      for (const key of Object.keys(customDataNameMapping)) {
+        if (!currentKeys.includes(key)) {
+          nextKey = key;
+          break;
+        }
+      }
+      const valueDefault = customDataNameMapping[nextKey]
+        ? customDataNameMapping[nextKey].default(fontSource)
+        : "";
+      const newItem = makeItem([nextKey, valueDefault]);
+      const newItems = [...labelList.items, newItem];
+      model.customData = newItems.map((label) => {
+        return { ...label };
+      });
+      labelList.setItems(newItems);
+      labelList.editCell(newItems.length - 1, "key");
+      addRemoveButton.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
     },
     removeButtonCallback: deleteSelectedItem,
     disableRemoveButton: true,
@@ -981,6 +1150,7 @@ function getLabelFromKey(key) {
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
     guidelines: translate("sidebar.user-settings.guidelines"),
+    customData: translate("Custom Data"), // TODO: translation
   };
   return keyLabelMap[key] || key;
 }
