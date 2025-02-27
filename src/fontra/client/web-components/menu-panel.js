@@ -288,10 +288,20 @@ export class MenuPanel extends SimpleElement {
     }
   }
 
+  dispatchKeyDown(key) {
+    window.dispatchEvent(
+      new CustomEvent("menu-panel:key-down", {
+        bubbles: false,
+        detail: { key },
+      })
+    );
+  }
+
   handleKeyDown(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
     this.searchMenuItems(event.key);
+    this.dispatchKeyDown(event.key);
     switch (event.key) {
       case "Escape":
         this.dismiss();
@@ -345,7 +355,6 @@ export class MenuPanel extends SimpleElement {
   }
 
   findSelectedItem() {
-    let selectedItem;
     for (const item of this.menuElement.children) {
       if (item.classList.contains("selected")) {
         return item;

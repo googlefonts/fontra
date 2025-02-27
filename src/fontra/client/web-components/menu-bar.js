@@ -46,13 +46,13 @@ export class MenuBar extends SimpleElement {
     this.render();
     window.addEventListener("blur", this.closeMenu.bind(this));
     window.addEventListener("click", this.onClick.bind(this));
+    window.addEventListener("menu-panel:key-down", this.handleKeyDown.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseOver.bind(this));
     this.contentElement.addEventListener(
       "mouseleave",
       this.unhoverMenuItems.bind(this)
     );
     this.contentElement.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.contentElement.addEventListener("keydown", this.handleKeyDown.bind(this));
     this.showMenuWhenHover = false;
   }
 
@@ -157,11 +157,11 @@ export class MenuBar extends SimpleElement {
   }
 
   handleKeyDown(event) {
-    event.stopImmediatePropagation();
-    switch (event.key) {
+    const { key } = event.detail;
+    switch (key) {
       case "ArrowLeft":
       case "ArrowRight":
-        this.navigateMenuBar(event.key);
+        this.navigateMenuBar(key);
         break;
     }
   }
