@@ -892,7 +892,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         isMainLayer: !layer.shortName,
         locationString: locationString,
       });
-      item.addKeyListener("visible", (event) => console.log(event.newValue));
       item.addKeyListener("visible", async (event) => {
         const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
         if (event.newValue) {
