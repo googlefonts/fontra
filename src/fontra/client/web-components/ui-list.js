@@ -387,7 +387,7 @@ export class UIList extends UnlitElement {
     };
 
     return (event) => {
-      cell.contentEditable = true;
+      cell.contentEditable = "plaintext-only";
       cell.classList.add("editing");
       const range = document.createRange();
       range.selectNodeContents(cell);
