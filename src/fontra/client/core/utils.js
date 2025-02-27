@@ -311,10 +311,7 @@ export async function fetchJSON(url, options) {
 export function isActiveElementTypeable() {
   const element = findNestedActiveElement(document.activeElement);
 
-  if (
-    element.contentEditable === "plaintext-only" ||
-    element.contentEditable === "true"
-  ) {
+  if (element.isContentEditable) {
     return true;
   }
   if (element.tagName.toLowerCase() === "textarea") {
