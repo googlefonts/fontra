@@ -20,6 +20,9 @@ export default class Panel extends SimpleElement {
     .panel-section--noscroll {
       overflow: hidden;
     }
+    .panel-section--full-height {
+      height: 100%;
+    }
   `;
 
   constructor(editorController) {

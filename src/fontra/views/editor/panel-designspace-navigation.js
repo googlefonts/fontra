@@ -1,16 +1,16 @@
 import { registerAction } from "/core/actions.js";
-import { getAxisBaseName } from "/core/glyph-controller.js";
+import { BACKGROUND_LAYER_SEPARATOR, getAxisBaseName } from "/core/glyph-controller.js";
 import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
 import { translate } from "/core/localization.js";
-import { controllerKey, ObservableController } from "/core/observable-object.js";
+import { ObservableController, controllerKey } from "/core/observable-object.js";
 import { labeledPopupSelect, labeledTextInput } from "/core/ui-utils.js";
 import {
+  FocusKeeper,
   boolInt,
   enumerate,
   escapeHTMLCharacters,
   filterObject,
-  FocusKeeper,
   modulo,
   objectsEqual,
   range,
@@ -19,7 +19,7 @@ import {
   scheduleCalls,
   throttleCalls,
 } from "/core/utils.js";
-import { GlyphSource, Layer } from "/core/var-glyph.js";
+import { GlyphSource, Layer, StaticGlyph } from "/core/var-glyph.js";
 import {
   isLocationAtDefault,
   locationToString,
@@ -39,6 +39,18 @@ import { NumberFormatter } from "/core/ui-utils.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
+
+const LIST_HEADER_ANIMATION_STYLE = `
+.clickable-icon-header {
+  transition: 150ms;
+}
+.clickable-icon-header:hover {
+  transform: scale(1.1);
+}
+.clickable-icon-header:active {
+  transform: scale(1.2);
+}
+`;
 
 export default class DesignspaceNavigationPanel extends Panel {
   identifier = "designspace-navigation";
@@ -193,7 +205,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       {
         id: "glyph-layers-accordion-item",
-        label: "Source layers", // XXXX TODO add translate strings
+        label: translate("sidebar.designspace-navigation.glyph-source-layers"),
         open: true,
         content: html.div(
           {
@@ -203,7 +215,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             html.createDomElement("ui-list", { id: "layers-list" }),
             html.createDomElement("add-remove-buttons", {
               style: "padding: 0.5em 0 0 0;",
-              id: "glyph-layers-add-remove-buttons",
+              id: "source-layers-add-remove-buttons",
             }),
           ]
         ),
@@ -211,9 +223,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     ];
 
     return html.div({ class: "panel" }, [
-      html.div({ class: "panel-section panel-section--flex panel-section--noscroll" }, [
-        this.accordion,
-      ]),
+      html.div({ class: "panel-section panel-section--full-height" }, [this.accordion]),
     ]);
   }
 
@@ -352,6 +362,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       ["backgroundLayers", "editingLayers"],
       (event) => {
         this._updateSourceItems();
+        this._updateSourceLayersItems();
       }
     );
 
@@ -371,26 +382,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     const columnDescriptions = this._setupSourceListColumnDescriptions();
 
     this.sourcesList = this.accordion.querySelector("#sources-list");
-    this.sourcesList.appendStyle(`
-      .clickable-icon-header {
-        transition: 150ms;
-      }
-      .clickable-icon-header:hover {
-        transform: scale(1.1);
-      }
-      .clickable-icon-header:active {
-        transform: scale(1.2);
-      }
-    `);
+    this.sourcesList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
     this.addRemoveSourceButtons = this.accordion.querySelector(
       "#sources-list-add-remove-buttons"
     );
-
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
     this.addRemoveSourceButtons.removeButtonCallback = () => this.removeSource();
+
+    this.addRemoveSourceLayerButtons = this.accordion.querySelector(
+      "#source-layers-add-remove-buttons"
+    );
+    this.addRemoveSourceLayerButtons.addButtonCallback = () => this.addSourceLayer();
+    this.addRemoveSourceLayerButtons.removeButtonCallback = () =>
+      this.removeSourceLayer();
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
@@ -419,7 +426,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourceLayersList = this.accordion.querySelector("#layers-list");
-    this.sourceLayersList.columnDescriptions = [{ key: "shortName" }];
+    this.sourceLayersList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
+    this.sourceLayersList.showHeader = true;
+    this.sourceLayersList.columnDescriptions = [
+      { title: "layer name", key: "shortName", width: "14em" },
+      {
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
+          console.log(event)
+        ),
+        key: "visible",
+        cellFactory: makeIconCellFactory([
+          "/tabler-icons/eye-closed.svg",
+          "/tabler-icons/eye.svg",
+        ]),
+        width: "1.2em",
+      },
+    ];
     this.sourceLayersList.addEventListener("listSelectionChanged", (event) => {
       const sourceItem = this.sourcesList.getSelectedItem();
       const layerItem = this.sourceLayersList.getSelectedItem();
@@ -835,8 +857,15 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
   }
 
+  _updateSourceLayersItems() {
+    const backgroundLayers = this.sceneSettings.backgroundLayers;
+    for (const item of this.sourceLayersList.items) {
+      item.visible = backgroundLayers[item.fullName] === item.locationString;
+    }
+  }
+
   async _updateSourceLayersList() {
-    // TODO: the background layers feature is not yet functional, disable for now
+    // TODO: the background layers feature is not yet fully functional, disable for now
     this.glyphLayersAccordionItem.hidden = true;
     return;
 
@@ -854,15 +883,41 @@ export default class DesignspaceNavigationPanel extends Panel {
       await this.sceneModel.getSelectedVariableGlyphController();
 
     const source = varGlyphController.glyph.sources[sourceIndex];
+    const locationString = varGlyphController.getSparseLocationStringForSource(source);
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
 
-    this.sourceLayersList.setItems(
-      layerNames.map((layer) => ({
+    const sourceLayerItems = layerNames.map((layer) => {
+      const item = new ObservableController({
         fullName: layer.fullName,
         shortName: layer.shortName || "foreground",
-      }))
-    );
+        visible: !!this.sceneSettings.backgroundLayers[layer.fullName],
+        isMainLayer: !layer.shortName,
+        locationString: locationString,
+      });
+      item.addKeyListener("visible", async (event) => {
+        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
+        if (event.newValue) {
+          newBackgroundLayers[layer.fullName] = locationString;
+        } else {
+          delete newBackgroundLayers[layer.fullName];
+        }
+        this.sceneSettings.backgroundLayers = newBackgroundLayers;
+      });
+      return item.model;
+    });
+
+    sourceLayerItems.sort((a, b) => {
+      let av = !a.isMainLayer;
+      let bv = !b.isMainLayer;
+      if (av == bv) {
+        av = a.shortName;
+        bv = b.shortName;
+      }
+      return (av > bv) - (av < bv);
+    });
+
+    this.sourceLayersList.setItems(sourceLayerItems);
 
     // TODO: keep track of the bg layer short name so we can switch sources/glyphs
     // while staying in the "same" bg layer
@@ -872,8 +927,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     if (itemMatch) {
       this.sourceLayersList.setSelectedItem(itemMatch);
     } else {
-      this.sourceLayersList.setSelectedItemIndex(0);
+      this.selectMainSourceLayer();
     }
+  }
+
+  selectMainSourceLayer() {
+    this.sourceLayersList.setSelectedItem(
+      this.sourceLayersList.items.find((item) => item.isMainLayer)
+    );
   }
 
   doSelectPreviousNextSourceLayer(selectPrevious) {
@@ -1380,6 +1441,86 @@ export default class DesignspaceNavigationPanel extends Panel {
       ]
     );
     return { contentElement, warningElement };
+  }
+
+  async addSourceLayer() {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const glyph = glyphController.glyph;
+
+    const selectedSourceItem = this.sourcesList.getSelectedItem();
+    if (!selectedSourceItem) {
+      return;
+    }
+
+    const dialog = await dialogSetup("Add layer for source", null, [
+      { title: translate("dialog.cancel"), isCancelButton: true },
+      { title: translate("dialog.okay"), isDefaultButton: true, result: "ok" },
+    ]);
+
+    const nameController = new ObservableController({});
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: max-content auto;
+          align-items: center;
+        `,
+      },
+      labeledTextInput("name", nameController, "sourceLayerName", {
+        id: "source-layer-name-text-input",
+      })
+    );
+    dialog.setContent(contentElement);
+
+    setTimeout(
+      () => contentElement.querySelector("#source-layer-name-text-input")?.focus(),
+      0
+    );
+
+    const result = await dialog.run();
+    if (!result) {
+      return;
+    }
+
+    const newLayerName = `${selectedSourceItem.layerName}${BACKGROUND_LAYER_SEPARATOR}${nameController.model.sourceLayerName}`;
+    if (glyph.layers[newLayerName]) {
+      console.log("layer already exists");
+      return;
+    }
+
+    const newLayer = Layer.fromObject({
+      glyph: StaticGlyph.fromObject({
+        xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
+      }),
+    });
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.layers[newLayerName] = newLayer;
+      return "add source layer";
+    });
+
+    this.sceneSettings.editLayerName = newLayerName;
+    this.sceneSettings.editingLayers = {
+      [newLayerName]: selectedSourceItem.locationString,
+    };
+  }
+
+  async removeSourceLayer() {
+    const selectedLayerItem = this.sourceLayersList.getSelectedItem();
+    if (!selectedLayerItem || selectedLayerItem.isMainLayer) {
+      return;
+    }
+
+    const layerName = selectedLayerItem.fullName;
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      delete glyph.layers[layerName];
+      return "remove source layer";
+    });
+
+    this.selectMainSourceLayer();
   }
 
   async editGlyphAxes() {

@@ -210,10 +210,7 @@ function validateShortCutDefinition(key, definition) {
     for (const otherDefinition of getShortCuts(otherKey)) {
       if (isShortCutDefinitionEqual(otherDefinition, definition)) {
         warnings.push(
-          `⚠️ ${translate(
-            "application-settings.shortcuts.warning.exists",
-            getActionTitle(otherKey)
-          )}`
+          `⚠️ ${translate("shortcuts.warning.exists", getActionTitle(otherKey))}`
         );
         break;
       }
@@ -429,9 +426,7 @@ class ShortCutElement extends HTMLElement {
         "onkeydown": (event) => this.recordShortCut(id, event),
         "onkeyup": (event) => this.recordShortCutKeyUp(id, event),
         "onblur": (event) => this.handleOnBlur(id),
-        "data-tooltip": translate(
-          "application-settings.shortcuts.tooltip.click-and-record"
-        ),
+        "data-tooltip": translate("shortcuts.tooltip.click-and-record"),
         "data-tooltipposition": "top",
       })
     );
@@ -445,9 +440,7 @@ class ShortCutElement extends HTMLElement {
         "class": "fontra-ui-shortcuts-panel-icon",
         "src": "/tabler-icons/refresh.svg",
         "onclick": (event) => this.resetShortCut(id),
-        "data-tooltip": translate(
-          "application-settings.shortcuts.tooltip.reset-to-default"
-        ),
+        "data-tooltip": translate("shortcuts.tooltip.reset-to-default"),
         "data-tooltipposition": "top",
       })
     );
