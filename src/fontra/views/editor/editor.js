@@ -1392,8 +1392,9 @@ export class EditorController extends ViewController {
         { actionIdentifier: "action.select-next-glyph" },
         { actionIdentifier: "action.select-previous-source" },
         { actionIdentifier: "action.select-next-source" },
-        { actionIdentifier: "action.select-previous-source-layer" },
-        { actionIdentifier: "action.select-next-source-layer" },
+        // TODO: enable once bg layers are fully working:
+        // { actionIdentifier: "action.select-previous-source-layer" },
+        // { actionIdentifier: "action.select-next-source-layer" },
       ],
     });
 
