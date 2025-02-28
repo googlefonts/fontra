@@ -1,4 +1,4 @@
-import { Bezier } from "../third-party/bezier-js.js";
+import { Bezier } from "bezier-js";
 import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";

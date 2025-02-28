@@ -1,11 +1,7 @@
 import { expect } from "chai";
 
-import VarArray from "../src/fontra/client/core/var-array.js";
-import {
-  addItemwise,
-  mulScalar,
-  subItemwise,
-} from "../src/fontra/client/core/var-funcs.js";
+import VarArray from "@fontra/core/var-array.js";
+import { addItemwise, mulScalar, subItemwise } from "@fontra/core/var-funcs.js";
 
 describe("var-funcs tests", () => {
   describe("testing addition", () => {

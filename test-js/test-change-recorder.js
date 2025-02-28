@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import fs from "fs";
 
-import { recordChanges } from "../src/fontra/client/core/change-recorder.js";
-import { applyChange } from "../src/fontra/client/core/changes.js";
-import { enumerate } from "../src/fontra/client/core/utils.js";
-import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import { applyChange } from "@fontra/core/changes.js";
+import { enumerate } from "@fontra/core/utils.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
 
 const testData = [
   {

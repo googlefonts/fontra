@@ -1,10 +1,10 @@
-import { recordChanges } from "../core/change-recorder.js";
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { enumerate, hexToRgba, range, rgbaToHex } from "../core/utils.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { enumerate, hexToRgba, range, rgbaToHex } from "@fontra/core/utils.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { translate } from "/core/localization.js";
-import { message } from "/web-components/modal-dialog.js";
 
 const defaultStatusFieldDefinitions = {
   "fontra.sourceStatusFieldDefinitions": [

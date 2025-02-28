@@ -1,5 +1,5 @@
+import { CrossAxisMapping } from "@fontra/core/cross-axis-mapping.js";
 import { expect } from "chai";
-import { CrossAxisMapping } from "../src/fontra/client/core/cross-axis-mapping.js";
 import { parametrize } from "./test-support.js";
 
 describe("CrossAxisMapping Tests", () => {

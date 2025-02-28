@@ -1,13 +1,13 @@
-import { registerActionCallbacks } from "../core/actions.js";
-import * as html from "../core/html-utils.js";
+import { registerActionCallbacks } from "@fontra/core/actions.js";
+import { makeFontraMenuBar } from "@fontra/core/fontra-menus.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { ViewController } from "@fontra/core/view-controller.js";
 import { AxesPanel } from "./panel-axes.js";
 import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
-import { makeFontraMenuBar } from "/core/fontra-menus.js";
-import { translate } from "/core/localization.js";
-import { ViewController } from "/core/view-controller.js";
 
 export class FontInfoController extends ViewController {
   static titlePattern(displayPath) {

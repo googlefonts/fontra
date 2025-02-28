@@ -21,7 +21,7 @@ import {
   sectRect,
   unionRect,
   updateRect,
-} from "../src/fontra/client/core/rectangle.js";
+} from "@fontra/core/rectangle.js";
 import { parametrize } from "./test-support.js";
 
 describe("pointInRect", () => {

@@ -1,4 +1,4 @@
-import * as html from "../core/html-utils.js";
+import * as html from "@fontra/core/html-utils.js";
 
 export class RotaryControl extends html.UnlitElement {
   static styles = `

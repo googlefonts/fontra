@@ -1,9 +1,12 @@
-import { doPerformAction, getActionIdentifierFromKeyEvent } from "../core/actions.js";
-import { recordChanges } from "../core/change-recorder.js";
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { translate } from "../core/localization.js";
-import { ObservableController } from "../core/observable-object.js";
+import {
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+} from "@fontra/core/actions.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
 import {
   NumberFormatter,
   OptionalNumberFormatter,
@@ -12,19 +15,19 @@ import {
   labeledCheckbox,
   labeledTextInput,
   textInput,
-} from "../core/ui-utils.js";
-import { arrowKeyDeltas, enumerate, modulo, range, round } from "../core/utils.js";
-import { UIList } from "../web-components/ui-list.js";
-import { updateRemoveButton } from "./panel-axes.js";
-import { BaseInfoPanel } from "./panel-base.js";
+} from "@fontra/core/ui-utils.js";
+import { arrowKeyDeltas, enumerate, modulo, range, round } from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
   mapAxesFromUserSpaceToSourceSpace,
-} from "/core/var-model.js";
-import "/web-components/add-remove-buttons.js";
-import "/web-components/designspace-location.js";
-import { dialogSetup, message } from "/web-components/modal-dialog.js";
+} from "@fontra/core/var-model.js";
+import "@fontra/web-components/add-remove-buttons.js";
+import "@fontra/web-components/designspace-location.js";
+import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { UIList } from "@fontra/web-components/ui-list.js";
+import { updateRemoveButton } from "./panel-axes.js";
+import { BaseInfoPanel } from "./panel-base.js";
 
 let selectedSourceIdentifier = undefined;
 

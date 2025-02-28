@@ -1,8 +1,8 @@
+import { assert, range } from "@fontra/core/utils.js";
 import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
-import { assert, range } from "/core/utils.js";
 
 const cjkDesignFrameGlyphName = "_cjkDesignFrame";
 

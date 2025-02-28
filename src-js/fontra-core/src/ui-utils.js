@@ -1,6 +1,6 @@
+import { PopupMenu } from "@fontra/web-components/popup-menu.js";
 import * as html from "./html-utils.js";
 import { uniqueID, zip } from "./utils.js";
-import { PopupMenu } from "/web-components/popup-menu.js";
 
 const containerClassName = "fontra-ui-sortable-list-container";
 const draggingClassName = "fontra-ui-sortable-list-dragging";

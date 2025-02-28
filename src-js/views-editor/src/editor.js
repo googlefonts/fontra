@@ -4,20 +4,22 @@ import {
   getActionIdentifierFromKeyEvent,
   registerAction,
   registerActionCallbacks,
-} from "../core/actions.js";
-import { Backend } from "../core/backend-api.js";
-import { CanvasController } from "../core/canvas-controller.js";
-import { recordChanges } from "../core/change-recorder.js";
-import { applyChange } from "../core/changes.js";
-import { FontController } from "../core/font-controller.js";
-import { staticGlyphToGLIF } from "../core/glyph-glif.js";
-import { pathToSVG } from "../core/glyph-svg.js";
-import { loaderSpinner } from "../core/loader-spinner.js";
-import { ObservableController } from "../core/observable-object.js";
+} from "@fontra/core/actions.js";
+import { Backend } from "@fontra/core/backend-api.js";
+import { CanvasController } from "@fontra/core/canvas-controller.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import { applyChange } from "@fontra/core/changes.js";
+import { FontController } from "@fontra/core/font-controller.js";
+import { makeFontraMenuBar } from "@fontra/core/fontra-menus.js";
+import { staticGlyphToGLIF } from "@fontra/core/glyph-glif.js";
+import { pathToSVG } from "@fontra/core/glyph-svg.js";
+import * as html from "@fontra/core/html-utils.js";
+import { loaderSpinner } from "@fontra/core/loader-spinner.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
 import {
   deleteSelectedPoints,
   filterPathByPointIndices,
-} from "../core/path-functions.js";
+} from "@fontra/core/path-functions.js";
 import {
   centeredRect,
   rectAddMargin,
@@ -27,10 +29,12 @@ import {
   rectScaleAroundCenter,
   rectSize,
   rectToArray,
-} from "../core/rectangle.js";
-import { SceneView } from "../core/scene-view.js";
-import { isSuperset } from "../core/set-ops.js";
-import { labeledCheckbox, labeledTextInput, pickFile } from "../core/ui-utils.js";
+} from "@fontra/core/rectangle.js";
+import { SceneView } from "@fontra/core/scene-view.js";
+import { isSuperset } from "@fontra/core/set-ops.js";
+import { themeController } from "@fontra/core/theme-settings.js";
+import { getDecomposedIdentity } from "@fontra/core/transform.js";
+import { labeledCheckbox, labeledTextInput, pickFile } from "@fontra/core/ui-utils.js";
 import {
   commandKeyProperty,
   enumerate,
@@ -50,11 +54,15 @@ import {
   scheduleCalls,
   writeObjectToURLFragment,
   writeToClipboard,
-} from "../core/utils.js";
-import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
-import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
-import { locationToString, makeSparseLocation } from "../core/var-model.js";
-import { VarPackedPath, joinPaths } from "../core/var-path.js";
+} from "@fontra/core/utils.js";
+import { addItemwise, mulScalar, subItemwise } from "@fontra/core/var-funcs.js";
+import { StaticGlyph, VariableGlyph, copyComponent } from "@fontra/core/var-glyph.js";
+import { locationToString, makeSparseLocation } from "@fontra/core/var-model.js";
+import { VarPackedPath, joinPaths } from "@fontra/core/var-path.js";
+import "@fontra/web-components/inline-svg.js";
+import { MenuItemDivider, showMenu } from "@fontra/web-components/menu-panel.js";
+import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { parsePluginBasePath } from "@fontra/web-components/plugin-manager.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { KnifeTool } from "./edit-tools-knife.js";
@@ -69,15 +77,14 @@ import {
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import { VisualizationLayers } from "./visualization-layers.js";
-import { makeFontraMenuBar } from "/core/fontra-menus.js";
-import * as html from "/core/html-utils.js";
-import { themeController } from "/core/theme-settings.js";
-import { getDecomposedIdentity } from "/core/transform.js";
-import "/web-components/inline-svg.js";
-import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
-import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
+import { applicationSettingsController } from "@fontra/core/application-settings.js";
+import {
+  ensureLanguageHasLoaded,
+  translate,
+  translatePlural,
+} from "@fontra/core/localization.js";
+import { ViewController } from "@fontra/core/view-controller.js";
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphNotePanel from "./panel-glyph-note.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -87,13 +94,6 @@ import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import TransformationPanel from "./panel-transformation.js";
 import Panel from "./panel.js";
-import { applicationSettingsController } from "/core/application-settings.js";
-import {
-  ensureLanguageHasLoaded,
-  translate,
-  translatePlural,
-} from "/core/localization.js";
-import { ViewController } from "/core/view-controller.js";
 
 const MIN_CANVAS_SPACE = 200;
 

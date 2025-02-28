@@ -1,5 +1,5 @@
+import { DiscreteVariationModel } from "@fontra/core/discrete-variation-model.js";
 import { expect } from "chai";
-import { DiscreteVariationModel } from "../src/fontra/client/core/discrete-variation-model.js";
 import { parametrize } from "./test-support.js";
 
 describe("DiscreteVariationModel tests", () => {

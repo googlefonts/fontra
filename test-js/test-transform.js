@@ -8,7 +8,7 @@ import {
   decomposedToTransform,
   getDecomposedIdentity,
   prependTransformToDecomposed,
-} from "../src/fontra/client/core/transform.js";
+} from "@fontra/core/transform.js";
 import { parametrize } from "./test-support.js";
 
 describe("transform tests", () => {

@@ -1,14 +1,14 @@
-import { themeColorCSS } from "./theme-support.js";
 import {
   canPerformAction,
   doPerformAction,
   getActionTitle,
   getShortCutRepresentationFromActionIdentifier,
-} from "/core/actions.js";
-import * as html from "/core/html-utils.js";
-import { SimpleElement } from "/core/html-utils.js";
-import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
-import { InlineSVG } from "/web-components/inline-svg.js";
+} from "@fontra/core/actions.js";
+import * as html from "@fontra/core/html-utils.js";
+import { SimpleElement } from "@fontra/core/html-utils.js";
+import { capitalizeFirstLetter, enumerate, reversed } from "@fontra/core/utils.js";
+import { InlineSVG } from "@fontra/web-components/inline-svg.js";
+import { themeColorCSS } from "./theme-support.js";
 
 export const MenuItemDivider = { title: "-" };
 

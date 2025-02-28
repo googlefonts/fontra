@@ -1,7 +1,7 @@
+import * as html from "@fontra/core/html-utils.js";
+import { UnlitElement } from "@fontra/core/html-utils.js";
+import { DefaultFormatter } from "@fontra/core/ui-utils.js";
 import { themeColorCSS } from "./theme-support.js";
-import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
-import { DefaultFormatter } from "/core/ui-utils.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 

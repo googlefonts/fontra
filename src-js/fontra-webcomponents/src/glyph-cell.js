@@ -1,11 +1,16 @@
+import { SVGPath2D } from "@fontra/core/glyph-svg.js";
+import * as html from "@fontra/core/html-utils.js";
+import { UnlitElement } from "@fontra/core/html-utils.js";
+import * as svg from "@fontra/core/svg-utils.js";
+import { Transform } from "@fontra/core/transform.js";
+import {
+  assert,
+  getCharFromCodePoint,
+  rgbaToCSS,
+  throttleCalls,
+} from "@fontra/core/utils.js";
 import { InlineSVG } from "./inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
-import { SVGPath2D } from "/core/glyph-svg.js";
-import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
-import * as svg from "/core/svg-utils.js";
-import { Transform } from "/core/transform.js";
-import { assert, getCharFromCodePoint, rgbaToCSS, throttleCalls } from "/core/utils.js";
 
 const colors = {
   "cell-background-color": ["#EEEEEE", "#585858"],

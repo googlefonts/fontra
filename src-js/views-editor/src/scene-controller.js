@@ -1,22 +1,33 @@
-import { registerAction } from "../core/actions.js";
-import { recordChanges } from "../core/change-recorder.js";
+import { registerAction } from "@fontra/core/actions.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
 import {
   ChangeCollector,
   applyChange,
   consolidateChanges,
   hasChange,
-} from "../core/changes.js";
-import { decomposeComponents } from "../core/glyph-controller.js";
-import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
-import { MouseTracker } from "../core/mouse-tracker.js";
-import { ObservableController } from "../core/observable-object.js";
+} from "@fontra/core/changes.js";
+import { decomposeComponents } from "@fontra/core/glyph-controller.js";
+import { glyphLinesFromText, textFromGlyphLines } from "@fontra/core/glyph-lines.js";
+import { translate, translatePlural } from "@fontra/core/localization.js";
+import { MouseTracker } from "@fontra/core/mouse-tracker.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
 import {
   connectContours,
   scalePoint,
   splitPathAtPointIndices,
-} from "../core/path-functions.js";
-import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
-import { difference, isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
+} from "@fontra/core/path-functions.js";
+import {
+  equalRect,
+  offsetRect,
+  rectAddMargin,
+  rectRound,
+} from "@fontra/core/rectangle.js";
+import {
+  difference,
+  isSuperset,
+  lenientIsEqualSet,
+  union,
+} from "@fontra/core/set-ops.js";
 import {
   arrowKeyDeltas,
   assert,
@@ -27,13 +38,12 @@ import {
   reversed,
   withTimeout,
   zip,
-} from "../core/utils.js";
-import { VarPackedPath, packContour } from "../core/var-path.js";
-import * as vector from "../core/vector.js";
+} from "@fontra/core/utils.js";
+import { VarPackedPath, packContour } from "@fontra/core/var-path.js";
+import * as vector from "@fontra/core/vector.js";
+import { dialog, message } from "@fontra/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
-import { translate, translatePlural } from "/core/localization.js";
-import { dialog, message } from "/web-components/modal-dialog.js";
 
 export class SceneController {
   constructor(

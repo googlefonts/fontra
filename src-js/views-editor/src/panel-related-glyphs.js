@@ -1,13 +1,16 @@
+import {
+  getCodePointFromGlyphName,
+  getSuggestedGlyphName,
+} from "@fontra/core/glyph-data.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { unicodeMadeOf, unicodeUsedBy } from "@fontra/core/unicode-utils.js";
 import Panel from "./panel.js";
-import { getCodePointFromGlyphName, getSuggestedGlyphName } from "/core/glyph-data.js";
-import * as html from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
-import { unicodeMadeOf, unicodeUsedBy } from "/core/unicode-utils.js";
 
-import { getCharFromCodePoint, throttleCalls } from "/core/utils.js";
-import { GlyphCellView } from "/web-components/glyph-cell-view.js";
-import { GlyphCell } from "/web-components/glyph-cell.js";
-import { showMenu } from "/web-components/menu-panel.js";
+import { getCharFromCodePoint, throttleCalls } from "@fontra/core/utils.js";
+import { GlyphCellView } from "@fontra/web-components/glyph-cell-view.js";
+import { GlyphCell } from "@fontra/web-components/glyph-cell.js";
+import { showMenu } from "@fontra/web-components/menu-panel.js";
 
 export default class RelatedGlyphPanel extends Panel {
   identifier = "related-glyphs";

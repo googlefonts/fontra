@@ -1,4 +1,4 @@
-import { strFromU8, strToU8, unzlibSync, zlibSync } from "../third-party/fflate.js";
+import { strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
 import { Transform } from "./transform.js";
 
 export function objectsEqual(obj1, obj2) {

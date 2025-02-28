@@ -1,6 +1,3 @@
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { BaseInfoPanel } from "./panel-base.js";
 import {
   getActionIdentifiers,
   getActionInfo,
@@ -11,11 +8,14 @@ import {
   getShortCuts,
   setCustomShortCuts,
   shortCutModifierMap,
-} from "/core/actions.js";
-import { translate } from "/core/localization.js";
-import { commandKeyProperty, isMac } from "/core/utils.js";
-import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
-import { dialog, message } from "/web-components/modal-dialog.js";
+} from "@fontra/core/actions.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { commandKeyProperty, isMac } from "@fontra/core/utils.js";
+import { IconButton } from "@fontra/web-components/icon-button.js"; // required for the icon buttons
+import { dialog, message } from "@fontra/web-components/modal-dialog.js";
+import { BaseInfoPanel } from "./panel-base.js";
 
 function getShortCutsGrouped() {
   const shortCutsGrouped = {};

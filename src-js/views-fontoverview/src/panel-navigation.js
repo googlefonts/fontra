@@ -1,23 +1,23 @@
-import { groupByKeys, groupByProperties } from "/core/glyph-organizer.js";
-import * as html from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
-import { ObservableController } from "/core/observable-object.js";
-import { glyphSetDataFormats } from "/core/parse-glyphset.js";
-import { difference, symmetricDifference, union } from "/core/set-ops.js";
+import { groupByKeys, groupByProperties } from "@fontra/core/glyph-organizer.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import { glyphSetDataFormats } from "@fontra/core/parse-glyphset.js";
+import { difference, symmetricDifference, union } from "@fontra/core/set-ops.js";
 import {
   labeledCheckbox,
   labeledPopupSelect,
   labeledTextInput,
   popupSelect,
-} from "/core/ui-utils.js";
-import { fetchJSON, scheduleCalls } from "/core/utils.js";
-import { DesignspaceLocation } from "/web-components/designspace-location.js";
-import { GlyphSearchField } from "/web-components/glyph-search-field.js";
-import { IconButton } from "/web-components/icon-button.js"; // required for the icon buttons
-import { showMenu } from "/web-components/menu-panel.js";
-import { dialogSetup, message } from "/web-components/modal-dialog.js";
-import { PopupMenu } from "/web-components/popup-menu.js";
-import { Accordion } from "/web-components/ui-accordion.js";
+} from "@fontra/core/ui-utils.js";
+import { fetchJSON, scheduleCalls } from "@fontra/core/utils.js";
+import { DesignspaceLocation } from "@fontra/web-components/designspace-location.js";
+import { GlyphSearchField } from "@fontra/web-components/glyph-search-field.js";
+import { IconButton } from "@fontra/web-components/icon-button.js"; // required for the icon buttons
+import { showMenu } from "@fontra/web-components/menu-panel.js";
+import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { PopupMenu } from "@fontra/web-components/popup-menu.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 
 export class FontOverviewNavigation extends HTMLElement {
   constructor(fontOverviewController) {

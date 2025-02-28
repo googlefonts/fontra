@@ -1,14 +1,14 @@
-import { expect } from "chai";
 import {
   chordLengthParameterize,
   computeMaxError,
   fitCubic,
   generateBezier,
   newtonRhapsonRootFind,
-} from "../src/fontra/client/core/fit-cubic.js";
+} from "@fontra/core/fit-cubic.js";
+import { expect } from "chai";
 
+import { normalizeVector } from "@fontra/core/vector.js";
 import { Bezier } from "bezier-js";
-import { normalizeVector } from "../src/fontra/client/core/vector.js";
 
 describe("chordLengthParameterize", () => {
   it("parameterize the given points", () => {

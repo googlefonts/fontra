@@ -1,6 +1,6 @@
+import * as html from "@fontra/core/html-utils.js";
+import { findNestedActiveElement } from "@fontra/core/utils.js";
 import Panel from "./panel.js";
-import * as html from "/core/html-utils.js";
-import { findNestedActiveElement } from "/core/utils.js";
 
 export default class TextEntryPanel extends Panel {
   identifier = "text-entry";

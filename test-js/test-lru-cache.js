@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { LRUCache } from "../src/fontra/client/core/lru-cache.js";
+import { LRUCache } from "@fontra/core/lru-cache.js";
 
 describe("LRUCache Tests", () => {
   it("empty", () => {

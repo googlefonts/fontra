@@ -1,6 +1,6 @@
-import "/core/theme-settings.js";
+import "@fontra/core/theme-settings.js";
 
-import { ApplicationSettingsController } from "/applicationsettings/applicationsettings.js";
+import { ApplicationSettingsController } from "@fontra/views-applicationsettings/applicationsettings.js";
 
 async function startApp() {
   window.applicationSettingsController = new ApplicationSettingsController();

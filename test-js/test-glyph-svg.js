@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { SVGPath2D } from "../src/fontra/client/core/glyph-svg.js";
+import { SVGPath2D } from "@fontra/core/glyph-svg.js";
 
 describe("SVGPath2D tests", () => {
   it("empty path", () => {

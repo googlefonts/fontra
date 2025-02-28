@@ -1,7 +1,7 @@
+import * as html from "@fontra/core/html-utils.js";
+import { UnlitElement } from "@fontra/core/html-utils.js";
+import { FocusKeeper } from "@fontra/core/utils.js";
 import { InlineSVG } from "./inline-svg.js";
-import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
-import { FocusKeeper } from "/core/utils.js";
 
 export class IconButton extends UnlitElement {
   static styles = `

@@ -1,4 +1,4 @@
-import { SimpleElement } from "/core/html-utils.js";
+import { SimpleElement } from "@fontra/core/html-utils.js";
 
 export default class Panel extends SimpleElement {
   panelStyles = `

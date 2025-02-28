@@ -1,9 +1,9 @@
+import { ensureLanguageHasLoaded } from "@fontra/core/localization.js";
+import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
 import { registerAction } from "./actions.js";
 import { Backend } from "./backend-api.js";
 import { FontController } from "./font-controller.js";
 import { getRemoteProxy } from "./remote.js";
-import { ensureLanguageHasLoaded } from "/core/localization.js";
-import { dialogSetup, message } from "/web-components/modal-dialog.js";
 
 export class ViewController {
   static titlePattern(displayName) {

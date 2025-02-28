@@ -1,5 +1,5 @@
+import { FontSourcesInstancer } from "@fontra/core/font-sources-instancer.js";
 import { expect } from "chai";
-import { FontSourcesInstancer } from "../src/fontra/client/core/font-sources-instancer.js";
 import { parametrize } from "./test-support.js";
 
 describe("FontSourcesInstancer Tests", () => {

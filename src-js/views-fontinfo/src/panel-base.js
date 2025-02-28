@@ -1,7 +1,7 @@
-import { UndoStack, reverseUndoRecord } from "../core/font-controller.js";
-import * as html from "../core/html-utils.js";
-import { commandKeyProperty } from "../core/utils.js";
-import { translate } from "/core/localization.js";
+import { UndoStack, reverseUndoRecord } from "@fontra/core/font-controller.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { commandKeyProperty } from "@fontra/core/utils.js";
 
 export class BaseInfoPanel {
   constructor(fontInfoController, panelElement) {

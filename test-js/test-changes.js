@@ -8,7 +8,7 @@ import {
   filterChangePattern,
   matchChangePath,
   matchChangePattern,
-} from "../src/fontra/client/core/changes.js";
+} from "@fontra/core/changes.js";
 import { getTestData } from "./test-support.js";
 
 describe("applyChange Tests", () => {

@@ -1,11 +1,15 @@
-import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
-import { translate } from "../core/localization.js";
-import { insertHandles, insertPoint, scalePoint } from "../core/path-functions.js";
-import { isEqualSet } from "../core/set-ops.js";
-import { modulo, parseSelection } from "../core/utils.js";
-import { VarPackedPath } from "../core/var-path.js";
-import * as vector from "../core/vector.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+} from "@fontra/core/changes.js";
+import { translate } from "@fontra/core/localization.js";
+import { insertHandles, insertPoint, scalePoint } from "@fontra/core/path-functions.js";
+import { isEqualSet } from "@fontra/core/set-ops.js";
+import { modulo, parseSelection } from "@fontra/core/utils.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
+import * as vector from "@fontra/core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 

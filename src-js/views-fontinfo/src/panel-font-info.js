@@ -1,9 +1,9 @@
-import { recordChanges } from "../core/change-recorder.js";
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { translate } from "/core/localization.js";
-import { Form } from "/web-components/ui-form.js";
 
 const fontInfoFields = [
   // [property name, localization key, type]

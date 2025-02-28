@@ -4,7 +4,7 @@ import { parametrize } from "./test-support.js";
 import {
   getCodePointFromGlyphName,
   getSuggestedGlyphName,
-} from "../src/fontra/client/core/glyph-data.js";
+} from "@fontra/core/glyph-data.js";
 
 describe("glyph-data Tests", () => {
   const getSuggestedGlyphName_testData = [

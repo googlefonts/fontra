@@ -1,13 +1,9 @@
 import { expect } from "chai";
 
-import { getClassSchema } from "../src/fontra/client/core/classes.js";
-import { enumerate, range } from "../src/fontra/client/core/utils.js";
-import {
-  Layer,
-  StaticGlyph,
-  VariableGlyph,
-} from "../src/fontra/client/core/var-glyph.js";
-import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { getClassSchema } from "@fontra/core/classes.js";
+import { enumerate, range } from "@fontra/core/utils.js";
+import { Layer, StaticGlyph, VariableGlyph } from "@fontra/core/var-glyph.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
 import { readRepoPathAsJSON } from "./test-support.js";
 
 const classesSchema = readRepoPathAsJSON("src/fontra/client/core/classes.json");

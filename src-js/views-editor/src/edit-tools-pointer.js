@@ -1,24 +1,35 @@
-import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
-import { connectContours, toggleSmooth } from "../core/path-functions.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+} from "@fontra/core/changes.js";
+import { translate } from "@fontra/core/localization.js";
+import { connectContours, toggleSmooth } from "@fontra/core/path-functions.js";
 import {
   centeredRect,
   normalizeRect,
   offsetRect,
   pointInRect,
   rectSize,
-} from "../core/rectangle.js";
-import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
-import { Transform } from "../core/transform.js";
+} from "@fontra/core/rectangle.js";
+import {
+  difference,
+  isSuperset,
+  symmetricDifference,
+  union,
+} from "@fontra/core/set-ops.js";
+import { Transform } from "@fontra/core/transform.js";
 import {
   boolInt,
   commandKeyProperty,
   enumerate,
   parseSelection,
   range,
-} from "../core/utils.js";
-import { VarPackedPath } from "../core/var-path.js";
-import * as vector from "../core/vector.js";
+} from "@fontra/core/utils.js";
+import { copyBackgroundImage, copyComponent } from "@fontra/core/var-glyph.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
+import * as vector from "@fontra/core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { getPinPoint } from "./panel-transformation.js";
@@ -28,8 +39,6 @@ import {
   strokeRoundNode,
   strokeSquareNode,
 } from "./visualization-layer-definitions.js";
-import { translate } from "/core/localization.js";
-import { copyBackgroundImage, copyComponent } from "/core/var-glyph.js";
 
 const transformHandleMargin = 6;
 const transformHandleSize = 8;

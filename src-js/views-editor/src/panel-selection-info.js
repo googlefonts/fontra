@@ -1,9 +1,8 @@
-import Panel from "./panel.js";
-import { recordChanges } from "/core/change-recorder.js";
-import * as html from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
-import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { getDecomposedIdentity } from "/core/transform.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { rectFromPoints, rectSize, unionRect } from "@fontra/core/rectangle.js";
+import { getDecomposedIdentity } from "@fontra/core/transform.js";
 import {
   assert,
   enumerate,
@@ -15,9 +14,10 @@ import {
   round,
   splitGlyphNameExtension,
   throttleCalls,
-} from "/core/utils.js";
-import { dialog } from "/web-components/modal-dialog.js";
-import { Form } from "/web-components/ui-form.js";
+} from "@fontra/core/utils.js";
+import { dialog } from "@fontra/web-components/modal-dialog.js";
+import { Form } from "@fontra/web-components/ui-form.js";
+import Panel from "./panel.js";
 
 export default class SelectionInfoPanel extends Panel {
   identifier = "selection-info";

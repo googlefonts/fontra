@@ -1,4 +1,8 @@
-import * as html from "../core/html-utils.js";
+import * as html from "@fontra/core/html-utils.js";
+import { ensureLanguageHasLoaded, translate } from "@fontra/core/localization.js";
+import "@fontra/web-components/grouped-settings.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
+import "@fontra/web-components/plugin-manager.js";
 import { ClipboardPanel } from "./panel-clipboard.js";
 import { DisplayLanguagePanel } from "./panel-display-language.js";
 import { EditorBehaviorPanel } from "./panel-editor-behavior.js";
@@ -6,10 +10,6 @@ import { PluginsManagerPanel } from "./panel-plugins-manager.js";
 import { ServerInfoPanel } from "./panel-server-info.js";
 import { ShortCutsPanel } from "./panel-shortcuts.js";
 import { ThemeSettingsPanel } from "./panel-theme-settings.js";
-import { ensureLanguageHasLoaded, translate } from "/core/localization.js";
-import "/web-components/grouped-settings.js";
-import { message } from "/web-components/modal-dialog.js";
-import "/web-components/plugin-manager.js";
 
 export class ApplicationSettingsController {
   async start() {

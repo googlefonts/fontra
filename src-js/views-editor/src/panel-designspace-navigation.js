@@ -1,10 +1,13 @@
-import { registerAction } from "/core/actions.js";
-import { BACKGROUND_LAYER_SEPARATOR, getAxisBaseName } from "/core/glyph-controller.js";
-import * as html from "/core/html-utils.js";
-import { htmlToElement } from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
-import { ObservableController, controllerKey } from "/core/observable-object.js";
-import { labeledPopupSelect, labeledTextInput } from "/core/ui-utils.js";
+import { registerAction } from "@fontra/core/actions.js";
+import {
+  BACKGROUND_LAYER_SEPARATOR,
+  getAxisBaseName,
+} from "@fontra/core/glyph-controller.js";
+import * as html from "@fontra/core/html-utils.js";
+import { htmlToElement } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { ObservableController, controllerKey } from "@fontra/core/observable-object.js";
+import { labeledPopupSelect, labeledTextInput } from "@fontra/core/ui-utils.js";
 import {
   FocusKeeper,
   boolInt,
@@ -18,24 +21,24 @@ import {
   round,
   scheduleCalls,
   throttleCalls,
-} from "/core/utils.js";
-import { GlyphSource, Layer, StaticGlyph } from "/core/var-glyph.js";
+} from "@fontra/core/utils.js";
+import { GlyphSource, Layer, StaticGlyph } from "@fontra/core/var-glyph.js";
 import {
   isLocationAtDefault,
   locationToString,
   makeSparseLocation,
   mapAxesFromUserSpaceToSourceSpace,
   piecewiseLinearMap,
-} from "/core/var-model.js";
-import "/web-components/designspace-location.js";
-import { IconButton } from "/web-components/icon-button.js";
-import { InlineSVG } from "/web-components/inline-svg.js";
-import { showMenu } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
-import { Accordion } from "/web-components/ui-accordion.js";
+} from "@fontra/core/var-model.js";
+import "@fontra/web-components/designspace-location.js";
+import { IconButton } from "@fontra/web-components/icon-button.js";
+import { InlineSVG } from "@fontra/web-components/inline-svg.js";
+import { showMenu } from "@fontra/web-components/menu-panel.js";
+import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 
+import { NumberFormatter } from "@fontra/core/ui-utils.js";
 import Panel from "./panel.js";
-import { NumberFormatter } from "/core/ui-utils.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";

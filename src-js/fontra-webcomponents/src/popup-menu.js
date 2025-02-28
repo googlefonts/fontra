@@ -1,8 +1,8 @@
+import * as html from "@fontra/core/html-utils.js";
+import { UnlitElement } from "@fontra/core/html-utils.js";
 import { InlineSVG } from "./inline-svg.js";
 import { showMenu } from "./menu-panel.js";
 import { themeColorCSS } from "./theme-support.js";
-import * as html from "/core/html-utils.js";
-import { UnlitElement } from "/core/html-utils.js";
 
 const colors = {
   "border-color": ["#0004", "#FFF4"],

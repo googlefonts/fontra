@@ -1,23 +1,23 @@
-import { recordChanges } from "../core/change-recorder.js";
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { ObservableController } from "../core/observable-object.js";
-import * as svg from "../core/svg-utils.js";
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import * as svg from "@fontra/core/svg-utils.js";
 import {
   NumberFormatter,
   OptionalNumberFormatter,
   checkboxListCell,
   labeledTextInput,
   setupSortableList,
-} from "../core/ui-utils.js";
-import { enumerate, range, zip } from "../core/utils.js";
-import { piecewiseLinearMap } from "../core/var-model.js";
-import { IconButton } from "../web-components/icon-button.js"; // for <icon-button>
-import { UIList } from "../web-components/ui-list.js";
+} from "@fontra/core/ui-utils.js";
+import { enumerate, range, zip } from "@fontra/core/utils.js";
+import { piecewiseLinearMap } from "@fontra/core/var-model.js";
+import "@fontra/web-components/add-remove-buttons.js";
+import { IconButton } from "@fontra/web-components/icon-button.js"; // for <icon-button>
+import { dialogSetup } from "@fontra/web-components/modal-dialog.js";
+import { UIList } from "@fontra/web-components/ui-list.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { translate } from "/core/localization.js";
-import "/web-components/add-remove-buttons.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
 
 const presetAxes = [
   {

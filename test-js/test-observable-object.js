@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { ObservableController } from "../src/fontra/client/core/observable-object.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
 
 describe("ObservableObject Tests", () => {
   it("change value test", async () => {

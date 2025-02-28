@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
   arrayExtend,
   bisect_right,
@@ -37,7 +36,8 @@ import {
   splitGlyphNameExtension,
   throttleCalls,
   withTimeout,
-} from "../src/fontra/client/core/utils.js";
+} from "@fontra/core/utils.js";
+import { expect } from "chai";
 
 import { getTestData, parametrize } from "./test-support.js";
 

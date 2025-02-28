@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { QueueIterator } from "../src/fontra/client/core/queue-iterator.js";
+import { QueueIterator } from "@fontra/core/queue-iterator.js";
 
 describe("QueueIterator Tests", () => {
   it("immediate item, immediate done", async () => {

@@ -1,4 +1,4 @@
-import { UnlitElement, div, input, label } from "/core/html-utils.js";
+import { UnlitElement, div, input, label } from "@fontra/core/html-utils.js";
 
 export class SimpleSettings extends UnlitElement {
   static styles = `

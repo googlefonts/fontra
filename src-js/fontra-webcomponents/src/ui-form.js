@@ -1,14 +1,14 @@
-import * as html from "../core/html-utils.js";
-import { SimpleElement } from "../core/html-utils.js";
-import { QueueIterator } from "../core/queue-iterator.js";
+import * as html from "@fontra/core/html-utils.js";
+import { SimpleElement } from "@fontra/core/html-utils.js";
+import { QueueIterator } from "@fontra/core/queue-iterator.js";
 import {
   enumerate,
   hyphenatedToCamelCase,
   round,
   scheduleCalls,
-} from "../core/utils.js";
-import { RangeSlider } from "/web-components/range-slider.js";
-import "/web-components/rotary-control.js";
+} from "@fontra/core/utils.js";
+import { RangeSlider } from "@fontra/web-components/range-slider.js";
+import "@fontra/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `

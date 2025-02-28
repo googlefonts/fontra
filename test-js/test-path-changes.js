@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import fs from "fs";
 
-import { applyChange } from "../src/fontra/client/core/changes.js";
-import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { applyChange } from "@fontra/core/changes.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
 
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";

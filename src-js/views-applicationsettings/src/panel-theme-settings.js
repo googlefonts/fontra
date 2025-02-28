@@ -1,7 +1,7 @@
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { translate } from "../core/localization.js";
-import { themeController } from "../core/theme-settings.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { themeController } from "@fontra/core/theme-settings.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 addStyleSheet(`

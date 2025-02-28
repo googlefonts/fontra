@@ -1,4 +1,4 @@
-import { Bezier } from "../third-party/bezier-js.js";
+import { Bezier } from "bezier-js";
 import {
   centeredRect,
   rectFromPoints,

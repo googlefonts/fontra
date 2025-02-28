@@ -2,10 +2,7 @@ import { expect, use } from "chai";
 import chaiAlmost from "chai-almost";
 use(chaiAlmost());
 
-import {
-  unicodeMadeOf,
-  unicodeUsedBy,
-} from "../src/fontra/client/core/unicode-utils.js";
+import { unicodeMadeOf, unicodeUsedBy } from "@fontra/core/unicode-utils.js";
 
 import { parametrize } from "./test-support.js";
 

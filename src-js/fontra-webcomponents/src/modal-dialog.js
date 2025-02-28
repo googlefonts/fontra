@@ -1,7 +1,7 @@
-import * as html from "/core/html-utils.js";
-import { SimpleElement } from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
-import { enumerate } from "/core/utils.js";
+import * as html from "@fontra/core/html-utils.js";
+import { SimpleElement } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
+import { enumerate } from "@fontra/core/utils.js";
 
 export async function dialog(headline, message, buttonDefs, autoDismissTimeout) {
   const dialogContentElement = await dialogSetup(

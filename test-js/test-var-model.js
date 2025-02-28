@@ -12,7 +12,7 @@ import {
   supportScalar,
   unnormalizeLocation,
   unnormalizeValue,
-} from "../src/fontra/client/core/var-model.js";
+} from "@fontra/core/var-model.js";
 import { parametrize } from "./test-support.js";
 
 describe("var-model tests", () => {

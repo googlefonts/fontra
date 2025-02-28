@@ -1,7 +1,6 @@
-import { registerAction } from "../core/actions.js";
+import { registerAction } from "@fontra/core/actions.js";
 import Panel from "./panel.js";
 
-import { getSelectedGlyphInfo } from "./scene-model.js";
 import {
   createDomElement,
   div,
@@ -11,23 +10,29 @@ import {
   option,
   select,
   span,
-} from "/core/html-utils.js";
-import { ObservableController } from "/core/observable-object.js";
-import { getOPFS } from "/core/opfs.js";
-import { fetchJSON, fileNameExtension, modulo, withTimeout } from "/core/utils.js";
-import { dialog, message } from "/web-components/modal-dialog.js";
-import "/web-components/range-slider.js";
-import { UIList } from "/web-components/ui-list.js";
+} from "@fontra/core/html-utils.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import { getOPFS } from "@fontra/core/opfs.js";
+import {
+  fetchJSON,
+  fileNameExtension,
+  modulo,
+  withTimeout,
+} from "@fontra/core/utils.js";
+import { dialog, message } from "@fontra/web-components/modal-dialog.js";
+import "@fontra/web-components/range-slider.js";
+import { UIList } from "@fontra/web-components/ui-list.js";
+import { getSelectedGlyphInfo } from "./scene-model.js";
 
-import "/third-party/lib-font/inflate.js";
-import "/third-party/lib-font/unbrotli.js";
+import "lib-font/inflate";
+import "lib-font/lib/unbrotli.js";
 
 // lib-font expects its dependencies to be imported first. Prettier moves the imports.
 // prettier-ignore: organizeImportsSkipDestructiveCodeActions
-import { Font } from "/third-party/lib-font.js";
+import { Font } from "lib-font";
 
+import { translate, translatePlural } from "@fontra/core/localization.js";
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
-import { translate, translatePlural } from "/core/localization.js";
 
 let referenceFontModel;
 

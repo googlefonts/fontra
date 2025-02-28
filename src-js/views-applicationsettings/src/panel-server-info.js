@@ -1,7 +1,7 @@
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { fetchJSON } from "@fontra/core/utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { fetchJSON } from "/core/utils.js";
 
 const serverInfo = await fetchJSON("/serverinfo");
 

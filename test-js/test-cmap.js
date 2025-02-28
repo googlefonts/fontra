@@ -5,8 +5,8 @@ import {
   getGlyphMapProxy,
   makeCharacterMapFromGlyphMap,
   makeGlyphMapFromCharacterMap,
-} from "../src/fontra/client/core/cmap.js";
-import { enumerate } from "../src/fontra/client/core/utils.js";
+} from "@fontra/core/cmap.js";
+import { enumerate } from "@fontra/core/utils.js";
 
 describe("characterMap tests", () => {
   const makeGlyphMapFromCharacterMap_testData = [

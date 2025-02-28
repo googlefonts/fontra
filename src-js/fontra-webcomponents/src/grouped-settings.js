@@ -1,5 +1,5 @@
+import { UnlitElement, div } from "@fontra/core/html-utils.js";
 import { SimpleSettings } from "./simple-settings.js";
-import { UnlitElement, div } from "/core/html-utils.js";
 
 export class GroupedSettings extends UnlitElement {
   static styles = `

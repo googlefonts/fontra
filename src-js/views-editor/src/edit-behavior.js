@@ -1,19 +1,19 @@
-import { consolidateChanges } from "../core/changes.js";
-import { polygonIsConvex } from "../core/convex-hull.js";
+import { consolidateChanges } from "@fontra/core/changes.js";
+import { polygonIsConvex } from "@fontra/core/convex-hull.js";
 import {
   Transform,
   decomposedToTransform,
   prependTransformToDecomposed,
-} from "../core/transform.js";
+} from "@fontra/core/transform.js";
 import {
   assert,
   enumerate,
   parseSelection,
   reversed,
   unionIndexSets,
-} from "../core/utils.js";
-import { copyBackgroundImage, copyComponent } from "../core/var-glyph.js";
-import * as vector from "../core/vector.js";
+} from "@fontra/core/utils.js";
+import { copyBackgroundImage, copyComponent } from "@fontra/core/var-glyph.js";
+import * as vector from "@fontra/core/vector.js";
 import {
   ANY,
   NIL,

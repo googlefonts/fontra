@@ -2,16 +2,15 @@ import {
   doPerformAction,
   getActionIdentifierFromKeyEvent,
   registerActionCallbacks,
-} from "../core/actions.js";
-import { FontOverviewNavigation } from "./panel-navigation.js";
-import { getGlyphMapProxy } from "/core/cmap.js";
-import { makeFontraMenuBar } from "/core/fontra-menus.js";
-import { GlyphOrganizer } from "/core/glyph-organizer.js";
-import * as html from "/core/html-utils.js";
-import { loaderSpinner } from "/core/loader-spinner.js";
-import { translate } from "/core/localization.js";
-import { ObservableController } from "/core/observable-object.js";
-import { parseGlyphSet, redirectGlyphSetURL } from "/core/parse-glyphset.js";
+} from "@fontra/core/actions.js";
+import { getGlyphMapProxy } from "@fontra/core/cmap.js";
+import { makeFontraMenuBar } from "@fontra/core/fontra-menus.js";
+import { GlyphOrganizer } from "@fontra/core/glyph-organizer.js";
+import * as html from "@fontra/core/html-utils.js";
+import { loaderSpinner } from "@fontra/core/loader-spinner.js";
+import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import { parseGlyphSet, redirectGlyphSetURL } from "@fontra/core/parse-glyphset.js";
 import {
   assert,
   dumpURLFragment,
@@ -25,10 +24,11 @@ import {
   sleepAsync,
   throttleCalls,
   writeObjectToURLFragment,
-} from "/core/utils.js";
-import { ViewController } from "/core/view-controller.js";
-import { GlyphCellView } from "/web-components/glyph-cell-view.js";
-import { message } from "/web-components/modal-dialog.js";
+} from "@fontra/core/utils.js";
+import { ViewController } from "@fontra/core/view-controller.js";
+import { GlyphCellView } from "@fontra/web-components/glyph-cell-view.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
+import { FontOverviewNavigation } from "./panel-navigation.js";
 
 const persistentSettings = [
   { key: "searchString" },

@@ -1,6 +1,6 @@
+import { consolidateCalls, withSavedState } from "@fontra/core/utils.js";
+import { mulScalar } from "@fontra/core/var-funcs.js";
 import { equalGlyphSelection } from "./scene-controller.js";
-import { consolidateCalls, withSavedState } from "/core/utils.js";
-import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
   constructor(definitions, darkTheme) {

@@ -1,15 +1,15 @@
-import { GlyphSearchField } from "./glyph-search-field.js";
-import { UIList } from "./ui-list.js";
-import { GlyphOrganizer } from "/core/glyph-organizer.js";
-import * as html from "/core/html-utils.js";
-import { SimpleElement } from "/core/html-utils.js";
+import { GlyphOrganizer } from "@fontra/core/glyph-organizer.js";
+import * as html from "@fontra/core/html-utils.js";
+import { SimpleElement } from "@fontra/core/html-utils.js";
 import {
   getCharFromCodePoint,
   glyphMapToItemList,
   guessCharFromGlyphName,
   makeUPlusStringFromCodePoint,
   throttleCalls,
-} from "/core/utils.js";
+} from "@fontra/core/utils.js";
+import { GlyphSearchField } from "./glyph-search-field.js";
+import { UIList } from "./ui-list.js";
 
 export class GlyphSearchList extends SimpleElement {
   static styles = `

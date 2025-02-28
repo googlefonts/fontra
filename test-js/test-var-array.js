@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import VarArray from "../src/fontra/client/core/var-array.js";
+import VarArray from "@fontra/core/var-array.js";
 
 describe("VarArray Tests", () => {
   const a1 = new VarArray(1, 2, 3, 4),

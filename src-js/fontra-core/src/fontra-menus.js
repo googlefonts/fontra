@@ -1,9 +1,9 @@
+import { MenuBar } from "@fontra/web-components/menu-bar.js";
+import { MenuItemDivider } from "@fontra/web-components/menu-panel.js";
 import { registerActionInfo } from "./actions.js";
 import * as html from "./html-utils.js";
 import { translate } from "./localization.js";
 import { assert } from "./utils.js";
-import { MenuBar } from "/web-components/menu-bar.js";
-import { MenuItemDivider } from "/web-components/menu-panel.js";
 
 const mapMenuItemKeyToFunction = {
   File: getFileMenuItems,

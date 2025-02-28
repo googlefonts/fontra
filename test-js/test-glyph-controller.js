@@ -1,10 +1,10 @@
 import { expect } from "chai";
 
-import { StaticGlyphController } from "../src/fontra/client/core/glyph-controller.js";
-import { getDecomposedIdentity } from "../src/fontra/client/core/transform.js";
-import { range } from "../src/fontra/client/core/utils.js";
-import { StaticGlyph, VariableGlyph } from "../src/fontra/client/core/var-glyph.js";
-import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { StaticGlyphController } from "@fontra/core/glyph-controller.js";
+import { getDecomposedIdentity } from "@fontra/core/transform.js";
+import { range } from "@fontra/core/utils.js";
+import { StaticGlyph, VariableGlyph } from "@fontra/core/var-glyph.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
 import { parametrize } from "./test-support.js";
 
 function makeTestStaticGlyphObject() {

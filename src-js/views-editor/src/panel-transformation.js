@@ -1,16 +1,18 @@
-import { registerAction } from "../core/actions.js";
-import { Backend } from "../core/backend-api.js";
-import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
-import { EditBehaviorFactory } from "./edit-behavior.js";
-import Panel from "./panel.js";
-import * as html from "/core/html-utils.js";
-import { translate } from "/core/localization.js";
+import { registerAction } from "@fontra/core/actions.js";
+import { Backend } from "@fontra/core/backend-api.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+} from "@fontra/core/changes.js";
+import * as html from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
 import {
   filterPathByPointIndices,
   getSelectionByContour,
-} from "/core/path-functions.js";
-import { rectCenter, rectSize } from "/core/rectangle.js";
-import { Transform } from "/core/transform.js";
+} from "@fontra/core/path-functions.js";
+import { rectCenter, rectSize } from "@fontra/core/rectangle.js";
+import { Transform } from "@fontra/core/transform.js";
 import {
   enumerate,
   mapObjectValuesAsync,
@@ -18,10 +20,12 @@ import {
   range,
   reversed,
   zip,
-} from "/core/utils.js";
-import { copyBackgroundImage, copyComponent } from "/core/var-glyph.js";
-import { VarPackedPath } from "/core/var-path.js";
-import { Form } from "/web-components/ui-form.js";
+} from "@fontra/core/utils.js";
+import { copyBackgroundImage, copyComponent } from "@fontra/core/var-glyph.js";
+import { VarPackedPath } from "@fontra/core/var-path.js";
+import { Form } from "@fontra/web-components/ui-form.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
+import Panel from "./panel.js";
 
 export default class TransformationPanel extends Panel {
   identifier = "selection-transformation";

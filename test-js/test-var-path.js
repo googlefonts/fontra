@@ -2,16 +2,16 @@ import { expect } from "chai";
 
 import { parametrize } from "./test-support.js";
 
-import { Transform } from "../src/fontra/client/core/transform.js";
-import { enumerate } from "../src/fontra/client/core/utils.js";
-import VarArray from "../src/fontra/client/core/var-array.js";
+import { Transform } from "@fontra/core/transform.js";
+import { enumerate } from "@fontra/core/utils.js";
+import VarArray from "@fontra/core/var-array.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
   VarPackedPath,
   joinPaths,
   joinPathsAsync,
-} from "../src/fontra/client/core/var-path.js";
+} from "@fontra/core/var-path.js";
 
 class MockPath2D {
   constructor() {

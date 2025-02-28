@@ -1,6 +1,6 @@
-import * as html from "../core/html-utils.js";
-import { addStyleSheet } from "../core/html-utils.js";
-import { languageController, languages, translate } from "../core/localization.js";
+import * as html from "@fontra/core/html-utils.js";
+import { addStyleSheet } from "@fontra/core/html-utils.js";
+import { languageController, languages, translate } from "@fontra/core/localization.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 addStyleSheet(`
