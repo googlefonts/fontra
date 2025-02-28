@@ -366,34 +366,16 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectPrevNext(isNext) {
-    const selectedChild = this.findSelectedItem();
-
-    if (selectedChild) {
-      let sibling;
-      if (isNext) {
-        sibling = selectedChild.nextElementSibling;
-      } else {
-        sibling = selectedChild.previousElementSibling;
-      }
-      while (sibling) {
-        if (sibling.classList.contains("enabled")) {
-          sibling.classList.add("selected");
-          selectedChild.classList.remove("selected");
-          break;
-        }
-        if (isNext) {
-          sibling = sibling.nextElementSibling;
-        } else {
-          sibling = sibling.previousElementSibling;
-        }
-      }
-    } else {
-      const f = isNext ? (a) => a : reversed;
-      for (const item of f(this.menuElement.children)) {
-        if (item.classList.contains("enabled")) {
+    const f = isNext ? (a) => a : reversed;
+    const selectedItem = this.findSelectedItem();
+    let previousItem;
+    for (const item of f(this.menuElement.children)) {
+      if (item.classList.contains("enabled")) {
+        if (!selectedItem || (selectedItem && selectedItem === previousItem)) {
           this.selectItem(item);
           break;
         }
+        previousItem = item;
       }
     }
   }
