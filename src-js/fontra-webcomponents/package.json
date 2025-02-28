@@ -1,5 +1,9 @@
 {
   "name": "@fontra/web-components",
+  "scripts": {
+    "test": "echo \"No test specified for @fontra/web-components\""
+  },
+  "version": "0.0.1",
   "exports": {
     "./*": "./src/*"
   },
