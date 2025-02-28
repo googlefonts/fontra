@@ -53,7 +53,7 @@ function getFontraMenu() {
         title: translate(`application-settings.${panelID}.title`),
         enabled: () => true,
         callback: () => {
-          window.open(`/applicationsettings/applicationsettings.html#${panelID}-panel`);
+          window.open(`/applicationsettings.html#${panelID}-panel`);
         },
       }));
     },
