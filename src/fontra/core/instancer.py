@@ -193,7 +193,7 @@ def _areComponentLocationsCompatible(
     componentAxisNames: list[Any] | None = None
 
     for glyph in glyphs:
-        if numComponents is None:
+        if numComponents is None or componentAxisNames is None:
             numComponents = len(glyph.components)
             componentAxisNames = [None] * numComponents
 
