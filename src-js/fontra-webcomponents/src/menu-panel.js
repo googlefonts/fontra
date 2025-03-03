@@ -4,6 +4,7 @@ import {
   getActionTitle,
   getShortCutRepresentationFromActionIdentifier,
 } from "@fontra/core/actions.js";
+import { dispatchCustomEvent } from "@fontra/core/event-utils.js";
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
 import { capitalizeFirstLetter, enumerate, reversed } from "@fontra/core/utils.js";
@@ -24,11 +25,20 @@ export function showMenu(menuItems, position, options) {
 export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
-  static closeAllMenus(event) {
+  static closeMenuPanels(event) {
+    let index = 0;
+    const targetMenuBar = event.target?.closest?.("menu-bar");
     for (const element of MenuPanel.openMenuPanels) {
-      element.dismiss();
+      if (element.context === "menu-bar") {
+        if (!targetMenuBar) {
+          dispatchCustomEvent(window, "menu-panel:close");
+        }
+      } else {
+        element.dismiss();
+        MenuPanel.openMenuPanels.splice(index, 1);
+      }
+      index++;
     }
-    MenuPanel.openMenuPanels.splice(0, MenuPanel.openMenuPanels.length);
   }
 
   static colors = {
@@ -399,18 +409,8 @@ export class MenuPanel extends SimpleElement {
 
 customElements.define("menu-panel", MenuPanel);
 
-window.addEventListener("click", (event) => {
-  const { target } = event;
-  let index = 0;
-  for (const element of MenuPanel.openMenuPanels) {
-    if (element !== target && element.context !== "menu-bar" && !element.childOf) {
-      element.dismiss();
-      MenuPanel.openMenuPanels.splice(index, 1);
-    }
-    index++;
-  }
-});
-window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
+window.addEventListener("mousedown", (event) => MenuPanel.closeMenuPanels(event));
+window.addEventListener("blur", (event) => MenuPanel.closeMenuPanels(event));
 
 function getMenuContainer() {
   // This is tightly coupled to modal-dialog.js
