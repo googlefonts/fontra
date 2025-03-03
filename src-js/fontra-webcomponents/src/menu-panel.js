@@ -299,21 +299,13 @@ export class MenuPanel extends SimpleElement {
     }
   }
 
-  dispatchKeyDown(key) {
-    window.dispatchEvent(
-      new CustomEvent("menu-panel:key-down", {
-        bubbles: false,
-        detail: { key },
-      })
-    );
-  }
-
   handleKeyDown(event) {
+    const { key } = event;
     event.preventDefault();
     event.stopImmediatePropagation();
-    this.searchMenuItems(event.key);
-    this.dispatchKeyDown(event.key);
-    switch (event.key) {
+    this.searchMenuItems(key);
+    dispatchCustomEvent(window, "menu-panel:keydown", { key });
+    switch (key) {
       case "Escape":
         this.dismiss();
         break;

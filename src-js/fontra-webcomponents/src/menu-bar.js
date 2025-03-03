@@ -46,7 +46,7 @@ export class MenuBar extends SimpleElement {
     this.render();
     window.addEventListener("blur", this.closeMenu.bind(this));
     window.addEventListener("menu-panel:close", this.closeMenu.bind(this));
-    window.addEventListener("menu-panel:key-down", this.handleKeyDown.bind(this));
+    window.addEventListener("menu-panel:keydown", this.handleKeyDown.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseOver.bind(this));
     this.contentElement.addEventListener(
       "mouseleave",
