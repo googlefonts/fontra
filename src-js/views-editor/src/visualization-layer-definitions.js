@@ -1,3 +1,4 @@
+import { guessGlyphPlaceholderString } from "@fontra/core/glyph-data.js";
 import { translate } from "@fontra/core/localization.js";
 import { rectToPoints } from "@fontra/core/rectangle.js";
 import { difference, isSuperset, union } from "@fontra/core/set-ops.js";
@@ -152,9 +153,16 @@ registerVisualizationLayerDefinition({
         positionedGlyph.glyph.xAdvance / 2,
         -lineDistance * glyphNameFontSize
       );
+    }
+    const placeholderString = guessGlyphPlaceholderString(
+      positionedGlyph.character?.codePointAt(0),
+      positionedGlyph.glyphName
+    );
+    if (placeholderString) {
       context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
+      context.direction = "rtl"; // FIXME "auto" does not work here
       context.fillText(
-        positionedGlyph.character,
+        placeholderString,
         positionedGlyph.glyph.xAdvance / 2,
         -lineDistance * glyphNameFontSize - 0.4 * placeholderFontSize
       );
