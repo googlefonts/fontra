@@ -64,7 +64,7 @@ class FontraServer:
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
         routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
-        routes.append(web.get("/.*/-/.*", self.viewRedirectHandler))
+        routes.append(web.get("/{head:.*}/-/{tail:.*}", self.viewRedirectHandler))
         for ep in entry_points(group="fontra.views"):
             routes.append(
                 web.get(
