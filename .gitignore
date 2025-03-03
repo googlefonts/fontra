@@ -1,6 +1,3 @@
-# Generated HTML/JS files
-src/fontra/client
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -263,3 +260,6 @@ dist
 
 # Local plugins
 src/fontra/localplugins/
+
+# Generated HTML/JS files
+src/fontra/client
