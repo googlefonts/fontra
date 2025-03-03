@@ -27,7 +27,7 @@ import "@fontra/web-components/add-remove-buttons.js";
 import "@fontra/web-components/designspace-location.js";
 import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
-import { updateRemoveButton } from "./panel-axes.js";
+import { arraysEqual, updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 const ufoInfoPrefix = "ufo.info.";
