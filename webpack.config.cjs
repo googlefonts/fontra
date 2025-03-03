@@ -22,6 +22,15 @@ module.exports = (_env, argv) => {
               "@fontra/views-fontoverview/fontoverview.html"
             ),
           },
+          js: {
+            // JS output filename, relative to `output.path` Webpack option
+            filename: "js/[name].[contenthash:8].js",
+            chunkFilename: "js/[name].chunk.js",
+          },
+          css: {
+            // CSS output filename, relative to `output.path` Webpack option
+            filename: "css/[name].[contenthash:8].css",
+          },
         }),
       ],
       production: argv.mode === "production",
