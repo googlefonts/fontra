@@ -145,6 +145,7 @@ export class MenuBar extends SimpleElement {
     };
     const menuPanel = new MenuPanel(items, {
       position,
+      context: "menu-bar",
       onSelect: () => this.closeMenu(),
       onClose: () => this.closeMenu(),
     });

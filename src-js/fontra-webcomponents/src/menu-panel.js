@@ -118,6 +118,7 @@ export class MenuPanel extends SimpleElement {
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
     this.childOf = options.childOf;
     this.menuSearchText = "";
+    this.context = options.context;
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
@@ -398,6 +399,17 @@ export class MenuPanel extends SimpleElement {
 
 customElements.define("menu-panel", MenuPanel);
 
+window.addEventListener("click", (event) => {
+  const { target } = event;
+  let index = 0;
+  for (const element of MenuPanel.openMenuPanels) {
+    if (element !== target && element.context !== "menu-bar" && !element.childOf) {
+      element.dismiss();
+      MenuPanel.openMenuPanels.splice(index, 1);
+    }
+    index++;
+  }
+});
 window.addEventListener("blur", (event) => MenuPanel.closeAllMenus(event));
 
 function getMenuContainer() {
