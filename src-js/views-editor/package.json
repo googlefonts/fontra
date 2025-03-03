@@ -1,5 +1,8 @@
 {
   "name": "@fontra/views-editor",
+  "scripts": {
+    "test": "echo \"No test specified for @fontra/views-editor\""
+  },
   "exports": {
     "./start.js": "./src/start.js",
     "./editor.js": "./src/editor.js",
