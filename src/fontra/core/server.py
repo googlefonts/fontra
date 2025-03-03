@@ -19,6 +19,7 @@ except ImportError:
     from importlib.abc import Traversable
 from importlib.metadata import entry_points
 from typing import Any, Optional
+from urllib.parse import quote
 
 from aiohttp import WSCloseCode, web
 
@@ -68,7 +69,7 @@ class FontraServer:
             routes.append(
                 web.get(
                     f"/{{path:{ep.name}.html}}",
-                    partial(self.staticContentHandler, ep.value),
+                    partial(self.viewHandler, ep.value),
                 )
             )
             # Legacy URL formats
@@ -235,6 +236,14 @@ class FontraServer:
         else:
             result = {"returnValue": returnValue}
         return web.Response(text=json.dumps(result), content_type="application/json")
+
+    async def viewHandler(self, packageName: str, request: web.Request) -> web.Response:
+        authToken = await self.projectManager.authorize(request)
+        if not authToken:
+            qs = quote(request.path_qs, safe="")
+            raise web.HTTPFound(f"/?ref={qs}")
+
+        return await self.staticContentHandler(packageName, request)
 
     async def staticContentHandler(
         self, packageName: str, request: web.Request
