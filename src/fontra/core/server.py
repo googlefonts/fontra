@@ -64,12 +64,18 @@ class FontraServer:
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
         routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
-        routes.append(web.get("/{head:.*}/-/{tail:.*}", self.viewRedirectHandler))
         for ep in entry_points(group="fontra.views"):
             routes.append(
                 web.get(
                     f"/{{path:{ep.name}.html}}",
                     partial(self.staticContentHandler, ep.value),
+                )
+            )
+            # Legacy URL formats
+            routes.append(web.get(f"/{{view:{ep.name}}}/", self.viewRedirectHandler))
+            routes.append(
+                web.get(
+                    f"/{{view:{ep.name}}}/-/{{project:.*}}", self.viewRedirectHandler
                 )
             )
         for ep in entry_points(group="fontra.webcontent"):
@@ -261,7 +267,12 @@ class FontraServer:
 
     # Support pre-2025 paths
     async def viewRedirectHandler(self, request: web.Request) -> web.Response:
-        raise web.HTTPFound(request.path.replace("/-/", ".html?project="))
+        view = request.match_info["view"]
+        project = request.match_info.get("project")
+        if project is None:
+            project = request.query.get("project")
+
+        raise web.HTTPFound(f"/{view}.html?project={project}")
 
 
 def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
