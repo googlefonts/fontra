@@ -1,5 +1,7 @@
 import { ChangeCollector, applyChange } from "./changes.js";
 import { range } from "./utils.js";
+import VarArray from "./var-array.js";
+import { VarPackedPath } from "./var-path.js";
 
 export function recordChanges(subject, func) {
   const changes = new ChangeCollector();
@@ -77,9 +79,9 @@ function getVarPackedPathProxyMethods(subject, changes) {
 }
 
 export const proxyMethodsMap = {
-  Array: getArrayProxyMethods,
-  VarArray: getArrayProxyMethods,
-  VarPackedPath: getVarPackedPathProxyMethods, // Poss. need to change the key to VarPackedPath.name when minifying
+  [Array.name]: getArrayProxyMethods,
+  [VarArray.name]: getArrayProxyMethods,
+  [VarPackedPath.name]: getVarPackedPathProxyMethods,
 };
 
 const getUnwrappedSubject = Symbol("get-unwrapped-subject");
