@@ -109,8 +109,8 @@ export const customDataNameMapping = {
   postscriptIsFixedPitch: { default: () => false, formatter: BooleanFormatter }, // Indicates if the font is monospaced.
   postscriptDefaultWidthX: { default: () => 0, formatter: _NumberFormatter },
   postscriptNominalWidthX: { default: () => 0, formatter: _NumberFormatter },
-  postscriptDefaultCharacter: { default: () => "glyphName" }, // 	The name of the glyph that should be used as the default character in PFM files.
-  postscriptWindowsCharacterSet: { default: () => 0, formatter: _NumberFormatter },
+  postscriptDefaultCharacter: { default: () => "glyphName" }, // The name of the glyph that should be used as the default character in PFM files.
+  postscriptWindowsCharacterSet: { default: () => 2, formatter: _NumberFormatter }, // 2 = Default
   // OpenType vhea Table Fields
   // openTypeVheaVertTypoAscender  // NOTE: not in ufoInfoAttributesToRoundTrip
   // openTypeVheaVertTypoDescender  // NOTE: not in ufoInfoAttributesToRoundTrip
