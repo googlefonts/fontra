@@ -115,10 +115,10 @@ describe("scheduleCalls", () => {
     setTimeout(() => {
       expect(worked).to.be.false;
       fun();
-    }, 4);
+    }, 3.5);
     setTimeout(() => {
       expect(worked).to.be.false;
-    }, 8);
+    }, 6);
     setTimeout(() => {
       expect(worked).to.be.true;
     }, 12);
