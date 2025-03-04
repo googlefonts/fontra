@@ -1,9 +1,14 @@
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { customDataNameMapping } from "@fontra/core/font-info-data.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
 import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
+import { buildFontCustomDataList } from "./panel-sources.js";
 
 const fontInfoFields = [
   // [property name, localization key, type]
@@ -23,12 +28,36 @@ const fontInfoFields = [
   ["versionMinor", "font-info.version.minor", "edit-number"],
 ];
 
+// Please see: ufoInfoAttributesToRoundTripFamilyLevel
+const customDataAttributesSupported = [
+  "openTypeNameUniqueID",
+  "openTypeHeadCreated",
+  "openTypeNameVersion",
+  "openTypeNamePreferredFamilyName",
+  "openTypeNameWWSFamilyName",
+  "openTypeOS2CodePageRanges",
+  "openTypeOS2UnicodeRanges",
+  "openTypeOS2FamilyClass",
+  "openTypeOS2Type", // embedding bit
+  "postscriptWindowsCharacterSet", // The Windows character set.
+];
+
 addStyleSheet(`
-.fontra-ui-font-info-axes-panel {
+.font-info-form-container {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
 }
+
+.fontra-ui-font-info-form {
+  padding-bottom: 1em; // This has no effect, sadly. And I don't know why.
+}
+
+.fontra-ui-font-info-header {
+  font-weight: bold;
+  padding-bottom: 0.5em;
+}
+
 `);
 
 export class FontInfoPanel extends BaseInfoPanel {
@@ -39,29 +68,27 @@ export class FontInfoPanel extends BaseInfoPanel {
   async setupUI() {
     const info = await this.fontController.getFontInfo();
 
+    const containerFontInfo = html.div({
+      class: "font-info-form-container",
+    });
+
     this.infoForm = new Form();
-    this.infoForm.className = "fontra-ui-font-info-axes-panel";
+    this.infoForm.className = "fontra-ui-font-info-form";
     this.infoForm.labelWidth = "max-content";
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       const [rootKey, itemKey] = JSON.parse(fieldItem.key);
-      const undoLabel = `change ${itemKey ? itemKey : rootKey}`; // TODO: translation
-
-      const root = {
-        fontInfo: await this.fontController.getFontInfo(),
-        unitsPerEm: this.fontController.unitsPerEm,
-      };
-      const changes = recordChanges(root, (root) => {
-        if (itemKey) {
-          const subject = root[rootKey];
-          subject[itemKey] = value;
-        } else {
-          root[rootKey] = value;
-        }
-      });
-      if (changes.hasChange) {
-        await this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      }
+      this.editFontInfo(
+        (root) => {
+          if (itemKey) {
+            const subject = root[rootKey];
+            subject[itemKey] = value;
+          } else {
+            root[rootKey] = value;
+          }
+        },
+        `change ${itemKey ? itemKey : rootKey}`
+      ); // TODO: translation
     };
 
     const formContents = [];
@@ -89,8 +116,68 @@ export class FontInfoPanel extends BaseInfoPanel {
     });
 
     this.infoForm.setFieldDescriptions(formContents);
+    containerFontInfo.append(
+      html.div({ class: "fontra-ui-font-info-header" }, [
+        translate("sources.labels.general"), // TODO: translation
+      ]),
+      this.infoForm
+    );
+
+    const cutomDataController = new ObservableController({ ...info.customData });
+
+    cutomDataController.addListener((event) => {
+      this.editFontInfo((root) => {
+        root.fontInfo.customData = {};
+        for (const item of event.newValue) {
+          const key = item["key"];
+          if (key === "attributeName") {
+            // Skip this, so people can edit this placeholder.
+            continue;
+          }
+          if (!customDataAttributesSupported.includes(key)) {
+            message(
+              translate("sources.dialog.cannot-edit-source.title"),
+              `CustomData "${key}" not implemented, yet.`
+            );
+            continue;
+          }
+          const formatter = customDataNameMapping[key]?.formatter || DefaultFormatter;
+          const result = formatter.fromString(item["value"]);
+          if (result.value == undefined) {
+            const msg = result.error ? ` (${result.error})` : "";
+            message(
+              translate("sources.dialog.cannot-edit-source.title"),
+              `"${key}" invalid value: ${item["value"]}${msg}`
+            );
+          } else {
+            root.fontInfo.customData[key] = result.value;
+          }
+        }
+      }, `edit customData`); // TODO: translation
+    });
+
+    containerFontInfo.append(
+      html.div({ class: "fontra-ui-font-info-header", style: "padding-top: 1em;" }, [
+        translate("Custom Data"), // TODO: translation
+      ]),
+      buildFontCustomDataList(cutomDataController, info, customDataAttributesSupported)
+    );
 
     this.panelElement.innerHTML = "";
-    this.panelElement.appendChild(this.infoForm);
+    this.panelElement.appendChild(containerFontInfo);
+    this.panelElement.focus();
+  }
+
+  async editFontInfo(editFunc, undoLabel) {
+    const root = {
+      fontInfo: await this.fontController.getFontInfo(),
+      unitsPerEm: this.fontController.unitsPerEm,
+    };
+    const changes = recordChanges(root, (root) => {
+      editFunc(root);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+    }
   }
 }
