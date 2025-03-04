@@ -95,33 +95,29 @@ describe("consolidateCalls", () => {
 });
 
 describe("scheduleCalls", () => {
-  it("schedules a function to be executed with given timeout", () => {
+  it("schedules a function to be executed with given timeout", async () => {
     let worked = false;
     const fun = scheduleCalls(() => {
       worked = true;
     });
     fun();
     expect(worked).to.be.false;
-    setTimeout(() => {
-      expect(worked).to.be.true;
-    });
+    await sleepAsync(0);
+    expect(worked).to.be.true;
   });
-  it("delete the previous schedule, creates a new one, if the function executed before timeout", () => {
+  it("delete the previous schedule, creates a new one, if the function executed before timeout", async () => {
     let worked = false;
     const fun = scheduleCalls(() => {
       worked = true;
     }, 5);
-    fun();
-    setTimeout(() => {
-      expect(worked).to.be.false;
-      fun();
-    }, 3.5);
-    setTimeout(() => {
-      expect(worked).to.be.false;
-    }, 6);
-    setTimeout(() => {
-      expect(worked).to.be.true;
-    }, 12);
+    fun(); // call in 5ms, unless it gets cancelled
+    await sleepAsync(3.5);
+    expect(worked).to.be.false; // so after 3.5ms, our func should _not_ have been called yet
+    fun(); // cancel previous call, call in 5ms, unless it gets cancelled again
+    await sleepAsync(3.5);
+    expect(worked).to.be.false; // so after another 3.5ms, our func should still not have been called
+    await sleepAsync(3.5);
+    expect(worked).to.be.true; // but after another 3.5ms (totalling 7ms), our func must have been called
   });
 });
 
