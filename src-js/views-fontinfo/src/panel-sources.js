@@ -722,28 +722,14 @@ class SourceBox extends HTMLElement {
         source.customData = {};
         for (const item of event.newValue) {
           const key = item["key"];
-          if (key === "attributeName") {
-            // Skip this, so people can edit this placeholder.
-            continue;
-          }
-          if (!customDataNameMapping[key]) {
+          if (!customDataAttributesSupported.includes(key)) {
             message(
-              translate("sources.dialog.cannot-edit-source.title"),
-              `CustomData "${key}" not implemented, yet.`
+              translate("Edit Advanced information"), // TODO: translation
+              `"${key}" not implemented, yet.` // TODO: translation
             );
             continue;
           }
-          const formatter = customDataNameMapping[key]?.formatter || DefaultFormatter;
-          const result = formatter.fromString(item["value"]);
-          if (result.value == undefined) {
-            const msg = result.error ? ` (${result.error})` : "";
-            message(
-              translate("sources.dialog.cannot-edit-source.title"),
-              `"${key}" invalid value: ${item["value"]}${msg}`
-            );
-          } else {
-            source.customData[key] = result.value;
-          }
+          source.customData[key] = item["value"];
         }
       }, `edit customData`); // TODO: translation
     });
