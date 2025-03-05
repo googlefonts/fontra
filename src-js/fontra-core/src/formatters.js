@@ -1,17 +1,24 @@
+function isString(value) {
+  return typeof value === "string" || value instanceof String;
+}
+
 // TODO: Keep in mind, that we have NumberFormatter in ui-utils.js.
 // _NumberFormatter is different because of:
 // NumberFormatter.fromString(0) == undefined -> but should be 0
 // NumberFormatter.fromString(true) == 1 -> but should be undefined
 export const _NumberFormatter = {
-  toString: (value) => value.toString(),
+  toString: (value) => {
+    if (isNaN(value)) {
+      return { error: "input value not a number" };
+    }
+    return value.toString();
+  },
   fromString: (value) => {
-    if (typeof value === "number") {
-      return { value: value };
-    } else if (typeof value === "boolean" || !value) {
-      return { error: "not a number" };
+    if (!isString(value)) {
+      return { error: "input value not a string" };
     }
     const number = Number(value);
-    if (isNaN(number)) {
+    if (isNaN(number) || !value) {
       return { error: "not a number" };
     } else {
       return { value: number };
@@ -22,8 +29,8 @@ export const _NumberFormatter = {
 export const BooleanFormatter = {
   toString: (value) => value.toString(),
   fromString: (value) => {
-    if (typeof value === "boolean") {
-      return { value: value };
+    if (!isString(value)) {
+      return { error: "input value not a string" };
     }
     if (value.trim().toLowerCase() === "true") {
       return { value: true };
@@ -46,11 +53,15 @@ export const ArrayFormatter = {
     return value.toString();
   },
   fromString: (value, arrayLength) => {
+    console.log("ArrayFormatter value: ", value, isString(value));
+    if (!isString(value)) {
+      return { error: "input value not a string" };
+    }
     let array = [];
     try {
       array = JSON.parse("[" + value + "]");
     } catch (e) {
-      return { error: e };
+      return { error: "not an array" };
     }
     if (Array.isArray(array)) {
       if (arrayLength && array.length != arrayLength) {

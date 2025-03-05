@@ -23,8 +23,8 @@ describe("NumberFormatter", () => {
       [true, undefined],
       [false, undefined],
       [null, undefined],
-      [200, 200],
-      [0, 0],
+      [200, undefined],
+      [0, undefined],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
@@ -37,14 +37,15 @@ describe("ArrayFormatter", () => {
   parametrize(
     "ArrayFormatter fromString tests",
     [
-      ["1,2,3,4", [1, 2, 3, 4]],
-      ["1, 2,3,4", [1, 2, 3, 4]],
-      ["", []],
-      ["Hello", undefined],
+      ["1,2,3,4", { value: [1, 2, 3, 4] }],
+      ["1, 2,3,4", { value: [1, 2, 3, 4] }],
+      ["", { value: [] }],
+      ["Hello", { error: "not an array" }],
+      [[1, 2, 3, 4], { error: "input value not a string" }],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
-      expect(ArrayFormatter.fromString(input).value).to.deep.equal(expectedResult);
+      expect(ArrayFormatter.fromString(input)).to.deep.equal(expectedResult);
     }
   );
 });
@@ -57,6 +58,7 @@ describe("ArrayFormatter", () => {
       [[], ""],
       [true, { error: "not an array" }],
       [new Set([1, 2, 3]), { error: "not an array" }],
+      ["1,2,3,4", { error: "not an array" }],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
@@ -72,6 +74,7 @@ describe("FixedLengthArrayFormatter", () => {
       [10, "1,2,3,4,5,6,7,8,9,10", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
       [10, "1,2,3,4,5,6,7,8,9", undefined],
       [2, "8,0", [8, 0]],
+      [2, [8, 0], undefined],
     ],
     (testData) => {
       const [arrayLength, input, expectedResult] = testData;
@@ -89,6 +92,7 @@ describe("FixedLengthArrayFormatter", () => {
       [10, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "1,2,3,4,5,6,7,8,9,10"],
       [10, [1, 2, 3, 4, 5, 6, 7, 8, 9], { error: "array length must be 10" }],
       [2, [8, 0], "8,0"],
+      [2, "8,0", { error: "not an array" }],
     ],
     (testData) => {
       const [arrayLength, input, expectedResult] = testData;
@@ -109,8 +113,8 @@ describe("BooleanFormatter", () => {
       ["True", true],
       ["FALSE", false],
       ["TRUE", true],
-      [false, false],
-      [true, true],
+      [false, undefined],
+      [true, undefined],
       ["", undefined],
       ["Hello", undefined],
       ["   false    ", false],
