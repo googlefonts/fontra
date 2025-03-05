@@ -2257,13 +2257,16 @@ export class EditorController extends ViewController {
       name: glyphName,
       transformation: getDecomposedIdentity(),
       location: location,
+      customData: {}, // Ignored, see below
     };
+
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         layerGlyph.components.push({
           name: newComponent.name,
           transformation: { ...newComponent.transformation },
           location: { ...newComponent.location },
+          customData: {}, // New empty object
         });
       }
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
