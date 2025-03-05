@@ -1,10 +1,8 @@
 import { recordChanges } from "@fontra/core/change-recorder.js";
-import { customDataNameMapping } from "@fontra/core/font-info-data.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
-import { DefaultFormatter } from "@fontra/core/ui-utils.js";
 import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
 import { message } from "@fontra/web-components/modal-dialog.js";
 import { Accordion } from "@fontra/web-components/ui-accordion.js";
@@ -121,28 +119,14 @@ export class FontInfoPanel extends BaseInfoPanel {
         root.fontInfo.customData = {};
         for (const item of event.newValue) {
           const key = item["key"];
-          if (key === "attributeName") {
-            // Skip this, so people can edit this placeholder.
-            continue;
-          }
           if (!customDataAttributesSupported.includes(key)) {
             message(
-              translate("sources.dialog.cannot-edit-source.title"),
-              `CustomData "${key}" not implemented, yet.`
+              translate("Edit Advanced information"), // TODO: translation
+              `"${key}" not implemented, yet.` // TODO: translation
             );
             continue;
           }
-          const formatter = customDataNameMapping[key]?.formatter || DefaultFormatter;
-          const result = formatter.fromString(item["value"]);
-          if (result.value == undefined) {
-            const msg = result.error ? ` (${result.error})` : "";
-            message(
-              translate("sources.dialog.cannot-edit-source.title"),
-              `"${key}" invalid value: ${item["value"]}${msg}`
-            );
-          } else {
-            root.fontInfo.customData[key] = result.value;
-          }
+          root.fontInfo.customData[key] = item["value"];
         }
       }, `edit customData`); // TODO: translation
     });

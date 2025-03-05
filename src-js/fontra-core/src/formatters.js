@@ -53,7 +53,6 @@ export const ArrayFormatter = {
     return value.toString();
   },
   fromString: (value, arrayLength) => {
-    console.log("ArrayFormatter value: ", value, isString(value));
     if (!isString(value)) {
       return { error: "input value not a string" };
     }
