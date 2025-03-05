@@ -5,10 +5,11 @@ import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
 import { message } from "@fontra/web-components/modal-dialog.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
-import { buildFontCustomDataList } from "./panel-sources.js";
 
 const fontInfoFields = [
   // [property name, localization key, type]
@@ -43,7 +44,7 @@ const customDataAttributesSupported = [
 ];
 
 addStyleSheet(`
-.font-info-form-container {
+.font-info-container {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
@@ -67,10 +68,6 @@ export class FontInfoPanel extends BaseInfoPanel {
 
   async setupUI() {
     const info = await this.fontController.getFontInfo();
-
-    const containerFontInfo = html.div({
-      class: "font-info-form-container",
-    });
 
     this.infoForm = new Form();
     this.infoForm.className = "fontra-ui-font-info-form";
@@ -116,12 +113,6 @@ export class FontInfoPanel extends BaseInfoPanel {
     });
 
     this.infoForm.setFieldDescriptions(formContents);
-    containerFontInfo.append(
-      html.div({ class: "fontra-ui-font-info-header" }, [
-        translate("sources.labels.general"), // TODO: translation
-      ]),
-      this.infoForm
-    );
 
     const cutomDataController = new ObservableController({ ...info.customData });
 
@@ -156,15 +147,34 @@ export class FontInfoPanel extends BaseInfoPanel {
       }, `edit customData`); // TODO: translation
     });
 
-    containerFontInfo.append(
-      html.div({ class: "fontra-ui-font-info-header", style: "padding-top: 1em;" }, [
-        translate("Custom Data"), // TODO: translation
-      ]),
-      buildFontCustomDataList(cutomDataController, info, customDataAttributesSupported)
-    );
+    const customDataList = new CustomDataList({
+      controller: cutomDataController,
+      fontObject: info,
+      supportedAttributes: customDataAttributesSupported,
+    });
+
+    const accordion = new Accordion();
+    const accordionItems = [
+      {
+        label: translate("sources.labels.general"),
+        id: "general",
+        content: this.infoForm,
+        open: true,
+      },
+      {
+        label: translate("Advanced Information"), // TODO: translate
+        id: "custom-data",
+        content: customDataList,
+        open: info.customData || false,
+      },
+    ];
+
+    accordion.items = accordionItems;
 
     this.panelElement.innerHTML = "";
-    this.panelElement.appendChild(containerFontInfo);
+    this.panelElement.appendChild(
+      html.div({ class: "font-info-container" }, [accordion])
+    );
     this.panelElement.focus();
   }
 

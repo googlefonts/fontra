@@ -25,13 +25,63 @@ import {
   mapAxesFromUserSpaceToSourceSpace,
 } from "@fontra/core/var-model.js";
 import "@fontra/web-components/add-remove-buttons.js";
+import "@fontra/web-components/custom-data-list.js";
+import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
 import "@fontra/web-components/designspace-location.js";
 import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
-import { arraysEqual, updateRemoveButton } from "./panel-axes.js";
+import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 let selectedSourceIdentifier = undefined;
+
+// Please see: ufoInfoAttributesToRoundTrip
+const customDataAttributesSupported = [
+  // "openTypeGaspRangeRecords", # part of MVAR, but commented out for now, as too complex
+  "openTypeHheaAscender",
+  "openTypeHheaDescender",
+  "openTypeHheaLineGap",
+  "openTypeOS2TypoAscender",
+  "openTypeOS2TypoDescender",
+  "openTypeOS2TypoLineGap",
+  "openTypeOS2WinAscent",
+  "openTypeOS2WinDescent",
+  "openTypeOS2StrikeoutPosition",
+  "openTypeOS2StrikeoutSize",
+  "postscriptUnderlinePosition",
+  "postscriptUnderlineThickness",
+  "openTypeHheaCaretOffset",
+  "openTypeHheaCaretSlopeRise",
+  "openTypeHheaCaretSlopeRun",
+  "openTypeOS2SubscriptXOffset",
+  "openTypeOS2SubscriptXSize",
+  "openTypeOS2SubscriptYOffset",
+  "openTypeOS2SubscriptYSize",
+  "openTypeOS2SuperscriptXOffset",
+  "openTypeOS2SuperscriptXSize",
+  "openTypeOS2SuperscriptYOffset",
+  "openTypeOS2SuperscriptYSize",
+  "openTypeVheaCaretOffset",
+  "openTypeVheaCaretSlopeRise",
+  "openTypeVheaCaretSlopeRun",
+  "openTypeVheaVertTypoLineGap",
+  "openTypeNameCompatibleFullName",
+  "openTypeNamePreferredSubfamilyName",
+  "openTypeNameWWSSubfamilyName",
+  "postscriptBlueFuzz",
+  "postscriptBlueScale",
+  "postscriptBlueShift",
+  "postscriptBlueValues",
+  "postscriptFamilyBlues",
+  "postscriptFamilyOtherBlues",
+  "postscriptForceBold",
+  "postscriptIsFixedPitch",
+  "postscriptOtherBlues",
+  "postscriptSlantAngle",
+  "postscriptStemSnapH",
+  "postscriptStemSnapV",
+];
 
 addStyleSheet(`
 .font-sources-container {
@@ -512,31 +562,6 @@ addStyleSheet(`
   margin-left: 1em;
   height: fit-content;
 }
-
-.fontra-ui-font-info-sources-panel-column {
-  display: grid;
-  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
-  gap: 0.5em;
-  align-items: start;
-  align-content: start;
-  padding-bottom: 2em;
-}
-
-.fontra-ui-font-info-sources-panel-line-metrics-hor {
-  grid-template-columns: minmax(4.5em, max-content) 4em 4em;
-}
-
-.fontra-ui-font-info-sources-panel-header {
-  font-weight: bold;
-  padding-bottom: 1em;
-}
-
-.fontra-ui-font-info-sources-panel-list-element {
-  min-width: max-content;
-  max-width: 29.5em; // 4.5 + 25
-  max-height: 12em;
-}
-
 `);
 
 class SourceBox extends HTMLElement {
@@ -724,43 +749,100 @@ class SourceBox extends HTMLElement {
       }, `edit customData`); // TODO: translation
     });
 
-    this.innerHTML = "";
-    this.append(
-      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-        getLabelFromKey("general"),
-      ]),
-      buildElement(this.controllers.general)
-    );
+    const accordion = new Accordion();
+    accordion.appendStyle(`
+.fontra-ui-font-info-sources-panel-column {
+  display: grid;
+  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
+  gap: 0.5em;
+  align-items: start;
+  align-content: start;
+  padding-bottom: 2em;
+}
+
+.fontra-ui-font-info-sources-panel-line-metrics-hor {
+  grid-template-columns: minmax(4.5em, max-content) 4em 4em;
+}
+
+.fontra-ui-font-info-sources-panel-list-element {
+  min-width: max-content;
+  max-width: 29.5em; // 4.5 + 25
+  max-height: 12em;
+}
+
+input {
+  background-color: var(--text-input-background-color);
+  color: var(--text-input-foreground-color);
+  border-radius: 0.25em;
+  border: none;
+  outline: none;
+  padding: 0.1em 0.3em;
+  font-family: "fontra-ui-regular";
+  font-size: 100%;
+}
+
+.ui-form-value input {
+  width: min(100%, 9.5em);
+  height: 1.6em;
+}
+    `);
+    const accordionItems = [
+      {
+        label: getLabelFromKey("general"),
+        id: "general",
+        content: buildElement(this.controllers.general),
+        open: true,
+      },
+    ];
+
     // Don't add 'Location', if the font has no axes.
     if (this.fontAxesSourceSpace.length > 0) {
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("location"),
-        ]),
-        buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
-      );
+      accordionItems.push({
+        label: getLabelFromKey("location"),
+        id: "location",
+        content: buildElementLocations(
+          this.controllers.location,
+          this.fontAxesSourceSpace
+        ),
+        open: true,
+      });
     }
+
+    // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
     if (!this.source.isSparse) {
-      // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("lineMetricsHorizontalLayout"),
-        ]),
-        buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
-      );
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("guidelines"),
-        ]),
-        buildFontGuidelineList(this.controllers.guidelines)
-      );
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("customData"),
-        ]),
-        buildFontCustomDataList(this.controllers.customData, this.source)
+      const customDataList = new CustomDataList({
+        controller: this.controllers.customData,
+        fontObject: this.source,
+        supportedAttributes: customDataAttributesSupported,
+      });
+      accordionItems.push(
+        {
+          label: getLabelFromKey("lineMetricsHorizontalLayout"),
+          id: "lineMetricsHorizontalLayout",
+          content: buildElementLineMetricsHor(
+            this.controllers.lineMetricsHorizontalLayout
+          ),
+          open: true,
+        },
+        {
+          label: getLabelFromKey("guidelines"),
+          id: "guidelines",
+          content: buildFontGuidelineList(this.controllers.guidelines),
+          open: Object.keys(this.source.guidelines).length > 0,
+        },
+        {
+          label: getLabelFromKey("customData"),
+          id: "customData",
+          content: customDataList,
+          open: Object.keys(this.source.customData).length > 0,
+        }
       );
     }
+
+    accordion.items = accordionItems;
+
+    this.innerHTML = "";
+    this.appendChild(accordion);
   }
 }
 
@@ -939,138 +1021,6 @@ function buildFontGuidelineList(controller) {
   ]);
 }
 
-export function buildFontCustomDataList(
-  controller,
-  fontObject = undefined,
-  supportedAttributes = Object.keys(customDataNameMapping)
-) {
-  // fontObject can either be FontInfo or FontSource.
-  const customDataNames = Object.keys(customDataNameMapping);
-  const model = controller.model;
-
-  const makeItem = ([key, value]) => {
-    const item = new ObservableController({ key: key, value: value });
-    item.addListener((event) => {
-      const sortedItems = [...labelList.items];
-      sortedItems.sort(
-        (a, b) =>
-          (customDataNames.indexOf(a.key) != -1
-            ? customDataNames.indexOf(a.key)
-            : customDataNames.length) -
-          (customDataNames.indexOf(b.key) != -1
-            ? customDataNames.indexOf(b.key)
-            : customDataNames.length)
-      );
-
-      if (!arraysEqual(labelList.items, sortedItems)) {
-        labelList.setItems(sortedItems);
-      }
-
-      const newCustomData = sortedItems.map((customData) => {
-        return { ...customData };
-      });
-      model.customData = newCustomData;
-    });
-    return item.model;
-  };
-
-  const sortedItems = Object.entries(model);
-  sortedItems.sort(
-    (a, b) =>
-      (customDataNames.indexOf(a[0]) != -1
-        ? customDataNames.indexOf(a[0])
-        : customDataNames.length) -
-      (customDataNames.indexOf(b[0]) != -1
-        ? customDataNames.indexOf(b[0])
-        : customDataNames.length)
-  );
-  const items = sortedItems?.map(makeItem) || [];
-
-  const labelList = new UIList();
-  labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
-  labelList.style = `min-width: 12em;`;
-  labelList.columnDescriptions = [
-    {
-      key: "key",
-      title: "Key", // TODO: translation
-      width: "14em",
-      editable: true,
-      continuous: false,
-    },
-    {
-      key: "value",
-      title: "Value", // TODO: translation
-      width: "10em",
-      editable: true,
-      continuous: false,
-    },
-  ];
-  labelList.showHeader = true;
-  labelList.minHeight = "5em";
-  labelList.setItems(items);
-
-  const deleteSelectedItem = () => {
-    const index = labelList.getSelectedItemIndex();
-    if (index === undefined) {
-      return;
-    }
-    const items = [...labelList.items];
-    items.splice(index, 1);
-    labelList.setItems(items);
-    const newCustomData = items.map((customData) => {
-      return { ...customData };
-    });
-    model.customData = newCustomData;
-    addRemoveButton.scrollIntoView({
-      behavior: "auto",
-      block: "nearest",
-      inline: "nearest",
-    });
-    labelList.setSelectedItemIndex(items.length - 1);
-  };
-
-  labelList.addEventListener("deleteKey", deleteSelectedItem);
-  const addRemoveButton = html.createDomElement("add-remove-buttons", {
-    addButtonCallback: () => {
-      // TODO: Maybe open a dialog with a list of possible keys?
-      const currentKeys = labelList.items.map((customData) => {
-        return customData.key;
-      });
-      let nextKey = "attributeName";
-      for (const key of supportedAttributes) {
-        if (!currentKeys.includes(key)) {
-          nextKey = key;
-          break;
-        }
-      }
-      const valueDefault = customDataNameMapping[nextKey]
-        ? customDataNameMapping[nextKey].default(fontObject)
-        : "";
-      const newItem = makeItem([nextKey, valueDefault]);
-      const newItems = [...labelList.items, newItem];
-      model.customData = newItems.map((label) => {
-        return { ...label };
-      });
-      labelList.setItems(newItems);
-      labelList.editCell(newItems.length - 1, "key");
-      addRemoveButton.scrollIntoView({
-        behavior: "auto",
-        block: "nearest",
-        inline: "nearest",
-      });
-    },
-    removeButtonCallback: deleteSelectedItem,
-    disableRemoveButton: true,
-  });
-
-  updateRemoveButton(labelList, addRemoveButton);
-
-  return html.div({ style: "display: grid; grid-gap: 0.3em;" }, [
-    labelList,
-    addRemoveButton,
-  ]);
-}
-
 function buildElementLocations(controller, fontAxes) {
   const locationElement = html.createDomElement("designspace-location", {
     continuous: false,
@@ -1154,7 +1104,7 @@ function getLabelFromKey(key) {
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
     guidelines: translate("sidebar.user-settings.guidelines"),
-    customData: translate("Custom Data"), // TODO: translation
+    customData: translate("Advanced Information"), // TODO: translation
   };
   return keyLabelMap[key] || key;
 }
