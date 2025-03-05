@@ -4,6 +4,7 @@ import { SimpleElement } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import { DefaultFormatter, labeledTextInput } from "@fontra/core/ui-utils.js";
+import { zip } from "@fontra/core/utils.js";
 import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
 import { themeColorCSS } from "./theme-support.js";
@@ -160,7 +161,6 @@ export class CustomDataList extends SimpleElement {
         if (key == undefined || value == undefined) {
           return;
         }
-
         const newItem = makeItem([key, value]);
         const newItems = [...labelList.items, newItem];
         model.customData = newItems.map((label) => {
@@ -200,9 +200,11 @@ export class CustomDataList extends SimpleElement {
         nameController.model.customDataKey == ""
           ? undefined
           : nameController.model.customDataKey;
-      nameController.model.suggestedCustomDataValue = `Please enter the correct value`;
       nameController.model.suggestedCustomDataKey = `Please enter a valid key`;
-      if (customDataKey != undefined) {
+      nameController.model.suggestedCustomDataValue = `Please enter the correct value`;
+      if (customDataKey == undefined) {
+        warnings.push(`⚠️ ${translate("Missing custom data key")}`); // TODO: translation
+      } else {
         const customDataInfo = customDataNameMapping[customDataKey]?.info;
         if (customDataInfo) {
           infos.push(customDataInfo);
@@ -232,17 +234,27 @@ export class CustomDataList extends SimpleElement {
       infoElement.innerText = infos.length ? infos.join("\n") : "";
     };
 
+    const customDataInfo = customDataNameMapping[nextKey];
+    const customDataFormatter = customDataInfo?.formatter || DefaultFormatter;
+    const defaultValue = customDataInfo
+      ? customDataFormatter.toString(customDataInfo.default(fontObject))
+      : undefined;
     const nameController = new ObservableController({
       customDataKey: nextKey,
       suggestedCustomDataKey: nextKey,
-      customDataValue: customDataNameMapping[nextKey].default(fontObject),
+      customDataValue: defaultValue,
       suggestedCustomDataValue: "Enter number, list or boolean",
     });
 
     nameController.addKeyListener("customDataKey", (event) => {
       validateInput();
-      nameController.model.customDataValue =
-        customDataNameMapping[nameController.model.customDataKey]?.default(fontObject);
+      const customDataInfo = customDataNameMapping[nameController.model.customDataKey];
+      if (customDataInfo) {
+        const customDataFormatter = customDataInfo.formatter || DefaultFormatter;
+        nameController.model.customDataValue = customDataFormatter.toString(
+          customDataInfo.default(fontObject)
+        );
+      }
     });
 
     nameController.addKeyListener("customDataValue", (event) => {
@@ -270,9 +282,14 @@ export class CustomDataList extends SimpleElement {
       return {};
     }
 
+    const formatter =
+      customDataNameMapping[nameController.model.customDataKey]?.formatter ||
+      DefaultFormatter;
+    const customDataValue = formatter.fromString(nameController.model.customDataValue);
+
     return {
       key: nameController.model.customDataKey,
-      value: nameController.model.customDataValue,
+      value: customDataValue.value,
     };
   }
 
