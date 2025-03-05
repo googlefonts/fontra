@@ -20,15 +20,20 @@ function getDescenderWinDefault(fontSource = undefined) {
 
 function getFamilyNameDefault(fontSource = undefined) {
   return fontSource.familyName || "Family Name";
+
+function getSubfamilyNameDefault(fontObject = undefined) {
+  return fontObject.name || "Subfamily Name";
 }
 
-function getSubfamilyNameDefault(fontSource = undefined) {
-  return fontSource.name || "Subfamily Name";
+function getVersionNameDefault(fontObject = undefined) {
+  return fontObject.versionMajor
+    ? `Version ${fontObject.versionMajor}.${fontObject.versionMinor}`
+    : "Version 1.0";
 }
 
-function getstrikeoutPositionDefault(fontSource = undefined) {
-  return fontSource.lineMetricsHorizontalLayout.ascender.value / 2 || 250;
-
+function getStrikeoutPositionDefault(fontObject = undefined) {
+  return fontObject.lineMetricsHorizontalLayout?.ascender.value / 2 || 250;
+}
 
 function getCreatedDefault() {
   // Note: UTC might differ from your local time.
@@ -46,8 +51,12 @@ function getCreatedDefault() {
 }
 
 export const customDataNameMapping = {
-  // verticl metrics values
-  openTypeHheaAscender: { default: getAscenderDefault, formatter: _NumberFormatter },
+  // vertical metrics values
+  openTypeHheaAscender: {
+    default: getAscenderDefault,
+    formatter: _NumberFormatter,
+    info: "Integer. Ascender value. Corresponds to the OpenType hhea table `Ascender` field.",
+  },
   openTypeHheaDescender: { default: getDescenderDefault, formatter: _NumberFormatter },
   openTypeHheaLineGap: { default: () => 0, formatter: _NumberFormatter },
   openTypeOS2TypoAscender: { default: getAscenderDefault, formatter: _NumberFormatter },
@@ -70,7 +79,7 @@ export const customDataNameMapping = {
   openTypeOS2StrikeoutSize: { default: () => 50, formatter: _NumberFormatter },
   // name table entries
   openTypeNameUniqueID: { default: () => "Unique ID Name ID 3" }, // Name ID 3
-  openTypeNameVersion: { default: () => "Version 1.0" }, // Name ID 7
+  openTypeNameVersion: { default: getVersionNameDefault }, // Name ID 7
   openTypeNamePreferredFamilyName: { default: getFamilyNameDefault }, // Name ID 16
   openTypeNamePreferredSubfamilyName: { default: getSubfamilyNameDefault }, // Name ID 17
   openTypeNameCompatibleFullName: { default: () => "Compatible Full Name" }, // Name ID 18
@@ -81,7 +90,11 @@ export const customDataNameMapping = {
   openTypeOS2WidthClass: { default: () => 5, formatter: _NumberFormatter },
   openTypeHeadCreated: { default: getCreatedDefault }, // The timezone is UTC.
   openTypeOS2Selection: { default: () => [], formatter: ArrayFormatter }, // 7 = Use Typo Metrics, 8 = has WWS name, https://github.com/fonttools/fonttools/blob/598b974f87f35972da24e96e45bd0176d18930a0/Lib/fontTools/ufoLib/__init__.py#L1889
-  openTypeOS2Type: { default: () => [3], formatter: ArrayFormatter }, // https://github.com/googlefonts/glyphsLib/blob/c4db6b981d577f456d64ebe9993818770e170454/Lib/glyphsLib/builder/custom_params.py#L1166
+  openTypeOS2Type: {
+    default: () => [3],
+    formatter: ArrayFormatter,
+    info: `Font embedding bit:\n2 = "Preview & Print embedding"\n3 = "Editable embedding" (default)`,
+  },
   openTypeOS2Panose: {
     default: () => [2, 11, 5, 2, 4, 5, 4, 2, 2, 4],
     formatter: PanoseArrayFormatter,
