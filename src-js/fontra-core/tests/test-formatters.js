@@ -119,6 +119,10 @@ describe("BooleanFormatter", () => {
       ["Hello", undefined],
       ["   false    ", false],
       ["   true    ", true],
+      [0, undefined],
+      [1, undefined],
+      ["0", undefined],
+      ["1", undefined],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
