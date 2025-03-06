@@ -41,7 +41,6 @@ describe("ArrayFormatter", () => {
       ["1, 2,3,4", { value: [1, 2, 3, 4] }],
       ["", { value: [] }],
       ["Hello", { error: "not an array" }],
-      [[1, 2, 3, 4], { error: "input value not a string" }],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
@@ -56,9 +55,6 @@ describe("ArrayFormatter", () => {
     [
       [[1, 2, 3, 4], "1,2,3,4"],
       [[], ""],
-      [true, { error: "not an array" }],
-      [new Set([1, 2, 3]), { error: "not an array" }],
-      ["1,2,3,4", { error: "not an array" }],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
@@ -71,16 +67,15 @@ describe("FixedLengthArrayFormatter", () => {
   parametrize(
     "FixedLengthArrayFormatter fromString tests",
     [
-      [10, "1,2,3,4,5,6,7,8,9,10", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
-      [10, "1,2,3,4,5,6,7,8,9", undefined],
-      [2, "8,0", [8, 0]],
-      [2, [8, 0], undefined],
+      [10, "1,2,3,4,5,6,7,8,9,10", { value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }],
+      [10, "1,2,3,4,5,6,7,8,9", { error: "array length must be 10" }],
+      [2, "8,0", { value: [8, 0] }],
     ],
     (testData) => {
       const [arrayLength, input, expectedResult] = testData;
-      expect(
-        FixedLengthArrayFormatter(arrayLength).fromString(input).value
-      ).to.deep.equal(expectedResult);
+      expect(FixedLengthArrayFormatter(arrayLength).fromString(input)).to.deep.equal(
+        expectedResult
+      );
     }
   );
 });
@@ -90,9 +85,7 @@ describe("FixedLengthArrayFormatter", () => {
     "FixedLengthArrayFormatter toString tests",
     [
       [10, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "1,2,3,4,5,6,7,8,9,10"],
-      [10, [1, 2, 3, 4, 5, 6, 7, 8, 9], { error: "array length must be 10" }],
       [2, [8, 0], "8,0"],
-      [2, "8,0", { error: "not an array" }],
     ],
     (testData) => {
       const [arrayLength, input, expectedResult] = testData;
@@ -107,26 +100,22 @@ describe("BooleanFormatter", () => {
   parametrize(
     "BooleanFormatter fromString tests",
     [
-      ["false", false],
-      ["true", true],
-      ["False", false],
-      ["True", true],
-      ["FALSE", false],
-      ["TRUE", true],
-      [false, undefined],
-      [true, undefined],
-      ["", undefined],
-      ["Hello", undefined],
-      ["   false    ", false],
-      ["   true    ", true],
-      [0, undefined],
-      [1, undefined],
-      ["0", undefined],
-      ["1", undefined],
+      ["false", { value: false }],
+      ["true", { value: true }],
+      ["False", { value: false }],
+      ["True", { value: true }],
+      ["FALSE", { value: false }],
+      ["TRUE", { value: true }],
+      ["", { error: "not a boolean" }],
+      ["Hello", { error: "not a boolean" }],
+      ["   false    ", { value: false }],
+      ["   true    ", { value: true }],
+      ["0", { error: "not a boolean" }],
+      ["1", { error: "not a boolean" }],
     ],
     (testData) => {
       const [input, expectedResult] = testData;
-      expect(BooleanFormatter.fromString(input).value).to.deep.equal(expectedResult);
+      expect(BooleanFormatter.fromString(input)).to.deep.equal(expectedResult);
     }
   );
 });

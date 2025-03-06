@@ -1,3 +1,4 @@
+import { assert } from "./utils.js";
 function isString(value) {
   return typeof value === "string" || value instanceof String;
 }
@@ -5,9 +6,7 @@ function isString(value) {
 export const BooleanFormatter = {
   toString: (value) => value.toString(),
   fromString: (value) => {
-    if (!isString(value)) {
-      return { error: "input value not a string" };
-    }
+    assert(isString(value), `input value not a string`);
     if (value.trim().toLowerCase() === "true") {
       return { value: true };
     } else if (value.trim().toLowerCase() === "false") {
@@ -19,19 +18,9 @@ export const BooleanFormatter = {
 };
 
 export const ArrayFormatter = {
-  toString: (value, arrayLength) => {
-    if (!Array.isArray(value)) {
-      return { error: "not an array" };
-    }
-    if (arrayLength && value.length != arrayLength) {
-      return { error: `array length must be ${arrayLength}` };
-    }
-    return value.toString();
-  },
+  toString: (value) => value.toString(),
   fromString: (value, arrayLength) => {
-    if (!isString(value)) {
-      return { error: "input value not a string" };
-    }
+    assert(isString(value), `input value not a string`);
     let array = [];
     try {
       array = JSON.parse("[" + value + "]");
