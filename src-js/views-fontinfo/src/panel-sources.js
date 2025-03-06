@@ -3,6 +3,8 @@ import {
   getActionIdentifierFromKeyEvent,
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { getCustomDataInfoFromKey } from "@fontra/core/font-info-data.js";
+import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
@@ -11,13 +13,12 @@ import {
   DefaultFormatter,
   NumberFormatter,
   OptionalNumberFormatter,
-  checkboxListCell,
   labelForElement,
   labeledCheckbox,
   labeledTextInput,
   textInput,
 } from "@fontra/core/ui-utils.js";
-import { arrowKeyDeltas, enumerate, modulo, range, round } from "@fontra/core/utils.js";
+import { arrowKeyDeltas, modulo, range, round } from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -729,7 +730,21 @@ class SourceBox extends HTMLElement {
             );
             continue;
           }
-          source.customData[key] = item["value"];
+
+          let value = item["value"];
+          if (isString(item["value"])) {
+            // This has been edited via double click in the list.
+            // All list cells have the default formatter,
+            // as we cannot set it individually for each cell, yet.
+            const customDataInfo = getCustomDataInfoFromKey(key);
+            const formatter = customDataInfo?.formatter || DefaultFormatter;
+            const returnValue = formatter.fromString(value);
+            if (returnValue.value != undefined) {
+              value = returnValue.value;
+            }
+          }
+
+          source.customData[key] = value;
         }
       }, `edit customData`); // TODO: translation
     });
@@ -795,11 +810,15 @@ input {
 
     // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
     if (!this.source.isSparse) {
-      const customDataList = new CustomDataList({
-        controller: this.controllers.customData,
-        fontObject: this.source,
-        supportedAttributes: customDataAttributesSupported,
-      });
+      const customDataInfos = customDataAttributesSupported.map((attributeName) => ({
+        ...getCustomDataInfoFromKey(attributeName),
+        getDefaultFunction: () =>
+          getCustomDataInfoFromKey(attributeName).getDefaultFunction(this.source),
+      }));
+      const customDataList = new CustomDataList(
+        this.controllers.customData,
+        customDataInfos
+      );
       accordionItems.push(
         {
           label: getLabelFromKey("lineMetricsHorizontalLayout"),

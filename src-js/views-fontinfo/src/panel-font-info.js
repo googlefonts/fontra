@@ -1,8 +1,11 @@
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { getCustomDataInfoFromKey } from "@fontra/core/font-info-data.js";
+import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
+import { DefaultFormatter } from "@fontra/core/ui-utils.js";
 import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
 import { message } from "@fontra/web-components/modal-dialog.js";
 import { Accordion } from "@fontra/web-components/ui-accordion.js";
@@ -126,17 +129,31 @@ export class FontInfoPanel extends BaseInfoPanel {
             );
             continue;
           }
-          root.fontInfo.customData[key] = item["value"];
+
+          let value = item["value"];
+          if (isString(item["value"])) {
+            // This has been edited via double click in the list.
+            // All list cells have the default formatter,
+            // as we cannot set it individually for each cell, yet.
+            const customDataInfo = getCustomDataInfoFromKey(key);
+            const formatter = customDataInfo?.formatter || DefaultFormatter;
+            const returnValue = formatter.fromString(value);
+            if (returnValue.value != undefined) {
+              value = returnValue.value;
+            }
+          }
+
+          root.fontInfo.customData[key] = value;
         }
       }, `edit customData`); // TODO: translation
     });
 
-    const customDataList = new CustomDataList({
-      controller: cutomDataController,
-      fontObject: info,
-      supportedAttributes: customDataAttributesSupported,
-    });
-
+    const customDataInfos = customDataAttributesSupported.map((attributeName) => ({
+      ...getCustomDataInfoFromKey(attributeName),
+      getDefaultFunction: () =>
+        getCustomDataInfoFromKey(attributeName).getDefaultFunction(info),
+    }));
+    const customDataList = new CustomDataList(cutomDataController, customDataInfos);
     const accordion = new Accordion();
     const accordionItems = [
       {

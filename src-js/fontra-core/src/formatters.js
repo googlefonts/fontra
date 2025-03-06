@@ -1,5 +1,5 @@
 import { assert } from "./utils.js";
-function isString(value) {
+export function isString(value) {
   return typeof value === "string" || value instanceof String;
 }
 
