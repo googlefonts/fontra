@@ -44,7 +44,7 @@ function getCreatedDefault() {
   const mm = String(date.getUTCMinutes()).padStart(2, "0");
   const SS = String(date.getUTCSeconds()).padStart(2, "0");
 
-  return `${YYYY}/${MM}/${DD} ${HH}:${mm}:${SS}`; // "YYYY/MM/DD HH:MM:SS"
+  return `${YYYY}/${MM}/${DD} ${HH}:${mm}:${SS}`;
 }
 
 export const customDataCollection = [
@@ -163,7 +163,7 @@ export const customDataCollection = [
   {
     key: "openTypeHeadCreated",
     getDefaultFunction: getCreatedDefault,
-    info: "The timezone is UTC and might differ to your local time.",
+    info: `"YYYY/MM/DD HH:MM:SS"\nThe timezone is UTC and might differ to your local time.`,
   },
   {
     key: "openTypeOS2Selection",
@@ -187,7 +187,7 @@ export const customDataCollection = [
     key: "openTypeOS2FamilyClass",
     getDefaultFunction: () => [8, 0],
     formatter: FixedLengthArrayFormatter(2),
-    info: "Class ID 8 = Sans Serif\nSubclass ID = 0: No Classification",
+    info: "OS/2 FamilyClass must be a list of 2: Class + Subclass.\nDefault -> [8, 0]\nClass ID 8 = Sans Serif\nSubclass ID = 0: No Classification",
   },
   {
     key: "openTypeOS2UnicodeRanges",
@@ -225,7 +225,7 @@ export const customDataCollection = [
     key: "postscriptBlueScale",
     getDefaultFunction: () => 0.039625,
     formatter: NumberFormatter,
-    info: "0.039625 -> default, please see: https://adobe-type-tools.github.io/font-tech-notes/pdfs/T1_SPEC.pdf",
+    info: "0.039625 -> default\nReference:\nhttps://adobe-type-tools.github.io/font-tech-notes/pdfs/T1_SPEC.pdf",
   },
   {
     key: "postscriptBlueShift",
