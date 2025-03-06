@@ -146,16 +146,8 @@ export class CustomDataList extends SimpleElement {
         const currentKeys = labelList.items.map((customData) => {
           return customData.key;
         });
-        let nextKey = undefined;
-        for (const key of this.supportedAttributes) {
-          if (!currentKeys.includes(key)) {
-            nextKey = key;
-            break;
-          }
-        }
         const { key, value } = await this._customDataPropertiesRunDialog(
           this.fontObject,
-          nextKey,
           this.supportedAttributes
         );
         if (key == undefined || value == undefined) {
@@ -190,60 +182,65 @@ export class CustomDataList extends SimpleElement {
     this.contentElement.appendChild(this.buildCustomDataList());
   }
 
-  async _customDataPropertiesRunDialog(fontObject, nextKey, supportedAttributes) {
+  async _customDataPropertiesRunDialog(fontObject, supportedAttributes) {
     const title = translate("Add advanced information"); // TODO: translation
 
     const validateInput = () => {
-      const infos = [];
       const warnings = [];
       const customDataKey =
         nameController.model.customDataKey == ""
           ? undefined
           : nameController.model.customDataKey;
-      nameController.model.suggestedCustomDataKey = `Please enter a valid key`;
-      nameController.model.suggestedCustomDataValue = `Please enter the correct value`;
-      if (customDataKey == undefined) {
-        warnings.push(`⚠️ ${translate("Missing custom data key")}`); // TODO: translation
-      } else {
-        const customDataInfo = customDataNameMapping[customDataKey]?.info;
-        if (customDataInfo) {
-          infos.push(customDataInfo);
-        }
+      const customDataValue =
+        nameController.model.customDataValue == ""
+          ? undefined
+          : nameController.model.customDataValue;
 
+      if (customDataKey == undefined && customDataValue == undefined) {
+        // We don't want to start with a warning.
+        dialog.defaultButton.classList.add("disabled");
+        warningElement.innerText = "";
+        return;
+      }
+
+      if (customDataKey == undefined && customDataValue != undefined) {
+        dialog.defaultButton.classList.add("disabled");
+        warningElement.innerText = "⚠️ Please enter a key."; // TODO: translation
+        return;
+      }
+
+      if (customDataKey != undefined && customDataValue == undefined) {
+        dialog.defaultButton.classList.add("disabled");
         if (!customDataNameMapping[customDataKey]) {
-          warnings.push(`⚠️ ${translate("Unkown custom data key")}`); // TODO: translation
+          warningElement.innerText = `⚠️ ${translate("Unkown custom data key")}`; // TODO: translation
+        } else {
+          // No value, but a valid key.No extra warning needed,
+          // because we have a placeholder text.
+          warningElement.innerText = "";
         }
+        return;
+      }
 
-        const customDataValue =
-          nameController.model.customDataValue == ""
-            ? undefined
-            : nameController.model.customDataValue;
-        if (customDataValue != undefined) {
-          const formatter =
-            customDataNameMapping[customDataKey]?.formatter || DefaultFormatter;
-          const result = formatter.fromString(customDataValue);
-          if (result.value == undefined) {
-            const msg = result.error ? ` "${result.error}"` : "";
-            warnings.push(`⚠️ Invalid value${msg}`); // TODO: translation
-          }
-        }
+      // Now we know we have a key and value.
+      infoElement.innerText = customDataNameMapping[customDataKey]?.info || "";
+
+      const formatter =
+        customDataNameMapping[customDataKey]?.formatter || DefaultFormatter;
+      const result = formatter.fromString(customDataValue);
+      if (result.value == undefined) {
+        const msg = result.error ? ` "${result.error}"` : "";
+        warnings.push(`⚠️ Invalid value${msg}`); // TODO: translation
       }
 
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
-      infoElement.innerText = infos.length ? infos.join("\n") : "";
     };
 
-    const customDataInfo = customDataNameMapping[nextKey];
-    const customDataFormatter = customDataInfo?.formatter || DefaultFormatter;
-    const defaultValue = customDataInfo
-      ? customDataFormatter.toString(customDataInfo.default(fontObject))
-      : undefined;
     const nameController = new ObservableController({
-      customDataKey: nextKey,
-      suggestedCustomDataKey: nextKey,
-      customDataValue: defaultValue,
-      suggestedCustomDataValue: "Enter number, list or boolean",
+      customDataKey: undefined,
+      suggestedCustomDataKey: "Please enter a key",
+      customDataValue: undefined,
+      suggestedCustomDataValue: "Please enter a value",
     });
 
     nameController.addKeyListener("customDataKey", (event) => {
@@ -266,7 +263,7 @@ export class CustomDataList extends SimpleElement {
 
     const dialog = await dialogSetup(title, null, [
       { title: translate("dialog.cancel"), isCancelButton: true },
-      { title: translate("dialog.add"), isDefaultButton: true },
+      { title: translate("dialog.add"), isDefaultButton: true, disabled: true },
     ]);
     dialog.setContent(contentElement);
 
@@ -274,8 +271,6 @@ export class CustomDataList extends SimpleElement {
       () => contentElement.querySelector("#source-name-text-input")?.focus(),
       0
     );
-
-    validateInput();
 
     if (!(await dialog.run())) {
       // User cancelled
@@ -285,11 +280,10 @@ export class CustomDataList extends SimpleElement {
     const formatter =
       customDataNameMapping[nameController.model.customDataKey]?.formatter ||
       DefaultFormatter;
-    const customDataValue = formatter.fromString(nameController.model.customDataValue);
 
     return {
       key: nameController.model.customDataKey,
-      value: customDataValue.value,
+      value: formatter.fromString(nameController.model.customDataValue).value,
     };
   }
 
