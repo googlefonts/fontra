@@ -1,8 +1,9 @@
+import { NumberFormatter } from "@fontra/core/ui-utils.js";
 import {
   ArrayFormatter,
   BooleanFormatter,
   PanoseArrayFormatter,
-  _NumberFormatter,
+  FixedLengthArrayFormatter,
 } from "./formatters.js";
 
 // NOTE: fontObject can be FontInfo or FontSource
@@ -12,10 +13,6 @@ function getAscenderDefault(fontObject = undefined) {
 
 function getDescenderDefault(fontObject = undefined) {
   return fontObject.lineMetricsHorizontalLayout?.descender.value || -200;
-}
-
-function getDescenderWinDefault(fontSource = undefined) {
-  return fontSource.lineMetricsHorizontalLayout.descender.value * -1 || 200;
 }
 
 function getFamilyNameDefault(fontSource = undefined) {
@@ -54,29 +51,29 @@ export const customDataNameMapping = {
   // vertical metrics values
   openTypeHheaAscender: {
     default: getAscenderDefault,
-    formatter: _NumberFormatter,
+    formatter: NumberFormatter,
     info: "Integer. Ascender value. Corresponds to the OpenType hhea table `Ascender` field.",
   },
-  openTypeHheaDescender: { default: getDescenderDefault, formatter: _NumberFormatter },
-  openTypeHheaLineGap: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2TypoAscender: { default: getAscenderDefault, formatter: _NumberFormatter },
+  openTypeHheaDescender: { default: getDescenderDefault, formatter: NumberFormatter },
+  openTypeHheaLineGap: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2TypoAscender: { default: getAscenderDefault, formatter: NumberFormatter },
   openTypeOS2TypoDescender: {
     default: getDescenderDefault,
-    formatter: _NumberFormatter,
+    formatter: NumberFormatter,
   },
-  openTypeOS2TypoLineGap: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2WinAscent: { default: getAscenderDefault, formatter: _NumberFormatter },
+  openTypeOS2TypoLineGap: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2WinAscent: { default: getAscenderDefault, formatter: NumberFormatter },
   openTypeOS2WinDescent: {
-    default: getDescenderWinDefault,
-    formatter: _NumberFormatter,
+    default: (fontSource) => getDescenderDefault(fontSource) * -1,
+    formatter: NumberFormatter,
   },
-  postscriptUnderlinePosition: { default: () => -100, formatter: _NumberFormatter },
-  postscriptUnderlineThickness: { default: () => 50, formatter: _NumberFormatter },
+  postscriptUnderlinePosition: { default: () => -100, formatter: NumberFormatter },
+  postscriptUnderlineThickness: { default: () => 50, formatter: NumberFormatter },
   openTypeOS2StrikeoutPosition: {
-    default: getstrikeoutPositionDefault,
-    formatter: _NumberFormatter,
+    default: getStrikeoutPositionDefault,
+    formatter: NumberFormatter,
   },
-  openTypeOS2StrikeoutSize: { default: () => 50, formatter: _NumberFormatter },
+  openTypeOS2StrikeoutSize: { default: () => 50, formatter: NumberFormatter },
   // name table entries
   openTypeNameUniqueID: { default: () => "Unique ID Name ID 3" }, // Name ID 3
   openTypeNameVersion: { default: getVersionNameDefault }, // Name ID 7
@@ -86,8 +83,8 @@ export const customDataNameMapping = {
   openTypeNameWWSFamilyName: { default: getFamilyNameDefault }, // Name ID 21
   openTypeNameWWSSubfamilyName: { default: getSubfamilyNameDefault }, // Name ID 22
   // misc
-  openTypeOS2WeightClass: { default: () => 400, formatter: _NumberFormatter },
-  openTypeOS2WidthClass: { default: () => 5, formatter: _NumberFormatter },
+  openTypeOS2WeightClass: { default: () => 400, formatter: NumberFormatter },
+  openTypeOS2WidthClass: { default: () => 5, formatter: NumberFormatter },
   openTypeHeadCreated: { default: getCreatedDefault }, // The timezone is UTC.
   openTypeOS2Selection: { default: () => [], formatter: ArrayFormatter }, // 7 = Use Typo Metrics, 8 = has WWS name, https://github.com/fonttools/fonttools/blob/598b974f87f35972da24e96e45bd0176d18930a0/Lib/fontTools/ufoLib/__init__.py#L1889
   openTypeOS2Type: {
@@ -107,45 +104,45 @@ export const customDataNameMapping = {
   postscriptOtherBlues: { default: () => [], formatter: ArrayFormatter },
   postscriptFamilyBlues: { default: () => [], formatter: ArrayFormatter },
   postscriptFamilyOtherBlues: { default: () => [], formatter: ArrayFormatter },
-  postscriptBlueScale: { default: () => 0.039625, formatter: _NumberFormatter },
-  postscriptBlueShift: { default: () => 1, formatter: _NumberFormatter },
-  postscriptBlueFuzz: { default: () => 1, formatter: _NumberFormatter },
+  postscriptBlueScale: { default: () => 0.039625, formatter: NumberFormatter },
+  postscriptBlueShift: { default: () => 1, formatter: NumberFormatter },
+  postscriptBlueFuzz: { default: () => 1, formatter: NumberFormatter },
   postscriptStemSnapH: { default: () => [], formatter: ArrayFormatter },
   postscriptStemSnapV: { default: () => [], formatter: ArrayFormatter },
   postscriptForceBold: { default: () => false, formatter: BooleanFormatter },
   // PostScript Specific Data
   // postscriptFontName // NOTE: not in ufoInfoAttributesToRoundTrip
   // postscriptFullName // NOTE: not in ufoInfoAttributesToRoundTrip
-  postscriptSlantAngle: { default: () => 0.0, formatter: _NumberFormatter },
-  postscriptUniqueID: { default: () => 0, formatter: _NumberFormatter },
+  postscriptSlantAngle: { default: () => 0.0, formatter: NumberFormatter },
+  postscriptUniqueID: { default: () => 0, formatter: NumberFormatter },
   postscriptWeightName: { default: () => "postscriptWeightName" },
   postscriptIsFixedPitch: { default: () => false, formatter: BooleanFormatter }, // Indicates if the font is monospaced.
-  postscriptDefaultWidthX: { default: () => 0, formatter: _NumberFormatter },
-  postscriptNominalWidthX: { default: () => 0, formatter: _NumberFormatter },
+  postscriptDefaultWidthX: { default: () => 0, formatter: NumberFormatter },
+  postscriptNominalWidthX: { default: () => 0, formatter: NumberFormatter },
   postscriptDefaultCharacter: { default: () => "glyphName" }, // The name of the glyph that should be used as the default character in PFM files.
-  postscriptWindowsCharacterSet: { default: () => 2, formatter: _NumberFormatter }, // 2 = Default
+  postscriptWindowsCharacterSet: { default: () => 2, formatter: NumberFormatter }, // 2 = Default
   // OpenType vhea Table Fields
-  // openTypeVheaVertTypoAscender  // NOTE: not in ufoInfoAttributesToRoundTrip
-  // openTypeVheaVertTypoDescender  // NOTE: not in ufoInfoAttributesToRoundTrip
-  openTypeVheaVertTypoLineGap: { default: () => 0, formatter: _NumberFormatter },
-  openTypeVheaCaretSlopeRise: { default: () => 0, formatter: _NumberFormatter },
-  openTypeVheaCaretSlopeRun: { default: () => 0, formatter: _NumberFormatter },
-  openTypeVheaCaretOffset: { default: () => 0, formatter: _NumberFormatter },
+  // openTypeVheaVertTypoAscender  // NOTE: part of lineMetricsVerMapping
+  // openTypeVheaVertTypoDescender  // NOTE: part of lineMetricsVerMapping
+  openTypeVheaVertTypoLineGap: { default: () => 0, formatter: NumberFormatter },
+  openTypeVheaCaretSlopeRise: { default: () => 0, formatter: NumberFormatter },
+  openTypeVheaCaretSlopeRun: { default: () => 0, formatter: NumberFormatter },
+  openTypeVheaCaretOffset: { default: () => 0, formatter: NumberFormatter },
   // OpenType hhea Table Fields
-  openTypeHheaCaretSlopeRise: { default: () => 0, formatter: _NumberFormatter },
-  openTypeHheaCaretSlopeRun: { default: () => 0, formatter: _NumberFormatter },
-  openTypeHheaCaretOffset: { default: () => 0, formatter: _NumberFormatter },
+  openTypeHheaCaretSlopeRise: { default: () => 0, formatter: NumberFormatter },
+  openTypeHheaCaretSlopeRun: { default: () => 0, formatter: NumberFormatter },
+  openTypeHheaCaretOffset: { default: () => 0, formatter: NumberFormatter },
   // OpenType OS/2 Table Fields
-  openTypeOS2SubscriptXSize: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SubscriptYSize: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SubscriptXOffset: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SubscriptYOffset: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SuperscriptXSize: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SuperscriptYSize: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SuperscriptXOffset: { default: () => 0, formatter: _NumberFormatter },
-  openTypeOS2SuperscriptYOffset: { default: () => 0, formatter: _NumberFormatter },
+  openTypeOS2SubscriptXSize: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SubscriptYSize: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SubscriptXOffset: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SubscriptYOffset: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SuperscriptXSize: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SuperscriptYSize: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SuperscriptXOffset: { default: () => 0, formatter: NumberFormatter },
+  openTypeOS2SuperscriptYOffset: { default: () => 0, formatter: NumberFormatter },
   // OpenType OS/2 Table Fields
-  openTypeHeadLowestRecPPEM: { default: () => 6, formatter: _NumberFormatter }, // Smallest readable size in pixels.
+  openTypeHeadLowestRecPPEM: { default: () => 6, formatter: NumberFormatter }, // Smallest readable size in pixels.
   openTypeHeadFlags: { default: () => [], formatter: ArrayFormatter },
 };
 
