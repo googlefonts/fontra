@@ -347,15 +347,6 @@ class DesignspaceBackend:
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
 
-        # Using a dict as an order-preserving set:
-        ufoPaths = {source.path: None for source in self.dsDoc.sources}
-        for ufoPath in ufoPaths:
-            reader = manager.getReader(ufoPath)
-            for ufoLayerName in reader.getLayerNames():
-                self.ufoLayers.append(
-                    UFOLayer(manager=manager, path=ufoPath, name=ufoLayerName)
-                )
-
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
             if self._familyName is None and source.familyName:
@@ -365,6 +356,12 @@ class DesignspaceBackend:
             ufoLayerName = source.layerName or defaultLayerName
 
             sourceLayer = self.ufoLayers.findItem(path=source.path, name=ufoLayerName)
+            if sourceLayer is None:
+                sourceLayer = UFOLayer(
+                    manager=manager, path=source.path, name=ufoLayerName
+                )
+                self.ufoLayers.append(sourceLayer)
+
             sourceStyleName = source.styleName or sourceLayer.fileName
             sourceName = (
                 sourceStyleName
@@ -382,6 +379,17 @@ class DesignspaceBackend:
                     isDefault=source == self.dsDoc.default,
                 )
             )
+
+        # Add remaining layers (background layers, variable glyph layers)
+        for source in self.dsDoc.sources:
+            ufoPath = source.path
+            reader = manager.getReader(ufoPath)
+            for ufoLayerName in reader.getLayerNames():
+                layer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
+                if layer is None:
+                    self.ufoLayers.append(
+                        UFOLayer(manager=manager, path=ufoPath, name=ufoLayerName)
+                    )
 
         self._updatePathsToWatch()
 
