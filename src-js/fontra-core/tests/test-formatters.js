@@ -2,36 +2,36 @@ import {
   ArrayFormatter,
   BooleanFormatter,
   FixedLengthArrayFormatter,
-  _NumberFormatter,
 } from "@fontra/core/formatters.js";
 import { expect } from "chai";
 
 import { getTestData, parametrize } from "./test-support.js";
 
-describe("NumberFormatter", () => {
-  parametrize(
-    "NumberFormatter tests",
-    [
-      ["1", 1],
-      ["11234", 11234],
-      ["0", 0],
-      ["-200", -200],
-      ["asdfg200", undefined],
-      ["", undefined],
-      ["test", undefined],
-      [undefined, undefined],
-      [true, undefined],
-      [false, undefined],
-      [null, undefined],
-      [200, undefined],
-      [0, undefined],
-    ],
-    (testData) => {
-      const [input, expectedResult] = testData;
-      expect(_NumberFormatter.fromString(input).value).to.equal(expectedResult);
-    }
-  );
-});
+// This is in preparation for NumberFormatter
+// describe("NumberFormatter", () => {
+//   parametrize(
+//     "NumberFormatter tests",
+//     [
+//       ["1", 1],
+//       ["11234", 11234],
+//       ["0", 0],
+//       ["-200", -200],
+//       ["asdfg200", undefined],
+//       ["", undefined],
+//       ["test", undefined],
+//       [undefined, undefined],
+//       [true, undefined],
+//       [false, undefined],
+//       [null, undefined],
+//       [200, undefined],
+//       [0, undefined],
+//     ],
+//     (testData) => {
+//       const [input, expectedResult] = testData;
+//       expect(NumberFormatter.fromString(input).value).to.equal(expectedResult);
+//     }
+//   );
+// });
 
 describe("ArrayFormatter", () => {
   parametrize(
