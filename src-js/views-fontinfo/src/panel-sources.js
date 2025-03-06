@@ -757,7 +757,7 @@ class SourceBox extends HTMLElement {
   gap: 0.5em;
   align-items: start;
   align-content: start;
-  padding-bottom: 2em;
+  padding-bottom: 1em;
 }
 
 .fontra-ui-font-info-sources-panel-line-metrics-hor {
@@ -1019,7 +1019,7 @@ function buildFontGuidelineList(controller) {
 
   updateRemoveButton(labelList, addRemoveButton);
 
-  return html.div({ style: "display: grid; grid-gap: 0.3em; padding-bottom: 2em;" }, [
+  return html.div({ style: "display: grid; grid-gap: 0.3em; padding-bottom: 1em;" }, [
     labelList,
     addRemoveButton,
   ]);

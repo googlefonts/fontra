@@ -155,6 +155,12 @@ export class FontInfoPanel extends BaseInfoPanel {
     }));
     const customDataList = new CustomDataList(cutomDataController, customDataInfos);
     const accordion = new Accordion();
+
+    accordion.appendStyle(`
+      #general {
+        padding-bottom: 1em;
+      }
+      `);
     const accordionItems = [
       {
         label: translate("sources.labels.general"),
