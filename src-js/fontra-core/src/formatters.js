@@ -2,30 +2,6 @@ function isString(value) {
   return typeof value === "string" || value instanceof String;
 }
 
-// TODO: Keep in mind, that we have NumberFormatter in ui-utils.js.
-// _NumberFormatter is different because of:
-// NumberFormatter.fromString(0) == undefined -> but should be 0
-// NumberFormatter.fromString(true) == 1 -> but should be undefined
-export const _NumberFormatter = {
-  toString: (value) => {
-    if (isNaN(value)) {
-      return { error: "input value not a number" };
-    }
-    return value.toString();
-  },
-  fromString: (value) => {
-    if (!isString(value)) {
-      return { error: "input value not a string" };
-    }
-    const number = Number(value);
-    if (isNaN(number) || !value) {
-      return { error: "not a number" };
-    } else {
-      return { value: number };
-    }
-  },
-};
-
 export const BooleanFormatter = {
   toString: (value) => value.toString(),
   fromString: (value) => {
