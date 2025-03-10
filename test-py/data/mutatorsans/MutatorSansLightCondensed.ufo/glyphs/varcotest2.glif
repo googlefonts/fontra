@@ -82,8 +82,12 @@
       </dict>
       <key>xyz.fontra.layer-names</key>
       <dict>
-        <key>MutatorSansBoldCondensed/weight=850,flip=100</key>
+        <key>bold-condensed^weight=850,flip=100</key>
         <string>weight=850,flip=100</string>
+        <key>light-condensed^varco_flip</key>
+        <string>varco_flip</string>
+        <key>light-condensed^varco_flop</key>
+        <string>varco_flop</string>
       </dict>
     </dict>
   </lib>
