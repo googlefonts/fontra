@@ -623,16 +623,24 @@ class DesignspaceBackend:
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
             ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+            ufoPath = self.defaultUFOLayer.path
+
+            if ufoLayer is None and "^" in layerName:
+                ufoPath, layerName = self._findUFOForLayerName(
+                    layerName, self.defaultUFOLayer.path
+                )
+                ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=layerName)
 
             if ufoLayer is None:
                 # This layer is not used by any source and we haven't seen it
-                # before. Let's create a new layer in the default UFO.
+                # before. Let's create a new layer in the appropriate UFO.
                 ufoLayer = self._createUFOLayer(
-                    glyphName, self.defaultUFOLayer.path, layerName, layerName
+                    glyphName, ufoPath, layerName, layerName
                 )
                 if ufoLayer.fontraLayerName != layerName:
                     layerNameMapping[ufoLayer.fontraLayerName] = layerName
                 layerName = ufoLayer.fontraLayerName
+
             layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
 
@@ -706,6 +714,19 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
+    def _findUFOForLayerName(self, layerName, ufoPath):
+        if "^" in layerName:
+            sourceIdentifier, bgLayerName = layerName.split("^", 1)
+            dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
+            if dsSource is not None:
+                ufoPath = dsSource.layer.path
+                layerName = bgLayerName
+            # else:
+            #     print([s for s in self.dsSources])
+            #     assert 0, ("===", sourceIdentifier, layerName)
+
+        return ufoPath, layerName
+
     def _createDefaultSourceAndUFO(self, sourceName):
         assert not self.dsSources
         assert not self.dsDoc.sources
@@ -767,16 +788,17 @@ class DesignspaceBackend:
             self._writeDesignSpaceDocument()
 
         if sparseLocalLocation:
-            ufoLayer = self.ufoLayers.findItem(
-                fontraLayerName=revLayerNameMapping.get(
-                    source.layerName, source.layerName
-                )
+            layerName = revLayerNameMapping.get(source.layerName, source.layerName)
+            ufoPath, layerName = self._findUFOForLayerName(
+                layerName, dsSource.layer.path
             )
+            assert dsSource.layer.path == ufoPath
+
+            ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=layerName)
 
             if ufoLayer is None:
-                ufoPath = dsSource.layer.path
                 ufoLayer = self._createUFOLayer(
-                    glyphName, ufoPath, source.layerName, source.layerName
+                    glyphName, ufoPath, layerName, source.layerName
                 )
                 ufoLayerName = ufoLayer.name
             else:
