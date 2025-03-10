@@ -105,7 +105,7 @@
       </array>
       <key>xyz.fontra.layer-names</key>
       <dict>
-        <key>MutatorSansBoldCondensed/foreground</key>
+        <key>bold-condensed</key>
         <string>weight=850</string>
       </dict>
       <key>xyz.fontra.source-names</key>

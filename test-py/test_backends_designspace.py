@@ -3,7 +3,7 @@ import shutil
 import uuid
 from contextlib import aclosing
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -222,7 +222,7 @@ async def test_addLocalAxis(writableTestFont):
 async def test_getGuidelines(writableTestFont):
     glyph = await writableTestFont.getGlyph("E")
 
-    layerName = "MutatorSansLightCondensed/foreground"
+    layerName = "light-condensed"
     layer = glyph.layers[layerName]
 
     assert 1 == len(layer.glyph.guidelines)
@@ -262,7 +262,7 @@ async def test_addGuidelines(writableTestFont):
 async def test_getAnchors(writableTestFont):
     glyph = await writableTestFont.getGlyph("E")
 
-    layerName = "MutatorSansLightCondensed/foreground"
+    layerName = "light-condensed"
     layer = glyph.layers[layerName]
 
     assert 1 == len(layer.glyph.anchors)
@@ -493,6 +493,7 @@ async def test_putAxes(writableTestFont):
                 "Test_BoldCondensed.ufo",
                 "Test_BoldWide.ufo",
                 "Test_LightCondensed.ufo",
+                "Test_LightCondensedItalic.ufo",
                 "Test_LightWide.ufo",
             ],
             "Test_LightWide.ufo",
@@ -520,34 +521,54 @@ async def test_newFileSystemBackend(
     assert [] == (await font.getAxes()).axes
     assert initialExpectedFileNames == fileNamesFromDir(tmpdir)
 
-    axes = await sourceFont.getAxes()
-    await font.putAxes(axes)
+    await font.putAxes(await sourceFont.getAxes())
+
+    sources = {
+        sourceIdentifier: source
+        for sourceIdentifier, source in (await sourceFont.getSources()).items()
+        if ".S." not in source.name  # to simplify designspace vs ufo test
+    }
+    await font.putSources(sources)
+
     glyphMap = await sourceFont.getGlyphMap()
-    glyph = await sourceFont.getGlyph("A")
-    await font.putGlyph("A", glyph, glyphMap["A"])
+    glyph = await sourceFont.getGlyph("H")
+    await font.putGlyph("H", glyph, glyphMap["H"])
 
     assert expectedFileNames == fileNamesFromDir(tmpdir)
 
     assert (tmpdir / referenceUFO).exists(), fileNamesFromDir(tmpdir)
 
-    assert ["A_.glif", "contents.plist"] == fileNamesFromDir(
+    assert ["H_.glif", "contents.plist"] == fileNamesFromDir(
         tmpdir / referenceUFO / "glyphs"
     )
 
     assert [
         "fontinfo.plist",
         "glyphs",
+        # "glyphs.support.S_.wide",  # see sources filter above
         "layercontents.plist",
+        "lib.plist",
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / referenceUFO)
 
-    newGlyph = await font.getGlyph("A")
+    newGlyph = await font.getGlyph("H")
     assert glyph == newGlyph
 
     # Check with freshly opened font
     referenceFont = getFileSystemBackend(destPath)
-    referenceGlyph = await referenceFont.getGlyph("A")
-    assert glyph == referenceGlyph
+
+    referenceGlyph = await referenceFont.getGlyph("H")
+    # referenceGlyph.sources.sort()
+    assert normalizeSourceOrder(glyph) == normalizeSourceOrder(referenceGlyph)
+
+
+def normalizeSourceOrder(glyph):
+    return replace(
+        glyph,
+        sources=sorted(
+            glyph.sources, key=lambda source: tuple(sorted(source.location.items()))
+        ),
+    )
 
 
 async def test_writeCorrectLayers(tmpdir, testFont):
@@ -567,7 +588,7 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     assert [
         "fontinfo.plist",
         "glyphs",
-        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
+        "glyphs.light-condensed^support",
         "layercontents.plist",
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / "Test_LightCondensed.ufo")
@@ -737,11 +758,11 @@ async def test_putSources_delete_revive(writableTestFont):
         "support.crossbar",
     ]
     assert {layerName for layerName in originalGlyph.layers} == {
-        "MutatorSansLightCondensed/foreground",
-        "MutatorSansLightCondensed/support.crossbar",
-        "MutatorSansBoldCondensed/foreground",
-        "MutatorSansLightWide/foreground",
-        "MutatorSansBoldWide/foreground",
+        "light-condensed",
+        "support.crossbar",
+        "bold-condensed",
+        "light-wide",
+        "bold-wide",
     }
 
     changedSources = deepcopy(originalSources)
@@ -758,10 +779,10 @@ async def test_putSources_delete_revive(writableTestFont):
         "support.crossbar",
     ]
     assert {layerName for layerName in changedGlyph.layers} == {
-        "MutatorSansLightCondensed/foreground",
-        "MutatorSansLightCondensed/support.crossbar",
-        "MutatorSansBoldCondensed/foreground",
-        "MutatorSansLightWide/foreground",
+        "light-condensed",
+        "support.crossbar",
+        "bold-condensed",
+        "light-wide",
     }
 
     await writableTestFont.putSources(originalSources)

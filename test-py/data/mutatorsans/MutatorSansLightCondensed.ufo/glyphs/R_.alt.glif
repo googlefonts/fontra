@@ -104,17 +104,6 @@
           </dict>
         </array>
       </dict>
-      <key>xyz.fontra.layer-names</key>
-      <dict>
-        <key>MutatorSansLightCondensed/foreground</key>
-        <string>&lt;default&gt;</string>
-        <key>MutatorSansLightCondensed/weight=1</key>
-        <string>weight=1</string>
-        <key>MutatorSansLightCondensed/width=1</key>
-        <string>width=1</string>
-        <key>MutatorSansLightCondensed/width=1,weight=1</key>
-        <string>width=1,weight=1</string>
-      </dict>
       <key>xyz.fontra.source-names</key>
       <dict>
         <key>LightCondensed</key>
