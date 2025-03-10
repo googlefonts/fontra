@@ -158,8 +158,18 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     glyph = await writableTestFont.getGlyph(glyphName)
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
+    targetUFOPath = pathlib.Path(
+        [
+            source.path
+            for source in writableTestFont.dsDoc.sources
+            if source.filename == expectedDSSource["filename"]
+        ][0]
+    )
+
+    ufoFileNamesPre = set(fileNamesFromDir(targetUFOPath))
+
     glyph.sources.append(GlyphSource(name="mid", location=location, layerName="mid"))
-    glyph.layers["mid"] = Layer(glyph=StaticGlyph())
+    glyph.layers["mid"] = Layer(glyph=StaticGlyph(xAdvance=100))
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
@@ -168,6 +178,15 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     assert dsSources == newDSSources[: len(dsSources)]
     assert len(newDSSources) == len(dsSources) + 1
     assert newDSSources[-1] == expectedDSSource
+
+    ufoFileNamesPost = set(fileNamesFromDir(targetUFOPath))
+
+    assert {"glyphs.mid"} == ufoFileNamesPost - ufoFileNamesPre
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+
+    reopenedGlyph = await reopenedBackend.getGlyph(glyphName)
+    assert glyph == reopenedGlyph
 
 
 async def test_addNewDenseSource(writableTestFont):
