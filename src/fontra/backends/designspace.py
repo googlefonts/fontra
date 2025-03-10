@@ -817,7 +817,7 @@ class DesignspaceBackend:
             # Assume sparse source, add new layer to existing UFO
             poleDSSource = self._findDSSourceForSparseSource(location)
             ufoLayer = self._createUFOLayer(
-                glyphName, poleDSSource.layer.path, layerName, layerName
+                glyphName, poleDSSource.layer.path, layerName, sourceIdentifier
             )
         else:
             # New UFO
