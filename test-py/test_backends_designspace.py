@@ -596,8 +596,8 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
 
-    axes = await testFont.getAxes()
-    await font.putAxes(axes)
+    await font.putAxes(await testFont.getAxes())
+    await font.putSources(await testFont.getSources())
     glyphMap = await testFont.getGlyphMap()
     glyph = await testFont.getGlyph("A")
 
@@ -607,8 +607,11 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     assert [
         "fontinfo.plist",
         "glyphs",
-        "glyphs.light-condensed^support",
+        "glyphs.support",
+        "glyphs.support.S_.middle",
+        "glyphs.support.crossbar",
         "layercontents.plist",
+        "lib.plist",
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / "Test_LightCondensed.ufo")
 
