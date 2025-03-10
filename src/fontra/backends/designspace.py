@@ -754,7 +754,7 @@ class DesignspaceBackend:
         glyphName: str,
         source: GlyphSource,
         localDefaultLocation: dict[str, float],
-        revLayerNameMapping: dict[str, float],
+        revLayerNameMapping: dict[str, str],
     ):
         baseLocation = {}
         if source.locationBase:
