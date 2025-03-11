@@ -215,6 +215,20 @@ export class CustomDataList extends SimpleElement {
       // At that point, we know we have a valid key -> add key info if exists.
       const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
       infoElement.innerText = customDataInfo?.info || "";
+      if (customDataInfo?.infoLink) {
+        infoElement.innerText += "\n";
+        infoElement.appendChild(
+          html.a(
+            {
+              href: customDataInfo?.infoLink,
+              target: "_blank",
+              style:
+                "font-style: italic; color: var(--foreground-color); text-decoration: underline;",
+            },
+            ["Link to reference"] // TODO: translation
+          )
+        );
+      }
 
       if (currentKeys.includes(customDataKey)) {
         setWarning(`⚠️ ${translate("Key already in use.")}`); // TODO: translation
