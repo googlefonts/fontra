@@ -14,8 +14,9 @@ function getDescenderDefault(fontObject = undefined) {
   return fontObject.lineMetricsHorizontalLayout?.descender.value || -200;
 }
 
-function getFamilyNameDefault(fontSource = undefined) {
-  return fontSource.familyName || "Family Name";
+function getFamilyNameDefault(fontObject = undefined) {
+  return fontObject.familyName || "Family Name";
+}
 
 function getSubfamilyNameDefault(fontObject = undefined) {
   return fontObject.name || "Subfamily Name";
