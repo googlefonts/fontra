@@ -38,7 +38,6 @@ export class CustomDataList extends SimpleElement {
   }
   `;
 
-  // fontObject can either be FontInfo or FontSource.
   constructor(controller, customDataInfos) {
     super();
     this.contentElement = this.shadowRoot.appendChild(html.div());
@@ -139,8 +138,8 @@ export class CustomDataList extends SimpleElement {
           return customData.key;
         });
         const { key, value } = await this._customDataPropertiesRunDialog(
-          this.fontObject,
-          this.customDataInfos
+          this.customDataInfos,
+          currentKeys
         );
         if (key == undefined || value == undefined) {
           return;
@@ -174,9 +173,10 @@ export class CustomDataList extends SimpleElement {
     this.contentElement.appendChild(this.buildCustomDataList());
   }
 
-  async _customDataPropertiesRunDialog(fontObject, customDataInfos) {
+  async _customDataPropertiesRunDialog(customDataInfos, currentKeys) {
     const title = translate("Add advanced information"); // TODO: translation
     const customDataNames = this.customDataInfos.map((info) => info.key);
+
     const validateInput = () => {
       const warnings = [];
       const customDataKey =
@@ -213,6 +213,10 @@ export class CustomDataList extends SimpleElement {
         return;
       }
 
+      if (currentKeys.includes(customDataKey)) {
+        warnings.push(`⚠️ ${translate("Key already in use")}`); // TODO: translation
+      }
+
       // Now we know we have a key and value.
       const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
       infoElement.innerText = customDataInfo?.info || "";
@@ -244,7 +248,7 @@ export class CustomDataList extends SimpleElement {
       if (customDataInfo) {
         const customDataFormatter = customDataInfo.formatter || DefaultFormatter;
         nameController.model.customDataValue = customDataFormatter.toString(
-          customDataInfo.getDefaultFunction(fontObject)
+          customDataInfo.getDefaultFunction()
         );
       }
     });
