@@ -39,9 +39,13 @@ const customDataAttributesSupported = [
   "openTypeNameWWSFamilyName",
   "openTypeOS2CodePageRanges",
   "openTypeOS2UnicodeRanges",
-  "openTypeOS2FamilyClass",
-  "openTypeOS2Type", // embedding bit
   "postscriptWindowsCharacterSet", // The Windows character set.
+  "openTypeOS2Type", // embedding bit
+  "openTypeOS2Selection",
+  "openTypeOS2WeightClass",
+  "openTypeOS2WidthClass",
+  "openTypeOS2FamilyClass",
+  "openTypeOS2Panose",
 ];
 
 addStyleSheet(`

@@ -222,7 +222,8 @@ export const customDataCollection = [
     info: `
     A list of bit numbers indicating the bits that should be set in fsSelection.
     The bit numbers are listed in the OpenType OS/2 specification.
-    Note: Bits 0 (italic), 5 (bold) and 6 (regular) must not be set here. These bits should be taken from the generic styleMapStyleName attribute.
+    Note: Bits 0 (italic), 5 (bold) and 6 (regular) must not be set here.
+    These bits should be taken from the generic styleMapStyleName attribute.
     0 = Italic (should not be set)
     1 = Underscore
     2 = Negative
@@ -243,15 +244,25 @@ export const customDataCollection = [
     info: `A list of bit numbers indicating the embedding type.
     The bit numbers are listed in the OpenType OS/2 specification.
     Corresponds to the OpenType OS/2 table fsType field.
-    2 = "Preview & Print embedding"
-    3 = "Editable embedding" (default)`,
+
+    0 = Installable embedding
+    1 = Restricted License embedding
+    2 = Preview & Print embedding
+    3 = Editable embedding (default)
+    8 = No subsetting
+    9 = Bitmap embedding only
+    `,
     infoLink: "https://learn.microsoft.com/en-us/typography/opentype/spec/os2#fstype",
   },
   {
     key: "openTypeOS2Panose",
     getDefaultFunction: () => [2, 11, 5, 2, 4, 5, 4, 2, 2, 4],
     formatter: FixedLengthArrayFormatter(10),
-    info: `The list must contain 10 non-negative integers that represent the setting for each category in the Panose specification. The integers correspond with the option numbers in each of the Panose categories. This corresponds to the OpenType OS/2 table Panose field.
+    info: `The list must contain 10 non-negative integers that represent the setting
+    for each category in the Panose specification.
+    The integers correspond with the option numbers in each of the Panose categories.
+    This corresponds to the OpenType OS/2 table Panose field.
+
     Default (sans-serif) -> [2, 11, 5, 2, 4, 5, 4, 2, 2, 4]`,
     infoLink: "https://monotype.github.io/panose/pan1.htm",
   },
