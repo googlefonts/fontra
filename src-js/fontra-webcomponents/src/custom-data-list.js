@@ -216,7 +216,7 @@ export class CustomDataList extends SimpleElement {
       const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
       infoElement.innerText = customDataInfo?.info || "";
       if (customDataInfo?.infoLink) {
-        infoElement.innerText += "\n";
+        infoElement.innerText += "\n\n";
         infoElement.appendChild(
           html.a(
             {
@@ -255,7 +255,6 @@ export class CustomDataList extends SimpleElement {
     });
 
     nameController.addKeyListener("customDataKey", (event) => {
-      validateInput();
       const customDataInfo = getCustomDataInfoFromKey(
         nameController.model.customDataKey,
         customDataInfos
@@ -266,6 +265,7 @@ export class CustomDataList extends SimpleElement {
           customDataInfo.getDefaultFunction()
         );
       }
+      validateInput();
     });
 
     nameController.addKeyListener("customDataValue", (event) => {
