@@ -347,15 +347,6 @@ class DesignspaceBackend:
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
 
-        # Using a dict as an order-preserving set:
-        ufoPaths = {source.path: None for source in self.dsDoc.sources}
-        for ufoPath in ufoPaths:
-            reader = manager.getReader(ufoPath)
-            for ufoLayerName in reader.getLayerNames():
-                self.ufoLayers.append(
-                    UFOLayer(manager=manager, path=ufoPath, name=ufoLayerName)
-                )
-
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
             if self._familyName is None and source.familyName:
@@ -365,6 +356,15 @@ class DesignspaceBackend:
             ufoLayerName = source.layerName or defaultLayerName
 
             sourceLayer = self.ufoLayers.findItem(path=source.path, name=ufoLayerName)
+            if sourceLayer is None:
+                sourceLayer = UFOLayer(
+                    manager=manager,
+                    path=source.path,
+                    name=ufoLayerName,
+                    fontraLayerName=source.name,
+                )
+                self.ufoLayers.append(sourceLayer)
+
             sourceStyleName = source.styleName or sourceLayer.fileName
             sourceName = (
                 sourceStyleName
@@ -382,6 +382,23 @@ class DesignspaceBackend:
                     isDefault=source == self.dsDoc.default,
                 )
             )
+
+        # Add remaining layers (background layers, variable glyph layers)
+        for source in self.dsDoc.sources:
+            ufoPath = source.path
+            reader = manager.getReader(ufoPath)
+            for ufoLayerName in reader.getLayerNames():
+                layer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
+                if layer is None:
+                    fontraLayerName = f"{source.name}^{ufoLayerName}"
+                    self.ufoLayers.append(
+                        UFOLayer(
+                            manager=manager,
+                            path=ufoPath,
+                            name=ufoLayerName,
+                            fontraLayerName=fontraLayerName,
+                        )
+                    )
 
         self._updatePathsToWatch()
 
@@ -606,16 +623,24 @@ class DesignspaceBackend:
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
             ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+            ufoPath = self.defaultUFOLayer.path
+
+            if ufoLayer is None and "^" in layerName:
+                ufoPath, layerName = self._findUFOForLayerName(
+                    layerName, self.defaultUFOLayer.path
+                )
+                ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=layerName)
 
             if ufoLayer is None:
                 # This layer is not used by any source and we haven't seen it
-                # before. Let's create a new layer in the default UFO.
+                # before. Let's create a new layer in the appropriate UFO.
                 ufoLayer = self._createUFOLayer(
-                    glyphName, self.defaultUFOLayer.path, layerName
+                    glyphName, ufoPath, layerName, layerName
                 )
                 if ufoLayer.fontraLayerName != layerName:
                     layerNameMapping[ufoLayer.fontraLayerName] = layerName
                 layerName = ufoLayer.fontraLayerName
+
             layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
 
@@ -689,10 +714,24 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
+    def _findUFOForLayerName(self, layerName, ufoPath):
+        if "^" in layerName:
+            sourceIdentifier, bgLayerName = layerName.split("^", 1)
+            dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
+            if dsSource is not None:
+                ufoPath = dsSource.layer.path
+                layerName = bgLayerName
+            # else:
+            #     print([s for s in self.dsSources])
+            #     assert 0, ("===", sourceIdentifier, layerName)
+
+        return ufoPath, layerName
+
     def _createDefaultSourceAndUFO(self, sourceName):
         assert not self.dsSources
         assert not self.dsDoc.sources
-        ufoLayer = self._createUFO(sourceName)
+        sourceIdentifier = makeDSSourceIdentifier(self.dsDoc, 0, None)
+        ufoLayer = self._createUFO(sourceName, sourceIdentifier)
 
         assert os.path.isdir(ufoLayer.path)
 
@@ -700,7 +739,7 @@ class DesignspaceBackend:
             self._familyName = pathlib.Path(self.dsDoc.path).stem
 
         dsSource = DSSource(
-            identifier=makeDSSourceIdentifier(self.dsDoc, 0, None),
+            identifier=sourceIdentifier,
             name=sourceName,
             layer=ufoLayer,
             location=self.defaultLocation,
@@ -715,7 +754,7 @@ class DesignspaceBackend:
         glyphName: str,
         source: GlyphSource,
         localDefaultLocation: dict[str, float],
-        revLayerNameMapping: dict[str, float],
+        revLayerNameMapping: dict[str, str],
     ):
         baseLocation = {}
         if source.locationBase:
@@ -749,20 +788,23 @@ class DesignspaceBackend:
             self._writeDesignSpaceDocument()
 
         if sparseLocalLocation:
-            ufoLayer = self.ufoLayers.findItem(
-                fontraLayerName=revLayerNameMapping.get(
-                    source.layerName, source.layerName
-                )
+            layerName = revLayerNameMapping.get(source.layerName, source.layerName)
+            ufoPath, layerName = self._findUFOForLayerName(
+                layerName, dsSource.layer.path
             )
+            assert dsSource.layer.path == ufoPath
+
+            ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=layerName)
 
             if ufoLayer is None:
-                ufoPath = dsSource.layer.path
-                ufoLayer = self._createUFOLayer(glyphName, ufoPath, source.layerName)
+                ufoLayer = self._createUFOLayer(
+                    glyphName, ufoPath, layerName, source.layerName
+                )
                 ufoLayerName = ufoLayer.name
             else:
                 ufoLayerName = ufoLayer.name
             normalizedSourceName = source.name
-            normalizedLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
+            normalizedLayerName = f"{dsSource.identifier}^{ufoLayerName}"
             defaultUFOLayerName = ufoLayer.reader.getDefaultLayerName()
 
             localSourceDict = {"name": source.name}
@@ -797,11 +839,11 @@ class DesignspaceBackend:
             # Assume sparse source, add new layer to existing UFO
             poleDSSource = self._findDSSourceForSparseSource(location)
             ufoLayer = self._createUFOLayer(
-                glyphName, poleDSSource.layer.path, layerName
+                glyphName, poleDSSource.layer.path, layerName, sourceIdentifier
             )
         else:
             # New UFO
-            ufoLayer = self._createUFO(sourceName)
+            ufoLayer = self._createUFO(sourceName, layerName)
 
         return DSSource(
             identifier=sourceIdentifier,
@@ -822,7 +864,7 @@ class DesignspaceBackend:
 
         return poleDSSource
 
-    def _createUFO(self, sourceName: str) -> UFOLayer:
+    def _createUFO(self, sourceName: str, sourceIdentifier: str) -> UFOLayer:
         dsFileName = pathlib.Path(self.dsDoc.path).stem
         suggestedUFOFileName = f"{dsFileName}_{sourceName}"
 
@@ -845,13 +887,18 @@ class DesignspaceBackend:
             manager=self.ufoManager,
             path=ufoPath,
             name=ufoLayerName,
+            fontraLayerName=sourceIdentifier,
         )
         self.ufoLayers.append(ufoLayer)
         self._updatePathsToWatch()
         return ufoLayer
 
     def _createUFOLayer(
-        self, glyphName: str | None, ufoPath: str, suggestedLayerName: str
+        self,
+        glyphName: str | None,
+        ufoPath: str,
+        suggestedLayerName: str,
+        fontraLayerName: str,
     ) -> UFOLayer:
         reader = self.ufoManager.getReader(ufoPath)
         existingLayerNames = set(reader.getLayerNames())
@@ -859,6 +906,7 @@ class DesignspaceBackend:
         count = 0
         # getGlyphSet() will create the layer if it doesn't already exist
         while glyphName in self.ufoManager.getGlyphSet(ufoPath, ufoLayerName):
+            # TODO: THIS IS NOT COVERED BY TESTS
             # The glyph already exists in the layer, which means there is
             # a conflict. Let's make up a layer name in which the glyph
             # does not exist.
@@ -874,6 +922,7 @@ class DesignspaceBackend:
             manager=self.ufoManager,
             path=ufoPath,
             name=ufoLayerName,
+            fontraLayerName=fontraLayerName,
         )
         self.ufoLayers.append(ufoLayer)
 
@@ -998,14 +1047,14 @@ class DesignspaceBackend:
             else:
                 if not fontSource.isSparse:
                     # Create a whole new UFO
-                    ufoLayer = self._createUFO(fontSource.name)
+                    ufoLayer = self._createUFO(fontSource.name, sourceIdentifier)
                 else:
                     # Create a new layer in the appropriate existing UFO
                     poleDSSource = self._findDSSourceForSparseSource(
                         denseSourceLocation, newDSSources
                     )
                     ufoLayer = self._createUFOLayer(
-                        None, poleDSSource.layer.path, fontSource.name
+                        None, poleDSSource.layer.path, fontSource.name, sourceIdentifier
                     )
 
                 dsSource = DSSource(
@@ -1668,14 +1717,11 @@ class UFOLayer:
     manager: UFOManager
     path: str
     name: str
+    fontraLayerName: str
 
     @cached_property
     def fileName(self) -> str:
         return os.path.splitext(os.path.basename(self.path))[0]
-
-    @cached_property
-    def fontraLayerName(self) -> str:
-        return f"{self.fileName}/{self.name}"
 
     @cached_property
     def reader(self) -> UFOReaderWriter:

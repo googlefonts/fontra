@@ -112,10 +112,10 @@ async def copyGlyphs(
     backgroundImageIdentifiers = []
 
     while glyphNamesToCopy:
+        glyphNamesCopied.update(glyphNamesToCopy)
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
             logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
         glyphName = glyphNamesToCopy.pop(0)
-        glyphNamesCopied.update(glyphNamesToCopy)
         logger.debug(f"reading {glyphName}")
 
         try:

@@ -50,7 +50,7 @@ async def test_fontHandler_basic(testFontHandler):
         glyph = await testFontHandler.getGlyph("A", connection=None)
 
     layerName, layer = firstLayerItem(glyph)
-    assert "MutatorSansLightCondensed/foreground" == layerName
+    assert "light-condensed" == layerName
     assert 32 == len(layer.glyph.path.coordinates)
     assert 20 == layer.glyph.path.coordinates[0]
 
