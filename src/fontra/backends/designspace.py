@@ -136,12 +136,11 @@ ufoInfoAttributesToRoundTripFamilyLevel = [
     "openTypeOS2FamilyClass",
     "openTypeOS2Type",  # embedding bit
     "postscriptWindowsCharacterSet",  # The Windows character set.
+    "openTypeOS2Panose",
+    "openTypeOS2Selection",
+    "openTypeOS2WeightClass",  # Note: The OS/2.usWeightClass, OS/2.usWidthClass and post.italicAngle values are not supported by variation data in the MVAR table. # noqa: E501
+    "openTypeOS2WidthClass",
 ]
-# *Maybe* to family, as a per-VF setting??
-#     "openTypeOS2Panose", # Allow this to be set for a VF?
-#     "openTypeOS2Selection", # The 'Bold' might be set for each static font individually (depending if it's a style linked bold font) # noqa: E501
-#     "openTypeOS2WeightClass", # Note: The OS/2.usWeightClass, OS/2.usWidthClass and post.italicAngle values are not supported by variation data in the MVAR table. # noqa: E501
-#     "openTypeOS2WidthClass",
 
 # CustomData, Font Source Level:
 ufoInfoAttributesToRoundTrip = [
