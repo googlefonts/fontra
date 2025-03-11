@@ -178,7 +178,8 @@ export class CustomDataList extends SimpleElement {
     const customDataNames = this.customDataInfos.map((info) => info.key);
 
     const validateInput = () => {
-      const warnings = [];
+      warningElement.innerText = "";
+      infoElement.innerText = "";
       const customDataKey =
         nameController.model.customDataKey == ""
           ? undefined
@@ -188,43 +189,48 @@ export class CustomDataList extends SimpleElement {
           ? undefined
           : nameController.model.customDataValue;
 
+      const setWarning = (warning) => {
+        warningElement.innerText = warning;
+        dialog.defaultButton.classList.toggle("disabled", true);
+      };
+
       if (customDataKey == undefined && customDataValue == undefined) {
-        // We don't want to start with a warning.
-        dialog.defaultButton.classList.add("disabled");
-        warningElement.innerText = "";
+        // We don't want to start with a warning,
+        // but need to disable the button -> therefore set it to empty string.
+        setWarning("");
         return;
       }
 
       if (customDataKey == undefined) {
-        dialog.defaultButton.classList.add("disabled");
-        warningElement.innerText = "⚠️ Please enter a key."; // TODO: translation
-        return; // Don't do any further validation.
+        setWarning("⚠️ Key is empty, please enter."); // TODO: translation
+        return;
       }
 
       if (!customDataNames.includes(customDataKey)) {
         // We know we have a key, but it is not supported, yet.
-        dialog.defaultButton.classList.add("disabled");
-        warningElement.innerText = `⚠️ ${translate("Unkown custom data key")}`; // TODO: translation
+        setWarning(`⚠️ ${translate("Key not supported, yet.")}`); // TODO: translation
         return;
       }
 
-      if (currentKeys.includes(customDataKey)) {
-        warnings.push(`⚠️ ${translate("Key already in use")}`); // TODO: translation
-      }
-
-      // At that point, we know we have a key and value.
+      // At that point, we know we have a valid key -> add key info if exists.
       const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
       infoElement.innerText = customDataInfo?.info || "";
 
-      const formatter = customDataInfo?.formatter || DefaultFormatter;
-      const result = formatter.fromString(customDataValue);
-      if (result.value == undefined) {
-        const msg = result.error ? ` "${result.error}"` : "";
-        warnings.push(`⚠️ Invalid value${msg}`); // TODO: translation
+      if (currentKeys.includes(customDataKey)) {
+        setWarning(`⚠️ ${translate("Key already in use.")}`); // TODO: translation
+        return;
       }
 
-      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
-      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+      const formatter = customDataInfo?.formatter || DefaultFormatter;
+      const result = formatter.fromString(customDataValue);
+      if (customDataKey != undefined && result.value == undefined) {
+        const msg = result.error ? ` "${result.error}"` : "";
+        setWarning(`⚠️ Invalid value${msg}`); // TODO: translation
+        return;
+      }
+
+      // If we reach here, everything is fine:
+      dialog.defaultButton.classList.toggle("disabled", false);
     };
 
     const nameController = new ObservableController({
