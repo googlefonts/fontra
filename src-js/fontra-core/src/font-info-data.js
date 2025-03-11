@@ -54,6 +54,8 @@ export const customDataCollection = [
     getDefaultFunction: getAscenderDefault,
     formatter: NumberFormatter,
     info: "Ascender value must be Integer.\nCorresponds to the OpenType hhea table `Ascender` field.",
+    infoLink:
+      "https://unifiedfontobject.org/versions/ufo3/fontinfo.plist/#opentype-hhea-table-fields",
   },
   {
     key: "openTypeHheaDescender",
