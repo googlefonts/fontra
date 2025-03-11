@@ -195,21 +195,16 @@ export class CustomDataList extends SimpleElement {
         return;
       }
 
-      if (customDataKey == undefined && customDataValue != undefined) {
+      if (customDataKey == undefined) {
         dialog.defaultButton.classList.add("disabled");
         warningElement.innerText = "⚠️ Please enter a key."; // TODO: translation
-        return;
+        return; // Don't do any further validation.
       }
 
-      if (customDataKey != undefined && customDataValue == undefined) {
+      if (!customDataNames.includes(customDataKey)) {
+        // We know we have a key, but it is not supported, yet.
         dialog.defaultButton.classList.add("disabled");
-        if (!customDataNames.includes(customDataKey)) {
-          warningElement.innerText = `⚠️ ${translate("Unkown custom data key")}`; // TODO: translation
-        } else {
-          // No value, but a valid key.No extra warning needed,
-          // because we have a placeholder text.
-          warningElement.innerText = "";
-        }
+        warningElement.innerText = `⚠️ ${translate("Unkown custom data key")}`; // TODO: translation
         return;
       }
 
@@ -217,7 +212,7 @@ export class CustomDataList extends SimpleElement {
         warnings.push(`⚠️ ${translate("Key already in use")}`); // TODO: translation
       }
 
-      // Now we know we have a key and value.
+      // At that point, we know we have a key and value.
       const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
       infoElement.innerText = customDataInfo?.info || "";
 
