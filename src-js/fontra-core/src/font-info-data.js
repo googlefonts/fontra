@@ -221,13 +221,13 @@ export const customDataCollection = [
     formatter: ArrayFormatter,
     info: `A list of bit numbers indicating the bits that should be set in fsSelection. The bit numbers are listed in the OpenType OS/2 specification. Note: Bits 0 (italic), 5 (bold) and 6 (regular) must not be set here. These bits should be taken from the generic styleMapStyleName attribute.
 
-    0 = Italic (should not be set)
+    0 = Italic (must not be set here)
     1 = Underscore
     2 = Negative
     3 = Outlined
     4 = Strikeout
-    5 = Bold (should not be set)
-    6 = Regular (should not be set)
+    5 = Bold (must not be set here)
+    6 = Regular (must not be set here)
     7 = Use Typo Metrics
     8 = has WWS name
     9 = Oblique`,
