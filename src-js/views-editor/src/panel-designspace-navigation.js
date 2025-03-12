@@ -432,7 +432,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
     this.sourceLayersList.showHeader = true;
     this.sourceLayersList.columnDescriptions = [
-      { title: "layer name", key: "shortName", width: "14em" },
+      { title: "layer name", key: "shortName", width: "15em" },
       {
         title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
           console.log(event)
