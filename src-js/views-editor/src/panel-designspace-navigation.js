@@ -7,7 +7,11 @@ import * as html from "@fontra/core/html-utils.js";
 import { htmlToElement } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController, controllerKey } from "@fontra/core/observable-object.js";
-import { labeledPopupSelect, labeledTextInput } from "@fontra/core/ui-utils.js";
+import {
+  labeledCheckbox,
+  labeledPopupSelect,
+  labeledTextInput,
+} from "@fontra/core/ui-utils.js";
 import {
   FocusKeeper,
   boolInt,
@@ -1474,7 +1478,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       { title: translate("dialog.okay"), isDefaultButton: true, result: "ok" },
     ]);
 
-    const nameController = new ObservableController({});
+    const inputController = new ObservableController({});
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -1485,9 +1489,13 @@ export default class DesignspaceNavigationPanel extends Panel {
           align-items: center;
         `,
       },
-      labeledTextInput("name", nameController, "sourceLayerName", {
-        id: "source-layer-name-text-input",
-      })
+      [
+        ...labeledTextInput("name", inputController, "sourceLayerName", {
+          id: "source-layer-name-text-input",
+        }),
+        html.div(), // gridfiller
+        labeledCheckbox("Copy current layer", inputController, "copyCurrentLayer", {}),
+      ]
     );
     dialog.setContent(contentElement);
 
@@ -1501,7 +1509,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const newLayerName = `${selectedSourceItem.layerName}${BACKGROUND_LAYER_SEPARATOR}${nameController.model.sourceLayerName}`;
+    const newLayerName = `${selectedSourceItem.layerName}${BACKGROUND_LAYER_SEPARATOR}${inputController.model.sourceLayerName}`;
     if (glyph.layers[newLayerName]) {
       console.log("layer already exists");
       return;
