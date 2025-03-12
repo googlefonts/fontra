@@ -311,7 +311,7 @@ export class CustomDataList extends SimpleElement {
 
     const infoElement = html.div({
       id: "info-text",
-      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+      style: `grid-column: 1 / -1; min-height: 1.5em; text-wrap: auto;`,
     });
 
     const contentElement = html.div(
@@ -320,10 +320,11 @@ export class CustomDataList extends SimpleElement {
           white-space: nowrap;
           display: grid;
           gap: 0.5em;
-          grid-template-columns: max-content auto;
+          grid-template-columns: auto auto;
           align-items: center;
           height: 100%;
           min-height: 0;
+          max-width: 44em;
         `,
       },
       [
