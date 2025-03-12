@@ -1478,7 +1478,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       { title: translate("dialog.okay"), isDefaultButton: true, result: "ok" },
     ]);
 
-    const inputController = new ObservableController({});
+    const inputController = new ObservableController({ copyCurrentLayer: false });
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -1515,10 +1515,17 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
+    const currentLayerGlyph = (await this.sceneModel.getSelectedStaticGlyphController())
+      ?.instance;
+
     const newLayer = Layer.fromObject({
-      glyph: StaticGlyph.fromObject({
-        xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
-      }),
+      glyph: StaticGlyph.fromObject(
+        inputController.model.copyCurrentLayer && currentLayerGlyph
+          ? currentLayerGlyph
+          : {
+              xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
+            }
+      ),
     });
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
