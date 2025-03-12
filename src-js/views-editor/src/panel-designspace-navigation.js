@@ -454,6 +454,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           [layerItem.fullName]: sourceItem.locationString,
         };
       }
+      this._updateRemoveSourceLayerButtonState();
     });
 
     this.fontController.addChangeListener(
@@ -928,6 +929,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     } else {
       this.selectMainSourceLayer();
     }
+
+    this._updateRemoveSourceLayerButtonState();
   }
 
   selectMainSourceLayer() {
@@ -952,6 +955,12 @@ export default class DesignspaceNavigationPanel extends Panel {
   _updateRemoveSourceButtonState() {
     this.addRemoveSourceButtons.disableRemoveButton =
       this.sourcesList.getSelectedItemIndex() === undefined;
+  }
+
+  _updateRemoveSourceLayerButtonState() {
+    const selectedItem = this.sourceLayersList.getSelectedItem();
+    this.addRemoveSourceLayerButtons.disableRemoveButton =
+      !selectedItem || selectedItem.isMainLayer;
   }
 
   async _updateEditingStatus() {
