@@ -1494,7 +1494,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           id: "source-layer-name-text-input",
         }),
         html.div(), // gridfiller
-        labeledCheckbox("Copy current layer", inputController, "copyCurrentLayer", {}),
+        labeledCheckbox("Copy current layer", inputController, "copyCurrentLayer", {}), // TODO: translate
       ]
     );
     dialog.setContent(contentElement);
