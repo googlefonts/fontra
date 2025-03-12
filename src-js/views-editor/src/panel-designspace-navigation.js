@@ -1465,6 +1465,24 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async addSourceLayer() {
+    const validateInput = () => {
+      const warnings = [];
+      if (
+        inputController.model.sourceLayerName &&
+        this.sourceLayersList.items.some(
+          (item) => item.shortName === inputController.model.sourceLayerName
+        )
+      ) {
+        warnings.push("⚠️ Layer name must be unique"); // TODO: translate
+      }
+
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle(
+        "disabled",
+        warnings.length || !inputController.model.sourceLayerName
+      );
+    };
+
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
@@ -1479,6 +1497,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     ]);
 
     const inputController = new ObservableController({ copyCurrentLayer: false });
+
+    const warningElement = html.div({
+      id: "warning-text",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -1495,8 +1519,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         }),
         html.div(), // gridfiller
         labeledCheckbox("Copy current layer", inputController, "copyCurrentLayer", {}), // TODO: translate
+        warningElement,
       ]
     );
+
+    validateInput();
+
+    inputController.addListener((event) => validateInput());
+
     dialog.setContent(contentElement);
 
     setTimeout(
