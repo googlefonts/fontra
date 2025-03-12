@@ -434,9 +434,18 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList.columnDescriptions = [
       { title: "layer name", key: "shortName", width: "15em" },
       {
-        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
-          console.log(event)
-        ),
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) => {
+          const addLayers = !this.sourceLayersList.items.some((item) => item.visible);
+          const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
+          for (const item of this.sourceLayersList.items) {
+            if (addLayers) {
+              newBackgroundLayers[item.fullName] = item.locationString;
+            } else {
+              delete newBackgroundLayers[item.fullName];
+            }
+          }
+          this.sceneSettings.backgroundLayers = newBackgroundLayers;
+        }),
         key: "visible",
         cellFactory: makeIconCellFactory([
           "/tabler-icons/eye-closed.svg",
