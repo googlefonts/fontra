@@ -665,6 +665,10 @@ export function sleepAsync(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function nextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 export function readFileOrBlobAsDataURL(fileOrBlob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
