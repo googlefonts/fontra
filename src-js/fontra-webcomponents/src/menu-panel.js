@@ -7,7 +7,7 @@ import {
 import { dispatchCustomEvent } from "@fontra/core/event-utils.js";
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
-import { enumerate, nextFrame, reversed } from "@fontra/core/utils.js";
+import { enumerate, reversed, sleepAsync } from "@fontra/core/utils.js";
 import { InlineSVG } from "@fontra/web-components/inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -144,7 +144,7 @@ export class MenuPanel extends SimpleElement {
       this.hide();
     } else if (this.immediatelyActive) {
       // Wait next cycle to ensure `tabindex` is available
-      await nextFrame();
+      await sleepAsync(0);
       this.setActive(true);
     }
   }
