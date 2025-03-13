@@ -96,7 +96,6 @@ export class CustomDataList extends SimpleElement {
         key: "key",
         title: "Key", // TODO: translation
         width: "14em",
-        editable: true,
         continuous: false,
       },
       {
