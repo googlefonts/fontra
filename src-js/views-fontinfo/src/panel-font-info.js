@@ -1,5 +1,5 @@
 import { recordChanges } from "@fontra/core/change-recorder.js";
-import { getCustomDataInfoFromKey } from "@fontra/core/font-info-data.js";
+import { openTypeSettingsFontFamilyLevel } from "@fontra/core/font-info-data.js";
 import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
@@ -7,7 +7,6 @@ import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
 import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
-import { message } from "@fontra/web-components/modal-dialog.js";
 import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
@@ -30,24 +29,6 @@ const fontInfoFields = [
   ["versionMinor", "font-info.version.minor", "edit-number"],
 ];
 
-// Please see: ufoInfoAttributesToRoundTripFamilyLevel
-const customDataAttributesSupported = [
-  "openTypeNameUniqueID",
-  "openTypeHeadCreated",
-  "openTypeNameVersion",
-  "openTypeNamePreferredFamilyName",
-  "openTypeNameWWSFamilyName",
-  "openTypeOS2CodePageRanges",
-  "openTypeOS2UnicodeRanges",
-  "postscriptWindowsCharacterSet", // The Windows character set.
-  "openTypeOS2Type", // embedding bit
-  "openTypeOS2Selection",
-  "openTypeOS2WeightClass",
-  "openTypeOS2WidthClass",
-  "openTypeOS2FamilyClass",
-  "openTypeOS2Panose",
-];
-
 addStyleSheet(`
 .font-info-container {
   background-color: var(--ui-element-background-color);
@@ -63,6 +44,7 @@ export class FontInfoPanel extends BaseInfoPanel {
 
   async setupUI() {
     const info = await this.fontController.getFontInfo();
+    const customDataKeys = openTypeSettingsFontFamilyLevel.map((item) => item.key);
 
     this.infoForm = new Form();
     this.infoForm.labelWidth = "max-content";
@@ -115,20 +97,16 @@ export class FontInfoPanel extends BaseInfoPanel {
         root.fontInfo.customData = {};
         for (const item of event.newValue) {
           const key = item["key"];
-          if (!customDataAttributesSupported.includes(key)) {
-            message(
-              translate("Edit OpenType settings"), // TODO: translation
-              `"${key}" not implemented, yet.` // TODO: translation
-            );
-            continue;
-          }
+          // We don't need to check the key, because we allow
+          // supported keys only to be added via the dialog, aynway.
 
           let value = item["value"];
           if (isString(item["value"])) {
             // This has been edited via double click in the list.
             // All list cells have the default formatter,
             // as we cannot set it individually for each cell, yet.
-            const customDataInfo = getCustomDataInfoFromKey(key);
+            const customDataInfo =
+              openTypeSettingsFontFamilyLevel[customDataKeys.indexOf(key)];
             const formatter = customDataInfo?.formatter || DefaultFormatter;
             const returnValue = formatter.fromString(value);
             if (returnValue.value != undefined) {
@@ -141,12 +119,14 @@ export class FontInfoPanel extends BaseInfoPanel {
       }, `edit customData`); // TODO: translation
     });
 
-    const customDataInfos = customDataAttributesSupported.map((attributeName) => ({
-      ...getCustomDataInfoFromKey(attributeName),
+    const openTypeSettings = customDataKeys.map((customDataKey) => ({
+      ...openTypeSettingsFontFamilyLevel[customDataKeys.indexOf(customDataKey)],
       getDefaultFunction: () =>
-        getCustomDataInfoFromKey(attributeName).getDefaultFunction(info),
+        openTypeSettingsFontFamilyLevel[
+          customDataKeys.indexOf(customDataKey)
+        ].getDefaultFunction(info),
     }));
-    const customDataList = new CustomDataList(cutomDataController, customDataInfos);
+    const customDataList = new CustomDataList(cutomDataController, openTypeSettings);
     const accordion = new Accordion();
 
     accordion.appendStyle(`
