@@ -725,7 +725,7 @@ class SourceBox extends HTMLElement {
           const key = item["key"];
           if (!customDataAttributesSupported.includes(key)) {
             message(
-              translate("Edit Advanced information"), // TODO: translation
+              translate("Edit OpenType settings"), // TODO: translation
               `"${key}" not implemented, yet.` // TODO: translation
             );
             continue;
@@ -1108,7 +1108,7 @@ function getLabelFromKey(key) {
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
     guidelines: translate("sidebar.user-settings.guidelines"),
-    customData: translate("Advanced Information"), // TODO: translation
+    customData: translate("OpenType settings"), // TODO: translation
   };
   return keyLabelMap[key] || key;
 }
