@@ -3,6 +3,10 @@ import {
   ArrayFormatter,
   BooleanFormatter,
   FixedLengthArrayFormatter,
+  IntegerFormatter,
+  IntegerFormatterMinMax,
+  UnsignedIntegerFormatter,
+  UnsignedNumberFormatter,
 } from "./formatters.js";
 
 // NOTE: fontObject can be FontInfo or FontSource
@@ -52,7 +56,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaAscender",
     getDefaultFunction: getAscenderDefault,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Ascender value must be integer. Corresponds to the OpenType hhea table Ascender field.",
     infoLinks: {
       // TODO: translation of link keys/names
@@ -63,7 +67,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaDescender",
     getDefaultFunction: getDescenderDefault,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Descender value must be integer. Corresponds to the OpenType hhea table Descender field.",
     infoLinks: {
       "Link to UFO specification":
@@ -73,7 +77,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaLineGap",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Line gap value must be integer. Default -> 0. Corresponds to the OpenType hhea table LineGap field.",
     infoLinks: {
       "Link to UFO specification":
@@ -83,7 +87,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2TypoAscender",
     getDefaultFunction: getAscenderDefault,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Ascender value must be integer. Corresponds to the OpenType OS/2 table sTypoAscender field.",
     infoLinks: {
       "Link to UFO specification":
@@ -93,7 +97,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2TypoDescender",
     getDefaultFunction: getDescenderDefault,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Descender value must be integer. Corresponds to the OpenType OS/2 table sTypoDescender field.",
     infoLinks: {
       "Link to UFO specification":
@@ -103,7 +107,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2TypoLineGap",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: "Line gap value must be integer. Default -> 0. Corresponds to the OpenType OS/2 table sTypoLineGap field.",
     infoLinks: {
       "Link to UFO specification":
@@ -113,7 +117,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2WinAscent",
     getDefaultFunction: getAscenderDefault,
-    formatter: NumberFormatter,
+    formatter: UnsignedIntegerFormatter,
     info: "Ascender value must be integer. Corresponds to the OpenType OS/2 table usWinAscent field.",
     infoLinks: {
       "Link to UFO specification":
@@ -125,7 +129,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2WinDescent",
     getDefaultFunction: (fontSource) => getDescenderDefault(fontSource) * -1,
-    formatter: NumberFormatter,
+    formatter: UnsignedIntegerFormatter,
     info: "Descender value must be integer. Corresponds to the OpenType OS/2 table usWinDescent field.",
     infoLinks: {
       "Link to UFO specification":
@@ -245,7 +249,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2WeightClass",
     getDefaultFunction: () => 400,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatterMinMax(1, 1000),
     info: "Weight class value from 1 to 1000. Corresponds to the OpenType OS/2 table usWeightClass field.",
     infoLinks: {
       "Link to OpenType specification":
@@ -255,7 +259,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2WidthClass",
     getDefaultFunction: () => 5,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatterMinMax(1, 9),
     info: "Width class value. Must be in the range 1-9. Corresponds to the OpenType OS/2 table usWidthClass field.",
     infoLinks: {
       "Link to OpenType specification":
@@ -405,7 +409,7 @@ export const customDataCollection = [
   {
     key: "postscriptBlueScale",
     getDefaultFunction: () => 0.039625,
-    formatter: NumberFormatter,
+    formatter: UnsignedNumberFormatter,
     info: `The optional BlueScale entry in the Private dictionary controls the point size at which overshoot suppression ceases.
 
     0.039625 -> default`,
@@ -417,7 +421,7 @@ export const customDataCollection = [
   {
     key: "postscriptBlueShift",
     getDefaultFunction: () => 1,
-    formatter: NumberFormatter,
+    formatter: UnsignedNumberFormatter,
     info: `The optional BlueShift entry in the Private dictionary adds another capability to the treatment of overshoot behavior.`,
     infoLinks: {
       "Link to Adobe Type 1 Font Format specification":
@@ -427,7 +431,7 @@ export const customDataCollection = [
   {
     key: "postscriptBlueFuzz",
     getDefaultFunction: () => 1,
-    formatter: NumberFormatter,
+    formatter: UnsignedNumberFormatter,
     info: `The optional BlueFuzz entry in the Private dictionary is an integer value that specifies the number of character space units to extend (in both directions) the effect of an alignment zone on a horizontal stem.
 
     The default value of BlueFuzz is 1.`,
@@ -512,7 +516,7 @@ export const customDataCollection = [
   {
     key: "postscriptDefaultWidthX",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: UnsignedNumberFormatter,
     info: `Default width for glyphs.`,
     infoLinks: {
       "Link to UFO specification":
@@ -522,7 +526,7 @@ export const customDataCollection = [
   {
     key: "postscriptNominalWidthX",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: UnsignedNumberFormatter,
     info: `Nominal width for glyphs.`,
     infoLinks: {
       "Link to UFO specification":
@@ -541,8 +545,8 @@ export const customDataCollection = [
   {
     key: "postscriptWindowsCharacterSet",
     getDefaultFunction: () => 2,
-    formatter: NumberFormatter,
-    info: `The Windows character set. The values are defined below.
+    formatter: IntegerFormatterMinMax(1, 20),
+    info: `The Windows character set (1-20).
 
     2 = Default`,
     infoLinks: {
@@ -556,7 +560,7 @@ export const customDataCollection = [
   {
     key: "openTypeVheaVertTypoLineGap",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Line gap value. Corresponds to the OpenType vhea table vertTypoLineGap field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -566,7 +570,7 @@ export const customDataCollection = [
   {
     key: "openTypeVheaCaretSlopeRise",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret slope rise value. Corresponds to the OpenType vhea table caretSlopeRise field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -576,7 +580,7 @@ export const customDataCollection = [
   {
     key: "openTypeVheaCaretSlopeRun",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret slope run value. Corresponds to the OpenType vhea table caretSlopeRun field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -586,7 +590,7 @@ export const customDataCollection = [
   {
     key: "openTypeVheaCaretOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret offset value. Corresponds to the OpenType vhea table caretOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -597,7 +601,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaCaretSlopeRise",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret slope rise value. Corresponds to the OpenType hhea table caretSlopeRise field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -607,7 +611,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaCaretSlopeRun",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret slope run value. Corresponds to the OpenType hhea table caretSlopeRun field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -617,7 +621,7 @@ export const customDataCollection = [
   {
     key: "openTypeHheaCaretOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Caret offset value. Corresponds to the OpenType hhea table caretOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -628,7 +632,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SubscriptXSize",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Subscript horizontal font size. Corresponds to the OpenType OS/2 table ySubscriptXSize field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -638,7 +642,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SubscriptYSize",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Subscript vertical font size. Corresponds to the OpenType OS/2 table ySubscriptYSize field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -648,7 +652,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SubscriptXOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Subscript horizontal font offset. Corresponds to the OpenType OS/2 table ySubscriptXOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -658,7 +662,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SubscriptYOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Subscript vertical font offset. Corresponds to the OpenType OS/2 table ySubscriptYOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -668,7 +672,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SuperscriptXSize",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Superscript horizontal font size. Corresponds to the OpenType OS/2 table ySuperscriptXSize field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -678,7 +682,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SuperscriptYSize",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Superscript vertical font size. Corresponds to the OpenType OS/2 table ySuperscriptYSize field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -688,7 +692,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SuperscriptXOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Superscript x offset. Corresponds to the OpenType OS/2 table ySuperscriptXOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -698,7 +702,7 @@ export const customDataCollection = [
   {
     key: "openTypeOS2SuperscriptYOffset",
     getDefaultFunction: () => 0,
-    formatter: NumberFormatter,
+    formatter: IntegerFormatter,
     info: `Superscript y offset. Corresponds to the OpenType OS/2 table ySuperscriptYOffset field.`,
     infoLinks: {
       "Link to UFO specification":
@@ -709,7 +713,7 @@ export const customDataCollection = [
   {
     key: "openTypeHeadLowestRecPPEM",
     getDefaultFunction: () => 6,
-    formatter: NumberFormatter,
+    formatter: UnsignedIntegerFormatter,
     info: "Smallest readable size in pixels. Corresponds to the OpenType head table lowestRecPPEM field.",
     infoLinks: {
       "Link to UFO specification":
