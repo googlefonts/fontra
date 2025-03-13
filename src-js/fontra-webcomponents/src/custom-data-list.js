@@ -323,7 +323,7 @@ export class CustomDataList extends SimpleElement {
           align-items: center;
           height: 100%;
           min-height: 0;
-          max-width: 44em;
+          max-width: 30em;
         `,
       },
       [
