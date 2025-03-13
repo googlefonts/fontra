@@ -2,6 +2,10 @@ import {
   ArrayFormatter,
   BooleanFormatter,
   FixedLengthArrayFormatter,
+  IntegerFormatter,
+  IntegerFormatterMinMax,
+  UnsignedIntegerFormatter,
+  UnsignedNumberFormatter,
 } from "@fontra/core/formatters.js";
 import { expect } from "chai";
 
@@ -32,6 +36,72 @@ import { getTestData, parametrize } from "./test-support.js";
 //     }
 //   );
 // });
+
+describe("IntegerFormatter", () => {
+  parametrize(
+    "IntegerFormatter tests",
+    [
+      ["1", { value: 1 }],
+      ["11234", { value: 11234 }],
+      ["0", { value: 0 }],
+      ["-200", { value: -200 }],
+      ["asdfg200", { error: "not an integer" }],
+      ["", { error: "not an integer" }],
+      ["test", { error: "not an integer" }],
+      ["0.152", { error: "not an integer" }],
+    ],
+    (testData) => {
+      const [input, expectedResult] = testData;
+      expect(IntegerFormatter.fromString(input)).to.deep.equal(expectedResult);
+    }
+  );
+});
+
+describe("FixedLengthArrayFormatter", () => {
+  parametrize(
+    "FixedLengthArrayFormatter toString tests",
+    [
+      [[1, 9], "5", { value: 5 }], // eg. usWidthClass
+      [[1, 1000], "400", { value: 400 }], // eg. usWeightClass
+      [[1, 9], "12", { error: "not between 1 and 9" }],
+      [[1, 1000], "1111", { error: "not between 1 and 1000" }],
+    ],
+    (testData) => {
+      const [minMaxValues, input, expectedResult] = testData;
+      expect(
+        IntegerFormatterMinMax(minMaxValues[0], minMaxValues[1]).fromString(input)
+      ).to.deep.equal(expectedResult);
+    }
+  );
+});
+
+describe("UnsignedIntegerFormatter", () => {
+  parametrize(
+    "UnsignedIntegerFormatter tests",
+    [
+      ["-0.152", { error: "not an integer" }],
+      ["-12", { error: "not a positive integer" }],
+    ],
+    (testData) => {
+      const [input, expectedResult] = testData;
+      expect(UnsignedIntegerFormatter.fromString(input)).to.deep.equal(expectedResult);
+    }
+  );
+});
+
+describe("UnsignedNumberFormatter", () => {
+  parametrize(
+    "UnsignedNumberFormatter tests",
+    [
+      ["-0.152", { error: "not a positive number" }],
+      ["-12", { error: "not a positive number" }],
+    ],
+    (testData) => {
+      const [input, expectedResult] = testData;
+      expect(UnsignedNumberFormatter.fromString(input)).to.deep.equal(expectedResult);
+    }
+  );
+});
 
 describe("ArrayFormatter", () => {
   parametrize(
