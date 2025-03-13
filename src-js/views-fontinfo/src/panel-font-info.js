@@ -6,7 +6,9 @@ import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { enumerate } from "@fontra/core/utils.js";
 import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
 import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
@@ -95,7 +97,7 @@ export class FontInfoPanel extends BaseInfoPanel {
     cutomDataController.addListener((event) => {
       this.editFontInfo((root) => {
         root.fontInfo.customData = {};
-        for (const item of event.newValue) {
+        for (const [i, item] of enumerate(event.newValue)) {
           const key = item["key"];
           // We don't need to check the key, because we allow
           // supported keys only to be added via the dialog, aynway.
@@ -111,6 +113,15 @@ export class FontInfoPanel extends BaseInfoPanel {
             const returnValue = formatter.fromString(value);
             if (returnValue.value != undefined) {
               value = returnValue.value;
+            } else {
+              const errorInfo = returnValue.error ? `: ${returnValue.error}.` : "";
+              message(
+                translate("Edit OpenType settings"), // TODO: translation
+                `Invalid value for ${key}, "${value}"${errorInfo}` // TODO: translation
+              );
+              // TODO: Do we want to fallback to the old value, and if so, how do we update the UI?
+              // value = event.oldValue[i].value;
+              continue;
             }
           }
 
