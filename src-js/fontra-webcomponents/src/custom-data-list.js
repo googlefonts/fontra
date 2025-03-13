@@ -278,10 +278,7 @@ export class CustomDataList extends SimpleElement {
     ]);
     dialog.setContent(contentElement);
 
-    setTimeout(
-      () => contentElement.querySelector("#source-name-text-input")?.focus(),
-      0
-    );
+    setTimeout(() => contentElement.querySelector("#customDataKey-input")?.focus(), 0);
 
     if (!(await dialog.run())) {
       // User cancelled
@@ -324,6 +321,7 @@ export class CustomDataList extends SimpleElement {
       },
       [
         ...labeledTextInput(translate("Key"), nameController, "customDataKey", {
+          id: "customDataKey-input",
           placeholderKey: "suggestedCustomDataKey",
           choices: customDataKeys,
         }),
