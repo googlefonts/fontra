@@ -54,16 +54,6 @@ addStyleSheet(`
   border-radius: 0.5em;
   padding: 1em;
 }
-
-.fontra-ui-font-info-form {
-  padding-bottom: 1em; // This has no effect, sadly. And I don't know why.
-}
-
-.fontra-ui-font-info-header {
-  font-weight: bold;
-  padding-bottom: 0.5em;
-}
-
 `);
 
 export class FontInfoPanel extends BaseInfoPanel {
@@ -75,7 +65,6 @@ export class FontInfoPanel extends BaseInfoPanel {
     const info = await this.fontController.getFontInfo();
 
     this.infoForm = new Form();
-    this.infoForm.className = "fontra-ui-font-info-form";
     this.infoForm.labelWidth = "max-content";
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
@@ -161,7 +150,7 @@ export class FontInfoPanel extends BaseInfoPanel {
     const accordion = new Accordion();
 
     accordion.appendStyle(`
-      #general {
+      .ui-accordion-item-content {
         padding-bottom: 1em;
       }
       `);
