@@ -128,7 +128,7 @@ export class FontInfoPanel extends BaseInfoPanel {
           const key = item["key"];
           if (!customDataAttributesSupported.includes(key)) {
             message(
-              translate("Edit Advanced information"), // TODO: translation
+              translate("Edit OpenType settings"), // TODO: translation
               `"${key}" not implemented, yet.` // TODO: translation
             );
             continue;
@@ -173,7 +173,7 @@ export class FontInfoPanel extends BaseInfoPanel {
         open: true,
       },
       {
-        label: translate("Advanced Information"), // TODO: translate
+        label: translate("OpenType settings"), // TODO: translate
         id: "custom-data",
         content: customDataList,
         open: info.customData || false,

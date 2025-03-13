@@ -173,7 +173,7 @@ export class CustomDataList extends SimpleElement {
   }
 
   async _customDataPropertiesRunDialog(customDataInfos, currentKeys) {
-    const title = translate("Add advanced information"); // TODO: translation
+    const title = translate("Add OpenType settings"); // TODO: translation
     const customDataNames = this.customDataInfos.map((info) => info.key);
 
     const validateInput = () => {
