@@ -1,6 +1,6 @@
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
-import { nextFrame } from "@fontra/core/utils.js";
+import { sleepAsync } from "@fontra/core/utils.js";
 import { MenuPanel } from "./menu-panel.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -181,7 +181,7 @@ export class MenuBar extends SimpleElement {
         const { activeElement } = this.shadowRoot;
         if (isMenuItem(activeElement) && !this.menuPanel) {
           this.openMenu(activeElement);
-          await nextFrame();
+          await sleepAsync(0);
         }
         const { menuPanel } = this;
         if (menuPanel && !menuPanel.selectedItem) {
