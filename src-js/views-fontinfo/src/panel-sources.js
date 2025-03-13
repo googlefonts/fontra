@@ -18,7 +18,7 @@ import {
   labeledTextInput,
   textInput,
 } from "@fontra/core/ui-utils.js";
-import { arrowKeyDeltas, modulo, range, round } from "@fontra/core/utils.js";
+import { arrowKeyDeltas, enumerate, modulo, range, round } from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -675,7 +675,7 @@ class SourceBox extends HTMLElement {
     this.controllers.customData.addListener((event) => {
       this.editSource((source) => {
         source.customData = {};
-        for (const item of event.newValue) {
+        for (const [i, item] of enumerate(event.newValue)) {
           const key = item["key"];
           // We don't need to check the key, because we allow
           // supported keys only to be added via the dialog, aynway.
@@ -691,6 +691,15 @@ class SourceBox extends HTMLElement {
             const returnValue = formatter.fromString(value);
             if (returnValue.value != undefined) {
               value = returnValue.value;
+            } else {
+              const errorInfo = returnValue.error ? `: ${returnValue.error}.` : "";
+              message(
+                translate("Edit OpenType settings"), // TODO: translation
+                `Invalid value for ${key}, "${value}"${errorInfo}` // TODO: translation
+              );
+              // TODO: Do we want to fallback to the old value, and if so, how do we update the UI?
+              // value = event.oldValue[i].value;
+              continue;
             }
           }
 
