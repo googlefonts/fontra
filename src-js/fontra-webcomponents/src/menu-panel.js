@@ -165,9 +165,19 @@ export class MenuPanel extends SimpleElement {
     this.style.display = "none";
   }
 
-  show() {
+  async show(options = { animated: false }) {
     this.hidden = false;
     this.style.display = null;
+    if (options.animated) {
+      // hide immediately since animation is delayed
+      this.style.opacity = 0;
+      const { finished } = this.animate(
+        { opacity: 1 },
+        { delay: 250, duration: 50, iterations: 1, easing: "ease-in-out" }
+      );
+      await finished;
+      this.style.opacity = null;
+    }
   }
 
   place() {
@@ -290,7 +300,7 @@ export class MenuPanel extends SimpleElement {
     );
   }
 
-  selectItem(item, submenuHidden = false) {
+  selectItem(item, fromChild = false) {
     for (const panel of MenuPanel.openMenuPanels) {
       panel.setActive(panel === this);
       if (panel.childOf === this) {
@@ -320,7 +330,7 @@ export class MenuPanel extends SimpleElement {
         const itemRect = item.getBoundingClientRect();
 
         this.submenu = new MenuPanel(this.menuItems[item.dataset.index].getItems(), {
-          hidden: submenuHidden,
+          hidden: true,
           immediatelyActive: false,
           position: {
             x: itemRect.width,
@@ -333,6 +343,9 @@ export class MenuPanel extends SimpleElement {
           },
         });
         this.menuElement.appendChild(this.submenu);
+        if (!fromChild) {
+          this.submenu.show({ animated: true });
+        }
         item.classList.add("has-open-submenu");
       }
     }
