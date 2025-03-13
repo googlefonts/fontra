@@ -3,7 +3,7 @@ import {
   getActionIdentifierFromKeyEvent,
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
-import { getCustomDataInfoFromKey } from "@fontra/core/font-info-data.js";
+import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
 import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
@@ -35,53 +35,6 @@ import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
 let selectedSourceIdentifier = undefined;
-
-// Please see: ufoInfoAttributesToRoundTrip
-const customDataAttributesSupported = [
-  // "openTypeGaspRangeRecords", # part of MVAR, but commented out for now, as too complex
-  "openTypeHheaAscender",
-  "openTypeHheaDescender",
-  "openTypeHheaLineGap",
-  "openTypeOS2TypoAscender",
-  "openTypeOS2TypoDescender",
-  "openTypeOS2TypoLineGap",
-  "openTypeOS2WinAscent",
-  "openTypeOS2WinDescent",
-  "openTypeOS2StrikeoutPosition",
-  "openTypeOS2StrikeoutSize",
-  "postscriptUnderlinePosition",
-  "postscriptUnderlineThickness",
-  "openTypeHheaCaretOffset",
-  "openTypeHheaCaretSlopeRise",
-  "openTypeHheaCaretSlopeRun",
-  "openTypeOS2SubscriptXOffset",
-  "openTypeOS2SubscriptXSize",
-  "openTypeOS2SubscriptYOffset",
-  "openTypeOS2SubscriptYSize",
-  "openTypeOS2SuperscriptXOffset",
-  "openTypeOS2SuperscriptXSize",
-  "openTypeOS2SuperscriptYOffset",
-  "openTypeOS2SuperscriptYSize",
-  "openTypeVheaCaretOffset",
-  "openTypeVheaCaretSlopeRise",
-  "openTypeVheaCaretSlopeRun",
-  "openTypeVheaVertTypoLineGap",
-  "openTypeNameCompatibleFullName",
-  "openTypeNamePreferredSubfamilyName",
-  "openTypeNameWWSSubfamilyName",
-  "postscriptBlueFuzz",
-  "postscriptBlueScale",
-  "postscriptBlueShift",
-  "postscriptBlueValues",
-  "postscriptFamilyBlues",
-  "postscriptFamilyOtherBlues",
-  "postscriptForceBold",
-  "postscriptIsFixedPitch",
-  "postscriptOtherBlues",
-  "postscriptSlantAngle",
-  "postscriptStemSnapH",
-  "postscriptStemSnapV",
-];
 
 addStyleSheet(`
 .font-sources-container {
@@ -575,6 +528,7 @@ class SourceBox extends HTMLElement {
     this.setupUI = setupUI;
     this.controllers = {};
     this.models = this._getModels();
+    this.customDataKeys = openTypeSettingsFontSourcesLevel.map((item) => item.key);
     this._updateContents();
   }
 
@@ -723,20 +677,16 @@ class SourceBox extends HTMLElement {
         source.customData = {};
         for (const item of event.newValue) {
           const key = item["key"];
-          if (!customDataAttributesSupported.includes(key)) {
-            message(
-              translate("Edit OpenType settings"), // TODO: translation
-              `"${key}" not implemented, yet.` // TODO: translation
-            );
-            continue;
-          }
+          // We don't need to check the key, because we allow
+          // supported keys only to be added via the dialog, aynway.
 
           let value = item["value"];
           if (isString(item["value"])) {
             // This has been edited via double click in the list.
             // All list cells have the default formatter,
             // as we cannot set it individually for each cell, yet.
-            const customDataInfo = getCustomDataInfoFromKey(key);
+            const customDataInfo =
+              openTypeSettingsFontSourcesLevel[this.customDataKeys.indexOf(key)];
             const formatter = customDataInfo?.formatter || DefaultFormatter;
             const returnValue = formatter.fromString(value);
             if (returnValue.value != undefined) {
@@ -810,14 +760,17 @@ input {
 
     // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
     if (!this.source.isSparse) {
-      const customDataInfos = customDataAttributesSupported.map((attributeName) => ({
-        ...getCustomDataInfoFromKey(attributeName),
+      const openTypeSettings = this.customDataKeys.map((customDataKey) => ({
+        ...openTypeSettingsFontSourcesLevel[this.customDataKeys.indexOf(customDataKey)],
         getDefaultFunction: () =>
-          getCustomDataInfoFromKey(attributeName).getDefaultFunction(this.source),
+          openTypeSettingsFontSourcesLevel[
+            this.customDataKeys.indexOf(customDataKey)
+          ].getDefaultFunction(this.source),
       }));
+
       const customDataList = new CustomDataList(
         this.controllers.customData,
-        customDataInfos
+        openTypeSettings
       );
       accordionItems.push(
         {

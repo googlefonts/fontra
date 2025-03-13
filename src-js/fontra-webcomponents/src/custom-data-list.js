@@ -1,4 +1,3 @@
-import { getCustomDataInfoFromKey } from "@fontra/core/font-info-data.js";
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
@@ -43,22 +42,22 @@ export class CustomDataList extends SimpleElement {
     this.contentElement = this.shadowRoot.appendChild(html.div());
     this.controller = controller;
     this.customDataInfos = customDataInfos;
+    this.customDataKeys = customDataInfos.map((item) => item.key);
     this.render();
   }
 
   buildCustomDataList() {
-    const customDataNames = this.customDataInfos.map((info) => info.key);
     const model = this.controller.model;
 
     const sortItems = (sortedItems) => {
       return sortedItems.sort(
         (a, b) =>
-          (customDataNames.indexOf(a.key) != -1
-            ? customDataNames.indexOf(a.key)
-            : customDataNames.length) -
-          (customDataNames.indexOf(b.key) != -1
-            ? customDataNames.indexOf(b.key)
-            : customDataNames.length)
+          (this.customDataKeys.indexOf(a.key) != -1
+            ? this.customDataKeys.indexOf(a.key)
+            : this.customDataKeys.length) -
+          (this.customDataKeys.indexOf(b.key) != -1
+            ? this.customDataKeys.indexOf(b.key)
+            : this.customDataKeys.length)
       );
     };
 
@@ -170,7 +169,6 @@ export class CustomDataList extends SimpleElement {
 
   async _customDataPropertiesRunDialog(customDataInfos, currentKeys) {
     const title = translate("Add OpenType settings"); // TODO: translation
-    const customDataNames = this.customDataInfos.map((info) => info.key);
 
     const validateInput = () => {
       warningElement.innerText = "";
@@ -201,14 +199,15 @@ export class CustomDataList extends SimpleElement {
         return;
       }
 
-      if (!customDataNames.includes(customDataKey)) {
+      if (!this.customDataKeys.includes(customDataKey)) {
         // We know we have a key, but it is not supported, yet.
         setWarning(`⚠️ ${translate("Key not supported.")}`); // TODO: translation
         return;
       }
 
       // At that point, we know we have a valid key -> add key info if exists.
-      const customDataInfo = getCustomDataInfoFromKey(customDataKey, customDataInfos);
+      const customDataInfo =
+        customDataInfos[this.customDataKeys.indexOf(customDataKey)];
       infoElement.innerText = customDataInfo?.info || "";
       if (customDataInfo?.infoLinks) {
         infoElement.appendChild(html.br());
@@ -253,10 +252,10 @@ export class CustomDataList extends SimpleElement {
     });
 
     nameController.addKeyListener("customDataKey", (event) => {
-      const customDataInfo = getCustomDataInfoFromKey(
-        nameController.model.customDataKey,
-        customDataInfos
-      );
+      const customDataInfo =
+        customDataInfos[
+          this.customDataKeys.indexOf(nameController.model.customDataKey)
+        ];
       if (customDataInfo) {
         const customDataFormatter = customDataInfo.formatter || DefaultFormatter;
         nameController.model.customDataValue = customDataFormatter.toString(
@@ -271,7 +270,7 @@ export class CustomDataList extends SimpleElement {
     });
 
     const { contentElement, warningElement, infoElement } =
-      this._customDataPropertiesContentElement(nameController, customDataNames);
+      this._customDataPropertiesContentElement(nameController, this.customDataKeys);
 
     const dialog = await dialogSetup(title, null, [
       { title: translate("dialog.cancel"), isCancelButton: true },
@@ -289,10 +288,8 @@ export class CustomDataList extends SimpleElement {
       return {};
     }
 
-    const customDataInfo = getCustomDataInfoFromKey(
-      nameController.model.customDataKey,
-      customDataInfos
-    );
+    const customDataInfo =
+      customDataInfos[this.customDataKeys.indexOf(nameController.model.customDataKey)];
     const formatter = customDataInfo?.formatter || DefaultFormatter;
 
     return {
@@ -301,7 +298,7 @@ export class CustomDataList extends SimpleElement {
     };
   }
 
-  _customDataPropertiesContentElement(nameController, customDataNames) {
+  _customDataPropertiesContentElement(nameController, customDataKeys) {
     const warningElement = html.div({
       id: "warning-text",
       style: `grid-column: 1 / -1; min-height: 1.5em;`,
@@ -328,7 +325,7 @@ export class CustomDataList extends SimpleElement {
       [
         ...labeledTextInput(translate("Key"), nameController, "customDataKey", {
           placeholderKey: "suggestedCustomDataKey",
-          choices: customDataNames,
+          choices: customDataKeys,
         }),
         ...labeledTextInput(translate("Value"), nameController, "customDataValue", {
           placeholderKey: "suggestedCustomDataValue",
