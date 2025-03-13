@@ -208,7 +208,7 @@ export class CustomDataList extends SimpleElement {
 
       if (!customDataNames.includes(customDataKey)) {
         // We know we have a key, but it is not supported, yet.
-        setWarning(`⚠️ ${translate("Key not supported, yet.")}`); // TODO: translation
+        setWarning(`⚠️ ${translate("Key not supported.")}`); // TODO: translation
         return;
       }
 
