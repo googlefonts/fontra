@@ -7,7 +7,11 @@ import * as html from "@fontra/core/html-utils.js";
 import { htmlToElement } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController, controllerKey } from "@fontra/core/observable-object.js";
-import { labeledPopupSelect, labeledTextInput } from "@fontra/core/ui-utils.js";
+import {
+  labeledCheckbox,
+  labeledPopupSelect,
+  labeledTextInput,
+} from "@fontra/core/ui-utils.js";
 import {
   FocusKeeper,
   boolInt,
@@ -432,11 +436,20 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
     this.sourceLayersList.showHeader = true;
     this.sourceLayersList.columnDescriptions = [
-      { title: "layer name", key: "shortName", width: "14em" },
+      { title: "layer name", key: "shortName", width: "15em" },
       {
-        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
-          console.log(event)
-        ),
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) => {
+          const addLayers = !this.sourceLayersList.items.some((item) => item.visible);
+          const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
+          for (const item of this.sourceLayersList.items) {
+            if (addLayers) {
+              newBackgroundLayers[item.fullName] = item.locationString;
+            } else {
+              delete newBackgroundLayers[item.fullName];
+            }
+          }
+          this.sceneSettings.backgroundLayers = newBackgroundLayers;
+        }),
         key: "visible",
         cellFactory: makeIconCellFactory([
           "/tabler-icons/eye-closed.svg",
@@ -454,6 +467,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           [layerItem.fullName]: sourceItem.locationString,
         };
       }
+      this._updateRemoveSourceLayerButtonState();
     });
 
     this.fontController.addChangeListener(
@@ -868,10 +882,6 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateSourceLayersList() {
-    // TODO: the background layers feature is not yet fully functional, disable for now
-    this.glyphLayersAccordionItem.hidden = true;
-    return;
-
     const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
     const haveLayers =
       this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
@@ -932,6 +942,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     } else {
       this.selectMainSourceLayer();
     }
+
+    this._updateRemoveSourceLayerButtonState();
   }
 
   selectMainSourceLayer() {
@@ -956,6 +968,12 @@ export default class DesignspaceNavigationPanel extends Panel {
   _updateRemoveSourceButtonState() {
     this.addRemoveSourceButtons.disableRemoveButton =
       this.sourcesList.getSelectedItemIndex() === undefined;
+  }
+
+  _updateRemoveSourceLayerButtonState() {
+    const selectedItem = this.sourceLayersList.getSelectedItem();
+    this.addRemoveSourceLayerButtons.disableRemoveButton =
+      !selectedItem || selectedItem.isMainLayer;
   }
 
   async _updateEditingStatus() {
@@ -1447,6 +1465,24 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async addSourceLayer() {
+    const validateInput = () => {
+      const warnings = [];
+      if (
+        inputController.model.sourceLayerName &&
+        this.sourceLayersList.items.some(
+          (item) => item.shortName === inputController.model.sourceLayerName
+        )
+      ) {
+        warnings.push("⚠️ Layer name must be unique"); // TODO: translate
+      }
+
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle(
+        "disabled",
+        warnings.length || !inputController.model.sourceLayerName
+      );
+    };
+
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
@@ -1460,7 +1496,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       { title: translate("dialog.okay"), isDefaultButton: true, result: "ok" },
     ]);
 
-    const nameController = new ObservableController({});
+    const inputController = new ObservableController({ copyCurrentLayer: false });
+
+    const warningElement = html.div({
+      id: "warning-text",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+
     const contentElement = html.div(
       {
         style: `overflow: hidden;
@@ -1471,10 +1513,20 @@ export default class DesignspaceNavigationPanel extends Panel {
           align-items: center;
         `,
       },
-      labeledTextInput("name", nameController, "sourceLayerName", {
-        id: "source-layer-name-text-input",
-      })
+      [
+        ...labeledTextInput("name", inputController, "sourceLayerName", {
+          id: "source-layer-name-text-input",
+        }),
+        html.div(), // gridfiller
+        labeledCheckbox("Copy current layer", inputController, "copyCurrentLayer", {}), // TODO: translate
+        warningElement,
+      ]
     );
+
+    validateInput();
+
+    inputController.addListener((event) => validateInput());
+
     dialog.setContent(contentElement);
 
     setTimeout(
@@ -1487,16 +1539,23 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const newLayerName = `${selectedSourceItem.layerName}${BACKGROUND_LAYER_SEPARATOR}${nameController.model.sourceLayerName}`;
+    const newLayerName = `${selectedSourceItem.layerName}${BACKGROUND_LAYER_SEPARATOR}${inputController.model.sourceLayerName}`;
     if (glyph.layers[newLayerName]) {
       console.log("layer already exists");
       return;
     }
 
+    const currentLayerGlyph = (await this.sceneModel.getSelectedStaticGlyphController())
+      ?.instance;
+
     const newLayer = Layer.fromObject({
-      glyph: StaticGlyph.fromObject({
-        xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
-      }),
+      glyph: StaticGlyph.fromObject(
+        inputController.model.copyCurrentLayer && currentLayerGlyph
+          ? currentLayerGlyph
+          : {
+              xAdvance: glyph.layers[selectedSourceItem.layerName].glyph.xAdvance,
+            }
+      ),
     });
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
