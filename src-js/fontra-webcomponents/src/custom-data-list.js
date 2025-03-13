@@ -50,19 +50,22 @@ export class CustomDataList extends SimpleElement {
     const customDataNames = this.customDataInfos.map((info) => info.key);
     const model = this.controller.model;
 
+    const sortItems = (sortedItems) => {
+      return sortedItems.sort(
+        (a, b) =>
+          (customDataNames.indexOf(a.key) != -1
+            ? customDataNames.indexOf(a.key)
+            : customDataNames.length) -
+          (customDataNames.indexOf(b.key) != -1
+            ? customDataNames.indexOf(b.key)
+            : customDataNames.length)
+      );
+    };
+
     const makeItem = ([key, value]) => {
       const item = new ObservableController({ key: key, value: value });
       item.addListener((event) => {
-        const sortedItems = [...labelList.items];
-        sortedItems.sort(
-          (a, b) =>
-            (customDataNames.indexOf(a.key) != -1
-              ? customDataNames.indexOf(a.key)
-              : customDataNames.length) -
-            (customDataNames.indexOf(b.key) != -1
-              ? customDataNames.indexOf(b.key)
-              : customDataNames.length)
-        );
+        const sortedItems = sortItems([...labelList.items]);
 
         if (!arraysEqual(labelList.items, sortedItems)) {
           labelList.setItems(sortedItems);
@@ -76,17 +79,8 @@ export class CustomDataList extends SimpleElement {
       return item.model;
     };
 
-    const sortedItems = Object.entries(model);
-    sortedItems.sort(
-      (a, b) =>
-        (customDataNames.indexOf(a[0]) != -1
-          ? customDataNames.indexOf(a[0])
-          : customDataNames.length) -
-        (customDataNames.indexOf(b[0]) != -1
-          ? customDataNames.indexOf(b[0])
-          : customDataNames.length)
-    );
-    const items = sortedItems?.map(makeItem) || [];
+    const items =
+      Object.entries(model)?.map(([key, value]) => makeItem([key, value])) || [];
 
     const labelList = new UIList();
     labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
@@ -144,12 +138,14 @@ export class CustomDataList extends SimpleElement {
           return;
         }
         const newItem = makeItem([key, value]);
-        const newItems = [...labelList.items, newItem];
+        const newItems = sortItems([...labelList.items, newItem]);
+
         model.customData = newItems.map((label) => {
           return { ...label };
         });
         labelList.setItems(newItems);
-        labelList.editCell(newItems.length - 1, "key");
+        const itemIndex = newItems.indexOf(newItem);
+        labelList.editCell(itemIndex, "key");
         addRemoveButton.scrollIntoView({
           behavior: "auto",
           block: "nearest",
