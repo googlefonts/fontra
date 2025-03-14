@@ -822,6 +822,21 @@ async def test_putSources_variable_glyph_bug(writableTestFont):
     assert glyph is not None
 
 
+async def test_putSources_source_name(writableTestFont):
+    fontSources = await writableTestFont.getSources()
+    for i, source in enumerate(fontSources.values()):
+        source.name = f"source{i}"
+    await writableTestFont.putSources(fontSources)
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedFontSources = await reopenedBackend.getSources()
+
+    assert [s.name for s in reopenedFontSources.values()] == [
+        s.name for s in fontSources.values()
+    ]
+    assert reopenedFontSources == fontSources
+
+
 expectedAxesWithMappings = Axes(
     axes=[
         FontAxis(
