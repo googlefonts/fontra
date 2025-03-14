@@ -1,5 +1,24 @@
 # Changelog for Fontra
 
+## 2025-03-14
+
+New features:
+
+- Background layers are here! [Issue 50](https://github.com/googlefonts/fontra/issues/50), many PR's, see issue.
+- Beginnings of writing .glyphs and .glyphspackage files. First step: glyph data. [fontra-glyphs issue 75](https://github.com/googlefonts/fontra-glyphs/issues/75) [fontra-glyphs PR 76](https://github.com/googlefonts/fontra-glyphs/pull/76) [Issue for future work](https://github.com/googlefonts/fontra-glyphs/issues/87)
+
+Bugfixes:
+
+- Units Per Em is now exported properly (This affected "Export as", `fontra-workflow` and `fontra-copy`). [Issue 2044](https://github.com/googlefonts/fontra/issues/2044) [PR 2046](https://github.com/googlefonts/fontra/pull/2046)
+- Fixed bug where the context menu wouldn't go away [Issue 2068](https://github.com/googlefonts/fontra/issues/2068) [PR 2069](https://github.com/googlefonts/fontra/pull/2069)
+- Fixed false positive with the interpolation compatibility checker. [Issue 2081](https://github.com/googlefonts/fontra/issues/2081) [PR 2083](https://github.com/googlefonts/fontra/pull/2083)
+
+Enhancements:
+
+- Don't write empty kern data to .fontra project. [Issue 2045](https://github.com/googlefonts/fontra/issues/2045) [PR 2047](https://github.com/googlefonts/fontra/pull/2047)
+- Show a warning when deleting a font source. [Issue 2048](https://github.com/googlefonts/fontra/issues/2048) [PR 2055](https://github.com/googlefonts/fontra/pull/2055)
+- Allow menus to be opened with click-drag, not just click. [Issue 2049](https://github.com/googlefonts/fontra/issues/2049) [PR 2060](https://github.com/googlefonts/fontra/pull/2060)
+
 ## 2025-03-05
 
 There have been some major changes in the front end, in order to have a clearer separation between the Python server code and the front end. This makes the front-end usable independently from the server.
