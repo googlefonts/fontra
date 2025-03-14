@@ -1,7 +1,15 @@
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { openTypeSettingsFontFamilyLevel } from "@fontra/core/font-info-data.js";
+import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
+import { ObservableController } from "@fontra/core/observable-object.js";
+import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { enumerate } from "@fontra/core/utils.js";
+import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { Form } from "@fontra/web-components/ui-form.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
@@ -24,7 +32,7 @@ const fontInfoFields = [
 ];
 
 addStyleSheet(`
-.fontra-ui-font-info-axes-panel {
+.font-info-container {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
@@ -38,30 +46,24 @@ export class FontInfoPanel extends BaseInfoPanel {
 
   async setupUI() {
     const info = await this.fontController.getFontInfo();
+    const customDataKeys = openTypeSettingsFontFamilyLevel.map((item) => item.key);
 
     this.infoForm = new Form();
-    this.infoForm.className = "fontra-ui-font-info-axes-panel";
     this.infoForm.labelWidth = "max-content";
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       const [rootKey, itemKey] = JSON.parse(fieldItem.key);
-      const undoLabel = `change ${itemKey ? itemKey : rootKey}`; // TODO: translation
-
-      const root = {
-        fontInfo: await this.fontController.getFontInfo(),
-        unitsPerEm: this.fontController.unitsPerEm,
-      };
-      const changes = recordChanges(root, (root) => {
-        if (itemKey) {
-          const subject = root[rootKey];
-          subject[itemKey] = value;
-        } else {
-          root[rootKey] = value;
-        }
-      });
-      if (changes.hasChange) {
-        await this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      }
+      this.editFontInfo(
+        (root) => {
+          if (itemKey) {
+            const subject = root[rootKey];
+            subject[itemKey] = value;
+          } else {
+            root[rootKey] = value;
+          }
+        },
+        `change ${itemKey ? itemKey : rootKey}`
+      ); // TODO: translation
     };
 
     const formContents = [];
@@ -90,7 +92,93 @@ export class FontInfoPanel extends BaseInfoPanel {
 
     this.infoForm.setFieldDescriptions(formContents);
 
+    const cutomDataController = new ObservableController({ ...info.customData });
+
+    cutomDataController.addListener((event) => {
+      this.editFontInfo((root) => {
+        root.fontInfo.customData = {};
+        for (const [i, item] of enumerate(event.newValue)) {
+          const key = item["key"];
+          // We don't need to check the key, because we allow
+          // supported keys only to be added via the dialog, aynway.
+
+          let value = item["value"];
+          if (isString(item["value"])) {
+            // This has been edited via double click in the list.
+            // All list cells have the default formatter,
+            // as we cannot set it individually for each cell, yet.
+            const customDataInfo =
+              openTypeSettingsFontFamilyLevel[customDataKeys.indexOf(key)];
+            const formatter = customDataInfo?.formatter || DefaultFormatter;
+            const returnValue = formatter.fromString(value);
+            if (returnValue.value != undefined) {
+              value = returnValue.value;
+            } else {
+              const errorInfo = returnValue.error ? `: ${returnValue.error}.` : "";
+              message(
+                translate("Edit OpenType settings"), // TODO: translation
+                `Invalid value for ${key}, "${value}"${errorInfo}` // TODO: translation
+              );
+              // TODO: Do we want to fallback to the old value, and if so, how do we update the UI?
+              // value = event.oldValue[i].value;
+              continue;
+            }
+          }
+
+          root.fontInfo.customData[key] = value;
+        }
+      }, `edit customData`); // TODO: translation
+    });
+
+    const openTypeSettings = customDataKeys.map((customDataKey) => ({
+      ...openTypeSettingsFontFamilyLevel[customDataKeys.indexOf(customDataKey)],
+      getDefaultFunction: () =>
+        openTypeSettingsFontFamilyLevel[
+          customDataKeys.indexOf(customDataKey)
+        ].getDefaultFunction(info),
+    }));
+    const customDataList = new CustomDataList(cutomDataController, openTypeSettings);
+    const accordion = new Accordion();
+
+    accordion.appendStyle(`
+      .ui-accordion-item-content {
+        padding-bottom: 1em;
+      }
+      `);
+    const accordionItems = [
+      {
+        label: translate("sources.labels.general"),
+        id: "general",
+        content: this.infoForm,
+        open: true,
+      },
+      {
+        label: translate("OpenType settings"), // TODO: translate
+        id: "custom-data",
+        content: customDataList,
+        open: info.customData || false,
+      },
+    ];
+
+    accordion.items = accordionItems;
+
     this.panelElement.innerHTML = "";
-    this.panelElement.appendChild(this.infoForm);
+    this.panelElement.appendChild(
+      html.div({ class: "font-info-container" }, [accordion])
+    );
+    this.panelElement.focus();
+  }
+
+  async editFontInfo(editFunc, undoLabel) {
+    const root = {
+      fontInfo: await this.fontController.getFontInfo(),
+      unitsPerEm: this.fontController.unitsPerEm,
+    };
+    const changes = recordChanges(root, (root) => {
+      editFunc(root);
+    });
+    if (changes.hasChange) {
+      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+    }
   }
 }

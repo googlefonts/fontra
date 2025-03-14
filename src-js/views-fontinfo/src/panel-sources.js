@@ -3,14 +3,16 @@ import {
   getActionIdentifierFromKeyEvent,
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
+import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import {
+  DefaultFormatter,
   NumberFormatter,
   OptionalNumberFormatter,
-  checkboxListCell,
   labelForElement,
   labeledCheckbox,
   labeledTextInput,
@@ -23,8 +25,11 @@ import {
   mapAxesFromUserSpaceToSourceSpace,
 } from "@fontra/core/var-model.js";
 import "@fontra/web-components/add-remove-buttons.js";
+import "@fontra/web-components/custom-data-list.js";
+import { CustomDataList } from "@fontra/web-components/custom-data-list.js";
 import "@fontra/web-components/designspace-location.js";
 import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { Accordion } from "@fontra/web-components/ui-accordion.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
 import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
@@ -510,31 +515,6 @@ addStyleSheet(`
   margin-left: 1em;
   height: fit-content;
 }
-
-.fontra-ui-font-info-sources-panel-column {
-  display: grid;
-  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
-  gap: 0.5em;
-  align-items: start;
-  align-content: start;
-  padding-bottom: 2em;
-}
-
-.fontra-ui-font-info-sources-panel-line-metrics-hor {
-  grid-template-columns: minmax(4.5em, max-content) 4em 4em;
-}
-
-.fontra-ui-font-info-sources-panel-header {
-  font-weight: bold;
-  padding-bottom: 1em;
-}
-
-.fontra-ui-font-info-sources-panel-guideline-list {
-  min-width: max-content;
-  max-width: 29.5em; // 4.5 + 25
-  max-height: 12em;
-}
-
 `);
 
 class SourceBox extends HTMLElement {
@@ -548,6 +528,7 @@ class SourceBox extends HTMLElement {
     this.setupUI = setupUI;
     this.controllers = {};
     this.models = this._getModels();
+    this.customDataKeys = openTypeSettingsFontSourcesLevel.map((item) => item.key);
     this._updateContents();
   }
 
@@ -568,8 +549,7 @@ class SourceBox extends HTMLElement {
         source.lineMetricsHorizontalLayout
       ),
       guidelines: { ...source.guidelines },
-      // TODO: hhea, OS/2 line metrics, etc
-      // customData: { ...source.customData },
+      customData: { ...source.customData },
     };
   }
 
@@ -692,37 +672,143 @@ class SourceBox extends HTMLElement {
       }, `edit guidelines`); // TODO: translation
     });
 
-    this.innerHTML = "";
-    this.append(
-      html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-        getLabelFromKey("general"),
-      ]),
-      buildElement(this.controllers.general)
-    );
+    this.controllers.customData.addListener((event) => {
+      this.editSource((source) => {
+        source.customData = {};
+        for (const [i, item] of enumerate(event.newValue)) {
+          const key = item["key"];
+          // We don't need to check the key, because we allow
+          // supported keys only to be added via the dialog, aynway.
+
+          let value = item["value"];
+          if (isString(item["value"])) {
+            // This has been edited via double click in the list.
+            // All list cells have the default formatter,
+            // as we cannot set it individually for each cell, yet.
+            const customDataInfo =
+              openTypeSettingsFontSourcesLevel[this.customDataKeys.indexOf(key)];
+            const formatter = customDataInfo?.formatter || DefaultFormatter;
+            const returnValue = formatter.fromString(value);
+            if (returnValue.value != undefined) {
+              value = returnValue.value;
+            } else {
+              const errorInfo = returnValue.error ? `: ${returnValue.error}.` : "";
+              message(
+                translate("Edit OpenType settings"), // TODO: translation
+                `Invalid value for ${key}, "${value}"${errorInfo}` // TODO: translation
+              );
+              // TODO: Do we want to fallback to the old value, and if so, how do we update the UI?
+              // value = event.oldValue[i].value;
+              continue;
+            }
+          }
+
+          source.customData[key] = value;
+        }
+      }, `edit customData`); // TODO: translation
+    });
+
+    const accordion = new Accordion();
+    accordion.appendStyle(`
+.fontra-ui-font-info-sources-panel-column {
+  display: grid;
+  grid-template-columns: minmax(4.5em, max-content) minmax(max-content, 25em);
+  gap: 0.5em;
+  align-items: start;
+  align-content: start;
+  padding-bottom: 1em;
+}
+
+.fontra-ui-font-info-sources-panel-line-metrics-hor {
+  grid-template-columns: minmax(4.5em, max-content) 4em 4em;
+}
+
+.fontra-ui-font-info-sources-panel-list-element {
+  min-width: max-content;
+  max-width: 29.5em; // 4.5 + 25
+  max-height: 12em;
+}
+
+input {
+  background-color: var(--text-input-background-color);
+  color: var(--text-input-foreground-color);
+  border-radius: 0.25em;
+  border: none;
+  outline: none;
+  padding: 0.1em 0.3em;
+  font-family: "fontra-ui-regular";
+  font-size: 100%;
+}
+
+.ui-form-value input {
+  width: min(100%, 9.5em);
+  height: 1.6em;
+}
+    `);
+    const accordionItems = [
+      {
+        label: getLabelFromKey("general"),
+        id: "general",
+        content: buildElement(this.controllers.general),
+        open: true,
+      },
+    ];
+
     // Don't add 'Location', if the font has no axes.
     if (this.fontAxesSourceSpace.length > 0) {
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("location"),
-        ]),
-        buildElementLocations(this.controllers.location, this.fontAxesSourceSpace)
-      );
+      accordionItems.push({
+        label: getLabelFromKey("location"),
+        id: "location",
+        content: buildElementLocations(
+          this.controllers.location,
+          this.fontAxesSourceSpace
+        ),
+        open: true,
+      });
     }
+
+    // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
     if (!this.source.isSparse) {
-      // NOTE: Don't show 'Line Metrics' or 'Guidelines' for sparse sources.
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("lineMetricsHorizontalLayout"),
-        ]),
-        buildElementLineMetricsHor(this.controllers.lineMetricsHorizontalLayout)
+      const openTypeSettings = this.customDataKeys.map((customDataKey) => ({
+        ...openTypeSettingsFontSourcesLevel[this.customDataKeys.indexOf(customDataKey)],
+        getDefaultFunction: () =>
+          openTypeSettingsFontSourcesLevel[
+            this.customDataKeys.indexOf(customDataKey)
+          ].getDefaultFunction(this.source),
+      }));
+
+      const customDataList = new CustomDataList(
+        this.controllers.customData,
+        openTypeSettings
       );
-      this.append(
-        html.div({ class: "fontra-ui-font-info-sources-panel-header" }, [
-          getLabelFromKey("guidelines"),
-        ]),
-        buildFontGuidelineList(this.controllers.guidelines)
+      accordionItems.push(
+        {
+          label: getLabelFromKey("lineMetricsHorizontalLayout"),
+          id: "lineMetricsHorizontalLayout",
+          content: buildElementLineMetricsHor(
+            this.controllers.lineMetricsHorizontalLayout
+          ),
+          open: true,
+        },
+        {
+          label: getLabelFromKey("guidelines"),
+          id: "guidelines",
+          content: buildFontGuidelineList(this.controllers.guidelines),
+          open: Object.keys(this.source.guidelines).length > 0,
+        },
+        {
+          label: getLabelFromKey("customData"),
+          id: "customData",
+          content: customDataList,
+          open: Object.keys(this.source.customData).length > 0,
+        }
       );
     }
+
+    accordion.items = accordionItems;
+
+    this.innerHTML = "";
+    this.appendChild(accordion);
   }
 }
 
@@ -802,7 +888,7 @@ function buildFontGuidelineList(controller) {
   const items = Object.values(model)?.map(makeItem) || [];
 
   const labelList = new UIList();
-  labelList.classList.add("fontra-ui-font-info-sources-panel-guideline-list");
+  labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
   labelList.style = `min-width: 12em;`;
   labelList.columnDescriptions = [
     {
@@ -895,7 +981,7 @@ function buildFontGuidelineList(controller) {
 
   updateRemoveButton(labelList, addRemoveButton);
 
-  return html.div({ style: "display: grid; grid-gap: 0.3em;" }, [
+  return html.div({ style: "display: grid; grid-gap: 0.3em; padding-bottom: 1em;" }, [
     labelList,
     addRemoveButton,
   ]);
@@ -984,6 +1070,7 @@ function getLabelFromKey(key) {
     location: translate("sources.labels.location"),
     lineMetricsHorizontalLayout: translate("sources.labels.line-metrics"),
     guidelines: translate("sidebar.user-settings.guidelines"),
+    customData: translate("OpenType settings"), // TODO: translation
   };
   return keyLabelMap[key] || key;
 }
