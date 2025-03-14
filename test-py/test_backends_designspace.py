@@ -813,6 +813,15 @@ async def test_putSources_delete_revive(writableTestFont):
     assert revivedGlyph == originalGlyph
 
 
+async def test_putSources_variable_glyph_bug(writableTestFont):
+    # https://github.com/googlefonts/fontra/issues/2040
+    fontSources = await writableTestFont.getSources()
+    await writableTestFont.putSources(fontSources)
+
+    glyph = await writableTestFont.getGlyph("varcotest2")
+    assert glyph is not None
+
+
 expectedAxesWithMappings = Axes(
     axes=[
         FontAxis(
