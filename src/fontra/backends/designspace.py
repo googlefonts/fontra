@@ -383,7 +383,12 @@ class DesignspaceBackend:
                 )
             )
 
+        self._addNonSourceLayers()
+        self._updatePathsToWatch()
+
+    def _addNonSourceLayers(self) -> None:
         # Add remaining layers (background layers, variable glyph layers)
+        manager = self.ufoManager
         for source in self.dsDoc.sources:
             ufoPath = source.path
             reader = manager.getReader(ufoPath)
@@ -399,8 +404,6 @@ class DesignspaceBackend:
                             fontraLayerName=fontraLayerName,
                         )
                     )
-
-        self._updatePathsToWatch()
 
     def buildGlyphFileNameMapping(self):
         glifFileNames = {}
@@ -1042,6 +1045,7 @@ class DesignspaceBackend:
                 dsSource = replace(
                     dsSource,
                     identifier=sourceIdentifier,
+                    name=fontSource.name,
                     location=denseSourceLocation,
                 )
             else:
@@ -1086,6 +1090,7 @@ class DesignspaceBackend:
         for dsSource in newDSSources:
             newLayers.append(dsSource.layer)
         self.ufoLayers = newLayers
+        self._addNonSourceLayers()
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
         newSourceDescriptors = [
