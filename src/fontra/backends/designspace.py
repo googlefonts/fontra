@@ -365,9 +365,8 @@ class DesignspaceBackend:
                 )
                 self.ufoLayers.append(sourceLayer)
 
-            sourceStyleName = source.styleName or sourceLayer.fileName
-            sourceName = (
-                sourceStyleName
+            sourceName = source.styleName or (
+                sourceLayer.fileName
                 if ufoLayerName == defaultLayerName
                 else source.layerName
             )
