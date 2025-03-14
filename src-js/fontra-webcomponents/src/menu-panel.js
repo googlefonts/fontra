@@ -387,7 +387,7 @@ export class MenuPanel extends SimpleElement {
         }
         break;
       case "Enter":
-        if (selectedItem) {
+        if (active && selectedItem) {
           selectedItem.onmouseup(event);
         }
         break;
