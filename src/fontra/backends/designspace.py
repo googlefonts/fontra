@@ -1090,7 +1090,6 @@ class DesignspaceBackend:
         for dsSource in newDSSources:
             newLayers.append(dsSource.layer)
         self.ufoLayers = newLayers
-        self._addNonSourceLayers()
 
         axisOrder = [axis.name for axis in self.dsDoc.axes]
         newSourceDescriptors = [
@@ -1099,6 +1098,8 @@ class DesignspaceBackend:
         self.dsDoc.sources = sortedSourceDescriptors(
             newSourceDescriptors, self.dsDoc.sources, axisOrder
         )
+
+        self._addNonSourceLayers()
 
         self._writeDesignSpaceDocument()
 
