@@ -552,6 +552,9 @@ export class FontOverviewController extends ViewController {
   }
 
   handleKeyDown(event) {
+    if (document.activeElement === document.querySelector("menu-bar")) {
+      return;
+    }
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
     if (actionIdentifier) {
       event.preventDefault();
