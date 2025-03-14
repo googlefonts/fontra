@@ -383,6 +383,7 @@ export class MenuPanel extends SimpleElement {
           }
           submenu.selectFirstEnabledItem(submenu.menuElement.children);
           submenu.setActive(true);
+          selectedItem.classList.remove("selected");
         }
         break;
       case "Enter":
