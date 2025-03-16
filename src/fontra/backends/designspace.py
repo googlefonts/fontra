@@ -351,15 +351,16 @@ class DesignspaceBackend:
         for source in self.dsDoc.sources:
             if self._familyName is None and source.familyName:
                 self._familyName = source.familyName
-            reader = manager.getReader(source.path)
+            ufoPath = os.path.normpath(source.path)
+            reader = manager.getReader(ufoPath)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
 
-            sourceLayer = self.ufoLayers.findItem(path=source.path, name=ufoLayerName)
+            sourceLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             if sourceLayer is None:
                 sourceLayer = UFOLayer(
                     manager=manager,
-                    path=source.path,
+                    path=ufoPath,
                     name=ufoLayerName,
                     fontraLayerName=source.name,
                 )
@@ -389,7 +390,7 @@ class DesignspaceBackend:
         # Add remaining layers (background layers, variable glyph layers)
         manager = self.ufoManager
         for source in self.dsDoc.sources:
-            ufoPath = source.path
+            ufoPath = os.path.normpath(source.path)
             reader = manager.getReader(ufoPath)
             for ufoLayerName in reader.getLayerNames():
                 layer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
