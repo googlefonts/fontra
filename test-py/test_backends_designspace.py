@@ -813,6 +813,30 @@ async def test_putSources_delete_revive(writableTestFont):
     assert revivedGlyph == originalGlyph
 
 
+async def test_putSources_variable_glyph_bug(writableTestFont):
+    # https://github.com/googlefonts/fontra/issues/2040
+    fontSources = await writableTestFont.getSources()
+    await writableTestFont.putSources(fontSources)
+
+    glyph = await writableTestFont.getGlyph("varcotest2")
+    assert glyph is not None
+
+
+async def test_putSources_source_name(writableTestFont):
+    fontSources = await writableTestFont.getSources()
+    for i, source in enumerate(fontSources.values()):
+        source.name = f"source{i}"
+    await writableTestFont.putSources(fontSources)
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedFontSources = await reopenedBackend.getSources()
+
+    assert [s.name for s in reopenedFontSources.values()] == [
+        s.name for s in fontSources.values()
+    ]
+    assert reopenedFontSources == fontSources
+
+
 expectedAxesWithMappings = Axes(
     axes=[
         FontAxis(

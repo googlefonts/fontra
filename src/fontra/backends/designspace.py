@@ -351,23 +351,23 @@ class DesignspaceBackend:
         for source in self.dsDoc.sources:
             if self._familyName is None and source.familyName:
                 self._familyName = source.familyName
-            reader = manager.getReader(source.path)
+            ufoPath = os.path.normpath(source.path)
+            reader = manager.getReader(ufoPath)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
 
-            sourceLayer = self.ufoLayers.findItem(path=source.path, name=ufoLayerName)
+            sourceLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             if sourceLayer is None:
                 sourceLayer = UFOLayer(
                     manager=manager,
-                    path=source.path,
+                    path=ufoPath,
                     name=ufoLayerName,
                     fontraLayerName=source.name,
                 )
                 self.ufoLayers.append(sourceLayer)
 
-            sourceStyleName = source.styleName or sourceLayer.fileName
-            sourceName = (
-                sourceStyleName
+            sourceName = source.styleName or (
+                sourceLayer.fileName
                 if ufoLayerName == defaultLayerName
                 else source.layerName
             )
@@ -383,9 +383,14 @@ class DesignspaceBackend:
                 )
             )
 
+        self._addNonSourceLayers()
+        self._updatePathsToWatch()
+
+    def _addNonSourceLayers(self) -> None:
         # Add remaining layers (background layers, variable glyph layers)
+        manager = self.ufoManager
         for source in self.dsDoc.sources:
-            ufoPath = source.path
+            ufoPath = os.path.normpath(source.path)
             reader = manager.getReader(ufoPath)
             for ufoLayerName in reader.getLayerNames():
                 layer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
@@ -399,8 +404,6 @@ class DesignspaceBackend:
                             fontraLayerName=fontraLayerName,
                         )
                     )
-
-        self._updatePathsToWatch()
 
     def buildGlyphFileNameMapping(self):
         glifFileNames = {}
@@ -1042,6 +1045,7 @@ class DesignspaceBackend:
                 dsSource = replace(
                     dsSource,
                     identifier=sourceIdentifier,
+                    name=fontSource.name,
                     location=denseSourceLocation,
                 )
             else:
@@ -1094,6 +1098,8 @@ class DesignspaceBackend:
         self.dsDoc.sources = sortedSourceDescriptors(
             newSourceDescriptors, self.dsDoc.sources, axisOrder
         )
+
+        self._addNonSourceLayers()
 
         self._writeDesignSpaceDocument()
 
