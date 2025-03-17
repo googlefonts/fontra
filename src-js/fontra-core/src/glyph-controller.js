@@ -36,7 +36,7 @@ import {
   range,
 } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
-import { StaticGlyph } from "./var-glyph.js";
+import { StaticGlyph, copyComponent } from "./var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -1030,11 +1030,12 @@ export async function decomposeComponents(
     const t = decomposedToTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
     for (const nestedCompo of compoInstance.components) {
-      newComponents.push({
-        name: nestedCompo.name,
-        transformation: prependTransformToDecomposed(t, nestedCompo.transformation),
-        location: { ...nestedCompo.location },
-      });
+      const newComponent = copyComponent(nestedCompo);
+      newComponent.transformation = prependTransformToDecomposed(
+        t,
+        nestedCompo.transformation
+      );
+      newComponents.push(newComponent);
     }
     for (const anchor of compoInstance.anchors) {
       const [x, y] = t.transformPoint(anchor.x, anchor.y);
