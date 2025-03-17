@@ -20,5 +20,3 @@ export async function startupLandingPage(authenticateFunc) {
     projectListContainer.appendChild(projectElement);
   }
 }
-
-startupLandingPage();
