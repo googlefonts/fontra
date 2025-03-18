@@ -1885,7 +1885,7 @@ export class EditorController extends ViewController {
       } else {
         await this._pasteReplaceGlyph(pasteVarGlyph);
       }
-      // Force sync between location and selectedSourceIndex, as the glyph's
+      // Force even trigger for fontLocationSourceMapped, as the glyph's
       // source list may have changed
       this.sceneSettings.fontLocationSourceMapped = {
         ...this.sceneSettings.fontLocationSourceMapped,
@@ -3091,7 +3091,7 @@ export class EditorController extends ViewController {
   async externalChange(change, isLiveChange) {
     await super.externalChange(change, isLiveChange);
 
-    // Force sync between location and selectedSourceIndex, as the glyph's
+    // Force even trigger for fontLocationSourceMapped, as the glyph's
     // source list may have changed
     this.sceneSettings.fontLocationSourceMapped = {
       ...this.sceneSettings.fontLocationSourceMapped,
