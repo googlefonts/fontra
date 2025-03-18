@@ -294,13 +294,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["selectedGlyph", "selectedSourceIndex"],
-      (event) => {
-        this._updateSourceLayersList();
-      }
-    );
-
-    this.sceneSettingsController.addKeyListener(
       [
         "fontAxesUseSourceCoordinates",
         "fontAxesShowEffectiveLocation",
@@ -340,6 +333,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       true
     );
 
+    // TODO: stop depending on selectedSourceIndex
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
       async (event) => {
@@ -358,7 +352,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           sourceListItem = undefined;
         }
 
-        this.sourcesList.setSelectedItem(sourceListItem);
+        this.sourcesList.setSelectedItem(sourceListItem, true);
 
         this._updateRemoveSourceButtonState();
         this._updateEditingStatus();
@@ -423,7 +417,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       } else {
         this.sceneSettings.editLayerName = null;
       }
+      this._updateRemoveSourceButtonState();
       this._updateEditingStatus();
+      this._updateSourceLayersList();
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
@@ -882,7 +878,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateSourceLayersList() {
-    const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
+    const sourceIndex = this.sourcesList.getSelectedItem()?.sourceIndex;
     const haveLayers =
       this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
     this.glyphLayersAccordionItem.hidden = !haveLayers;
