@@ -818,7 +818,8 @@ export class EditorController extends ViewController {
         ...this.sceneSettings.selectedGlyph,
         isEditing: true,
       };
-      this.sceneSettings.selectedSourceIndex = 0;
+      // Navigate to the default location, so the new glyph's default source gets selected
+      this.sceneSettings.fontLocationSourceMapped = {};
     }
   }
 
