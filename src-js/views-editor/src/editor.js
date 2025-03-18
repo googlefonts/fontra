@@ -2845,31 +2845,12 @@ export class EditorController extends ViewController {
     this.sceneController.selection = newSelection;
   }
 
-  async doSelectPreviousNextSource(selectPrevious) {
-    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
-    if (!instance) {
-      return;
-    }
-    const varGlyphController =
-      await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = this.sceneSettings.selectedSourceIndex;
-    let newSourceIndex;
-    if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
-        ...this.sceneSettings.fontLocationSourceMapped,
-        ...this.sceneSettings.glyphLocation,
-      });
-    } else {
-      newSourceIndex = modulo(
-        sourceIndex + (selectPrevious ? -1 : 1),
-        varGlyphController.sources.length
-      );
-    }
-    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-    this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  doSelectPreviousNextSource(selectPrevious) {
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.doSelectPreviousNextSource(selectPrevious);
   }
 
-  async doSelectPreviousNextSourceLayer(selectPrevious) {
+  doSelectPreviousNextSourceLayer(selectPrevious) {
     const panel = this.getSidebarPanel("designspace-navigation");
     panel?.doSelectPreviousNextSourceLayer(selectPrevious);
   }

@@ -952,6 +952,30 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
+  async doSelectPreviousNextSource(selectPrevious) {
+    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
+    if (!instance) {
+      return;
+    }
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    const sourceIndex = this.sceneSettings.selectedSourceIndex;
+    let newSourceIndex;
+    if (sourceIndex === undefined) {
+      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      });
+    } else {
+      newSourceIndex = modulo(
+        sourceIndex + (selectPrevious ? -1 : 1),
+        varGlyphController.sources.length
+      );
+    }
+    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+    this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
   doSelectPreviousNextSourceLayer(selectPrevious) {
     if (this.sourceLayersList.items.length < 2) {
       return;
