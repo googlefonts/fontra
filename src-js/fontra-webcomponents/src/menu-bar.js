@@ -28,6 +28,11 @@ export class MenuBar extends SimpleElement {
     -webkit-user-select: none;
   }
 
+  .menu-item:focus-visible {
+    outline: none;
+  }
+
+  .menu-item:focus-visible,
   .menu-item.hovered,
   .menu-item.current {
     background: var(--menu-bar-link-hover);
@@ -54,6 +59,7 @@ export class MenuBar extends SimpleElement {
       this.unhoverMenuItems.bind(this)
     );
     this.contentElement.addEventListener("mousedown", this.onMouseDown.bind(this));
+    this.contentElement.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.showMenuWhenHover = false;
   }
 
@@ -71,10 +77,18 @@ export class MenuBar extends SimpleElement {
 
   onMouseDown(event) {
     const { target } = event;
-    if (isMenuItem(target) && !this.menuPanel) {
-      this.openMenu(target);
-    } else {
-      this.closeMenu();
+    if (isMenuItem(target)) {
+      if (!this.menuPanel) {
+        this.openMenu(target);
+      } else {
+        this.closeMenu();
+      }
+    }
+  }
+
+  onMouseUp(event) {
+    if (isMenuItem(event.target)) {
+      this.shadowRoot.activeElement.blur();
     }
   }
 
@@ -164,6 +178,7 @@ export class MenuBar extends SimpleElement {
   closeMenu() {
     this.clearCurrentSelection();
     this.showMenuWhenHover = false;
+    this.shadowRoot.activeElement.blur();
   }
 
   async onKeyDown(event) {
