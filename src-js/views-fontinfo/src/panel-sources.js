@@ -4,13 +4,11 @@ import {
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
 import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
-import { isString } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import {
-  DefaultFormatter,
   NumberFormatter,
   OptionalNumberFormatter,
   labelForElement,
@@ -18,7 +16,7 @@ import {
   labeledTextInput,
   textInput,
 } from "@fontra/core/ui-utils.js";
-import { arrowKeyDeltas, enumerate, modulo, range, round } from "@fontra/core/utils.js";
+import { arrowKeyDeltas, modulo, range, round } from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -675,35 +673,8 @@ class SourceBox extends HTMLElement {
     this.controllers.customData.addListener((event) => {
       this.editSource((source) => {
         source.customData = {};
-        for (const [i, item] of enumerate(event.newValue)) {
-          const key = item["key"];
-          // We don't need to check the key, because we allow
-          // supported keys only to be added via the dialog, aynway.
-
-          let value = item["value"];
-          if (isString(item["value"])) {
-            // This has been edited via double click in the list.
-            // All list cells have the default formatter,
-            // as we cannot set it individually for each cell, yet.
-            const customDataInfo =
-              openTypeSettingsFontSourcesLevel[this.customDataKeys.indexOf(key)];
-            const formatter = customDataInfo?.formatter || DefaultFormatter;
-            const returnValue = formatter.fromString(value);
-            if (returnValue.value != undefined) {
-              value = returnValue.value;
-            } else {
-              const errorInfo = returnValue.error ? `: ${returnValue.error}.` : "";
-              message(
-                translate("Edit OpenType settings"), // TODO: translation
-                `Invalid value for ${key}, "${value}"${errorInfo}` // TODO: translation
-              );
-              // TODO: Do we want to fallback to the old value, and if so, how do we update the UI?
-              // value = event.oldValue[i].value;
-              continue;
-            }
-          }
-
-          source.customData[key] = value;
+        for (const item of event.newValue) {
+          source.customData[item["key"]] = item["value"];
         }
       }, `edit customData`); // TODO: translation
     });

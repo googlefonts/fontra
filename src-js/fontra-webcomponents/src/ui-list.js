@@ -1,6 +1,8 @@
 import * as html from "@fontra/core/html-utils.js";
 import { UnlitElement } from "@fontra/core/html-utils.js";
+import { translate } from "@fontra/core/localization.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
@@ -276,7 +278,8 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          const formatter = colDesc.formatter || DefaultFormatter;
+          const formatter =
+            item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
 
           cell = html.div(
             { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
@@ -328,12 +331,15 @@ export class UIList extends UnlitElement {
     const isContinuous = colDesc.continuous === undefined || colDesc.continuous;
 
     const onchange = (event) => {
-      const formatter = colDesc.formatter || DefaultFormatter;
+      const formatter =
+        item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
       const { value, error } = formatter.fromString(
         cell.innerText != "\n" ? cell.innerText : ""
       );
       if (!error) {
         item[colDesc.key] = value;
+      } else {
+        // TODO: show a tooltip-like message instead of a modal dialog
       }
       formattingError = error;
     };
@@ -348,8 +354,14 @@ export class UIList extends UnlitElement {
         onchange(event);
       }
       if (formattingError) {
-        const formatter = colDesc.formatter || DefaultFormatter;
+        const formatter =
+          item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
         cell.textContent = formatter.toString(initialValue);
+        // TODO: This message should be removed if we have tooltip-like message
+        message(
+          translate("Editing cell"), // TODO: translation
+          translate(`Invalid "${colDesc.key}": ${formattingError}`) // TODO: translation
+        );
       }
     };
 

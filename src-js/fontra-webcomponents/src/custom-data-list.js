@@ -62,7 +62,13 @@ export class CustomDataList extends SimpleElement {
     };
 
     const makeItem = ([key, value]) => {
-      const item = new ObservableController({ key: key, value: value });
+      const customDataInfo = this.customDataInfos[this.customDataKeys.indexOf(key)];
+      const formatter = customDataInfo?.formatter || DefaultFormatter;
+      const item = new ObservableController({
+        key: key,
+        value: value,
+        formatters: { value: formatter },
+      });
       item.addListener((event) => {
         const sortedItems = sortItems([...labelList.items]);
 
@@ -89,14 +95,13 @@ export class CustomDataList extends SimpleElement {
         key: "key",
         title: "Key", // TODO: translation
         width: "14em",
-        continuous: false,
       },
       {
         key: "value",
         title: "Value", // TODO: translation
         width: "14em",
         editable: true,
-        continuous: false,
+        continuous: false, // TODO: If we have a tooltip-like error message, this should be set to true
       },
     ];
     labelList.showHeader = true;
