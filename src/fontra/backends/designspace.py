@@ -978,16 +978,14 @@ class DesignspaceBackend:
     async def putFontInfo(self, fontInfo: FontInfo):
         infoDict = {}
         for fontraName, ufoName in fontInfoNameMapping:
-            value = getattr(fontInfo, fontraName, None)
-            if value is not None:
-                infoDict[ufoName] = value
+            infoDict[ufoName] = getattr(fontInfo, fontraName, None)
 
         if fontInfo.familyName:
             self._familyName = fontInfo.familyName
 
         infoDict["customData"] = {}
-        for infoAttr, value in fontInfo.customData.items():
-            infoDict["customData"][infoAttr] = value
+        for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
+            infoDict["customData"][infoAttr] = fontInfo.customData.get(infoAttr)
 
         self._updateGlobalFontInfo(infoDict)
 
@@ -1617,22 +1615,17 @@ def createDSDocFromUFOPath(ufoPath, styleName):
 def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
     # set attribute
     for infoAttr, value in infoDict.items():
-        if value is not None:
+        if value is None or value == "":
+            if hasattr(fontInfo, infoAttr):
+                delattr(fontInfo, infoAttr)
+        else:
             setattr(fontInfo, infoAttr, value)
 
-    # delete attribute
-    for fontraName, ufoName in fontInfoNameMapping:
-        if infoDict.get(ufoName, None):
-            # If exists in infoDict, don't delete: skip.
-            continue
-        value = getattr(fontInfo, ufoName, None)
-        if value is not None:
-            delattr(fontInfo, ufoName)
-
+    customData = infoDict.get("customData", {})
     for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
-        if infoAttr in infoDict.get("customData", {}).keys():
+        if infoAttr in customData:
             # set custom data
-            value = infoDict["customData"][infoAttr]
+            value = customData[infoAttr]
             setattr(fontInfo, infoAttr, value)
         else:
             # delete custom data
