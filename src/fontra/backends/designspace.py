@@ -976,7 +976,7 @@ class DesignspaceBackend:
         return FontInfo(**info)
 
     async def putFontInfo(self, fontInfo: FontInfo):
-        infoDict = {}
+        infoDict: dict[str, Any] = {}
         for fontraName, ufoName in fontInfoNameMapping:
             infoDict[ufoName] = getattr(fontInfo, fontraName, None)
 
