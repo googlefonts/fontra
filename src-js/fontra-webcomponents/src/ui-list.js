@@ -80,7 +80,8 @@ export class UIList extends UnlitElement {
       user-select: none;
     }
 
-    .contents > .selected {
+    .contents > .selected,
+    .selected > input {
       background-color: var(--row-selected-background-color);
     }
 
@@ -112,6 +113,16 @@ export class UIList extends UnlitElement {
     .text-cell.right,
     .text-cell-header.right {
       text-align: right;
+    }
+
+    input {
+      font-family: fontra-ui-regular, -apple-system, sans-serif;
+      font-size: 100%;
+      border: none;
+    }
+
+    input:invalid{
+      color:red;
     }
     `;
 
@@ -280,10 +291,19 @@ export class UIList extends UnlitElement {
           const formatter =
             item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
 
-          cell = html.div(
-            { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
-            [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
-          );
+          if (colDesc.editable) {
+            cell = html.input({
+              class: `text-cell ${colDesc.key} ${colDesc.align || "left"}`,
+              value: formatter.toString(
+                colDesc.get ? colDesc.get(item) : item[colDesc.key]
+              ),
+            });
+          } else {
+            cell = html.div(
+              { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
+              [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
+            );
+          }
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
@@ -333,12 +353,14 @@ export class UIList extends UnlitElement {
       const formatter =
         item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
       const { value, error } = formatter.fromString(
-        cell.innerText != "\n" ? cell.innerText : ""
+        cell.value != "\n" ? cell.value : ""
       );
       if (!error) {
         item[colDesc.key] = value;
+        cell.setCustomValidity("");
       } else {
-        // TODO: show a tooltip-like message instead of a modal dialog
+        cell.setCustomValidity(`Invalid "${colDesc.key}": ${error}`);
+        cell.reportValidity();
       }
       formattingError = error;
     };
@@ -355,12 +377,7 @@ export class UIList extends UnlitElement {
       if (formattingError) {
         const formatter =
           item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
-        cell.textContent = formatter.toString(initialValue);
-        // TODO: This message should be removed if we have tooltip-like message
-        message(
-          "Editing cell", // TODO: translation
-          `Invalid "${colDesc.key}": ${formattingError}` // TODO: translation
-        );
+        cell.value = formatter.toString(initialValue);
       }
     };
 
@@ -369,7 +386,8 @@ export class UIList extends UnlitElement {
     }
 
     cell.onkeydown = (event) => {
-      if (!cell.contentEditable) {
+      // this.selectedItemIndex = undefined; // NOTE: This prevents the deleteKey to remove the whole line, as we set the selectedItemIndex to undefined.
+      if (!cell.isContentEditable) {
         return;
       }
       switch (event.key) {
