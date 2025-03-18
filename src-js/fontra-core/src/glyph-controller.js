@@ -456,6 +456,23 @@ export class VariableGlyphController {
     return this.getDenseSourceLocationForSource(this.sources[sourceIndex]);
   }
 
+  splitLocation(location) {
+    const glyphAxisNames = new Set(this.axes.map((axis) => axis.name));
+
+    const fontLocation = {};
+    const glyphLocation = {};
+
+    for (const [axisName, axisValue] of Object.entries(location)) {
+      if (glyphAxisNames.has(axisName)) {
+        glyphLocation[axisName] = axisValue;
+      } else {
+        fontLocation[axisName] = axisValue;
+      }
+    }
+
+    return { fontLocation, glyphLocation };
+  }
+
   getDenseSourceLocationForSource(source) {
     const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);

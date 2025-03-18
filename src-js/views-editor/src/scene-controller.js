@@ -262,10 +262,8 @@ export class SceneController {
 
         const location =
           varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
-        const { fontLocation, glyphLocation } = splitLocation(
-          location,
-          varGlyphController.axes
-        );
+        const { fontLocation, glyphLocation } =
+          varGlyphController.splitLocation(location);
 
         this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
           senderID: locationSelectedSourceToken,
@@ -1617,23 +1615,6 @@ export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
     glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
     glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
   );
-}
-
-function splitLocation(location, glyphAxes) {
-  const glyphAxisNames = new Set(glyphAxes.map((axis) => axis.name));
-
-  const fontLocation = {};
-  const glyphLocation = {};
-
-  for (const [axisName, axisValue] of Object.entries(location)) {
-    if (glyphAxisNames.has(axisName)) {
-      glyphLocation[axisName] = axisValue;
-    } else {
-      fontLocation[axisName] = axisValue;
-    }
-  }
-
-  return { fontLocation, glyphLocation };
 }
 
 export function joinContours(path, firstPointIndex, secondPointIndex) {
