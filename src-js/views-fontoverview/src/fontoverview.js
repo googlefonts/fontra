@@ -215,7 +215,9 @@ export class FontOverviewController extends ViewController {
       }
     );
 
-    document.addEventListener("keydown", (event) => this.handleKeyDown(event));
+    document
+      .getElementById("main-container")
+      .addEventListener("keydown", (event) => this.handleKeyDown(event));
 
     this._updateGlyphItemList();
   }
