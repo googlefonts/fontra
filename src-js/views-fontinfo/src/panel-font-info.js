@@ -49,7 +49,25 @@ export class FontInfoPanel extends BaseInfoPanel {
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       const [rootKey, itemKey] = JSON.parse(fieldItem.key);
-      this.editFontInfo(
+      // Old Code
+      // const undoLabel = `change ${itemKey ? itemKey : rootKey}`; // TODO: translation
+
+      // const root = {
+      //   fontInfo: await this.fontController.getFontInfo(),
+      //   unitsPerEm: this.fontController.unitsPerEm,
+      // };
+      // const changes = recordChanges(root, (root) => {
+      //   if (itemKey) {
+      //     const subject = root[rootKey];
+      //     subject[itemKey] = value;
+      //   } else {
+      //     root[rootKey] = value;
+      //   }
+      // });
+      // if (changes.hasChange) {
+      //   await this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      // }
+      await this.editFontInfo(
         (root) => {
           if (itemKey) {
             const subject = root[rootKey];
@@ -88,9 +106,9 @@ export class FontInfoPanel extends BaseInfoPanel {
 
     this.infoForm.setFieldDescriptions(formContents);
 
-    const cutomDataController = new ObservableController({ ...info.customData });
+    const customDataController = new ObservableController({ ...info.customData });
 
-    cutomDataController.addListener((event) => {
+    customDataController.addListener((event) => {
       this.editFontInfo((root) => {
         root.fontInfo.customData = {};
         for (const item of event.newValue) {
@@ -106,7 +124,7 @@ export class FontInfoPanel extends BaseInfoPanel {
           customDataKeys.indexOf(customDataKey)
         ].getDefaultFunction(info),
     }));
-    const customDataList = new CustomDataList(cutomDataController, openTypeSettings);
+    const customDataList = new CustomDataList(customDataController, openTypeSettings);
     const accordion = new Accordion();
 
     accordion.appendStyle(`
@@ -147,7 +165,7 @@ export class FontInfoPanel extends BaseInfoPanel {
       editFunc(root);
     });
     if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      await this.postChange(changes.change, changes.rollbackChange, undoLabel);
     }
   }
 }

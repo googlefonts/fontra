@@ -1023,6 +1023,16 @@ async def test_putFontInfoDeleteDescription(writableTestFont):
     assert reopenedInfo == info
 
 
+async def test_changeUnitsPerEmCheckFontInfo(writableTestFont):
+    info = deepcopy(await writableTestFont.getFontInfo())
+    # change UnitsPerEm
+    await writableTestFont.putUnitsPerEm(999)
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedInfo = await reopenedBackend.getFontInfo()
+    assert reopenedInfo == info
+
+
 async def test_lineMetricsVerticalLayout(tmpdir):
     tmpdir = pathlib.Path(tmpdir)
     fontPath = tmpdir / "test.designspace"
