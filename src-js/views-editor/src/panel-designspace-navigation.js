@@ -953,27 +953,25 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async doSelectPreviousNextSource(selectPrevious) {
-    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
-    if (!instance) {
-      return;
-    }
-    const varGlyphController =
-      await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = this.sceneSettings.selectedSourceIndex;
-    let newSourceIndex;
-    if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
+    let itemIndex = this.sourcesList.getSelectedItemIndex();
+    if (itemIndex != undefined) {
+      const newItemIndex = modulo(
+        itemIndex + (selectPrevious ? -1 : 1),
+        this.sourcesList.items.length
+      );
+      this.sourcesList.setSelectedItemIndex(newItemIndex, true);
+    } else {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      const nearestSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
         ...this.sceneSettings.fontLocationSourceMapped,
         ...this.sceneSettings.glyphLocation,
       });
-    } else {
-      newSourceIndex = modulo(
-        sourceIndex + (selectPrevious ? -1 : 1),
-        varGlyphController.sources.length
+      const sourceItem = this.sourcesList.items.find(
+        (item) => item.sourceIndex === nearestSourceIndex
       );
+      this.sourcesList.setSelectedItem(sourceItem, true);
     }
-    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-    this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
   doSelectPreviousNextSourceLayer(selectPrevious) {
