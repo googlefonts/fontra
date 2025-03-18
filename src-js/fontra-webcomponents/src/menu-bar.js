@@ -54,6 +54,7 @@ export class MenuBar extends SimpleElement {
     window.addEventListener("menu-panel:close", this.closeMenu.bind(this));
     window.addEventListener("keydown", this.onKeyDown.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseOver.bind(this));
+    this.contentElement.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.contentElement.addEventListener(
       "mouseleave",
       this.unhoverMenuItems.bind(this)
@@ -82,6 +83,13 @@ export class MenuBar extends SimpleElement {
       } else {
         this.closeMenu();
       }
+    }
+  }
+
+  onMouseUp(event) {
+    const { target } = event;
+    if (isMenuItem(target)) {
+      target?.blur();
     }
   }
 
@@ -145,7 +153,6 @@ export class MenuBar extends SimpleElement {
     };
     const menuPanel = new MenuPanel(items, {
       position,
-      immediatelyActive: false,
       context: "menu-bar",
       onSelect: () => this.closeMenu(),
       onClose: () => this.closeMenu(),
@@ -171,7 +178,6 @@ export class MenuBar extends SimpleElement {
   closeMenu() {
     this.clearCurrentSelection();
     this.showMenuWhenHover = false;
-    this.shadowRoot.activeElement?.blur();
   }
 
   async onKeyDown(event) {

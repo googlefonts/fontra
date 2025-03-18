@@ -158,7 +158,7 @@ export class MenuPanel extends SimpleElement {
     this.active = active;
     if (active) {
       const activeElement = getActiveElement();
-      if (this !== activeElement) {
+      if (this !== activeElement && this.context !== "menu-bar") {
         this._savedActiveElement = activeElement;
       }
       this.focus();
