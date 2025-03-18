@@ -138,6 +138,7 @@ export class MenuBar extends SimpleElement {
     };
     const menuPanel = new MenuPanel(items, {
       position,
+      immediatelyActive: false,
       context: "menu-bar",
       onSelect: () => this.closeMenu(),
       onClose: () => this.closeMenu(),
@@ -166,25 +167,27 @@ export class MenuBar extends SimpleElement {
   }
 
   async onKeyDown(event) {
+    const { submenuPanel } = this;
+    let { menuPanel } = this;
     switch (event.key) {
       case "ArrowLeft":
-        if (!this.submenuPanel) {
+        if (!submenuPanel || menuPanel.active) {
           this.navigateMenuBar(-1);
         }
         break;
       case "ArrowRight":
-        if (!this.submenuPanel) {
+        if (!submenuPanel || submenuPanel.active) {
           this.navigateMenuBar(+1);
         }
         break;
       case "ArrowDown":
         const { activeElement } = this.shadowRoot;
-        if (isMenuItem(activeElement) && !this.menuPanel) {
+        if (isMenuItem(activeElement) && !menuPanel) {
           this.openMenu(activeElement);
           await sleepAsync(0);
         }
-        const { menuPanel } = this;
-        if (menuPanel && !menuPanel.selectedItem) {
+        menuPanel = this.menuPanel;
+        if (menuPanel && !menuPanel.selectedItem && !menuPanel.submenu) {
           menuPanel.selectFirstEnabledItem(menuPanel.menuElement.children);
         }
         break;

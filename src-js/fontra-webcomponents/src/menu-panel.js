@@ -156,8 +156,15 @@ export class MenuPanel extends SimpleElement {
 
   setActive(active) {
     this.active = active;
-    this._savedActiveElement = getActiveElement();
-    this.focus();
+    if (active) {
+      const activeElement = getActiveElement();
+      if (this !== activeElement) {
+        this._savedActiveElement = activeElement;
+      }
+      this.focus();
+    } else {
+      this._savedActiveElement = null;
+    }
   }
 
   hide() {
@@ -266,7 +273,7 @@ export class MenuPanel extends SimpleElement {
               event.stopImmediatePropagation();
             },
             onmouseleave: (event) => {
-              itemElement.classList.remove("selected");
+              this.selectItem(null);
             },
             onmouseup: (event) => {
               event.preventDefault();
@@ -301,28 +308,28 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectItem(item, fromChild = false) {
-    for (const panel of MenuPanel.openMenuPanels) {
-      panel.setActive(panel === this);
-      if (panel.childOf === this) {
-        panel.dismiss();
-      }
-    }
-
-    const { selectedItem } = this;
-    if (selectedItem && selectedItem !== item) {
-      selectedItem.classList.remove("selected");
-    }
-
-    for (const child of this.menuElement.children) {
-      if (child.classList.contains("has-open-submenu")) {
-        child.classList.remove("has-open-submenu");
-        this.submenu = null;
-      }
-    }
-
     this.selectedItem = item;
 
+    for (const child of this.menuElement.children) {
+      if (child !== item) {
+        child.classList.remove("selected");
+        if (child.classList.contains("has-open-submenu")) {
+          if (item) {
+            child.classList.remove("has-open-submenu");
+            this.submenu = null;
+          }
+        }
+      }
+    }
+
     if (item) {
+      for (const panel of MenuPanel.openMenuPanels) {
+        panel.setActive(panel === this);
+        if (panel.childOf === this) {
+          panel.dismiss();
+        }
+      }
+
       item.classList.add("selected");
 
       if (item.classList.contains("with-submenu")) {
@@ -358,39 +365,45 @@ export class MenuPanel extends SimpleElement {
 
   async onKeyDown(event) {
     const { key } = event.detail;
-    const { active, childOf, submenu, selectedItem } = this;
-    this.searchMenuItems(key);
-    switch (key) {
-      case "Escape":
-        this.dismiss();
-        break;
-      case "ArrowDown":
-        this.selectPrevNext(true);
-        break;
-      case "ArrowUp":
-        this.selectPrevNext(false);
-        break;
-      case "ArrowLeft":
-        if (active && childOf) {
-          childOf.selectItem(childOf.selectedItem, true);
-          childOf.focus();
-        }
-        break;
-      case "ArrowRight":
-        if (active && submenu) {
-          if (submenu.hidden) {
-            submenu.show();
+    if (key === "Escape") {
+      this.dismiss();
+    } else if (this.active) {
+      const { childOf, submenu, selectedItem } = this;
+      this.searchMenuItems(key);
+      switch (key) {
+        case "ArrowDown":
+          this.selectPrevNext(true);
+          break;
+        case "ArrowUp":
+          this.selectPrevNext(false);
+          break;
+        case "ArrowLeft":
+          if (childOf) {
+            await sleepAsync(0); // Wait for menu-bar keydown
+            childOf.selectItem(
+              childOf.menuElement.querySelector(".has-open-submenu"),
+              true
+            );
           }
-          submenu.selectFirstEnabledItem(submenu.menuElement.children);
-          submenu.setActive(true);
-          selectedItem.classList.remove("selected");
-        }
-        break;
-      case "Enter":
-        if (active && selectedItem) {
-          selectedItem.onmouseup(event);
-        }
-        break;
+          break;
+        case "ArrowRight":
+          if (submenu) {
+            await sleepAsync(0); // Wait for menu-bar keydown
+            this.setActive(false);
+            this.selectItem(null);
+            if (submenu.hidden) {
+              submenu.show();
+            }
+            await sleepAsync(0); //  Wait for render
+            submenu.selectFirstEnabledItem(submenu.menuElement.children);
+          }
+          break;
+        case "Enter":
+          if (selectedItem) {
+            selectedItem.onmouseup(event);
+          }
+          break;
+      }
     }
   }
 
@@ -428,9 +441,6 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectPrevNext(isNext) {
-    if (!this.active) {
-      return;
-    }
     const f = isNext ? (a) => a : reversed;
     const { selectedItem } = this;
     let previousItem;
@@ -476,15 +486,14 @@ function isEnabledItem(item) {
 // @param root: Document | ShadowRoot
 // @return Element | null
 function getActiveElement(root = document) {
-  const activeEl = root.activeElement;
-
-  if (!activeEl) {
-    return null;
-  }
-
-  if (activeEl.shadowRoot) {
-    return getActiveElement(activeEl.shadowRoot);
-  } else {
-    return activeEl;
-  }
+  let previous = null;
+  const run = (root) => {
+    const { activeElement } = root;
+    if (!activeElement) {
+      return previous;
+    }
+    previous = activeElement;
+    return activeElement.shadowRoot ? run(activeElement.shadowRoot) : activeElement;
+  };
+  return run(root);
 }
