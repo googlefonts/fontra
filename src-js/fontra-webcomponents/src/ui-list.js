@@ -1,6 +1,5 @@
 import * as html from "@fontra/core/html-utils.js";
 import { UnlitElement } from "@fontra/core/html-utils.js";
-import { translate } from "@fontra/core/localization.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
 import { message } from "@fontra/web-components/modal-dialog.js";
 import { themeColorCSS } from "./theme-support.js";
@@ -359,8 +358,8 @@ export class UIList extends UnlitElement {
         cell.textContent = formatter.toString(initialValue);
         // TODO: This message should be removed if we have tooltip-like message
         message(
-          translate("Editing cell"), // TODO: translation
-          translate(`Invalid "${colDesc.key}": ${formattingError}`) // TODO: translation
+          "Editing cell", // TODO: translation
+          `Invalid "${colDesc.key}": ${formattingError}` // TODO: translation
         );
       }
     };
