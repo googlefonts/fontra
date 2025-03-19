@@ -841,15 +841,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
-    this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
+
+    await this.updateSourceListSelectionFromLocation();
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
     this._updateSourceLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
-
-    await this.updateSourceListSelectionFromLocation(true);
   }
 
   _updateSourceItems() {
