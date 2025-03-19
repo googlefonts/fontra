@@ -983,9 +983,8 @@ class DesignspaceBackend:
         if fontInfo.familyName:
             self._familyName = fontInfo.familyName
 
-        infoDict["customData"] = {}
         for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
-            infoDict["customData"][infoAttr] = fontInfo.customData.get(infoAttr)
+            infoDict[infoAttr] = fontInfo.customData.get(infoAttr)
 
         self._updateGlobalFontInfo(infoDict)
 
@@ -1620,17 +1619,6 @@ def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
                 delattr(fontInfo, infoAttr)
         else:
             setattr(fontInfo, infoAttr, value)
-
-    customData = infoDict.get("customData", {})
-    for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
-        if infoAttr in customData:
-            # set custom data
-            value = customData[infoAttr]
-            setattr(fontInfo, infoAttr, value)
-        else:
-            # delete custom data
-            if hasattr(fontInfo, infoAttr):
-                delattr(fontInfo, infoAttr)
 
 
 @dataclass(kw_only=True)
