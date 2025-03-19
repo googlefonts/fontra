@@ -196,3 +196,20 @@ export function rectRound(rect) {
     yMax: Math.round(rect.yMax),
   };
 }
+
+function isNumber(n) {
+  return typeof n === "number";
+}
+
+export function validateRect(rect) {
+  if (
+    !isNumber(rect.xMin) ||
+    !isNumber(rect.yMin) ||
+    !isNumber(rect.xMax) ||
+    !isNumber(rect.yMax)
+  ) {
+    throw new TypeError(`Not a valid rectangle: ${JSON.stringify(rect)}`);
+  } else {
+    console.log("all good", rect);
+  }
+}

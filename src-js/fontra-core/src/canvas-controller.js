@@ -1,4 +1,4 @@
-import { normalizeRect, rectCenter } from "./rectangle.js";
+import { normalizeRect, rectCenter, validateRect } from "./rectangle.js";
 import { consolidateCalls, withSavedState } from "./utils.js";
 
 const MIN_MAGNIFICATION = 0.005;
@@ -211,12 +211,14 @@ export class CanvasController {
     const top = this.canvas.parentElement.offsetTop;
     const bottomLeft = this.localPoint({ x: 0 + left, y: 0 + top });
     const topRight = this.localPoint({ x: width + left, y: height + top });
-    return normalizeRect({
+    const viewBox = normalizeRect({
       xMin: bottomLeft.x,
       yMin: bottomLeft.y,
       xMax: topRight.x,
       yMax: topRight.y,
     });
+    validateRect(viewBox);
+    return viewBox;
   }
 
   isActualViewBox(viewBox) {
@@ -231,6 +233,7 @@ export class CanvasController {
   }
 
   setViewBox(viewBox) {
+    validateRect(viewBox);
     this.magnification = this._getProposedViewBoxMagnification(viewBox);
     const canvasCenter = this.canvasPoint(rectCenter(viewBox));
     this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;

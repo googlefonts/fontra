@@ -21,6 +21,7 @@ import {
   sectRect,
   unionRect,
   updateRect,
+  validateRect,
 } from "@fontra/core/rectangle.js";
 import { parametrize } from "./test-support.js";
 
@@ -636,4 +637,21 @@ describe("rectRound", () => {
       expect(result).deep.equals(expectedResult);
     }
   );
+});
+
+describe("validateRect", () => {
+  const testData = [
+    { rect: { xMin: 0.2, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: true },
+    { rect: { xMin: "0.2", yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: false },
+    { rect: { xMin: null, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: false },
+    { rect: {}, good: false },
+    { rect: { xMin: 12 }, good: false },
+  ];
+  parametrize("Validate rectangle", testData, (testItem) => {
+    if (testItem.good) {
+      expect(validateRect(testItem.rect)).equals(undefined);
+    } else {
+      expect(() => validateRect(testItem.rect)).to.throw("Not a valid rectangle");
+    }
+  });
 });
