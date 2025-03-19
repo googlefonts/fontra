@@ -818,7 +818,8 @@ export class EditorController extends ViewController {
         ...this.sceneSettings.selectedGlyph,
         isEditing: true,
       };
-      this.sceneSettings.selectedSourceIndex = 0;
+      // Navigate to the default location, so the new glyph's default source gets selected
+      this.sceneSettings.fontLocationSourceMapped = {};
     }
   }
 
@@ -868,18 +869,26 @@ export class EditorController extends ViewController {
         this.getSidebarPanel("designspace-navigation").addSource();
         break;
       case "goToNearestSource":
-        const glyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        const nearestSourceIndex = glyphController.findNearestSourceForSourceLocation(
-          {
-            ...this.sceneSettings.fontLocationSourceMapped,
-            ...this.sceneSettings.glyphLocation,
-          },
-          true
-        );
-        this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
+        this.goToNearestSource();
         break;
     }
+  }
+
+  async goToNearestSource() {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const nearestSourceIndex = glyphController.findNearestSourceForSourceLocation(
+      {
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      },
+      true
+    );
+    const location =
+      glyphController.getDenseSourceLocationForSourceIndex(nearestSourceIndex);
+    const { fontLocation, glyphLocation } = glyphController.splitLocation(location);
+    this.sceneSettingsController.model.fontLocationSourceMapped = fontLocation;
+    this.sceneSettingsController.model.glyphLocation =
+      glyphController.foldNLIAxes(glyphLocation);
   }
 
   initTools() {
@@ -1876,7 +1885,7 @@ export class EditorController extends ViewController {
       } else {
         await this._pasteReplaceGlyph(pasteVarGlyph);
       }
-      // Force sync between location and selectedSourceIndex, as the glyph's
+      // Force even trigger for fontLocationSourceMapped, as the glyph's
       // source list may have changed
       this.sceneSettings.fontLocationSourceMapped = {
         ...this.sceneSettings.fontLocationSourceMapped,
@@ -2845,31 +2854,12 @@ export class EditorController extends ViewController {
     this.sceneController.selection = newSelection;
   }
 
-  async doSelectPreviousNextSource(selectPrevious) {
-    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
-    if (!instance) {
-      return;
-    }
-    const varGlyphController =
-      await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = this.sceneSettings.selectedSourceIndex;
-    let newSourceIndex;
-    if (sourceIndex === undefined) {
-      newSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
-        ...this.sceneSettings.fontLocationSourceMapped,
-        ...this.sceneSettings.glyphLocation,
-      });
-    } else {
-      newSourceIndex = modulo(
-        sourceIndex + (selectPrevious ? -1 : 1),
-        varGlyphController.sources.length
-      );
-    }
-    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-    this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  doSelectPreviousNextSource(selectPrevious) {
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.doSelectPreviousNextSource(selectPrevious);
   }
 
-  async doSelectPreviousNextSourceLayer(selectPrevious) {
+  doSelectPreviousNextSourceLayer(selectPrevious) {
     const panel = this.getSidebarPanel("designspace-navigation");
     panel?.doSelectPreviousNextSourceLayer(selectPrevious);
   }
@@ -3101,7 +3091,7 @@ export class EditorController extends ViewController {
   async externalChange(change, isLiveChange) {
     await super.externalChange(change, isLiveChange);
 
-    // Force sync between location and selectedSourceIndex, as the glyph's
+    // Force even trigger for fontLocationSourceMapped, as the glyph's
     // source list may have changed
     this.sceneSettings.fontLocationSourceMapped = {
       ...this.sceneSettings.fontLocationSourceMapped,

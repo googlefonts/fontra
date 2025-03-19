@@ -294,13 +294,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sceneSettingsController.addKeyListener(
-      ["selectedGlyph", "selectedSourceIndex"],
-      (event) => {
-        this._updateSourceLayersList();
-      }
-    );
-
-    this.sceneSettingsController.addKeyListener(
       [
         "fontAxesUseSourceCoordinates",
         "fontAxesShowEffectiveLocation",
@@ -322,7 +315,9 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
-      (event) => {
+      async (event) => {
+        await this.updateSourceListSelectionFromLocation(true);
+
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
         this.updateInterpolationContributions();
@@ -338,31 +333,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
       },
       true
-    );
-
-    this.sceneSettingsController.addKeyListener(
-      "selectedSourceIndex",
-      async (event) => {
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        let index = event.newValue;
-
-        let sourceListItem = this.sourceListGetSourceItem(index);
-
-        if (
-          varGlyphController?.sources[index]?.layerName !== sourceListItem?.layerName
-        ) {
-          // the selectedSourceIndex event may come at a time that the
-          // sourcesList hasn't been updated yet, so could be out of
-          // sync. Prevent setting it to a wrong value.
-          sourceListItem = undefined;
-        }
-
-        this.sourcesList.setSelectedItem(sourceListItem);
-
-        this._updateRemoveSourceButtonState();
-        this._updateEditingStatus();
-      }
     );
 
     this.sceneSettingsController.addKeyListener(
@@ -410,7 +380,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
-      this.sceneSettings.selectedSourceIndex = sourceIndex;
+      await this.sceneController.setLocationFromSourceIndex(sourceIndex);
+
       if (sourceIndex != undefined) {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
@@ -423,7 +394,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       } else {
         this.sceneSettings.editLayerName = null;
       }
+      this._updateRemoveSourceButtonState();
       this._updateEditingStatus();
+      this._updateSourceLayersList();
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
@@ -489,6 +462,20 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  async updateSourceListSelectionFromLocation(shouldDispatchEvent = false) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    const sourceIndex = varGlyphController?.getSourceIndex({
+      ...this.sceneSettings.fontLocationSourceMapped,
+      ...this.sceneSettings.glyphLocation,
+    });
+    const sourceItem =
+      sourceIndex !== undefined
+        ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
+        : undefined;
+    this.sourcesList.setSelectedItem(sourceItem, shouldDispatchEvent);
   }
 
   _setupSourceListColumnDescriptions() {
@@ -854,7 +841,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
-    this.sourceListSetSelectedSource(this.sceneSettings.selectedSourceIndex);
+
+    await this.updateSourceListSelectionFromLocation();
 
     this.glyphSourcesAccordionItem.hidden = !varGlyphController;
 
@@ -882,7 +870,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateSourceLayersList() {
-    const sourceIndex = this.sceneModel.sceneSettings.selectedSourceIndex;
+    const sourceIndex = this.sourcesList.getSelectedItem()?.sourceIndex;
     const haveLayers =
       this.sceneModel.selectedGlyph?.isEditing && sourceIndex != undefined;
     this.glyphLayersAccordionItem.hidden = !haveLayers;
@@ -950,6 +938,28 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourceLayersList.setSelectedItem(
       this.sourceLayersList.items.find((item) => item.isMainLayer)
     );
+  }
+
+  async doSelectPreviousNextSource(selectPrevious) {
+    let itemIndex = this.sourcesList.getSelectedItemIndex();
+    if (itemIndex != undefined) {
+      const newItemIndex = modulo(
+        itemIndex + (selectPrevious ? -1 : 1),
+        this.sourcesList.items.length
+      );
+      this.sourcesList.setSelectedItemIndex(newItemIndex, true);
+    } else {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      const nearestSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      });
+      const sourceItem = this.sourcesList.items.find(
+        (item) => item.sourceIndex === nearestSourceIndex
+      );
+      this.sourcesList.setSelectedItem(sourceItem, true);
+    }
   }
 
   doSelectPreviousNextSourceLayer(selectPrevious) {
@@ -1162,9 +1172,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return translate("sidebar.designspace-navigation.dialog.add-source.title");
     });
-    // Navigate to new source
-    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    this.sceneSettings.selectedSourceIndex = selectedSourceIndex;
   }
 
   async editSourceProperties(sourceIndex) {

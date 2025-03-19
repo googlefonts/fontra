@@ -98,7 +98,6 @@ export class SceneController {
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
-      selectedSourceIndex: null,
       selection: new Set(),
       hoverSelection: new Set(),
       combinedSelection: new Set(), // dynamic: selection | hoverSelection
@@ -226,61 +225,6 @@ export class SceneController {
       };
     });
 
-    // Set up the mutual dependencies between location and selectedSourceIndex
-    const locationSelectedSourceToken = Symbol("location-selectedSourceIndex");
-
-    this.sceneSettingsController.addKeyListener(
-      ["fontLocationSourceMapped", "glyphLocation"],
-      async (event) => {
-        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
-          return;
-        }
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.fontLocationSourceMapped,
-          ...this.sceneSettings.glyphLocation,
-        });
-        this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-          senderID: locationSelectedSourceToken,
-        });
-      }
-    );
-
-    this.sceneSettingsController.addKeyListener(
-      "selectedSourceIndex",
-      async (event) => {
-        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
-          return;
-        }
-        const sourceIndex = event.newValue;
-        if (sourceIndex == undefined) {
-          return;
-        }
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-
-        const location =
-          varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
-        const { fontLocation, glyphLocation } = splitLocation(
-          location,
-          varGlyphController.axes
-        );
-
-        this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
-          senderID: locationSelectedSourceToken,
-        });
-        this.sceneSettingsController.setItem(
-          "glyphLocation",
-          varGlyphController.foldNLIAxes(glyphLocation),
-          {
-            senderID: locationSelectedSourceToken,
-          }
-        );
-      },
-      true
-    );
-
     this.fontController.addChangeListener(
       { axes: null },
       (change, isExternalChange) => {
@@ -360,6 +304,22 @@ export class SceneController {
         this.canvasController.requestUpdate();
       }
     );
+  }
+
+  async setLocationFromSourceIndex(sourceIndex) {
+    if (sourceIndex == undefined) {
+      return;
+    }
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    const location =
+      varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
+    const { fontLocation, glyphLocation } = varGlyphController.splitLocation(location);
+
+    this.sceneSettingsController.model.fontLocationSourceMapped = fontLocation;
+    this.sceneSettingsController.model.glyphLocation =
+      varGlyphController.foldNLIAxes(glyphLocation);
   }
 
   _checkSelectionForLockedItems() {
@@ -1617,23 +1577,6 @@ export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
     glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
     glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
   );
-}
-
-function splitLocation(location, glyphAxes) {
-  const glyphAxisNames = new Set(glyphAxes.map((axis) => axis.name));
-
-  const fontLocation = {};
-  const glyphLocation = {};
-
-  for (const [axisName, axisValue] of Object.entries(location)) {
-    if (glyphAxisNames.has(axisName)) {
-      glyphLocation[axisName] = axisValue;
-    } else {
-      fontLocation[axisName] = axisValue;
-    }
-  }
-
-  return { fontLocation, glyphLocation };
 }
 
 export function joinContours(path, firstPointIndex, secondPointIndex) {
