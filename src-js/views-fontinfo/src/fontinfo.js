@@ -7,6 +7,7 @@ import { AxesPanel } from "./panel-axes.js";
 import { CrossAxisMappingPanel } from "./panel-cross-axis-mapping.js";
 import { DevelopmentStatusDefinitionsPanel } from "./panel-development-status-definitions.js";
 import { FontInfoPanel } from "./panel-font-info.js";
+import { OpenTypeFeatureCodePanel } from "./panel-opentype-feature-code.js";
 import { SourcesPanel } from "./panel-sources.js";
 
 export class FontInfoController extends ViewController {
@@ -38,6 +39,7 @@ export class FontInfoController extends ViewController {
       AxesPanel,
       CrossAxisMappingPanel,
       SourcesPanel,
+      OpenTypeFeatureCodePanel,
       DevelopmentStatusDefinitionsPanel,
     ]) {
       panelClass.fontAttributes.forEach((fontAttr) => {
