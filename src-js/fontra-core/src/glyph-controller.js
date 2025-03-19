@@ -475,10 +475,10 @@ export class VariableGlyphController {
 
   getDenseSourceLocationForSource(source) {
     const sourceLocation = this.getSourceLocation(source);
-    return { ...this.getDefaultDenseSourceLocation(), ...sourceLocation };
+    return { ...this.getDenseDefaultSourceLocation(), ...sourceLocation };
   }
 
-  getDefaultDenseSourceLocation() {
+  getDenseDefaultSourceLocation() {
     const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
     return { ...fontDefaultLocation, ...glyphDefaultLocation };
@@ -575,6 +575,12 @@ export class VariableGlyphController {
 
   getSparseLocationStringForSourceLocation(sourceLocation) {
     return locationToString(makeSparseLocation(sourceLocation, this.combinedAxes));
+  }
+
+  getSparseDefaultLocationString() {
+    return locationToString(
+      makeSparseLocation(this.getDenseDefaultSourceLocation(), this.combinedAxes)
+    );
   }
 
   expandNLIAxes(sourceLocation) {
