@@ -1,5 +1,11 @@
 # Changelog for Fontra
 
+## 2025-03-19
+
+- Vastly improved keyboard navigation of the menu bar and (contextual) menus. [Issue 2061](https://github.com/googlefonts/fontra/issues/2061) [PR 2062](https://github.com/googlefonts/fontra/pull/2062)
+- Fixed bug where components appeared incompatible. [Issue 2092](https://github.com/googlefonts/fontra/issues/2092) [PR 2093](https://github.com/googlefonts/fontra/pull/2093)
+- [fontra-rcjk] Fixed bug where the list of projects was duplicated. [Issue 2094](https://github.com/googlefonts/fontra/issues/2094) [PR 2095](https://github.com/googlefonts/fontra/pull/2095)
+
 ## 2025-03-16
 
 - Fixed several bugs in the designspace backend related to editing font sources. [Issue 2040](https://github.com/googlefonts/fontra/issues/2040) [PR 2091](https://github.com/googlefonts/fontra/pull/2091)
