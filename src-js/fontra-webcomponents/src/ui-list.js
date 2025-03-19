@@ -383,6 +383,9 @@ export class UIList extends UnlitElement {
     cell.oninput = (event) => handleChange(event, true);
 
     cell.onkeydown = (event) => {
+      if (cell.readOnly) {
+        return;
+      }
       switch (event.key) {
         case "Enter":
           event.preventDefault();
