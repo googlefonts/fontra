@@ -387,6 +387,7 @@ export class UIList extends UnlitElement {
           item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
         cell.value = formatter.toString(initialValue);
       }
+      document.getSelection().collapseToEnd();
     };
 
     cell.oninput = (event) => handleChange(event, true);
