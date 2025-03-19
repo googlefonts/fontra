@@ -305,21 +305,23 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          const formatter =
-            item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
+          const formatter = item.formatters?.[colDesc.key] || colDesc.formatter;
+          const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
+          const formattedValue = formatter ? formatter.toString(value) : value;
 
-          cell = html.input({
-            class: `text-cell ${colDesc.key} ${colDesc.align || "left"}`,
-            value: formatter.toString(
-              colDesc.get ? colDesc.get(item) : item[colDesc.key]
-            ),
-            readOnly: true, // Default: true, will be changed within ondblclick -> _makeCellEditor
-          });
+          const classString = `text-cell ${colDesc.key} ${colDesc.align || "left"}`;
+          if (colDesc.editable) {
+            cell = html.input({
+              class: classString,
+              value: formattedValue,
+              readOnly: true, // Default: true, will be changed within ondblclick -> _makeCellEditor
+            });
+            cell.ondblclick = this._makeCellEditor(cell, colDesc, item);
+          } else {
+            cell = html.div({ class: classString }, [formattedValue]);
+          }
           if (colDesc.width) {
             cell.style.width = colDesc.width;
-          }
-          if (colDesc.editable) {
-            cell.ondblclick = this._makeCellEditor(cell, colDesc, item);
           }
         }
         row.appendChild(cell);
