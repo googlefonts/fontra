@@ -1,5 +1,5 @@
 import { normalizeRect, rectCenter, validateRect } from "./rectangle.js";
-import { consolidateCalls, withSavedState } from "./utils.js";
+import { assert, consolidateCalls, isNumber, withSavedState } from "./utils.js";
 
 const MIN_MAGNIFICATION = 0.005;
 const MAX_MAGNIFICATION = 200;
@@ -51,11 +51,15 @@ export class CanvasController {
   }
 
   get canvasWidth() {
-    return this.canvas.parentElement.getBoundingClientRect().width;
+    const w = this.canvas.parentElement.getBoundingClientRect().width;
+    assert(isNumber(w));
+    return w;
   }
 
   get canvasHeight() {
-    return this.canvas.parentElement.getBoundingClientRect().height;
+    const h = this.canvas.parentElement.getBoundingClientRect().height;
+    assert(isNumber(h));
+    return h;
   }
 
   get devicePixelRatio() {
@@ -79,6 +83,8 @@ export class CanvasController {
       // parent container
       const dx = this.previousOffsets["parentOffsetX"] - parentOffsetX;
       const dy = this.previousOffsets["parentOffsetY"] - parentOffsetY;
+      assert(isNumber(dx));
+      assert(isNumber(dy));
       this.origin.x += dx;
       this.origin.y += dy;
     }
@@ -113,6 +119,8 @@ export class CanvasController {
     // We try to detect whether the event comes from a "clunky" scroll wheel, one
     // that outputs rather large values for deltaY (this appears to be common on
     // Windows), so we can scale down to keep zoom speed and scroll speed in check.
+    assert(isNumber(deltaX));
+    assert(isNumber(deltaY));
     const clunkyScrollWheel =
       Math.abs(deltaY) > 50 && Math.abs(wheelDeltaY / deltaY) < 2;
     if (event.ctrlKey || event.altKey) {
@@ -150,6 +158,7 @@ export class CanvasController {
   }
 
   _doPinchMagnify(event, zoomFactor) {
+    assert(isNumber(zoomFactor));
     const center = this.localPoint({ x: event.pageX, y: event.pageY });
     const prevMagnification = this.magnification;
 
@@ -191,13 +200,18 @@ export class CanvasController {
     const y =
       -(event.y - this.canvas.parentElement.offsetTop - this.origin.y) /
       this.magnification;
-    return { x: x, y: y };
+
+    assert(isNumber(x));
+    assert(isNumber(y));
+    return { x, y };
   }
 
   canvasPoint(point) {
     const x = point.x * this.magnification + this.origin.x;
     const y = -point.y * this.magnification + this.origin.y;
-    return { x: x, y: y };
+    assert(isNumber(x));
+    assert(isNumber(y));
+    return { x, y };
   }
 
   get onePixelUnit() {
@@ -253,8 +267,11 @@ export class CanvasController {
   }
 
   _getProposedViewBoxMagnification(viewBox) {
+    validateRect(viewBox);
     const width = this.canvasWidth;
     const height = this.canvasHeight;
+    assert(isNumber(width));
+    assert(isNumber(height));
     const magnificationX = Math.abs(width / (viewBox.xMax - viewBox.xMin));
     const magnificationY = Math.abs(height / (viewBox.yMax - viewBox.yMin));
     return Math.min(magnificationX, magnificationY);
