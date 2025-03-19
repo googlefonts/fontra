@@ -1172,9 +1172,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return translate("sidebar.designspace-navigation.dialog.add-source.title");
     });
-    // Navigate to new source
-    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    this.sceneSettings.selectedSourceIndex = selectedSourceIndex;
   }
 
   async editSourceProperties(sourceIndex) {
