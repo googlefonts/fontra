@@ -776,10 +776,12 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const defaultLocationString = varGlyphController?.getSparseDefaultLocationString();
 
+    const seenSourceLocations = new Set();
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const locationString =
         varGlyphController.getSparseLocationStringForSource(source);
+      seenSourceLocations.add(locationString);
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
       const isDefaultSource = locationString === defaultLocationString;
@@ -793,6 +795,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
         locationString,
+        denseLocation: varGlyphController.getDenseSourceLocationForSource(source),
         isDefaultSource,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
@@ -843,6 +846,26 @@ export default class DesignspaceNavigationPanel extends Panel {
         });
       });
       sourceItems.push(sourceController.model);
+    }
+
+    const defaultLocation = varGlyphController?.getDenseDefaultSourceLocation();
+    for (const [sourceIdentifier, fontSource] of Object.entries(
+      this.fontController.sources
+    )) {
+      const location = { ...defaultLocation, ...fontSource.location };
+      const locationString = locationToString(
+        makeSparseLocation(location, this.fontController.fontAxesSourceSpace)
+      );
+      if (seenSourceLocations.has(locationString)) {
+        continue;
+      }
+      const sourceController = new ObservableController({
+        name: fontSource.name,
+        formattedName: fontSource.name,
+        locationString,
+        denseLocation: location,
+      });
+      // sourceItems.push(sourceController.model);
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
