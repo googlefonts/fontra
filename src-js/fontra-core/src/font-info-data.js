@@ -2,7 +2,7 @@ import { NumberFormatter } from "@fontra/core/ui-utils.js";
 import {
   ArrayFormatter,
   BooleanFormatter,
-  CreatedFormatter,
+  DateTimeFormatter,
   FixedLengthArrayFormatter,
   IntegerFormatter,
   IntegerFormatterMinMax,
@@ -65,7 +65,7 @@ export const openTypeSettingsFontFamilyLevel = [
   {
     key: "openTypeHeadCreated",
     getDefaultFunction: getCreatedDefault,
-    formatter: CreatedFormatter,
+    formatter: DateTimeFormatter,
     info: `Creation date. Expressed as a string of the format “YYYY/MM/DD HH:MM:SS”. The timezone is UTC why it might differ to your local time.`,
     infoLinks: {
       "Link to UFO specification":

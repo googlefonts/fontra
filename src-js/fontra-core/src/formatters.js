@@ -97,7 +97,7 @@ export const FixedLengthArrayFormatter = (arrayLength) => ({
   fromString: (value) => ArrayFormatter.fromString(value, arrayLength),
 });
 
-export const CreatedFormatter = {
+export const DateTimeFormatter = {
   toString: (value) => value.toString(),
   fromString: (value) => {
     assert(isString(value), `input value not a string`);
