@@ -15,6 +15,7 @@ import {
   hexToRgba,
   hyphenatedToCamelCase,
   hyphenatedToLabel,
+  isNumber,
   loadURLFragment,
   makeUPlusStringFromCodePoint,
   mapObjectValues,
@@ -742,5 +743,24 @@ describe("bisect_right", () => {
 
   parametrize("bisect_right test", testData, (testCase) => {
     expect(bisect_right(testCase.a, testCase.x)).to.equal(testCase.i);
+  });
+});
+
+describe("isNumber", () => {
+  const testData = [
+    { n: 0, isNumber: true },
+    { n: 0.5, isNumber: true },
+    { n: -100, isNumber: true },
+    { n: undefined, isNumber: false },
+    { n: NaN, isNumber: false },
+    { n: Infinity, isNumber: false },
+    { n: -Infinity, isNumber: false },
+    { n: null, isNumber: false },
+    { n: "1", isNumber: false },
+    { n: "1.5", isNumber: false },
+  ];
+
+  parametrize("isNumber test", testData, (testCase) => {
+    expect(isNumber(testCase.n)).to.equal(testCase.isNumber);
   });
 });

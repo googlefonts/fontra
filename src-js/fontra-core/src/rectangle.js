@@ -1,3 +1,5 @@
+import { isNumber } from "./utils.js";
+
 export function pointInRect(x, y, rect) {
   if (!rect) {
     return false;
@@ -195,10 +197,6 @@ export function rectRound(rect) {
     xMax: Math.round(rect.xMax),
     yMax: Math.round(rect.yMax),
   };
-}
-
-function isNumber(n) {
-  return !isNaN(n) && typeof n === "number" && n !== Infinity;
 }
 
 export function validateRect(rect) {
