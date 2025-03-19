@@ -4,7 +4,7 @@ import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import { DefaultFormatter, labeledTextInput } from "@fontra/core/ui-utils.js";
 import { zip } from "@fontra/core/utils.js";
-import { dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
+import { dialogSetup } from "@fontra/web-components/modal-dialog.js";
 import { UIList } from "@fontra/web-components/ui-list.js";
 
 // TODO: Refactor this, copy from panel-axes.js
