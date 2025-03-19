@@ -1629,8 +1629,7 @@ def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
             setattr(fontInfo, infoAttr, value)
         else:
             # delete custom data
-            value = getattr(fontInfo, infoAttr, None)
-            if value is not None:
+            if hasattr(fontInfo, infoAttr):
                 delattr(fontInfo, infoAttr)
 
 
