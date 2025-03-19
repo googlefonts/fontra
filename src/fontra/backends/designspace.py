@@ -124,32 +124,33 @@ fontInfoNameMapping = [
 ]
 
 
-ufoInfoPrefix = "ufo.info."
-
-
-ufoInfoAttributesToRoundTrip = [
-    "openTypeGaspRangeRecords",
+# CustomData, Font Family Level:
+ufoInfoAttributesToRoundTripFamilyLevel = [
+    "openTypeNameUniqueID",
     "openTypeHeadCreated",
-    "openTypeHeadFlags",
-    "openTypeHeadLowestRecPPEM",
+    "openTypeNameVersion",
+    "openTypeNamePreferredFamilyName",
+    "openTypeNameWWSFamilyName",
+    "openTypeOS2CodePageRanges",
+    "openTypeOS2UnicodeRanges",
+    "openTypeOS2FamilyClass",
+    "openTypeOS2Type",  # embedding bit
+    "postscriptWindowsCharacterSet",  # The Windows character set.
+    "openTypeOS2Panose",
+    "openTypeOS2Selection",
+    "openTypeOS2WeightClass",  # Note: The OS/2.usWeightClass, OS/2.usWidthClass and post.italicAngle values are not supported by variation data in the MVAR table. # noqa: E501
+    "openTypeOS2WidthClass",
+]
+
+# CustomData, Font Source Level:
+ufoInfoAttributesToRoundTrip = [
+    # "openTypeGaspRangeRecords", # part of MVAR, but commented out for now, as too complex
     "openTypeHheaAscender",
     "openTypeHheaCaretOffset",
     "openTypeHheaCaretSlopeRise",
     "openTypeHheaCaretSlopeRun",
     "openTypeHheaDescender",
     "openTypeHheaLineGap",
-    "openTypeNameCompatibleFullName",
-    "openTypeNamePreferredFamilyName",
-    "openTypeNamePreferredSubfamilyName",
-    "openTypeNameRecords",
-    "openTypeNameUniqueID",
-    "openTypeNameVersion",
-    "openTypeNameWWSFamilyName",
-    "openTypeNameWWSSubfamilyName",
-    "openTypeOS2CodePageRanges",
-    "openTypeOS2FamilyClass",
-    "openTypeOS2Panose",
-    "openTypeOS2Selection",
     "openTypeOS2StrikeoutPosition",
     "openTypeOS2StrikeoutSize",
     "openTypeOS2SubscriptXOffset",
@@ -160,40 +161,43 @@ ufoInfoAttributesToRoundTrip = [
     "openTypeOS2SuperscriptXSize",
     "openTypeOS2SuperscriptYOffset",
     "openTypeOS2SuperscriptYSize",
-    "openTypeOS2Type",
     "openTypeOS2TypoAscender",
     "openTypeOS2TypoDescender",
     "openTypeOS2TypoLineGap",
-    "openTypeOS2UnicodeRanges",
-    "openTypeOS2WeightClass",
-    "openTypeOS2WidthClass",
     "openTypeOS2WinAscent",
     "openTypeOS2WinDescent",
     "openTypeVheaCaretOffset",
     "openTypeVheaCaretSlopeRise",
     "openTypeVheaCaretSlopeRun",
     "openTypeVheaVertTypoLineGap",
+    "postscriptUnderlinePosition",
+    "postscriptUnderlineThickness",
+    "openTypeNameCompatibleFullName",
+    "openTypeNamePreferredSubfamilyName",
+    "openTypeNameWWSSubfamilyName",
     "postscriptBlueFuzz",
     "postscriptBlueScale",
     "postscriptBlueShift",
     "postscriptBlueValues",
-    "postscriptDefaultCharacter",
-    "postscriptDefaultWidthX",
     "postscriptFamilyBlues",
     "postscriptFamilyOtherBlues",
     "postscriptForceBold",
     "postscriptIsFixedPitch",
-    "postscriptNominalWidthX",
     "postscriptOtherBlues",
     "postscriptSlantAngle",
     "postscriptStemSnapH",
     "postscriptStemSnapV",
-    "postscriptUnderlinePosition",
-    "postscriptUnderlineThickness",
-    "postscriptUniqueID",
-    "postscriptWeightName",
-    "postscriptWindowsCharacterSet",
 ]
+
+# Let's NOT expose (for now):
+#     "openTypeHeadFlags",  # too low level?
+#     "openTypeHeadLowestRecPPEM", # the smallest readable size might different between fonts (eg. Text vs. Display) # noqa: E501
+#     "openTypeNameRecords", # more complex, can be all, family level, source level and instance level + different languages # noqa: E501
+#     "postscriptUniqueID",
+#     "postscriptWeightName",
+#     "postscriptDefaultCharacter", # The name of the glyph that should be used as the default character in PFM files. # noqa: E501
+#     "postscriptDefaultWidthX", # Default width for glyphs.
+#     "postscriptNominalWidthX", # Nominal width for glyphs.
 
 
 class DesignspaceBackend:
@@ -960,17 +964,27 @@ class DesignspaceBackend:
             if value is not None:
                 info[fontraName] = value
 
+        customData = {}
+        for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
+            value = getattr(ufoInfo, infoAttr, None)
+            if value is not None:
+                customData[infoAttr] = value
+
+        if customData:
+            info["customData"] = customData
+
         return FontInfo(**info)
 
     async def putFontInfo(self, fontInfo: FontInfo):
-        infoDict = {}
+        infoDict: dict[str, Any] = {}
         for fontraName, ufoName in fontInfoNameMapping:
-            value = getattr(fontInfo, fontraName, None)
-            if value is not None:
-                infoDict[ufoName] = value
+            infoDict[ufoName] = getattr(fontInfo, fontraName, None)
 
         if fontInfo.familyName:
             self._familyName = fontInfo.familyName
+
+        for infoAttr in ufoInfoAttributesToRoundTripFamilyLevel:
+            infoDict[infoAttr] = fontInfo.customData.get(infoAttr)
 
         self._updateGlobalFontInfo(infoDict)
 
@@ -1598,8 +1612,12 @@ def createDSDocFromUFOPath(ufoPath, styleName):
 
 
 def _updateFontInfoFromDict(fontInfo: UFOFontInfo, infoDict: dict):
+    # set attribute
     for infoAttr, value in infoDict.items():
-        if value is not None:
+        if value is None or value == "":
+            if hasattr(fontInfo, infoAttr):
+                delattr(fontInfo, infoAttr)
+        else:
             setattr(fontInfo, infoAttr, value)
 
 
@@ -1677,7 +1695,7 @@ class DSSource:
             for infoAttr in ufoInfoAttributesToRoundTrip:
                 value = getattr(fontInfo, infoAttr, None)
                 if value is not None:
-                    customData[f"{ufoInfoPrefix}{infoAttr}"] = value
+                    customData[infoAttr] = value
 
         return FontSource(
             name=self.name,
@@ -2225,10 +2243,15 @@ def updateFontInfoFromFontSource(reader, fontSource):
 
     fontInfo.guidelines = packGuidelines(fontSource.guidelines)
 
-    for key, value in fontSource.customData.items():
-        if key.startswith(ufoInfoPrefix):
-            infoAttr = key[len(ufoInfoPrefix) :]
-            setattr(fontInfo, infoAttr, value)
+    # set custom data
+    for infoAttr, value in fontSource.customData.items():
+        setattr(fontInfo, infoAttr, value)
+
+    # delete custom data
+    for infoAttr in ufoInfoAttributesToRoundTrip:
+        if infoAttr not in fontSource.customData.keys():
+            if hasattr(fontInfo, infoAttr):
+                delattr(fontInfo, infoAttr)
 
     reader.writeInfo(fontInfo)
 

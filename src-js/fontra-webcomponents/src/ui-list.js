@@ -1,6 +1,7 @@
 import * as html from "@fontra/core/html-utils.js";
 import { UnlitElement } from "@fontra/core/html-utils.js";
 import { DefaultFormatter } from "@fontra/core/ui-utils.js";
+import { message } from "@fontra/web-components/modal-dialog.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
@@ -79,7 +80,8 @@ export class UIList extends UnlitElement {
       user-select: none;
     }
 
-    .contents > .selected {
+    .contents > .selected,
+    .selected > input {
       background-color: var(--row-selected-background-color);
     }
 
@@ -111,6 +113,33 @@ export class UIList extends UnlitElement {
     .text-cell.right,
     .text-cell-header.right {
       text-align: right;
+    }
+
+    input {
+      font-family: fontra-ui-regular, -apple-system, sans-serif;
+      font-size: 100%;
+      border: none;
+      color: var(--row-foreground-color);
+      background-color: var(--row-background-color);
+    }
+
+    input:focus {
+      outline: none;
+      background-color: var(--background-color);
+      border-radius: 0.25em;
+    }
+
+    input:invalid {
+      color: red;
+    }
+
+    input:read-only {
+      cursor: pointer;
+    }
+
+    input:read-only:focus {
+      outline: none;
+      background-color: unset;
     }
     `;
 
@@ -276,12 +305,16 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          const formatter = colDesc.formatter || DefaultFormatter;
+          const formatter =
+            item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
 
-          cell = html.div(
-            { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
-            [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
-          );
+          cell = html.input({
+            class: `text-cell ${colDesc.key} ${colDesc.align || "left"}`,
+            value: formatter.toString(
+              colDesc.get ? colDesc.get(item) : item[colDesc.key]
+            ),
+            readOnly: true, // Default: true, will be changed within ondblclick -> _makeCellEditor
+          });
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
@@ -325,40 +358,42 @@ export class UIList extends UnlitElement {
   _makeCellEditor(cell, colDesc, item) {
     const initialValue = item[colDesc.key];
     let formattingError;
-    const isContinuous = colDesc.continuous === undefined || colDesc.continuous;
 
-    const onchange = (event) => {
-      const formatter = colDesc.formatter || DefaultFormatter;
+    const handleChange = (event, onlyCheck) => {
+      const formatter =
+        item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
       const { value, error } = formatter.fromString(
-        cell.innerText != "\n" ? cell.innerText : ""
+        cell.value != "\n" ? cell.value : ""
       );
-      if (!error) {
+      cell.setCustomValidity("");
+      if (!error && !onlyCheck) {
         item[colDesc.key] = value;
+      } else if (error && onlyCheck) {
+        cell.setCustomValidity(`Invalid "${colDesc.key}": ${error}`);
+        cell.reportValidity();
       }
       formattingError = error;
     };
 
     cell.onblur = (event) => {
-      cell.contentEditable = false;
+      cell.readOnly = true;
       cell.classList.remove("editing");
       cell.scrollTop = 0;
       cell.scrollLeft = 0;
       this.contents.focus();
-      if (!isContinuous) {
-        onchange(event);
-      }
+      handleChange(event, false);
       if (formattingError) {
-        const formatter = colDesc.formatter || DefaultFormatter;
-        cell.textContent = formatter.toString(initialValue);
+        const formatter =
+          item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
+        cell.value = formatter.toString(initialValue);
       }
+      document.getSelection().collapseToEnd();
     };
 
-    if (isContinuous) {
-      cell.oninput = onchange;
-    }
+    cell.oninput = (event) => handleChange(event, true);
 
     cell.onkeydown = (event) => {
-      if (!cell.contentEditable) {
+      if (cell.readOnly) {
         return;
       }
       switch (event.key) {
@@ -370,8 +405,6 @@ export class UIList extends UnlitElement {
         case "Tab":
           event.preventDefault();
           event.stopImmediatePropagation();
-          const cells = [...cell.parentElement.children];
-          const direction = event.shiftKey ? -1 : 1;
           let sibling = cell;
           do {
             sibling = event.shiftKey
@@ -387,7 +420,7 @@ export class UIList extends UnlitElement {
     };
 
     return (event) => {
-      cell.contentEditable = "plaintext-only";
+      cell.readOnly = false;
       cell.classList.add("editing");
       const range = document.createRange();
       range.selectNodeContents(cell);
@@ -395,6 +428,7 @@ export class UIList extends UnlitElement {
       selection.removeAllRanges();
       selection.addRange(range);
       cell.focus();
+      cell.select();
     };
   }
 
