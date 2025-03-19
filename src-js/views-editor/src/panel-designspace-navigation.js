@@ -774,6 +774,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     const backgroundLayers = { ...this.sceneSettings.backgroundLayers };
     const editingLayers = { ...this.sceneSettings.editingLayers };
 
+    const defaultLocationString = varGlyphController?.getSparseDefaultLocationString();
+
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const locationString =
@@ -789,6 +791,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
         locationString,
+        isDefaultSource: locationString === defaultLocationString,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
