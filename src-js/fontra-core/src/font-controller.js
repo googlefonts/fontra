@@ -955,7 +955,10 @@ export class FontController {
 
   get crossAxisMapping() {
     if (!this._crossAxisMapping) {
-      this._crossAxisMapping = new CrossAxisMapping(this.axes.axes, this.axes.mappings);
+      this._crossAxisMapping = new CrossAxisMapping(
+        this.fontAxesSourceSpace,
+        this.axes.mappings
+      );
     }
     return this._crossAxisMapping;
   }
