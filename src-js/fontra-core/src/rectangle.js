@@ -198,7 +198,7 @@ export function rectRound(rect) {
 }
 
 function isNumber(n) {
-  return !isNaN(n) && typeof n === "number";
+  return !isNaN(n) && typeof n === "number" && n !== Infinity;
 }
 
 export function validateRect(rect) {
