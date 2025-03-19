@@ -7,7 +7,12 @@ import {
 import { dispatchCustomEvent } from "@fontra/core/event-utils.js";
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
-import { enumerate, reversed, sleepAsync } from "@fontra/core/utils.js";
+import {
+  enumerate,
+  findNestedActiveElement,
+  reversed,
+  sleepAsync,
+} from "@fontra/core/utils.js";
 import { InlineSVG } from "@fontra/web-components/inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -157,7 +162,7 @@ export class MenuPanel extends SimpleElement {
   setActive(active) {
     this.active = active;
     if (active) {
-      const activeElement = getActiveElement();
+      const activeElement = findNestedActiveElement();
       if (this !== activeElement && this.context !== "menu-bar") {
         this._savedActiveElement = activeElement;
       }
@@ -480,20 +485,4 @@ function getMenuContainer() {
 
 function isEnabledItem(item) {
   return item.classList.contains("enabled");
-}
-
-// Get activeElement, even if in ShadowRoot.
-// @param root: Document | ShadowRoot
-// @return Element | null
-function getActiveElement(root = document) {
-  let previous = null;
-  const run = (root) => {
-    const { activeElement } = root;
-    if (!activeElement) {
-      return previous;
-    }
-    previous = activeElement;
-    return activeElement.shadowRoot ? run(activeElement.shadowRoot) : activeElement;
-  };
-  return run(root);
 }
