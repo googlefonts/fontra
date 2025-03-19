@@ -642,6 +642,7 @@ describe("rectRound", () => {
 describe("validateRect", () => {
   const testData = [
     { rect: { xMin: 0.2, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: true },
+    { rect: { xMin: NaN, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: false },
     { rect: { xMin: "0.2", yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: false },
     { rect: { xMin: null, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 }, good: false },
     { rect: {}, good: false },

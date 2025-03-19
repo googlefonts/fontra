@@ -198,7 +198,7 @@ export function rectRound(rect) {
 }
 
 function isNumber(n) {
-  return typeof n === "number";
+  return !isNaN(n) && typeof n === "number";
 }
 
 export function validateRect(rect) {
