@@ -182,17 +182,14 @@ export class CustomDataList extends SimpleElement {
         nameController.model.customDataKey == ""
           ? undefined
           : nameController.model.customDataKey;
-      const customDataValue =
-        nameController.model.customDataValue == ""
-          ? undefined
-          : nameController.model.customDataValue;
+      const customDataValue = nameController.model.customDataValue;
 
       const setWarning = (warning) => {
         warningElement.innerText = warning;
         dialog.defaultButton.classList.toggle("disabled", true);
       };
 
-      if (customDataKey == undefined && customDataValue == undefined) {
+      if (customDataKey == undefined && customDataValue == "") {
         // We don't want to start with a warning,
         // but need to disable the button -> therefore set it to empty string.
         setWarning("");

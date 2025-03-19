@@ -124,6 +124,14 @@ export class UIList extends UnlitElement {
     input:invalid{
       color:red;
     }
+
+    input:read-only {
+      cursor: pointer;
+    }
+
+    input:read-only:focus {
+      outline: none;
+    }
     `;
 
   constructor() {
@@ -291,19 +299,13 @@ export class UIList extends UnlitElement {
           const formatter =
             item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
 
-          if (colDesc.editable) {
-            cell = html.input({
-              class: `text-cell ${colDesc.key} ${colDesc.align || "left"}`,
-              value: formatter.toString(
-                colDesc.get ? colDesc.get(item) : item[colDesc.key]
-              ),
-            });
-          } else {
-            cell = html.div(
-              { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
-              [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
-            );
-          }
+          cell = html.input({
+            class: `text-cell ${colDesc.key} ${colDesc.align || "left"}`,
+            value: formatter.toString(
+              colDesc.get ? colDesc.get(item) : item[colDesc.key]
+            ),
+            readOnly: true, // Default: true, will be changed within ondblclick -> _makeCellEditor
+          });
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
@@ -345,7 +347,8 @@ export class UIList extends UnlitElement {
   }
 
   _makeCellEditor(cell, colDesc, item) {
-    const initialValue = item[colDesc.key];
+    const initialSelectedItemIndex = this.selectedItemIndex;
+    let newValue = item[colDesc.key]; // first set initialValue, will be overwritten if no error.
     let formattingError;
     const isContinuous = colDesc.continuous === undefined || colDesc.continuous;
 
@@ -356,7 +359,7 @@ export class UIList extends UnlitElement {
         cell.value != "\n" ? cell.value : ""
       );
       if (!error) {
-        item[colDesc.key] = value;
+        newValue = value;
         cell.setCustomValidity("");
       } else {
         cell.setCustomValidity(`Invalid "${colDesc.key}": ${error}`);
@@ -366,7 +369,7 @@ export class UIList extends UnlitElement {
     };
 
     cell.onblur = (event) => {
-      cell.contentEditable = false;
+      cell.readOnly = true;
       cell.classList.remove("editing");
       cell.scrollTop = 0;
       cell.scrollLeft = 0;
@@ -377,8 +380,11 @@ export class UIList extends UnlitElement {
       if (formattingError) {
         const formatter =
           item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
-        cell.value = formatter.toString(initialValue);
+        cell.value = formatter.toString(newValue);
+      } else {
+        item[colDesc.key] = newValue;
       }
+      this.selectedItemIndex = initialSelectedItemIndex;
     };
 
     if (isContinuous) {
@@ -386,10 +392,7 @@ export class UIList extends UnlitElement {
     }
 
     cell.onkeydown = (event) => {
-      // this.selectedItemIndex = undefined; // NOTE: This prevents the deleteKey to remove the whole line, as we set the selectedItemIndex to undefined.
-      if (!cell.isContentEditable) {
-        return;
-      }
+      this.selectedItemIndex = undefined;
       switch (event.key) {
         case "Enter":
           event.preventDefault();
@@ -399,8 +402,6 @@ export class UIList extends UnlitElement {
         case "Tab":
           event.preventDefault();
           event.stopImmediatePropagation();
-          const cells = [...cell.parentElement.children];
-          const direction = event.shiftKey ? -1 : 1;
           let sibling = cell;
           do {
             sibling = event.shiftKey
@@ -416,7 +417,7 @@ export class UIList extends UnlitElement {
     };
 
     return (event) => {
-      cell.contentEditable = "plaintext-only";
+      cell.readOnly = false;
       cell.classList.add("editing");
       const range = document.createRange();
       range.selectNodeContents(cell);
