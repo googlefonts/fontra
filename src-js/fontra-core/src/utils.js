@@ -770,6 +770,10 @@ export function bisect_right(a, x) {
   return lo;
 }
 
+export function isNumber(n) {
+  return !isNaN(n) && typeof n === "number" && n !== Infinity && n !== -Infinity;
+}
+
 export const friendlyHttpStatus = {
   200: "OK",
   201: "Created",

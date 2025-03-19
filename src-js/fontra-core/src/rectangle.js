@@ -1,3 +1,5 @@
+import { isNumber } from "./utils.js";
+
 export function pointInRect(x, y, rect) {
   if (!rect) {
     return false;
@@ -195,4 +197,15 @@ export function rectRound(rect) {
     xMax: Math.round(rect.xMax),
     yMax: Math.round(rect.yMax),
   };
+}
+
+export function validateRect(rect) {
+  if (
+    !isNumber(rect.xMin) ||
+    !isNumber(rect.yMin) ||
+    !isNumber(rect.xMax) ||
+    !isNumber(rect.yMax)
+  ) {
+    throw new TypeError(`Not a valid rectangle: ${JSON.stringify(rect)}`);
+  }
 }
