@@ -83,7 +83,7 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
   }
 }
 
-// The following code related to 'completions' is based on:
+// The following code related to 'completions' is modified but based on:
 // https://codemirror.net/try/?example=Custom%20completions
 const completions = [
   {
@@ -97,6 +97,12 @@ const completions = [
     info: "Lookups are defined in a similar way to features.",
   },
   { label: "sub", type: "keyword", info: "Substitutions" },
+  { label: "pos", type: "keyword", info: "The syntax for a positioning" },
+  { label: "ignore", type: "keyword", info: "Ignore" },
+
+  { label: "language", type: "keyword", info: "Language Systems" },
+  { label: "languagesystem", type: "keyword", info: "Language" },
+  { label: "script", type: "keyword", info: "Script " },
   // TODO: Extend with helpful completions
 ];
 
@@ -111,22 +117,29 @@ function myCompletions(context) {
 }
 
 // NOTE: This is a very brief first try of language-specific color coding for OpenType feature code.
-// The following code has been generated with the help of AI.
+// The following code has been generated with the help of AI + hand modified a bit.
 const OpenTypeFeatureLanguage = StreamLanguage.define({
   token(stream) {
     if (stream.match(/^#.*$/)) {
       stream.skipToEnd(); // Skip the entire line
       return null; // Do not apply any token
     }
-    if (stream.match(/feature|class|lookup|script|language/)) return "keyword";
-    if (stream.match(/@/)) return "atSymbol";
+
+    if (
+      stream.match(/languagesystem |feature |class |lookup |script |language |sub |by /)
+    )
+      return "keyword";
+
+    // if (stream.match(/[a-zA-Z0-9]/)) return "number"; // this is class
+    if (stream.match(/@.*? /)) return "number"; // this is a class variable
     if (stream.match(/{|}/)) return "brace";
     if (stream.match(/\[|\]/)) return "squareBracket";
     if (stream.match(/\(|\)/)) return "paren";
-    if (stream.match(/'.*?'/)) return "string";
-    if (stream.match(/\b[a-zA-Z0-9_]+\b/)) return "identifier";
-    if (stream.match(/\b\d+\b/)) return "number";
-    if (stream.match(/\/\/.*$/)) return "comment";
+    // if (stream.match(/'.*?'/)) return "string";
+    // if (stream.match(/\b[a-zA-Z0-9_]+\b/)) return "number";
+    // if (stream.match(/\b\d+\b/)) return "number";
+    // if (stream.match(/\/\/.*$/)) return "comment";
+    // if (stream.match(/ .*? /)) return "string";
     stream.next();
     return null;
   },
