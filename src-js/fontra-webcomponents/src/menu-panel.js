@@ -7,7 +7,12 @@ import {
 import { dispatchCustomEvent } from "@fontra/core/event-utils.js";
 import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
-import { capitalizeFirstLetter, enumerate, reversed } from "@fontra/core/utils.js";
+import {
+  enumerate,
+  findNestedActiveElement,
+  reversed,
+  sleepAsync,
+} from "@fontra/core/utils.js";
 import { InlineSVG } from "@fontra/web-components/inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -69,10 +74,6 @@ export class MenuPanel extends SimpleElement {
       margin: 0.2em 0em 0.3em 0em; /* top, right, bottom, left */
     }
 
-    .menu-container:focus {
-      outline: none;
-    }
-
     .menu-item-divider {
       border: none;
       border-top: 1px solid #80808080;
@@ -116,26 +117,116 @@ export class MenuPanel extends SimpleElement {
     }
   `;
 
+  _savedActiveElement = null;
+
   constructor(menuItems, options = {}) {
     super();
-    options = { visible: true, ...options };
-    this.style = "display: none;";
-    this.visible = options.visible;
+    this.hidden = options.hidden ?? false;
+    this.immediatelyActive = options.immediatelyActive ?? true;
     this.position = options.position;
     this.onSelect = options.onSelect;
     this.onClose = options.onClose;
-    this.positionContainer = options.positionContainer;
-    this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
     this.childOf = options.childOf;
     this.menuSearchText = "";
     this.context = options.context;
-
-    // No context menu on our context menu please:
-    this.menuElement.oncontextmenu = (event) => event.preventDefault();
-
+    this.active = false;
+    this.submenu = null;
+    this.selectedItem = null;
     this.menuItems = menuItems;
+    this.menuElement = this.getMenuElement();
+    this.shadowRoot.appendChild(this.menuElement);
+    this._attachStyles();
+    MenuPanel.openMenuPanels.push(this);
+  }
 
-    for (const [index, item] of enumerate(menuItems)) {
+  async connectedCallback() {
+    this.addEventListener("contextmenu", this.onContextMenu);
+    this.addEventListener("menu-panel:keydown", this.onKeyDown);
+    this.setAttribute("tabindex", "0");
+    this.place();
+
+    if (this.hidden) {
+      this.hide();
+    } else if (this.immediatelyActive) {
+      // Wait next cycle to ensure `tabindex` is available
+      await sleepAsync(0);
+      this.setActive(true);
+    }
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener("contextmenu", this.onContextMenu);
+    this.removeEventListener("menu-panel:keydown", this.onKeyDown);
+  }
+
+  setActive(active) {
+    this.active = active;
+    if (active) {
+      const activeElement = findNestedActiveElement();
+      if (this !== activeElement && this.context !== "menu-bar") {
+        this._savedActiveElement = activeElement;
+      }
+      this.focus();
+    } else {
+      this._savedActiveElement = null;
+    }
+  }
+
+  hide() {
+    this.hidden = true;
+    this.style.display = "none";
+  }
+
+  async show(options = { animated: false }) {
+    this.hidden = false;
+    this.style.display = null;
+    if (options.animated) {
+      // hide immediately since animation is delayed
+      this.style.opacity = 0;
+      const { finished } = this.animate(
+        { opacity: 1 },
+        { delay: 250, duration: 50, iterations: 1, easing: "ease-in-out" }
+      );
+      await finished;
+      this.style.opacity = null;
+    }
+  }
+
+  place() {
+    const assignStyles = (x, y) => {
+      Object.assign(this.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+      });
+    };
+    let { x, y } = { ...this.position };
+    assignStyles(x, y);
+    // Ensure the whole menu is visible, and not cropped by the window
+    const bodyRect = document.body.getBoundingClientRect();
+    const { right, width, bottom } = this.getBoundingClientRect();
+    if (right > bodyRect.right) {
+      x -= width + 2;
+    }
+    if (bottom > bodyRect.bottom) {
+      y -= bottom - bodyRect.bottom + 2;
+    }
+    assignStyles(x, y);
+  }
+
+  dismiss() {
+    const index = MenuPanel.openMenuPanels.indexOf(this);
+    if (index >= 0) {
+      MenuPanel.openMenuPanels.splice(index, 1);
+    }
+    this.parentElement?.removeChild(this);
+    this._savedActiveElement?.focus();
+    this.onClose?.();
+  }
+
+  getMenuElement() {
+    const menuElement = html.div({ class: "menu-container" });
+
+    for (const [index, item] of enumerate(this.menuItems)) {
       if (!item.enabled) {
         item.enabled = item.actionIdentifier
           ? () => canPerformAction(item.actionIdentifier)
@@ -186,7 +277,9 @@ export class MenuPanel extends SimpleElement {
               event.preventDefault();
               event.stopImmediatePropagation();
             },
-            onmouseleave: (event) => itemElement.classList.remove("selected"),
+            onmouseleave: (event) => {
+              this.selectItem(null);
+            },
             onmouseup: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
@@ -205,122 +298,117 @@ export class MenuPanel extends SimpleElement {
         );
         itemElement.dataset.index = index;
       }
-      this.menuElement.appendChild(itemElement);
+      menuElement.appendChild(itemElement);
     }
 
-    this._attachStyles();
-    this.shadowRoot.appendChild(this.menuElement);
-    this.tabIndex = 0;
-    this.addEventListener("keydown", (event) => this.handleKeyDown(event));
-    setTimeout(() => this.menuElement.focus(), 0);
-    MenuPanel.openMenuPanels.push(this);
+    return menuElement;
   }
 
-  connectedCallback() {
-    if (this.visible) {
-      this.show();
-    }
+  selectFirstEnabledItem(items) {
+    this.selectItem(
+      Array.from(items)
+        .filter((item) => isEnabledItem(item))
+        .at(0)
+    );
   }
 
-  hide() {
-    this.style.display = "none";
-  }
+  selectItem(item, fromChild = false) {
+    this.selectedItem = item;
 
-  show() {
-    this._savedActiveElement = document.activeElement;
-    const position = { ...this.position };
-    this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
-
-    // Ensure the whole menu is visible, and not cropped by the window
-    const containerRect = document.body.getBoundingClientRect();
-    const thisRect = this.getBoundingClientRect();
-    if (thisRect.right > containerRect.right) {
-      position.x -= thisRect.width + 2;
-    }
-    if (thisRect.bottom > containerRect.bottom) {
-      position.y -= thisRect.bottom - containerRect.bottom + 2;
-    }
-    this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
-
-    this.focus();
-  }
-
-  dismiss() {
-    const index = MenuPanel.openMenuPanels.indexOf(this);
-    if (index >= 0) {
-      MenuPanel.openMenuPanels.splice(index, 1);
-    }
-    this.parentElement?.removeChild(this);
-    this._savedActiveElement?.focus();
-    this.onClose?.();
-  }
-
-  selectItem(itemElement) {
-    for (const menuPanel of MenuPanel.openMenuPanels) {
-      if (menuPanel.childOf === this) {
-        menuPanel.dismiss();
-        break;
+    for (const child of this.menuElement.children) {
+      if (child !== item) {
+        child.classList.remove("selected");
+        if (child.classList.contains("has-open-submenu")) {
+          if (item) {
+            child.classList.remove("has-open-submenu");
+            this.submenu = null;
+          }
+        }
       }
     }
 
-    for (const item of this.menuElement.children) {
-      if (item.classList.contains("has-open-submenu")) {
-        item.classList.remove("has-open-submenu");
+    if (item) {
+      for (const panel of MenuPanel.openMenuPanels) {
+        panel.setActive(panel === this);
+        if (panel.childOf === this) {
+          panel.dismiss();
+        }
       }
-    }
 
-    const selectedItem = this.findSelectedItem();
-    if (selectedItem && selectedItem !== itemElement) {
-      selectedItem.classList.remove("selected");
-    }
-    itemElement.classList.add("selected");
+      item.classList.add("selected");
 
-    if (itemElement.classList.contains("with-submenu")) {
-      const { y: menuElementY } = this.getBoundingClientRect();
-      const { y, width } = itemElement.getBoundingClientRect();
-      const submenu = new MenuPanel(
-        this.menuItems[itemElement.dataset.index].getItems(),
-        {
+      if (item.classList.contains("with-submenu")) {
+        const { y } = this.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
+
+        this.submenu = new MenuPanel(this.menuItems[item.dataset.index].getItems(), {
+          hidden: true,
+          immediatelyActive: false,
           position: {
-            x: 0,
-            y: 0,
+            x: itemRect.width,
+            y: itemRect.y - y - 4,
           },
           childOf: this,
           onSelect: (event) => {
             // FIXME: this probably only works one level deep
             this.dismiss();
           },
+        });
+        this.menuElement.appendChild(this.submenu);
+        if (!fromChild) {
+          this.submenu.show({ animated: true });
         }
-      );
-      this.menuElement.appendChild(submenu);
-      submenu.position = { x: width, y: y - menuElementY - 4 };
-      submenu.show();
-      itemElement.classList.add("has-open-submenu");
+        item.classList.add("has-open-submenu");
+      }
     }
   }
 
-  handleKeyDown(event) {
-    const { key } = event;
+  onContextMenu(event) {
+    // No context menu on our context menu please:
     event.preventDefault();
-    event.stopImmediatePropagation();
-    this.searchMenuItems(key);
-    dispatchCustomEvent(window, "menu-panel:keydown", { key });
-    switch (key) {
-      case "Escape":
-        this.dismiss();
-        break;
-      case "ArrowDown":
-        this.selectPrevNext(true);
-        break;
-      case "ArrowUp":
-        this.selectPrevNext(false);
-        break;
-      case "Enter":
-        const selectedItem = this.findSelectedItem();
-        if (selectedItem) {
-          selectedItem.onmouseup(event);
-        }
-        break;
+  }
+
+  async onKeyDown(event) {
+    const { key } = event.detail;
+    if (key === "Escape") {
+      this.dismiss();
+    } else if (this.active) {
+      const { childOf, submenu, selectedItem } = this;
+      this.searchMenuItems(key);
+      switch (key) {
+        case "ArrowDown":
+          this.selectPrevNext(true);
+          break;
+        case "ArrowUp":
+          this.selectPrevNext(false);
+          break;
+        case "ArrowLeft":
+          if (childOf) {
+            await sleepAsync(0); // Wait for menu-bar keydown
+            childOf.selectItem(
+              childOf.menuElement.querySelector(".has-open-submenu"),
+              true
+            );
+          }
+          break;
+        case "ArrowRight":
+          if (submenu) {
+            await sleepAsync(0); // Wait for menu-bar keydown
+            this.setActive(false);
+            this.selectItem(null);
+            if (submenu.hidden) {
+              submenu.show();
+            }
+            await sleepAsync(0); //  Wait for render
+            submenu.selectFirstEnabledItem(submenu.menuElement.children);
+          }
+          break;
+        case "Enter":
+          if (selectedItem) {
+            selectedItem.onmouseup(event);
+          }
+          break;
+      }
     }
   }
 
@@ -335,7 +423,7 @@ export class MenuPanel extends SimpleElement {
     this.menuSearchText += key.toLowerCase();
 
     for (const item of this.menuElement.children) {
-      if (item.classList.contains("enabled")) {
+      if (isEnabledItem(item)) {
         const itemText = item.textContent.toLowerCase();
         if (itemText.startsWith(this.menuSearchText)) {
           foundMatchingItem = true;
@@ -357,43 +445,17 @@ export class MenuPanel extends SimpleElement {
     }
   }
 
-  findSelectedItem() {
-    for (const item of this.menuElement.children) {
-      if (item.classList.contains("selected")) {
-        return item;
-      }
-    }
-  }
-
   selectPrevNext(isNext) {
-    const selectedChild = this.findSelectedItem();
-
-    if (selectedChild) {
-      let sibling;
-      if (isNext) {
-        sibling = selectedChild.nextElementSibling;
-      } else {
-        sibling = selectedChild.previousElementSibling;
-      }
-      while (sibling) {
-        if (sibling.classList.contains("enabled")) {
-          sibling.classList.add("selected");
-          selectedChild.classList.remove("selected");
-          break;
-        }
-        if (isNext) {
-          sibling = sibling.nextElementSibling;
-        } else {
-          sibling = sibling.previousElementSibling;
-        }
-      }
-    } else {
-      const f = isNext ? (a) => a : reversed;
-      for (const item of f(this.menuElement.children)) {
-        if (item.classList.contains("enabled")) {
+    const f = isNext ? (a) => a : reversed;
+    const { selectedItem } = this;
+    let previousItem;
+    for (const item of f(this.menuElement.children)) {
+      if (isEnabledItem(item)) {
+        if (!selectedItem || (selectedItem && selectedItem === previousItem)) {
           this.selectItem(item);
           break;
         }
+        previousItem = item;
       }
     }
   }
@@ -401,8 +463,13 @@ export class MenuPanel extends SimpleElement {
 
 customElements.define("menu-panel", MenuPanel);
 
-window.addEventListener("mousedown", (event) => MenuPanel.closeMenuPanels(event));
 window.addEventListener("blur", (event) => MenuPanel.closeMenuPanels(event));
+window.addEventListener("mousedown", (event) => MenuPanel.closeMenuPanels(event));
+window.addEventListener("keydown", (event) => {
+  for (const element of MenuPanel.openMenuPanels) {
+    dispatchCustomEvent(element, "menu-panel:keydown", event);
+  }
+});
 
 function getMenuContainer() {
   // This is tightly coupled to modal-dialog.js
@@ -414,4 +481,8 @@ function getMenuContainer() {
     : null;
 
   return dialogContainer || document.body;
+}
+
+function isEnabledItem(item) {
+  return item.classList.contains("enabled");
 }
