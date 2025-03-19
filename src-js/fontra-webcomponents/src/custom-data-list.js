@@ -84,8 +84,9 @@ export class CustomDataList extends SimpleElement {
       return item.model;
     };
 
-    const items =
-      Object.entries(model)?.map(([key, value]) => makeItem([key, value])) || [];
+    const items = sortItems(
+      Object.entries(model)?.map(([key, value]) => makeItem([key, value])) || []
+    );
 
     const labelList = new UIList();
     labelList.classList.add("fontra-ui-font-info-sources-panel-list-element");
