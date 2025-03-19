@@ -1,6 +1,7 @@
 import {
   ArrayFormatter,
   BooleanFormatter,
+  CreatedFormatter,
   FixedLengthArrayFormatter,
   IntegerFormatter,
   IntegerFormatterMinMax,
@@ -186,6 +187,24 @@ describe("BooleanFormatter", () => {
     (testData) => {
       const [input, expectedResult] = testData;
       expect(BooleanFormatter.fromString(input)).to.deep.equal(expectedResult);
+    }
+  );
+});
+
+describe("CreatedFormatter", () => {
+  parametrize(
+    "CreatedFormatter fromString tests",
+    [
+      ["2025/03/19", { error: "not a valid date-time format (YYYY/MM/DD HH:MM:SS)" }],
+      ["2025/03/19 09:29:53", { value: "2025/03/19 09:29:53" }],
+      [
+        "25/03/19 09:29:53",
+        { error: "not a valid date-time format (YYYY/MM/DD HH:MM:SS)" },
+      ],
+    ],
+    (testData) => {
+      const [input, expectedResult] = testData;
+      expect(CreatedFormatter.fromString(input)).to.deep.equal(expectedResult);
     }
   );
 });

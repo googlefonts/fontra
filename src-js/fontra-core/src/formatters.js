@@ -96,3 +96,16 @@ export const FixedLengthArrayFormatter = (arrayLength) => ({
   toString: (value) => ArrayFormatter.toString(value, arrayLength),
   fromString: (value) => ArrayFormatter.fromString(value, arrayLength),
 });
+
+export const CreatedFormatter = {
+  toString: (value) => value.toString(),
+  fromString: (value) => {
+    assert(isString(value), `input value not a string`);
+    const dateTimePattern = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/;
+    if (!dateTimePattern.test(value)) {
+      return { error: "not a valid date-time format (YYYY/MM/DD HH:MM:SS)" };
+    } else {
+      return { value: value };
+    }
+  },
+};
