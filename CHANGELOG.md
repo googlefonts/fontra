@@ -2,6 +2,7 @@
 
 ## 2025-03-19
 
+- New feature: we added UI for lower level OpenType settings, as part of the Font Info panel and the Font Sources panel. [Issue 2023](https://github.com/googlefonts/fontra/issues/2023) [PR 2039](https://github.com/googlefonts/fontra/pull/2039)
 - Vastly improved keyboard navigation of the menu bar and (contextual) menus. [Issue 2061](https://github.com/googlefonts/fontra/issues/2061) [PR 2062](https://github.com/googlefonts/fontra/pull/2062)
 - Fixed bug where components appeared incompatible. [Issue 2092](https://github.com/googlefonts/fontra/issues/2092) [PR 2093](https://github.com/googlefonts/fontra/pull/2093)
 - [fontra-rcjk] Fixed bug where the list of projects was duplicated. [Issue 2094](https://github.com/googlefonts/fontra/issues/2094) [PR 2095](https://github.com/googlefonts/fontra/pull/2095)
