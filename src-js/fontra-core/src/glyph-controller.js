@@ -41,7 +41,6 @@ import {
   locationToString,
   makeSparseLocation,
   makeSparseNormalizedLocation,
-  mapAxesFromUserSpaceToSourceSpace,
   normalizeLocation,
 } from "./var-model.js";
 import { VarPackedPath, joinPaths } from "./var-path.js";
@@ -49,9 +48,9 @@ import { VarPackedPath, joinPaths } from "./var-path.js";
 export const BACKGROUND_LAYER_SEPARATOR = "^";
 
 export class VariableGlyphController {
-  constructor(glyph, fontAxes, fontSources) {
+  constructor(glyph, fontAxesSourceSpace, fontSources) {
     this.glyph = glyph;
-    this._fontAxes = fontAxes;
+    this.fontAxesSourceSpace = fontAxesSourceSpace;
     this._fontSources = fontSources;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
@@ -87,19 +86,12 @@ export class VariableGlyphController {
     if (this._fontAxisNames === undefined) {
       const glyphAxisNames = new Set(this.glyph.axes.map((axis) => axis.name));
       this._fontAxisNames = new Set(
-        this._fontAxes
+        this.fontAxesSourceSpace
           .map((axis) => axis.name)
           .filter((axisName) => !glyphAxisNames.has(axisName))
       );
     }
     return this._fontAxisNames;
-  }
-
-  get fontAxesSourceSpace() {
-    if (this._fontAxesSourceSpace === undefined) {
-      this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this._fontAxes);
-    }
-    return this._fontAxesSourceSpace;
   }
 
   getSourceLocation(source) {
@@ -191,7 +183,6 @@ export class VariableGlyphController {
     delete this._sourceInterpolationStatus;
     delete this._combinedAxes;
     delete this._fontAxisNames;
-    delete this._fontAxesSourceSpace;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
