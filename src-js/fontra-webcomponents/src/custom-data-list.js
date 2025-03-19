@@ -101,7 +101,6 @@ export class CustomDataList extends SimpleElement {
         title: "Value", // TODO: translation
         width: "14em",
         editable: true,
-        continuous: true,
       },
     ];
     labelList.showHeader = true;

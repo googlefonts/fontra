@@ -347,20 +347,19 @@ export class UIList extends UnlitElement {
   }
 
   _makeCellEditor(cell, colDesc, item) {
-    let newValue = item[colDesc.key]; // first set initialValue, will be overwritten if no error.
+    const initialValue = item[colDesc.key];
     let formattingError;
-    const isContinuous = colDesc.continuous === undefined || colDesc.continuous;
 
-    const onchange = (event) => {
+    const handleChange = (event, onlyCheck) => {
       const formatter =
         item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
       const { value, error } = formatter.fromString(
         cell.value != "\n" ? cell.value : ""
       );
-      if (!error) {
-        newValue = value;
-        cell.setCustomValidity("");
-      } else {
+      cell.setCustomValidity("");
+      if (!error && !onlyCheck) {
+        item[colDesc.key] = value;
+      } else if (error && onlyCheck) {
         cell.setCustomValidity(`Invalid "${colDesc.key}": ${error}`);
         cell.reportValidity();
       }
@@ -373,21 +372,15 @@ export class UIList extends UnlitElement {
       cell.scrollTop = 0;
       cell.scrollLeft = 0;
       this.contents.focus();
-      if (!isContinuous) {
-        onchange(event);
-      }
+      handleChange(event, false);
       if (formattingError) {
         const formatter =
           item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
-        cell.value = formatter.toString(newValue);
-      } else {
-        item[colDesc.key] = newValue;
+        cell.value = formatter.toString(initialValue);
       }
     };
 
-    if (isContinuous) {
-      cell.oninput = onchange;
-    }
+    cell.oninput = (event) => handleChange(event, true);
 
     cell.onkeydown = (event) => {
       switch (event.key) {
