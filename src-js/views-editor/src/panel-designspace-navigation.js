@@ -496,7 +496,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         width: "1.2em",
       },
       {
-        key: "name",
+        key: "formattedName",
         title: translate("sidebar.designspace-navigation.glyph-sources.name"),
         width: "12em",
       },
@@ -782,8 +782,10 @@ export default class DesignspaceNavigationPanel extends Panel {
         varGlyphController.getSparseLocationStringForSource(source);
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
+      const isDefaultSource = locationString === defaultLocationString;
       const sourceController = new ObservableController({
         name: source.name,
+        formattedName: isDefaultSource ? html.b({}, [source.name]) : source.name,
         layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === locationString,
@@ -791,7 +793,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
         locationString,
-        isDefaultSource: locationString === defaultLocationString,
+        isDefaultSource,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
