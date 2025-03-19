@@ -226,59 +226,6 @@ export class SceneController {
       };
     });
 
-    // Set up the mutual dependencies between location and selectedSourceIndex
-    const locationSelectedSourceToken = Symbol("location-selectedSourceIndex");
-
-    this.sceneSettingsController.addKeyListener(
-      ["fontLocationSourceMapped", "glyphLocation"],
-      async (event) => {
-        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
-          return;
-        }
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.fontLocationSourceMapped,
-          ...this.sceneSettings.glyphLocation,
-        });
-        this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
-          senderID: locationSelectedSourceToken,
-        });
-      }
-    );
-
-    this.sceneSettingsController.addKeyListener(
-      "selectedSourceIndex",
-      async (event) => {
-        if (event.senderInfo?.senderID === locationSelectedSourceToken) {
-          return;
-        }
-        const sourceIndex = event.newValue;
-        if (sourceIndex == undefined) {
-          return;
-        }
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-
-        const location =
-          varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
-        const { fontLocation, glyphLocation } =
-          varGlyphController.splitLocation(location);
-
-        this.sceneSettingsController.setItem("fontLocationSourceMapped", fontLocation, {
-          senderID: locationSelectedSourceToken,
-        });
-        this.sceneSettingsController.setItem(
-          "glyphLocation",
-          varGlyphController.foldNLIAxes(glyphLocation),
-          {
-            senderID: locationSelectedSourceToken,
-          }
-        );
-      },
-      true
-    );
-
     this.fontController.addChangeListener(
       { axes: null },
       (change, isExternalChange) => {
@@ -358,6 +305,22 @@ export class SceneController {
         this.canvasController.requestUpdate();
       }
     );
+  }
+
+  async setLocationFromSourceIndex(sourceIndex) {
+    if (sourceIndex == undefined) {
+      return;
+    }
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    const location =
+      varGlyphController.getDenseSourceLocationForSourceIndex(sourceIndex);
+    const { fontLocation, glyphLocation } = varGlyphController.splitLocation(location);
+
+    this.sceneSettingsController.model.fontLocationSourceMapped = fontLocation;
+    this.sceneSettingsController.model.glyphLocation =
+      varGlyphController.foldNLIAxes(glyphLocation);
   }
 
   _checkSelectionForLockedItems() {

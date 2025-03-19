@@ -316,17 +316,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
       async (event) => {
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        const sourceIndex = varGlyphController?.getSourceIndex({
-          ...this.sceneSettings.fontLocationSourceMapped,
-          ...this.sceneSettings.glyphLocation,
-        });
-        const sourceItem =
-          sourceIndex !== undefined
-            ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
-            : undefined;
-        this.sourcesList.setSelectedItem(sourceItem, true);
+        await this.updateSourceListSelectionFromLocation(true);
 
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -390,7 +380,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
-      this.sceneSettings.selectedSourceIndex = sourceIndex;
+      await this.sceneController.setLocationFromSourceIndex(sourceIndex);
+
       if (sourceIndex != undefined) {
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
@@ -471,6 +462,20 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  async updateSourceListSelectionFromLocation(shouldDispatchEvent = false) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    const sourceIndex = varGlyphController?.getSourceIndex({
+      ...this.sceneSettings.fontLocationSourceMapped,
+      ...this.sceneSettings.glyphLocation,
+    });
+    const sourceItem =
+      sourceIndex !== undefined
+        ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
+        : undefined;
+    this.sourcesList.setSelectedItem(sourceItem, shouldDispatchEvent);
   }
 
   _setupSourceListColumnDescriptions() {
@@ -843,6 +848,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSourceLayersList();
     this._updateRemoveSourceButtonState();
     this._updateEditingStatus();
+
+    await this.updateSourceListSelectionFromLocation(true);
   }
 
   _updateSourceItems() {
