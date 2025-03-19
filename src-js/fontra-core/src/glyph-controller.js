@@ -474,10 +474,14 @@ export class VariableGlyphController {
   }
 
   getDenseSourceLocationForSource(source) {
+    const sourceLocation = this.getSourceLocation(source);
+    return { ...this.getDefaultDenseSourceLocation(), ...sourceLocation };
+  }
+
+  getDefaultDenseSourceLocation() {
     const fontDefaultLocation = makeDefaultLocation(this.fontAxesSourceSpace);
     const glyphDefaultLocation = makeDefaultLocation(this.axes);
-    const sourceLocation = this.getSourceLocation(source);
-    return { ...fontDefaultLocation, ...glyphDefaultLocation, ...sourceLocation };
+    return { ...fontDefaultLocation, ...glyphDefaultLocation };
   }
 
   findNearestSourceForSourceLocation(sourceLocation, skipInactive = false) {
