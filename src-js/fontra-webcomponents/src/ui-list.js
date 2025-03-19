@@ -119,10 +119,18 @@ export class UIList extends UnlitElement {
       font-family: fontra-ui-regular, -apple-system, sans-serif;
       font-size: 100%;
       border: none;
+      color: var(--row-foreground-color);
+      background-color: var(--row-background-color);
     }
 
-    input:invalid{
-      color:red;
+    input:focus {
+      outline: none;
+      background-color: var(--background-color);
+      border-radius: 0.25em;
+    }
+
+    input:invalid {
+      color: red;
     }
 
     input:read-only {
@@ -131,6 +139,7 @@ export class UIList extends UnlitElement {
 
     input:read-only:focus {
       outline: none;
+      background-color: unset;
     }
     `;
 
