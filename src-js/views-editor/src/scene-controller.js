@@ -98,7 +98,6 @@ export class SceneController {
       glyphLocation: {},
       selectedGlyph: null,
       selectedGlyphName: null,
-      selectedSourceIndex: null,
       selection: new Set(),
       hoverSelection: new Set(),
       combinedSelection: new Set(), // dynamic: selection | hoverSelection
