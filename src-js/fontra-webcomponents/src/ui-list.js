@@ -347,7 +347,6 @@ export class UIList extends UnlitElement {
   }
 
   _makeCellEditor(cell, colDesc, item) {
-    const initialSelectedItemIndex = this.selectedItemIndex;
     let newValue = item[colDesc.key]; // first set initialValue, will be overwritten if no error.
     let formattingError;
     const isContinuous = colDesc.continuous === undefined || colDesc.continuous;
@@ -423,6 +422,7 @@ export class UIList extends UnlitElement {
       selection.removeAllRanges();
       selection.addRange(range);
       cell.focus();
+      cell.select();
     };
   }
 
