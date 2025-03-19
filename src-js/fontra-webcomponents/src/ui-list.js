@@ -384,7 +384,6 @@ export class UIList extends UnlitElement {
       } else {
         item[colDesc.key] = newValue;
       }
-      this.selectedItemIndex = initialSelectedItemIndex;
     };
 
     if (isContinuous) {
@@ -392,7 +391,6 @@ export class UIList extends UnlitElement {
     }
 
     cell.onkeydown = (event) => {
-      this.selectedItemIndex = undefined;
       switch (event.key) {
         case "Enter":
           event.preventDefault();
