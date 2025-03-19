@@ -5,7 +5,7 @@ import {
   areGuidelinesCompatible,
   normalizeGuidelines,
 } from "./utils.js";
-import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
+import { locationToString } from "./var-model.js";
 
 export class FontSourcesInstancer {
   constructor(fontAxesSourceSpace, fontSources) {
