@@ -966,7 +966,7 @@ export class FontController {
   get fontSourcesInstancer() {
     if (!this._fontSourcesInstancer) {
       this._fontSourcesInstancer = new FontSourcesInstancer(
-        this.axes.axes,
+        this.fontAxesSourceSpace,
         this.sources
       );
     }
