@@ -111,6 +111,13 @@ export class FontController {
     return this._rootObject.axes.axes;
   }
 
+  get fontAxesSourceSpace() {
+    if (!this._fontAxesSourceSpace) {
+      this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    }
+    return this._fontAxesSourceSpace;
+  }
+
   get sources() {
     return this._rootObject.sources;
   }
@@ -152,11 +159,10 @@ export class FontController {
   }
 
   getSortedSourceIdentifiers() {
-    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const defaultSourceLocation = this.fontSourcesInstancer.defaultSourceLocation;
 
     const sortFunc = (identifierA, identifierB) => {
-      for (const axis of fontAxesSourceSpace) {
+      for (const axis of this.fontAxesSourceSpace) {
         const [valueA, valueB] = [identifierA, identifierB].map(
           (identifier) =>
             ({
@@ -847,6 +853,7 @@ export class FontController {
   async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
+    delete this._fontAxesSourceSpace;
 
     this._glyphInstancePromiseCache.clear();
 
