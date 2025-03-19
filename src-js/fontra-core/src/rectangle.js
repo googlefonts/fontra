@@ -209,7 +209,5 @@ export function validateRect(rect) {
     !isNumber(rect.yMax)
   ) {
     throw new TypeError(`Not a valid rectangle: ${JSON.stringify(rect)}`);
-  } else {
-    console.log("all good", rect);
   }
 }
