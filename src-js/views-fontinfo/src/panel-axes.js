@@ -917,7 +917,7 @@ export function updateRemoveButton(list, buttons) {
   });
 }
 
-export function arraysEqual(arrayA, arrayB) {
+function arraysEqual(arrayA, arrayB) {
   if (arrayA.length !== arrayB.length) {
     return false;
   }
