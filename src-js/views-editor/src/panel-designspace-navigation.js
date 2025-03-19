@@ -315,7 +315,19 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
-      (event) => {
+      async (event) => {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const sourceIndex = varGlyphController?.getSourceIndex({
+          ...this.sceneSettings.fontLocationSourceMapped,
+          ...this.sceneSettings.glyphLocation,
+        });
+        const sourceItem =
+          sourceIndex !== undefined
+            ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
+            : undefined;
+        this.sourcesList.setSelectedItem(sourceItem, true);
+
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
         this.updateInterpolationContributions();
@@ -331,32 +343,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
       },
       true
-    );
-
-    // TODO: stop depending on selectedSourceIndex
-    this.sceneSettingsController.addKeyListener(
-      "selectedSourceIndex",
-      async (event) => {
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        let index = event.newValue;
-
-        let sourceListItem = this.sourceListGetSourceItem(index);
-
-        if (
-          varGlyphController?.sources[index]?.layerName !== sourceListItem?.layerName
-        ) {
-          // the selectedSourceIndex event may come at a time that the
-          // sourcesList hasn't been updated yet, so could be out of
-          // sync. Prevent setting it to a wrong value.
-          sourceListItem = undefined;
-        }
-
-        this.sourcesList.setSelectedItem(sourceListItem, true);
-
-        this._updateRemoveSourceButtonState();
-        this._updateEditingStatus();
-      }
     );
 
     this.sceneSettingsController.addKeyListener(
