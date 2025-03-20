@@ -244,6 +244,7 @@ export const strings = {
   "message.cancel-editing": "Quelqu'un d'autre a édité juste avant vous",
   "message.edit-has-been-reverted": "L'édition a été annulé",
   "message.glyph-could-not-be-saved": "Le glyphe n'a pas pu être enregistré",
+  "opentype-feature-code.title": "Features",
   "plugin-manager.add-plugin-dialog.label.path": "Plugin path:",
   "plugin-manager.add-plugin-dialog.title": "Add plugin",
   "plugin-manager.add-plugin-dialog.warning.title": "Erreur",

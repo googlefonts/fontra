@@ -242,6 +242,7 @@ export const strings = {
   "message.cancel-editing": "他のユーザーがあなたの直前に操作を行いました。",
   "message.edit-has-been-reverted": "このグリフは前の状態に戻されました。",
   "message.glyph-could-not-be-saved": "このグリフは保存されません。",
+  "opentype-feature-code.title": "Features",
   "plugin-manager.add-plugin-dialog.label.path": "プラグインのパス:",
   "plugin-manager.add-plugin-dialog.title": "プラグインを追加",
   "plugin-manager.add-plugin-dialog.warning.title": "エラー",
