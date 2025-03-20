@@ -80,6 +80,7 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
         customTheme,
         autocompletion({ override: [myCompletions] }),
         history(),
+        EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             this.updateFeatureCode(update);

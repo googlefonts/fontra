@@ -95,12 +95,12 @@ export class CustomDataList extends SimpleElement {
       {
         key: "key",
         title: "Key", // TODO: translation
-        width: "14em",
+        width: "17.5em",
       },
       {
         key: "value",
         title: "Value", // TODO: translation
-        width: "14em",
+        width: "10em",
         editable: true,
       },
     ];
