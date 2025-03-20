@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-03-20
+
+- New feature: we added a Font Info panel for editing OpenType features. [Issue 2080](https://github.com/googlefonts/fontra/issues/2080) [PR 2104](https://github.com/googlefonts/fontra/pull/2104)
+
 ## 2025-03-19
 
 - New feature: we added UI for lower level OpenType settings, as part of the Font Info panel and the Font Sources panel. [Issue 2023](https://github.com/googlefonts/fontra/issues/2023) [PR 2039](https://github.com/googlefonts/fontra/pull/2039)
