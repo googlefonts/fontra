@@ -413,7 +413,11 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
       const sourceIndex =
         this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
-      this.editSourceProperties(sourceIndex);
+      if (sourceIndex != undefined) {
+        this.editSourceProperties(sourceIndex);
+      } else {
+        console.log("double clicked font source");
+      }
     });
 
     this.sourceLayersList = this.accordion.querySelector("#layers-list");
