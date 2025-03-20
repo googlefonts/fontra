@@ -402,7 +402,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       } else {
         this.sceneSettings.editLayerName = null;
         if (selectedItem) {
-          this.sceneSettings.fontLocationSourceMapped = selectedItem.denseLocation;
+          this.sceneSettings.fontLocationSourceMapped = {
+            ...selectedItem.denseLocation,
+          };
+          this.sceneSettings.glyphLocation = {};
         }
       }
       this._updateRemoveSourceButtonState();
@@ -889,6 +892,15 @@ export default class DesignspaceNavigationPanel extends Panel {
         visible: false,
       });
       sourceItems.push(sourceController.model);
+    }
+
+    if (varGlyphController) {
+      sourceItems.sort(
+        getSourceCompareFunc("denseLocation", [
+          ...varGlyphController.fontAxisNames,
+          ...varGlyphController.axes.map((axis) => axis.name),
+        ])
+      );
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
@@ -2024,6 +2036,21 @@ function makeAccordionHeaderButton(button) {
   }
 
   return html.createDomElement("icon-button", options);
+}
+
+function getSourceCompareFunc(locationProperty, axisNames) {
+  return (a, b) => {
+    const locA = a[locationProperty];
+    const locB = b[locationProperty];
+    for (const axisName of axisNames) {
+      const valueA = locA[axisName];
+      const valueB = locB[axisName];
+      if (valueA !== valueB) {
+        return valueA < valueB ? -1 : 0;
+      }
+    }
+    return 0;
+  };
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
