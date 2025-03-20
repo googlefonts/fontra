@@ -7,7 +7,7 @@ import { themeColorCSS } from "./theme-support.js";
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
 const colors = {
-  "border-color": ["lightgray", "darkgray"],
+  "border-color": ["#aaa", "#777"],
   "row-border-color": ["#ddd", "#333"],
   "row-foreground-color": ["black", "white"],
   "row-background-color": ["white", "#333"],
