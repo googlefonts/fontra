@@ -81,6 +81,18 @@ export class BaseInfoPanel {
     this.setupUI();
   }
 
+  pushUndoItem(changes, undoLabel) {
+    const undoRecord = {
+      change: changes.change,
+      rollbackChange: changes.rollbackChange,
+      info: {
+        label: undoLabel,
+      },
+    };
+
+    this.undoStack.pushUndoRecord(undoRecord);
+  }
+
   async postChange(change, rollbackChange, undoLabel) {
     const undoRecord = {
       change: change,

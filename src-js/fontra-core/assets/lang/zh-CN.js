@@ -230,6 +230,7 @@ export const strings = {
   "message.cancel-editing": "有人在你之前做了编辑。",
   "message.edit-has-been-reverted": "编辑将被复原。",
   "message.glyph-could-not-be-saved": "该字形无法被保存。",
+  "opentype-feature-code.title": "Features",
   "plugin-manager.add-plugin-dialog.label.path": "插件路径：",
   "plugin-manager.add-plugin-dialog.title": "添加插件",
   "plugin-manager.add-plugin-dialog.warning.title": "错误",

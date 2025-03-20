@@ -127,6 +127,7 @@ export class FontController {
     if (!this._rootObject[key]) {
       const methods = {
         fontInfo: "getFontInfo",
+        features: "getFeatures",
       };
       const methodName = methods[key];
       if (!methodName) {
@@ -139,6 +140,10 @@ export class FontController {
 
   async getFontInfo() {
     return await this.getData("fontInfo");
+  }
+
+  async getFeatures() {
+    return await this.getData("features");
   }
 
   async getSources() {
