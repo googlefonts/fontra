@@ -882,6 +882,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         locationString,
         denseLocation: location,
         isFontSource: true,
+        visible: false,
       });
       sourceItems.push(sourceController.model);
     }
