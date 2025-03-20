@@ -106,7 +106,7 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
   }
 
   getUndoRedoLabel(isRedo) {
-    return isRedo ? "Redo" : "Undo";
+    return isRedo ? "action.redo" : "action.undo";
   }
 
   canUndoRedo(isRedo) {
