@@ -478,13 +478,17 @@ export default class DesignspaceNavigationPanel extends Panel {
   async updateSourceListSelectionFromLocation(shouldDispatchEvent = false) {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = varGlyphController?.getSourceIndex({
-      ...this.sceneSettings.fontLocationSourceMapped,
-      ...this.sceneSettings.glyphLocation,
-    });
+
+    const locationString = varGlyphController?.getSparseLocationStringForSourceLocation(
+      {
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }
+    );
+
     const sourceItem =
-      sourceIndex !== undefined
-        ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
+      locationString !== undefined
+        ? this.sourcesList.items.find((item) => item.locationString === locationString)
         : undefined;
     this.sourcesList.setSelectedItem(sourceItem, shouldDispatchEvent);
   }
