@@ -1,4 +1,5 @@
 import { autocompletion } from "@codemirror/autocomplete";
+import { history, redo, redoDepth, undo, undoDepth } from "@codemirror/history";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { scheduleCalls } from "@fontra/core/utils.js";
@@ -72,12 +73,13 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
       []
     );
 
-    const view = new EditorView({
+    this.editorView = new EditorView({
       doc: features.text,
       extensions: [
         basicSetup,
         customTheme,
         autocompletion({ override: [myCompletions] }),
+        history(),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             this.updateFeatureCode(update);
@@ -100,7 +102,24 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
         root.features.text = update.state.doc.toString();
       }
     );
-    this.pushUndoItem(changes, undoLabel);
+  }
+
+  getUndoRedoLabel(isRedo) {
+    return isRedo ? "Redo" : "Undo";
+  }
+
+  canUndoRedo(isRedo) {
+    return !!(isRedo
+      ? redoDepth(this.editorView.state)
+      : undoDepth(this.editorView.state));
+  }
+
+  async doUndoRedo(isRedo) {
+    if (isRedo) {
+      redo(this.editorView);
+    } else {
+      undo(this.editorView);
+    }
   }
 }
 
@@ -164,7 +183,7 @@ const completions = [
     type: "keyword",
     info: `Example:
     language TRK  exclude_dflt; # Turkish
-		    sub i by i.dot;`,
+    sub i by i.dot;`,
   },
   {
     label: "languagesystem",
