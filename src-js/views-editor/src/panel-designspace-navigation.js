@@ -865,7 +865,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         locationString,
         denseLocation: location,
       });
-      // sourceItems.push(sourceController.model);
+      sourceItems.push(sourceController.model);
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
@@ -1826,6 +1826,9 @@ function makeIconCellFactory(
   return (item, colDesc) => {
     const focus = new FocusKeeper();
     const value = item[colDesc.key];
+    if (value == undefined) {
+      return html.div();
+    }
     const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
     const iconElement = html.createDomElement("inline-svg", {
       src: iconPaths[boolInt(value)],
