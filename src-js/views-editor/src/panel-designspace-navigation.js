@@ -874,6 +874,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         formattedName: html.div({ class: "font-source" }, [fontSource.name]),
         locationString,
         denseLocation: location,
+        isFontSource: true,
       });
       sourceItems.push(sourceController.model);
     }
@@ -1038,7 +1039,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     // else if the selected item has an interpolation error
     // - make *only* selected item editing
 
-    if (!selectedItem) {
+    if (!selectedItem || selectedItem.isFontSource) {
       this.sceneSettings.editingLayers = {};
     } else {
       const varGlyphController =
