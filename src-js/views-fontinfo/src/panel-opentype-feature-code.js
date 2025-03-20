@@ -29,12 +29,13 @@ addStyleSheet(`
   height: calc(100% - 2em);
 }
 
+#font-info-opentype-feature-code-text-entry-textarea > .cm-editor {
+  height: 100%;
+}
+
 `);
 
 const customTheme = EditorView.theme({
-  ".cm-editor": {
-    height: "100%",
-  },
   ".cm-cursor": {
     borderLeft: "2px solid var(--fontra-red-color)",
   },
