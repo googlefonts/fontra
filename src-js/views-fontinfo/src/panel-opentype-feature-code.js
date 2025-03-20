@@ -9,15 +9,13 @@ addStyleSheet(`
 
 #opentype-feature-code-panel.font-info-panel {
   height: 100%;
-  width: 100%;
 }
 
 .font-info-opentype-feature-code-container {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
-  // height: 500px;
-  // width: 500px;
+  overflow: hidden;
 }
 
 .font-info-opentype-feature-code-header {
@@ -27,8 +25,8 @@ addStyleSheet(`
 
 #font-info-opentype-feature-code-text-entry-textarea {
   font-size: 1.1em;
-  // overflow: scroll;
-  // height: 100%;
+  overflow: scroll;
+  height: calc(100% - 2em);
 }
 
 `);
