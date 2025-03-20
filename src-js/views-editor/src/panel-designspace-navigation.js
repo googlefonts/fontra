@@ -388,9 +388,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
-      await this.sceneController.setLocationFromSourceIndex(sourceIndex);
 
       if (sourceIndex != undefined) {
+        await this.sceneController.setLocationFromSourceIndex(sourceIndex);
         const varGlyphController =
           await this.sceneModel.getSelectedVariableGlyphController();
         if (varGlyphController) {
@@ -401,6 +401,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
       } else {
         this.sceneSettings.editLayerName = null;
+        if (selectedItem) {
+          this.sceneSettings.fontLocationSourceMapped = selectedItem.denseLocation;
+        }
       }
       this._updateRemoveSourceButtonState();
       this._updateEditingStatus();
