@@ -360,6 +360,14 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sourcesList = this.accordion.querySelector("#sources-list");
     this.sourcesList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
+    this.sourcesList.appendStyle(`
+      .bold {
+        font-weight: bold;
+      }
+      .font-source {
+        opacity: 40%;
+      }
+    `);
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
@@ -787,7 +795,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       const isDefaultSource = locationString === defaultLocationString;
       const sourceController = new ObservableController({
         name: source.name,
-        formattedName: isDefaultSource ? html.b({}, [source.name]) : source.name,
+        formattedName: isDefaultSource
+          ? html.div({ class: "bold" }, [source.name])
+          : source.name,
         layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === locationString,
@@ -861,7 +871,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       const sourceController = new ObservableController({
         name: fontSource.name,
-        formattedName: fontSource.name,
+        formattedName: html.div({ class: "font-source" }, [fontSource.name]),
         locationString,
         denseLocation: location,
       });
