@@ -44,9 +44,6 @@ const customTheme = EditorView.theme({
     color: "var(--horizontal-rule-color)",
     borderRight: "1px solid var(--horizontal-rule-color)",
   },
-  ".cm-activeLine": {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
 });
 
 export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
