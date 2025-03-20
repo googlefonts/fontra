@@ -14,13 +14,13 @@ addStyleSheet(`
 .font-info-opentype-feature-code-container {
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
-  padding: 1em;
   overflow: hidden;
 }
 
 .font-info-opentype-feature-code-header {
   font-weight: bold;
-  padding-bottom: 1em;
+  padding: 1em;
+  padding-bottom: 0.5em;
 }
 
 #font-info-opentype-feature-code-text-entry-textarea {
@@ -30,6 +30,23 @@ addStyleSheet(`
 }
 
 `);
+
+const customTheme = EditorView.theme({
+  ".cm-editor": {
+    height: "100%",
+  },
+  ".cm-cursor": {
+    borderLeft: "2px solid var(--fontra-red-color)",
+  },
+  ".cm-gutters": {
+    backgroundColor: "var(--ui-element-background-color)",
+    color: "var(--horizontal-rule-color)",
+    borderRight: "1px solid var(--horizontal-rule-color)",
+  },
+  ".cm-activeLine": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+});
 
 export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
   static title = "opentype-feature-code.title";
@@ -61,6 +78,7 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
       doc: features.text,
       extensions: [
         basicSetup,
+        customTheme,
         autocompletion({ override: [myCompletions] }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -76,14 +94,15 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
   }
 
   async _updateFeatureCode(update) {
+    const undoLabel = "edit OpenType feature code"; // TODO: translation
     const changes = await this.fontController.performEdit(
-      "edit OpenType feature code", // TODO: translation
+      undoLabel,
       "features",
       (root) => {
         root.features.text = update.state.doc.toString();
-      },
-      this
+      }
     );
+    this.pushUndoItem(changes, undoLabel);
   }
 }
 
