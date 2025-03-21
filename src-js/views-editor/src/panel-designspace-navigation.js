@@ -414,13 +414,24 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateSourceLayersList();
     });
 
-    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      const sourceIndex =
-        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
+    this.sourcesList.addEventListener("rowDoubleClicked", async (event) => {
+      const sourceItem = this.sourcesList.items[event.detail.doubleClickedRowIndex];
+      const sourceIndex = sourceItem.sourceIndex;
       if (sourceIndex != undefined) {
         this.editSourceProperties(sourceIndex);
       } else {
-        console.log("double clicked font source");
+        const glyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const sourceIdentifier = sourceItem.layerName;
+        const fontSource = this.fontController.sources[sourceIdentifier];
+        await this.addSourceFromInterpolation(
+          glyphController,
+          fontSource.name,
+          sourceIdentifier,
+          fontSource.location,
+          sourceIdentifier,
+          {}
+        );
       }
     });
 
