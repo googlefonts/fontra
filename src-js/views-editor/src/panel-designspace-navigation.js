@@ -562,9 +562,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     ];
 
     const statusFieldDefinitions =
-      this.sceneController.sceneModel.fontController.customData[
-        FONTRA_STATUS_DEFINITIONS_KEY
-      ];
+      this.fontController.customData[FONTRA_STATUS_DEFINITIONS_KEY];
 
     if (statusFieldDefinitions) {
       this.defaultStatusValue = statusFieldDefinitions.find(
@@ -1216,11 +1214,32 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const filteredLocation = stripLocation(newLocation, locationBase, glyph);
 
-    const getGlyphFunc = this.sceneController.sceneModel.fontController.getGlyph.bind(
-      this.sceneController.sceneModel.fontController
+    await this.addSourceFromInterpolation(
+      glyphController,
+      sourceName,
+      layerName,
+      newLocation,
+      locationBase,
+      filteredLocation,
+      !layerNames.includes(layerName)
     );
+  }
 
-    let { instance } = await glyphController.instantiate(newLocation, getGlyphFunc);
+  async addSourceFromInterpolation(
+    glyphController,
+    sourceName,
+    layerName,
+    instanceLocation,
+    locationBase,
+    additionalLocation,
+    doAddLayer = true
+  ) {
+    const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
+
+    let { instance } = await glyphController.instantiate(
+      instanceLocation,
+      getGlyphFunc
+    );
     instance = instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
@@ -1231,12 +1250,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         GlyphSource.fromObject({
           name: sourceName,
           layerName: layerName,
-          location: filteredLocation,
+          location: additionalLocation,
           locationBase: locationBase,
         })
       );
-      if (layerNames.indexOf(layerName) < 0) {
-        // Only add layer if the name is new
+      if (doAddLayer) {
         glyph.layers[layerName] = Layer.fromObject({ glyph: instance });
       }
       return translate("sidebar.designspace-navigation.dialog.add-source.title");
