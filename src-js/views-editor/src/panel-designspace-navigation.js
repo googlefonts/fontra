@@ -720,14 +720,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         !items.every(
           (item) =>
             item.editing ||
-            item.interpolationStatus.discreteLocationKey !== discreteLocationKey
+            item.interpolationStatus?.discreteLocationKey !== discreteLocationKey
         );
 
     const editingLayers = {};
     for (const item of items) {
       const editing =
         (onOff &&
-          item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
+          item.interpolationStatus?.discreteLocationKey === discreteLocationKey) ||
         item === selectedItem;
       if (editing) {
         editingLayers[item.layerName] = item.locationString;
