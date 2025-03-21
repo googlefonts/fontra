@@ -887,10 +887,18 @@ export default class DesignspaceNavigationPanel extends Panel {
       const sourceController = new ObservableController({
         name: fontSource.name,
         formattedName: html.div({ class: "font-source" }, [fontSource.name]),
+        layerName: sourceIdentifier, // pseudo/virtual layer name
         locationString,
         denseLocation: location,
         isFontSource: true,
-        visible: false,
+        visible: backgroundLayers[sourceIdentifier] === locationString,
+      });
+      sourceController.addKeyListener("visible", async (event) => {
+        this.sceneSettings.backgroundLayers = updateObject(
+          this.sceneSettings.backgroundLayers,
+          sourceIdentifier,
+          event.newValue ? locationString : undefined
+        );
       });
       sourceItems.push(sourceController.model);
     }
