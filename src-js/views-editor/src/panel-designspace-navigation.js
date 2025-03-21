@@ -25,6 +25,7 @@ import {
   round,
   scheduleCalls,
   throttleCalls,
+  updateObject,
 } from "@fontra/core/utils.js";
 import { GlyphSource, Layer, StaticGlyph } from "@fontra/core/var-glyph.js";
 import {
@@ -836,24 +837,24 @@ export default class DesignspaceNavigationPanel extends Panel {
         });
       });
       sourceController.addKeyListener("visible", async (event) => {
-        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
-        if (event.newValue) {
-          newBackgroundLayers[layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        } else {
-          delete newBackgroundLayers[layerName];
-        }
-        this.sceneSettings.backgroundLayers = newBackgroundLayers;
+        const locationString = event.newValue
+          ? varGlyphController.getSparseLocationStringForSource(source)
+          : undefined;
+        this.sceneSettings.backgroundLayers = updateObject(
+          this.sceneSettings.backgroundLayers,
+          layerName,
+          locationString
+        );
       });
       sourceController.addKeyListener("editing", async (event) => {
-        const newEditingLayers = { ...this.sceneSettings.editingLayers };
-        if (event.newValue) {
-          newEditingLayers[layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        } else {
-          delete newEditingLayers[layerName];
-        }
-        this.sceneSettings.editingLayers = newEditingLayers;
+        const locationString = event.newValue
+          ? varGlyphController.getSparseLocationStringForSource(source)
+          : undefined;
+        this.sceneSettings.editingLayers = updateObject(
+          this.sceneSettings.editingLayers,
+          layerName,
+          locationString
+        );
         await this._pruneEditingLayers();
       });
       sourceController.addKeyListener("status", async (event) => {
