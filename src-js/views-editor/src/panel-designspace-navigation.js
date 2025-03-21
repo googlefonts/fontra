@@ -288,10 +288,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       })
     );
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-      this._updateAxes();
-      this._updateSources();
-      this._updateInterpolationErrorInfo();
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", async (event) => {
+      await this._updateAxes();
+      await this._updateSources();
+      await this._updateInterpolationErrorInfo();
     });
 
     this.sceneSettingsController.addKeyListener(
@@ -307,17 +307,21 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneController.addCurrentGlyphChangeListener(
-      scheduleCalls((event) => {
-        this._updateAxes();
-        this._updateSources();
-        this._updateInterpolationErrorInfo();
+      scheduleCalls(async (event) => {
+        await this._updateAxes();
+        await this._updateSources();
+        await this._updateInterpolationErrorInfo();
+        await this._updateSourceLayersList();
       }, 100)
     );
 
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
       async (event) => {
-        await this.updateSourceListSelectionFromLocation(true);
+        await this.updateSourceListSelectionFromLocation();
+        await this._updateRemoveSourceButtonState();
+        await this._updateEditingStatus();
+        await this._updateSourceLayersList();
 
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -351,7 +355,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateSources();
     });
 
-    this.sceneController.addEventListener("glyphEditCannotEditLocked", async () => {
+    this.sceneController.addEventListener("glyphEditCannotEditLocked", () => {
       // See the event handler for glyphEditCannotEditReadOnly above
       this._updateAxes();
       this._updateSources();
@@ -496,7 +500,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
-  async updateSourceListSelectionFromLocation(shouldDispatchEvent = false) {
+  async updateSourceListSelectionFromLocation() {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
 
@@ -511,7 +515,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       locationString !== undefined
         ? this.sourcesList.items.find((item) => item.locationString === locationString)
         : undefined;
-    this.sourcesList.setSelectedItem(sourceItem, shouldDispatchEvent);
+    this.sourcesList.setSelectedItem(sourceItem);
   }
 
   _setupSourceListColumnDescriptions() {
@@ -965,6 +969,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       await this.sceneModel.getSelectedVariableGlyphController();
 
     const source = varGlyphController.glyph.sources[sourceIndex];
+
+    if (!source) {
+      // This unfortunately happens when the sources list hasn't been updated yet.
+      this.sourceLayersList.setItems([]);
+      return;
+    }
+
     const locationString = varGlyphController.getSparseLocationStringForSource(source);
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
@@ -1082,11 +1093,16 @@ export default class DesignspaceNavigationPanel extends Panel {
     // else if the selected item has an interpolation error
     // - make *only* selected item editing
 
-    if (!selectedItem || selectedItem.isFontSource) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    if (
+      !selectedItem ||
+      selectedItem.isFontSource ||
+      !varGlyphController.sources[selectedItem.sourceIndex]
+    ) {
       this.sceneSettings.editingLayers = {};
     } else {
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
       const sourceLayers = varGlyphController.getSourceLayerNamesForSourceIndex(
         selectedItem.sourceIndex
       );
