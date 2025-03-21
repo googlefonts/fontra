@@ -390,10 +390,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
 
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+
       if (sourceIndex != undefined) {
         await this.sceneController.setLocationFromSourceIndex(sourceIndex);
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
         if (varGlyphController) {
           this.sceneSettings.editLayerName =
             varGlyphController.sources[sourceIndex]?.layerName;
@@ -403,9 +404,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       } else {
         this.sceneSettings.editLayerName = null;
         if (selectedItem) {
-          this.sceneSettings.fontLocationSourceMapped = {
-            ...selectedItem.denseLocation,
-          };
+          const { fontLocation } = varGlyphController.splitLocation(
+            selectedItem.denseLocation
+          );
+          this.sceneSettings.fontLocationSourceMapped = fontLocation;
           this.sceneSettings.glyphLocation = {};
         }
       }
