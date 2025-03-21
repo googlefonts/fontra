@@ -814,11 +814,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
       const isDefaultSource = locationString === defaultLocationString;
+      const sourceName = varGlyphController.getSourceName(source);
       const sourceController = new ObservableController({
-        name: source.name,
+        name: sourceName,
         formattedName: isDefaultSource
-          ? html.div({ class: "bold" }, [source.name])
-          : source.name,
+          ? html.div({ class: "bold" }, [sourceName])
+          : sourceName,
         layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === locationString,
@@ -838,7 +839,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             event.newValue
               ? "sidebar.designspace-navigation.source.activate"
               : "sidebar.designspace-navigation.source.deactivate",
-            source.name
+            sourceName
           );
         });
       });
@@ -873,7 +874,7 @@ export default class DesignspaceNavigationPanel extends Panel {
               count++;
             }
           }
-          return `set status ${count > 1 ? "(multiple)" : source.name}`;
+          return `set status ${count > 1 ? "(multiple)" : sourceName}`;
         });
       });
       sourceItems.push(sourceController.model);
@@ -1260,7 +1261,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.push(
         GlyphSource.fromObject({
-          name: sourceName,
+          name: "", // Will be taken from font source
           layerName: layerName,
           location: additionalLocation,
           locationBase: locationBase,
@@ -1291,7 +1292,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         "sidebar.designspace-navigation.dialog.source-properties.ok-button-title"
       ),
       glyph,
-      source.name,
+      glyphController.getSourceName(source),
       source.layerName,
       source.location,
       source.locationBase
