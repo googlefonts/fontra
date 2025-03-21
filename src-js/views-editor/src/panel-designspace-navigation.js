@@ -698,11 +698,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       const varGlyphController =
         await this.sceneModel.getSelectedVariableGlyphController();
       backgroundLayers = {};
-      for (const source of varGlyphController.sources) {
-        if (!backgroundLayers[source.layerName]) {
-          backgroundLayers[source.layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        }
+      for (const item of this.sourcesList.items) {
+        backgroundLayers[item.layerName] = item.locationString;
       }
     }
     this.sceneSettings.backgroundLayers = backgroundLayers;
