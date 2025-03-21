@@ -1154,6 +1154,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       disabled: !canDeleteLayer,
     });
 
+    const sourceLayerNames =
+      glyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
+    const sourceLayerNamesString = sourceLayerNames
+      .map((item) => `“${item.shortName || "foreground"}”`)
+      .join(", ");
+
     const dialogContent = html.div({}, [
       html.div({ class: "message" }, [
         translate(
@@ -1166,7 +1173,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       html.label({ for: "delete-layer", style: canDeleteLayer ? "" : "color: gray;" }, [
         translate(
           "sidebar.designspace-navigation.warning.delete-associated-layer",
-          `“${source.layerName}”`
+          sourceLayerNamesString
         ),
       ]),
     ]);
@@ -1181,7 +1188,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph.sources.splice(sourceIndex, 1);
       let layerMessage = "";
       if (layer !== undefined && deleteLayerCheckBox.checked) {
-        delete glyph.layers[source.layerName];
+        for (const { fullName } of sourceLayerNames) {
+          delete glyph.layers[fullName];
+        }
         layerMessage = translate("sidebar.designspace-navigation.undo.and-layer");
       }
       return translate(
