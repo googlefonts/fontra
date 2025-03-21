@@ -618,7 +618,9 @@ class DesignspaceBackend:
             sourceInfo = self._prepareUFOSourceLayer(
                 glyphName, source, localDefaultLocation, revLayerNameMapping
             )
-            if sourceInfo.sourceName != source.name:
+            if sourceInfo.sourceName != source.name and not (
+                source.locationBase and not source.name
+            ):
                 sourceNameMapping[sourceInfo.sourceName] = source.name
             if sourceInfo.layerName != source.layerName:
                 layerNameMapping[sourceInfo.layerName] = source.layerName
