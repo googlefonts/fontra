@@ -94,6 +94,10 @@ export class VariableGlyphController {
     return this._fontAxisNames;
   }
 
+  getSourceName(source) {
+    return source.name || this._fontSources[source.locationBase]?.name;
+  }
+
   getSourceLocation(source) {
     return { ...this._fontSources[source.locationBase]?.location, ...source.location };
   }
