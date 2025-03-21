@@ -1158,7 +1158,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       html.div({ class: "message" }, [
         translate(
           "sidebar.designspace-navigation.warning.delete-source",
-          `#${sourceIndex}, “${source.name}”`
+          `“${glyphController.getSourceName(source)}”`
         ),
       ]),
       html.br(),
