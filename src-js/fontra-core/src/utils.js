@@ -774,6 +774,16 @@ export function isNumber(n) {
   return !isNaN(n) && typeof n === "number" && n !== Infinity && n !== -Infinity;
 }
 
+export function updateObject(obj, prop, value) {
+  obj = { ...obj };
+  if (value === undefined) {
+    delete obj[prop];
+  } else {
+    obj[prop] = value;
+  }
+  return obj;
+}
+
 export const friendlyHttpStatus = {
   200: "OK",
   201: "Created",
