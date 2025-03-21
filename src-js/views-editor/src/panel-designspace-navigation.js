@@ -1546,12 +1546,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         `,
       },
       [
-        // ...labeledPopupSelect(
-        //   "Location Base:",
-        //   nameController,
-        //   "locationBase",
-        //   fontSourceMenuItems
-        // ),
+        ...labeledPopupSelect(
+          "Location Base:",
+          nameController,
+          "locationBase",
+          fontSourceMenuItems
+        ),
         ...labeledTextInput(
           translate(
             "sidebar.designspace-navigation.dialog.add-source.label.source-name"
