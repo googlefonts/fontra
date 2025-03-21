@@ -1054,8 +1054,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _updateRemoveSourceButtonState() {
+    const sourceItem = this.sourcesList.getSelectedItem();
     this.addRemoveSourceButtons.disableRemoveButton =
-      this.sourcesList.getSelectedItemIndex() === undefined;
+      !sourceItem || !!sourceItem.isFontSource;
   }
 
   _updateRemoveSourceLayerButtonState() {
