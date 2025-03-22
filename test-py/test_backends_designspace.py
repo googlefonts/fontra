@@ -1143,8 +1143,6 @@ async def test_sparse_master_background_layers(writableTestFont):
     reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedGlyph = await reopenedBackend.getGlyph(glyphName)
 
-    assert sorted(glyph.layers) == sorted(reopenedGlyph.layers)
-    # assert bgLayerName in reopenedGlyph.layers
     assert glyph == reopenedGlyph
 
 
