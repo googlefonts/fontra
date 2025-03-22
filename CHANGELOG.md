@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-03-22
+
+- [designspace/ufo] Fixed background layers for sparse masters. [Issue 2111](https://github.com/googlefonts/fontra/issues/2111) [PR 2112](https://github.com/googlefonts/fontra/pull/2112)
+
 ## 2025-03-20
 
 - New feature: we added a Font Info panel for editing OpenType features. [Issue 2080](https://github.com/googlefonts/fontra/issues/2080) [PR 2104](https://github.com/googlefonts/fontra/pull/2104)
