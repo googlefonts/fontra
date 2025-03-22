@@ -5,11 +5,11 @@ import {
   areGuidelinesCompatible,
   normalizeGuidelines,
 } from "./utils.js";
-import { locationToString, mapAxesFromUserSpaceToSourceSpace } from "./var-model.js";
+import { locationToString } from "./var-model.js";
 
 export class FontSourcesInstancer {
-  constructor(fontAxes, fontSources) {
-    this.fontAxes = fontAxes;
+  constructor(fontAxesSourceSpace, fontSources) {
+    this.fontAxesSourceSpace = fontAxesSourceSpace;
     this.fontSources = fontSources;
     this._setup();
   }
@@ -18,7 +18,6 @@ export class FontSourcesInstancer {
     this._fontSourcesList = Object.values(this.fontSources).filter(
       (source) => !source.isSparse
     );
-    this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     this.defaultSourceLocation = Object.fromEntries(
       this.fontAxesSourceSpace.map((axis) => [axis.name, axis.defaultValue])
     );

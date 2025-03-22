@@ -111,6 +111,13 @@ export class FontController {
     return this._rootObject.axes.axes;
   }
 
+  get fontAxesSourceSpace() {
+    if (!this._fontAxesSourceSpace) {
+      this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    }
+    return this._fontAxesSourceSpace;
+  }
+
   get sources() {
     return this._rootObject.sources;
   }
@@ -152,11 +159,10 @@ export class FontController {
   }
 
   getSortedSourceIdentifiers() {
-    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const defaultSourceLocation = this.fontSourcesInstancer.defaultSourceLocation;
 
     const sortFunc = (identifierA, identifierB) => {
-      for (const axis of fontAxesSourceSpace) {
+      for (const axis of this.fontAxesSourceSpace) {
         const [valueA, valueB] = [identifierA, identifierB].map(
           (identifier) =>
             ({
@@ -415,7 +421,7 @@ export class FontController {
   }
 
   makeVariableGlyphController(glyph) {
-    return new VariableGlyphController(glyph, this.fontAxes, this.sources);
+    return new VariableGlyphController(glyph, this.fontAxesSourceSpace, this.sources);
   }
 
   updateGlyphDependencies(glyph) {
@@ -847,6 +853,7 @@ export class FontController {
   async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
+    delete this._fontAxesSourceSpace;
 
     this._glyphInstancePromiseCache.clear();
 
@@ -948,7 +955,10 @@ export class FontController {
 
   get crossAxisMapping() {
     if (!this._crossAxisMapping) {
-      this._crossAxisMapping = new CrossAxisMapping(this.axes.axes, this.axes.mappings);
+      this._crossAxisMapping = new CrossAxisMapping(
+        this.fontAxesSourceSpace,
+        this.axes.mappings
+      );
     }
     return this._crossAxisMapping;
   }
@@ -956,7 +966,7 @@ export class FontController {
   get fontSourcesInstancer() {
     if (!this._fontSourcesInstancer) {
       this._fontSourcesInstancer = new FontSourcesInstancer(
-        this.axes.axes,
+        this.fontAxesSourceSpace,
         this.sources
       );
     }

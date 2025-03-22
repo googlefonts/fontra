@@ -4,14 +4,13 @@ import { zip } from "./utils.js";
 import {
   VariationModel,
   makeSparseNormalizedLocation,
-  mapAxesFromUserSpaceToSourceSpace,
   normalizeLocation,
   unnormalizeLocation,
 } from "./var-model.js";
 
 export class CrossAxisMapping {
-  constructor(fontAxes, mappings) {
-    this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(fontAxes);
+  constructor(fontAxesSourceSpace, mappings) {
+    this.fontAxesSourceSpace = fontAxesSourceSpace;
     this.mappings = mappings;
     if (mappings?.length) {
       this._setupModel();
