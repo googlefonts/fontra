@@ -399,7 +399,9 @@ class DesignspaceBackend:
             for ufoLayerName in reader.getLayerNames():
                 layer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
                 if layer is None:
-                    fontraLayerName = f"{source.name}^{ufoLayerName}"
+                    fontraLayerName = self._getFontraLayerNameFromUFOLayerName(
+                        source.name, ufoLayerName
+                    )
                     self.ufoLayers.append(
                         UFOLayer(
                             manager=manager,
@@ -408,6 +410,16 @@ class DesignspaceBackend:
                             fontraLayerName=fontraLayerName,
                         )
                     )
+
+    def _getFontraLayerNameFromUFOLayerName(self, sourceIdentifier, ufoLayerName):
+        fontraLayerName = f"{sourceIdentifier}^{ufoLayerName}"
+        if "^" in ufoLayerName:
+            # This is possibly a background layer for a sparse master, if the
+            # UFO layer name is prefixed with an existing source identifier
+            sourceIdentifier, _ = ufoLayerName.split("^", 1)
+            if self.dsSources.findItem(identifier=sourceIdentifier) is not None:
+                fontraLayerName = ufoLayerName
+        return fontraLayerName
 
     def buildGlyphFileNameMapping(self):
         glifFileNames = {}
@@ -725,7 +737,7 @@ class DesignspaceBackend:
         if "^" in layerName:
             sourceIdentifier, bgLayerName = layerName.split("^", 1)
             dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
-            if dsSource is not None:
+            if dsSource is not None and not dsSource.isSparse:
                 ufoPath = dsSource.layer.path
                 layerName = bgLayerName
             # else:

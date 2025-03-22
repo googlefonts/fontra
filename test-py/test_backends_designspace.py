@@ -1131,6 +1131,22 @@ async def test_empty_layers_have_contents_plist(tmpdir, suffix, testFont):
             assert (glyphsDir / "contents.plist").exists()
 
 
+async def test_sparse_master_background_layers(writableTestFont):
+    glyphName = "B"
+    layerName = "support.crossbar"
+    bgLayerName = f"{layerName}^backgroundtest"
+
+    glyph = await writableTestFont.getGlyph(glyphName)
+    glyph.layers[bgLayerName] = deepcopy(glyph.layers[layerName])
+
+    await writableTestFont.putGlyph(glyphName, glyph, [ord(glyphName)])
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    reopenedGlyph = await reopenedBackend.getGlyph(glyphName)
+
+    assert glyph == reopenedGlyph
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
