@@ -874,21 +874,9 @@ export class EditorController extends ViewController {
     }
   }
 
-  async goToNearestSource() {
-    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
-    const nearestSourceIndex = glyphController.findNearestSourceForSourceLocation(
-      {
-        ...this.sceneSettings.fontLocationSourceMapped,
-        ...this.sceneSettings.glyphLocation,
-      },
-      true
-    );
-    const location =
-      glyphController.getDenseSourceLocationForSourceIndex(nearestSourceIndex);
-    const { fontLocation, glyphLocation } = glyphController.splitLocation(location);
-    this.sceneSettingsController.model.fontLocationSourceMapped = fontLocation;
-    this.sceneSettingsController.model.glyphLocation =
-      glyphController.foldNLIAxes(glyphLocation);
+  goToNearestSource() {
+    const panel = this.getSidebarPanel("designspace-navigation");
+    panel?.goToNearestSource();
   }
 
   initTools() {

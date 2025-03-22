@@ -1,4 +1,5 @@
 import { registerAction } from "@fontra/core/actions.js";
+import { findNearestLocationIndex } from "@fontra/core/discrete-variation-model.js";
 import {
   BACKGROUND_LAYER_SEPARATOR,
   getAxisBaseName,
@@ -1032,6 +1033,21 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
+  async goToNearestSource() {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const targetLocation = {
+      ...glyphController.getDenseDefaultSourceLocation(),
+      ...glyphController.expandNLIAxes({
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }),
+    };
+
+    const locations = this.sourcesList.items.map((item) => item.denseLocation);
+    const index = findNearestLocationIndex(targetLocation, locations);
+    this.sourcesList.setSelectedItemIndex(index, true);
+  }
+
   async doSelectPreviousNextSource(selectPrevious) {
     let itemIndex = this.sourcesList.getSelectedItemIndex();
     if (itemIndex != undefined) {
@@ -1041,16 +1057,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       );
       this.sourcesList.setSelectedItemIndex(newItemIndex, true);
     } else {
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
-      const nearestSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
-        ...this.sceneSettings.fontLocationSourceMapped,
-        ...this.sceneSettings.glyphLocation,
-      });
-      const sourceItem = this.sourcesList.items.find(
-        (item) => item.sourceIndex === nearestSourceIndex
-      );
-      this.sourcesList.setSelectedItem(sourceItem, true);
+      this.goToNearestSource();
     }
   }
 
