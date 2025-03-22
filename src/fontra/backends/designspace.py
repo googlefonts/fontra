@@ -737,10 +737,7 @@ class DesignspaceBackend:
         if "^" in layerName:
             sourceIdentifier, bgLayerName = layerName.split("^", 1)
             dsSource = self.dsSources.findItem(identifier=sourceIdentifier)
-            if (
-                dsSource is not None
-                and dsSource.layer.name == dsSource.layer.reader.getDefaultLayerName()
-            ):
+            if dsSource is not None and not dsSource.isSparse:
                 ufoPath = dsSource.layer.path
                 layerName = bgLayerName
             # else:
