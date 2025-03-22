@@ -1135,6 +1135,7 @@ async def test_sparse_master_background_layers(writableTestFont):
     glyphName = "B"
     layerName = "support.crossbar"
     bgLayerName = f"{layerName}^backgroundtest"
+
     glyph = await writableTestFont.getGlyph(glyphName)
     glyph.layers[bgLayerName] = deepcopy(glyph.layers[layerName])
 
