@@ -224,6 +224,7 @@ class DesignspaceBackend:
         self._familyName: str | None = None
         self._defaultFontInfo: UFOFontInfo | None = None
         self._initialize(dsDoc)
+        self._implicitDefaultLocationBase = None
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = ensureDSSourceNamesAreUnique(dsDoc)
@@ -781,6 +782,14 @@ class DesignspaceBackend:
             dsSource = self.dsSources.findItem(identifier=source.locationBase)
             if dsSource is not None:
                 baseLocation = dsSource.location
+            elif self._implicitDefaultLocationBase is None:
+                # We allow for ONE non-existing locationBase, as this may have come
+                # from a single-file UFO
+                self._implicitDefaultLocationBase = source.locationBase
+            elif self._implicitDefaultLocationBase != source.locationBase:
+                raise ValueError(
+                    f"Unknown font source identifier: {source.locationBase}"
+                )
 
         sourceLocation = baseLocation | localDefaultLocation | source.location
         sparseLocalLocation = {
