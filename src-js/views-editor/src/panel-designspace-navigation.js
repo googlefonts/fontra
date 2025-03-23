@@ -1244,6 +1244,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const {
       location: newLocation,
+      filteredLocation,
       sourceName,
       layerName,
       layerNames,
@@ -1267,7 +1268,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       layerName,
       newLocation,
       locationBase,
-      newLocation,
+      filteredLocation,
       !layerNames.includes(layerName)
     );
   }
@@ -1316,6 +1317,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const {
       location: newLocation,
+      filteredLocation,
       sourceName,
       layerName,
       layerNames,
@@ -1510,8 +1512,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       return {};
     }
 
-    const newLocation = stripLocation(
-      makeSparseLocation(locationController.model, locationAxes),
+    const newLocation = makeSparseLocation(locationController.model, locationAxes);
+    const filteredLocation = stripLocation(
+      newLocation,
       locationBase,
       this.fontController.sources
     );
@@ -1531,7 +1534,14 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     locationBase = nameController.model.locationBase || null;
 
-    return { location: newLocation, sourceName, layerName, layerNames, locationBase };
+    return {
+      location: newLocation,
+      filteredLocation,
+      sourceName,
+      layerName,
+      layerNames,
+      locationBase,
+    };
   }
 
   _sourcePropertiesLocationAxes(glyph) {
