@@ -6,7 +6,10 @@ import {
   consolidateChanges,
   hasChange,
 } from "@fontra/core/changes.js";
-import { decomposeComponents } from "@fontra/core/glyph-controller.js";
+import {
+  decomposeComponents,
+  roundComponentOrigins,
+} from "@fontra/core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "@fontra/core/glyph-lines.js";
 import { translate, translatePlural } from "@fontra/core/localization.js";
 import { MouseTracker } from "@fontra/core/mouse-tracker.js";
@@ -1164,8 +1167,7 @@ export class SceneController {
     const instance = glyphController.instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
-    // FIXME: the following function lives in panel-designspace-navigation.js
-    // roundComponentOrigins(instance.components);
+    roundComponentOrigins(instance.components);
 
     const layerName = sourceIdentifier;
 

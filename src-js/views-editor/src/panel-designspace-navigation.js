@@ -3,6 +3,7 @@ import { findNearestLocationIndex } from "@fontra/core/discrete-variation-model.
 import {
   BACKGROUND_LAYER_SEPARATOR,
   getAxisBaseName,
+  roundComponentOrigins,
 } from "@fontra/core/glyph-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { htmlToElement } from "@fontra/core/html-utils.js";
@@ -1886,17 +1887,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       infoElement.appendChild(html.br());
     }
   }
-}
-
-function roundComponentOrigins(components) {
-  components.forEach((component) => {
-    component.transformation.translateX = Math.round(
-      component.transformation.translateX
-    );
-    component.transformation.translateY = Math.round(
-      component.transformation.translateY
-    );
-  });
 }
 
 function foldNLIAxes(axes) {

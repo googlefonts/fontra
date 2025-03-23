@@ -1311,3 +1311,14 @@ async function getGlyphAndDependenciesDeep(glyphName, getGlyphFunc) {
   }
   return glyphs;
 }
+
+export function roundComponentOrigins(components) {
+  components.forEach((component) => {
+    component.transformation.translateX = Math.round(
+      component.transformation.translateX
+    );
+    component.transformation.translateY = Math.round(
+      component.transformation.translateY
+    );
+  });
+}
