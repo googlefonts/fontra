@@ -778,13 +778,7 @@ async def test_putSources(writableTestFont):
 async def test_putSources_delete_revive(writableTestFont):
     originalSources = await writableTestFont.getSources()
     originalGlyph = await writableTestFont.getGlyph("E")
-    assert [source.name for source in originalGlyph.sources] == [
-        "LightCondensed",
-        "BoldCondensed",
-        "LightWide",
-        "BoldWide",
-        "support.crossbar",
-    ]
+    assert [source.name for source in originalGlyph.sources] == ["", "", "", "", ""]
     assert {layerName for layerName in originalGlyph.layers} == {
         "light-condensed",
         "support.crossbar",
@@ -800,12 +794,7 @@ async def test_putSources_delete_revive(writableTestFont):
 
     changedGlyph = await writableTestFont.getGlyph("E")
     assert changedGlyph != originalGlyph
-    assert [source.name for source in changedGlyph.sources] == [
-        "LightCondensed",
-        "BoldCondensed",
-        "LightWide",
-        "support.crossbar",
-    ]
+    assert [source.name for source in changedGlyph.sources] == ["", "", "", ""]
     assert {layerName for layerName in changedGlyph.layers} == {
         "light-condensed",
         "support.crossbar",
