@@ -19,6 +19,7 @@ import {
   enumerate,
   escapeHTMLCharacters,
   filterObject,
+  isObjectEmpty,
   modulo,
   objectsEqual,
   range,
@@ -1259,19 +1260,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const filteredLocation = stripLocation(
-      newLocation,
-      locationBase,
-      this.fontController.sources
-    );
-
     await this.addSourceFromInterpolation(
       glyphController,
       sourceName,
       layerName,
       newLocation,
       locationBase,
-      filteredLocation,
+      newLocation,
       !layerNames.includes(layerName)
     );
   }
@@ -1339,16 +1334,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const filteredLocation = stripLocation(
-      newLocation,
-      locationBase,
-      this.fontController.sources
-    );
-
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, filteredLocation)) {
-        source.location = filteredLocation;
+      if (!objectsEqual(source.location, newLocation)) {
+        source.location = newLocation;
       }
       if (sourceName !== source.name) {
         source.name = sourceName;
@@ -1520,12 +1509,25 @@ export default class DesignspaceNavigationPanel extends Panel {
       return {};
     }
 
-    const newLocation = makeSparseLocation(locationController.model, locationAxes);
+    const newLocation = stripLocation(
+      makeSparseLocation(locationController.model, locationAxes),
+      locationBase,
+      this.fontController.sources
+    );
 
     sourceName =
       nameController.model.sourceName || nameController.model.suggestedSourceName;
+
+    if (
+      sourceName === this.fontController.sources[locationBase]?.name &&
+      isObjectEmpty(newLocation)
+    ) {
+      sourceName = "";
+    }
+
     layerName =
       nameController.model.layerName || nameController.model.suggestedLayerName;
+
     locationBase = nameController.model.locationBase || null;
 
     return { location: newLocation, sourceName, layerName, layerNames, locationBase };
