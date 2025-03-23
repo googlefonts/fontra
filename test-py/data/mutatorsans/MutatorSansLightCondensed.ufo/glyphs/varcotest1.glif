@@ -108,11 +108,6 @@
         <key>bold-condensed</key>
         <string>weight=850</string>
       </dict>
-      <key>xyz.fontra.source-names</key>
-      <dict>
-        <key>BoldCondensed</key>
-        <string>weight=850</string>
-      </dict>
     </dict>
   </lib>
 </glyph>

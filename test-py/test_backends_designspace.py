@@ -386,7 +386,12 @@ async def test_addLocalAxisAndSource(writableTestFont):
 
     glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
-        GlyphSource(name="test", location={"test": 100}, layerName=layerName)
+        GlyphSource(
+            name="test",
+            locationBase="light-condensed",
+            location={"test": 100},
+            layerName=layerName,
+        )
     )
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
 
