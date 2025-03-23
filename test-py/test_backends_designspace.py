@@ -184,8 +184,11 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     assert {"glyphs.mid"} == ufoFileNamesPost - ufoFileNamesPre
 
     reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
-
+    fontSources = await reopenedBackend.getSources()
     reopenedGlyph = await reopenedBackend.getGlyph(glyphName)
+
+    glyph = normalizeGlyphSources(glyph, fontSources)
+    reopenedGlyph = normalizeGlyphSources(reopenedGlyph, fontSources)
     assert glyph == reopenedGlyph
 
 
@@ -584,21 +587,44 @@ async def test_newFileSystemBackend(
 
     referenceGlyph = await referenceFont.getGlyph("H")
 
-    assert normalizeSourceOrder(glyph, sources) == normalizeSourceOrder(
+    assert normalizeGlyphSourceOrder(glyph, sources) == normalizeGlyphSourceOrder(
         referenceGlyph, sources
     )
 
 
-def normalizeSourceOrder(glyph, fontSources):
+def normalizeGlyphSources(glyph, fontSources):
+    return replace(
+        glyph,
+        sources=[
+            replace(
+                source,
+                name=getSourceName(source, fontSources),
+                location=getSourceLocation(source, fontSources),
+                locationBase=None,
+            )
+            for source in glyph.sources
+        ],
+    )
+
+
+def normalizeGlyphSourceOrder(glyph, fontSources):
+    glyph = normalizeGlyphSources(glyph, fontSources)
     return replace(
         glyph,
         sources=sorted(
             glyph.sources,
-            key=lambda source: tuple(
-                sorted(getSourceLocation(source, fontSources).items())
-            ),
+            key=lambda source: tuple(sorted(source.location.items())),
         ),
     )
+
+
+def getSourceName(source, fontSources):
+    fontSourceName = (
+        fontSources[source.locationBase].name
+        if source.locationBase in fontSources
+        else {}
+    )
+    return fontSourceName or source.name
 
 
 def getSourceLocation(source, fontSources):
