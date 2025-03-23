@@ -24,7 +24,8 @@ getGlyphTestData = [
             "sources": [
                 {
                     "layerName": "default",
-                    "name": "default",
+                    "name": "",
+                    "locationBase": "default",
                 }
             ],
             "layers": {
@@ -59,7 +60,8 @@ getGlyphTestData = [
                 {
                     "location": {},
                     "layerName": "default",
-                    "name": "default",
+                    "name": "",
+                    "locationBase": "default",
                 }
             ],
             "layers": {
@@ -109,28 +111,33 @@ getGlyphTestData = [
             "name": "period",
             "sources": [
                 {
-                    "name": "LightCondensed",
-                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-condensed",
                     "layerName": "light-condensed",
                 },
                 {
-                    "name": "BoldCondensed",
-                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "bold-condensed",
                     "layerName": "bold-condensed",
                 },
                 {
-                    "name": "LightWide",
-                    "location": {"italic": 0, "weight": 150.0, "width": 1000.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-wide",
                     "layerName": "light-wide",
                 },
                 {
-                    "name": "BoldWide",
-                    "location": {"italic": 0, "weight": 850.0, "width": 1000.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "bold-wide",
                     "layerName": "bold-wide",
                 },
                 {
-                    "name": "LightCondensedItalic",
-                    "location": {"italic": 1, "weight": 150.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-condensed-italic",
                     "layerName": "light-condensed-italic",
                 },
             ],
@@ -204,23 +211,27 @@ getGlyphTestData = [
             "name": "Aacute",
             "sources": [
                 {
-                    "name": "LightCondensed",
-                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-condensed",
                     "layerName": "light-condensed",
                 },
                 {
-                    "name": "BoldCondensed",
-                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "bold-condensed",
                     "layerName": "bold-condensed",
                 },
                 {
-                    "name": "LightWide",
-                    "location": {"italic": 0, "weight": 150.0, "width": 1000.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-wide",
                     "layerName": "light-wide",
                 },
                 {
-                    "name": "BoldWide",
-                    "location": {"italic": 0, "weight": 850.0, "width": 1000.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "bold-wide",
                     "layerName": "bold-wide",
                 },
             ],
@@ -382,13 +393,15 @@ getGlyphTestData = [
             "name": "varcotest1",
             "sources": [
                 {
-                    "name": "LightCondensed",
-                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-condensed",
                     "layerName": "light-condensed",
                 },
                 {
-                    "name": "weight=850",
-                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
+                    "name": "",
+                    "location": {},
+                    "locationBase": "bold-condensed",
                     "layerName": "weight=850",
                 },
             ],
@@ -510,24 +523,28 @@ getGlyphTestData = [
             ],
             "sources": [
                 {
+                    "name": "",
+                    "location": {},
+                    "locationBase": "light-condensed",
                     "layerName": "light-condensed",
-                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
-                    "name": "LightCondensed",
                 },
                 {
                     "layerName": "varco_flip",
                     "location": {"flip": 100},
+                    "locationBase": "light-condensed",
                     "name": "varco_flip",
                 },
                 {
                     "layerName": "varco_flop",
                     "location": {"flop": 100},
+                    "locationBase": "light-condensed",
                     "name": "varco_flop",
                 },
                 {
                     "name": "weight=850,flip=100",
                     "layerName": "weight=850,flip=100",
-                    "location": {"flip": 100, "weight": 850},
+                    "location": {"flip": 100},
+                    "locationBase": "bold-condensed",
                     "inactive": False,
                     "customData": {},
                 },
