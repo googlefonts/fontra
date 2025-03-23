@@ -1259,7 +1259,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
+    const filteredLocation = stripLocation(
+      newLocation,
+      locationBase,
+      this.fontController.sources
+    );
 
     await this.addSourceFromInterpolation(
       glyphController,
@@ -1335,7 +1339,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
+    const filteredLocation = stripLocation(
+      newLocation,
+      locationBase,
+      this.fontController.sources
+    );
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
@@ -1917,10 +1925,10 @@ function getGlyphAxisNamesSet(glyph) {
   return new Set(glyph.axes.map((axis) => axis.name));
 }
 
-function stripLocation(location, locationBase, glyph) {
-  const glyphAxisNames = getGlyphAxisNamesSet(glyph);
+function stripLocation(location, locationBase, fontSources) {
+  const baseLocation = fontSources[locationBase]?.location || {};
   return locationBase
-    ? filterObject(location, (name, value) => !glyphAxisNames.has(name))
+    ? filterObject(location, (name, value) => baseLocation[name] !== value)
     : location;
 }
 
