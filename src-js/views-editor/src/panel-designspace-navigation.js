@@ -1328,7 +1328,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph,
       glyphController.getSourceName(source),
       source.layerName,
-      source.location,
+      glyphController.getSourceLocation(source),
       source.locationBase
     );
     if (!newLocation) {
