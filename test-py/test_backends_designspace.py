@@ -583,17 +583,31 @@ async def test_newFileSystemBackend(
     referenceFont = getFileSystemBackend(destPath)
 
     referenceGlyph = await referenceFont.getGlyph("H")
-    # referenceGlyph.sources.sort()
-    assert normalizeSourceOrder(glyph) == normalizeSourceOrder(referenceGlyph)
+
+    assert normalizeSourceOrder(glyph, sources) == normalizeSourceOrder(
+        referenceGlyph, sources
+    )
 
 
-def normalizeSourceOrder(glyph):
+def normalizeSourceOrder(glyph, fontSources):
     return replace(
         glyph,
         sources=sorted(
-            glyph.sources, key=lambda source: tuple(sorted(source.location.items()))
+            glyph.sources,
+            key=lambda source: tuple(
+                sorted(getSourceLocation(source, fontSources).items())
+            ),
         ),
     )
+
+
+def getSourceLocation(source, fontSources):
+    fontSourceLocation = (
+        fontSources[source.locationBase].location
+        if source.locationBase in fontSources
+        else {}
+    )
+    return fontSourceLocation | source.location
 
 
 async def test_writeCorrectLayers(tmpdir, testFont):
