@@ -224,7 +224,7 @@ class DesignspaceBackend:
         self._familyName: str | None = None
         self._defaultFontInfo: UFOFontInfo | None = None
         self._initialize(dsDoc)
-        self._implicitDefaultLocationBase = None
+        self._implicitDefaultLocationBase: str | None = None
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = ensureDSSourceNamesAreUnique(dsDoc)
