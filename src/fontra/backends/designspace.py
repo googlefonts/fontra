@@ -1725,7 +1725,7 @@ class DSSource:
         if localDefaultOverride is None:
             localDefaultOverride = {}
         return GlyphSource(
-            name=self.name,
+            name=self.name if localDefaultOverride else "",
             locationBase=self.identifier,
             location={**localDefaultOverride},
             layerName=self.layer.fontraLayerName,
