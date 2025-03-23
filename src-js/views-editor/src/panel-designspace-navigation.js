@@ -435,7 +435,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         const fontSource = this.fontController.sources[sourceIdentifier];
         await this.addSourceFromInterpolation(
           glyphController,
-          fontSource.name,
+          "",
           sourceIdentifier,
           fontSource.location,
           sourceIdentifier,
@@ -1264,7 +1264,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     await this.addSourceFromInterpolation(
       glyphController,
-      sourceName,
+      locationBase && isObjectEmpty(filteredLocation) ? "" : sourceName,
       layerName,
       newLocation,
       locationBase,
@@ -1296,7 +1296,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.push(
         GlyphSource.fromObject({
-          name: "", // Will be taken from font source
+          name: sourceName,
           layerName: layerName,
           location: additionalLocation,
           locationBase: locationBase,
