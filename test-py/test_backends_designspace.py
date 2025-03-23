@@ -443,6 +443,7 @@ async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
     newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
 
     await newFont.putAxes(await testFont.getAxes())
+    await newFont.putSources(await testFont.getSources())
 
     glyph = await testFont.getGlyph("C")
 
