@@ -1386,6 +1386,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return translate("sidebar.designspace-navigation.source-properties.undo");
     });
+
+    this.navigateToLocation(newLocation);
   }
 
   async _sourcePropertiesRunDialog(
