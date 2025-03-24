@@ -1230,7 +1230,6 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async addSource() {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
-    const glyph = glyphController.glyph;
 
     const location = glyphController.expandNLIAxes({
       ...this.sceneSettings.fontLocationSourceMapped,
@@ -1252,7 +1251,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     } = await this._sourcePropertiesRunDialog(
       translate("sidebar.designspace-navigation.dialog.add-source.title"),
       translate("sidebar.designspace-navigation.dialog.add-source.ok-button-title"),
-      glyph,
+      glyphController,
       "",
       "",
       location,
@@ -1336,7 +1335,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       translate(
         "sidebar.designspace-navigation.dialog.source-properties.ok-button-title"
       ),
-      glyph,
+      glyphController,
       source.name,
       source.layerName,
       glyphController.getSourceLocation(source),
@@ -1393,12 +1392,13 @@ export default class DesignspaceNavigationPanel extends Panel {
   async _sourcePropertiesRunDialog(
     title,
     okButtonTitle,
-    glyph,
+    glyphController,
     sourceName,
     layerName,
     location,
     locationBase
   ) {
+    const glyph = glyphController.glyph;
     const validateInput = () => {
       const warnings = [];
       const editedSourceName =
@@ -1506,7 +1506,9 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const sourceLocations = new Set(
       glyph.sources.map((source) =>
-        locationToString(makeSparseLocation(source.location, locationAxes))
+        locationToString(
+          makeSparseLocation(glyphController.getSourceLocation(source), locationAxes)
+        )
       )
     );
     if (sourceName.length) {
