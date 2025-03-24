@@ -33,7 +33,7 @@ export class FontSourcesInstancer {
     this._instanceCache = new LRUCache(50);
   }
 
-  getLocationIdentifierForLocation(location) {
+  getSourceIdentifierForLocation(location) {
     location = { ...this.defaultSourceLocation, ...location };
     return this._sourceIdsByLocationString[locationToString(location)];
   }

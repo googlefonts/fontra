@@ -1158,7 +1158,7 @@ export class SceneController {
 
   _insertGlyphSourceIfAtFontSource(varGlyph, glyphController) {
     const sourceIdentifier =
-      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
         this.sceneSettings.fontLocationSourceMapped
       );
     if (!sourceIdentifier) {

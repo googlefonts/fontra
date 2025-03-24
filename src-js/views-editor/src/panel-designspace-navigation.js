@@ -1238,7 +1238,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     const suggestedLocationBase =
-      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
         this.sceneSettings.fontLocationSourceMapped
       );
 
