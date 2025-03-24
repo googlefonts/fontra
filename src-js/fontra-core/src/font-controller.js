@@ -973,6 +973,14 @@ export class FontController {
     return this._fontSourcesInstancer;
   }
 
+  get defaultSourceLocation() {
+    return this.fontSourcesInstancer.defaultSourceLocation;
+  }
+
+  get defaultSourceIdentifier() {
+    return this.fontSourcesInstancer.defaultSourceIdentifier;
+  }
+
   mapSourceLocationToMappedSourceLocation(sourceLocation) {
     return { ...this.crossAxisMapping.mapLocation(sourceLocation) };
   }
