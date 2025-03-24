@@ -1436,7 +1436,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         glyphAxisNames.has(name)
       );
       const newLocation = {
-        ...this.fontController.fontSourcesInstancer.defaultLocation,
+        ...this.fontController.fontSourcesInstancer.defaultSourceLocation,
         ...sourceLocation,
         ...glyphLocation,
       };
