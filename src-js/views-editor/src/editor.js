@@ -804,13 +804,24 @@ export class EditorController extends ViewController {
       ]
     );
     if (result === "ok") {
-      const layerName = "default";
+      const sourceIdentifier = this.fontController.defaultSourceIdentifier;
+      const fontSource = this.fontController.sources[sourceIdentifier];
+      const layerName = sourceIdentifier || "default";
+      const sourceName = fontSource ? "" : layerName;
+
       await this.newGlyph(
         positionedGlyph.glyphName,
         positionedGlyph.character?.codePointAt(0),
         VariableGlyph.fromObject({
           name: positionedGlyph.glyphName,
-          sources: [{ name: layerName, location: {}, layerName: layerName }],
+          sources: [
+            {
+              name: sourceName,
+              location: {},
+              layerName: layerName,
+              locationBase: sourceIdentifier,
+            },
+          ],
           layers: { [layerName]: { glyph: positionedGlyph.glyph.instance } },
         })
       );
