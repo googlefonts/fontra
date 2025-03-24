@@ -1525,11 +1525,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     const newLocation = makeSparseLocation(locationController.model, locationAxes);
-    const filteredLocation = stripLocation(
-      newLocation,
-      locationBase,
-      this.fontController.sources
-    );
 
     sourceName =
       nameController.model.sourceName || nameController.model.suggestedSourceName;
@@ -1545,6 +1540,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       nameController.model.layerName || nameController.model.suggestedLayerName;
 
     locationBase = nameController.model.locationBase || null;
+
+    const filteredLocation = stripLocation(
+      newLocation,
+      locationBase,
+      this.fontController.sources
+    );
 
     return {
       location: newLocation,
