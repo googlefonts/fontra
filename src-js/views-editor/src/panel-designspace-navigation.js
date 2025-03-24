@@ -1272,7 +1272,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       !layerNames.includes(layerName)
     );
 
-    const { fontLocation, glyphLocation } = glyphController.splitLocation(newLocation);
+    this.navigateToLocation(newLocation);
+  }
+
+  async navigateToLocation(location) {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const { fontLocation, glyphLocation } = glyphController.splitLocation(location);
     this.sceneSettings.fontLocationSourceMapped = fontLocation;
     this.sceneSettings.glyphLocation = glyphLocation;
   }
