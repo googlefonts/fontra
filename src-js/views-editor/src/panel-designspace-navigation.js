@@ -1353,14 +1353,25 @@ export default class DesignspaceNavigationPanel extends Panel {
       source.locationBase = locationBase;
 
       const oldLayerName = source.layerName;
+
       if (layerName !== oldLayerName) {
+        const sourceLayerNames =
+          glyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
         source.layerName = layerName;
-        if (layerNames.indexOf(layerName) < 0) {
-          // Rename the layer
-          if (glyph.layers[oldLayerName]) {
-            glyph.layers[layerName] = glyph.layers[oldLayerName];
-            delete glyph.layers[oldLayerName];
+
+        if (!layerNames.includes(layerName)) {
+          // Rename the layer(s)
+          for (const { fullName } of sourceLayerNames) {
+            if (fullName.startsWith(oldLayerName) && glyph.layers[fullName]) {
+              const newLayerName = fullName.replace(oldLayerName, layerName);
+              glyph.layers[newLayerName] = glyph.layers[fullName];
+              delete glyph.layers[fullName];
+            }
           }
+
+          // The layer may be used by multiple sources.
+          // Make sure they use the new name, too.
           for (const source of glyph.sources) {
             if (source.layerName === oldLayerName) {
               source.layerName = layerName;
