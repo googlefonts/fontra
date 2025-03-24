@@ -1410,7 +1410,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
       layerName: layerName === sourceName ? "" : layerName,
       suggestedSourceName: suggestedSourceName,
-      suggestedLayerName: sourceName || suggestedSourceName,
+      suggestedLayerName: locationBase
+        ? locationBase
+        : sourceName || suggestedSourceName,
       locationBase: locationBase || "",
     });
 
