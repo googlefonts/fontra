@@ -445,7 +445,13 @@ export class FontController {
     }
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
+  async newGlyph(
+    glyphName,
+    codePoint,
+    varGlyph = null,
+    defaultLayerGlyph = null,
+    undoLabel = null
+  ) {
     if (this.readOnly) {
       console.log("can't create glyph in read-only mode");
       return;
@@ -458,7 +464,30 @@ export class FontController {
         `assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`
       );
     }
-    const sourceName = "default"; // TODO: get from backend via font sources
+
+    if (!varGlyph) {
+      const sourceIdentifier = this.defaultSourceIdentifier;
+      const layerName = sourceIdentifier || "default";
+      const sourceName = this.sources[sourceIdentifier] ? "" : layerName;
+      varGlyph = {
+        name: glyphName,
+        sources: [
+          {
+            name: sourceName,
+            location: {},
+            layerName: layerName,
+            locationBase: sourceIdentifier,
+          },
+        ],
+        layers: {
+          [layerName]: {
+            glyph: defaultLayerGlyph || StaticGlyph.fromObject({ xAdvance: 500 }),
+          },
+        },
+      };
+    } else {
+      assert(!defaultLayerGlyph, "can't pass defaultLayerGlyph when passing varGlyph");
+    }
 
     const glyph = VariableGlyph.fromObject(varGlyph);
     glyph.name = glyphName;

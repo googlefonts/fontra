@@ -809,21 +809,11 @@ export class EditorController extends ViewController {
       const layerName = sourceIdentifier || "default";
       const sourceName = fontSource ? "" : layerName;
 
-      await this.newGlyph(
+      await this.fontController.newGlyph(
         positionedGlyph.glyphName,
         positionedGlyph.character?.codePointAt(0),
-        VariableGlyph.fromObject({
-          name: positionedGlyph.glyphName,
-          sources: [
-            {
-              name: sourceName,
-              location: {},
-              layerName: layerName,
-              locationBase: sourceIdentifier,
-            },
-          ],
-          layers: { [layerName]: { glyph: positionedGlyph.glyph.instance } },
-        })
+        null,
+        positionedGlyph.glyph.instance
       );
       this.sceneSettings.selectedGlyph = {
         ...this.sceneSettings.selectedGlyph,
@@ -1875,10 +1865,11 @@ export class EditorController extends ViewController {
       );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph.isUndefined) {
-        await this.newGlyph(
+        await this.fontController.newGlyph(
           positionedGlyph.glyphName,
           positionedGlyph.character?.codePointAt(0),
           pasteVarGlyph,
+          null,
           `paste new glyph "${positionedGlyph.glyphName}"`
         );
       } else {
@@ -3081,10 +3072,6 @@ export class EditorController extends ViewController {
     const { x, y } = event;
     this.contextMenuPosition = { x: x, y: y };
     showMenu(this.buildContextMenuItems(event), { x: x + 1, y: y - 1 });
-  }
-
-  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
-    await this.fontController.newGlyph(glyphName, codePoint, varGlyph, undoLabel);
   }
 
   async externalChange(change, isLiveChange) {
