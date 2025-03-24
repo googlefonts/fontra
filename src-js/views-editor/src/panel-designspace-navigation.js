@@ -1402,12 +1402,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
-    const suggestedSourceName = suggestedSourceNameFromLocation(
-      makeSparseLocation(location, locationAxes)
-    );
+    const suggestedSourceName =
+      this.fontController.sources[locationBase]?.name ||
+      suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
 
     const nameController = new ObservableController({
-      sourceName: sourceName || suggestedSourceName,
+      sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
       layerName: layerName === sourceName ? "" : layerName,
       suggestedSourceName: suggestedSourceName,
       suggestedLayerName: sourceName || suggestedSourceName,
