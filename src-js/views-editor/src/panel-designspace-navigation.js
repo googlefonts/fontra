@@ -1426,7 +1426,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       if (!event.newValue) {
         return;
       }
-      const fontSource = this.fontController.sources[event.newValue];
+      const sourceIdentifier = event.newValue;
+      const fontSource = this.fontController.sources[sourceIdentifier];
       const sourceLocation = fontSource.location;
       const fontLocation = filterObject(
         sourceLocation,
@@ -1443,25 +1444,35 @@ export default class DesignspaceNavigationPanel extends Panel {
       for (const [name, value] of Object.entries(newLocation)) {
         locationController.setItem(name, value, { sentByLocationBase: true });
       }
-      nameController.model.sourceName = fontSource.name;
+      nameController.model.sourceName = "";
+      nameController.model.suggestedSourceName = fontSource.name;
+      nameController.model.suggestedLayerName = sourceIdentifier;
     });
 
     locationController.addListener((event) => {
       if (!event.senderInfo?.sentByLocationBase) {
         nameController.model.locationBase = "";
       }
-      const suggestedSourceName = suggestedSourceNameFromLocation(
-        makeSparseLocation(locationController.model, locationAxes)
-      );
-      if (nameController.model.sourceName == nameController.model.suggestedSourceName) {
-        nameController.model.sourceName = suggestedSourceName;
+
+      if (!nameController.model.locationBase) {
+        const suggestedSourceName = suggestedSourceNameFromLocation(
+          makeSparseLocation(locationController.model, locationAxes)
+        );
+        if (
+          nameController.model.sourceName == nameController.model.suggestedSourceName
+        ) {
+          nameController.model.sourceName = suggestedSourceName;
+        }
+        if (
+          nameController.model.layerName == nameController.model.suggestedSourceName
+        ) {
+          nameController.model.layerName = suggestedSourceName;
+        }
+        nameController.model.suggestedSourceName = suggestedSourceName;
+        nameController.model.suggestedLayerName =
+          nameController.model.sourceName || suggestedSourceName;
       }
-      if (nameController.model.layerName == nameController.model.suggestedSourceName) {
-        nameController.model.layerName = suggestedSourceName;
-      }
-      nameController.model.suggestedSourceName = suggestedSourceName;
-      nameController.model.suggestedLayerName =
-        nameController.model.sourceName || suggestedSourceName;
+
       validateInput();
     });
 
