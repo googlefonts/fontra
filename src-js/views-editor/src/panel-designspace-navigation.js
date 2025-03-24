@@ -1478,11 +1478,10 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const fontSourceMenuItems = [
       { value: "", label: "None" },
-      ...Object.entries(this.fontController.sources).map(
-        ([sourceIdentifier, source]) => {
-          return { value: sourceIdentifier, label: source.name };
-        }
-      ),
+      ...this.fontController.getSortedSourceIdentifiers().map((sourceIdentifier) => ({
+        value: sourceIdentifier,
+        label: this.fontController.sources[sourceIdentifier]?.name,
+      })),
     ];
 
     const { contentElement, warningElement } = this._sourcePropertiesContentElement(
