@@ -1341,6 +1341,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
+    console.log("XXX sourceName", sourceName);
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
       if (!objectsEqual(source.location, newLocation)) {
@@ -1533,13 +1535,6 @@ export default class DesignspaceNavigationPanel extends Panel {
     sourceName =
       nameController.model.sourceName || nameController.model.suggestedSourceName;
 
-    if (
-      sourceName === this.fontController.sources[locationBase]?.name &&
-      isObjectEmpty(newLocation)
-    ) {
-      sourceName = "";
-    }
-
     layerName =
       nameController.model.layerName || nameController.model.suggestedLayerName;
 
@@ -1550,6 +1545,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       locationBase,
       this.fontController.sources
     );
+
+    if (
+      sourceName === this.fontController.sources[locationBase]?.name &&
+      isObjectEmpty(filteredLocation)
+    ) {
+      sourceName = "";
+    }
 
     return {
       location: newLocation,
