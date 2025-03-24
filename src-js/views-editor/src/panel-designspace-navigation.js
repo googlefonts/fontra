@@ -1344,7 +1344,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
       if (!objectsEqual(source.location, newLocation)) {
-        source.location = newLocation;
+        source.location = filteredLocation;
       }
       if (sourceName !== source.name) {
         source.name = sourceName;
