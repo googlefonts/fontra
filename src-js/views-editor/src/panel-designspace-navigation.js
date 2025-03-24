@@ -1412,7 +1412,9 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const nameController = new ObservableController({
       sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
-      layerName: layerName === sourceName ? "" : layerName,
+      layerName: (locationBase ? layerName === locationBase : layerName === sourceName)
+        ? ""
+        : layerName,
       suggestedSourceName: suggestedSourceName,
       suggestedLayerName: locationBase
         ? locationBase
@@ -1422,7 +1424,9 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     nameController.addKeyListener("sourceName", (event) => {
       nameController.model.suggestedLayerName =
-        event.newValue || nameController.model.suggestedSourceName;
+        event.newValue ||
+        nameController.model.locationBase ||
+        nameController.model.suggestedSourceName;
       validateInput();
     });
 
