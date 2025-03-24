@@ -1337,7 +1337,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         "sidebar.designspace-navigation.dialog.source-properties.ok-button-title"
       ),
       glyph,
-      glyphController.getSourceName(source),
+      source.name,
       source.layerName,
       glyphController.getSourceLocation(source),
       source.locationBase
