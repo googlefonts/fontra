@@ -1,7 +1,9 @@
 import { registerAction } from "@fontra/core/actions.js";
+import { findNearestLocationIndex } from "@fontra/core/discrete-variation-model.js";
 import {
   BACKGROUND_LAYER_SEPARATOR,
   getAxisBaseName,
+  roundComponentOrigins,
 } from "@fontra/core/glyph-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { htmlToElement } from "@fontra/core/html-utils.js";
@@ -18,6 +20,7 @@ import {
   enumerate,
   escapeHTMLCharacters,
   filterObject,
+  isObjectEmpty,
   modulo,
   objectsEqual,
   range,
@@ -25,6 +28,7 @@ import {
   round,
   scheduleCalls,
   throttleCalls,
+  updateObject,
 } from "@fontra/core/utils.js";
 import { GlyphSource, Layer, StaticGlyph } from "@fontra/core/var-glyph.js";
 import {
@@ -287,10 +291,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       })
     );
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-      this._updateAxes();
-      this._updateSources();
-      this._updateInterpolationErrorInfo();
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", async (event) => {
+      await this._updateAxes();
+      await this._updateSources();
+      await this._updateInterpolationErrorInfo();
     });
 
     this.sceneSettingsController.addKeyListener(
@@ -306,17 +310,21 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneController.addCurrentGlyphChangeListener(
-      scheduleCalls((event) => {
-        this._updateAxes();
-        this._updateSources();
-        this._updateInterpolationErrorInfo();
+      scheduleCalls(async (event) => {
+        await this._updateAxes();
+        await this._updateSources();
+        await this._updateInterpolationErrorInfo();
+        await this._updateSourceLayersList();
       }, 100)
     );
 
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
       async (event) => {
-        await this.updateSourceListSelectionFromLocation(true);
+        await this.updateSourceListSelectionFromLocation();
+        await this._updateRemoveSourceButtonState();
+        await this._updateEditingStatus();
+        await this._updateSourceLayersList();
 
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
@@ -350,7 +358,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateSources();
     });
 
-    this.sceneController.addEventListener("glyphEditCannotEditLocked", async () => {
+    this.sceneController.addEventListener("glyphEditCannotEditLocked", () => {
       // See the event handler for glyphEditCannotEditReadOnly above
       this._updateAxes();
       this._updateSources();
@@ -360,6 +368,14 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sourcesList = this.accordion.querySelector("#sources-list");
     this.sourcesList.appendStyle(LIST_HEADER_ANIMATION_STYLE);
+    this.sourcesList.appendStyle(`
+      .bold {
+        font-weight: bold;
+      }
+      .font-source {
+        opacity: 40%;
+      }
+    `);
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
@@ -380,11 +396,12 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
-      await this.sceneController.setLocationFromSourceIndex(sourceIndex);
+
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
 
       if (sourceIndex != undefined) {
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
+        await this.sceneController.setLocationFromSourceIndex(sourceIndex);
         if (varGlyphController) {
           this.sceneSettings.editLayerName =
             varGlyphController.sources[sourceIndex]?.layerName;
@@ -393,16 +410,38 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
       } else {
         this.sceneSettings.editLayerName = null;
+        if (selectedItem) {
+          const { fontLocation } = varGlyphController.splitLocation(
+            selectedItem.denseLocation
+          );
+          this.sceneSettings.fontLocationSourceMapped = fontLocation;
+          this.sceneSettings.glyphLocation = {};
+        }
       }
       this._updateRemoveSourceButtonState();
       this._updateEditingStatus();
       this._updateSourceLayersList();
     });
 
-    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      const sourceIndex =
-        this.sourcesList.items[event.detail.doubleClickedRowIndex].sourceIndex;
-      this.editSourceProperties(sourceIndex);
+    this.sourcesList.addEventListener("rowDoubleClicked", async (event) => {
+      const sourceItem = this.sourcesList.items[event.detail.doubleClickedRowIndex];
+      const sourceIndex = sourceItem.sourceIndex;
+      if (sourceIndex != undefined) {
+        this.editSourceProperties(sourceIndex);
+      } else {
+        const glyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const sourceIdentifier = sourceItem.layerName;
+        const fontSource = this.fontController.sources[sourceIdentifier];
+        await this.addSourceFromInterpolation(
+          glyphController,
+          "",
+          sourceIdentifier,
+          fontSource.location,
+          sourceIdentifier,
+          {}
+        );
+      }
     });
 
     this.sourceLayersList = this.accordion.querySelector("#layers-list");
@@ -444,7 +483,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.fontController.addChangeListener(
-      { axes: null, glyphMap: null },
+      { axes: null, sources: null, glyphMap: null },
       (change, isExternalChange) => {
         this._updateAxes();
         this._updateSources();
@@ -464,18 +503,22 @@ export default class DesignspaceNavigationPanel extends Panel {
     this._updateSources();
   }
 
-  async updateSourceListSelectionFromLocation(shouldDispatchEvent = false) {
+  async updateSourceListSelectionFromLocation() {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = varGlyphController?.getSourceIndex({
-      ...this.sceneSettings.fontLocationSourceMapped,
-      ...this.sceneSettings.glyphLocation,
-    });
+
+    const locationString = varGlyphController?.getSparseLocationStringForSourceLocation(
+      {
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }
+    );
+
     const sourceItem =
-      sourceIndex !== undefined
-        ? this.sourcesList.items.find((item) => item.sourceIndex === sourceIndex)
+      locationString !== undefined
+        ? this.sourcesList.items.find((item) => item.locationString === locationString)
         : undefined;
-    this.sourcesList.setSelectedItem(sourceItem, shouldDispatchEvent);
+    this.sourcesList.setSelectedItem(sourceItem);
   }
 
   _setupSourceListColumnDescriptions() {
@@ -496,7 +539,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         width: "1.2em",
       },
       {
-        key: "name",
+        key: "formattedName",
         title: translate("sidebar.designspace-navigation.glyph-sources.name"),
         width: "12em",
       },
@@ -539,9 +582,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     ];
 
     const statusFieldDefinitions =
-      this.sceneController.sceneModel.fontController.customData[
-        FONTRA_STATUS_DEFINITIONS_KEY
-      ];
+      this.fontController.customData[FONTRA_STATUS_DEFINITIONS_KEY];
 
     if (statusFieldDefinitions) {
       this.defaultStatusValue = statusFieldDefinitions.find(
@@ -675,11 +716,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       const varGlyphController =
         await this.sceneModel.getSelectedVariableGlyphController();
       backgroundLayers = {};
-      for (const source of varGlyphController.sources) {
-        if (!backgroundLayers[source.layerName]) {
-          backgroundLayers[source.layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        }
+      for (const item of this.sourcesList.items) {
+        backgroundLayers[item.layerName] = item.locationString;
       }
     }
     this.sceneSettings.backgroundLayers = backgroundLayers;
@@ -697,14 +735,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         !items.every(
           (item) =>
             item.editing ||
-            item.interpolationStatus.discreteLocationKey !== discreteLocationKey
+            item.interpolationStatus?.discreteLocationKey !== discreteLocationKey
         );
 
     const editingLayers = {};
     for (const item of items) {
       const editing =
         (onOff &&
-          item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
+          item.interpolationStatus?.discreteLocationKey === discreteLocationKey) ||
         item === selectedItem;
       if (editing) {
         editingLayers[item.layerName] = item.locationString;
@@ -774,14 +812,23 @@ export default class DesignspaceNavigationPanel extends Panel {
     const backgroundLayers = { ...this.sceneSettings.backgroundLayers };
     const editingLayers = { ...this.sceneSettings.editingLayers };
 
+    const defaultLocationString = varGlyphController?.getSparseDefaultLocationString();
+
+    const seenSourceLocations = new Set();
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const locationString =
         varGlyphController.getSparseLocationStringForSource(source);
+      seenSourceLocations.add(locationString);
       const layerName = source.layerName;
       const status = source.customData[FONTRA_STATUS_KEY];
+      const isDefaultSource = locationString === defaultLocationString;
+      const sourceName = varGlyphController.getSourceName(source);
       const sourceController = new ObservableController({
-        name: source.name,
+        name: sourceName,
+        formattedName: isDefaultSource
+          ? html.div({ class: "bold" }, [sourceName])
+          : sourceName,
         layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === locationString,
@@ -789,6 +836,8 @@ export default class DesignspaceNavigationPanel extends Panel {
         status: status !== undefined ? status : this.defaultStatusValue,
         sourceIndex: index,
         locationString,
+        denseLocation: varGlyphController.getDenseSourceLocationForSource(source),
+        isDefaultSource,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
@@ -799,29 +848,29 @@ export default class DesignspaceNavigationPanel extends Panel {
             event.newValue
               ? "sidebar.designspace-navigation.source.activate"
               : "sidebar.designspace-navigation.source.deactivate",
-            source.name
+            sourceName
           );
         });
       });
       sourceController.addKeyListener("visible", async (event) => {
-        const newBackgroundLayers = { ...this.sceneSettings.backgroundLayers };
-        if (event.newValue) {
-          newBackgroundLayers[layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        } else {
-          delete newBackgroundLayers[layerName];
-        }
-        this.sceneSettings.backgroundLayers = newBackgroundLayers;
+        const locationString = event.newValue
+          ? varGlyphController.getSparseLocationStringForSource(source)
+          : undefined;
+        this.sceneSettings.backgroundLayers = updateObject(
+          this.sceneSettings.backgroundLayers,
+          layerName,
+          locationString
+        );
       });
       sourceController.addKeyListener("editing", async (event) => {
-        const newEditingLayers = { ...this.sceneSettings.editingLayers };
-        if (event.newValue) {
-          newEditingLayers[layerName] =
-            varGlyphController.getSparseLocationStringForSource(source);
-        } else {
-          delete newEditingLayers[layerName];
-        }
-        this.sceneSettings.editingLayers = newEditingLayers;
+        const locationString = event.newValue
+          ? varGlyphController.getSparseLocationStringForSource(source)
+          : undefined;
+        this.sceneSettings.editingLayers = updateObject(
+          this.sceneSettings.editingLayers,
+          layerName,
+          locationString
+        );
         await this._pruneEditingLayers();
       });
       sourceController.addKeyListener("status", async (event) => {
@@ -834,10 +883,49 @@ export default class DesignspaceNavigationPanel extends Panel {
               count++;
             }
           }
-          return `set status ${count > 1 ? "(multiple)" : source.name}`;
+          return `set status ${count > 1 ? "(multiple)" : sourceName}`;
         });
       });
       sourceItems.push(sourceController.model);
+    }
+
+    const defaultLocation = varGlyphController?.getDenseDefaultSourceLocation();
+    for (const [sourceIdentifier, fontSource] of Object.entries(
+      this.fontController.sources
+    )) {
+      const location = { ...defaultLocation, ...fontSource.location };
+      const locationString = locationToString(
+        makeSparseLocation(location, this.fontController.fontAxesSourceSpace)
+      );
+      if (seenSourceLocations.has(locationString)) {
+        continue;
+      }
+      const sourceController = new ObservableController({
+        name: fontSource.name,
+        formattedName: html.div({ class: "font-source" }, [fontSource.name]),
+        layerName: sourceIdentifier, // pseudo/virtual layer name
+        locationString,
+        denseLocation: location,
+        isFontSource: true,
+        visible: backgroundLayers[sourceIdentifier] === locationString,
+      });
+      sourceController.addKeyListener("visible", async (event) => {
+        this.sceneSettings.backgroundLayers = updateObject(
+          this.sceneSettings.backgroundLayers,
+          sourceIdentifier,
+          event.newValue ? locationString : undefined
+        );
+      });
+      sourceItems.push(sourceController.model);
+    }
+
+    if (varGlyphController) {
+      sourceItems.sort(
+        getSourceCompareFunc("denseLocation", [
+          ...varGlyphController.fontAxisNames,
+          ...varGlyphController.axes.map((axis) => axis.name),
+        ])
+      );
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
@@ -884,6 +972,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       await this.sceneModel.getSelectedVariableGlyphController();
 
     const source = varGlyphController.glyph.sources[sourceIndex];
+
+    if (!source) {
+      // This unfortunately happens when the sources list hasn't been updated yet.
+      this.sourceLayersList.setItems([]);
+      return;
+    }
+
     const locationString = varGlyphController.getSparseLocationStringForSource(source);
     const layerNames =
       varGlyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
@@ -940,6 +1035,21 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
+  async goToNearestSource() {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const targetLocation = {
+      ...glyphController.getDenseDefaultSourceLocation(),
+      ...glyphController.expandNLIAxes({
+        ...this.sceneSettings.fontLocationSourceMapped,
+        ...this.sceneSettings.glyphLocation,
+      }),
+    };
+
+    const locations = this.sourcesList.items.map((item) => item.denseLocation);
+    const index = findNearestLocationIndex(targetLocation, locations);
+    this.sourcesList.setSelectedItemIndex(index, true);
+  }
+
   async doSelectPreviousNextSource(selectPrevious) {
     let itemIndex = this.sourcesList.getSelectedItemIndex();
     if (itemIndex != undefined) {
@@ -949,16 +1059,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       );
       this.sourcesList.setSelectedItemIndex(newItemIndex, true);
     } else {
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
-      const nearestSourceIndex = varGlyphController.findNearestSourceForSourceLocation({
-        ...this.sceneSettings.fontLocationSourceMapped,
-        ...this.sceneSettings.glyphLocation,
-      });
-      const sourceItem = this.sourcesList.items.find(
-        (item) => item.sourceIndex === nearestSourceIndex
-      );
-      this.sourcesList.setSelectedItem(sourceItem, true);
+      this.goToNearestSource();
     }
   }
 
@@ -976,8 +1077,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   _updateRemoveSourceButtonState() {
+    const sourceItem = this.sourcesList.getSelectedItem();
     this.addRemoveSourceButtons.disableRemoveButton =
-      this.sourcesList.getSelectedItemIndex() === undefined;
+      !sourceItem || !!sourceItem.isFontSource;
   }
 
   _updateRemoveSourceLayerButtonState() {
@@ -1000,11 +1102,16 @@ export default class DesignspaceNavigationPanel extends Panel {
     // else if the selected item has an interpolation error
     // - make *only* selected item editing
 
-    if (!selectedItem) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+
+    if (
+      !selectedItem ||
+      selectedItem.isFontSource ||
+      !varGlyphController.sources[selectedItem.sourceIndex]
+    ) {
       this.sceneSettings.editingLayers = {};
     } else {
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
       const sourceLayers = varGlyphController.getSourceLayerNamesForSourceIndex(
         selectedItem.sourceIndex
       );
@@ -1074,11 +1181,18 @@ export default class DesignspaceNavigationPanel extends Panel {
       disabled: !canDeleteLayer,
     });
 
+    const sourceLayerNames =
+      glyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
+    const sourceLayerNamesString = sourceLayerNames
+      .map((item) => `“${item.shortName || "foreground"}”`)
+      .join(", ");
+
     const dialogContent = html.div({}, [
       html.div({ class: "message" }, [
         translate(
           "sidebar.designspace-navigation.warning.delete-source",
-          `#${sourceIndex}, “${source.name}”`
+          `“${glyphController.getSourceName(source)}”`
         ),
       ]),
       html.br(),
@@ -1086,7 +1200,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       html.label({ for: "delete-layer", style: canDeleteLayer ? "" : "color: gray;" }, [
         translate(
           "sidebar.designspace-navigation.warning.delete-associated-layer",
-          `“${source.layerName}”`
+          sourceLayerNamesString
         ),
       ]),
     ]);
@@ -1101,7 +1215,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph.sources.splice(sourceIndex, 1);
       let layerMessage = "";
       if (layer !== undefined && deleteLayerCheckBox.checked) {
-        delete glyph.layers[source.layerName];
+        for (const { fullName } of sourceLayerNames) {
+          delete glyph.layers[fullName];
+        }
         layerMessage = translate("sidebar.designspace-navigation.undo.and-layer");
       }
       return translate(
@@ -1114,7 +1230,6 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async addSource() {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
-    const glyph = glyphController.glyph;
 
     const location = glyphController.expandNLIAxes({
       ...this.sceneSettings.fontLocationSourceMapped,
@@ -1122,12 +1237,13 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     const suggestedLocationBase =
-      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
         this.sceneSettings.fontLocationSourceMapped
       );
 
     const {
       location: newLocation,
+      filteredLocation,
       sourceName,
       layerName,
       layerNames,
@@ -1135,7 +1251,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     } = await this._sourcePropertiesRunDialog(
       translate("sidebar.designspace-navigation.dialog.add-source.title"),
       translate("sidebar.designspace-navigation.dialog.add-source.ok-button-title"),
-      glyph,
+      glyphController,
       "",
       "",
       location,
@@ -1145,13 +1261,41 @@ export default class DesignspaceNavigationPanel extends Panel {
       return;
     }
 
-    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
-
-    const getGlyphFunc = this.sceneController.sceneModel.fontController.getGlyph.bind(
-      this.sceneController.sceneModel.fontController
+    await this.addSourceFromInterpolation(
+      glyphController,
+      locationBase && isObjectEmpty(filteredLocation) ? "" : sourceName,
+      layerName,
+      newLocation,
+      locationBase,
+      filteredLocation,
+      !layerNames.includes(layerName)
     );
 
-    let { instance } = await glyphController.instantiate(newLocation, getGlyphFunc);
+    this.navigateToLocation(newLocation);
+  }
+
+  async navigateToLocation(location) {
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    const { fontLocation, glyphLocation } = glyphController.splitLocation(location);
+    this.sceneSettings.fontLocationSourceMapped = fontLocation;
+    this.sceneSettings.glyphLocation = glyphLocation;
+  }
+
+  async addSourceFromInterpolation(
+    glyphController,
+    sourceName,
+    layerName,
+    instanceLocation,
+    locationBase,
+    additionalLocation,
+    doAddLayer = true
+  ) {
+    const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
+
+    let { instance } = await glyphController.instantiate(
+      instanceLocation,
+      getGlyphFunc
+    );
     instance = instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
@@ -1162,12 +1306,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         GlyphSource.fromObject({
           name: sourceName,
           layerName: layerName,
-          location: filteredLocation,
+          location: additionalLocation,
           locationBase: locationBase,
         })
       );
-      if (layerNames.indexOf(layerName) < 0) {
-        // Only add layer if the name is new
+      if (doAddLayer) {
         glyph.layers[layerName] = Layer.fromObject({ glyph: instance });
       }
       return translate("sidebar.designspace-navigation.dialog.add-source.title");
@@ -1182,6 +1325,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const {
       location: newLocation,
+      filteredLocation,
       sourceName,
       layerName,
       layerNames,
@@ -1191,21 +1335,19 @@ export default class DesignspaceNavigationPanel extends Panel {
       translate(
         "sidebar.designspace-navigation.dialog.source-properties.ok-button-title"
       ),
-      glyph,
+      glyphController,
       source.name,
       source.layerName,
-      source.location,
+      glyphController.getSourceLocation(source),
       source.locationBase
     );
     if (!newLocation) {
       return;
     }
 
-    const filteredLocation = stripLocation(newLocation, locationBase, glyph);
-
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, filteredLocation)) {
+      if (!objectsEqual(source.location, newLocation)) {
         source.location = filteredLocation;
       }
       if (sourceName !== source.name) {
@@ -1215,14 +1357,25 @@ export default class DesignspaceNavigationPanel extends Panel {
       source.locationBase = locationBase;
 
       const oldLayerName = source.layerName;
+
       if (layerName !== oldLayerName) {
+        const sourceLayerNames =
+          glyphController.getSourceLayerNamesForSourceIndex(sourceIndex);
+
         source.layerName = layerName;
-        if (layerNames.indexOf(layerName) < 0) {
-          // Rename the layer
-          if (glyph.layers[oldLayerName]) {
-            glyph.layers[layerName] = glyph.layers[oldLayerName];
-            delete glyph.layers[oldLayerName];
+
+        if (!layerNames.includes(layerName)) {
+          // Rename the layer(s)
+          for (const { fullName } of sourceLayerNames) {
+            if (fullName.startsWith(oldLayerName) && glyph.layers[fullName]) {
+              const newLayerName = fullName.replace(oldLayerName, layerName);
+              glyph.layers[newLayerName] = glyph.layers[fullName];
+              delete glyph.layers[fullName];
+            }
           }
+
+          // The layer may be used by multiple sources.
+          // Make sure they use the new name, too.
           for (const source of glyph.sources) {
             if (source.layerName === oldLayerName) {
               source.layerName = layerName;
@@ -1232,17 +1385,20 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return translate("sidebar.designspace-navigation.source-properties.undo");
     });
+
+    this.navigateToLocation(newLocation);
   }
 
   async _sourcePropertiesRunDialog(
     title,
     okButtonTitle,
-    glyph,
+    glyphController,
     sourceName,
     layerName,
     location,
     locationBase
   ) {
+    const glyph = glyphController.glyph;
     const validateInput = () => {
       const warnings = [];
       const editedSourceName =
@@ -1268,21 +1424,27 @@ export default class DesignspaceNavigationPanel extends Panel {
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
-    const suggestedSourceName = suggestedSourceNameFromLocation(
-      makeSparseLocation(location, locationAxes)
-    );
+    const suggestedSourceName =
+      this.fontController.sources[locationBase]?.name ||
+      suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
 
     const nameController = new ObservableController({
-      sourceName: sourceName || suggestedSourceName,
-      layerName: layerName === sourceName ? "" : layerName,
+      sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
+      layerName: (locationBase ? layerName === locationBase : layerName === sourceName)
+        ? ""
+        : layerName,
       suggestedSourceName: suggestedSourceName,
-      suggestedLayerName: sourceName || suggestedSourceName,
+      suggestedLayerName: locationBase
+        ? locationBase
+        : sourceName || suggestedSourceName,
       locationBase: locationBase || "",
     });
 
     nameController.addKeyListener("sourceName", (event) => {
       nameController.model.suggestedLayerName =
-        event.newValue || nameController.model.suggestedSourceName;
+        event.newValue ||
+        nameController.model.locationBase ||
+        nameController.model.suggestedSourceName;
       validateInput();
     });
 
@@ -1292,7 +1454,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       if (!event.newValue) {
         return;
       }
-      const fontSource = this.fontController.sources[event.newValue];
+      const sourceIdentifier = event.newValue;
+      const fontSource = this.fontController.sources[sourceIdentifier];
       const sourceLocation = fontSource.location;
       const fontLocation = filterObject(
         sourceLocation,
@@ -1302,53 +1465,64 @@ export default class DesignspaceNavigationPanel extends Panel {
         glyphAxisNames.has(name)
       );
       const newLocation = {
-        ...this.fontController.fontSourcesInstancer.defaultLocation,
+        ...this.fontController.fontSourcesInstancer.defaultSourceLocation,
         ...sourceLocation,
         ...glyphLocation,
       };
       for (const [name, value] of Object.entries(newLocation)) {
         locationController.setItem(name, value, { sentByLocationBase: true });
       }
-      nameController.model.sourceName = fontSource.name;
+      nameController.model.sourceName = "";
+      nameController.model.suggestedSourceName = fontSource.name;
+      nameController.model.suggestedLayerName = sourceIdentifier;
     });
 
     locationController.addListener((event) => {
       if (!event.senderInfo?.sentByLocationBase) {
         nameController.model.locationBase = "";
       }
-      const suggestedSourceName = suggestedSourceNameFromLocation(
-        makeSparseLocation(locationController.model, locationAxes)
-      );
-      if (nameController.model.sourceName == nameController.model.suggestedSourceName) {
-        nameController.model.sourceName = suggestedSourceName;
+
+      if (!nameController.model.locationBase) {
+        const suggestedSourceName = suggestedSourceNameFromLocation(
+          makeSparseLocation(locationController.model, locationAxes)
+        );
+        if (
+          nameController.model.sourceName == nameController.model.suggestedSourceName
+        ) {
+          nameController.model.sourceName = suggestedSourceName;
+        }
+        if (
+          nameController.model.layerName == nameController.model.suggestedSourceName
+        ) {
+          nameController.model.layerName = suggestedSourceName;
+        }
+        nameController.model.suggestedSourceName = suggestedSourceName;
+        nameController.model.suggestedLayerName =
+          nameController.model.sourceName || suggestedSourceName;
       }
-      if (nameController.model.layerName == nameController.model.suggestedSourceName) {
-        nameController.model.layerName = suggestedSourceName;
-      }
-      nameController.model.suggestedSourceName = suggestedSourceName;
-      nameController.model.suggestedLayerName =
-        nameController.model.sourceName || suggestedSourceName;
+
       validateInput();
     });
 
     const sourceLocations = new Set(
       glyph.sources.map((source) =>
-        locationToString(makeSparseLocation(source.location, locationAxes))
+        locationToString(
+          makeSparseLocation(glyphController.getSourceLocation(source), locationAxes)
+        )
       )
     );
-    if (sourceName.length) {
-      sourceLocations.delete(
-        locationToString(makeSparseLocation(location, locationAxes))
-      );
-    }
+    // Remove our original source location from the set, as that's obviously an
+    // allowed location.
+    sourceLocations.delete(
+      locationToString(makeSparseLocation(location, locationAxes))
+    );
 
     const fontSourceMenuItems = [
       { value: "", label: "None" },
-      ...Object.entries(this.fontController.sources).map(
-        ([sourceIdentifier, source]) => {
-          return { value: sourceIdentifier, label: source.name };
-        }
-      ),
+      ...this.fontController.getSortedSourceIdentifiers().map((sourceIdentifier) => ({
+        value: sourceIdentifier,
+        label: this.fontController.sources[sourceIdentifier]?.name,
+      })),
     ];
 
     const { contentElement, warningElement } = this._sourcePropertiesContentElement(
@@ -1382,11 +1556,33 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     sourceName =
       nameController.model.sourceName || nameController.model.suggestedSourceName;
+
     layerName =
       nameController.model.layerName || nameController.model.suggestedLayerName;
+
     locationBase = nameController.model.locationBase || null;
 
-    return { location: newLocation, sourceName, layerName, layerNames, locationBase };
+    const filteredLocation = stripLocation(
+      newLocation,
+      locationBase,
+      this.fontController.sources
+    );
+
+    if (
+      sourceName === this.fontController.sources[locationBase]?.name &&
+      isObjectEmpty(filteredLocation)
+    ) {
+      sourceName = "";
+    }
+
+    return {
+      location: newLocation,
+      filteredLocation,
+      sourceName,
+      layerName,
+      layerNames,
+      locationBase,
+    };
   }
 
   _sourcePropertiesLocationAxes(glyph) {
@@ -1437,12 +1633,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         `,
       },
       [
-        // ...labeledPopupSelect(
-        //   "Location Base:",
-        //   nameController,
-        //   "locationBase",
-        //   fontSourceMenuItems
-        // ),
+        ...labeledPopupSelect(
+          "Location Base:",
+          nameController,
+          "locationBase",
+          fontSourceMenuItems
+        ),
         ...labeledTextInput(
           translate(
             "sidebar.designspace-navigation.dialog.add-source.label.source-name"
@@ -1744,17 +1940,6 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 }
 
-function roundComponentOrigins(components) {
-  components.forEach((component) => {
-    component.transformation.translateX = Math.round(
-      component.transformation.translateX
-    );
-    component.transformation.translateY = Math.round(
-      component.transformation.translateY
-    );
-  });
-}
-
 function foldNLIAxes(axes) {
   // Fold NLI axes into single axes
   const axisInfo = {};
@@ -1783,10 +1968,10 @@ function getGlyphAxisNamesSet(glyph) {
   return new Set(glyph.axes.map((axis) => axis.name));
 }
 
-function stripLocation(location, locationBase, glyph) {
-  const glyphAxisNames = getGlyphAxisNamesSet(glyph);
+function stripLocation(location, locationBase, fontSources) {
+  const baseLocation = fontSources[locationBase]?.location || {};
   return locationBase
-    ? filterObject(location, (name, value) => !glyphAxisNames.has(name))
+    ? filterObject(location, (name, value) => baseLocation[name] !== value)
     : location;
 }
 
@@ -1798,6 +1983,9 @@ function makeIconCellFactory(
   return (item, colDesc) => {
     const focus = new FocusKeeper();
     const value = item[colDesc.key];
+    if (value == undefined) {
+      return html.div();
+    }
     const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
     const iconElement = html.createDomElement("inline-svg", {
       src: iconPaths[boolInt(value)],
@@ -1970,6 +2158,21 @@ function makeAccordionHeaderButton(button) {
   }
 
   return html.createDomElement("icon-button", options);
+}
+
+function getSourceCompareFunc(locationProperty, axisNames) {
+  return (a, b) => {
+    const locA = a[locationProperty];
+    const locB = b[locationProperty];
+    for (const axisName of axisNames) {
+      const valueA = locA[axisName];
+      const valueB = locB[axisName];
+      if (valueA !== valueB) {
+        return valueA < valueB ? -1 : 0;
+      }
+    }
+    return 0;
+  };
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);

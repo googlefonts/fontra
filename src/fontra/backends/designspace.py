@@ -224,6 +224,7 @@ class DesignspaceBackend:
         self._familyName: str | None = None
         self._defaultFontInfo: UFOFontInfo | None = None
         self._initialize(dsDoc)
+        self._implicitDefaultLocationBase: str | None = None
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = ensureDSSourceNamesAreUnique(dsDoc)
@@ -566,18 +567,17 @@ class DesignspaceBackend:
 
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             assert ufoLayer is not None
-            # For locationBase
-            # location = {
-            #     k: v
-            #     for k, v in source["location"].items()
-            #     if dsSource.location.get(k) != v
-            # }
+            # Calc the location to be added to the base location
+            location = {
+                k: v
+                for k, v in source["location"].items()
+                if dsSource.location.get(k) != v
+            }
             sources.append(
                 GlyphSource(
                     name=sourceName,
-                    # locationBase=dsSource.identifier,
-                    # location=location,
-                    location=source["location"],
+                    locationBase=dsSource.identifier,
+                    location=location,
                     layerName=ufoLayer.fontraLayerName,
                 )
             )
@@ -618,7 +618,9 @@ class DesignspaceBackend:
             sourceInfo = self._prepareUFOSourceLayer(
                 glyphName, source, localDefaultLocation, revLayerNameMapping
             )
-            if sourceInfo.sourceName != source.name:
+            if sourceInfo.sourceName != source.name and not (
+                source.locationBase and not source.name
+            ):
                 sourceNameMapping[sourceInfo.sourceName] = source.name
             if sourceInfo.layerName != source.layerName:
                 layerNameMapping[sourceInfo.layerName] = source.layerName
@@ -780,6 +782,14 @@ class DesignspaceBackend:
             dsSource = self.dsSources.findItem(identifier=source.locationBase)
             if dsSource is not None:
                 baseLocation = dsSource.location
+            elif self._implicitDefaultLocationBase is None:
+                # We allow for ONE non-existing locationBase, as this may have come
+                # from a single-file UFO
+                self._implicitDefaultLocationBase = source.locationBase
+            elif self._implicitDefaultLocationBase != source.locationBase:
+                raise ValueError(
+                    f"Unknown font source identifier: {source.locationBase}"
+                )
 
         sourceLocation = baseLocation | localDefaultLocation | source.location
         sparseLocalLocation = {
@@ -1724,10 +1734,9 @@ class DSSource:
         if localDefaultOverride is None:
             localDefaultOverride = {}
         return GlyphSource(
-            name=self.name,
-            # locationBase=self.identifier,
-            # location={**localDefaultOverride},
-            location={**self.location, **localDefaultOverride},
+            name=self.name if localDefaultOverride else "",
+            locationBase=self.identifier,
+            location={**localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
 

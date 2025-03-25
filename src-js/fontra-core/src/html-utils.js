@@ -179,4 +179,6 @@ export const option = createDomElement.bind(null, "option");
 export const style = createDomElement.bind(null, "style");
 export const details = createDomElement.bind(null, "details");
 export const summary = createDomElement.bind(null, "summary");
+export const b = createDomElement.bind(null, "b");
+export const i = createDomElement.bind(null, "i");
 // Let's add more once needed

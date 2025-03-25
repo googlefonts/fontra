@@ -215,7 +215,7 @@ export class FontOverviewNavigation extends HTMLElement {
     const popupItems = [];
 
     const selectedSourceIdentifier = () =>
-      this.fontController.fontSourcesInstancer.getLocationIdentifierForLocation(
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
         this.fontOverviewSettings.fontLocationSource
       );
 

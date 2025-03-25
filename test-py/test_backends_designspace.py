@@ -184,8 +184,11 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     assert {"glyphs.mid"} == ufoFileNamesPost - ufoFileNamesPre
 
     reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
-
+    fontSources = await reopenedBackend.getSources()
     reopenedGlyph = await reopenedBackend.getGlyph(glyphName)
+
+    glyph = normalizeGlyphSources(glyph, fontSources)
+    reopenedGlyph = normalizeGlyphSources(reopenedGlyph, fontSources)
     assert glyph == reopenedGlyph
 
 
@@ -386,7 +389,12 @@ async def test_addLocalAxisAndSource(writableTestFont):
 
     glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
-        GlyphSource(name="test", location={"test": 100}, layerName=layerName)
+        GlyphSource(
+            name="test",
+            locationBase="light-condensed",
+            location={"test": 100},
+            layerName=layerName,
+        )
     )
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
 
@@ -438,6 +446,7 @@ async def test_putGlyph_with_backgroundImage_new_font(testFont, tmpdir):
     newFont = DesignspaceBackend.createFromPath(tmpdir / "test.designspace")
 
     await newFont.putAxes(await testFont.getAxes())
+    await newFont.putSources(await testFont.getSources())
 
     glyph = await testFont.getGlyph("C")
 
@@ -577,17 +586,54 @@ async def test_newFileSystemBackend(
     referenceFont = getFileSystemBackend(destPath)
 
     referenceGlyph = await referenceFont.getGlyph("H")
-    # referenceGlyph.sources.sort()
-    assert normalizeSourceOrder(glyph) == normalizeSourceOrder(referenceGlyph)
+
+    assert normalizeGlyphSourceOrder(glyph, sources) == normalizeGlyphSourceOrder(
+        referenceGlyph, sources
+    )
 
 
-def normalizeSourceOrder(glyph):
+def normalizeGlyphSources(glyph, fontSources):
+    return replace(
+        glyph,
+        sources=[
+            replace(
+                source,
+                name=getSourceName(source, fontSources),
+                location=getSourceLocation(source, fontSources),
+                locationBase=None,
+            )
+            for source in glyph.sources
+        ],
+    )
+
+
+def normalizeGlyphSourceOrder(glyph, fontSources):
+    glyph = normalizeGlyphSources(glyph, fontSources)
     return replace(
         glyph,
         sources=sorted(
-            glyph.sources, key=lambda source: tuple(sorted(source.location.items()))
+            glyph.sources,
+            key=lambda source: tuple(sorted(source.location.items())),
         ),
     )
+
+
+def getSourceName(source, fontSources):
+    fontSourceName = (
+        fontSources[source.locationBase].name
+        if source.locationBase in fontSources
+        else {}
+    )
+    return fontSourceName or source.name
+
+
+def getSourceLocation(source, fontSources):
+    fontSourceLocation = (
+        fontSources[source.locationBase].location
+        if source.locationBase in fontSources
+        else {}
+    )
+    return fontSourceLocation | source.location
 
 
 async def test_writeCorrectLayers(tmpdir, testFont):
@@ -772,13 +818,7 @@ async def test_putSources(writableTestFont):
 async def test_putSources_delete_revive(writableTestFont):
     originalSources = await writableTestFont.getSources()
     originalGlyph = await writableTestFont.getGlyph("E")
-    assert [source.name for source in originalGlyph.sources] == [
-        "LightCondensed",
-        "BoldCondensed",
-        "LightWide",
-        "BoldWide",
-        "support.crossbar",
-    ]
+    assert [source.name for source in originalGlyph.sources] == ["", "", "", "", ""]
     assert {layerName for layerName in originalGlyph.layers} == {
         "light-condensed",
         "support.crossbar",
@@ -794,12 +834,7 @@ async def test_putSources_delete_revive(writableTestFont):
 
     changedGlyph = await writableTestFont.getGlyph("E")
     assert changedGlyph != originalGlyph
-    assert [source.name for source in changedGlyph.sources] == [
-        "LightCondensed",
-        "BoldCondensed",
-        "LightWide",
-        "support.crossbar",
-    ]
+    assert [source.name for source in changedGlyph.sources] == ["", "", "", ""]
     assert {layerName for layerName in changedGlyph.layers} == {
         "light-condensed",
         "support.crossbar",

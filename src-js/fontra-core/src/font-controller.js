@@ -111,6 +111,13 @@ export class FontController {
     return this._rootObject.axes.axes;
   }
 
+  get fontAxesSourceSpace() {
+    if (!this._fontAxesSourceSpace) {
+      this._fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
+    }
+    return this._fontAxesSourceSpace;
+  }
+
   get sources() {
     return this._rootObject.sources;
   }
@@ -152,11 +159,10 @@ export class FontController {
   }
 
   getSortedSourceIdentifiers() {
-    const fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(this.fontAxes);
     const defaultSourceLocation = this.fontSourcesInstancer.defaultSourceLocation;
 
     const sortFunc = (identifierA, identifierB) => {
-      for (const axis of fontAxesSourceSpace) {
+      for (const axis of this.fontAxesSourceSpace) {
         const [valueA, valueB] = [identifierA, identifierB].map(
           (identifier) =>
             ({
@@ -415,7 +421,7 @@ export class FontController {
   }
 
   makeVariableGlyphController(glyph) {
-    return new VariableGlyphController(glyph, this.fontAxes, this.sources);
+    return new VariableGlyphController(glyph, this.fontAxesSourceSpace, this.sources);
   }
 
   updateGlyphDependencies(glyph) {
@@ -439,7 +445,13 @@ export class FontController {
     }
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
+  async newGlyph(
+    glyphName,
+    codePoint,
+    varGlyph = null,
+    defaultLayerGlyph = null,
+    undoLabel = null
+  ) {
     if (this.readOnly) {
       console.log("can't create glyph in read-only mode");
       return;
@@ -452,7 +464,30 @@ export class FontController {
         `assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`
       );
     }
-    const sourceName = "default"; // TODO: get from backend via font sources
+
+    if (!varGlyph) {
+      const sourceIdentifier = this.defaultSourceIdentifier;
+      const layerName = sourceIdentifier || "default";
+      const sourceName = this.sources[sourceIdentifier] ? "" : layerName;
+      varGlyph = {
+        name: glyphName,
+        sources: [
+          {
+            name: sourceName,
+            location: {},
+            layerName: layerName,
+            locationBase: sourceIdentifier,
+          },
+        ],
+        layers: {
+          [layerName]: {
+            glyph: defaultLayerGlyph || StaticGlyph.fromObject({ xAdvance: 500 }),
+          },
+        },
+      };
+    } else {
+      assert(!defaultLayerGlyph, "can't pass defaultLayerGlyph when passing varGlyph");
+    }
 
     const glyph = VariableGlyph.fromObject(varGlyph);
     glyph.name = glyphName;
@@ -847,6 +882,7 @@ export class FontController {
   async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
+    delete this._fontAxesSourceSpace;
 
     this._glyphInstancePromiseCache.clear();
 
@@ -948,7 +984,10 @@ export class FontController {
 
   get crossAxisMapping() {
     if (!this._crossAxisMapping) {
-      this._crossAxisMapping = new CrossAxisMapping(this.axes.axes, this.axes.mappings);
+      this._crossAxisMapping = new CrossAxisMapping(
+        this.fontAxesSourceSpace,
+        this.axes.mappings
+      );
     }
     return this._crossAxisMapping;
   }
@@ -956,11 +995,19 @@ export class FontController {
   get fontSourcesInstancer() {
     if (!this._fontSourcesInstancer) {
       this._fontSourcesInstancer = new FontSourcesInstancer(
-        this.axes.axes,
+        this.fontAxesSourceSpace,
         this.sources
       );
     }
     return this._fontSourcesInstancer;
+  }
+
+  get defaultSourceLocation() {
+    return this.fontSourcesInstancer.defaultSourceLocation;
+  }
+
+  get defaultSourceIdentifier() {
+    return this.fontSourcesInstancer.defaultSourceIdentifier;
   }
 
   mapSourceLocationToMappedSourceLocation(sourceLocation) {

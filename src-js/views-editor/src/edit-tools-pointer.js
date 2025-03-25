@@ -21,6 +21,7 @@ import {
 } from "@fontra/core/set-ops.js";
 import { Transform } from "@fontra/core/transform.js";
 import {
+  assert,
   boolInt,
   commandKeyProperty,
   enumerate,
@@ -357,6 +358,8 @@ export class PointerTool extends BaseTool {
           editBehavior: behaviorFactory.getBehavior(behaviorName),
         };
       });
+
+      assert(layerInfo.length >= 1, "no layer to edit");
 
       layerInfo[0].isPrimaryLayer = true;
 

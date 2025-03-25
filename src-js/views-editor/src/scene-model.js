@@ -266,13 +266,25 @@ export class SceneModel {
       if (layerName in skipLayers) {
         continue;
       }
-      let sourceIndex =
-        varGlyph.getSourceIndexForSourceLocationString(sourceLocationString) || 0;
-      const layerGlyph = await this.fontController.getLayerGlyphController(
-        glyphName,
-        layerName,
-        sourceIndex
-      );
+      let layerGlyph;
+      if (varGlyph.layers.hasOwnProperty(layerName)) {
+        // Proper layer glyph
+        let sourceIndex =
+          varGlyph.getSourceIndexForSourceLocationString(sourceLocationString) || 0;
+        layerGlyph = await this.fontController.getLayerGlyphController(
+          glyphName,
+          layerName,
+          sourceIndex
+        );
+      } else if (this.fontController.sources.hasOwnProperty(layerName)) {
+        // Virtual layer glyph
+        const location = this.fontController.sources[layerName].location;
+        layerGlyph = await this.fontController.getGlyphInstance(
+          glyphName,
+          location,
+          undefined
+        );
+      }
       if (layerGlyph) {
         layerGlyphs.push(layerGlyph);
       }

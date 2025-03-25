@@ -116,7 +116,7 @@ describe("FontSourcesInstancer Tests", () => {
   });
 
   parametrize(
-    "FontSourcesInstancer.getLocationIdentifierForLocation",
+    "FontSourcesInstancer.getSourceIdentifierForLocation",
     [
       { location: {}, locationIdentifier: "source1" },
       { location: { Weight: 400 }, locationIdentifier: "source1" },
@@ -134,7 +134,7 @@ describe("FontSourcesInstancer Tests", () => {
     ],
     (testItem) => {
       const fsi = new FontSourcesInstancer(testAxes, testSources);
-      expect(fsi.getLocationIdentifierForLocation(testItem.location)).to.equal(
+      expect(fsi.getSourceIdentifierForLocation(testItem.location)).to.equal(
         testItem.locationIdentifier
       );
     }
@@ -146,6 +146,6 @@ describe("FontSourcesInstancer Tests", () => {
     expect(sourceInstance).to.deep.equal(undefined);
     expect(fsi.defaultSourceIdentifier).to.equal(undefined);
     expect(fsi.defaultSourceLocation).to.deep.equal({});
-    expect(fsi.getLocationIdentifierForLocation({})).to.equal(undefined);
+    expect(fsi.getSourceIdentifierForLocation({})).to.equal(undefined);
   });
 });

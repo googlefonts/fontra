@@ -6,7 +6,10 @@ import {
   consolidateChanges,
   hasChange,
 } from "@fontra/core/changes.js";
-import { decomposeComponents } from "@fontra/core/glyph-controller.js";
+import {
+  decomposeComponents,
+  roundComponentOrigins,
+} from "@fontra/core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "@fontra/core/glyph-lines.js";
 import { translate, translatePlural } from "@fontra/core/localization.js";
 import { MouseTracker } from "@fontra/core/mouse-tracker.js";
@@ -39,6 +42,7 @@ import {
   withTimeout,
   zip,
 } from "@fontra/core/utils.js";
+import { GlyphSource, Layer } from "@fontra/core/var-glyph.js";
 import { VarPackedPath, packContour } from "@fontra/core/var-path.js";
 import * as vector from "@fontra/core/vector.js";
 import { dialog, message } from "@fontra/web-components/modal-dialog.js";
@@ -1066,12 +1070,20 @@ export class SceneController {
       return;
     }
 
+    let addSourceChanges;
     let glyphController;
     if (doInstance || requireSelectedLayer) {
       glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
-        this._dispatchEvent("glyphEditLocationNotAtSource");
-        return;
+        assert(!doInstance); // doInstance seems to be no longer used, always false
+        addSourceChanges = this._insertGlyphSourceIfAtFontSource(
+          varGlyph,
+          glyphController
+        );
+        if (!addSourceChanges) {
+          this._dispatchEvent("glyphEditLocationNotAtSource");
+          return;
+        }
       }
     }
 
@@ -1104,11 +1116,11 @@ export class SceneController {
       throw error;
     }
 
-    const {
-      changes: changes,
-      undoLabel: undoLabel,
-      broadcast: broadcast,
-    } = result || {};
+    let { changes, undoLabel, broadcast } = result || {};
+
+    if (addSourceChanges) {
+      changes = addSourceChanges.concat(changes);
+    }
 
     if (changes && changes.hasChange) {
       const undoInfo = {
@@ -1142,6 +1154,40 @@ export class SceneController {
       this.selection = initialSelection;
       editContext.editCancel();
     }
+  }
+
+  _insertGlyphSourceIfAtFontSource(varGlyph, glyphController) {
+    const sourceIdentifier =
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
+        this.sceneSettings.fontLocationSourceMapped
+      );
+    if (!sourceIdentifier) {
+      return undefined;
+    }
+    const instance = glyphController.instance.copy();
+    // Round coordinates and component positions
+    instance.path = instance.path.roundCoordinates();
+    roundComponentOrigins(instance.components);
+
+    const layerName = sourceIdentifier;
+
+    const addSourceChanges = recordChanges(varGlyph.glyph, (glyph) => {
+      glyph.sources.push(
+        GlyphSource.fromObject({
+          name: "", // Will be taken from font source
+          layerName: layerName,
+          location: {},
+          locationBase: sourceIdentifier,
+        })
+      );
+      glyph.layers[layerName] = Layer.fromObject({ glyph: instance });
+    });
+    this.sceneSettings.editingLayers = {
+      [layerName]: varGlyph.getSparseLocationStringForSourceLocation(
+        this.sceneSettings.fontLocationSourceMapped
+      ),
+    };
+    return addSourceChanges;
   }
 
   getSelectionBounds() {
