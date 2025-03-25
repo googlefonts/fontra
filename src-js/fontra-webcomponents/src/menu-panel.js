@@ -141,7 +141,7 @@ export class MenuPanel extends SimpleElement {
 
   async connectedCallback() {
     this.addEventListener("contextmenu", this.onContextMenu);
-    this.addEventListener("menu-panel:keydown", this.onKeyDown);
+    this.addEventListener("keydown", this.onKeyDown);
     this.setAttribute("tabindex", "0");
     this.place();
 
@@ -156,7 +156,7 @@ export class MenuPanel extends SimpleElement {
 
   disconnectedCallback() {
     this.removeEventListener("contextmenu", this.onContextMenu);
-    this.removeEventListener("menu-panel:keydown", this.onKeyDown);
+    this.removeEventListener("keydown", this.onKeyDown);
   }
 
   setActive(active) {
@@ -349,6 +349,7 @@ export class MenuPanel extends SimpleElement {
             y: itemRect.y - y - 4,
           },
           childOf: this,
+          context: this.context,
           onSelect: (event) => {
             // FIXME: this probably only works one level deep
             this.dismiss();
@@ -369,7 +370,11 @@ export class MenuPanel extends SimpleElement {
   }
 
   async onKeyDown(event) {
-    const { key } = event.detail;
+    if (this.context !== "menu-bar") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+    const { key } = event;
     if (key === "Escape") {
       this.dismiss();
     } else if (this.active) {
@@ -393,7 +398,6 @@ export class MenuPanel extends SimpleElement {
           break;
         case "ArrowRight":
           if (submenu) {
-            await sleepAsync(0); // Wait for menu-bar keydown
             this.setActive(false);
             this.selectItem(null);
             if (submenu.hidden) {
@@ -465,11 +469,6 @@ customElements.define("menu-panel", MenuPanel);
 
 window.addEventListener("blur", (event) => MenuPanel.closeMenuPanels(event));
 window.addEventListener("mousedown", (event) => MenuPanel.closeMenuPanels(event));
-window.addEventListener("keydown", (event) => {
-  for (const element of MenuPanel.openMenuPanels) {
-    dispatchCustomEvent(element, "menu-panel:keydown", event);
-  }
-});
 
 function getMenuContainer() {
   // This is tightly coupled to modal-dialog.js
