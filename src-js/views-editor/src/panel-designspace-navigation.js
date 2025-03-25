@@ -1511,11 +1511,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         )
       )
     );
-    if (sourceName.length) {
-      sourceLocations.delete(
-        locationToString(makeSparseLocation(location, locationAxes))
-      );
-    }
+    // Remove our original source location from the set, as that's obviously an
+    // allowed location.
+    sourceLocations.delete(
+      locationToString(makeSparseLocation(location, locationAxes))
+    );
 
     const fontSourceMenuItems = [
       { value: "", label: "None" },
