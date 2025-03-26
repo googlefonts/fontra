@@ -3,6 +3,7 @@ import {
   getActionIdentifierFromKeyEvent,
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { ensureDenseSource } from "@fontra/core/font-controller.js";
 import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
@@ -307,13 +308,13 @@ export class SourcesPanel extends BaseInfoPanel {
       );
     }
 
-    return {
+    return ensureDenseSource({
       lineMetricsHorizontalLayout: getDefaultLineMetricsHor(
         this.fontController.unitsPerEm
       ),
       ...interpolatedSource,
       ...newSource,
-    };
+    });
   }
 
   getSourceName(sources) {
