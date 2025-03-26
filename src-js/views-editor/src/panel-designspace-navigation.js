@@ -158,7 +158,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             tooltip: translate("sidebar.designspace-navigation.font-axes.edit"),
             onclick: (event) => {
               const url = new URL(window.location);
-              url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
+              url.pathname = url.pathname.replace("/editor.html", "/fontinfo.html");
               url.hash = "#axes-panel";
               window.open(url.toString());
             },
