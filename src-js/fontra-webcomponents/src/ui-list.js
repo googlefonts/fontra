@@ -545,7 +545,13 @@ export class UIList extends UnlitElement {
       }
       return;
     }
-    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+    if (
+      (event.key !== "ArrowUp" && event.key !== "ArrowDown") ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
       return;
     }
     event.preventDefault();
