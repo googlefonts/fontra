@@ -140,7 +140,7 @@ export class SourcesPanel extends BaseInfoPanel {
       this.selectedSourceIdentifier
     )
       ? this.selectedSourceIdentifier
-      : sortedSourceIdentifiers[0];
+      : sortedSourceIdentifiers[0]; // May result in undefined
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
