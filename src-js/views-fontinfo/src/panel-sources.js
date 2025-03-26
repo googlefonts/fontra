@@ -17,7 +17,13 @@ import {
   labeledTextInput,
   textInput,
 } from "@fontra/core/ui-utils.js";
-import { arrowKeyDeltas, modulo, range, round } from "@fontra/core/utils.js";
+import {
+  arrowKeyDeltas,
+  modulo,
+  range,
+  round,
+  sleepAsync,
+} from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -176,8 +182,9 @@ export class SourcesPanel extends BaseInfoPanel {
       delete root.sources[selectedSourceIdentifier];
     });
     if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      await this.postChange(changes.change, changes.rollbackChange, undoLabel);
       selectedSourceIdentifier = undefined;
+      await sleepAsync(0); // Breathe, so the font controller can purge some caches
       this.setupUI();
     }
   }
