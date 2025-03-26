@@ -33,6 +33,9 @@ import { UIList } from "@fontra/web-components/ui-list.js";
 import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
+// Unfortunate global var, due to poor factoring between SourcePanel and SourceBox
+let selectedSourceIdentifier = undefined;
+
 addStyleSheet(`
 .font-sources-container {
   display: grid;
@@ -78,7 +81,6 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   async setupUI() {
-    this.selectedSourceIdentifier = undefined;
     const sources = await this.fontController.getSources();
     this.fontAxesSourceSpace = mapAxesFromUserSpaceToSourceSpace(
       this.fontController.axes.axes
@@ -137,16 +139,16 @@ export class SourcesPanel extends BaseInfoPanel {
     this.panelElement.appendChild(container);
     this.panelElement.focus();
 
-    this.selectedSourceIdentifier = sortedSourceIdentifiers.includes(
-      this.selectedSourceIdentifier
+    selectedSourceIdentifier = sortedSourceIdentifiers.includes(
+      selectedSourceIdentifier
     )
-      ? this.selectedSourceIdentifier
+      ? selectedSourceIdentifier
       : sortedSourceIdentifiers[0]; // May result in undefined
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
-    if (this.selectedSourceIdentifier !== undefined) {
-      const index = sortedSourceIdentifiers.indexOf(this.selectedSourceIdentifier);
+    if (selectedSourceIdentifier !== undefined) {
+      const index = sortedSourceIdentifiers.indexOf(selectedSourceIdentifier);
       sourceNameBoxes[index].selected = true;
     }
   }
@@ -167,15 +169,15 @@ export class SourcesPanel extends BaseInfoPanel {
 
     const undoLabel = translate(
       "sources.undo.delete",
-      this.fontController.sources[this.selectedSourceIdentifier].name
+      this.fontController.sources[selectedSourceIdentifier].name
     );
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
-      delete root.sources[this.selectedSourceIdentifier];
+      delete root.sources[selectedSourceIdentifier];
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.selectedSourceIdentifier = undefined;
+      selectedSourceIdentifier = undefined;
       this.setupUI();
     }
   }
@@ -199,7 +201,7 @@ export class SourcesPanel extends BaseInfoPanel {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.selectedSourceIdentifier = sourceIdentifier;
+      selectedSourceIdentifier = sourceIdentifier;
       this.setupUI();
     }
   }
@@ -461,7 +463,7 @@ class SourceNameBox extends HTMLElement {
     this._selected = onOff;
     this.classList.toggle("selected", this._selected);
     if (this._selected) {
-      this.selectedSourceIdentifier = this.sourceIdentifier;
+      selectedSourceIdentifier = this.sourceIdentifier;
       this.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
       this._deselectOtherSourceNameBoxs();
       this._updateSourceBox();
