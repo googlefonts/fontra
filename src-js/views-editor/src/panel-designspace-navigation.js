@@ -518,7 +518,23 @@ export default class DesignspaceNavigationPanel extends Panel {
         ? this.sourcesList.items.find((item) => item.locationString === locationString)
         : undefined;
     this.sourcesList.setSelectedItem(sourceItem);
-    if (!sourceItem || sourceItem.isFontSource) {
+
+    if (sourceItem && !sourceItem.isFontSource) {
+      // We are at a true glyph source
+      const layerNames = varGlyphController.getSourceLayerNamesForSourceIndex(
+        sourceItem.sourceIndex
+      );
+      if (
+        !layerNames.some(
+          ({ fullName }) => fullName === this.sceneSettings.editLayerName
+        )
+      ) {
+        // editLayerName does not belong to this source
+        this.sceneSettings.editLayerName = null;
+      }
+    } else {
+      // We are either at a font source, or at no source at all
+      // (In other words: we are *not* at a true glyph source)
       this.sceneSettings.editLayerName = null;
     }
   }
