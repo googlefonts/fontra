@@ -160,6 +160,9 @@ export class SourcesPanel extends BaseInfoPanel {
   }
 
   async deleteSource() {
+    if (!selectedSourceIdentifier) {
+      return;
+    }
     const dialog = await dialogSetup(
       "Are you sure you want to delete the selected font source?", // TODO: translation
       "Deleting a font source may result in kerning being lost or glyphs to become invalid.", // TODO: translation
