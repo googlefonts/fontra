@@ -1,5 +1,10 @@
 # Changelog for Fontra
 
+## 2025-03-26
+
+- Fixed bug with undo and source (background) layers: undo wouldn't switch to the correct source layer, with a visual glitch because the correct layer would be in edit mode. [Issue 2119](https://github.com/googlefonts/fontra/issues/2119) [PR 2120](https://github.com/googlefonts/fontra/pull/2120)
+- Fixed various problems with the font sources panel (in the font info view), when there were no sources at all. [Issue 2117](https://github.com/googlefonts/fontra/issues/2117) [PR 2118](https://github.com/googlefonts/fontra/pull/2118)
+
 ## 2025-03-25
 
 - New features in the glyph sources list:
