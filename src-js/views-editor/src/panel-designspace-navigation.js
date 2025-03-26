@@ -326,7 +326,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         await this._updateEditingStatus();
         await this._updateSourceLayersList();
 
-        this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
         this.updateInterpolationContributions();
         this._updateInterpolationErrorInfo();
@@ -519,6 +518,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         ? this.sourcesList.items.find((item) => item.locationString === locationString)
         : undefined;
     this.sourcesList.setSelectedItem(sourceItem);
+    if (!sourceItem || sourceItem.isFontSource) {
+      this.sceneSettings.editLayerName = null;
+    }
   }
 
   _setupSourceListColumnDescriptions() {
