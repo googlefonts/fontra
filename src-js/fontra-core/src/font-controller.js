@@ -1177,26 +1177,28 @@ function ensureDenseAxes(axes) {
  * @returns {Record<string, FontSource>}
  */
 function ensureDenseSources(sources) {
-  return mapObjectValues(sources, (source) => {
-    return {
-      ...source,
-      location: source.location || {},
-      lineMetricsHorizontalLayout: mapObjectValues(
-        source.lineMetricsHorizontalLayout || {},
-        (metric) => {
-          return { value: metric.value, zone: metric.zone || 0 };
-        }
-      ),
-      lineMetricsVerticalLayout: mapObjectValues(
-        source.lineMetricsVerticalLayout || {},
-        (metric) => {
-          return { value: metric.value, zone: metric.zone || 0 };
-        }
-      ),
-      guidelines: normalizeGuidelines(source.guidelines || []),
-      customData: source.customData || {},
-    };
-  });
+  return mapObjectValues(sources, (source) => ensureDenseSource(source));
+}
+
+export function ensureDenseSource(source) {
+  return {
+    ...source,
+    location: source.location || {},
+    lineMetricsHorizontalLayout: mapObjectValues(
+      source.lineMetricsHorizontalLayout || {},
+      (metric) => {
+        return { value: metric.value, zone: metric.zone || 0 };
+      }
+    ),
+    lineMetricsVerticalLayout: mapObjectValues(
+      source.lineMetricsVerticalLayout || {},
+      (metric) => {
+        return { value: metric.value, zone: metric.zone || 0 };
+      }
+    ),
+    guidelines: normalizeGuidelines(source.guidelines || []),
+    customData: source.customData || {},
+  };
 }
 
 class InstanceRequestQueue {

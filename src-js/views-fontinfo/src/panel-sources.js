@@ -3,6 +3,7 @@ import {
   getActionIdentifierFromKeyEvent,
 } from "@fontra/core/actions.js";
 import { recordChanges } from "@fontra/core/change-recorder.js";
+import { ensureDenseSource } from "@fontra/core/font-controller.js";
 import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
@@ -16,7 +17,13 @@ import {
   labeledTextInput,
   textInput,
 } from "@fontra/core/ui-utils.js";
-import { arrowKeyDeltas, modulo, range, round } from "@fontra/core/utils.js";
+import {
+  arrowKeyDeltas,
+  modulo,
+  range,
+  round,
+  sleepAsync,
+} from "@fontra/core/utils.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -32,6 +39,7 @@ import { UIList } from "@fontra/web-components/ui-list.js";
 import { updateRemoveButton } from "./panel-axes.js";
 import { BaseInfoPanel } from "./panel-base.js";
 
+// Unfortunate global var, due to poor factoring between SourcePanel and SourceBox
 let selectedSourceIdentifier = undefined;
 
 addStyleSheet(`
@@ -141,15 +149,20 @@ export class SourcesPanel extends BaseInfoPanel {
       selectedSourceIdentifier
     )
       ? selectedSourceIdentifier
-      : sortedSourceIdentifiers[0];
+      : this.fontController.defaultSourceIdentifier || sortedSourceIdentifiers[0];
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
-    const index = sortedSourceIdentifiers.indexOf(selectedSourceIdentifier);
-    sourceNameBoxes[index].selected = true;
+    if (selectedSourceIdentifier !== undefined) {
+      const index = sortedSourceIdentifiers.indexOf(selectedSourceIdentifier);
+      sourceNameBoxes[index].selected = true;
+    }
   }
 
   async deleteSource() {
+    if (!selectedSourceIdentifier) {
+      return;
+    }
     const dialog = await dialogSetup(
       "Are you sure you want to delete the selected font source?", // TODO: translation
       "Deleting a font source may result in kerning being lost or glyphs to become invalid.", // TODO: translation
@@ -172,8 +185,9 @@ export class SourcesPanel extends BaseInfoPanel {
       delete root.sources[selectedSourceIdentifier];
     });
     if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      await this.postChange(changes.change, changes.rollbackChange, undoLabel);
       selectedSourceIdentifier = undefined;
+      await sleepAsync(0); // Breathe, so the font controller can purge some caches
       this.setupUI();
     }
   }
@@ -306,13 +320,13 @@ export class SourcesPanel extends BaseInfoPanel {
       );
     }
 
-    return {
+    return ensureDenseSource({
       lineMetricsHorizontalLayout: getDefaultLineMetricsHor(
         this.fontController.unitsPerEm
       ),
       ...interpolatedSource,
       ...newSource,
-    };
+    });
   }
 
   getSourceName(sources) {
