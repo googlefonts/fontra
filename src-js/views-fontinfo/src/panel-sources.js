@@ -144,8 +144,10 @@ export class SourcesPanel extends BaseInfoPanel {
     const sourceNameBoxes = document.querySelectorAll(
       ".fontra-ui-font-info-sources-panel-source-name-box"
     );
-    const index = sortedSourceIdentifiers.indexOf(this.selectedSourceIdentifier);
-    sourceNameBoxes[index].selected = true;
+    if (this.selectedSourceIdentifier !== undefined) {
+      const index = sortedSourceIdentifiers.indexOf(this.selectedSourceIdentifier);
+      sourceNameBoxes[index].selected = true;
+    }
   }
 
   async deleteSource() {
