@@ -305,10 +305,13 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          const formatter =
-            item.formatters?.[colDesc.key] || colDesc.formatter || DefaultFormatter;
+          const formatter = item.formatters?.[colDesc.key] || colDesc.formatter;
           const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
-          const formattedValue = formatter ? formatter.toString(value) : value;
+          const formattedValue = formatter
+            ? formatter.toString(value)
+            : value == undefined
+            ? ""
+            : value;
 
           const classString = `text-cell ${colDesc.key} ${colDesc.align || "left"}`;
           if (colDesc.editable) {
