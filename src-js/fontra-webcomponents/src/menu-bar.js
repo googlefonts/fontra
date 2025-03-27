@@ -50,7 +50,10 @@ export class MenuBar extends SimpleElement {
     this.contentElement = this.shadowRoot.appendChild(html.div({ class: "menu-bar" }));
     this.render();
     window.addEventListener("blur", this.closeMenu.bind(this));
-    window.addEventListener("menu-panel:close", this.closeMenu.bind(this));
+    window.addEventListener("menu-bar:close-menu", this.closeMenu.bind(this));
+    window.addEventListener("menu-bar:navigate", (event) => {
+      this.navigateMenuBar(event.detail.direction);
+    });
     window.addEventListener("keydown", this.onKeyDown.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseOver.bind(this));
     this.contentElement.addEventListener("mouseup", this.onMouseUp.bind(this));
@@ -158,30 +161,17 @@ export class MenuBar extends SimpleElement {
   }
 
   async onKeyDown(event) {
-    const { submenuPanel } = this;
-    let { menuPanel } = this;
-    switch (event.key) {
-      case "ArrowLeft":
-        if (!submenuPanel || menuPanel.active) {
-          this.navigateMenuBar(-1);
-        }
-        break;
-      case "ArrowRight":
-        if (!submenuPanel || submenuPanel.active) {
-          this.navigateMenuBar(+1);
-        }
-        break;
-      case "ArrowDown":
-        const { activeElement } = this.shadowRoot;
-        if (isMenuItem(activeElement) && !menuPanel) {
-          this.openMenu(activeElement);
-          await sleepAsync(0);
-        }
+    if (event.key === "ArrowDown") {
+      let { menuPanel } = this;
+      const { activeElement } = this.shadowRoot;
+      if (isMenuItem(activeElement) && !menuPanel) {
+        this.openMenu(activeElement);
+        await sleepAsync(0); // Wait for render
         menuPanel = this.menuPanel;
-        if (menuPanel && !menuPanel.selectedItem && !menuPanel.submenu) {
+        if (menuPanel) {
           menuPanel.selectFirstEnabledItem(menuPanel.menuElement.children);
         }
-        break;
+      }
     }
   }
 
