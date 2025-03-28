@@ -8,11 +8,13 @@
 ## 2025-03-25
 
 - New features in the glyph sources list:
+
   - The glyph sources are now sorted according to the axes (they used to be in creation order)
   - The _default_ source's name is now rendered in bold, so it's easier to find
   - For each _font source_ location ("global location") for which the glyph does _not_ have a source, there is now a "virtual source" in the list, rendered in gray. To create an _actual_ source at that location, either double-click the virtual source, or, while the virtual source is selected, start modifying the glyph.
   - [Issue 1572](https://github.com/googlefonts/fontra/issues/1572), [Issue 1639](https://github.com/googlefonts/fontra/issues/1639), [Issue 1640](https://github.com/googlefonts/fontra/issues/1640), [Issue 2114](https://github.com/googlefonts/fontra/issues/2114)
   - [PR 2102](https://github.com/googlefonts/fontra/pull/2102), [PR 2098](https://github.com/googlefonts/fontra/pull/2098)
+
 - Fixed subtle key handling bug with popup menus inside a dialog [Issue 2113](https://github.com/googlefonts/fontra/issues/2113) [PR 2115](https://github.com/googlefonts/fontra/pull/2115)
 
 ## 2025-03-22
