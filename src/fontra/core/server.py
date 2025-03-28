@@ -244,8 +244,10 @@ class FontraServer:
             raise web.HTTPFound(f"/?ref={qs}")
 
         project = request.query.get("project")
-        if not await self.projectManager.projectAvailable(project, authToken):
-            raise web.HTTPNotFound()
+        if not project or not await self.projectManager.projectAvailable(
+            project, authToken
+        ):
+            raise web.HTTPForbidden()
 
         return await self.staticContentHandler(packageName, request)
 
