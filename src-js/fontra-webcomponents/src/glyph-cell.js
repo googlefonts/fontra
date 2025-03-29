@@ -1,14 +1,10 @@
+import { guessGlyphPlaceholderString } from "@fontra/core/glyph-data.js";
 import { SVGPath2D } from "@fontra/core/glyph-svg.js";
 import * as html from "@fontra/core/html-utils.js";
 import { UnlitElement } from "@fontra/core/html-utils.js";
 import * as svg from "@fontra/core/svg-utils.js";
 import { Transform } from "@fontra/core/transform.js";
-import {
-  assert,
-  getCharFromCodePoint,
-  rgbaToCSS,
-  throttleCalls,
-} from "@fontra/core/utils.js";
+import { assert, rgbaToCSS, throttleCalls } from "@fontra/core/utils.js";
 import { InlineSVG } from "./inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -132,9 +128,10 @@ export class GlyphCell extends UnlitElement {
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
     assert(this.height === UNSCALED_CELL_HEIGHT, "manual size dependency incorrect");
     this.width = this.height;
-    this._glyphCharacter = this.codePoints?.[0]
-      ? getCharFromCodePoint(this.codePoints[0]) || ""
-      : "";
+    this._placeholderString = guessGlyphPlaceholderString(
+      this.codePoints,
+      this.glyphName
+    );
     this._selected = false;
   }
 
@@ -223,13 +220,14 @@ export class GlyphCell extends UnlitElement {
             : html.div(
                 {
                   class: "glyph-shape-placeholder",
+                  dir: "auto",
                   style: `
                   width: calc(${this.width}px * var(--glyph-cell-scale-factor));
                   font-size: calc(${fallbackFontSize}px * var(--glyph-cell-scale-factor));
                   line-height: ${fallbackFontSize}px;
                 `,
                 },
-                [this._glyphCharacter]
+                [this._placeholderString]
               ),
           html.div(
             {
