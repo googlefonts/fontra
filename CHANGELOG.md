@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-03-30
+
+- [fontra-glyphs] The Glyphs backend now supports background layers, for reading and writing. [fontra-glyphs Issue 88](https://github.com/googlefonts/fontra-glyphs/issues/88) [fontra-glyphs PR 92](https://github.com/googlefonts/fontra-glyphs/pull/92)
+
 ## 2025-03-26
 
 - Fixed bug with undo and source (background) layers: undo wouldn't switch to the correct source layer, with a visual glitch because the correct layer would be in edit mode. [Issue 2119](https://github.com/googlefonts/fontra/issues/2119) [PR 2120](https://github.com/googlefonts/fontra/pull/2120)
