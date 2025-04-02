@@ -17,6 +17,7 @@ import {
   hyphenatedToLabel,
   isNumber,
   loadURLFragment,
+  longestCommonPrefix,
   makeUPlusStringFromCodePoint,
   mapObjectValues,
   mapObjectValuesAsync,
@@ -762,5 +763,22 @@ describe("isNumber", () => {
 
   parametrize("isNumber test", testData, (testCase) => {
     expect(isNumber(testCase.n)).to.equal(testCase.isNumber);
+  });
+});
+
+describe("longestCommonPrefix", () => {
+  const testData = [
+    { a: [], prefix: "" },
+    { a: [""], prefix: "" },
+    { a: ["a"], prefix: "a" },
+    { a: ["abcdef"], prefix: "abcdef" },
+    { a: ["abcdef", "abcdefgh"], prefix: "abcdef" },
+    { a: ["abc", "ab", "abde", "abdef"], prefix: "ab" },
+    { a: ["abc", "ab", "abde", "abdef", "a"], prefix: "a" },
+    { a: ["abc", "ab", "abde", "abdef", ""], prefix: "" },
+  ];
+
+  parametrize("longestCommonPrefix test", testData, (testCase) => {
+    expect(longestCommonPrefix(testCase.a)).to.equal(testCase.prefix);
   });
 });

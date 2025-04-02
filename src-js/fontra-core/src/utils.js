@@ -784,6 +784,27 @@ export function updateObject(obj, prop, value) {
   return obj;
 }
 
+export function longestCommonPrefix(strings) {
+  if (!strings.length) {
+    return "";
+  }
+
+  const firstString = strings[0];
+  let i;
+
+  for (i = 0; ; i++) {
+    const c = firstString[i];
+    if (c === undefined) {
+      break;
+    }
+    if (strings.some((s) => s[i] !== c)) {
+      break;
+    }
+  }
+
+  return firstString.slice(0, i);
+}
+
 export const friendlyHttpStatus = {
   200: "OK",
   201: "Created",
