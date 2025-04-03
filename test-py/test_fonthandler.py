@@ -20,6 +20,7 @@ mutatorFiles = [
     "MutatorSansLightCondensed.ufo",
     "MutatorSansLightCondensedItalic.ufo",
     "MutatorSansLightWide.ufo",
+    "MutatorSans_features.fea",
 ]
 
 
@@ -295,6 +296,11 @@ async def test_getBackgroundImage(testFontHandler):
     assert imageData["type"] == "png"
     assert len(imageData["data"]) == 81308
     assert isinstance(imageData["data"], str)
+
+
+async def test_getFeatures(testFontHandler):
+    features = await testFontHandler.getFeatures(connection=None)
+    assert features.language == "fea"
 
 
 async def test_getKerning(testFontHandler):
