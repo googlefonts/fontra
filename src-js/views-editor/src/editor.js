@@ -116,7 +116,6 @@ export class EditorController extends ViewController {
     );
     this.canvasController = canvasController;
 
-    this.fontController = new FontController(font);
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
