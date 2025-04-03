@@ -444,6 +444,10 @@ def moveDefaultLocations(
     for location in originalLocations:
         contributingAxes = set()
         for axisName, value in location.items():
+            if axisName not in originalDefaultSourceLocation:
+                # Surplus/stale axis info: perhaps an axis got deleted.
+                # Let's ignore.
+                continue
             if value != originalDefaultSourceLocation[axisName]:
                 contributingAxes.add(axisName)
         if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
