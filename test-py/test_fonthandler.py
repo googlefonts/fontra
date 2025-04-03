@@ -297,5 +297,10 @@ async def test_getBackgroundImage(testFontHandler):
     assert isinstance(imageData["data"], str)
 
 
+async def test_getKerning(testFontHandler):
+    kerning = await testFontHandler.getKerning(connection=None)
+    assert "kern" in kerning
+
+
 def firstLayerItem(glyph):
     return next(iter(glyph.layers.items()))
