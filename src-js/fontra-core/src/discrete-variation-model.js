@@ -8,6 +8,8 @@ import {
 
 export class DiscreteVariationModel {
   constructor(locations, axes) {
+    this._originalLocations = locations;
+    this.axes = axes;
     this._discreteAxes = axes.filter((axis) => axis.values);
     this._continuousAxes = axes.filter((axis) => !axis.values);
 
@@ -35,6 +37,22 @@ export class DiscreteVariationModel {
       }
     }
     this._models = {};
+    this._subModels = {};
+  }
+
+  getSubModel(sourceValues) {
+    const key = sourceValues.map((v) => (v == undefined ? "0" : "1")).join("");
+    let subModel = this._subModels[key];
+    if (!subModel) {
+      const locValues = [...zip(this._originalLocations, sourceValues)];
+      const subLocations = locValues
+        .map(([location, v]) => (v == undefined ? undefined : location))
+        .filter((loc) => loc != undefined);
+      subModel = new DiscreteVariationModel(subLocations, this.axes);
+      this._subModels[key] = subModel;
+    }
+    const subValues = sourceValues.filter((v) => v != undefined);
+    return { subModel, subValues };
   }
 
   getDeltas(sourceValues) {
