@@ -41,6 +41,10 @@ export class DiscreteVariationModel {
   }
 
   getSubModel(sourceValues) {
+    if (!sourceValues.some((v) => v == undefined)) {
+      return { subModel: this, subValues: sourceValues };
+    }
+
     const key = sourceValues.map((v) => (v == undefined ? "0" : "1")).join("");
     let subModel = this._subModels[key];
     if (!subModel) {
