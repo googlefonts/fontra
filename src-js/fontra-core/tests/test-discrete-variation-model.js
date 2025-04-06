@@ -220,4 +220,15 @@ describe("DiscreteVariationModel tests", () => {
       expect(subModel2 === subModel).to.equal(true);
     }
   );
+
+  parametrize(
+    "DiscreteVariationModel getSubModel base model",
+    testCasesNoItalic,
+    (testData) => {
+      const model = new DiscreteVariationModel(testLocations, testAxes);
+      const { subModel, subValues } = model.getSubModel(testSourceData);
+      expect(model).to.equal(subModel);
+      expect(model === subModel).to.equal(true);
+    }
+  );
 });
