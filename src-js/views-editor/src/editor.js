@@ -147,6 +147,7 @@ export class EditorController extends ViewController {
     this.sceneSettingsController.addKeyListener(
       [
         "align",
+        "applyKerning",
         "editLayerName",
         "editingLayers",
         "fontLocationUser",
@@ -3128,6 +3129,7 @@ export class EditorController extends ViewController {
       }
     }
     this.sceneSettings.align = viewInfo["align"] || "center";
+    this.sceneSettings.applyKerning = viewInfo["applyKerning"] === false ? false : true;
     if (viewInfo["viewBox"]) {
       this.sceneController.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -3252,6 +3254,9 @@ export class EditorController extends ViewController {
     }
     if (this.sceneSettings.align !== "center") {
       viewInfo["align"] = this.sceneSettings.align;
+    }
+    if (!this.sceneSettings.applyKerning) {
+      viewInfo["applyKerning"] = this.sceneSettings.applyKerning;
     }
 
     const url = new URL(window.location);
