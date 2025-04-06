@@ -433,9 +433,10 @@ export class SceneModel {
           );
         }
 
-        const kernValue = kerningInstance
-          ? kerningInstance.getPairValue(previousGlyphName, glyphInfo.glyphName)
-          : 0;
+        const kernValue =
+          kerningInstance && previousGlyphName
+            ? kerningInstance.getPairValue(previousGlyphName, glyphInfo.glyphName)
+            : 0;
 
         positionedLine.glyphs.push({
           x: x + kernValue,
