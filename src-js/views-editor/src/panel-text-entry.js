@@ -1,4 +1,5 @@
 import * as html from "@fontra/core/html-utils.js";
+import { labeledCheckbox } from "@fontra/core/ui-utils.js";
 import { findNestedActiveElement } from "@fontra/core/utils.js";
 import Panel from "./panel.js";
 
@@ -70,6 +71,7 @@ export default class TextEntryPanel extends Panel {
 
     this.setupTextEntryElement();
     this.setupTextAlignElement();
+    this.setupApplyKerningElement();
     this.setupIntersectionObserver();
   }
 
@@ -109,6 +111,7 @@ export default class TextEntryPanel extends Panel {
                 }),
               ]
             ),
+            html.div({ id: "apply-kerning-checkbox" }),
           ]
         ),
       ]
@@ -137,6 +140,18 @@ export default class TextEntryPanel extends Panel {
         this.textSettings.align = el.dataset.align;
       };
     }
+  }
+
+  setupApplyKerningElement() {
+    this.applyKerningCheckBox = labeledCheckbox(
+      "Apply kerning",
+      this.textSettingsController,
+      "applyKerning",
+      {}
+    );
+
+    const placeHolder = this.contentElement.querySelector("#apply-kerning-checkbox");
+    placeHolder.replaceWith(this.applyKerningCheckBox);
   }
 
   setupTextEntryElement() {
