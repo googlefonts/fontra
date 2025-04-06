@@ -11,6 +11,7 @@ import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { CrossAxisMapping } from "./cross-axis-mapping.js";
 import { FontSourcesInstancer } from "./font-sources-instancer.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
+import { KerningController } from "./kerning-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { setPopFirst } from "./set-ops.js";
 import { TaskPool } from "./task-pool.js";
@@ -887,6 +888,7 @@ export class FontController {
   async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
+    delete this._kerningControllers;
     delete this._fontAxesSourceSpace;
 
     this._glyphInstancePromiseCache.clear();
@@ -1005,6 +1007,27 @@ export class FontController {
       );
     }
     return this._fontSourcesInstancer;
+  }
+
+  async getKerningController(kernTag) {
+    if (!this._kerningControllers) {
+      this._kerningControllers = {};
+    }
+    let kerningController = this._kerningControllers[kernTag];
+    if (!kerningController) {
+      const kerning = await this.getKerning();
+      const kerningTable = kerning[kernTag];
+      if (!kerningTable) {
+        return undefined;
+      }
+      kerningController = new KerningController(
+        kerningTable,
+        this.fontAxesSourceSpace,
+        this.sources
+      );
+      this._kerningControllers[kernTag] = kerningController;
+    }
+    return kerningController;
   }
 
   get defaultSourceLocation() {
