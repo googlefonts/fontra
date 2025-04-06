@@ -90,6 +90,7 @@ export class SceneController {
     this.sceneSettingsController = new ObservableController({
       text: "",
       align: "center",
+      applyKerning: true,
       editLayerName: null,
       glyphLines: [],
       fontLocationUser: {},
@@ -370,6 +371,14 @@ export class SceneController {
       "align",
       (event) => {
         this.scrollAdjustBehavior = "text-align";
+      },
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "applyKerning",
+      (event) => {
+        this.scrollAdjustBehavior = "pin-glyph-center";
       },
       true
     );

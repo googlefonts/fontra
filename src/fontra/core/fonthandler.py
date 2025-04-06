@@ -227,6 +227,8 @@ class FontHandler:
                 value = await self.backend.getUnitsPerEm()
             case "features":
                 value = await self.backend.getFeatures()
+            case "kerning":
+                value = await self.backend.getKerning()
             case _:
                 raise KeyError(key)
 
@@ -276,6 +278,10 @@ class FontHandler:
     @remoteMethod
     async def getFeatures(self, *, connection):
         return await self.getData("features")
+
+    @remoteMethod
+    async def getKerning(self, *, connection):
+        return await self.getData("kerning")
 
     @remoteMethod
     async def getCustomData(self, *, connection):
