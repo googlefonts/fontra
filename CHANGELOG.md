@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-04-06
+
+- Implement applying kerning in the editor canvas. [Issue 2135](https://github.com/googlefonts/fontra/issues/2135) [PR 2136](https://github.com/googlefonts/fontra/pull/2136)
+
 ## 2025-03-30
 
 - [fontra-glyphs] The Glyphs backend now supports background layers, for reading and writing. [fontra-glyphs Issue 88](https://github.com/googlefonts/fontra-glyphs/issues/88) [fontra-glyphs PR 92](https://github.com/googlefonts/fontra-glyphs/pull/92)
