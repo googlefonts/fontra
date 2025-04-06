@@ -144,7 +144,7 @@ export default class TextEntryPanel extends Panel {
 
   setupApplyKerningElement() {
     this.applyKerningCheckBox = labeledCheckbox(
-      "Apply kerning",
+      "Apply kerning", // TODO: translate
       this.textSettingsController,
       "applyKerning",
       {}
