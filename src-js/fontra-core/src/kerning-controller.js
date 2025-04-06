@@ -21,6 +21,13 @@ export class KerningController {
     const leftPairGroupNames = [...leftPairNames].filter((n) => groupNames.has(n));
     const rightPairGroupNames = [...rightPairNames].filter((n) => groupNames.has(n));
 
+    // TODO/FIXME:
+    // 1. add default for when there are no group names,
+    // 2. use heuristings if there's only one group name
+    // Probably: fall back to "public.kern1" and "@MMK_L_" etc.
+    this.leftPrefix = longestCommonPrefix(leftPairGroupNames);
+    this.rightPrefix = longestCommonPrefix(rightPairGroupNames);
+
     this.leftPairGroupMapping = makeGlyphGroupMapping(
       leftPairGroupNames,
       this.kernData.groups
