@@ -46,7 +46,7 @@ export class SceneModel {
     this.updateSceneCancelSignal = {};
 
     this.sceneSettingsController.addKeyListener(
-      ["glyphLines", "align", "selectedGlyph", "editLayerName"],
+      ["glyphLines", "align", "applyKerning", "selectedGlyph", "editLayerName"],
       (event) => {
         this.updateScene();
       }
@@ -55,6 +55,7 @@ export class SceneModel {
     this.sceneSettingsController.addKeyListener(
       ["fontLocationSourceMapped", "glyphLocation"],
       (event) => {
+        this._resetKerningInstance();
         this._syncGlyphLocations();
         this.updateScene();
       }
@@ -169,6 +170,24 @@ export class SceneModel {
       glyphLocations = this._glyphLocations;
     }
     return glyphLocations;
+  }
+
+  _resetKerningInstance() {
+    delete this._kerningInstance;
+  }
+
+  async getKerningInstance(kernTag) {
+    if (!this._kerningInstance) {
+      const controller = await this.fontController.getKerningController(kernTag);
+      if (controller) {
+        this._kerningInstance = controller.instantiate(
+          this.sceneSettings.fontLocationSourceMapped
+        );
+      } else {
+        this._kerningInstance = { getPairValue: (leftGlyph, rightGlyph) => 0 };
+      }
+    }
+    return this._kerningInstance;
   }
 
   _syncGlyphLocations() {
@@ -350,6 +369,10 @@ export class SceneModel {
 
   async buildScene(cancelSignal) {
     const fontController = this.fontController;
+    const kerningInstance = this.sceneSettings.applyKerning
+      ? await this.getKerningInstance("kern")
+      : null;
+
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
     const {
@@ -383,6 +406,7 @@ export class SceneModel {
     }
 
     for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
+      let previousGlyphName = null;
       const positionedLine = { glyphs: [] };
       let x = 0;
       for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
@@ -408,8 +432,13 @@ export class SceneModel {
             glyphInfo.glyphName
           );
         }
+
+        const kernValue = kerningInstance
+          ? kerningInstance.getPairValue(previousGlyphName, glyphInfo.glyphName)
+          : 0;
+
         positionedLine.glyphs.push({
-          x: x,
+          x: x + kernValue,
           y: y,
           glyph: glyphInstance,
           varGlyph: varGlyph,
@@ -419,7 +448,8 @@ export class SceneModel {
           isSelected: isSelectedGlyph,
           isEditing: !!(isSelectedGlyph && selectedGlyphIsEditing),
         });
-        x += glyphInstance.xAdvance;
+        x += glyphInstance.xAdvance + kernValue;
+        previousGlyphName = glyphInfo.glyphName;
       }
 
       longestLineLength = Math.max(longestLineLength, x);
