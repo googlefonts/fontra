@@ -194,7 +194,6 @@ describe("DiscreteVariationModel tests", () => {
     const { subModel, subValues } = model.getSubModel(testSourceDataSubModel);
     expect(subValues).to.have.lengthOf(3);
     expect(subValues).to.deep.equal(testSourceDataSubModel.slice(0, 3));
-    expect(model).to.not.equal(subModel);
     const deltas = subModel.getDeltas(subValues);
     {
       const { instance, errors } = subModel.interpolateFromDeltas({}, deltas);
@@ -208,4 +207,17 @@ describe("DiscreteVariationModel tests", () => {
       expect(instance).to.deep.equal([0, 100]);
     }
   });
+
+  parametrize(
+    "DiscreteVariationModel getSubModel cache",
+    testCasesNoItalic,
+    (testData) => {
+      const model = new DiscreteVariationModel(testLocations, testAxes);
+      const { subModel, subValues } = model.getSubModel(testSourceDataSubModel);
+      const { subModel: subModel2 } = model.getSubModel(testSourceDataSubModel);
+      expect(model).to.not.equal(subModel);
+      expect(subModel2).to.equal(subModel);
+      expect(subModel2 === subModel).to.equal(true);
+    }
+  );
 });
