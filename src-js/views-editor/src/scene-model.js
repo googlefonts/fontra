@@ -440,13 +440,13 @@ export class SceneModel {
 
         x += kernValue;
         positionedLine.glyphs.push({
-          x: x,
-          y: y,
+          x,
+          y,
           glyph: glyphInstance,
-          varGlyph: varGlyph,
+          varGlyph,
           glyphName: glyphInfo.glyphName,
           character: glyphInfo.character,
-          isUndefined: isUndefined,
+          isUndefined,
           isSelected: isSelectedGlyph,
           isEditing: !!(isSelectedGlyph && selectedGlyphIsEditing),
         });
