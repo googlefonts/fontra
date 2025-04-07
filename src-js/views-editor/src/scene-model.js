@@ -442,6 +442,7 @@ export class SceneModel {
         positionedLine.glyphs.push({
           x,
           y,
+          kernValue,
           glyph: glyphInstance,
           varGlyph,
           glyphName: glyphInfo.glyphName,
