@@ -733,8 +733,8 @@ registerVisualizationLayerDefinition({
   userSwitchable: true,
   defaultOn: false,
   zIndex: 190,
-  colors: { negativeKernColor: "#F1175922", positiveKernColor: "#1759F122" },
-  colorsDarkMode: { negativeKernColor: "#FF336644", positiveKernColor: "#3366FF44" },
+  colors: { negativeKernColor: "#F1175933", positiveKernColor: "#1759F133" },
+  colorsDarkMode: { negativeKernColor: "#FF336655", positiveKernColor: "#3366FF55" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     if (!positionedGlyph.kernValue) {
       return;
