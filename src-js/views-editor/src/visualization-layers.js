@@ -64,7 +64,7 @@ export class VisualizationLayers {
         ...(this.darkTheme && layerDef.colorsDarkMode ? layerDef.colorsDarkMode : {}),
       };
       const layer = {
-        selectionMode: layerDef.selectionMode,
+        selectionFunc: layerDef.selectionFunc,
         selectionFilter: layerDef.selectionFilter,
         parameters: parameters,
         draw: layerDef.draw,
@@ -74,23 +74,30 @@ export class VisualizationLayers {
     this.layers = layers;
   }
 
-  drawVisualizationLayers(model, controller) {
+  drawVisualizationLayers(visContext) {
     if (!this.layers) {
       this.buildLayers();
     }
-    const glyphsBySelectionMode = getGlyphsBySelectionMode(model);
+
+    const { model, controller } = visContext;
     const context = controller.context;
+
     for (const layer of this.layers) {
-      const glyphs = layer.selectionFilter
-        ? glyphsBySelectionMode[layer.selectionMode].filter(layer.selectionFilter)
-        : glyphsBySelectionMode[layer.selectionMode];
-      for (const positionedGlyph of glyphs) {
+      for (const item of layer.selectionFunc(visContext, layer)) {
         withSavedState(context, () => {
-          context.translate(positionedGlyph.x, positionedGlyph.y);
-          layer.draw(context, positionedGlyph, layer.parameters, model, controller);
+          context.translate(item.x, item.y);
+          layer.draw(context, item, layer.parameters, model, controller);
         });
       }
     }
+  }
+}
+
+export class VisualizationContext {
+  constructor(model, controller) {
+    this.model = model;
+    this.controller = controller;
+    this.glyphsBySelectionMode = getGlyphsBySelectionMode(model);
   }
 }
 
