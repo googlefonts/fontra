@@ -31,18 +31,14 @@ export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
   static closeMenuPanels(event) {
-    let index = 0;
-    const targetMenuBar = event.target?.closest?.("menu-bar");
+    if (event.target?.closest?.("menu-bar")) {
+      return;
+    }
     for (const element of MenuPanel.openMenuPanels) {
-      if (element.context === "menu-bar") {
-        if (!targetMenuBar) {
-          dispatchCustomEvent(window, "menu-panel:close");
-        }
-      } else {
-        element.dismiss();
-        MenuPanel.openMenuPanels.splice(index, 1);
+      element.dismiss();
+      if (element.context === "menu-bar" && !element.childOf) {
+        dispatchCustomEvent(window, "menu-bar:close-menu");
       }
-      index++;
     }
   }
 
@@ -370,15 +366,14 @@ export class MenuPanel extends SimpleElement {
   }
 
   async onKeyDown(event) {
-    if (this.context !== "menu-bar") {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
     const { key } = event;
     if (key === "Escape") {
-      this.dismiss();
+      MenuPanel.closeMenuPanels(event);
     } else if (this.active) {
-      const { childOf, submenu, selectedItem } = this;
+      const { childOf, submenu, selectedItem, context } = this;
       this.searchMenuItems(key);
       switch (key) {
         case "ArrowDown":
@@ -389,11 +384,13 @@ export class MenuPanel extends SimpleElement {
           break;
         case "ArrowLeft":
           if (childOf) {
-            await sleepAsync(0); // Wait for menu-bar keydown
+            await sleepAsync(0); // Wait for update
             childOf.selectItem(
               childOf.menuElement.querySelector(".has-open-submenu"),
               true
             );
+          } else if (context === "menu-bar") {
+            dispatchCustomEvent(window, "menu-bar:navigate", { direction: -1 });
           }
           break;
         case "ArrowRight":
@@ -405,6 +402,8 @@ export class MenuPanel extends SimpleElement {
             }
             await sleepAsync(0); //  Wait for render
             submenu.selectFirstEnabledItem(submenu.menuElement.children);
+          } else if (context === "menu-bar") {
+            dispatchCustomEvent(window, "menu-bar:navigate", { direction: 1 });
           }
           break;
         case "Enter":
