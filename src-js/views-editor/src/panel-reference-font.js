@@ -27,7 +27,10 @@ import { getSelectedGlyphInfo } from "./scene-model.js";
 import { Font } from "lib-font";
 
 import { translate, translatePlural } from "@fontra/core/localization.js";
-import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
+import {
+  glyphSelector,
+  registerVisualizationLayerDefinition,
+} from "./visualization-layer-definitions.js";
 
 let referenceFontModel;
 
@@ -37,7 +40,7 @@ const DEFAULT_FONT_SIZE = 100;
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
   name: "sidebar.user-settings.glyph.referencefont",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 100,

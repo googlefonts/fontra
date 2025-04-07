@@ -4,6 +4,7 @@ import * as vector from "@fontra/core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool } from "./edit-tools-base.js";
 import {
+  glyphSelector,
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
@@ -15,7 +16,7 @@ const POWER_RULER_IDENTIFIER = "fontra.power.ruler";
 registerVisualizationLayerDefinition({
   identifier: POWER_RULER_IDENTIFIER,
   name: "sidebar.user-settings.glyph.powerruler",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 600,

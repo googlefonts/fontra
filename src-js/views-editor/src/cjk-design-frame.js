@@ -1,5 +1,6 @@
 import { assert, range } from "@fontra/core/utils.js";
 import {
+  glyphSelector,
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
@@ -11,7 +12,7 @@ let _theCJKDesignFrame;
 registerVisualizationLayerDefinition({
   identifier: "fontra.cjk.design.frame",
   name: "sidebar.user-settings.glyph.cjkframe",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 200,

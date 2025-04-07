@@ -6,6 +6,7 @@ import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import {
   fillRoundNode,
+  glyphSelector,
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
@@ -107,7 +108,7 @@ export class KnifeTool extends BaseTool {
 registerVisualizationLayerDefinition({
   identifier: "fontra.knifetool.line",
   name: "Knife tool line",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { strokeWidth: 1, nodeSize: 10 },
   colors: { strokeColor: "#1118", nodeColor: "#3080FF80" },

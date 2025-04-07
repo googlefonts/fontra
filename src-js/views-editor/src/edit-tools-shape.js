@@ -2,7 +2,10 @@ import * as rectangle from "@fontra/core/rectangle.js";
 import { commandKeyProperty, range } from "@fontra/core/utils.js";
 import { VarPackedPath, packContour } from "@fontra/core/var-path.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
-import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
+import {
+  glyphSelector,
+  registerVisualizationLayerDefinition,
+} from "./visualization-layer-definitions.js";
 
 export class ShapeTool {
   identifier = "shape-tool";
@@ -222,7 +225,7 @@ export function getUnpackedContoursEllipse(cx, cy, rx, ry, t = bezierArcMagic) {
 registerVisualizationLayerDefinition({
   identifier: "fontra.shapetool.shape",
   name: "Shape tool shape",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: { boxColor: "#FFFB", color: "#000" },
