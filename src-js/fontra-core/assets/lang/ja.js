@@ -421,6 +421,7 @@ export const strings = {
   "sidebar.user-settings.glyph.dragcrosshair": "ドラッグ中、水平垂直の補助線を表示",
   "sidebar.user-settings.glyph.dragghostpath":
     "ドラッグ中、“ゴースト”パス（移動前のパス）を表示",
+  "sidebar.user-settings.glyph.kerning": "Kerning",
   "sidebar.user-settings.glyph.lockicon": "ロックされたグリフにアイコンを表示",
   "sidebar.user-settings.glyph.point.index": "ポイントの順番を表示",
   "sidebar.user-settings.glyph.powerruler": "パワー定規を表示",
