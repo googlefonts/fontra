@@ -244,8 +244,11 @@ class FontraServer:
             raise web.HTTPFound(f"/?ref={qs}")
 
         project = request.query.get("project")
-        if not project or not await self.projectManager.projectAvailable(
-            project, authToken
+        # Skip applicationsettings.html, as it is the only view that does
+        # *not* require a valid project in the query
+        if request.match_info.get("path") != "applicationsettings.html" and (
+            not project
+            or not await self.projectManager.projectAvailable(project, authToken)
         ):
             raise web.HTTPForbidden()
 
