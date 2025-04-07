@@ -438,8 +438,9 @@ export class SceneModel {
             ? kerningInstance.getPairValue(previousGlyphName, glyphInfo.glyphName)
             : 0;
 
+        x += kernValue;
         positionedLine.glyphs.push({
-          x: x + kernValue,
+          x: x,
           y: y,
           glyph: glyphInstance,
           varGlyph: varGlyph,
@@ -449,7 +450,7 @@ export class SceneModel {
           isSelected: isSelectedGlyph,
           isEditing: !!(isSelectedGlyph && selectedGlyphIsEditing),
         });
-        x += glyphInstance.xAdvance + kernValue;
+        x += glyphInstance.xAdvance;
         previousGlyphName = glyphInfo.glyphName;
       }
 
