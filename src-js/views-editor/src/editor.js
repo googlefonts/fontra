@@ -76,7 +76,7 @@ import {
   allGlyphsCleanVisualizationLayerDefinition,
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
-import { VisualizationLayers } from "./visualization-layers.js";
+import { VisualizationContext, VisualizationLayers } from "./visualization-layers.js";
 
 import { applicationSettingsController } from "@fontra/core/application-settings.js";
 import {
@@ -171,7 +171,9 @@ export class EditorController extends ViewController {
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
-      this.visualizationLayers.drawVisualizationLayers(model, controller)
+      this.visualizationLayers.drawVisualizationLayers(
+        new VisualizationContext(model, controller)
+      )
     );
     canvasController.sceneView = sceneView;
 
@@ -182,7 +184,9 @@ export class EditorController extends ViewController {
       this.isThemeDark
     );
     this.cleanSceneView = new SceneView(this.sceneModel, (model, controller) => {
-      this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
+      this.cleanGlyphsLayers.drawVisualizationLayers(
+        new VisualizationContext(model, controller)
+      );
     });
 
     // TODO move event stuff out of here

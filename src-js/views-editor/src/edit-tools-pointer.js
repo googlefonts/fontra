@@ -36,6 +36,7 @@ import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { getPinPoint } from "./panel-transformation.js";
 import { equalGlyphSelection } from "./scene-controller.js";
 import {
+  glyphSelector,
   registerVisualizationLayerDefinition,
   strokeRoundNode,
   strokeSquareNode,
@@ -715,7 +716,7 @@ function getSelectModeFunction(event) {
 registerVisualizationLayerDefinition({
   identifier: "fontra.transform.selection",
   name: "edit-tools-pointer.transform.selection",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 400,

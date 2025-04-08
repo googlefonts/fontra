@@ -29,10 +29,17 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
   visualizationLayerDefinitions.splice(index, 0, newLayerDef);
 }
 
+export function glyphSelector(selectionMode) {
+  return (visContext, layer) => {
+    const glyphs = visContext.glyphsBySelectionMode[selectionMode] || [];
+    return layer.selectionFilter ? glyphs.filter(layer.selectionFilter) : glyphs;
+  };
+}
+
 registerVisualizationLayerDefinition({
   identifier: "fontra.upm.grid",
   name: "sidebar.user-settings.glyph.upmgrid",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 0,
@@ -63,7 +70,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.empty.selected.glyph",
   name: "Empty selected glyph",
-  selectionMode: "selected",
+  selectionFunc: glyphSelector("selected"),
   selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
   zIndex: 200,
   colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
@@ -74,7 +81,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.empty.hovered.glyph",
   name: "Empty hovered glyph",
-  selectionMode: "hovered",
+  selectionFunc: glyphSelector("hovered"),
   selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
   zIndex: 200,
   colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
@@ -102,7 +109,7 @@ function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, contr
 registerVisualizationLayerDefinition({
   identifier: "fontra.context.glyphs",
   name: "Context glyphs",
-  selectionMode: "unselected",
+  selectionFunc: glyphSelector("unselected"),
   zIndex: 200,
   colors: { fillColor: "#000", errorColor: "#AAA" },
   colorsDarkMode: { fillColor: "#FFF", errorColor: "#999" },
@@ -117,7 +124,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.undefined.glyph",
   name: "Undefined glyph",
-  selectionMode: "all",
+  selectionFunc: glyphSelector("all"),
   selectionFilter: (positionedGlyph) => positionedGlyph.isUndefined,
   zIndex: 500,
   colors: {
@@ -158,7 +165,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.baseline",
   name: "sidebar.user-settings.glyph.baseline",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 500,
@@ -175,7 +182,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.lineMetrics",
   name: "sidebar.user-settings.line-metrics",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 100,
@@ -254,7 +261,7 @@ const lockIconPath2D = new Path2D(
 registerVisualizationLayerDefinition({
   identifier: "fontra.glyph.locking",
   name: "Glyph locking",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 700,
   screenParameters: { iconSize: 19 },
   colors: { strokeColor: "#000C" },
@@ -265,7 +272,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.glyph.locking.non-editing",
   name: "sidebar.user-settings.glyph.lockicon",
-  selectionMode: "notediting",
+  selectionFunc: glyphSelector("notediting"),
   userSwitchable: true,
   zIndex: 700,
   screenParameters: { iconSize: 19 },
@@ -294,7 +301,7 @@ function _drawGlyphLockIcon(context, positionedGlyph, parameters, model, control
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchors",
   name: "Anchors",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     strokeWidth: 1,
@@ -315,7 +322,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.selected.anchors",
   name: "Selected anchors",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     smoothSize: 8,
@@ -368,7 +375,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.anchor.names",
   name: "sidebar.user-settings.glyph.anchornames",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 600,
@@ -411,7 +418,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.background-image",
   name: "sidebar.user-settings.glyph.background-image",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 50,
@@ -488,7 +495,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.guidelines",
   name: "sidebar.user-settings.guidelines",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 500,
@@ -607,7 +614,7 @@ function _drawGuideline(context, parameters, guideline, strokeColor) {
 registerVisualizationLayerDefinition({
   identifier: "fontra.selected.guidelines",
   name: "Selected guidelines",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     smoothSize: 8,
@@ -729,7 +736,7 @@ function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
 registerVisualizationLayerDefinition({
   identifier: "fontra.kerning-indicators",
   name: "sidebar.user-settings.glyph.kerning",
-  selectionMode: "all",
+  selectionFunc: glyphSelector("all"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 190,
@@ -758,7 +765,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
   name: "sidebar.user-settings.glyph.sidebearings",
-  selectionMode: "notediting",
+  selectionFunc: glyphSelector("notediting"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 190,
@@ -771,7 +778,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings",
   name: "Sidebearings",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { strokeWidth: 1, extent: 16 },
   colors: { strokeColor: "#0004" },
@@ -803,7 +810,7 @@ function _drawMiniSideBearings(
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
   name: "sidebar.user-settings.glyph.dragcrosshair",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 500,
@@ -830,7 +837,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
   name: "sidebar.user-settings.glyph.dragghostpath",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: true,
   zIndex: 500,
@@ -851,7 +858,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.path.fill",
   name: "Edit path fill",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: { fillColor: "#0001" },
@@ -865,7 +872,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.selected.glyph",
   name: "Selected glyph",
-  selectionMode: "selected",
+  selectionFunc: glyphSelector("selected"),
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
@@ -877,7 +884,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.hovered.glyph",
   name: "Hovered glyph",
-  selectionMode: "hovered",
+  selectionFunc: glyphSelector("hovered"),
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
@@ -900,7 +907,7 @@ function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.selection",
   name: "Component selection",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     hoveredStrokeWidth: 3,
@@ -1089,7 +1096,7 @@ const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
 registerVisualizationLayerDefinition({
   identifier: "fontra.startpoint.indicator",
   name: "Startpoint indicator",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { radius: 9, strokeWidth: 2 },
   colors: { color: "#989898A0" },
@@ -1125,7 +1132,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.contour.index",
   name: "sidebar.user-settings.glyph.contour",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
@@ -1172,7 +1179,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.index",
   name: "sidebar.user-settings.glyph.component",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
@@ -1232,7 +1239,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.component.nodes",
   name: "sidebar.user-settings.component.nodes",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 450,
@@ -1266,7 +1273,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.handles",
   name: "Bezier handles",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: { color: "#BBB" },
@@ -1284,7 +1291,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.nodes",
   name: "Nodes",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: { cornerSize: 8, smoothSize: 8, handleSize: 6.5 },
   colors: { color: "#BBB" },
@@ -1305,7 +1312,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.selected.nodes",
   name: "Selected nodes",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     cornerSize: 8,
@@ -1362,7 +1369,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
   name: "sidebar.user-settings.glyph.coordinates",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
@@ -1423,7 +1430,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.point.index",
   name: "sidebar.user-settings.glyph.point.index",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
@@ -1470,7 +1477,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.connect-insert.point",
   name: "Connect/insert point",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     connectRadius: 11,
@@ -1529,7 +1536,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.status.color",
   name: "sidebar.user-settings.glyph.statuscolor",
-  selectionMode: "all",
+  selectionFunc: glyphSelector("all"),
   userSwitchable: true,
   defaultOn: false,
   zIndex: 100,
@@ -1589,7 +1596,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.background.layers",
   name: "Background glyph layers",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
@@ -1616,7 +1623,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.editing.layers",
   name: "Editing glyph layers",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
@@ -1646,7 +1653,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.path.under.stroke",
   name: "Underlying edit path stroke",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 490,
   screenParameters: {
     strokeWidth: 3,
@@ -1664,7 +1671,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.path.stroke",
   name: "Edit path stroke",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     strokeWidth: 1,
@@ -1682,7 +1689,7 @@ registerVisualizationLayerDefinition({
 registerVisualizationLayerDefinition({
   identifier: "fontra.rect.select",
   name: "Rect select",
-  selectionMode: "editing",
+  selectionFunc: glyphSelector("editing"),
   zIndex: 500,
   screenParameters: {
     strokeWidth: 1,
@@ -1713,7 +1720,7 @@ registerVisualizationLayerDefinition({
 export const allGlyphsCleanVisualizationLayerDefinition = {
   identifier: "fontra.all.glyphs",
   name: "All glyphs",
-  selectionMode: "all",
+  selectionFunc: glyphSelector("all"),
   zIndex: 500,
   colors: { fillColor: "#000" },
   colorsDarkMode: { fillColor: "#FFF" },
@@ -1876,7 +1883,7 @@ function* iterComponentOriginsByIndex(components, componentIndices) {
 // {
 //   identifier: "fontra.baseline",
 //   name: "Baseline",
-//   selectionMode: "unselected",  // choice from all, unselected, hovered, selected, editing
+//   selectionFunc: glyphSelector("hovered")  // choice from all, unselected, hovered, selected, editing
 //   selectionFilter: (positionedGlyph) => ...some condition...,  // OPTIONAL
 //   zIndex: 50
 //   screenParameters: {},  // in screen/pixel units
