@@ -134,7 +134,9 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
       baseGlyphNames = base.split("_").map((name) => name + suffix);
     }
 
-    const codePoints = baseGlyphNames.map((name) => getCodePointFromGlyphName(name));
+    const codePoints = baseGlyphNames
+      .map((name) => getCodePointFromGlyphName(name))
+      .filter((item) => item);
     if (codePoints.length == baseGlyphNames.length) {
       glyphString = codePoints
         .map((codePoint) => getCharFromCodePoint(codePoint))

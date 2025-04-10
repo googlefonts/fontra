@@ -99,6 +99,7 @@ describe("glyph-data Tests", () => {
       direction: "rtl",
     },
     { glyphName: "lam_lam_alef-ar", codePoints: [], glyphString: "\u0644\u0644\u0627" },
+    { glyphName: "lam_foo_alef-ar", codePoints: [], glyphString: "" },
   ];
 
   parametrize(
