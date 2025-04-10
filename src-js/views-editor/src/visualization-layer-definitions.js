@@ -154,13 +154,13 @@ registerVisualizationLayerDefinition({
         -lineDistance * glyphNameFontSize
       );
     }
-    const placeholderString = guessGlyphPlaceholderString(
+    const [placeholderString, placeholderDirection] = guessGlyphPlaceholderString(
       positionedGlyph.character?.codePointAt(0),
       positionedGlyph.glyphName
     );
     if (placeholderString) {
       context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
-      context.direction = "rtl"; // FIXME "auto" does not work here
+      context.direction = placeholderDirection;
       context.fillText(
         placeholderString,
         positionedGlyph.glyph.xAdvance / 2,

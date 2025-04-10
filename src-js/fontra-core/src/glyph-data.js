@@ -119,6 +119,8 @@ export function getGlyphInfoFromGlyphName(glyphName) {
 
 export function guessGlyphPlaceholderString(codePoints, glyphName) {
   let glyphString = "";
+  let direction = undefined;
+
   if (codePoints?.[0]) {
     glyphString = getCharFromCodePoint(codePoints[0]);
   }
@@ -145,12 +147,15 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
             break;
           case ".init":
             glyphString = glyphString + ZWJ;
+            direction = "rtl";
             break;
           case ".medi":
             glyphString = ZWJ + glyphString + ZWJ;
+            direction = "rtl";
             break;
           case ".fina":
             glyphString = ZWJ + glyphString;
+            direction = "rtl";
             break;
           default:
             break;
@@ -159,5 +164,5 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
     }
   }
 
-  return glyphString;
+  return [glyphString, direction];
 }
