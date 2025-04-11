@@ -1,4 +1,9 @@
-import { assert, enumerate } from "./utils.js";
+import {
+  assert,
+  enumerate,
+  getCharFromCodePoint,
+  splitGlyphNameExtension,
+} from "./utils.js";
 
 let glyphDataCSV;
 
@@ -110,4 +115,55 @@ export function getGlyphInfoFromCodePoint(codePoint) {
 export function getGlyphInfoFromGlyphName(glyphName) {
   parseGlyphDataCSV();
   return glyphDataByName.get(glyphName);
+}
+
+export function guessGlyphPlaceholderString(codePoints, glyphName) {
+  let glyphString = "";
+  let direction = undefined;
+
+  if (codePoints?.[0]) {
+    glyphString = getCharFromCodePoint(codePoints[0]);
+    direction = getGlyphInfoFromCodePoint(codePoints[0])?.direction?.toLowerCase();
+  }
+
+  if (!glyphString && glyphName) {
+    const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
+
+    let baseGlyphNames = [baseGlyphName];
+    if (baseGlyphName.indexOf("_") != -1) {
+      const [base, suffix] = splitGlyphNameExtension(baseGlyphName, "-");
+      baseGlyphNames = base.split("_").map((name) => name + suffix);
+    }
+
+    const codePoints = baseGlyphNames
+      .map((name) => getCodePointFromGlyphName(name))
+      .filter((item) => item);
+    if (codePoints.length == baseGlyphNames.length) {
+      glyphString = codePoints
+        .map((codePoint) => getCharFromCodePoint(codePoint))
+        .join("");
+      direction = getGlyphInfoFromCodePoint(codePoints[0])?.direction?.toLowerCase();
+
+      if (extension) {
+        const ZWJ = "\u200D";
+        switch (extension) {
+          case ".isol":
+            break;
+          case ".init":
+            glyphString = glyphString + ZWJ;
+            break;
+          case ".medi":
+            glyphString = ZWJ + glyphString + ZWJ;
+            break;
+          case ".fina":
+            glyphString = ZWJ + glyphString;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  return { glyphString, direction };
 }
