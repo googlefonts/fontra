@@ -2,7 +2,8 @@
 
 ## 2025-04-11
 
-- Fix "glitch" where the source layers (background layers) UI list does not immediately show when putting a glyph in edit mode. [Issue 2143](https://github.com/googlefonts/fontra/issues/2143) [PR 2144](https://github.com/googlefonts/fontra/pull/2144)
+- Create better placeholder strings for "undefined" glyphs, in the font overview and in the editor. This is especially effective for Arabic contextual alternates, and ligatures. Contributed by Khaled Hosny. [Issue 2005](https://github.com/googlefonts/fontra/issues/2005) [PR 2010](https://github.com/googlefonts/fontra/pull/2010)
+- Fix glitch where the source layers (background layers) UI list does not immediately show when putting a glyph in edit mode. [Issue 2143](https://github.com/googlefonts/fontra/issues/2143) [PR 2144](https://github.com/googlefonts/fontra/pull/2144)
 
 ## 2025-04-07
 
