@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-04-11
+
+- Fix "glitch" where the source layers (background layers) UI list does not immediately show when putting a glyph in edit mode. [Issue 2143](https://github.com/googlefonts/fontra/issues/2143) [PR 2144](https://github.com/googlefonts/fontra/pull/2144)
+
 ## 2025-04-06
 
 - Implement applying kerning in the editor canvas. [Issue 2135](https://github.com/googlefonts/fontra/issues/2135) [PR 2136](https://github.com/googlefonts/fontra/pull/2136)
