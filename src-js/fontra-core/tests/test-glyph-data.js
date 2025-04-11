@@ -62,8 +62,18 @@ describe("glyph-data Tests", () => {
   const guessGlyphPlaceholderString_testData = [
     { glyphName: "", codePoints: ["A".codePointAt(0)], glyphString: "A" },
     { glyphName: "B", codePoints: ["A".codePointAt(0)], glyphString: "A" },
-    { glyphName: "alef-ar", codePoints: [0x0627], glyphString: "\u0627" },
-    { glyphName: "alef-ar.isol", codePoints: [], glyphString: "\u0627" },
+    {
+      glyphName: "alef-ar",
+      codePoints: [0x0627],
+      glyphString: "\u0627",
+      direction: "rtl",
+    },
+    {
+      glyphName: "alef-ar.isol",
+      codePoints: [],
+      glyphString: "\u0627",
+      direction: "rtl",
+    },
     { glyphName: "alef-ar.isol", codePoints: [0xfe8d], glyphString: "\uFE8D" },
     {
       glyphName: "alef-ar.fina",
@@ -91,14 +101,24 @@ describe("glyph-data Tests", () => {
       direction: "rtl",
     },
     { glyphName: "f_i", codePoints: [], glyphString: "fi" },
-    { glyphName: "lam_alef-ar", codePoints: [], glyphString: "\u0644\u0627" },
+    {
+      glyphName: "lam_alef-ar",
+      codePoints: [],
+      glyphString: "\u0644\u0627",
+      direction: "rtl",
+    },
     {
       glyphName: "lam_alef-ar.fina",
       codePoints: [],
       glyphString: "\u200D\u0644\u0627",
       direction: "rtl",
     },
-    { glyphName: "lam_lam_alef-ar", codePoints: [], glyphString: "\u0644\u0644\u0627" },
+    {
+      glyphName: "lam_lam_alef-ar",
+      codePoints: [],
+      glyphString: "\u0644\u0644\u0627",
+      direction: "rtl",
+    },
     { glyphName: "lam_foo_alef-ar", codePoints: [], glyphString: "" },
   ];
 
@@ -106,7 +126,7 @@ describe("glyph-data Tests", () => {
     "guessGlyphPlaceholderString",
     guessGlyphPlaceholderString_testData,
     (testItem) => {
-      const [glyphString, direction] = guessGlyphPlaceholderString(
+      const { glyphString, direction } = guessGlyphPlaceholderString(
         testItem.codePoints,
         testItem.glyphName
       );

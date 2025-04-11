@@ -128,10 +128,12 @@ export class GlyphCell extends UnlitElement {
     this.height = (1 + this.marginTop + this.marginBottom) * this.size;
     assert(this.height === UNSCALED_CELL_HEIGHT, "manual size dependency incorrect");
     this.width = this.height;
-    [this._placeholderString, this._placeholderDirection] = guessGlyphPlaceholderString(
+    const { glyphString, direction } = guessGlyphPlaceholderString(
       this.codePoints,
       this.glyphName
     );
+    this._placeholderString = glyphString;
+    this._placeholderDirection = direction || "auto";
     this._selected = false;
   }
 
@@ -220,9 +222,7 @@ export class GlyphCell extends UnlitElement {
             : html.div(
                 {
                   class: "glyph-shape-placeholder",
-                  ...(this._placeholderDirection
-                    ? { dir: this._placeholderDirection }
-                    : {}),
+                  dir: this._placeholderDirection,
                   style: `
                   width: calc(${this.width}px * var(--glyph-cell-scale-factor));
                   font-size: calc(${fallbackFontSize}px * var(--glyph-cell-scale-factor));

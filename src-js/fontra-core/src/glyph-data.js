@@ -123,6 +123,7 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
 
   if (codePoints?.[0]) {
     glyphString = getCharFromCodePoint(codePoints[0]);
+    direction = getGlyphInfoFromCodePoint(codePoints[0])?.direction?.toLowerCase();
   }
 
   if (!glyphString && glyphName) {
@@ -141,6 +142,7 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
       glyphString = codePoints
         .map((codePoint) => getCharFromCodePoint(codePoint))
         .join("");
+      direction = getGlyphInfoFromCodePoint(codePoints[0])?.direction?.toLowerCase();
 
       if (extension) {
         const ZWJ = "\u200D";
@@ -149,15 +151,12 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
             break;
           case ".init":
             glyphString = glyphString + ZWJ;
-            direction = "rtl";
             break;
           case ".medi":
             glyphString = ZWJ + glyphString + ZWJ;
-            direction = "rtl";
             break;
           case ".fina":
             glyphString = ZWJ + glyphString;
-            direction = "rtl";
             break;
           default:
             break;
@@ -166,5 +165,5 @@ export function guessGlyphPlaceholderString(codePoints, glyphName) {
     }
   }
 
-  return [glyphString, direction];
+  return { glyphString, direction };
 }

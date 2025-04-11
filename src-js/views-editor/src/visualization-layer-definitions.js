@@ -154,15 +154,15 @@ registerVisualizationLayerDefinition({
         -lineDistance * glyphNameFontSize
       );
     }
-    const [placeholderString, placeholderDirection] = guessGlyphPlaceholderString(
+    const { glyphString, direction } = guessGlyphPlaceholderString(
       positionedGlyph.character?.codePointAt(0),
       positionedGlyph.glyphName
     );
-    if (placeholderString) {
+    if (glyphString) {
       context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
-      context.direction = placeholderDirection;
+      context.direction = direction;
       context.fillText(
-        placeholderString,
+        glyphString,
         positionedGlyph.glyph.xAdvance / 2,
         -lineDistance * glyphNameFontSize - 0.4 * placeholderFontSize
       );
