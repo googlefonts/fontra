@@ -291,11 +291,15 @@ export default class DesignspaceNavigationPanel extends Panel {
       })
     );
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", async (event) => {
-      await this._updateAxes();
-      await this._updateSources();
-      await this._updateInterpolationErrorInfo();
-    });
+    this.sceneSettingsController.addKeyListener(
+      ["selectedGlyph", "selectedGlyphName"],
+      async (event) => {
+        await this._updateAxes();
+        await this._updateSources();
+        await this._updateInterpolationErrorInfo();
+        await this._updateSourceLayersList();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener(
       [
