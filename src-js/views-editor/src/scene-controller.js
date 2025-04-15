@@ -332,11 +332,11 @@ export class SceneController {
       this.sceneSettings.backgroundImagesAreLocked ||
       !this.visualizationLayersSettings.model["fontra.background-image"]
     ) {
-      this._deselectBackroundImage();
+      this._deselectBackgroundImage();
     }
   }
 
-  _deselectBackroundImage() {
+  _deselectBackgroundImage() {
     if (this.sceneSettings.selection.has("backgroundImage/0")) {
       this.sceneSettings.selection = difference(this.sceneSettings.selection, [
         "backgroundImage/0",
@@ -399,7 +399,7 @@ export class SceneController {
       "backgroundImagesAreLocked",
       (event) => {
         if (event.newValue) {
-          this._deselectBackroundImage();
+          this._deselectBackgroundImage();
         }
       },
       true
@@ -409,7 +409,7 @@ export class SceneController {
       "fontra.background-image",
       (event) => {
         if (!event.newValue) {
-          this._deselectBackroundImage();
+          this._deselectBackgroundImage();
         }
       }
     );
