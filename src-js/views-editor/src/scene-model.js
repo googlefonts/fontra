@@ -367,6 +367,20 @@ export class SceneModel {
     }
   }
 
+  getGlyphSubscriptionPatterns() {
+    const subscriptionPattern = {
+      glyphs: Object.fromEntries(
+        [...this.cachedGlyphNames].map((glyphName) => [glyphName, null])
+      ),
+    };
+    const liveSubscriptionPattern = {
+      glyphs: Object.fromEntries(
+        [...this.usedGlyphNames].map((glyphName) => [glyphName, null])
+      ),
+    };
+    return { subscriptionPattern, liveSubscriptionPattern };
+  }
+
   async buildScene(cancelSignal) {
     const fontController = this.fontController;
     const kerningInstance = this.sceneSettings.applyKerning

@@ -10,6 +10,15 @@ import { FontInfoPanel } from "./panel-font-info.js";
 import { OpenTypeFeatureCodePanel } from "./panel-opentype-feature-code.js";
 import { SourcesPanel } from "./panel-sources.js";
 
+const panelClasses = [
+  FontInfoPanel,
+  AxesPanel,
+  CrossAxisMappingPanel,
+  SourcesPanel,
+  OpenTypeFeatureCodePanel,
+  DevelopmentStatusDefinitionsPanel,
+];
+
 export class FontInfoController extends ViewController {
   static titlePattern(displayPath) {
     return `Fontra Font Info — ${decodeURI(displayPath)}`;
@@ -32,20 +41,7 @@ export class FontInfoController extends ViewController {
     this.panels = {};
     const observer = setupIntersectionObserver(panelContainer, this.panels);
 
-    const subscribePattern = {};
-
-    for (const panelClass of [
-      FontInfoPanel,
-      AxesPanel,
-      CrossAxisMappingPanel,
-      SourcesPanel,
-      OpenTypeFeatureCodePanel,
-      DevelopmentStatusDefinitionsPanel,
-    ]) {
-      panelClass.fontAttributes.forEach((fontAttr) => {
-        subscribePattern[fontAttr] = null;
-      });
-
+    for (const panelClass of panelClasses) {
       const headerElement = html.div(
         {
           class: "header",
@@ -86,9 +82,20 @@ export class FontInfoController extends ViewController {
       observer.observe(panelElement);
     }
 
-    await this.fontController.subscribeChanges(subscribePattern, false);
+    const { subscriptionPattern } = this.getSubscriptionPatterns();
+    await this.fontController.subscribeChanges(subscriptionPattern, false);
 
     window.addEventListener("keydown", (event) => this.handleKeyDown(event));
+  }
+
+  getSubscriptionPatterns() {
+    const subscriptionPattern = {};
+    for (const panelClass of panelClasses) {
+      panelClass.fontAttributes.forEach((fontAttr) => {
+        subscriptionPattern[fontAttr] = null;
+      });
+    }
+    return { subscriptionPattern };
   }
 
   handleKeyDown(event) {
