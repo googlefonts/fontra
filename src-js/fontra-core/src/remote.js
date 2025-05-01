@@ -41,6 +41,7 @@ export class RemoteObject {
       messageFromServer: undefined,
       externalChange: undefined,
       reloadData: undefined,
+      reconnect: undefined,
     };
 
     const g = _genNextClientCallID();
@@ -54,6 +55,7 @@ export class RemoteObject {
         if (document.visibilityState === "visible" && this.websocket.readyState > 1) {
           // console.log("wake reconnect");
           this._connect();
+          this._trigger("reconnect");
         }
       },
       false
@@ -159,6 +161,7 @@ export class RemoteObject {
     if (this.websocket.readyState !== 1) {
       // console.log("waiting for reconnect");
       await this._connect();
+      this._trigger("reconnect");
     }
     this.websocket.send(JSON.stringify(message));
 

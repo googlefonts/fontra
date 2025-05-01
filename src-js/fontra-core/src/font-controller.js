@@ -100,6 +100,10 @@ export class FontController {
     return Object.keys(this._rootObject);
   }
 
+  getRootSubscriptionPattern() {
+    return Object.fromEntries(this.getRootKeys().map((key) => [key, null]));
+  }
+
   get glyphMap() {
     return this._rootObject.glyphMap;
   }

@@ -45,6 +45,7 @@ export class ViewController {
     remoteFontEngine.on("reloadData", (reloadPattern) =>
       controller.reloadData(reloadPattern)
     );
+    remoteFontEngine.on("reconnect", () => controller.onReconnect());
 
     await controller.start();
     controller.afterStart();
@@ -141,6 +142,23 @@ export class ViewController {
   /* called by reloadData */
   async reloadGlyphs(glyphNames) {
     await this.fontController.reloadGlyphs(glyphNames);
+  }
+
+  /* this is called when a connection has been established again, after a disconnect */
+  async onReconnect() {
+    const { subscriptionPattern, liveSubscriptionPattern } =
+      this.getSubscriptionPatterns();
+    if (subscriptionPattern) {
+      await this.fontController.subscribeChanges(subscriptionPattern, false);
+    }
+    if (liveSubscriptionPattern) {
+      await this.fontController.subscribeChanges(liveSubscriptionPattern, true);
+    }
+  }
+
+  /* gets called from onReconnect(), can be overridden by subclass */
+  getSubscriptionPatterns() {
+    return {};
   }
 
   /**

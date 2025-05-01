@@ -161,12 +161,8 @@ export class FontOverviewController extends ViewController {
     this.glyphOrganizer.setSearchString(this.fontOverviewSettings.searchString);
     this.glyphOrganizer.setGroupByKeys(this.fontOverviewSettings.groupByKeys);
 
-    const rootSubscriptionPattern = {};
-    for (const rootKey of this.fontController.getRootKeys()) {
-      rootSubscriptionPattern[rootKey] = null;
-    }
-    rootSubscriptionPattern["glyphs"] = null;
-    await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
+    const { subscriptionPattern } = this.getSubscriptionPatterns();
+    await this.fontController.subscribeChanges(subscriptionPattern, false);
 
     const sidebarContainer = document.querySelector("#sidebar-container");
     const glyphCellViewContainer = document.querySelector("#glyph-cell-view-container");
@@ -584,6 +580,12 @@ export class FontOverviewController extends ViewController {
 
     registerActionCallbacks("action.zoom-in", () => this.zoomIn());
     registerActionCallbacks("action.zoom-out", () => this.zoomOut());
+  }
+
+  getSubscriptionPatterns() {
+    const subscriptionPattern = this.fontController.getRootSubscriptionPattern();
+    subscriptionPattern["glyphs"] = null;
+    return { subscriptionPattern };
   }
 
   canUndoRedo(isRedo) {

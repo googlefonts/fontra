@@ -757,11 +757,11 @@ export class EditorController extends ViewController {
 
   async _start() {
     await super.start();
-    const rootSubscriptionPattern = {};
-    for (const rootKey of this.fontController.getRootKeys()) {
-      rootSubscriptionPattern[rootKey] = null;
-    }
-    await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
+
+    await this.fontController.subscribeChanges(
+      this.fontController.getRootSubscriptionPattern(),
+      false
+    );
 
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
@@ -780,6 +780,16 @@ export class EditorController extends ViewController {
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
+  }
+
+  getSubscriptionPatterns() {
+    const { subscriptionPattern, liveSubscriptionPattern } =
+      this.sceneModel.getGlyphSubscriptionPatterns();
+    const rootSubscriptionPattern = this.fontController.getRootSubscriptionPattern();
+    return {
+      subscriptionPattern: { ...rootSubscriptionPattern, ...subscriptionPattern },
+      liveSubscriptionPattern,
+    };
   }
 
   async showDialogNewGlyph() {
