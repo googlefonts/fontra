@@ -368,17 +368,10 @@ export class SceneModel {
   }
 
   getGlyphSubscriptionPatterns() {
-    const subscriptionPattern = {
-      glyphs: Object.fromEntries(
-        [...this.cachedGlyphNames].map((glyphName) => [glyphName, null])
-      ),
+    return {
+      subscriptionPattern: makeGlyphNamesPattern(this.cachedGlyphNames),
+      liveSubscriptionPattern: makeGlyphNamesPattern(this.usedGlyphNames),
     };
-    const liveSubscriptionPattern = {
-      glyphs: Object.fromEntries(
-        [...this.usedGlyphNames].map((glyphName) => [glyphName, null])
-      ),
-    };
-    return { subscriptionPattern, liveSubscriptionPattern };
   }
 
   async buildScene(cancelSignal) {
