@@ -195,15 +195,14 @@ export default class ReferenceFontPanel extends Panel {
       align-content: start;
     }
 
-    .reference-font-items {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5em;
-      overflow-y: auto;
-    }
-
     .reference-font-list {
       gap: 0;
+    }
+
+    /* Cannot put the font-list into a nested container, otherwise the grid auto-splitting won't work.
+    So we drag the margin up a bit for now to create a grouping. */
+    .reference-font-list + add-remove-buttons {
+      margin-top: -0.5em;
     }
 
     .title {
@@ -702,11 +701,9 @@ export default class ReferenceFontPanel extends Panel {
           [
             div({ class: "title" }, [translate("sidebar.reference-font")]),
             div({}, [translate("sidebar.reference-font.info")]),
-            div({ class: "reference-font-items" }, [
-              this.filesUIList,
-              form({ enctype: "multipart/form-data", hidden: true }, [fileInput]),
-              addRemoveButtons,
-            ]),
+            this.filesUIList,
+            addRemoveButtons,
+            form({ enctype: "multipart/form-data", hidden: true }, [fileInput]),
             div(
               {
                 style: `
