@@ -74,8 +74,14 @@ class MinimalGlyph:
 
 
 @dataclass(kw_only=True)
+class MinimalUFOInfo:
+    unitsPerEm: int = 1000
+
+
+@dataclass(kw_only=True)
 class MinimalUFO:
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
+    info: MinimalUFOInfo = field(default_factory=MinimalUFOInfo)
     features: OpenTypeFeatures = field(default_factory=OpenTypeFeatures)
     layers: dict = field(init=False, repr=False, default_factory=dict)
     groups: dict = field(init=False, repr=False, default_factory=dict)
