@@ -39,6 +39,7 @@ import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph, copyComponent } from "./var-glyph.js";
 import {
   locationToString,
+  makeDefaultLocation,
   makeSparseLocation,
   makeSparseNormalizedLocation,
   normalizeLocation,
@@ -1183,10 +1184,6 @@ function makeEmptyComponentPlaceholderGlyph() {
   }
 
   return StaticGlyph.fromObject({ path: path });
-}
-
-function makeDefaultLocation(axes) {
-  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
 
 function ensureGlyphCompatibility(layerGlyphs, glyphDependencies) {

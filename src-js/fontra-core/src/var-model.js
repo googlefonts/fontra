@@ -576,3 +576,7 @@ export function isLocationAtDefault(location, axes) {
   }
   return true;
 }
+
+export function makeDefaultLocation(axes) {
+  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
+}
