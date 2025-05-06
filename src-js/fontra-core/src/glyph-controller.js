@@ -48,10 +48,9 @@ import { VarPackedPath, joinPaths } from "./var-path.js";
 export const BACKGROUND_LAYER_SEPARATOR = "^";
 
 export class VariableGlyphController {
-  constructor(glyph, fontAxesSourceSpace, fontSources) {
+  constructor(glyph, fontController) {
     this.glyph = glyph;
-    this.fontAxesSourceSpace = fontAxesSourceSpace;
-    this._fontSources = fontSources;
+    this._fontController = fontController;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
     this._layerNameToSourceIndex = {};
@@ -75,6 +74,14 @@ export class VariableGlyphController {
     return this.glyph.layers;
   }
 
+  get fontAxesSourceSpace() {
+    return this._fontController.fontAxesSourceSpace;
+  }
+
+  get fontSources() {
+    return this._fontController.sources;
+  }
+
   get combinedAxes() {
     if (this._combinedAxes === undefined) {
       this._setupAxisMapping();
@@ -95,11 +102,11 @@ export class VariableGlyphController {
   }
 
   getSourceName(source) {
-    return source.name || this._fontSources[source.locationBase]?.name;
+    return source.name || this.fontSources[source.locationBase]?.name;
   }
 
   getSourceLocation(source) {
-    return { ...this._fontSources[source.locationBase]?.location, ...source.location };
+    return { ...this.fontSources[source.locationBase]?.location, ...source.location };
   }
 
   _setupAxisMapping() {
@@ -523,6 +530,9 @@ export class VariableGlyphController {
 
     if (!sourceLayerNames) {
       const source = this.sources[sourceIndex];
+      if (!source) {
+        return []; // Hmm
+      }
       this._layerNameToSourceIndex[source.layerName] = sourceIndex;
 
       const layerNamePrefix = source.layerName + BACKGROUND_LAYER_SEPARATOR;
