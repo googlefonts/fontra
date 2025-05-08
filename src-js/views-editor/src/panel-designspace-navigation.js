@@ -1508,11 +1508,12 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     locationController.addListener((event) => {
-      if (!event.senderInfo?.sentByLocationBase) {
+      const isGlyphAxisChange = glyphAxisNames.has(event.key);
+      if (!event.senderInfo?.sentByLocationBase && !isGlyphAxisChange) {
         nameController.model.locationBase = "";
       }
 
-      if (!nameController.model.locationBase) {
+      if (!nameController.model.locationBase || isGlyphAxisChange) {
         const suggestedSourceName = suggestedSourceNameFromLocation(
           makeSparseLocation(locationController.model, locationAxes)
         );
