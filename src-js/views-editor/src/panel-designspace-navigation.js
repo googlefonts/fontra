@@ -1487,10 +1487,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       const sourceIdentifier = event.newValue;
       const fontSource = this.fontController.sources[sourceIdentifier];
       const sourceLocation = fontSource.location;
-      const fontLocation = filterObject(
-        sourceLocation,
-        (name, value) => !glyphAxisNames.has(name)
-      );
       const glyphLocation = filterObject(locationController.model, (name, value) =>
         glyphAxisNames.has(name)
       );
