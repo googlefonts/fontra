@@ -1471,9 +1471,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     nameController.addKeyListener("sourceName", (event) => {
+      const glyphLocation = filterObject(locationController.model, (name, value) =>
+        glyphAxisNames.has(name)
+      );
+      const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+
       nameController.model.suggestedLayerName =
         event.newValue ||
-        nameController.model.locationBase ||
+        (hasGlyphLocation ? "" : nameController.model.locationBase) ||
         nameController.model.suggestedSourceName;
       validateInput();
     });
@@ -1499,8 +1504,19 @@ export default class DesignspaceNavigationPanel extends Panel {
         locationController.setItem(name, value, { sentByLocationBase: true });
       }
       nameController.model.sourceName = "";
-      nameController.model.suggestedSourceName = fontSource.name;
-      nameController.model.suggestedLayerName = sourceIdentifier;
+
+      const suggestedSourceName = suggestedSourceNameFromLocation(
+        makeSparseLocation(locationController.model, locationAxes)
+      );
+
+      const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+
+      nameController.model.suggestedSourceName = hasGlyphLocation
+        ? suggestedSourceName
+        : fontSource.name;
+      nameController.model.suggestedLayerName = hasGlyphLocation
+        ? suggestedSourceName
+        : sourceIdentifier;
     });
 
     locationController.addListener((event) => {
