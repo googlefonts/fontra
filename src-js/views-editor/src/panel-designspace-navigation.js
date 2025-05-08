@@ -1443,29 +1443,42 @@ export default class DesignspaceNavigationPanel extends Panel {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
+    const { glyphLocation } = glyphController.splitLocation(location);
+    const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+    const fontSourceName = this.fontController.sources[locationBase]?.name;
+
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
+
     const suggestedSourceName =
-      this.fontController.sources[locationBase]?.name ||
-      suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
+      fontSourceName && !hasGlyphLocation
+        ? fontSourceName
+        : suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
+    const suggestedLayerName =
+      locationBase && !hasGlyphLocation
+        ? locationBase
+        : sourceName || suggestedSourceName;
 
     const nameController = new ObservableController({
       sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
       layerName: (locationBase ? layerName === locationBase : layerName === sourceName)
         ? ""
         : layerName,
-      suggestedSourceName: suggestedSourceName,
-      suggestedLayerName: locationBase
-        ? locationBase
-        : sourceName || suggestedSourceName,
+      suggestedSourceName,
+      suggestedLayerName,
       locationBase: locationBase || "",
     });
 
     nameController.addKeyListener("sourceName", (event) => {
+      const glyphLocation = filterObject(locationController.model, (name, value) =>
+        glyphAxisNames.has(name)
+      );
+      const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+
       nameController.model.suggestedLayerName =
         event.newValue ||
-        nameController.model.locationBase ||
+        (hasGlyphLocation ? "" : nameController.model.locationBase) ||
         nameController.model.suggestedSourceName;
       validateInput();
     });
@@ -1479,10 +1492,6 @@ export default class DesignspaceNavigationPanel extends Panel {
       const sourceIdentifier = event.newValue;
       const fontSource = this.fontController.sources[sourceIdentifier];
       const sourceLocation = fontSource.location;
-      const fontLocation = filterObject(
-        sourceLocation,
-        (name, value) => !glyphAxisNames.has(name)
-      );
       const glyphLocation = filterObject(locationController.model, (name, value) =>
         glyphAxisNames.has(name)
       );
@@ -1495,16 +1504,28 @@ export default class DesignspaceNavigationPanel extends Panel {
         locationController.setItem(name, value, { sentByLocationBase: true });
       }
       nameController.model.sourceName = "";
-      nameController.model.suggestedSourceName = fontSource.name;
-      nameController.model.suggestedLayerName = sourceIdentifier;
+
+      const suggestedSourceName = suggestedSourceNameFromLocation(
+        makeSparseLocation(locationController.model, locationAxes)
+      );
+
+      const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+
+      nameController.model.suggestedSourceName = hasGlyphLocation
+        ? suggestedSourceName
+        : fontSource.name;
+      nameController.model.suggestedLayerName = hasGlyphLocation
+        ? suggestedSourceName
+        : sourceIdentifier;
     });
 
     locationController.addListener((event) => {
-      if (!event.senderInfo?.sentByLocationBase) {
+      const isGlyphAxisChange = glyphAxisNames.has(event.key);
+      if (!event.senderInfo?.sentByLocationBase && !isGlyphAxisChange) {
         nameController.model.locationBase = "";
       }
 
-      if (!nameController.model.locationBase) {
+      if (!nameController.model.locationBase || isGlyphAxisChange) {
         const suggestedSourceName = suggestedSourceNameFromLocation(
           makeSparseLocation(locationController.model, locationAxes)
         );
@@ -1533,11 +1554,15 @@ export default class DesignspaceNavigationPanel extends Panel {
         )
       )
     );
-    // Remove our original source location from the set, as that's obviously an
-    // allowed location.
-    sourceLocations.delete(
-      locationToString(makeSparseLocation(location, locationAxes))
-    );
+    // layerName === "" if we're adding a new source, and layerName !== "" if we're editing
+    // an existing source.
+    // If we are editing an existing source, remove our original source location from the set,
+    // as that's obviously an allowed location.
+    if (layerName) {
+      sourceLocations.delete(
+        locationToString(makeSparseLocation(location, locationAxes))
+      );
+    }
 
     const fontSourceMenuItems = [
       { value: "", label: "None" },

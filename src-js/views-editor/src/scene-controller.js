@@ -43,6 +43,7 @@ import {
   zip,
 } from "@fontra/core/utils.js";
 import { GlyphSource, Layer } from "@fontra/core/var-glyph.js";
+import { isLocationAtDefault } from "@fontra/core/var-model.js";
 import { VarPackedPath, packContour } from "@fontra/core/var-path.js";
 import * as vector from "@fontra/core/vector.js";
 import { dialog, message } from "@fontra/web-components/modal-dialog.js";
@@ -1166,6 +1167,10 @@ export class SceneController {
   }
 
   _insertGlyphSourceIfAtFontSource(varGlyph, glyphController) {
+    if (!isLocationAtDefault(this.sceneSettings.glyphLocation, varGlyph.axes)) {
+      return undefined;
+    }
+
     const sourceIdentifier =
       this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
         this.sceneSettings.fontLocationSourceMapped
@@ -1173,6 +1178,7 @@ export class SceneController {
     if (!sourceIdentifier) {
       return undefined;
     }
+
     const instance = glyphController.instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
