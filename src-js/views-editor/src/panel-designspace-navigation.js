@@ -1443,22 +1443,30 @@ export default class DesignspaceNavigationPanel extends Panel {
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
 
+    const { glyphLocation } = glyphController.splitLocation(location);
+    const hasGlyphLocation = !isLocationAtDefault(glyphLocation, glyph.axes);
+    const fontSourceName = this.fontController.sources[locationBase]?.name;
+
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
+
     const suggestedSourceName =
-      this.fontController.sources[locationBase]?.name ||
-      suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
+      fontSourceName && !hasGlyphLocation
+        ? fontSourceName
+        : suggestedSourceNameFromLocation(makeSparseLocation(location, locationAxes));
+    const suggestedLayerName =
+      locationBase && !hasGlyphLocation
+        ? locationBase
+        : sourceName || suggestedSourceName;
 
     const nameController = new ObservableController({
       sourceName: sourceName || (locationBase ? "" : suggestedSourceName),
       layerName: (locationBase ? layerName === locationBase : layerName === sourceName)
         ? ""
         : layerName,
-      suggestedSourceName: suggestedSourceName,
-      suggestedLayerName: locationBase
-        ? locationBase
-        : sourceName || suggestedSourceName,
+      suggestedSourceName,
+      suggestedLayerName,
       locationBase: locationBase || "",
     });
 
