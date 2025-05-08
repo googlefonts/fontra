@@ -1541,6 +1541,8 @@ export default class DesignspaceNavigationPanel extends Panel {
         )
       )
     );
+    // layerName === "" if we're adding a new source, and layerName !== "" if we're editing
+    // an existing source.
     // If we are editing an existing source, remove our original source location from the set,
     // as that's obviously an allowed location.
     if (layerName) {
