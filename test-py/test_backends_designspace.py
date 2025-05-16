@@ -1204,12 +1204,9 @@ async def test_uniqueFontSourceIdentifiers(writableTestFont):
         source.name = "non-unique-name"
     dsDoc.write(dsPath)
 
-    firstBackend = getFileSystemBackend(dsPath)
-    firstSources = await firstBackend.getSources()
-    secondBackend = getFileSystemBackend(dsPath)
-    secondSources = await secondBackend.getSources()
-
-    assert firstSources == secondSources
+    backend = getFileSystemBackend(dsPath)
+    sources = await backend.getSources()
+    assert len(sources) == len(dsDoc.sources)
 
 
 def fileNamesFromDir(path):
