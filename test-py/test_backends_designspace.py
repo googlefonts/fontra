@@ -1197,6 +1197,21 @@ async def test_deterministicFontSourceIdentifiers(writableTestFont):
     assert firstSources == secondSources
 
 
+async def test_uniqueFontSourceIdentifiers(writableTestFont):
+    dsDoc = writableTestFont.dsDoc
+    dsPath = dsDoc.path
+    for source in dsDoc.sources:
+        source.name = "non-unique-name"
+    dsDoc.write(dsPath)
+
+    firstBackend = getFileSystemBackend(dsPath)
+    firstSources = await firstBackend.getSources()
+    secondBackend = getFileSystemBackend(dsPath)
+    secondSources = await secondBackend.getSources()
+
+    assert firstSources == secondSources
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
