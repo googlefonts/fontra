@@ -1182,6 +1182,33 @@ async def test_sparse_master_background_layers(writableTestFont):
     assert glyph == reopenedGlyph
 
 
+async def test_deterministicFontSourceIdentifiers(writableTestFont):
+    dsDoc = writableTestFont.dsDoc
+    dsPath = dsDoc.path
+    for source in dsDoc.sources:
+        source.name = None
+    dsDoc.write(dsPath)
+
+    firstBackend = getFileSystemBackend(dsPath)
+    firstSources = await firstBackend.getSources()
+    secondBackend = getFileSystemBackend(dsPath)
+    secondSources = await secondBackend.getSources()
+
+    assert firstSources == secondSources
+
+
+async def test_uniqueFontSourceIdentifiers(writableTestFont):
+    dsDoc = writableTestFont.dsDoc
+    dsPath = dsDoc.path
+    for source in dsDoc.sources:
+        source.name = "non-unique-name"
+    dsDoc.write(dsPath)
+
+    backend = getFileSystemBackend(dsPath)
+    sources = await backend.getSources()
+    assert len(sources) == len(dsDoc.sources)
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 

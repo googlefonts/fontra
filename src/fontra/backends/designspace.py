@@ -4,7 +4,6 @@ import asyncio
 import logging
 import os
 import pathlib
-import secrets
 import shutil
 import uuid
 from collections import defaultdict
@@ -2217,12 +2216,16 @@ def makeDSSourceIdentifier(
         else usedSourceNames
     )
 
-    sourceName = None
+    if originalSourceName is None:
+        originalSourceName = ""
+
+    sourceName = originalSourceName
+    counter = 0
 
     while not sourceName or sourceName in usedSourceNames:
-        sourceName = (
-            originalSourceName or ""
-        ) + f"::fontra{sourceIndex:03}-{secrets.token_hex(4)}"
+        counterString = f"#{counter}" if counter else ""
+        sourceName = originalSourceName + f"::fontra{sourceIndex:03}{counterString}"
+        counter += 1
 
     return sourceName
 
