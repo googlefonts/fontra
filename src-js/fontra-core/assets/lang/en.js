@@ -143,6 +143,7 @@ export const strings = {
     "The location is not at a source.",
   "dialog.cant-edit-glyph.content.locked-glyph": "The glyph is locked.",
   "dialog.cant-edit-glyph.title": "Can’t edit glyph “%0”",
+  "dialog.cant-edit-kerning.title": "Can’t edit kerning",
   "dialog.create": "Create",
   "dialog.create-new-glyph.body":
     'Click "Create" if you want to create a new glyph named "%0"%1.',
@@ -416,6 +417,7 @@ export const strings = {
   "sidebar.user-settings.glyph.dragcrosshair": "Drag crosshair",
   "sidebar.user-settings.glyph.dragghostpath": "Drag “ghost” path",
   "sidebar.user-settings.glyph.kerning": "Kerning",
+  "sidebar.user-settings.glyph.kerning-tool": "Kerning (tool)",
   "sidebar.user-settings.glyph.lockicon": "Glyph lock icon for non-editing glyphs",
   "sidebar.user-settings.glyph.point.index": "Point indices",
   "sidebar.user-settings.glyph.powerruler": "Power Ruler",

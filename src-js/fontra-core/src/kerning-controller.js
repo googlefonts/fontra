@@ -1,11 +1,38 @@
+import { recordChanges } from "./change-recorder.js";
+import { ChangeCollector, wildcard } from "./changes.js";
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
-import { longestCommonPrefix } from "./utils.js";
+import {
+  assert,
+  enumerate,
+  isObjectEmpty,
+  longestCommonPrefix,
+  throttleCalls,
+  zip,
+} from "./utils.js";
 
 export class KerningController {
-  constructor(kernData, fontAxesSourceSpace, fontSources) {
-    this.kernData = kernData;
-    this.fontAxesSourceSpace = fontAxesSourceSpace;
-    this.fontSources = fontSources;
+  constructor(kernTag, kerning, fontController) {
+    this.kernTag = kernTag;
+    this.kerning = kerning;
+    this.fontController = fontController;
+
+    this.fontController.addChangeListener?.(
+      { kerning: { [wildcard]: { sourceIdentifiers: null } } },
+      (change, isExternalChange) => {
+        this.clearCaches();
+      }
+    );
+
+    this._setup();
+  }
+
+  get kernData() {
+    return (
+      this.kerning[this.kernTag] || { groups: {}, values: {}, sourceIdentifiers: [] }
+    );
+  }
+
+  clearCaches() {
     this._setup();
   }
 
@@ -38,28 +65,68 @@ export class KerningController {
     );
 
     const locations = this.kernData.sourceIdentifiers.map(
-      (sourceIdentifier) => this.fontSources[sourceIdentifier].location
+      (sourceIdentifier) => this.fontController.sources[sourceIdentifier].location
     );
-    this.model = new DiscreteVariationModel(locations, this.fontAxesSourceSpace);
+    this.model = new DiscreteVariationModel(
+      locations,
+      this.fontController.fontAxesSourceSpace
+    );
+
     this._pairFunctions = {};
   }
 
+  get sourceIdentifiers() {
+    return this.kernData.sourceIdentifiers;
+  }
+
+  get values() {
+    return this.kernData.values;
+  }
+
   instantiate(location) {
-    return new KerningInstance(this, location);
+    const sourceIdentifier =
+      this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(location);
+
+    return new KerningInstance(this, location, sourceIdentifier);
+  }
+
+  getPairValueForSource(leftName, rightName, sourceIdentifier) {
+    /*
+     * For the return value, we distinquish between:
+     * - undefined: there exists no kerning data for this pair
+     * - null: there exists kerning data for this pair, but at *this* source
+     *   the value is `null``
+     */
+    const values = this.getPairValues(leftName, rightName);
+    if (!values) {
+      return undefined;
+    }
+    const index = this.sourceIdentifiers.indexOf(sourceIdentifier);
+    if (index < 0) {
+      return undefined;
+    }
+    const value = values[index];
+    // The values array may be too short, turn undefined into null
+    return value === undefined ? null : value;
+  }
+
+  getPairValues(leftName, rightName) {
+    return this.kernData.values[leftName]?.[rightName];
   }
 
   _getPairFunction(leftName, rightName) {
     let pairFunction = this._pairFunctions[leftName]?.[rightName];
     if (pairFunction === undefined) {
-      const sourceValues = this.kernData.values[leftName]?.[rightName];
+      let sourceValues = this.getPairValues(leftName, rightName);
       if (sourceValues === undefined) {
         // We don't have kerning for this pair
         pairFunction = null;
       } else {
-        const { subModel, subValues } = this.model.getSubModel(sourceValues);
-        const deltas = subModel.getDeltas(subValues);
+        // Replace missing values with zeros
+        sourceValues = sourceValues.map((v) => (v == null ? 0 : v));
+        const deltas = this.model.getDeltas(sourceValues);
         pairFunction = (location) =>
-          subModel.interpolateFromDeltas(location, deltas).instance;
+          this.model.interpolateFromDeltas(location, deltas).instance;
       }
       if (!this._pairFunctions[leftName]) {
         this._pairFunctions[leftName] = {};
@@ -69,52 +136,235 @@ export class KerningController {
     return pairFunction;
   }
 
-  getPairValue(location, leftGlyph, rightGlyph) {
+  getPairNames(leftGlyph, rightGlyph) {
+    const pairsToTry = this.getPairsToTry(leftGlyph, rightGlyph);
+
+    for (const [leftName, rightName] of pairsToTry) {
+      const sourceValues = this.getPairValues(leftName, rightName);
+      if (sourceValues) {
+        return [leftName, rightName];
+      }
+    }
+
+    return pairsToTry.at(-1);
+  }
+
+  getPairsToTry(leftGlyph, rightGlyph) {
     const leftGroup = this.leftPairGroupMapping[leftGlyph];
     const rightGroup = this.rightPairGroupMapping[rightGlyph];
-    const pairsToTry = [
+    return [
       [leftGlyph, rightGlyph],
       [leftGlyph, rightGroup],
       [leftGroup, rightGlyph],
       [leftGroup, rightGroup],
-    ];
+    ].filter(([leftName, rightName]) => leftName && rightName);
+  }
 
-    let value = 0;
+  getGlyphPairValue(leftGlyph, rightGlyph, location, sourceIdentifier = null) {
+    const pairsToTry = this.getPairsToTry(leftGlyph, rightGlyph);
+
+    let value = null;
 
     for (const [leftName, rightName] of pairsToTry) {
-      if (!leftName || !rightName) {
-        continue;
-      }
+      if (sourceIdentifier) {
+        const sourceValue = this.getPairValueForSource(
+          leftName,
+          rightName,
+          sourceIdentifier
+        );
+        if (sourceValue !== undefined) {
+          value = sourceValue;
+          break;
+        }
+      } else {
+        const pairFunction = this._getPairFunction(leftName, rightName);
 
-      const pairFunction = this._getPairFunction(leftName, rightName);
-
-      if (pairFunction) {
-        value = pairFunction(location);
-        break;
+        if (pairFunction) {
+          value = pairFunction(location);
+          break;
+        }
       }
     }
 
     return value;
   }
+
+  getEditContext(pairSelectors) {
+    return new KerningEditContext(this, pairSelectors);
+  }
 }
 
 class KerningInstance {
-  constructor(controller, location) {
+  constructor(controller, location, sourceIdentifier) {
     this.controller = controller;
     this.location = location;
+    this.sourceIdentifier = sourceIdentifier; // may be undefined
     this.valueCache = {};
   }
 
-  getPairValue(leftGlyph, rightGlyph) {
+  getGlyphPairValue(leftGlyph, rightGlyph) {
     let value = this.valueCache[leftGlyph]?.[rightGlyph];
     if (value === undefined) {
-      value = this.controller.getPairValue(this.location, leftGlyph, rightGlyph);
+      value = this.controller.getGlyphPairValue(
+        leftGlyph,
+        rightGlyph,
+        this.location,
+        this.sourceIdentifier
+      );
       if (!this.valueCache[leftGlyph]) {
         this.valueCache[leftGlyph] = {};
       }
       this.valueCache[leftGlyph][rightGlyph] = value;
     }
     return value;
+  }
+}
+
+class KerningEditContext {
+  constructor(kerningController, pairSelectors) {
+    assert(pairSelectors.length > 0);
+    this.kerningController = kerningController;
+    this.fontController = kerningController.fontController;
+    this.pairSelectors = pairSelectors;
+    this._throttledEditIncremental = throttleCalls(async (change) => {
+      this.fontController.editIncremental(change);
+    }, 50);
+    this._throttledEditIncrementalTimeoutID = null;
+  }
+
+  async _editIncremental(change, mayDrop = false) {
+    // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
+    // at a maximum number of changes per second, to prevent flooding the network
+    if (mayDrop) {
+      this._throttledEditIncrementalTimeoutID = this._throttledEditIncremental(change);
+    } else {
+      clearTimeout(this._throttledEditIncrementalTimeoutID);
+      this.fontController.editIncremental(change);
+    }
+  }
+
+  async edit(values, undoLabel) {
+    function* valuesGenerator() {
+      yield values;
+    }
+    return await this.editContinuous(valuesGenerator(), undoLabel);
+  }
+
+  async editContinuous(valuesIterator, undoLabel) {
+    const font = { kerning: this.kerningController.kerning };
+    const fontController = this.kerningController.fontController;
+
+    let initialChanges = recordChanges(font, (font) => {
+      ensureKerningData(font.kerning, this.kerningController.kernTag);
+      const kernData = font.kerning[this.kerningController.kernTag];
+
+      const values = font.kerning[this.kerningController.kernTag].values;
+      for (const { sourceIdentifier, leftName, rightName } of this.pairSelectors) {
+        if (!kernData.sourceIdentifiers.includes(sourceIdentifier)) {
+          kernData.sourceIdentifiers = [
+            ...kernData.sourceIdentifiers,
+            sourceIdentifier,
+          ];
+          this.kerningController.clearCaches();
+        }
+        if (!values[leftName]) {
+          values[leftName] = {};
+        }
+        if (!values[leftName][rightName]) {
+          values[leftName][rightName] = Array(
+            this.kerningController.sourceIdentifiers.length
+          ).fill(null);
+        } else {
+          if (
+            values[leftName][rightName].length <
+            this.kerningController.sourceIdentifiers.length
+          ) {
+            const n =
+              this.kerningController.sourceIdentifiers.length -
+              values[leftName][rightName].length;
+            values[leftName][rightName] = [
+              ...values[leftName][rightName],
+              ...Array(n).fill(null),
+            ];
+          }
+        }
+      }
+    });
+
+    if (initialChanges.hasChange) {
+      await fontController.editIncremental(initialChanges.change);
+    }
+
+    const sourceIndices = {};
+    for (const [i, sourceIdentifier] of enumerate(
+      this.kerningController.sourceIdentifiers
+    )) {
+      sourceIndices[sourceIdentifier] = i;
+    }
+
+    let firstChanges;
+    let lastChanges;
+    for await (const newValues of valuesIterator) {
+      assert(newValues.length === this.pairSelectors.length);
+      lastChanges = recordChanges(font, (font) => {
+        const kernData = font.kerning[this.kerningController.kernTag];
+        const values = kernData.values;
+        for (const [{ sourceIdentifier, leftName, rightName }, newValue] of zip(
+          this.pairSelectors,
+          newValues
+        )) {
+          let index = sourceIndices[sourceIdentifier];
+          assert(index != undefined);
+          assert(values[leftName][rightName]);
+          values[leftName][rightName][index] = newValue;
+        }
+      });
+      if (!firstChanges) {
+        firstChanges = lastChanges;
+      }
+      await this._editIncremental(lastChanges.change, true); // may drop
+    }
+    await this._editIncremental(lastChanges.change, false);
+
+    const finalForwardChanges = initialChanges.concat(lastChanges);
+    const finalRollbackChanges = initialChanges.concat(firstChanges);
+    const finalChanges = ChangeCollector.fromChanges(
+      finalForwardChanges.change,
+      finalRollbackChanges.rollbackChange
+    );
+    await fontController.editFinal(
+      finalChanges.change,
+      finalChanges.rollbackChange,
+      undoLabel,
+      false
+    );
+
+    return finalChanges;
+  }
+
+  async delete(undoLabel) {
+    const font = { kerning: this.kerningController.kerning };
+    let changes = recordChanges(font, (font) => {
+      const values = font.kerning[this.kerningController.kernTag].values;
+      for (const { leftName, rightName } of this.pairSelectors) {
+        if (!values[leftName][rightName]) {
+          continue;
+        }
+        delete values[leftName][rightName];
+        if (isObjectEmpty(values[leftName])) {
+          delete values[leftName];
+        }
+      }
+    });
+
+    await this.fontController.editFinal(
+      changes.change,
+      changes.rollbackChange,
+      undoLabel,
+      true
+    );
+
+    return changes;
   }
 }
 
@@ -126,4 +376,15 @@ function makeGlyphGroupMapping(groupNames, groups) {
     });
   }
   return mapping;
+}
+
+function ensureKerningData(kerning, kernTag) {
+  if (!kerning[kernTag]) {
+    // We don't have data yet for this kern tag
+    kerning[kernTag] = {
+      sourceIdentifiers: [],
+      groups: {},
+      values: {},
+    };
+  }
 }

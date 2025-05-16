@@ -142,6 +142,7 @@ export const strings = {
     "La localisation n'est pas sur une source",
   "dialog.cant-edit-glyph.content.locked-glyph": "Le glyphe est vérouillé",
   "dialog.cant-edit-glyph.title": "Ne peut pas éditer le glyphe «%0»",
+  "dialog.cant-edit-kerning.title": "Can’t edit kerning",
   "dialog.create": "Créer",
   "dialog.create-new-glyph.body":
     'Cliquez «Créer» si vous voulez créer un nouveau glyphe nommé  "%0"%1.',
@@ -437,6 +438,7 @@ export const strings = {
   "sidebar.user-settings.glyph.dragcrosshair": "Croix de sélection",
   "sidebar.user-settings.glyph.dragghostpath": "Afficher la position avant édition",
   "sidebar.user-settings.glyph.kerning": "Kerning",
+  "sidebar.user-settings.glyph.kerning-tool": "Kerning (tool)",
   "sidebar.user-settings.glyph.lockicon":
     "Icône verrouillée du glyphe pour les glyphes non édités",
   "sidebar.user-settings.glyph.point.index": "Index des points",

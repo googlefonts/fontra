@@ -292,7 +292,7 @@ export class SceneController {
     this.canvasController.canvas.addEventListener("viewBoxChanged", (event) => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
-      } else {
+      } else if (event.detail !== "set-view-box") {
         this.autoViewBox = false;
       }
       this.sceneSettingsController.setItem(
@@ -361,6 +361,15 @@ export class SceneController {
         };
       }
     });
+
+    this.fontController.addChangeListener(
+      { axes: null, kerning: null },
+      async () => {
+        await this.sceneModel.updateScene();
+        this.canvasController.requestUpdate();
+      },
+      true
+    );
   }
 
   setupSettingsListeners() {
@@ -535,6 +544,8 @@ export class SceneController {
         this._previousGlyphPosition.x + this._previousGlyphPosition.xAdvance / 2;
       const glyphCenter = glyphPosition.x + glyphPosition.xAdvance / 2;
       originXDelta = glyphCenter - previousGlyphCenter;
+    } else if (this.scrollAdjustBehavior?.behavior === "tool-pin-point") {
+      originXDelta = this.scrollAdjustBehavior.getPinPointDelta();
     }
 
     if (originXDelta) {
@@ -622,8 +633,12 @@ export class SceneController {
 
   handleKeyDown(event) {
     if ((!event[commandKeyProperty] || event.shiftKey) && event.key in arrowKeyDeltas) {
-      this.handleArrowKeys(event);
       event.preventDefault();
+      if (this.selectedTool?.handleArrowKeys) {
+        this.selectedTool.handleArrowKeys(event);
+      } else {
+        this.handleArrowKeys(event);
+      }
       return;
     } else {
       this.selectedTool?.handleKeyDown(event);
@@ -1636,7 +1651,8 @@ function positionedGlyphPosition(positionedGlyph) {
 export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
   return (
     glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
-    glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
+    glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex &&
+    glyphSelectionA?.metric === glyphSelectionB?.metric
   );
 }
 
