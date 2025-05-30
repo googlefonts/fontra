@@ -188,7 +188,7 @@ def getWickedLettersGeorgianGlyphSets():
         name = dirInfo["name"]
         if not name.endswith(".txt"):
             continue
-        name = "WT Georgian " + name[:-4].split("_")[-1]
+        name = "WL Georgian " + name[:-4].split("_")[-1]
         glyphSets.append(
             {
                 "name": name,

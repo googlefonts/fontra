@@ -455,15 +455,15 @@
     },
     "glyphSets": [
       {
-        "name": "WT Georgian Asomtavruli",
+        "name": "WL Georgian Asomtavruli",
         "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Asomtavruli.txt"
       },
       {
-        "name": "WT Georgian Mkhedruli",
+        "name": "WL Georgian Mkhedruli",
         "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Mkhedruli.txt"
       },
       {
-        "name": "WT Georgian Nuskhuri",
+        "name": "WL Georgian Nuskhuri",
         "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Nuskhuri.txt"
       }
     ]
