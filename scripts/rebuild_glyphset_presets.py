@@ -177,12 +177,42 @@ def getKoeberlinLatinGlyphSets():
     }
 
 
+def getWickedLettersGeorgianGlyphSets():
+    sourceURL = "https://github.com/wickedletters/Georgian-Character-set"
+
+    dirContents = getGitHubDirectoryInfo("wickedletters", "Georgian-Character-set", "")
+
+    glyphSets = []
+
+    for dirInfo in dirContents:
+        name = dirInfo["name"]
+        if not name.endswith(".txt"):
+            continue
+        name = "WT Georgian " + name[:-4].split("_")[-1]
+        glyphSets.append(
+            {
+                "name": name,
+                "url": jsDelivrURL(
+                    "wickedletters", "Georgian-Character-set", dirInfo["path"]
+                ),
+            }
+        )
+
+    return {
+        "name": "Wicked Letters, Georgian",
+        "sourceURL": sourceURL,
+        "dataOptions": {"dataFormat": "glyph-names", "commentChars": "#"},
+        "glyphSets": glyphSets,
+    }
+
+
 def collectCollections():
     collections = []
     collections.append(getGoogleFontsGlyphSets())
     collections.append(getBlackFoundryGlyphSets())
     collections.append(getAdobeLatinCyrGreekGlyphSets())
     collections.append(getKoeberlinLatinGlyphSets())
+    collections.append(getWickedLettersGeorgianGlyphSets())
     return collections
 
 
@@ -196,7 +226,7 @@ if __name__ == "__main__":
 
     repoDir = pathlib.Path(__file__).resolve().parent.parent
     glyphSetDataPath = (
-        repoDir / "src" / "fontra" / "client" / "data" / "glyphset-presets.json"
+        repoDir / "src-js" / "fontra-core" / "assets" / "data" / "glyphset-presets.json"
     )
     with open(glyphSetDataPath, "w") as f:
-        json.dump(collections, f, indent=2)
+        json.dump(collections, f, indent=2) + "\n"
