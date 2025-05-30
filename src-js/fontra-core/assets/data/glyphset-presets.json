@@ -445,5 +445,27 @@
         "url": "https://cdn.jsdelivr.net/gh/koeberlin/Latin-Character-Sets/CharacterSets/Glyphs/LatinXL_glyphs.txt"
       }
     ]
+  },
+  {
+    "name": "Wicked Letters, Georgian",
+    "sourceURL": "https://github.com/wickedletters/Georgian-Character-set",
+    "dataOptions": {
+      "dataFormat": "glyph-names",
+      "commentChars": "#"
+    },
+    "glyphSets": [
+      {
+        "name": "WL Georgian Asomtavruli",
+        "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Asomtavruli.txt"
+      },
+      {
+        "name": "WL Georgian Mkhedruli",
+        "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Mkhedruli.txt"
+      },
+      {
+        "name": "WL Georgian Nuskhuri",
+        "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Nuskhuri.txt"
+      }
+    ]
   }
 ]
