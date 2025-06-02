@@ -4761,6 +4761,46 @@ FC5B;thalAlefabove-ar;Letter;;;RTL;arabic;ARABIC LIGATURE THAL WITH SUPERSCRIPT 
 0632;zain-ar;Letter;;;RTL;arabic;ARABIC LETTER ZAIN;uni0632
 ;zain-ar.isol;Letter;;;RTL;arabic;ARABIC LETTER ZAIN ISOLATED FORM;uni0632.isol
 ;zain-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER ZAIN FINAL FORM;uni0632.fina
+0870;alefFathaattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED FATHA;uni0870
+0871;alefToprightfathaattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED TOP RIGHT FATHA;uni0871
+0872;alefRightmiddlestroke-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH RIGHT MIDDLE STROKE;uni0872
+0873;alefLeftmiddlestroke-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH LEFT MIDDLE STROKE;uni0873
+0874;alefKasraattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED KASRA;uni0874
+0875;alefBottomrightkasraattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED BOTTOM RIGHT KASRA;uni0875
+0876;alefRounddotaboveattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED ROUND DOT ABOVE;uni0876
+0877;alefRightrounddotattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED RIGHT ROUND DOT;uni0877
+0878;alefLeftrounddotattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED LEFT ROUND DOT;uni0878
+0879;alefRounddotbelowattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED ROUND DOT BELOW;uni0879
+087A;alefDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH DOT ABOVE;uni087A
+087B;alefToprightfathaattachedDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED TOP RIGHT FATHA AND DOT ABOVE;uni087B
+087C;alefRightmiddlestrokeDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH RIGHT MIDDLE STROKE AND DOT ABOVE;uni087C
+087D;alefBottomrightkasraattachedDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED BOTTOM RIGHT KASRA AND DOT ABOVE;uni087D
+087E;alefToprightfathaattachedLeftring-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED TOP RIGHT FATHA AND LEFT RING;uni087E
+087F;alefRightmiddlestrokeLeftring-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH RIGHT MIDDLE STROKE AND LEFT RING;uni087F
+0880;alefBottomrightkasraattachedLeftring-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED BOTTOM RIGHT KASRA AND LEFT RING;uni0880
+0881;alefRighthamzaattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED RIGHT HAMZA;uni0881
+0882;alefLefthamzaattached-ar;Letter;;;RTL;arabic;ARABIC LETTER ALEF WITH ATTACHED LEFT HAMZA;uni0882
+0883;kashidaHamza-ar;Letter;;;RTL;arabic;ARABIC TATWEEL WITH OVERSTRUCK HAMZA;uni0883
+0884;kashidaWaw-ar;Letter;;;RTL;arabic;ARABIC TATWEEL WITH OVERSTRUCK WAW;uni0884
+0885;kashidaTwobelow-ar;Letter;;;RTL;arabic;ARABIC TATWEEL WITH TWO DOTS BELOW;uni0885
+0886;yehThin-ar;Letter;;;RTL;arabic;ARABIC LETTER THIN YEH;uni0886
+0887;rounddotbaseline-ar;Letter;;;RTL;arabic;ARABIC BASELINE ROUND DOT;uni0887
+0888;rounddotraised-ar;Letter;;;RTL;arabic;ARABIC RAISED ROUND DOT;uni0888
+0889;noonVinvertedabove-ar;Letter;;;RTL;arabic;ARABIC LETTER NOON WITH INVERTED SMALL V;uni0889
+088A;hahVinvertedbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER HAH WITH INVERTED SMALL V BELOW;uni088A
+088B;tahDotbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER TAH WITH DOT BELOW;uni088B
+088C;tahThreedotsbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER TAH WITH THREE DOTS BELOW;uni088C
+088E;verticaltail-ar;Letter;;;RTL;arabic;ARABIC VERTICAL TAIL;uni088E
+0890;poundmarkabove-ar;Symbol;Format;;RTL;arabic;ARABIC POUND MARK ABOVE;uni0890
+0891;piastremarkabove-ar;Symbol;Format;;RTL;arabic;ARABIC PIASTRE MARK ABOVE;uni0891
+0898;aljuzabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH WORD AL-JUZ;uni0898
+0899;ishmaambelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL LOW WORD ISHMAAM;uni0899
+089A;imaalabelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL LOW WORD IMAALA;uni089A
+089B;tasheel-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL LOW WORD TASHEEL;uni089B
+089C;maddawaajib-ar;Mark;Nonspacing;;RTL;arabic;ARABIC MADDA WAAJIB;uni089C
+089D;alefmokhassasabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SUPERSCRIPT ALEF MOKHASSAS;uni089D
+089E;maddadoubled-ar;Mark;Nonspacing;;RTL;arabic;ARABIC DOUBLED MADDA;uni089E
+089F;halfmaddaovermadda-ar;Mark;Nonspacing;;RTL;arabic;ARABIC HALF MADDA OVER MADDA;uni089F
 08B2;zainVinvertedabove-ar;Letter;;;RTL;arabic;ARABIC LETTER ZAIN WITH INVERTED V ABOVE;uni08B2
 08B3;ainThreedotsbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER AIN WITH THREE DOTS BELOW;uni08B3
 08B4;kafDotbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER KAF WITH DOT BELOW;uni08B4
@@ -4768,9 +4808,7 @@ FC5B;thalAlefabove-ar;Letter;;;RTL;arabic;ARABIC LIGATURE THAL WITH SUPERSCRIPT 
 08BF;tehVabove-ar;Letter;;;RTL;arabic;ARABIC LETTER TEH WITH SMALL V;uni08BF
 08C0;ttehVabove-ar;Letter;;;RTL;arabic;ARABIC LETTER TTEH WITH SMALL V;uni08C0
 08C1;tchehVabove-ar;Letter;;;RTL;arabic;ARABIC LETTER TCHEH WITH SMALL V;uni08C1
-08C2;kehehVabove-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH SMALL V;uni08C2
 08C3;ghainThreedotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER GHAIN WITH THREE DOTS ABOVE;uni08C3
-08C4;qafThreedotsaboveAfrican-ar;Letter;;;RTL;arabic;ARABIC LETTER AFRICAN QAF WITH THREE DOTS ABOVE;uni08C4
 08C5;jeemThreedotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER JEEM WITH THREE DOTS ABOVE;uni08C5
 08C6;jeemThreedotsbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER JEEM WITH THREE DOTS BELOW;uni08C6
 08C7;lamTahabove-ar;Letter;;;RTL;arabic;ARABIC LETTER LAM WITH SMALL ARABIC LETTER TAH ABOVE;uni08C7
@@ -4907,6 +4945,9 @@ FC5C;rehAlefabove-ar;Letter;;;RTL;arabic;ARABIC LIGATURE REH WITH SUPERSCRIPT AL
 ;qafThreedotsabove-ar.init;Letter;;;RTL;arabic;ARABIC LETTER QAF WITH THREE DOTS ABOVE INITIAL FORM;uni06A8.init
 08A5;qafDotbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER QAF WITH DOT BELOW;uni08A5
 08BC;qafAfrican-ar;Letter;;;RTL;arabic;ARABIC LETTER AFRICAN QAF;uni08BC
+08B5;qafDotbelowNodotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER QAF WITH DOT BELOW AND NO DOTS ABOVE;uni08B5
+08C4;qafThreedotsaboveAfrican-ar;Letter;;;RTL;arabic;ARABIC LETTER AFRICAN QAF WITH THREE DOTS ABOVE;uni08C4
+06D7;qafLamAlefMaksuraabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA;uni06D7
 ;kafDotless-ar;Letter;;;RTL;arabic;ARABIC LETTER DOTLESS KAF;
 ;kafDotless-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER DOTLESS KAF FINAL FORM;
 0643;kaf-ar;Letter;;;RTL;arabic;ARABIC LETTER KAF;uni0643
@@ -4924,6 +4965,9 @@ FC5C;rehAlefabove-ar;Letter;;;RTL;arabic;ARABIC LIGATURE REH WITH SUPERSCRIPT AL
 0762;kehehDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH DOT ABOVE;uni0762
 0763;kehehThreedotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH THREE DOTS ABOVE;uni0763
 0764;kehehThreedotsupbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH THREE DOTS POINTING UPWARDS BELOW;uni0764
+088D;kehehTwodotsverticalbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH TWO DOTS VERTICALLY BELOW;uni088D
+08C8;kehehElongatedhamzaabove-ar;Letter;;;RTL;arabic;ARABIC LETTER GRAF;uni08C8
+08C2;kehehVabove-ar;Letter;;;RTL;arabic;ARABIC LETTER KEHEH WITH SMALL V;uni08C2
 06AF;gaf-ar;Letter;;;RTL;arabic;ARABIC LETTER GAF;uni06AF
 ;gaf-ar.isol;Letter;;;RTL;arabic;ARABIC LETTER GAF ISOLATED FORM;uni06AF.isol
 ;gaf-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER GAF FINAL FORM;uni06AF.fina
@@ -5087,20 +5131,21 @@ FC90;alefMaksuraAlefabove-ar.fina;Letter;;;RTL;arabic;ARABIC LIGATURE ALEF MAKSU
 ;yehVabove-ar.init;Letter;;;RTL;arabic;ARABIC LETTER YEH WITH SMALL V;uni06CE.init
 08A8;yehTwodotsbelowHamzaabove-ar;Letter;;;RTL;arabic;ARABIC LETTER YEH WITH TWO DOTS BELOW AND HAMZA ABOVE;uni08A8
 08A9;yehTwodotsbelowDotabove-ar;Letter;;;RTL;arabic;ARABIC LETTER YEH WITH TWO DOTS BELOW AND DOT ABOVE;uni08A9
-063D;yehFarsiVinverted-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D
-;yehFarsiVinverted-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.fina
-;yehFarsiVinverted-ar.medi;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.medi
-;yehFarsiVinverted-ar.init;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.init
 06CC;yehFarsi-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH;uni06CC
 ;yehFarsi-ar.isol;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH ISOLATED FORM;uni06CC.isol
 ;yehFarsi-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH FINAL FORM;uni06CC.fina
 ;yehFarsi-ar.medi;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH MEDIAL FORM;uni06CC.medi
 ;yehFarsi-ar.init;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH INITIAL FORM;uni06CC.init
+063D;yehFarsiVinverted-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D
+;yehFarsiVinverted-ar.fina;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.fina
+;yehFarsiVinverted-ar.medi;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.medi
+;yehFarsiVinverted-ar.init;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH INVERTED V;uni063D.init
 063E;yehFarsiTwodotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH TWO DOTS ABOVE;uni063E
 063F;yehFarsiThreedotsabove-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH THREE DOTS ABOVE;uni063F
 0775;yehFarsiTwoabove-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH EXTENDED ARABIC-INDIC DIGIT TWO ABOVE;uni0775
 0776;yehFarsiThreeabove-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH EXTENDED ARABIC-INDIC DIGIT THREE ABOVE;uni0776
 0777;yehFarsiFourbelow-ar;Letter;;;RTL;arabic;ARABIC LETTER FARSI YEH WITH EXTENDED ARABIC-INDIC DIGIT FOUR BELOW;uni0777
+08C9;yehFarsiSmall-ar;Letter;Modifier;;RTL;arabic;ARABIC SMALL FARSI YEH;uni08C9
 06CD;yehTail-ar;Letter;;;RTL;arabic;ARABIC LETTER YEH WITH TAIL;uni06CD
 0620;yehKashmiri-ar;Letter;;;RTL;arabic;ARABIC LETTER KASHMIRI YEH;uni0620
 ;yehKashmiri-ar.medi;Letter;;;RTL;arabic;ARABIC LETTER KASHMIRI YEH;uni0620.medi
@@ -5599,6 +5644,25 @@ FC90;alefMaksuraAlefabove-ar.fina;Letter;;;RTL;arabic;ARABIC LIGATURE ALEF MAKSU
 ;kashidaFina-ar;Letter;;;RTL;arabic;ARABIC TAIL FRAGMENT;uniFE73
 ;kasra-ar.isol;Mark;Spacing;;RTL;arabic;ARABIC KASRA ISOLATED FORM;uni0650.isol
 ;kasra-ar.medi;Letter;;;RTL;arabic;ARABIC KASRA MEDIAL FORM;uni0650.medi
+FD40;rahimahuAllaah-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RAHIMAHU ALLAAH;uniFD40
+FD41;radiAllaahuAnh-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RADI ALLAAHU ANH;uniFD41
+FD42;radiAllaahuAnhaa-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RADI ALLAAHU ANHAA;uniFD42
+FD43;radiAllaahuAnhum-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RADI ALLAAHU ANHUM;uniFD43
+FD44;radiAllaahuAnhumaa-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RADI ALLAAHU ANHUMAA;uniFD44
+FD45;radiAllaahuAnhunna-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RADI ALLAAHU ANHUNNA;uniFD45
+FD46;sallallaahuAlayhiWaAalih-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE SALLALLAAHU ALAYHI WA-AALIH;uniFD46
+FD47;alayhiAsSalaam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE ALAYHI AS-SALAAM;uniFD47
+FD48;alayhimAsSalaam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE ALAYHIM AS-SALAAM;uniFD48
+FD49;alayhimaaAsSalaam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE ALAYHIMAA AS-SALAAM;uniFD49
+FD4A;alayhiAsSalaatuWaSalaam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE ALAYHI AS-SALAATU WAS-SALAAM;uniFD4A
+FD4B;quddisaSirrah-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE QUDDISA SIRRAH;uniFD4B
+FD4C;sallallahuAlayhiWaAaliheeWaSallam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE SALLALLAHU ALAYHI WAAALIHEE WA-SALLAM;uniFD4C
+FD4D;alayhaaAsSalaam-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE ALAYHAA AS-SALAAM;uniFD4D
+FD4E;tabaarakaWaTaaalaa-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE TABAARAKA WA-TAAALAA;uniFD4E
+FD4F;rahimahumAllaah-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE RAHIMAHUM ALLAAH;uniFD4F
+FDCF;salaamuhuAlaynaa-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE SALAAMUHU ALAYNAA;uniFDCF
+FDFE;subhaanahuWaTaaalaa-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE SUBHAANAHU WA TAAALAA;uniFDFE
+FDFF;azzaWaJall-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE AZZA WA JALL;uniFDFF
 0640;kashida-ar;Letter;;;RTL;arabic;ARABIC TATWEEL;uni0640
 0610;sallallahouAlayheWassallamcomb-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SIGN SALLALLAHOU ALAYHE WASSALLAM;uni0610
 0611;alayheAssallamcomb-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SIGN ALAYHE ASSALLAM;uni0611
@@ -5716,7 +5780,6 @@ FBC1;tahbelowSymbol-ar;Punctuation;;;RTL;arabic;ARABIC SYMBOL SMALL TAH BELOW;un
 065D;dammareversed-ar;Mark;Nonspacing;;RTL;arabic;ARABIC REVERSED DAMMA;uni065D
 065E;fathatwodots-ar;Mark;Nonspacing;;RTL;arabic;ARABIC FATHA WITH TWO DOTS;uni065E
 06D6;sadLamAlefMaksuraabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH LIGATURE SAD WITH LAM WITH ALEF MAKSURA;uni06D6
-06D7;qafLamAlefMaksuraabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH LIGATURE QAF WITH LAM WITH ALEF MAKSURA;uni06D7
 06D8;meemabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH MEEM INITIAL FORM;uni06D8
 06E2;meemStopabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH MEEM ISOLATED FORM;uni06E2
 06D9;lamAlefabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH LAM ALEF;uni06D9
@@ -5760,6 +5823,7 @@ FBC1;tahbelowSymbol-ar;Punctuation;;;RTL;arabic;ARABIC SYMBOL SMALL TAH BELOW;un
 060C;comma-ar;Punctuation;;;RTL;arabic;ARABIC COMMA;uni060C
 061B;semicolon-ar;Punctuation;;;RTL;arabic;ARABIC SEMICOLON;uni061B
 061C;mark-ar;Symbol;Format;;RTL;arabic;ARABIC LETTER MARK;uni061C
+061D;endoftext-ar;Punctuation;;;;arabic;ARABIC END OF TEXT MARK;uni061D
 061F;question-ar;Punctuation;;;RTL;arabic;ARABIC QUESTION MARK;uni061F
 066A;percent-ar;Symbol;Math;;RTL;arabic;ARABIC PERCENT SIGN;uni066A
 0600;number-ar;Punctuation;;;RTL;arabic;ARABIC NUMBER SIGN;uni0600
@@ -5820,6 +5884,15 @@ FDFD;bismillah-ar;Symbol;Ligature;;RTL;arabic;ARABIC LIGATURE BISMILLAH AR-RAHMA
 08B8;tehTehabove-ar;Letter;;;RTL;arabic;ARABIC LETTER TEH WITH SMALL TEH ABOVE;uni08B8
 08B9;rehNoonabove-ar;Letter;;;RTL;arabic;ARABIC LETTER REH WITH SMALL NOON ABOVE;uni08B9
 08BA;yehTwodotsbelowNoonabove-ar;Letter;;;RTL;arabic;ARABIC LETTER YEH WITH TWO DOTS BELOW AND SMALL NOON ABOVE;uni08BA
+08CA;yehFarsiabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH FARSI YEH;uni08CA
+08CB;yehbarreeTwobelowabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH YEH BARREE WITH TWO DOTS BELOW;uni08CB
+08CC;sahabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH WORD SAH;uni08CC
+08CD;zahabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SMALL HIGH ZAH;uni08CD
+08CE;largerounddotabove-ar;Mark;Nonspacing;;RTL;arabic;ARABIC LARGE ROUND DOT ABOVE;uni08CE
+08CF;largerounddotbelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC LARGE ROUND DOT BELOW;uni08CF
+08D0;sukunbelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC SUKUN BELOW;uni08D0
+08D1;largecirclebelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC LARGE CIRCLE BELOW;uni08D1
+08D2;largerounddotinsidecirclebelow-ar;Mark;Nonspacing;;RTL;arabic;ARABIC LARGE ROUND DOT INSIDE CIRCLE BELOW;uni08D2
 0700;paragraph-syriac;Punctuation;;;;syriac;SYRIAC END OF PARAGRAPH;uni0700
 0701;fullstopSupralinear-syriac;Punctuation;;;;syriac;SYRIAC SUPRALINEAR FULL STOP;uni0701
 0702;fullstopSublinear-syriac;Punctuation;;;;syriac;SYRIAC SUBLINEAR FULL STOP;uni0702
@@ -7876,55 +7949,146 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 0D95;oo-sinhala;Letter;;;;sinhala;SINHALA LETTER OOYANNA;uni0D95
 0D96;au-sinhala;Letter;;;;sinhala;SINHALA LETTER AUYANNA;uni0D96
 0D9A;ka-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA KAYANNA;uni0D9A
+;ku-sinhala;Letter;;;;sinhala;SINHALA LETTER KU;uni0D9A0DD4
+;kuu-sinhala;Letter;;;;sinhala;SINHALA LETTER KUU;uni0D9A0DD6
 0D9B;kha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA KAYANNA;uni0D9B
+;kh-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA AL-KAYANNA ;uni0D9B0DCA
+;khi-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA KIYANNA;uni0D9B0DD2
+;khii-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA KIIYANNA;uni0D9B0DD3
 0D9C;ga-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA GAYANNA;uni0D9C
+;gu-sinhala;Letter;;;;sinhala;SINHALA LETTER GU;uni0D9C0DD4
+;guu-sinhala;Letter;;;;sinhala;SINHALA LETTER GUU;uni0D9C0DD6
 0D9D;gha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA GAYANNA;uni0D9D
 0D9E;nga-sinhala;Letter;;;;sinhala;SINHALA LETTER KANTAJA NAASIKYAYA;uni0D9E
+;ng-sinhala;Letter;;;;sinhala;SINHALA LETTER KANTAJA NAASIKYAYA WITHOUT VOWEL;uni0D9E0DCA
+;ngi-sinhala;Letter;;;;sinhala;SINHALA LETTER KANTAJA NAASIKYAYA WITH VOWEL I;uni0D9E0DD2
+;ngii-sinhala;Letter;;;;sinhala;SINHALA LETTER KANTAJA NAASIKYAYA WITH VOWEL II;uni0D9E0DD3
 0D9F;nnga-sinhala;Letter;;;;sinhala;SINHALA LETTER SANYAKA GAYANNA;uni0D9F
+;nngu-sinhala;Letter;;;;sinhala;SINHALA LETTER NNGU;uni0D9F0DD4
+;nnguu-sinhala;Letter;;;;sinhala;SINHALA LETTER NNGUU;uni0D9F0DD6
 0DA0;ca-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA CAYANNA;uni0DA0
+;c-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA AL-CAYANNA;uni0DA00DCA
+;ci-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA CIYANNA;uni0DA00DD2
+;cii-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA CIIYANNA;uni0DA00DD3
 0DA1;cha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA CAYANNA;uni0DA1
+;ch-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA AL-CAYANNA;uni0DA10DCA
+;chi-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA CIYANNA;uni0DA10DD2
+;chii-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA CIIYANNA;uni0DA10DD3
 0DA2;ja-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA JAYANNA;uni0DA2
+;j-sinhala;Letter;;;;sinhala;SINHALA LETTER J;uni0DA20DCA
+;ji-sinhala;Letter;;;;sinhala;SINHALA LETTER JI;uni0DA20DD2
+;jii-sinhala;Letter;;;;sinhala;SINHALA LETTER JII;uni0DA20DD3
 0DA3;jha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA JAYANNA;uni0DA3
+;jh-sinhala;Letter;;;;sinhala;SINHALA LETTER JH;uni0DA30DCA
+;jhi-sinhala;Letter;;;;sinhala;SINHALA LETTER JHI;uni0DA30DD2
+;jhii-sinhala;Letter;;;;sinhala;SINHALA LETTER JHII;uni0DA30DD3
 0DA4;nya-sinhala;Letter;;;;sinhala;SINHALA LETTER TAALUJA NAASIKYAYA;uni0DA4
+;nyu-sinhala;Letter;;;;sinhala;SINHALA LETTER NYU;uni0DA40DD4
+;nyuu-sinhala;Letter;;;;sinhala;SINHALA LETTER NYUU;uni0DA40DD6
+;nyra-sinhala;Letter;;;;sinhala;SINHALA LETTER NYRA;uni0DA40DCA200D0DBB
 0DA5;jnya-sinhala;Letter;;;;sinhala;SINHALA LETTER TAALUJA SANYOOGA NAAKSIKYAYA;uni0DA5
+;jnyu-sinhala;Letter;;;;sinhala;SINHALA LETTER JNYU;uni0DA50DD4
+;jnyuu-sinhala;Letter;;;;sinhala;SINHALA LETTER JNYUU;uni0DA50DD6
+;jnyra-sinhala;Letter;;;;sinhala;SINHALA LETTER JNYRA;uni0DA50DCA200D0DBB
 0DA6;nyja-sinhala;Letter;;;;sinhala;SINHALA LETTER SANYAKA JAYANNA;uni0DA6
+;nyj-sinhala;Letter;;;;sinhala;SINHALA LETTER NYJ;uni0DA60DCA
+;nyji-sinhala;Letter;;;;sinhala;SINHALA LETTER NYJI;uni0DA60DD2
+;nyjii-sinhala;Letter;;;;sinhala;SINHALA LETTER NYJII;uni0DA60DD3
 0DA7;tta-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA TTAYANNA;uni0DA7
+;tt-sinhala;Letter;;;;sinhala;SINHALA LETTER TT;uni0DA70DCA
+;tti-sinhala;Letter;;;;sinhala;SINHALA LETTER TTI;uni0DA70DD2
+;ttii-sinhala;Letter;;;;sinhala;SINHALA LETTER TTII;uni0DA70DD3
 0DA8;ttha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA TTAYANNA;uni0DA8
+;tth-sinhala;Letter;;;;sinhala;SINHALA LETTER TTH;uni0DA80DCA
+;tthi-sinhala;Letter;;;;sinhala;SINHALA LETTER TTHI;uni0DA80DD2
+;tthii-sinhala;Letter;;;;sinhala;SINHALA LETTER TTHII;uni0DA80DD3
 0DA9;dda-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA DDAYANNA;uni0DA9
+;dd-sinhala;Letter;;;;sinhala;SINHALA LETTER DD;uni0DA90DCA
+;ddi-sinhala;Letter;;;;sinhala;SINHALA LETTER DDI;uni0DA90DD2
+;ddii-sinhala;Letter;;;;sinhala;SINHALA LETTER DDII;uni0DA90DD3
 0DAA;ddha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA DDAYANNA;uni0DAA
+;ddh-sinhala;Letter;;;;sinhala;SINHALA LETTER DDH;uni0DAA0DCA
+;ddhi-sinhala;Letter;;;;sinhala;SINHALA LETTER DDHI;uni0DAA0DD2
+;ddhii-sinhala;Letter;;;;sinhala;SINHALA LETTER DDHII;uni0DAA0DD3
 0DAB;nna-sinhala;Letter;;;;sinhala;SINHALA LETTER MUURDHAJA NAYANNA;uni0DAB
 0DAC;nndda-sinhala;Letter;;;;sinhala;SINHALA LETTER SANYAKA DDAYANNA;uni0DAC
+;nndd-sinhala;Letter;;;;sinhala;SINHALA LETTER NNDD;uni0DAC0DCA
+;nnddi-sinhala;Letter;;;;sinhala;SINHALA LETTER NNDDI;uni0DAC0DD2
+;nnddii-sinhala;Letter;;;;sinhala;SINHALA LETTER NNDDII;uni0DAC0DD3
 0DAD;ta-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA TAYANNA;uni0DAD
+;tu-sinhala;Letter;;;;sinhala;SINHALA LETTER TU;uni0DAD0DD4
+;tuu-sinhala;Letter;;;;sinhala;SINHALA LETTER TUU;uni0DAD0DD6
 0DAE;tha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA TAYANNA;uni0DAE
+;th-sinhala;Letter;;;;sinhala;SINHALA LETTER TH;uni0DAE0DCA
+;thi-sinhala;Letter;;;;sinhala;SINHALA LETTER THI;uni0DAE0DD2
+;thii-sinhala;Letter;;;;sinhala;SINHALA LETTER THII;uni0DAE0DD3
 0DAF;da-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA DAYANNA;uni0DAF
+;du-sinhala;Letter;;;;sinhala;SINHALA LETTER DU;uni0DAF0DD4
+;duu-sinhala;Letter;;;;sinhala;SINHALA LETTER DUU;uni0DAF0DD6
+;dra-sinhala;Letter;;;;sinhala;SINHALA LETTER DRA;uni0DAF0DCA200D0DBB
 0DB0;dha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA DAYANNA;uni0DB0
+;dh-sinhala;Letter;;;;sinhala;SINHALA LETTER DH;uni0DB00DCA
+;dhi-sinhala;Letter;;;;sinhala;SINHALA LETTER DHI;uni0DB00DD2
+;dhii-sinhala;Letter;;;;sinhala;SINHALA LETTER DHII;uni0DB00DD3
 0DB1;na-sinhala;Letter;;;;sinhala;SINHALA LETTER DANTAJA NAYANNA;uni0DB1
 0DB3;nda-sinhala;Letter;;;;sinhala;SINHALA LETTER SANYAKA DAYANNA;uni0DB3
+;ndu-sinhala;Letter;;;;sinhala;SINHALA LETTER NDU;uni0DB30DD4
+;nduu-sinhala;Letter;;;;sinhala;SINHALA LETTER NDUU;uni0DB30DD6
+;ndra-sinhala;Letter;;;;sinhala;SINHALA LETTER NDRA;uni0DB30DCA200D0DBB
 0DB4;pa-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA PAYANNA;uni0DB4
 0DB5;pha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA PAYANNA;uni0DB5
+;ph-sinhala;Letter;;;;sinhala;SINHALA LETTER PH;uni0DB50DCA
+;phi-sinhala;Letter;;;;sinhala;SINHALA LETTER PHI;uni0DB50DD2
+;phii-sinhala;Letter;;;;sinhala;SINHALA LETTER PHII;uni0DB50DD3
 0DB6;ba-sinhala;Letter;;;;sinhala;SINHALA LETTER ALPAPRAANA BAYANNA;uni0DB6
+;b-sinhala;Letter;;;;sinhala;SINHALA LETTER B;uni0DB60DCA
+;bi-sinhala;Letter;;;;sinhala;SINHALA LETTER BI;uni0DB60DD2
+;bii-sinhala;Letter;;;;sinhala;SINHALA LETTER BII;uni0DB60DD3
 0DB7;bha-sinhala;Letter;;;;sinhala;SINHALA LETTER MAHAAPRAANA BAYANNA;uni0DB7
+;bhu-sinhala;Letter;;;;sinhala;SINHALA LETTER BHU;uni0DB70DD4
+;bhuu-sinhala;Letter;;;;sinhala;SINHALA LETTER BHUU;uni0DB70DD6
 0DB8;ma-sinhala;Letter;;;;sinhala;SINHALA LETTER MAYANNA;uni0DB8
+;m-sinhala;Letter;;;;sinhala;SINHALA LETTER M;uni0DB80DCA
+;mi-sinhala;Letter;;;;sinhala;SINHALA LETTER MI;uni0DB80DD2
+;mii-sinhala;Letter;;;;sinhala;SINHALA LETTER MII;uni0DB80DD3
 0DB9;mba-sinhala;Letter;;;;sinhala;SINHALA LETTER AMBA BAYANNA;uni0DB9
+;mb-sinhala;Letter;;;;sinhala;SINHALA LETTER MB;uni0DB90DCA
+;mbi-sinhala;Letter;;;;sinhala;SINHALA LETTER MBI;uni0DB90DD2
+;mbii-sinhala;Letter;;;;sinhala;SINHALA LETTER MBII;uni0DB90DD3
 0DBA;ya-sinhala;Letter;;;;sinhala;SINHALA LETTER YAYANNA;uni0DBA
 0DBB;ra-sinhala;Letter;;;;sinhala;SINHALA LETTER RAYANNA;uni0DBB
+;r-sinhala;Letter;;;;sinhala;SINHALA LETTER R;uni0DBB0DCA
+;ri-sinhala;Letter;;;;sinhala;SINHALA LETTER RI;uni0DBB0DD2
+;rii-sinhala;Letter;;;;sinhala;SINHALA LETTER RII;uni0DBB0DD3
+;rae-sinhala;Letter;;;;sinhala;SINHALA LETTER RAE;uni0DBB0DD0
+;raee-sinhala;Letter;;;;sinhala;SINHALA LETTER RAEE;uni0DBB0DD1
 0DBD;la-sinhala;Letter;;;;sinhala;SINHALA LETTER DANTAJA LAYANNA;uni0DBD
+;lu-sinhala;Letter;;;;sinhala;SINHALA LETTER LU;uni0DBD0DD4
+;luu-sinhala;Letter;;;;sinhala;SINHALA LETTER LUU;uni0DBD0DD6
 0DC0;va-sinhala;Letter;;;;sinhala;SINHALA LETTER VAYANNA;uni0DC0
+;v-sinhala;Letter;;;;sinhala;SINHALA LETTER V;uni0DC00DCA
+;vi-sinhala;Letter;;;;sinhala;SINHALA LETTER VI;uni0DC00DD2
+;vii-sinhala;Letter;;;;sinhala;SINHALA LETTER VII;uni0DC00DD3
 0DC1;sha-sinhala;Letter;;;;sinhala;SINHALA LETTER TAALUJA SAYANNA;uni0DC1
+;shu-sinhala;Letter;;;;sinhala;SINHALA LETTER SHU;uni0DC10DD4
+;shuu-sinhala;Letter;;;;sinhala;SINHALA LETTER SHUU;uni0DC10DD6
 0DC2;ssa-sinhala;Letter;;;;sinhala;SINHALA LETTER MUURDHAJA SAYANNA;uni0DC2
 0DC3;sa-sinhala;Letter;;;;sinhala;SINHALA LETTER DANTAJA SAYANNA;uni0DC3
 0DC4;ha-sinhala;Letter;;;;sinhala;SINHALA LETTER HAYANNA;uni0DC4
 0DC5;lla-sinhala;Letter;;;;sinhala;SINHALA LETTER MUURDHAJA LAYANNA;uni0DC5
+;llu-sinhala;Letter;;;;sinhala;SINHALA LETTER LLU;uni0DC50DD4
+;lluu-sinhala;Letter;;;;sinhala;SINHALA LETTER LLUU;uni0DC50DD6
 0DC6;fa-sinhala;Letter;;;;sinhala;SINHALA LETTER FAYANNA;uni0DC6
 0DCA;virama-sinhala;Mark;Nonspacing;;;sinhala;SINHALA SIGN AL-LAKUNA;uni0DCA
 0DCF;aaMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN AELA-PILLA;uni0DCF
 0DD0;aeMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN KETTI AEDA-PILLA;uni0DD0
-0DD1;aaeMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA AEDA-PILLA;uni0DD1
+0DD1;aeeMatra-sinhala;Letter;;;;sinhala;SINHALA VOWEL SIGN DIGA AEDA-PILLA;uni0DD1
 0DD2;iMatra-sinhala;Mark;Nonspacing;;;sinhala;SINHALA VOWEL SIGN KETTI IS-PILLA;uni0DD2
 0DD3;iiMatra-sinhala;Mark;Nonspacing;;;sinhala;SINHALA VOWEL SIGN DIGA IS-PILLA;uni0DD3
 0DD4;uMatra-sinhala;Mark;Nonspacing;;;sinhala;SINHALA VOWEL SIGN KETTI PAA-PILLA;uni0DD4
 0DD6;uuMatra-sinhala;Mark;Nonspacing;;;sinhala;SINHALA VOWEL SIGN DIGA PAA-PILLA;uni0DD6
 0DD8;rVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN GAETTA-PILLA;uni0DD8
+0DF2;rrVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA GAETTA-PILLA;uni0DF2
 0DD9;eMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN KOMBUVA;uni0DD9
 0DDA;eeMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA KOMBUVA;uni0DDA
 0DDB;aiMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN KOMBU DEKA;uni0DDB
@@ -7932,6 +8096,10 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 0DDD;ooMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN KOMBUVA HAA DIGA AELA-PILLA;uni0DDD
 0DDE;auMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN KOMBUVA HAA GAYANUKITTA;uni0DDE
 0DDF;lVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN GAYANUKITTA;uni0DDF
+0DF3;llVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA GAYANUKITTA;uni0DF3
+;rakar-sinhala;Mark;Nonspacing;;;sinhala;SINHALA MARK RAKAR;uni0DCA200D0DBB
+;repha-sinhala;Mark;Nonspacing;;;sinhala;SINHALA MARK REPHA;uni0DBB0DCA200D
+;yansaya-sinhala;Letter;Halfform;;;sinhala;SINHALA HALFFORM LETTER YA;uni0DCA200D0DBA
 0DE6;zerolith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT ZERO;uni0DE6
 0DE7;onelith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT ONE;uni0DE7
 0DE8;twolith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT TWO;uni0DE8
@@ -7942,8 +8110,6 @@ A839;quantity-northindic;Symbol;;;;;NORTH INDIC QUANTITY MARK;uniA839
 0DED;sevenlith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT SEVEN;uni0DED
 0DEE;eightlith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT EIGHT;uni0DEE
 0DEF;ninelith-sinhala;Number;Decimal Digit;;;sinhala;SINHALA LITH DIGIT NINE;uni0DEF
-0DF2;rrVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA GAETTA-PILLA;uni0DF2
-0DF3;llVocalicMatra-sinhala;Mark;Spacing Combining;;;sinhala;SINHALA VOWEL SIGN DIGA GAYANUKITTA;uni0DF3
 0DF4;kunddaliya-sinhala;Punctuation;;;;sinhala;SINHALA PUNCTUATION KUNDDALIYA;uni0DF4
 111E1;oneArchaic-sinhala;Number;;;;sinhala;SINHALA ARCHAIC DIGIT ONE;u111E1
 111E2;twoArchaic-sinhala;Number;;;;sinhala;SINHALA ARCHAIC DIGIT TWO;u111E2
@@ -9826,22 +9992,22 @@ A9FE;bha-tailaing;Letter;;;;myanmar;MYANMAR LETTER TAI LAING BHA;uniA9FE
 30FD;iteration-kata;Mark;Modifier;;;kana;KATAKANA ITERATION MARK;uni30FD
 30FE;voicediteration-kata;Mark;Modifier;;;kana;KATAKANA VOICED ITERATION MARK;uni30FE
 30FF;digraphkoto-kata;Letter;;;;kana;KATAKANA DIGRAPH KOTO;uni30FF
-3190;linkingAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION LINKING MARK;uni3190
+3190;linkingAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION LINKING MARK;uni3190
 3191;reverseAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION REVERSE MARK;uni3191
-3192;oneAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION ONE MARK;uni3192
-3193;twoAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION TWO MARK;uni3193
-3194;threeAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION THREE MARK;uni3194
-3195;fourAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FOUR MARK;uni3195
-3196;topAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION TOP MARK;uni3196
-3197;middleAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION MIDDLE MARK;uni3197
-3198;bottomAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION BOTTOM MARK;uni3198
-3199;firstAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FIRST MARK;uni3199
-319A;secondAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION SECOND MARK;uni319A
-319B;thirdAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION THIRD MARK;uni319B
-319C;fourthAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FOURTH MARK;uni319C
-319D;heavenAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION HEAVEN MARK;uni319D
-319E;earthAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION EARTH MARK;uni319E
-319F;manAnnotaion-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION MAN MARK;uni319F
+3192;oneAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION ONE MARK;uni3192
+3193;twoAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION TWO MARK;uni3193
+3194;threeAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION THREE MARK;uni3194
+3195;fourAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FOUR MARK;uni3195
+3196;topAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION TOP MARK;uni3196
+3197;middleAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION MIDDLE MARK;uni3197
+3198;bottomAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION BOTTOM MARK;uni3198
+3199;firstAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FIRST MARK;uni3199
+319A;secondAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION SECOND MARK;uni319A
+319B;thirdAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION THIRD MARK;uni319B
+319C;fourthAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION FOURTH MARK;uni319C
+319D;heavenAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION HEAVEN MARK;uni319D
+319E;earthAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION EARTH MARK;uni319E
+319F;manAnnotation-han;Symbol;;;;han;IDEOGRAPHIC ANNOTATION MAN MARK;uni319F
 32D0;a-kata.circled;Letter;;;;kana;CIRCLED KATAKANA A;uni32D0
 32D1;i-kata.circled;Letter;;;;kana;CIRCLED KATAKANA I;uni32D1
 32D2;u-kata.circled;Letter;;;;kana;CIRCLED KATAKANA U;uni32D2
@@ -10877,7 +11043,7 @@ FFEE;whiteCircle.half;Symbol;;;;;HALFWIDTH WHITE CIRCLE;uniFFEE
 1140;pansiosCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG PANSIOS;uni1140
 1141;ieungKiyeokCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-KIYEOK;uni1141
 1142;ieungTikeutCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-TIKEUT;uni1142
-1143;ieung-mieumCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-MIEUM;uni1143
+1143;ieungMieumCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-MIEUM;uni1143
 1144;ieungPieupCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-PIEUP;uni1144
 1145;ieungSiosCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-SIOS;uni1145
 1146;ieungPansiosCho-ko;Letter;Jamo;;;hangul;HANGUL CHOSEONG IEUNG-PANSIOS;uni1146
@@ -23477,7 +23643,7 @@ ABBF;ya-cherokee;Letter;;lower;;cherokee;CHEROKEE SMALL LETTER YA;uniABBF
 167D;thwaaWoodScree-canadian;Letter;;;;canadian;CANADIAN SYLLABICS WOODS-CREE THWAA;uni167D
 167E;thFinalWoodScree-canadian;Letter;Modifier;;;canadian;CANADIAN SYLLABICS WOODS-CREE FINAL TH;uni167E
 167F;wBlackfoot-canadian;Letter;;;;canadian;CANADIAN SYLLABICS BLACKFOOT W;uni167F
-1680;spaceMark-ogham;Space;;;;ogham;OGHAM SPACE MARK;uni1680
+1680;spaceMark-ogham;Separator;Space;;;ogham;OGHAM SPACE MARK;uni1680
 1681;beith-ogham;Letter;;;;ogham;OGHAM LETTER BEITH;uni1681
 1682;luis-ogham;Letter;;;;ogham;OGHAM LETTER LUIS;uni1682
 1683;fearn-ogham;Letter;;;;ogham;OGHAM LETTER FEARN;uni1683
@@ -25527,16 +25693,16 @@ A6E2;men-bamum;Letter;;;;bamum;BAMUM LETTER MEN;uniA6E2
 A6E3;ma-bamum;Letter;;;;bamum;BAMUM LETTER MA;uniA6E3
 A6E4;ti-bamum;Letter;;;;bamum;BAMUM LETTER TI;uniA6E4
 A6E5;ki-bamum;Letter;;;;bamum;BAMUM LETTER KI;uniA6E5
-A6E6;mo-bamum;Letter;Number;;;bamum;BAMUM LETTER MO;uniA6E6
-A6E7;mbaa-bamum;Letter;Number;;;bamum;BAMUM LETTER MBAA;uniA6E7
-A6E8;tet-bamum;Letter;Number;;;bamum;BAMUM LETTER TET;uniA6E8
-A6E9;kpa-bamum;Letter;Number;;;bamum;BAMUM LETTER KPA;uniA6E9
-A6EA;ten-bamum;Letter;Number;;;bamum;BAMUM LETTER TEN;uniA6EA
-A6EB;ntuu-bamum;Letter;Number;;;bamum;BAMUM LETTER NTUU;uniA6EB
-A6EC;samba-bamum;Letter;Number;;;bamum;BAMUM LETTER SAMBA;uniA6EC
-A6ED;faamae-bamum;Letter;Number;;;bamum;BAMUM LETTER FAAMAE;uniA6ED
-A6EE;kovuu-bamum;Letter;Number;;;bamum;BAMUM LETTER KOVUU;uniA6EE
-A6EF;koghom-bamum;Letter;Number;;;bamum;BAMUM LETTER KOGHOM;uniA6EF
+A6E6;mo-bamum;Letter;;;;bamum;BAMUM LETTER MO;uniA6E6
+A6E7;mbaa-bamum;Letter;;;;bamum;BAMUM LETTER MBAA;uniA6E7
+A6E8;tet-bamum;Letter;;;;bamum;BAMUM LETTER TET;uniA6E8
+A6E9;kpa-bamum;Letter;;;;bamum;BAMUM LETTER KPA;uniA6E9
+A6EA;ten-bamum;Letter;;;;bamum;BAMUM LETTER TEN;uniA6EA
+A6EB;ntuu-bamum;Letter;;;;bamum;BAMUM LETTER NTUU;uniA6EB
+A6EC;samba-bamum;Letter;;;;bamum;BAMUM LETTER SAMBA;uniA6EC
+A6ED;faamae-bamum;Letter;;;;bamum;BAMUM LETTER FAAMAE;uniA6ED
+A6EE;kovuu-bamum;Letter;;;;bamum;BAMUM LETTER KOVUU;uniA6EE
+A6EF;koghom-bamum;Letter;;;;bamum;BAMUM LETTER KOGHOM;uniA6EF
 A6F0;koqndon-bamum;Mark;Nonspacing;;;bamum;BAMUM COMBINING MARK KOQNDON;uniA6F0
 A6F1;tukwentis-bamum;Mark;Nonspacing;;;bamum;BAMUM COMBINING MARK TUKWENTIS;uniA6F1
 A6F2;njaemli-bamum;Punctuation;;;;bamum;BAMUM NJAEMLI;uniA6F2
@@ -26377,9 +26543,9 @@ FE0C;VS13;Mark;Nonspacing;;;;VARIATION SELECTOR-13;uniFE0C
 FE0D;VS14;Mark;Nonspacing;;;;VARIATION SELECTOR-14;uniFE0D
 FE0E;VS15;Mark;Nonspacing;;;;VARIATION SELECTOR-15;uniFE0E
 FE0F;VS16;Mark;Nonspacing;;;;VARIATION SELECTOR-16;uniFE0F
-FFF9;interlinearannotationanchor;Other;Format;;;;INTERLINEAR ANNOTATION ANCHOR;uniFFF9
-FFFA;interlinearannotationseparator;Other;Format;;;;INTERLINEAR ANNOTATION SEPARATOR;uniFFFA
-FFFB;interlinearannotationterminator;Other;Format;;;;INTERLINEAR ANNOTATION TERMINATOR;uniFFFB
+FFF9;interlinearAnnotationAnchor;Separator;Format;;;;INTERLINEAR ANNOTATION ANCHOR;uniFFF9
+FFFA;interlinearAnnotationSeparator;Separator;Format;;;;INTERLINEAR ANNOTATION SEPARATOR;uniFFFA
+FFFB;interlinearAnnotationTerminator;Separator;Format;;;;INTERLINEAR ANNOTATION TERMINATOR;uniFFFB
 FFFC;objectReplacementCharacter;Symbol;;;;;OBJECT REPLACEMENT CHARACTER;uniFFFC
 FFFD;replacementCharacter;Symbol;;;;;REPLACEMENT CHARACTER;uniFFFD
 2010;hyphentwo;Punctuation;Dash;;;;HYPHEN;uni2010
@@ -33518,6 +33684,54 @@ FB02;fl;Letter;Ligature;lower;;latin;LATIN SMALL LIGATURE FL;
 10525;ghe-elbasan;Letter;;;;elbasan;ELBASAN LETTER GHE;u10525
 10526;ghamma-elbasan;Letter;;;;elbasan;ELBASAN LETTER GHAMMA;u10526
 10527;khe-elbasan;Letter;;;;elbasan;ELBASAN LETTER KHE;u10527
+10E80;elif-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER ELIF;u10E80
+10E81;be-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER BE;u10E81
+10E82;pe-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER PE;u10E82
+10E83;phe-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER PHE;u10E83
+10E84;the-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER THE;u10E84
+10E85;se-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER SE;u10E85
+10E86;cim-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER CIM;u10E86
+10E87;chim-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER CHIM;u10E87
+10E88;chhim-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER CHHIM;u10E88
+10E89;hha-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER HHA;u10E89
+10E8A;xa-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER XA;u10E8A
+10E8B;dal-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER DAL;u10E8B
+10E8C;zal-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER ZAL;u10E8C
+10E8D;ra-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER RA;u10E8D
+10E8E;rha-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER RHA;u10E8E
+10E8F;za-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER ZA;u10E8F
+10E90;ja-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER JA;u10E90
+10E91;sin-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER SIN;u10E91
+10E92;shin-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER SHIN;u10E92
+10E93;sad-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER SAD;u10E93
+10E94;dad-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER DAD;u10E94
+10E95;ta-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER TA;u10E95
+10E96;ze-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER ZE;u10E96
+10E97;eyn-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER EYN;u10E97
+10E98;xheyn-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER XHEYN;u10E98
+10E99;fa-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER FA;u10E99
+10E9A;va-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER VA;u10E9A
+10E9B;vaalternate-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER VA ALTERNATE FORM;u10E9B
+10E9C;qaf-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER QAF;u10E9C
+10E9D;kaf-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER KAF;u10E9D
+10E9E;khaf-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER KHAF;u10E9E
+10E9F;gaf-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER GAF;u10E9F
+10EA0;lam-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER LAM;u10EA0
+10EA1;mim-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER MIM;u10EA1
+10EA2;nun-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER NUN;u10EA2
+10EA3;um-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER UM;u10EA3
+10EA4;waw-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER WAW;u10EA4
+10EA5;ow-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER OW;u10EA5
+10EA6;ew-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER EW;u10EA6
+10EA7;hay-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER HAY;u10EA7
+10EA8;yot-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER YOT;u10EA8
+10EA9;et-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER ET;u10EA9
+10EAB;hamzacomb-yezidi;Mark;Nonspacing;;RTL;yezidi;YEZIDI COMBINING HAMZA MARK;u10EAB
+10EAC;maddacomb-yezidi;Mark;Nonspacing;;RTL;yezidi;YEZIDI COMBINING MADDA MARK;u10EAC
+10EAD;hyphenation-yezidi;Punctuation;Dash;;RTL;yezidi;YEZIDI HYPHENATION MARK;u10EAD
+10EB0;lamdotabove-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER LAM WITH DOT ABOVE;u10EB0
+10EB1;yotcircumflexabove-yezidi;Letter;;;RTL;yezidi;YEZIDI LETTER YOT WITH CIRCUMFLEX ABOVE;u10EB1
+;_bar-yezidi;Mark;Nonspacing;;RTL;yezidi;YEZIDI BAR COMPONENT;
 E0001;language.tag;Symbol;Format;;;;LANGUAGE TAG;uE0001
 E0020;space.tag;Symbol;Format;;;;TAG SPACE;uE0020
 E0021;exclamationmark.tag;Symbol;Format;;;;TAG EXCLAMATION MARK;uE0021
