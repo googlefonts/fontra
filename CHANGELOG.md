@@ -1,5 +1,11 @@
 # Changelog for Fontra
 
+## 2025-06-04
+
+- Fix warning caused by HTML Canvas API misuse. [Issue 2171](https://github.com/googlefonts/fontra/issues/2171) [PR 2174](https://github.com/googlefonts/fontra/pull/2174)
+- Added Georgian glyph sets. [PR 2167](https://github.com/googlefonts/fontra/pull/2167)
+- Update glyph-data.csv. [PR 2172](https://github.com/googlefonts/fontra/pull/2172)
+
 ## 2025-05-08
 
 - Fix miscellaneous bugs with the glyph source UI [PR 2161](https://github.com/googlefonts/fontra/pull/2161)
