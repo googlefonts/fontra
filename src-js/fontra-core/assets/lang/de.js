@@ -144,6 +144,7 @@ export const strings = {
     "Die Location ist nicht bei einer Source.",
   "dialog.cant-edit-glyph.content.locked-glyph": "Der Glyph ist gesperrt.",
   "dialog.cant-edit-glyph.title": "Kann Glyphen “%0” nicht bearbeiten",
+  "dialog.cant-edit-kerning.title": "Can’t edit kerning",
   "dialog.create": "Erstellen",
   "dialog.create-new-glyph.body":
     'Klicke "Erstellen" um einen neuen Glyphen hinzuzufügen mit dem Namen "%0"%1.',
@@ -428,6 +429,7 @@ export const strings = {
   "sidebar.user-settings.glyph.dragcrosshair": "Fadenkreuz-Bewegung",
   "sidebar.user-settings.glyph.dragghostpath": '"Gespänster"-Pfad-Bewegung',
   "sidebar.user-settings.glyph.kerning": "Kerning",
+  "sidebar.user-settings.glyph.kerning-tool": "Kerning (tool)",
   "sidebar.user-settings.glyph.lockicon":
     "Glyph-Schloss-Symbol für nicht editierende Glyphen",
   "sidebar.user-settings.glyph.point.index": "Punkt-Indexe",
