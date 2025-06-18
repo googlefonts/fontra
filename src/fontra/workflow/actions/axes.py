@@ -886,6 +886,7 @@ class DropLocationBase(BaseFilter):
             sources=[
                 replace(
                     source,
+                    name=instancer.getSourceName(source),
                     locationBase=None,
                     location=instancer.getGlyphSourceLocation(source),
                 )

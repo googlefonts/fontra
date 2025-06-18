@@ -108,6 +108,18 @@ class FontInstancer:
             fontSource.location if fontSource is not None else {}
         ) | glyphSource.location
 
+    def getGlyphSourceName(self, glyphSource: GlyphSource) -> str | None:
+        if glyphSource.name:
+            return glyphSource.name
+
+        fontSource = (
+            self.fontSources.get(glyphSource.locationBase)
+            if glyphSource.locationBase
+            else None
+        )
+
+        return fontSource.name if fontSource is not None else None
+
     @async_cached_property
     async def fontSourcesInstancer(self):
         await self._ensureSetup()
@@ -441,6 +453,9 @@ class GlyphInstancer:
 
     def getGlyphSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
         return self.fontInstancer.getGlyphSourceLocation(glyphSource)
+
+    def getSourceName(self, glyphSource: GlyphSource) -> str | None:
+        return self.fontInstancer.getGlyphSourceName(glyphSource)
 
 
 @dataclass

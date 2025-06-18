@@ -2,7 +2,7 @@
 "name": "B",
 "sources": [
 {
-"name": "",
+"name": "LightCondensed",
 "layerName": "light-condensed",
 "location": {
 "italic": 0,
@@ -11,7 +11,7 @@
 }
 },
 {
-"name": "",
+"name": "BoldCondensed",
 "layerName": "bold-condensed",
 "location": {
 "italic": 0,
@@ -20,7 +20,7 @@
 }
 },
 {
-"name": "",
+"name": "LightWide",
 "layerName": "light-wide",
 "location": {
 "italic": 0,
@@ -29,7 +29,7 @@
 }
 },
 {
-"name": "",
+"name": "BoldWide",
 "layerName": "bold-wide",
 "location": {
 "italic": 0,
@@ -38,7 +38,7 @@
 }
 },
 {
-"name": "",
+"name": "support.crossbar",
 "layerName": "support.crossbar",
 "location": {
 "italic": 0,
