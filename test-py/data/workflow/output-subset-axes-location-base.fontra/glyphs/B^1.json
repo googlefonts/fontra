@@ -1,0 +1,37 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "",
+"layerName": "light-condensed",
+"locationBase": "light-condensed"
+},
+{
+"name": "",
+"layerName": "bold-condensed",
+"locationBase": "bold-condensed"
+},
+{
+"name": "",
+"layerName": "support.crossbar",
+"locationBase": "support.crossbar"
+}
+],
+"layers": {
+"bold-condensed": {
+"glyph": {
+"xAdvance": 710
+}
+},
+"light-condensed": {
+"glyph": {
+"xAdvance": 443
+}
+},
+"support.crossbar": {
+"glyph": {
+"xAdvance": 645
+}
+}
+}
+}

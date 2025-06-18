@@ -1581,6 +1581,25 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "subset-keep-axis-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+            - filter: subset-glyphs
+              glyphNames: ["B"]
+            - filter: drop-shapes
+            - filter: clear-location-base  # bug: should not be needed
+            - filter: subset-axes
+              axisNames: ["weight"]
+            - filter: set-location-base  # bug: should not be needed
+            - output: fontra-write
+              destination: "output-subset-axes-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
