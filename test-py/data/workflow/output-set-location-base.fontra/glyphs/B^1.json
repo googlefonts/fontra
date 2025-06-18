@@ -1,0 +1,57 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "",
+"layerName": "light-condensed",
+"locationBase": "light-condensed"
+},
+{
+"name": "",
+"layerName": "bold-condensed",
+"locationBase": "bold-condensed"
+},
+{
+"name": "",
+"layerName": "light-wide",
+"locationBase": "light-wide"
+},
+{
+"name": "",
+"layerName": "bold-wide",
+"locationBase": "bold-wide"
+},
+{
+"name": "",
+"layerName": "support.crossbar",
+"locationBase": "support.crossbar"
+}
+],
+"layers": {
+"bold-condensed": {
+"glyph": {
+"xAdvance": 710
+}
+},
+"bold-wide": {
+"glyph": {
+"xAdvance": 1270
+}
+},
+"light-condensed": {
+"glyph": {
+"xAdvance": 443
+}
+},
+"light-wide": {
+"glyph": {
+"xAdvance": 1173
+}
+},
+"support.crossbar": {
+"glyph": {
+"xAdvance": 645
+}
+}
+}
+}
