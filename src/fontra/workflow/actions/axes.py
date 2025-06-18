@@ -278,7 +278,7 @@ class SubsetAxes(BaseFilter):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         return mapGlyphSourceLocationsAndFilter(
-            instancer.glyph, await self.mapFilterLocationFunc, instancer
+            instancer, await self.mapFilterLocationFunc
         )
 
     @async_cached_property
@@ -852,8 +852,9 @@ def mapGlyphSourceLocations(glyph: VariableGlyph, mapFunc) -> VariableGlyph:
 
 
 def mapGlyphSourceLocationsAndFilter(
-    glyph: VariableGlyph, mapFilterFunc, instancer: GlyphInstancer
+    instancer: GlyphInstancer, mapFilterFunc
 ) -> VariableGlyph:
+    glyph = instancer.glyph
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
