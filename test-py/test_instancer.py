@@ -203,6 +203,26 @@ async def test_instancer(instancer, glyphName, location, coordSystem, expectedRe
     assert expectedResult == result
 
 
+splitLocationTestData = [
+    ("A", {}, {}, {}),
+    ("A", {"weight": 400}, {"weight": 400}, {}),
+    ("varcotest2", {"weight": 400, "flip": 50}, {"weight": 400}, {"flip": 50}),
+]
+
+
+@pytest.mark.parametrize(
+    "glyphName, location, expectedFontLocation, expectedGlyphLocation",
+    splitLocationTestData,
+)
+async def test_instancer_splitLocation(
+    instancer, glyphName, location, expectedFontLocation, expectedGlyphLocation
+):
+    glyphInstancer = await instancer.getGlyphInstancer(glyphName)
+    fontLocation, glyphLocation = glyphInstancer.splitLocation(location)
+    assert expectedFontLocation == fontLocation
+    assert expectedGlyphLocation == glyphLocation
+
+
 penTestData = [
     (
         "period",

@@ -457,6 +457,22 @@ class GlyphInstancer:
     def getSourceName(self, glyphSource: GlyphSource) -> str | None:
         return self.fontInstancer.getGlyphSourceName(glyphSource)
 
+    def splitLocation(
+        self, location: dict[str, float]
+    ) -> tuple[dict[str, float], dict[str, float]]:
+        glyphAxisNames = self.glyphAxisNames
+
+        fontLocation = {}
+        glyphLocation = {}
+
+        for axisName, axisValue in location.items():
+            if axisName in glyphAxisNames:
+                glyphLocation[axisName] = axisValue
+            else:
+                fontLocation[axisName] = axisValue
+
+        return fontLocation, glyphLocation
+
 
 @dataclass
 class GlyphInstance:
