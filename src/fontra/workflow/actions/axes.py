@@ -871,9 +871,9 @@ def mapLocation(location, mapFuncs):
     }
 
 
-@registerFilterAction("drop-location-base")
+@registerFilterAction("clear-location-base")
 @dataclass(kw_only=True)
-class DropLocationBase(BaseFilter):
+class ClearLocationBase(BaseFilter):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph

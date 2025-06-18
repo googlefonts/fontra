@@ -1549,7 +1549,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             [],
         ),
         (
-            "drop-location-base",
+            "clear-location-base",
             """
             steps:
             - input: fontra-read
@@ -1557,9 +1557,9 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             - filter: subset-glyphs
               glyphNames: ["B"]
             - filter: drop-shapes
-            - filter: drop-location-base
+            - filter: clear-location-base
             - output: fontra-write
-              destination: "drop-location-base.fontra"
+              destination: "output-clear-location-base.fontra"
             """,
             False,
             [],
