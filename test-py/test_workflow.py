@@ -1548,6 +1548,22 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "drop-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+            - filter: subset-glyphs
+              glyphNames: ["B"]
+            - filter: drop-shapes
+            - filter: drop-location-base
+            - output: fontra-write
+              destination: "drop-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(

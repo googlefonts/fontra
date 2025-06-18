@@ -869,3 +869,26 @@ def mapLocation(location, mapFuncs):
         axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
         for axisName, axisValue in location.items()
     }
+
+
+@registerFilterAction("drop-location-base")
+@dataclass(kw_only=True)
+class DropLocationBase(BaseFilter):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+
+        if not any(source.locationBase is not None for source in glyph.sources):
+            return glyph
+
+        return replace(
+            glyph,
+            sources=[
+                replace(
+                    source,
+                    locationBase=None,
+                    location=instancer.getGlyphSourceLocation(source),
+                )
+                for source in instancer.glyph.sources
+            ],
+        )

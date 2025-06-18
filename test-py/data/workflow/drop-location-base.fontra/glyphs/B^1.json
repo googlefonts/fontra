@@ -1,0 +1,77 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "",
+"layerName": "light-condensed",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 0
+}
+},
+{
+"name": "",
+"layerName": "bold-condensed",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 0
+}
+},
+{
+"name": "",
+"layerName": "light-wide",
+"location": {
+"italic": 0,
+"weight": 150,
+"width": 1000
+}
+},
+{
+"name": "",
+"layerName": "bold-wide",
+"location": {
+"italic": 0,
+"weight": 850,
+"width": 1000
+}
+},
+{
+"name": "",
+"layerName": "support.crossbar",
+"location": {
+"italic": 0,
+"weight": 595,
+"width": 0
+}
+}
+],
+"layers": {
+"bold-condensed": {
+"glyph": {
+"xAdvance": 710
+}
+},
+"bold-wide": {
+"glyph": {
+"xAdvance": 1270
+}
+},
+"light-condensed": {
+"glyph": {
+"xAdvance": 443
+}
+},
+"light-wide": {
+"glyph": {
+"xAdvance": 1173
+}
+},
+"support.crossbar": {
+"glyph": {
+"xAdvance": 645
+}
+}
+}
+}
