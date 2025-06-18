@@ -1590,10 +1590,8 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             - filter: subset-glyphs
               glyphNames: ["B"]
             - filter: drop-shapes
-            - filter: clear-location-base  # bug: should not be needed
             - filter: subset-axes
               axisNames: ["weight"]
-            - filter: set-location-base  # bug: should not be needed
             - output: fontra-write
               destination: "output-subset-axes-location-base.fontra"
             """,

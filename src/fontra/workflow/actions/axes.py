@@ -253,15 +253,17 @@ class SubsetAxes(BaseFilter):
         # but those axes are to be dropped, so it *also* says "axes to drop"
         locationToKeep = {n: v for n, v in location.items() if n not in keepAxisNames}
 
-        def mapFilterFunc(location):
+        def mapFilterFunc(locationToFilter, locationToMap=None):
+            if locationToMap is None:
+                locationToMap = locationToFilter
             if (
-                subsetLocationKeep(locationToKeep | location, locationToKeep)
+                subsetLocationKeep(locationToKeep | locationToFilter, locationToKeep)
                 != locationToKeep
             ):
                 # drop this location
                 return None
 
-            return subsetLocationDrop(location, locationToKeep)
+            return subsetLocationDrop(locationToMap, locationToKeep)
 
         return mapFilterFunc
 
@@ -273,8 +275,11 @@ class SubsetAxes(BaseFilter):
             axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
         )
 
-    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return mapGlyphSourceLocationsAndFilter(glyph, await self.mapFilterLocationFunc)
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        return mapGlyphSourceLocationsAndFilter(
+            instancer.glyph, await self.mapFilterLocationFunc, instancer
+        )
 
     @async_cached_property
     async def processedSources(self) -> dict[str, FontSource]:
@@ -847,13 +852,13 @@ def mapGlyphSourceLocations(glyph: VariableGlyph, mapFunc) -> VariableGlyph:
 
 
 def mapGlyphSourceLocationsAndFilter(
-    glyph: VariableGlyph, mapFilterFunc
+    glyph: VariableGlyph, mapFilterFunc, instancer: GlyphInstancer
 ) -> VariableGlyph:
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
-        # We do *not* need to take source.locationBase into account here
-        newLocation = mapFilterFunc(source.location)
+        fullLocation = instancer.getSourceLocation(source)
+        newLocation = mapFilterFunc(fullLocation, source.location)
         if newLocation is None:
             layersToDelete.add(source.layerName)
         else:
