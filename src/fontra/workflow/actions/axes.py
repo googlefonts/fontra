@@ -23,6 +23,7 @@ from ...core.classes import (
     unstructure,
 )
 from ...core.discretevariationmodel import DiscreteVariationModel
+from ...core.instancer import GlyphInstancer
 from ...core.varutils import (
     AxisRange,
     locationToTuple,
@@ -790,7 +791,9 @@ def updateKerningTable(
 
 
 def updateGlyphSourcesAndLayers(
-    instancer, newLocations, remainingAxisNames=None
+    instancer: GlyphInstancer,
+    newLocations: list[dict[str, float]],
+    remainingAxisNames: set | None = None,
 ) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
@@ -799,7 +802,7 @@ def updateGlyphSourcesAndLayers(
 
     sourcesByLocation = {
         locationToTuple(
-            filterLocation(instancer.getGlyphSourceLocation(source), axisNames)
+            filterLocation(instancer.getSourceLocation(source), axisNames)
         ): source
         for source in instancer.activeSources
     }
@@ -888,7 +891,7 @@ class ClearLocationBase(BaseFilter):
                     source,
                     name=instancer.getSourceName(source),
                     locationBase=None,
-                    location=instancer.getGlyphSourceLocation(source),
+                    location=instancer.getSourceLocation(source),
                 )
                 for source in instancer.glyph.sources
             ],

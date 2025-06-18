@@ -355,7 +355,7 @@ class ShallowDecomposeComposites(BaseFilter):
         newLayers = dict(glyph.layers)
 
         for source in instancer.activeSources:
-            location = instancer.getGlyphSourceLocation(source)
+            location = instancer.getSourceLocation(source)
             instance = instancer.instantiate(location)
             newPaths = [instance.glyph.path]
             newComponents = []
