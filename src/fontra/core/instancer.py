@@ -451,7 +451,7 @@ class GlyphInstancer:
     def checkCompatibility(self):
         return self.model.checkCompatibilityFromDeltas(self.deltas)
 
-    def getGlyphSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
+    def getSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
         return self.fontInstancer.getGlyphSourceLocation(glyphSource)
 
     def getSourceName(self, glyphSource: GlyphSource) -> str | None:
