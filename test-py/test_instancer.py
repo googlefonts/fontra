@@ -823,6 +823,14 @@ def test_FontSourcesInstancer_empty_sources_list():
     assert sourceInstance is None
 
 
+def test_FontSourcesInstancer_defaultSourceIdentifier():
+    fsi = FontSourcesInstancer(
+        fontAxes=testAxes_FontSourcesInstancer,
+        fontSources=testSources_FontSourcesInstancer,
+    )
+    assert fsi.defaultSourceIdentifier == "source1"
+
+
 testData_prependTransformToDecomposed = [
     (
         Transform(),
