@@ -831,6 +831,31 @@ def test_FontSourcesInstancer_defaultSourceIdentifier():
     assert fsi.defaultSourceIdentifier == "source1"
 
 
+testData_getSourceIdentifierForLocation = [
+    ({}, "source1"),
+    ({"Weight": 400, "Width": 50}, "source1"),
+    ({"Weight": 900, "Width": 50}, "source2"),
+    ({"Weight": 650}, None),
+    ({"Width": 75}, None),
+    ({"Weight": 650, "Width": 75}, None),
+]
+
+
+@pytest.mark.parametrize(
+    "location, expectedSourceIdentifier", testData_getSourceIdentifierForLocation
+)
+def test_FontSourcesInstancer_getSourceIdentifierForLocation(
+    location, expectedSourceIdentifier
+):
+    fsi = FontSourcesInstancer(
+        fontAxes=testAxes_FontSourcesInstancer,
+        fontSources=testSources_FontSourcesInstancer,
+    )
+
+    sourceIdentifier = fsi.getSourceIdentifierForLocation(location)
+    assert sourceIdentifier == expectedSourceIdentifier
+
+
 testData_prependTransformToDecomposed = [
     (
         Transform(),
