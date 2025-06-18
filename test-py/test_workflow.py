@@ -1564,6 +1564,23 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "set-location-base",
+            """
+            steps:
+            - input: fontra-read
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+            - filter: subset-glyphs
+              glyphNames: ["B", "varcotest2"]
+            - filter: drop-shapes
+            - filter: clear-location-base
+            - filter: set-location-base
+            - output: fontra-write
+              destination: "output-set-location-base.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(

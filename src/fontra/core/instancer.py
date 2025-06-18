@@ -594,7 +594,12 @@ class FontSourcesInstancer:
             locationToTuple(
                 makeDenseLocation(source.location, self.defaultSourceLocation)
             ): sourceIdentifier
-            for sourceIdentifier, source in self.fontSourcesDense.items()
+            for sourceIdentifier, source in self.fontSources.items()
+        }
+        self.sourceIdsByLocationDense = {
+            locationTuple: sourceIdentifier
+            for locationTuple, sourceIdentifier in self.sourceIdsByLocation.items()
+            if sourceIdentifier in self.fontSourcesDense
         }
         self._instanceCache = LRUCache(50)
 
@@ -643,7 +648,7 @@ class FontSourcesInstancer:
         sourceLocation = makeDenseLocation(sourceLocation, self.defaultSourceLocation)
         locationTuple = locationToTuple(sourceLocation)
 
-        sourceIdentifier = self.sourceIdsByLocation.get(locationTuple)
+        sourceIdentifier = self.sourceIdsByLocationDense.get(locationTuple)
         if sourceIdentifier is not None:
             return self.fontSourcesDense[sourceIdentifier]
 
