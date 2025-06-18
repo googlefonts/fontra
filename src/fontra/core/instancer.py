@@ -584,8 +584,7 @@ class FontSourcesInstancer:
 
     @cached_property
     def defaultSourceIdentifier(self) -> str | None:
-        locationTuple = locationToTuple(self.defaultSourceLocation)
-        return self.sourceIdsByLocation.get(locationTuple)
+        return self.getSourceIdentifierForLocation({})
 
     def getSourceIdentifierForLocation(self, location: dict[str, float]) -> str | None:
         locationTuple = locationToTuple(self.defaultSourceLocation | location)
