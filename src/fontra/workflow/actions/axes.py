@@ -60,7 +60,7 @@ class RenameAxes(BaseFilter):
         )
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return mapGlyphSourceLocationsAndFilter(glyph, self.renameLocationAxes)
+        return mapGlyphSourceLocations(glyph, self.renameLocationAxes)
 
     async def processAxes(self, axes: Axes) -> Axes:
         return replace(axes, axes=[_renameAxis(axis, self.axes) for axis in axes.axes])
@@ -137,7 +137,7 @@ class DropAxisMappings(BaseFilter):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+        return mapGlyphSourceLocations(glyph, mapFunc)
 
     async def getAxes(self) -> Axes:
         axes = await self.inputAxes
@@ -216,7 +216,7 @@ class AdjustAxes(BaseFilter):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+        return mapGlyphSourceLocations(glyph, mapFunc)
 
     async def processSources(
         self, sources: dict[str, FontSource]
@@ -831,6 +831,18 @@ def updateGlyphSourcesAndLayers(
 
     return dropUnusedSourcesAndLayers(
         replace(glyph, sources=newSources, layers=newLayers)
+    )
+
+
+def mapGlyphSourceLocations(glyph: VariableGlyph, mapFunc) -> VariableGlyph:
+    # We do *not* need to take source.locationBase into account here as the same
+    # mapping is applied to the font source locations
+    return replace(
+        glyph,
+        sources=[
+            replace(source, location=mapFunc(source.location))
+            for source in glyph.sources
+        ],
     )
 
 
