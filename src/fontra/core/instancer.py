@@ -108,6 +108,18 @@ class FontInstancer:
             fontSource.location if fontSource is not None else {}
         ) | glyphSource.location
 
+    def getGlyphSourceName(self, glyphSource: GlyphSource) -> str | None:
+        if glyphSource.name:
+            return glyphSource.name
+
+        fontSource = (
+            self.fontSources.get(glyphSource.locationBase)
+            if glyphSource.locationBase
+            else None
+        )
+
+        return fontSource.name if fontSource is not None else None
+
     @async_cached_property
     async def fontSourcesInstancer(self):
         await self._ensureSetup()
@@ -442,6 +454,25 @@ class GlyphInstancer:
     def getGlyphSourceLocation(self, glyphSource: GlyphSource) -> dict[str, float]:
         return self.fontInstancer.getGlyphSourceLocation(glyphSource)
 
+    def getSourceName(self, glyphSource: GlyphSource) -> str | None:
+        return self.fontInstancer.getGlyphSourceName(glyphSource)
+
+    def splitLocation(
+        self, location: dict[str, float]
+    ) -> tuple[dict[str, float], dict[str, float]]:
+        glyphAxisNames = self.glyphAxisNames
+
+        fontLocation = {}
+        glyphLocation = {}
+
+        for axisName, axisValue in location.items():
+            if axisName in glyphAxisNames:
+                glyphLocation[axisName] = axisValue
+            else:
+                fontLocation[axisName] = axisValue
+
+        return fontLocation, glyphLocation
+
 
 @dataclass
 class GlyphInstance:
@@ -563,13 +594,21 @@ class FontSourcesInstancer:
             locationToTuple(
                 makeDenseLocation(source.location, self.defaultSourceLocation)
             ): sourceIdentifier
-            for sourceIdentifier, source in self.fontSourcesDense.items()
+            for sourceIdentifier, source in self.fontSources.items()
+        }
+        self.sourceIdsByLocationDense = {
+            locationTuple: sourceIdentifier
+            for locationTuple, sourceIdentifier in self.sourceIdsByLocation.items()
+            if sourceIdentifier in self.fontSourcesDense
         }
         self._instanceCache = LRUCache(50)
 
     @cached_property
     def defaultSourceIdentifier(self) -> str | None:
-        locationTuple = locationToTuple(self.defaultSourceLocation)
+        return self.getSourceIdentifierForLocation({})
+
+    def getSourceIdentifierForLocation(self, location: dict[str, float]) -> str | None:
+        locationTuple = locationToTuple(self.defaultSourceLocation | location)
         return self.sourceIdsByLocation.get(locationTuple)
 
     @cached_property
@@ -609,7 +648,7 @@ class FontSourcesInstancer:
         sourceLocation = makeDenseLocation(sourceLocation, self.defaultSourceLocation)
         locationTuple = locationToTuple(sourceLocation)
 
-        sourceIdentifier = self.sourceIdsByLocation.get(locationTuple)
+        sourceIdentifier = self.sourceIdsByLocationDense.get(locationTuple)
         if sourceIdentifier is not None:
             return self.fontSourcesDense[sourceIdentifier]
 

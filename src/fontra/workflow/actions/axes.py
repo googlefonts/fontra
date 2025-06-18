@@ -692,7 +692,7 @@ def trimLocation(
 def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
     axisNames = instancer.fontAxisNames
     sources = instancer.fontSources
-    sourceIdsByLocation = instancer.sourceIdsByLocation
+    sourceIdsByLocation = instancer.sourceIdsByLocationDense
 
     if remainingFontAxisNames is None:
         remainingFontAxisNames = axisNames
@@ -869,3 +869,61 @@ def mapLocation(location, mapFuncs):
         axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
         for axisName, axisValue in location.items()
     }
+
+
+@registerFilterAction("clear-location-base")
+@dataclass(kw_only=True)
+class ClearLocationBase(BaseFilter):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+
+        if not any(source.locationBase is not None for source in glyph.sources):
+            return glyph
+
+        return replace(
+            glyph,
+            sources=[
+                replace(
+                    source,
+                    name=instancer.getSourceName(source),
+                    locationBase=None,
+                    location=instancer.getGlyphSourceLocation(source),
+                )
+                for source in instancer.glyph.sources
+            ],
+        )
+
+
+@registerFilterAction("set-location-base")
+@dataclass(kw_only=True)
+class SetLocationBase(BaseFilter):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+        fontSourcesInstancer = await instancer.fontInstancer.fontSourcesInstancer
+
+        if any(source.locationBase is not None for source in glyph.sources):
+            return glyph
+
+        return replace(
+            glyph,
+            sources=[
+                updateSource(source, instancer, fontSourcesInstancer)
+                for source in glyph.sources
+            ],
+        )
+
+
+def updateSource(source, instancer, fontSourcesInstancer):
+    assert source.locationBase is None
+    fontLocation, glyphLocation = instancer.splitLocation(source.location)
+    sourceName = source.name if glyphLocation else ""
+    locationBase = fontSourcesInstancer.getSourceIdentifierForLocation(fontLocation)
+
+    if locationBase is None:
+        return source
+
+    return replace(
+        source, name=sourceName, locationBase=locationBase, location=glyphLocation
+    )
