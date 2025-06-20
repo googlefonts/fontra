@@ -1035,12 +1035,8 @@ export class FontController {
   }
 
   async _getKerningController(kernTag) {
-    const kerning = await this.getKerning();
-    const kerningTable = kerning[kernTag];
-    if (!kerningTable) {
-      return null;
-    }
-    return new KerningController(kerningTable, this.fontAxesSourceSpace, this.sources);
+    // Do not inline: the this.getKerning() call must be part of the promise
+    return new KerningController(kernTag, await this.getKerning(), this);
   }
 
   get defaultSourceLocation() {
