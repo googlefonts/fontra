@@ -685,11 +685,16 @@ export class FontController {
     }
   }
 
-  addChangeListener(matchPattern, listener, wantLiveChanges) {
+  addChangeListener(
+    matchPattern,
+    listener,
+    wantLiveChanges = false,
+    immediate = false
+  ) {
     if (wantLiveChanges) {
-      this._changeListenersLive.push({ matchPattern, listener });
+      this._changeListenersLive.push({ matchPattern, listener, immediate });
     } else {
-      this._changeListeners.push({ matchPattern, listener });
+      this._changeListeners.push({ matchPattern, listener, immediate });
     }
   }
 
@@ -709,7 +714,11 @@ export class FontController {
       : chain(this._changeListenersLive, this._changeListeners);
     for (const listenerInfo of listeners) {
       if (!change || matchChangePattern(change, listenerInfo.matchPattern)) {
-        setTimeout(() => listenerInfo.listener(change, isExternalChange), 0);
+        if (listenerInfo.immediate) {
+          listenerInfo.listener(change, isExternalChange);
+        } else {
+          setTimeout(() => listenerInfo.listener(change, isExternalChange), 0);
+        }
       }
     }
   }
@@ -1026,12 +1035,8 @@ export class FontController {
   }
 
   async _getKerningController(kernTag) {
-    const kerning = await this.getKerning();
-    const kerningTable = kerning[kernTag];
-    if (!kerningTable) {
-      return null;
-    }
-    return new KerningController(kerningTable, this.fontAxesSourceSpace, this.sources);
+    // Do not inline: the this.getKerning() call must be part of the promise
+    return new KerningController(kernTag, await this.getKerning(), this);
   }
 
   get defaultSourceLocation() {

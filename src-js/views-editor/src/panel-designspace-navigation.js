@@ -265,7 +265,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.fontAxesElement.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
-        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.scrollAdjustBehavior =
+          this.getScrollAdjustBehavior("pin-glyph-center");
         this.sceneController.autoViewBox = false;
 
         this.sceneSettingsController.setItem(
@@ -281,7 +282,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.glyphAxesElement.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
-        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.scrollAdjustBehavior =
+          this.getScrollAdjustBehavior("pin-glyph-center");
         this.sceneController.autoViewBox = false;
         this.sceneSettingsController.setItem(
           "glyphLocation",
@@ -396,7 +398,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.removeSourceLayer();
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
-      this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+      this.sceneController.scrollAdjustBehavior =
+        this.getScrollAdjustBehavior("pin-glyph-center");
       const selectedItem = this.sourcesList.getSelectedItem();
       const sourceIndex = selectedItem?.sourceIndex;
 
@@ -414,10 +417,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       } else {
         this.sceneSettings.editLayerName = null;
         if (selectedItem) {
-          const { fontLocation } = varGlyphController.splitLocation(
-            selectedItem.denseLocation
-          );
-          this.sceneSettings.fontLocationSourceMapped = fontLocation;
+          if (!varGlyphController) {
+            this.sceneSettings.fontLocationSourceMapped = {};
+          } else {
+            const { fontLocation } = varGlyphController.splitLocation(
+              selectedItem.denseLocation
+            );
+            this.sceneSettings.fontLocationSourceMapped = fontLocation;
+          }
           this.sceneSettings.glyphLocation = {};
         }
       }
@@ -504,6 +511,13 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  getScrollAdjustBehavior(defaultBehavior) {
+    if (this.sceneController.selectedTool?.getScrollAdjustBehavior) {
+      return this.sceneController.selectedTool.getScrollAdjustBehavior();
+    }
+    return defaultBehavior;
   }
 
   async updateSourceListSelectionFromLocation() {
@@ -1059,6 +1073,25 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async goToNearestSource() {
     const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
+    if (!glyphController) {
+      this.sceneController.scrollAdjustBehavior =
+        this.getScrollAdjustBehavior("pin-glyph-center");
+
+      const defaultLocation =
+        this.fontController.fontSourcesInstancer.defaultSourceLocation;
+      const sourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
+      const locations = sourceIdentifiers.map((sourceIdentifier) => ({
+        ...defaultLocation,
+        ...this.fontController.sources[sourceIdentifier].location,
+      }));
+      const targetLocation = {
+        ...defaultLocation,
+        ...this.sceneSettings.fontLocationSourceMapped,
+      };
+      const index = findNearestLocationIndex(targetLocation, locations);
+      this.sceneSettings.fontLocationSourceMapped = locations[index];
+      return;
+    }
     const targetLocation = {
       ...glyphController.getDenseDefaultSourceLocation(),
       ...glyphController.expandNLIAxes({
@@ -1073,15 +1106,32 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async doSelectPreviousNextSource(selectPrevious) {
+    const delta = selectPrevious ? -1 : 1;
     let itemIndex = this.sourcesList.getSelectedItemIndex();
     if (itemIndex != undefined) {
-      const newItemIndex = modulo(
-        itemIndex + (selectPrevious ? -1 : 1),
-        this.sourcesList.items.length
-      );
+      const newItemIndex = modulo(itemIndex + delta, this.sourcesList.items.length);
       this.sourcesList.setSelectedItemIndex(newItemIndex, true);
     } else {
-      this.goToNearestSource();
+      const sourceIdentifier =
+        this.fontController.fontSourcesInstancer.getSourceIdentifierForLocation(
+          this.sceneSettings.fontLocationSourceMapped
+        );
+      if (sourceIdentifier) {
+        const sourceIdentifiers = this.fontController.getSortedSourceIdentifiers();
+        const newIndex = modulo(
+          sourceIdentifiers.indexOf(sourceIdentifier) + delta,
+          sourceIdentifiers.length
+        );
+        const newSourceIdentifier = sourceIdentifiers[newIndex];
+
+        this.sceneController.scrollAdjustBehavior =
+          this.getScrollAdjustBehavior("pin-glyph-center");
+
+        this.sceneSettings.fontLocationSourceMapped =
+          this.fontController.sources[newSourceIdentifier].location;
+      } else {
+        this.goToNearestSource();
+      }
     }
   }
 

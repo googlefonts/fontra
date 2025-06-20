@@ -135,6 +135,7 @@ def getItemCast(subject, attrName, fieldKey):
 
 
 _MISSING = object()
+wildcard = "__WILDCARD__"  # A unique object would be better, but JSON.
 
 
 def matchChangePattern(
@@ -150,6 +151,8 @@ def matchChangePattern(
     node = matchPattern
     for pathElement in change.get("p", []):
         childNode = node.get(pathElement, _MISSING)
+        if childNode is _MISSING:
+            childNode = node.get(wildcard, _MISSING)
         if childNode is _MISSING:
             return False
         if childNode is None:

@@ -742,35 +742,6 @@ function _drawLockIcon(context, x, y, strokeColor, iconSize, lineWidth = 2) {
 }
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.kerning-indicators",
-  name: "sidebar.user-settings.glyph.kerning",
-  selectionFunc: glyphSelector("all"),
-  userSwitchable: true,
-  defaultOn: false,
-  zIndex: 190,
-  colors: { negativeKernColor: "#F1175933", positiveKernColor: "#1759F133" },
-  colorsDarkMode: { negativeKernColor: "#FF336655", positiveKernColor: "#3366FF55" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!positionedGlyph.kernValue) {
-      return;
-    }
-    const lineMetrics = model.fontSourceInstance?.lineMetricsHorizontalLayout;
-
-    context.fillStyle =
-      positionedGlyph.kernValue > 0
-        ? parameters.positiveKernColor
-        : parameters.negativeKernColor;
-
-    const ascender =
-      lineMetrics?.ascender?.value || model.fontController.unitsPerEm * 0.8;
-    const descender =
-      lineMetrics?.descender?.value || model.fontController.unitsPerEm * -0.2;
-
-    context.fillRect(0, descender, -positionedGlyph.kernValue, ascender - descender);
-  },
-});
-
-registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
   name: "sidebar.user-settings.glyph.sidebearings",
   selectionFunc: glyphSelector("notediting"),

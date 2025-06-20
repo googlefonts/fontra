@@ -23,6 +23,7 @@ import {
   parseSelection,
   range,
   reversed,
+  valueInRange,
 } from "@fontra/core/utils.js";
 import * as vector from "@fontra/core/vector.js";
 
@@ -59,6 +60,13 @@ export class SceneModel {
         this._syncGlyphLocations();
         this.updateScene();
       }
+    );
+
+    this.fontController.addChangeListener(
+      { kerning: null },
+      () => this._resetKerningInstance(),
+      true,
+      true
     );
 
     this.sceneSettingsController.addKeyListener(
@@ -184,7 +192,7 @@ export class SceneModel {
           this.sceneSettings.fontLocationSourceMapped
         );
       } else {
-        this._kerningInstance = { getPairValue: (leftGlyph, rightGlyph) => 0 };
+        this._kerningInstance = { getGlyphPairValue: (leftGlyph, rightGlyph) => null };
       }
     }
     return this._kerningInstance;
@@ -442,7 +450,7 @@ export class SceneModel {
 
         const kernValue =
           kerningInstance && previousGlyphName
-            ? kerningInstance.getPairValue(previousGlyphName, glyphInfo.glyphName)
+            ? kerningInstance.getGlyphPairValue(previousGlyphName, glyphInfo.glyphName)
             : 0;
 
         x += kernValue;
@@ -951,6 +959,53 @@ export class SceneModel {
       foundGlyph = { lineIndex: i, glyphIndex: j };
     }
     return foundGlyph;
+  }
+
+  kerningAtPoint(point, size) {
+    if (!this.positionedLines.length) {
+      return;
+    }
+
+    const ascender = this.ascender;
+    const descender = this.descender;
+
+    for (const [lineIndex, line] of enumerate(this.positionedLines)) {
+      if (!line.glyphs.length) {
+        continue;
+      }
+      const firstGlyph = line.glyphs[0];
+      const lastGlyph = line.glyphs.at(-1);
+      const metricsBox = {
+        xMin: firstGlyph.x,
+        yMin: firstGlyph.y + descender,
+        xMax: lastGlyph.x + lastGlyph.glyph.xAdvance,
+        yMax: firstGlyph.y + ascender,
+      };
+      if (!pointInRect(point.x, point.y, metricsBox)) {
+        continue;
+      }
+
+      for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
+        const positionedGlyph = line.glyphs[glyphIndex];
+        const leftPos = positionedGlyph.x;
+        const kernRange = [leftPos - positionedGlyph.kernValue, leftPos].sort(
+          (a, b) => a - b
+        );
+        if (valueInRange(kernRange[0] - size, point.x, kernRange[1] + size)) {
+          return { lineIndex, glyphIndex };
+        }
+      }
+    }
+  }
+
+  get ascender() {
+    const lineMetrics = this.fontSourceInstance?.lineMetricsHorizontalLayout;
+    return lineMetrics?.ascender?.value || this.fontController.unitsPerEm * 0.8;
+  }
+
+  get descender() {
+    const lineMetrics = this.fontSourceInstance?.lineMetricsHorizontalLayout;
+    return lineMetrics?.descender?.value || model.fontController.unitsPerEm * -0.2;
   }
 
   getSceneBounds() {

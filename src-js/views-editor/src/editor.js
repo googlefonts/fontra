@@ -65,6 +65,7 @@ import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialo
 import { parsePluginBasePath } from "@fontra/web-components/plugin-manager.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
+import { KerningTool } from "./edit-tools-kerning.js";
 import { KnifeTool } from "./edit-tools-knife.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTools } from "./edit-tools-pointer.js";
@@ -289,16 +290,16 @@ export class EditorController extends ViewController {
 
       registerActionCallbacks(
         "action.undo",
-        () => this.doUndoRedo(false),
-        () => this.canUndoRedo(false),
-        () => this.getUndoRedoLabel(false)
+        () => this.callDelegateMethod("doUndoRedo", false),
+        () => this.callDelegateMethod("canUndoRedo", false),
+        () => this.callDelegateMethod("getUndoRedoLabel", false)
       );
 
       registerActionCallbacks(
         "action.redo",
-        () => this.doUndoRedo(true),
-        () => this.canUndoRedo(true),
-        () => this.getUndoRedoLabel(true)
+        () => this.callDelegateMethod("doUndoRedo", true),
+        () => this.callDelegateMethod("canUndoRedo", true),
+        () => this.callDelegateMethod("getUndoRedoLabel", true)
       );
 
       if (insecureSafariConnection()) {
@@ -328,12 +329,9 @@ export class EditorController extends ViewController {
 
       registerActionCallbacks(
         "action.delete",
-        (event) => this.doDelete(event),
-        () => this.canDelete(),
-        () =>
-          this.sceneSettings.selectedGlyph?.isEditing
-            ? translate("action.delete-selection")
-            : translate("action.delete-glyph")
+        (event) => this.callDelegateMethod("doDelete", event),
+        () => this.callDelegateMethod("canDelete"),
+        () => this.callDelegateMethod("getDeleteLabel")
       );
 
       registerActionCallbacks(
@@ -763,17 +761,11 @@ export class EditorController extends ViewController {
       false
     );
 
+    await this.fontController.subscribeChanges({ kerning: null }, true);
+
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
     await blankFont.load();
-
-    this.fontController.addChangeListener(
-      { axes: null },
-      async (change, isExternalChange) => {
-        await this.sceneModel.updateScene();
-        this.canvasController.requestUpdate();
-      }
-    );
 
     this.initActionsAfterStart();
 
@@ -788,7 +780,7 @@ export class EditorController extends ViewController {
     const rootSubscriptionPattern = this.fontController.getRootSubscriptionPattern();
     return {
       subscriptionPattern: { ...rootSubscriptionPattern, ...subscriptionPattern },
-      liveSubscriptionPattern,
+      liveSubscriptionPattern: { kerning: null, ...liveSubscriptionPattern },
     };
   }
 
@@ -902,6 +894,7 @@ export class EditorController extends ViewController {
       PenTool,
       KnifeTool,
       ShapeTool,
+      // KerningTool,
       PowerRulerTool,
       HandTool,
     ];
@@ -1457,6 +1450,15 @@ export class EditorController extends ViewController {
       event.preventDefault();
       event.stopImmediatePropagation();
       doPerformAction(actionIdentifier, event);
+    }
+  }
+
+  callDelegateMethod(methodName, ...args) {
+    const tool = this.sceneController.selectedTool;
+    if (tool?.[methodName]) {
+      return tool[methodName](...args);
+    } else {
+      return this[methodName](...args);
     }
   }
 
@@ -2150,6 +2152,16 @@ export class EditorController extends ViewController {
       },
       undefined,
       true
+    );
+  }
+
+  getDeleteLabel() {
+    return translate(
+      this.sceneSettings.selectedGlyph
+        ? this.sceneSettings.selectedGlyph?.isEditing
+          ? "action.delete-selection"
+          : "action.delete-glyph"
+        : "action.delete"
     );
   }
 
