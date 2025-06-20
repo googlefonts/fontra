@@ -203,6 +203,26 @@ async def test_instancer(instancer, glyphName, location, coordSystem, expectedRe
     assert expectedResult == result
 
 
+splitLocationTestData = [
+    ("A", {}, {}, {}),
+    ("A", {"weight": 400}, {"weight": 400}, {}),
+    ("varcotest2", {"weight": 400, "flip": 50}, {"weight": 400}, {"flip": 50}),
+]
+
+
+@pytest.mark.parametrize(
+    "glyphName, location, expectedFontLocation, expectedGlyphLocation",
+    splitLocationTestData,
+)
+async def test_instancer_splitLocation(
+    instancer, glyphName, location, expectedFontLocation, expectedGlyphLocation
+):
+    glyphInstancer = await instancer.getGlyphInstancer(glyphName)
+    fontLocation, glyphLocation = glyphInstancer.splitLocation(location)
+    assert expectedFontLocation == fontLocation
+    assert expectedGlyphLocation == glyphLocation
+
+
 penTestData = [
     (
         "period",
@@ -821,6 +841,39 @@ def test_FontSourcesInstancer_empty_sources_list():
     fsi = FontSourcesInstancer(fontAxes=[], fontSources={})
     sourceInstance = fsi.instantiate({})
     assert sourceInstance is None
+
+
+def test_FontSourcesInstancer_defaultSourceIdentifier():
+    fsi = FontSourcesInstancer(
+        fontAxes=testAxes_FontSourcesInstancer,
+        fontSources=testSources_FontSourcesInstancer,
+    )
+    assert fsi.defaultSourceIdentifier == "source1"
+
+
+testData_getSourceIdentifierForLocation = [
+    ({}, "source1"),
+    ({"Weight": 400, "Width": 50}, "source1"),
+    ({"Weight": 900, "Width": 50}, "source2"),
+    ({"Weight": 650}, None),
+    ({"Width": 75}, None),
+    ({"Weight": 650, "Width": 75}, None),
+]
+
+
+@pytest.mark.parametrize(
+    "location, expectedSourceIdentifier", testData_getSourceIdentifierForLocation
+)
+def test_FontSourcesInstancer_getSourceIdentifierForLocation(
+    location, expectedSourceIdentifier
+):
+    fsi = FontSourcesInstancer(
+        fontAxes=testAxes_FontSourcesInstancer,
+        fontSources=testSources_FontSourcesInstancer,
+    )
+
+    sourceIdentifier = fsi.getSourceIdentifierForLocation(location)
+    assert sourceIdentifier == expectedSourceIdentifier
 
 
 testData_prependTransformToDecomposed = [

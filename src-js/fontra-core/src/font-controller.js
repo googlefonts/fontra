@@ -901,7 +901,7 @@ export class FontController {
   async _purgeCachesRelatedToAxesAndSourcesChanges() {
     delete this._crossAxisMapping;
     delete this._fontSourcesInstancer;
-    delete this._kerningControllers;
+    delete this._kerningControllerPromises;
     delete this._fontAxesSourceSpace;
 
     this._glyphInstancePromiseCache.clear();
@@ -1023,16 +1023,24 @@ export class FontController {
   }
 
   async getKerningController(kernTag) {
-    if (!this._kerningControllers) {
-      this._kerningControllers = {};
+    if (!this._kerningControllerPromises) {
+      this._kerningControllerPromises = {};
     }
-    let kerningController = this._kerningControllers[kernTag];
-    if (kerningController === undefined) {
-      const kerning = await this.getKerning();
-      kerningController = new KerningController(kernTag, kerning, this);
-      this._kerningControllers[kernTag] = kerningController || null;
+    let kerningControllerPromise = this._kerningControllerPromises[kernTag];
+    if (kerningControllerPromise === undefined) {
+      kerningControllerPromise = this._getKerningController(kernTag);
+      this._kerningControllerPromises[kernTag] = kerningControllerPromise;
     }
-    return kerningController;
+    return await kerningControllerPromise;
+  }
+
+  async _getKerningController(kernTag) {
+    const kerning = await this.getKerning();
+    const kerningTable = kerning[kernTag];
+    if (!kerningTable) {
+      return null;
+    }
+    return new KerningController(kerningTable, this.fontAxesSourceSpace, this.sources);
   }
 
   get defaultSourceLocation() {

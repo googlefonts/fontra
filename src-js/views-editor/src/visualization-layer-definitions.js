@@ -160,7 +160,7 @@ registerVisualizationLayerDefinition({
     );
     if (glyphString) {
       context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
-      context.direction = direction;
+      context.direction = direction || context.direction;
       context.fillText(
         glyphString,
         positionedGlyph.glyph.xAdvance / 2,

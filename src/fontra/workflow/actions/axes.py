@@ -23,6 +23,7 @@ from ...core.classes import (
     unstructure,
 )
 from ...core.discretevariationmodel import DiscreteVariationModel
+from ...core.instancer import GlyphInstancer
 from ...core.varutils import (
     AxisRange,
     locationToTuple,
@@ -59,7 +60,7 @@ class RenameAxes(BaseFilter):
         )
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return mapGlyphSourceLocationsAndFilter(glyph, self.renameLocationAxes)
+        return mapGlyphSourceLocations(glyph, self.renameLocationAxes)
 
     async def processAxes(self, axes: Axes) -> Axes:
         return replace(axes, axes=[_renameAxis(axis, self.axes) for axis in axes.axes])
@@ -136,7 +137,7 @@ class DropAxisMappings(BaseFilter):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+        return mapGlyphSourceLocations(glyph, mapFunc)
 
     async def getAxes(self) -> Axes:
         axes = await self.inputAxes
@@ -215,7 +216,7 @@ class AdjustAxes(BaseFilter):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFunc = partial(mapLocation, mapFuncs=await self.axisValueMapFunctions)
-        return mapGlyphSourceLocationsAndFilter(glyph, mapFunc)
+        return mapGlyphSourceLocations(glyph, mapFunc)
 
     async def processSources(
         self, sources: dict[str, FontSource]
@@ -252,15 +253,17 @@ class SubsetAxes(BaseFilter):
         # but those axes are to be dropped, so it *also* says "axes to drop"
         locationToKeep = {n: v for n, v in location.items() if n not in keepAxisNames}
 
-        def mapFilterFunc(location):
+        def mapFilterFunc(locationToFilter, locationToMap=None):
+            if locationToMap is None:
+                locationToMap = locationToFilter
             if (
-                subsetLocationKeep(locationToKeep | location, locationToKeep)
+                subsetLocationKeep(locationToKeep | locationToFilter, locationToKeep)
                 != locationToKeep
             ):
                 # drop this location
                 return None
 
-            return subsetLocationDrop(location, locationToKeep)
+            return subsetLocationDrop(locationToMap, locationToKeep)
 
         return mapFilterFunc
 
@@ -272,8 +275,11 @@ class SubsetAxes(BaseFilter):
             axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
         )
 
-    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return mapGlyphSourceLocationsAndFilter(glyph, await self.mapFilterLocationFunc)
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        return mapGlyphSourceLocationsAndFilter(
+            instancer, await self.mapFilterLocationFunc
+        )
 
     @async_cached_property
     async def processedSources(self) -> dict[str, FontSource]:
@@ -692,7 +698,7 @@ def trimLocation(
 def updateFontSources(instancer, newLocations, remainingFontAxisNames=None):
     axisNames = instancer.fontAxisNames
     sources = instancer.fontSources
-    sourceIdsByLocation = instancer.sourceIdsByLocation
+    sourceIdsByLocation = instancer.sourceIdsByLocationDense
 
     if remainingFontAxisNames is None:
         remainingFontAxisNames = axisNames
@@ -790,7 +796,9 @@ def updateKerningTable(
 
 
 def updateGlyphSourcesAndLayers(
-    instancer, newLocations, remainingAxisNames=None
+    instancer: GlyphInstancer,
+    newLocations: list[dict[str, float]],
+    remainingAxisNames: set | None = None,
 ) -> VariableGlyph:
     axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
@@ -799,7 +807,7 @@ def updateGlyphSourcesAndLayers(
 
     sourcesByLocation = {
         locationToTuple(
-            filterLocation(instancer.getGlyphSourceLocation(source), axisNames)
+            filterLocation(instancer.getSourceLocation(source), axisNames)
         ): source
         for source in instancer.activeSources
     }
@@ -831,14 +839,27 @@ def updateGlyphSourcesAndLayers(
     )
 
 
+def mapGlyphSourceLocations(glyph: VariableGlyph, mapFunc) -> VariableGlyph:
+    # We do *not* need to take source.locationBase into account here as the same
+    # mapping is applied to the font source locations
+    return replace(
+        glyph,
+        sources=[
+            replace(source, location=mapFunc(source.location))
+            for source in glyph.sources
+        ],
+    )
+
+
 def mapGlyphSourceLocationsAndFilter(
-    glyph: VariableGlyph, mapFilterFunc
+    instancer: GlyphInstancer, mapFilterFunc
 ) -> VariableGlyph:
+    glyph = instancer.glyph
     newSources = []
     layersToDelete = set()
     for source in glyph.sources:
-        # We do *not* need to take source.locationBase into account here
-        newLocation = mapFilterFunc(source.location)
+        fullLocation = instancer.getSourceLocation(source)
+        newLocation = mapFilterFunc(fullLocation, source.location)
         if newLocation is None:
             layersToDelete.add(source.layerName)
         else:
@@ -869,3 +890,61 @@ def mapLocation(location, mapFuncs):
         axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
         for axisName, axisValue in location.items()
     }
+
+
+@registerFilterAction("clear-location-base")
+@dataclass(kw_only=True)
+class ClearLocationBase(BaseFilter):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+
+        if not any(source.locationBase is not None for source in glyph.sources):
+            return glyph
+
+        return replace(
+            glyph,
+            sources=[
+                replace(
+                    source,
+                    name=instancer.getSourceName(source),
+                    locationBase=None,
+                    location=instancer.getSourceLocation(source),
+                )
+                for source in instancer.glyph.sources
+            ],
+        )
+
+
+@registerFilterAction("set-location-base")
+@dataclass(kw_only=True)
+class SetLocationBase(BaseFilter):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+        fontSourcesInstancer = await instancer.fontInstancer.fontSourcesInstancer
+
+        if any(source.locationBase is not None for source in glyph.sources):
+            return glyph
+
+        return replace(
+            glyph,
+            sources=[
+                updateSource(source, instancer, fontSourcesInstancer)
+                for source in glyph.sources
+            ],
+        )
+
+
+def updateSource(source, instancer, fontSourcesInstancer):
+    assert source.locationBase is None
+    fontLocation, glyphLocation = instancer.splitLocation(source.location)
+    sourceName = source.name if glyphLocation else ""
+    locationBase = fontSourcesInstancer.getSourceIdentifierForLocation(fontLocation)
+
+    if locationBase is None:
+        return source
+
+    return replace(
+        source, name=sourceName, locationBase=locationBase, location=glyphLocation
+    )
