@@ -894,8 +894,8 @@ export class EditorController extends ViewController {
       PenTool,
       KnifeTool,
       ShapeTool,
+      // KerningTool,
       PowerRulerTool,
-      KerningTool,
       HandTool,
     ];
 
