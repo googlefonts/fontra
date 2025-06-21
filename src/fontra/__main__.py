@@ -59,7 +59,11 @@ def main() -> None:
 
     server = FontraServer(
         host=host,
-        httpPort=httpPort if httpPort is not None else findFreeTCPPort(DEFAULT_PORT),
+        httpPort=(
+            httpPort
+            if httpPort is not None
+            else findFreeTCPPort(DEFAULT_PORT, host=host)
+        ),
         projectManager=manager,
         launchWebBrowser=args.launch,
         versionToken=secrets.token_hex(4),

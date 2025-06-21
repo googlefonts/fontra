@@ -310,12 +310,12 @@ def splitVersionToken(fileName: str) -> tuple[str, str | None]:
     return fileName, None
 
 
-def findFreeTCPPort(startPort: int = 8000) -> int:
+def findFreeTCPPort(startPort: int = 8000, host: str = "localhost") -> int:
     port = startPort
     while True:
         tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            tcp.bind(("", port))
+            tcp.bind((host, port))
         except OSError as e:
             if e.errno != errno.EADDRINUSE:
                 raise
