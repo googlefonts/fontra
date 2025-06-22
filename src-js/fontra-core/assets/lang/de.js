@@ -300,7 +300,7 @@ export const strings = {
     "Sort by axis value",
   "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name":
     "Sort by source name",
-  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "No sorting",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "Do not sort",
   "sidebar.designspace-navigation.glyph-sources.name": "Source Name",
   "sidebar.designspace-navigation.glyph-sources.status": "Status",
   "sidebar.designspace-navigation.source-properties.undo":

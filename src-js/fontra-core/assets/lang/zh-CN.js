@@ -282,7 +282,7 @@ export const strings = {
     "Sort by axis value",
   "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name":
     "Sort by source name",
-  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "No sorting",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "Do not sort",
   "sidebar.designspace-navigation.glyph-sources.name": "源名称",
   "sidebar.designspace-navigation.glyph-sources.status": "状态",
   "sidebar.designspace-navigation.source-properties.undo": "编辑源属性",
