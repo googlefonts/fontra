@@ -292,6 +292,12 @@ export const strings = {
   "sidebar.designspace-navigation.glyph-axes.reset": "グリフの補完軸をリセット",
   "sidebar.designspace-navigation.glyph-source-layers": "ソースレイヤー",
   "sidebar.designspace-navigation.glyph-sources": "グリフソース",
+  "sidebar.designspace-navigation.glyph-sources-sort-options": "Sort options",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-axis-value":
+    "Sort by axis value",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name":
+    "Sort by source name",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "No sorting",
   "sidebar.designspace-navigation.glyph-sources.name": "ソース名",
   "sidebar.designspace-navigation.glyph-sources.status": "ラベル",
   "sidebar.designspace-navigation.source-properties.undo": "ソースのプロパティを編集",

@@ -299,6 +299,12 @@ export const strings = {
   "sidebar.designspace-navigation.glyph-axes.reset": "Réinitialiser les axes du glyphe",
   "sidebar.designspace-navigation.glyph-source-layers": "Source layers",
   "sidebar.designspace-navigation.glyph-sources": "Sources du glyphe",
+  "sidebar.designspace-navigation.glyph-sources-sort-options": "Sort options",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-axis-value":
+    "Sort by axis value",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name":
+    "Sort by source name",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "No sorting",
   "sidebar.designspace-navigation.glyph-sources.name": "nom de la source",
   "sidebar.designspace-navigation.glyph-sources.status": "statut",
   "sidebar.designspace-navigation.source-properties.undo":
