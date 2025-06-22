@@ -277,6 +277,12 @@ export const strings = {
   "sidebar.designspace-navigation.glyph-axes.reset": "重置字形参数轴",
   "sidebar.designspace-navigation.glyph-source-layers": "源图层",
   "sidebar.designspace-navigation.glyph-sources": "字形源",
+  "sidebar.designspace-navigation.glyph-sources-sort-options": "Sort options",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-axis-value":
+    "Sort by axis value",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name":
+    "Sort by source name",
+  "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting": "No sorting",
   "sidebar.designspace-navigation.glyph-sources.name": "源名称",
   "sidebar.designspace-navigation.glyph-sources.status": "状态",
   "sidebar.designspace-navigation.source-properties.undo": "编辑源属性",

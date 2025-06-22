@@ -1,4 +1,5 @@
 import { registerAction } from "@fontra/core/actions.js";
+import { applicationSettingsController } from "@fontra/core/application-settings.js";
 import { findNearestLocationIndex } from "@fontra/core/discrete-variation-model.js";
 import {
   BACKGROUND_LAYER_SEPARATOR,
@@ -27,6 +28,7 @@ import {
   rgbaToCSS,
   round,
   scheduleCalls,
+  stringCompare,
   throttleCalls,
   updateObject,
 } from "@fontra/core/utils.js";
@@ -213,6 +215,16 @@ export default class DesignspaceNavigationPanel extends Panel {
             }),
           ]
         ),
+        auxiliaryHeaderElement: groupAccordionHeaderButtons([
+          makeAccordionHeaderButton({
+            icon: "menu-2",
+            id: "glyph-sources-sort-options-button",
+            tooltip: translate(
+              "sidebar.designspace-navigation.glyph-sources-sort-options"
+            ),
+            onclick: (event) => this.showGlyphSourcesSortOptionsMenu(event),
+          }),
+        ]),
       },
       {
         id: "glyph-layers-accordion-item",
@@ -721,6 +733,35 @@ export default class DesignspaceNavigationPanel extends Panel {
     showMenu(menuItems, { x: buttonRect.left, y: buttonRect.bottom });
   }
 
+  showGlyphSourcesSortOptionsMenu(event) {
+    const sortOptions = [
+      [
+        "sidebar.designspace-navigation.glyph-sources-sort-options.by-axis-value",
+        "by-axis-value",
+      ],
+      [
+        "sidebar.designspace-navigation.glyph-sources-sort-options.by-source-name",
+        "by-source-name",
+      ],
+      [
+        "sidebar.designspace-navigation.glyph-sources-sort-options.no-sorting",
+        "no-sorting",
+      ],
+    ];
+    const menuItems = sortOptions.map(([title, value]) => ({
+      title: translate(title),
+      callback: () => {
+        applicationSettingsController.model.glyphSourcesSortOptions = value;
+        this._updateSources();
+      },
+      checked: applicationSettingsController.model.glyphSourcesSortOptions === value,
+    }));
+
+    const button = this.accordion.querySelector("#glyph-sources-sort-options-button");
+    const buttonRect = button.getBoundingClientRect();
+    showMenu(menuItems, { x: buttonRect.left, y: buttonRect.bottom });
+  }
+
   resetFontAxesToDefault(event) {
     this.sceneSettings.fontLocationUser = {};
   }
@@ -956,12 +997,31 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
 
     if (varGlyphController) {
-      sourceItems.sort(
-        getSourceCompareFunc("denseLocation", [
-          ...varGlyphController.fontAxisNames,
-          ...varGlyphController.axes.map((axis) => axis.name),
-        ])
-      );
+      const sortStrategy =
+        applicationSettingsController.model.glyphSourcesSortOptions || "by-axis-value";
+
+      let sortFunc = null;
+
+      switch (sortStrategy) {
+        case "by-axis-value":
+          sortFunc = getSourceCompareFunc("denseLocation", [
+            ...varGlyphController.fontAxisNames,
+            ...varGlyphController.axes.map((axis) => axis.name),
+          ]);
+          break;
+        case "by-source-name":
+          sortFunc = (a, b) => {
+            return stringCompare(
+              varGlyphController.getSourceName(a),
+              varGlyphController.getSourceName(b)
+            );
+          };
+          break;
+      }
+
+      if (sortFunc) {
+        sourceItems.sort(sortFunc);
+      }
     }
 
     this.sourcesList.setItems(sourceItems, false, true);
