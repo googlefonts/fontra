@@ -853,3 +853,7 @@ export const friendlyHttpStatus = {
   504: "Gateway Timeout",
   505: "HTTP Version Not Supported",
 };
+
+export function stringCompare(a, b) {
+  return a < b ? -1 : a === b ? 0 : 1;
+}

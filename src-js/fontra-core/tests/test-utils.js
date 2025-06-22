@@ -36,6 +36,7 @@ import {
   scheduleCalls,
   sleepAsync,
   splitGlyphNameExtension,
+  stringCompare,
   throttleCalls,
   withTimeout,
 } from "@fontra/core/utils.js";
@@ -780,5 +781,19 @@ describe("longestCommonPrefix", () => {
 
   parametrize("longestCommonPrefix test", testData, (testCase) => {
     expect(longestCommonPrefix(testCase.a)).to.equal(testCase.prefix);
+  });
+});
+
+describe("stringCompare", () => {
+  const testData = [
+    { a: "A", b: "A", result: 0 },
+    { a: "A", b: "AA", result: -1 },
+    { a: "A", b: "B", result: -1 },
+    { a: "BB", b: "B", result: 1 },
+    { a: "B", b: "A", result: 1 },
+  ];
+
+  parametrize("stringCompare test", testData, (testCase) => {
+    expect(stringCompare(testCase.a, testCase.b)).to.equal(testCase.result);
   });
 });
