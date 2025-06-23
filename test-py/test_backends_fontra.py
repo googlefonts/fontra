@@ -7,6 +7,7 @@ import pytest
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
+from fontra.backends.fontra import longestCommonPrefix
 from fontra.core.classes import ImageType, OpenTypeFeatures
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -171,3 +172,20 @@ async def test_getBackgroundImage(testFontraFont):
     imageData = await testFontraFont.getBackgroundImage(bgImage.identifier)
     assert imageData.type == ImageType.PNG
     assert len(imageData.data) == 60979
+
+
+longestCommonPrefixTestData = [
+    ([], ""),
+    ([""], ""),
+    (["a"], "a"),
+    (["abcdef"], "abcdef"),
+    (["abcdef", "abcdefgh"], "abcdef"),
+    (["abc", "ab", "abde", "abdef"], "ab"),
+    (["abc", "ab", "abde", "abdef", "a"], "a"),
+    (["abc", "ab", "abde", "abdef", ""], ""),
+]
+
+
+@pytest.mark.parametrize("strings, expectedPrefix", longestCommonPrefixTestData)
+def test_longestCommonPrefix(strings, expectedPrefix):
+    assert longestCommonPrefix(strings) == expectedPrefix
