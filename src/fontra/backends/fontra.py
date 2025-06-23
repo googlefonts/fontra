@@ -400,6 +400,8 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             if isLegacy:
                 leftGroups, rightGroups, values = upconvertKerning(leftGroups, values)
 
+            assert rightGroups is not None
+
             kerning[kernType] = Kerning(
                 leftGroups=leftGroups,
                 rightGroups=rightGroups,
