@@ -113,14 +113,17 @@ def subsetKernTable(kernTable, glyphNames):
     newLeftGroups = subsetGroups(kernTable.leftGroups, glyphNames)
     newRightGroups = subsetGroups(kernTable.rightGroups, glyphNames)
 
+    leftGroupNames = {"@" + groupName for groupName in newLeftGroups.keys()}
+    rightGroupNames = {"@" + groupName for groupName in newRightGroups.keys()}
+
     newValues = {}
     for left, rightDict in kernTable.values.items():
         rightDict = {
             right: values
             for right, values in rightDict.items()
-            if right in glyphNames or right in newRightGroups
+            if right in glyphNames or right in rightGroupNames
         }
-        if rightDict and (left in glyphNames or left in newLeftGroups):
+        if rightDict and (left in glyphNames or left in leftGroupNames):
             newValues[left] = rightDict
 
     # TODO: should groups be dropped that are not used (anymore) in the subsetted
