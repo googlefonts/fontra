@@ -1,9 +1,9 @@
 
-@public.kern2.MERGETEST = [A Adieresis];
 @public.kern1.A = [A Adieresis];
+@public.kern2.MERGETEST = [A Adieresis];
 feature kern {
+    pos A A (wdth=100,wght=400:10 wdth=100,wght=900:20 wdth=200,wght=400:30 wdth=200,wght=900:40);
+    enum pos A @public.kern2.MERGETEST (wdth=100,wght=400:-10 wdth=100,wght=900:-20 wdth=200,wght=400:-30 wdth=200,wght=900:-40);
     enum pos @public.kern1.A T (wdth=100,wght=400:10 wdth=100,wght=900:20 wdth=200,wght=400:30 wdth=200,wght=900:40);
     enum pos @public.kern1.A V (wdth=100,wght=400:15 wdth=100,wght=900:25 wdth=200,wght=400:35 wdth=200,wght=900:0);
-    enum pos A @public.kern2.MERGETEST (wdth=100,wght=400:-10 wdth=100,wght=900:-20 wdth=200,wght=400:-30 wdth=200,wght=900:-40);
-    pos A A (wdth=100,wght=400:10 wdth=100,wght=900:20 wdth=200,wght=400:30 wdth=200,wght=900:40);
 } kern;
