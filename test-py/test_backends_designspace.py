@@ -117,16 +117,16 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
 
 async def test_getCustomDataSingleUFO(testFontSingleUFO):
     customData = await testFontSingleUFO.getCustomData()
-    assert 15 == len(customData)
+    assert 14 == len(customData)
 
 
 async def test_putCustomDataSingleUFO(writableTestFontSingleUFO):
     customData = await writableTestFontSingleUFO.getCustomData()
-    assert 17 == len(customData)
+    assert 16 == len(customData)
     customData["testing"] = 12
     await writableTestFontSingleUFO.putCustomData(customData)
     customData = await writableTestFontSingleUFO.getCustomData()
-    assert 18 == len(customData)
+    assert 17 == len(customData)
 
 
 @pytest.mark.parametrize(
