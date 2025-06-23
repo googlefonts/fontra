@@ -611,7 +611,11 @@ def upconvertKerning(groups, values):
 
 def fixPrefix(kernPairName, groupPrefix):
     return (
-        "@" + kernPairName[len(groupPrefix) :]
-        if kernPairName.startswith(groupPrefix)
+        (
+            "@" + kernPairName[len(groupPrefix) :]
+            if kernPairName.startswith(groupPrefix)
+            else kernPairName
+        )
+        if groupPrefix
         else kernPairName
     )
