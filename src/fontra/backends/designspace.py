@@ -2386,21 +2386,21 @@ def longestCommonPrefix(strings: Sequence[str]) -> str:
     return firstString[:i]
 
 
-def adjustGroupPrefix(kernPairName: str) -> tuple[str, str | None]:
+def adjustGroupPrefix(kernPairName: str) -> str:
     if kernPairName.startswith(("public.kern1.", "public.kern2.")):
         return "@" + kernPairName[13:]
     return kernPairName
 
 
-def addLeftPrefix(kernPairName):
+def addLeftPrefix(kernPairName: str) -> str:
     return replacePrefix(kernPairName, "@", "public.kern1.")
 
 
-def addRightPrefix(kernPairName):
+def addRightPrefix(kernPairName: str) -> str:
     return replacePrefix(kernPairName, "@", "public.kern2.")
 
 
-def replacePrefix(s, oldPrefix, newPrefix):
+def replacePrefix(s: str, oldPrefix: str, newPrefix: str) -> str:
     return newPrefix + s[len(oldPrefix) :] if s.startswith(oldPrefix) else s
 
 
