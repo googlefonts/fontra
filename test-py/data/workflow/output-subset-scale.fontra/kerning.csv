@@ -2,12 +2,12 @@ TYPE
 kern
 
 GROUPS1
-@MMK_L_A;A;Adieresis
+A;A;Adieresis
 
 GROUPS2
-@MMK_R_A;A;Adieresis
+A;A;Adieresis
 
 VALUES
 side1;side2;light-condensed;bold-condensed;light-wide;bold-wide;light-condensed-italic
 B;A;;-15.0;;;
-B;@@MMK_R_A;;;-18.75;;
+B;@A;;;-18.75;;

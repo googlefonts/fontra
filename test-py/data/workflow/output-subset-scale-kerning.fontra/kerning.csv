@@ -2,17 +2,17 @@ TYPE
 kern
 
 GROUPS1
-@MMK_L_A;A
+A;A
 
 GROUPS2
-@MMK_R_A;A
+A;A
 
 VALUES
 side1;side2;light-condensed;bold-condensed;light-wide;bold-wide;light-condensed-italic
-T;@@MMK_R_A;-56;;-161;-112;
+T;@A;-56;;-161;-112;
 T;A;;-49;;;
-V;@@MMK_R_A;-75;;-158;;
-@@MMK_L_A;V;-11;;-135;;
-@@MMK_L_A;T;;;-142;;
+V;@A;-75;;-158;;
+@A;V;-11;;-135;;
+@A;T;;;-142;;
 A;T;;-52;;;
 A;V;;-38;;;

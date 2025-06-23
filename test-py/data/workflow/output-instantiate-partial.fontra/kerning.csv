@@ -2,12 +2,12 @@ TYPE
 kern
 
 GROUPS1
-@MMK_L_A;A
+A;A
 
 GROUPS2
-@MMK_R_A;A
+A;A
 
 VALUES
 side1;side2;30916594;6c8db0dd;c196a981
 B;A;0;-8;-12
-B;@@MMK_R_A;-10;-4;0
+B;@A;-10;-4;0
