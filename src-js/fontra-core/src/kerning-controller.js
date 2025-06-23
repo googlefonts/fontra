@@ -22,8 +22,8 @@ export class KerningController {
   get kernData() {
     return (
       this.kerning[this.kernTag] || {
-        leftGroups: {},
-        rightGroups: {},
+        groupsSide1: {},
+        groupsSide2: {},
         values: {},
         sourceIdentifiers: [],
       }
@@ -43,8 +43,8 @@ export class KerningController {
       }
     }
 
-    this.leftPairGroupMapping = makeGlyphGroupMapping(this.kernData.leftGroups);
-    this.rightPairGroupMapping = makeGlyphGroupMapping(this.kernData.rightGroups);
+    this.leftPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide1);
+    this.rightPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide2);
 
     const locations = this.kernData.sourceIdentifiers.map(
       (sourceIdentifier) => this.fontController.sources[sourceIdentifier].location
@@ -365,8 +365,8 @@ function ensureKerningData(kerning, kernTag) {
     // We don't have data yet for this kern tag
     kerning[kernTag] = {
       sourceIdentifiers: [],
-      leftGroups: {},
-      rightGroups: {},
+      groupsSide1: {},
+      groupsSide2: {},
       values: {},
     };
   }

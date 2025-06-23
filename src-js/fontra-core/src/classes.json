@@ -515,11 +515,11 @@
     }
   },
   "Kerning": {
-    "leftGroups": {
+    "groupsSide1": {
       "type": "dict",
       "subtype": "list"
     },
-    "rightGroups": {
+    "groupsSide2": {
       "type": "dict",
       "subtype": "list"
     },

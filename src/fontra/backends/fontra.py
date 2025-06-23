@@ -354,12 +354,12 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
             writer.writerow([])
 
             writer.writerow(["GROUPS1"])
-            for groupName, group in sorted(kerningTable.leftGroups.items()):
+            for groupName, group in sorted(kerningTable.groupsSide1.items()):
                 writer.writerow([groupName] + group)
             writer.writerow([])
 
             writer.writerow(["GROUPS2"])
-            for groupName, group in sorted(kerningTable.rightGroups.items()):
+            for groupName, group in sorted(kerningTable.groupsSide2.items()):
                 writer.writerow([groupName] + group)
             writer.writerow([])
 
@@ -388,8 +388,8 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             if kernType is None:
                 break
 
-            leftGroups, isLegacy = kerningReadGroups(rowIter, "GROUPS1", True)
-            rightGroups, _ = (
+            groupsSide1, isLegacy = kerningReadGroups(rowIter, "GROUPS1", True)
+            groupsSide2, _ = (
                 (None, None)
                 if isLegacy
                 else kerningReadGroups(rowIter, "GROUPS2", False)
@@ -398,15 +398,15 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             sourceIdentifiers, values = kerningReadValues(rowIter)
 
             if isLegacy:
-                leftGroups, rightGroups, values = upconvertKerning(
-                    leftGroups, values, kernType
+                groupsSide1, groupsSide2, values = upconvertKerning(
+                    groupsSide1, values, kernType
                 )
 
-            assert rightGroups is not None
+            assert groupsSide2 is not None
 
             kerning[kernType] = Kerning(
-                leftGroups=leftGroups,
-                rightGroups=rightGroups,
+                groupsSide1=groupsSide1,
+                groupsSide2=groupsSide2,
                 sourceIdentifiers=sourceIdentifiers,
                 values=values,
             )
@@ -602,11 +602,11 @@ def upconvertKerning(groups, values, kernType):
     leftGroupPrefix = guessPrefix(leftGroupNames, leftPrefixes)
     rightGroupPrefix = guessPrefix(rightGroupNames, rightPrefixes)
 
-    leftGroups = {
+    groupsSide1 = {
         groupName[len(leftGroupPrefix) :]: groups[groupName]
         for groupName in leftGroupNames
     }
-    rightGroups = {
+    groupsSide2 = {
         groupName[len(rightGroupPrefix) :]: groups[groupName]
         for groupName in rightGroupNames
     }
@@ -620,7 +620,7 @@ def upconvertKerning(groups, values, kernType):
             rightName = fixPrefix(rightName, rightGroupPrefix)
             newValues[leftName][rightName] = values
 
-    return leftGroups, rightGroups, newValues
+    return groupsSide1, groupsSide2, newValues
 
 
 def fixPrefix(kernPairName, groupPrefix):

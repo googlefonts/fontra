@@ -1182,12 +1182,12 @@ class DesignspaceBackend:
             for left, rightDict in valueDicts.items()
         }
 
-        leftGroups, rightGroups = splitGroups(groups)
+        groupsSide1, groupsSide2 = splitGroups(groups)
 
         return {
             "kern": Kerning(
-                leftGroups=leftGroups,
-                rightGroups=rightGroups,
+                groupsSide1=groupsSide1,
+                groupsSide2=groupsSide2,
                 sourceIdentifiers=sourceIdentifiers,
                 values=values,
             )
@@ -1234,8 +1234,8 @@ class DesignspaceBackend:
                     continue
                 if kernType == "kern":
                     groups = prefixGroups(
-                        kerningTable.leftGroups, "public.kern1."
-                    ) | prefixGroups(kerningTable.rightGroups, "public.kern2.")
+                        kerningTable.groupsSide1, "public.kern1."
+                    ) | prefixGroups(kerningTable.groupsSide2, "public.kern2.")
                     dsSource.layer.reader.writeGroups(groups)
                     ufoKerning = kerningPerSource.get(dsSource.identifier, {})
                     dsSource.layer.reader.writeKerning(ufoKerning)
@@ -2394,16 +2394,16 @@ def prefixGroups(groups, prefix):
 def splitGroups(
     groups: dict[str, list[str]]
 ) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    leftGroups = {}
-    rightGroups = {}
+    groupsSide1 = {}
+    groupsSide2 = {}
 
     for groupName, glyphNames in groups.items():
         if groupName.startswith("public.kern1."):
-            leftGroups[groupName[13:]] = glyphNames
+            groupsSide1[groupName[13:]] = glyphNames
         elif groupName.startswith("public.kern2."):
-            rightGroups[groupName[13:]] = glyphNames
+            groupsSide2[groupName[13:]] = glyphNames
         else:
             # not a kerning group -- drop
             pass
 
-    return leftGroups, rightGroups
+    return groupsSide1, groupsSide2

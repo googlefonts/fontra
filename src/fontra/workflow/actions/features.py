@@ -218,10 +218,10 @@ class BaseGenerateKerningFeature(BaseFilter):
 
         w = FeatureWriter()
 
-        for groupName, group in sorted(kerning.leftGroups.items()):
+        for groupName, group in sorted(kerning.groupsSide1.items()):
             w.addGroup(self._kern1Prefix + groupName, group)
 
-        for groupName, group in sorted(kerning.rightGroups.items()):
+        for groupName, group in sorted(kerning.groupsSide2.items()):
             w.addGroup(self._kern2Prefix + groupName, group)
 
         fea = w.addFeature(self._kernFeatureTag)

@@ -110,11 +110,11 @@ def subsetKerning(kerning, glyphNames):
 
 
 def subsetKernTable(kernTable, glyphNames):
-    newLeftGroups = subsetGroups(kernTable.leftGroups, glyphNames)
-    newRightGroups = subsetGroups(kernTable.rightGroups, glyphNames)
+    newGroupsSide1 = subsetGroups(kernTable.groupsSide1, glyphNames)
+    newGroupsSide2 = subsetGroups(kernTable.groupsSide2, glyphNames)
 
-    leftGroupNames = {"@" + groupName for groupName in newLeftGroups.keys()}
-    rightGroupNames = {"@" + groupName for groupName in newRightGroups.keys()}
+    leftGroupNames = {"@" + groupName for groupName in newGroupsSide1.keys()}
+    rightGroupNames = {"@" + groupName for groupName in newGroupsSide2.keys()}
 
     newValues = {}
     for left, rightDict in kernTable.values.items():
@@ -131,8 +131,8 @@ def subsetKernTable(kernTable, glyphNames):
 
     return replace(
         kernTable,
-        leftGroups=newLeftGroups,
-        rightGroups=newRightGroups,
+        groupsSide1=newGroupsSide1,
+        groupsSide2=newGroupsSide2,
         values=newValues,
     )
 

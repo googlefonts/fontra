@@ -31,8 +31,8 @@ describe("KerningController Tests", () => {
 
   const testKerning = {
     kern: {
-      leftGroups: { O: ["O", "D", "Q"] },
-      rightGroups: { O: ["O", "C", "G", "Q"] },
+      groupsSide1: { O: ["O", "D", "Q"] },
+      groupsSide2: { O: ["O", "C", "G", "Q"] },
       sourceIdentifiers: ["a", "b", "c", "d", "e", "f"],
       values: {
         "T": { A: [-100, null, null, -200, null, null] },
