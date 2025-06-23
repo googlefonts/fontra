@@ -583,41 +583,41 @@ verBottomPrefixes = ["kern.bottom."]
 
 
 def upconvertKerning(groups, values, kernType):
-    leftGroupNames = set()
-    rightGroupNames = set()
+    groupSide1Names = set()
+    groupSide2Names = set()
 
     for leftName, valueDict in values.items():
         if leftName in groups:
-            leftGroupNames.add(leftName)
+            groupSide1Names.add(leftName)
         for rightName in valueDict:
             if rightName in groups:
-                rightGroupNames.add(rightName)
+                groupSide2Names.add(rightName)
 
-    leftGroupNames = sorted(leftGroupNames)
-    rightGroupNames = sorted(rightGroupNames)
+    groupSide1Names = sorted(groupSide1Names)
+    groupSide2Names = sorted(groupSide2Names)
 
     leftPrefixes = verTopPrefixes if kernType == "vkrn" else horLeftPrefixes
     rightPrefixes = verBottomPrefixes if kernType == "vkrn" else horRightPrefixes
 
-    leftGroupPrefix = guessPrefix(leftGroupNames, leftPrefixes)
-    rightGroupPrefix = guessPrefix(rightGroupNames, rightPrefixes)
+    groupSide1Prefix = guessPrefix(groupSide1Names, leftPrefixes)
+    groupSide2Prefix = guessPrefix(groupSide2Names, rightPrefixes)
 
     groupsSide1 = {
-        groupName[len(leftGroupPrefix) :]: groups[groupName]
-        for groupName in leftGroupNames
+        groupName[len(groupSide1Prefix) :]: groups[groupName]
+        for groupName in groupSide1Names
     }
     groupsSide2 = {
-        groupName[len(rightGroupPrefix) :]: groups[groupName]
-        for groupName in rightGroupNames
+        groupName[len(groupSide2Prefix) :]: groups[groupName]
+        for groupName in groupSide2Names
     }
 
     newValues = {}
 
     for leftName, valueDict in values.items():
-        leftName = fixPrefix(leftName, leftGroupPrefix)
+        leftName = fixPrefix(leftName, groupSide1Prefix)
         newValues[leftName] = {}
         for rightName, values in valueDict.items():
-            rightName = fixPrefix(rightName, rightGroupPrefix)
+            rightName = fixPrefix(rightName, groupSide2Prefix)
             newValues[leftName][rightName] = values
 
     return groupsSide1, groupsSide2, newValues

@@ -312,23 +312,23 @@ def _mergeKernTable(kernTableA, kernTableB):
 
 
 def _disambiguateKerningGroupNames(kernTableA, kernTableB):
-    leftGroupNameMap, leftPairNameMap = _getConflictResolutionMappings(
+    groupSide1NameMap, pairSide1NameMap = _getConflictResolutionMappings(
         kernTableA.groupsSide1, kernTableB.groupsSide2
     )
 
-    rightGroupNameMap, rightPairNameMap = _getConflictResolutionMappings(
+    groupSide2NameMap, pairSide2NameMap = _getConflictResolutionMappings(
         kernTableA.groupsSide2, kernTableB.groupsSide2
     )
 
-    if not leftGroupNameMap and not rightGroupNameMap:
+    if not groupSide1NameMap and not groupSide2NameMap:
         return kernTableA
 
-    groupsSide1 = _renameGroups(kernTableA.groupsSide1, leftGroupNameMap)
-    groupsSide2 = _renameGroups(kernTableA.groupsSide2, rightGroupNameMap)
+    groupsSide1 = _renameGroups(kernTableA.groupsSide1, groupSide1NameMap)
+    groupsSide2 = _renameGroups(kernTableA.groupsSide2, groupSide2NameMap)
 
     values = {
-        leftPairNameMap.get(left, left): {
-            rightPairNameMap.get(right, right): values
+        pairSide1NameMap.get(left, left): {
+            pairSide2NameMap.get(right, right): values
             for right, values in rightDict.items()
         }
         for left, rightDict in kernTableA.values.items()
