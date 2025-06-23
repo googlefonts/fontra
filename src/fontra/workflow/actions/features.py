@@ -218,22 +218,25 @@ class BaseGenerateKerningFeature(BaseFilter):
 
         w = FeatureWriter()
 
-        for groupName, group in sorted(kerning.groups.items()):
-            w.addGroup(groupName, group)
+        for groupName, group in sorted(kerning.leftGroups.items()):
+            w.addGroup(self._kern1Prefix + groupName, group)
+
+        for groupName, group in sorted(kerning.rightGroups.items()):
+            w.addGroup(self._kern2Prefix + groupName, group)
 
         fea = w.addFeature(self._kernFeatureTag)
 
         for left, rightDict in sorted(
             kerning.values.items(), key=self._kernKeySortFunc
         ):
-            leftIsClass = left.startswith(self._kern1Prefix)
+            leftIsClass = left.startswith("@")
             if leftIsClass:
-                left = "@" + left
+                left = "@" + self._kern1Prefix + left[1:]
 
             for right, values in sorted(rightDict.items(), key=self._kernKeySortFunc):
-                rightIsClass = right.startswith(self._kern2Prefix)
+                rightIsClass = right.startswith("@")
                 if rightIsClass:
-                    right = "@" + right
+                    right = "@" + self._kern2Prefix + right[1:]
 
                 values = [0 if v is None else round(v) for v in values]
                 firstValue = values[0]
