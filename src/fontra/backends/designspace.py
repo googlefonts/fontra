@@ -13,7 +13,7 @@ from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
 from types import SimpleNamespace
-from typing import Any, Awaitable, Callable, Sequence
+from typing import Any, Awaitable, Callable
 
 from fontTools.designspaceLib import (
     AxisDescriptor,
@@ -2367,23 +2367,6 @@ def convertImageData(data, type):
     outFile = io.BytesIO()
     image.save(outFile, type)
     return ImageData(type=type, data=outFile.getvalue())
-
-
-def longestCommonPrefix(strings: Sequence[str]) -> str:
-    if not strings:
-        return ""
-
-    firstString = strings[0]
-
-    i = 0
-
-    while i < len(firstString):
-        c = firstString[i]
-        if any(i >= len(s) or s[i] != c for s in strings):
-            break
-        i += 1
-
-    return firstString[:i]
 
 
 def adjustGroupPrefix(kernPairName: str) -> str:
