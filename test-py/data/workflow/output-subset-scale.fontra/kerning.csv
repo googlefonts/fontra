@@ -2,11 +2,12 @@ TYPE
 kern
 
 LEFTGROUPS
+@MMK_L_A;A;Adieresis
 
 RIGHTGROUPS
 @MMK_R_A;A;Adieresis
 
 VALUES
 side1;side2;light-condensed;bold-condensed;light-wide;bold-wide;light-condensed-italic
-B;A;;-15;;;
+B;A;;-15.0;;;
 B;@@MMK_R_A;;;-18.75;;
