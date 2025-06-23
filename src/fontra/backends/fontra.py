@@ -608,11 +608,13 @@ def upconvertKerning(groups, values, kernType):
 
     groupsSide1 = {
         groupName[len(groupSide1Prefix) :]: groups[groupName]
-        for groupName in groupSide1Names
+        for groupName in groups
+        if groupName.startswith(groupSide1Prefix)
     }
     groupsSide2 = {
         groupName[len(groupSide2Prefix) :]: groups[groupName]
-        for groupName in groupSide2Names
+        for groupName in groups
+        if groupName.startswith(groupSide2Prefix)
     }
 
     newValues = {}

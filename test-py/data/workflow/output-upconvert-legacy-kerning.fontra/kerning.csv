@@ -19,8 +19,10 @@ vkrn
 
 GROUPS1
 AB;A;B
+C;C
 
 GROUPS2
+A;A
 BC;B;C
 
 VALUES

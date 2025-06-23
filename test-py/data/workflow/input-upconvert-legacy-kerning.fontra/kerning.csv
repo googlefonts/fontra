@@ -17,7 +17,9 @@ vkrn
 
 GROUPS
 kern.top.AB;A;B
+kern.top.C;C
 kern.bottom.BC;B;C
+kern.bottom.A;A
 
 VALUES
 side1;side2;0075ca4f;f563722c;d77f29e2;09259dfc
