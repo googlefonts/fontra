@@ -13,7 +13,7 @@ from datetime import datetime
 from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
 from types import SimpleNamespace
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Sequence
 
 from fontTools.designspaceLib import (
     AxisDescriptor,
@@ -1173,16 +1173,23 @@ class DesignspaceBackend:
                 valueDicts[leftKey][rightKey][dsSource.identifier] = value
 
         values = {
-            left: {
-                right: [valueDict.get(key) for key in sourceIdentifiers]
+            adjustGroupPrefix(left): {
+                adjustGroupPrefix(right): [
+                    valueDict.get(key) for key in sourceIdentifiers
+                ]
                 for right, valueDict in rightDict.items()
             }
             for left, rightDict in valueDicts.items()
         }
 
+        leftGroups, rightGroups = splitGroups(groups)
+
         return {
             "kern": Kerning(
-                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+                leftGroups=leftGroups,
+                rightGroups=rightGroups,
+                sourceIdentifiers=sourceIdentifiers,
+                values=values,
             )
         }
 
@@ -1226,7 +1233,10 @@ class DesignspaceBackend:
                 if dsSource.isSparse:
                     continue
                 if kernType == "kern":
-                    dsSource.layer.reader.writeGroups(kerningTable.groups)
+                    groups = prefixGroups(
+                        kerningTable.leftGroups, "public.kern1."
+                    ) | prefixGroups(kerningTable.rightGroups, "public.kern2.")
+                    dsSource.layer.reader.writeGroups(groups)
                     ufoKerning = kerningPerSource.get(dsSource.identifier, {})
                     dsSource.layer.reader.writeKerning(ufoKerning)
                 else:
@@ -2357,3 +2367,60 @@ def convertImageData(data, type):
     outFile = io.BytesIO()
     image.save(outFile, type)
     return ImageData(type=type, data=outFile.getvalue())
+
+
+def longestCommonPrefix(strings: Sequence[str]) -> str:
+    if not strings:
+        return ""
+
+    firstString = strings[0]
+
+    i = 0
+
+    while i < len(firstString):
+        c = firstString[i]
+        if any(i >= len(s) or s[i] != c for s in strings):
+            break
+        i += 1
+
+    return firstString[:i]
+
+
+def adjustGroupPrefix(kernPairName: str) -> tuple[str, str | None]:
+    if kernPairName.startswith(("public.kern1.", "public.kern2.")):
+        return "@" + kernPairName[13:]
+    return kernPairName
+
+
+def addLeftPrefix(kernPairName):
+    return replacePrefix(kernPairName, "@", "public.kern1.")
+
+
+def addRightPrefix(kernPairName):
+    return replacePrefix(kernPairName, "@", "public.kern2.")
+
+
+def replacePrefix(s, oldPrefix, newPrefix):
+    return newPrefix + s[len(oldPrefix) :] if s.startswith(oldPrefix) else s
+
+
+def prefixGroups(groups, prefix):
+    return {prefix + groupName: glyphNames for groupName, glyphNames in groups.items()}
+
+
+def splitGroups(
+    groups: dict[str, list[str]]
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    leftGroups = {}
+    rightGroups = {}
+
+    for groupName, glyphNames in groups.items():
+        if groupName.startswith("public.kern1."):
+            leftGroups[groupName[13:]] = glyphNames
+        elif groupName.startswith("public.kern2."):
+            rightGroups[groupName[13:]] = glyphNames
+        else:
+            # not a kerning group -- drop
+            pass
+
+    return leftGroups, rightGroups

@@ -62,7 +62,8 @@ class OpenTypeFeatures:
 
 @dataclass(kw_only=True)
 class Kerning:
-    groups: dict[str, list[str]]
+    leftGroups: dict[str, list[str]]
+    rightGroups: dict[str, list[str]]
     sourceIdentifiers: list[str]
     # left glyph/group -> right glyph/group -> source index -> value
     values: dict[str, dict[str, list[float | None]]]

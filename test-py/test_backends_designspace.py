@@ -10,7 +10,12 @@ from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
-from fontra.backends.designspace import DesignspaceBackend, UFOBackend, convertImageData
+from fontra.backends.designspace import (
+    DesignspaceBackend,
+    UFOBackend,
+    convertImageData,
+    longestCommonPrefix,
+)
 from fontra.backends.null import NullBackend
 from fontra.core.classes import (
     Anchor,
@@ -1112,18 +1117,33 @@ async def test_kerning_read_write(writableTestFont):
 
     assert len(kerning["kern"].sourceIdentifiers) == 5
     kerning["kern"].values["A"]["J"] = [None, -25, -30, -15, None]
-    kerning["kern"].groups["public.kern1.@MMK_L_A"].append("X")
+    kerning["kern"].leftGroups["@MMK_L_A"].append("X")
 
     await writableTestFont.putKerning(kerning)
 
     reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedKerning = await reopenedFont.getKerning()
     assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
-    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == [
+    assert reopenedKerning["kern"].leftGroups["@MMK_L_A"] == [
         "A",
         "Aacute",
         "Adieresis",
         "X",
+    ]
+
+    assert reopenedKerning["kern"].values["@@MMK_L_A"]["T"] == [
+        None,
+        None,
+        -190,
+        None,
+        None,
+    ]
+    assert reopenedKerning["kern"].values["T"]["@@MMK_R_A"] == [
+        -75,
+        None,
+        -215,
+        -150,
+        None,
     ]
 
 
@@ -1207,6 +1227,23 @@ async def test_uniqueFontSourceIdentifiers(writableTestFont):
     backend = getFileSystemBackend(dsPath)
     sources = await backend.getSources()
     assert len(sources) == len(dsDoc.sources)
+
+
+longestCommonPrefixTestData = [
+    ([], ""),
+    ([""], ""),
+    (["a"], "a"),
+    (["abcdef"], "abcdef"),
+    (["abcdef", "abcdefgh"], "abcdef"),
+    (["abc", "ab", "abde", "abdef"], "ab"),
+    (["abc", "ab", "abde", "abdef", "a"], "a"),
+    (["abc", "ab", "abde", "abdef", ""], ""),
+]
+
+
+@pytest.mark.parametrize("strings, expectedPrefix", longestCommonPrefixTestData)
+def test_longestCommonPrefix(strings, expectedPrefix):
+    assert longestCommonPrefix(strings) == expectedPrefix
 
 
 def fileNamesFromDir(path):
