@@ -192,7 +192,7 @@ class BaseGenerateKerningFeature(BaseFilter):
 
     def _kernKeySortFunc(self, item):
         key, _ = item
-        return key.startswith(self._kern1Prefix) or key.startswith(self._kern2Prefix)
+        return (key.startswith("@"), key)
 
     async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
         kerning = (await self.inputKerning).get(self._kernFeatureTag)
