@@ -18,7 +18,7 @@
       <integer>-35</integer>
       <key>V</key>
       <integer>-85</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-25</integer>
     </dict>
     <key>C</key>
@@ -29,7 +29,7 @@
       <integer>-40</integer>
       <key>V</key>
       <integer>-65</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-40</integer>
     </dict>
     <key>E</key>
@@ -51,7 +51,7 @@
       <integer>-70</integer>
       <key>U</key>
       <integer>-10</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-125</integer>
     </dict>
     <key>G</key>
@@ -68,7 +68,7 @@
       <integer>-20</integer>
       <key>V</key>
       <integer>-70</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-40</integer>
     </dict>
     <key>H</key>
@@ -84,7 +84,7 @@
       <integer>-135</integer>
       <key>O</key>
       <integer>-10</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-70</integer>
     </dict>
     <key>L</key>
@@ -110,7 +110,7 @@
       <integer>-90</integer>
       <key>V</key>
       <integer>-80</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-30</integer>
     </dict>
     <key>P</key>
@@ -119,7 +119,7 @@
       <integer>-200</integer>
       <key>T</key>
       <integer>-20</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-95</integer>
     </dict>
     <key>R</key>
@@ -138,7 +138,7 @@
       <integer>-60</integer>
       <key>V</key>
       <integer>-95</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-80</integer>
     </dict>
     <key>S</key>
@@ -157,7 +157,7 @@
       <integer>-10</integer>
       <key>V</key>
       <integer>-20</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-45</integer>
     </dict>
     <key>T</key>
@@ -170,14 +170,14 @@
       <integer>-90</integer>
       <key>S</key>
       <integer>-25</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-215</integer>
     </dict>
     <key>U</key>
     <dict>
       <key>J</key>
       <integer>-140</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-75</integer>
     </dict>
     <key>V</key>
@@ -190,10 +190,10 @@
       <integer>-55</integer>
       <key>S</key>
       <integer>-50</integer>
-      <key>public.kern2.@MMK_R_A</key>
+      <key>public.kern2.A</key>
       <integer>-210</integer>
     </dict>
-    <key>public.kern1.@MMK_L_A</key>
+    <key>public.kern1.A</key>
     <dict>
       <key>J</key>
       <integer>-35</integer>

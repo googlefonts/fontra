@@ -2,13 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>public.kern1.@MMK_L_A</key>
+    <key>public.kern1.A</key>
     <array>
       <string>A</string>
       <string>Aacute</string>
       <string>Adieresis</string>
     </array>
-    <key>public.kern2.@MMK_R_A</key>
+    <key>public.kern2.A</key>
     <array>
       <string>A</string>
       <string>Aacute</string>

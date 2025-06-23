@@ -1112,28 +1112,28 @@ async def test_kerning_read_write(writableTestFont):
 
     assert len(kerning["kern"].sourceIdentifiers) == 5
     kerning["kern"].values["A"]["J"] = [None, -25, -30, -15, None]
-    kerning["kern"].leftGroups["@MMK_L_A"].append("X")
+    kerning["kern"].leftGroups["A"].append("X")
 
     await writableTestFont.putKerning(kerning)
 
     reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedKerning = await reopenedFont.getKerning()
     assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
-    assert reopenedKerning["kern"].leftGroups["@MMK_L_A"] == [
+    assert reopenedKerning["kern"].leftGroups["A"] == [
         "A",
         "Aacute",
         "Adieresis",
         "X",
     ]
 
-    assert reopenedKerning["kern"].values["@@MMK_L_A"]["T"] == [
+    assert reopenedKerning["kern"].values["@A"]["T"] == [
         None,
         None,
         -190,
         None,
         None,
     ]
-    assert reopenedKerning["kern"].values["T"]["@@MMK_R_A"] == [
+    assert reopenedKerning["kern"].values["T"]["@A"] == [
         -75,
         None,
         -215,
