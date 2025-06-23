@@ -1,0 +1,16 @@
+{
+"name": "V",
+"sources": [
+{
+"name": "default",
+"layerName": "default"
+}
+],
+"layers": {
+"default": {
+"glyph": {
+"xAdvance": 500
+}
+}
+}
+}
