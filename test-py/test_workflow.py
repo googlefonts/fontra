@@ -1596,6 +1596,18 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "upconvert-legacy-kerning",
+            """
+            steps:
+            - input: fontra-read
+              source: test-py/data/workflow/input-upconvert-legacy-kerning.fontra
+            - output: fontra-write
+              destination: "output-upconvert-legacy-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
