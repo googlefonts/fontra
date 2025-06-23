@@ -1,9 +1,11 @@
 TYPE
 vkrn
 
-GROUPS
-kern.bottom.BC;B;C
+LEFTGROUPS
 kern.top.AB;A;B
+
+RIGHTGROUPS
+kern.bottom.BC;B;C
 
 VALUES
 side1;side2;0075ca4f;f563722c;d77f29e2;09259dfc
