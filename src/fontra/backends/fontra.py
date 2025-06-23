@@ -353,12 +353,12 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
             writer.writerow([kernType])
             writer.writerow([])
 
-            writer.writerow(["LEFTGROUPS"])
+            writer.writerow(["GROUPS1"])
             for groupName, group in sorted(kerningTable.leftGroups.items()):
                 writer.writerow([groupName] + group)
             writer.writerow([])
 
-            writer.writerow(["RIGHTGROUPS"])
+            writer.writerow(["GROUPS2"])
             for groupName, group in sorted(kerningTable.rightGroups.items()):
                 writer.writerow([groupName] + group)
             writer.writerow([])
@@ -388,11 +388,11 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             if kernType is None:
                 break
 
-            leftGroups, isLegacy = kerningReadGroups(rowIter, "LEFTGROUPS", True)
+            leftGroups, isLegacy = kerningReadGroups(rowIter, "GROUPS1", True)
             rightGroups, _ = (
                 (None, None)
                 if isLegacy
-                else kerningReadGroups(rowIter, "RIGHTGROUPS", False)
+                else kerningReadGroups(rowIter, "GROUPS2", False)
             )
 
             sourceIdentifiers, values = kerningReadValues(rowIter)
