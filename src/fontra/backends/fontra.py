@@ -389,8 +389,10 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
                 break
 
             leftGroups, isLegacy = kerningReadGroups(rowIter, "LEFTGROUPS", True)
-            rightGroups = (
-                None if isLegacy else kerningReadGroups(rowIter, "RIGHTGROUPS", False)
+            rightGroups, _ = (
+                (None, None)
+                if isLegacy
+                else kerningReadGroups(rowIter, "RIGHTGROUPS", False)
             )
 
             sourceIdentifiers, values = kerningReadValues(rowIter)
