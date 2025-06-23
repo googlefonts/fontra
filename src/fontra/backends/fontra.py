@@ -398,7 +398,9 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             sourceIdentifiers, values = kerningReadValues(rowIter)
 
             if isLegacy:
-                leftGroups, rightGroups, values = upconvertKerning(leftGroups, values)
+                leftGroups, rightGroups, values = upconvertKerning(
+                    leftGroups, values, kernType
+                )
 
             assert rightGroups is not None
 
@@ -564,9 +566,8 @@ def longestCommonPrefix(strings: Sequence[str]) -> str:
     return firstString[:i]
 
 
-def guessPrefix(groupNames, isLeft):
+def guessPrefix(groupNames, prefixes):
     commonPrefix = longestCommonPrefix(groupNames)
-    prefixes = ["public.kern1.", "@MMK_L_"] if isLeft else ["public.kern2.", "@MMK_R_"]
 
     for prefix in prefixes:
         if commonPrefix.startswith(prefix):
@@ -575,7 +576,13 @@ def guessPrefix(groupNames, isLeft):
     return ""
 
 
-def upconvertKerning(groups, values):
+horLeftPrefixes = ["public.kern1.", "@MMK_L_"]
+horRightPrefixes = ["public.kern2.", "@MMK_R_"]
+verTopPrefixes = ["kern.top."]
+verBottomPrefixes = ["kern.bottom."]
+
+
+def upconvertKerning(groups, values, kernType):
     leftGroupNames = set()
     rightGroupNames = set()
 
@@ -589,8 +596,11 @@ def upconvertKerning(groups, values):
     leftGroupNames = sorted(leftGroupNames)
     rightGroupNames = sorted(rightGroupNames)
 
-    leftGroupPrefix = guessPrefix(leftGroupNames, True)
-    rightGroupPrefix = guessPrefix(rightGroupNames, False)
+    leftPrefixes = verTopPrefixes if kernType == "vkrn" else horLeftPrefixes
+    rightPrefixes = verBottomPrefixes if kernType == "vkrn" else horRightPrefixes
+
+    leftGroupPrefix = guessPrefix(leftGroupNames, leftPrefixes)
+    rightGroupPrefix = guessPrefix(rightGroupNames, rightPrefixes)
 
     leftGroups = {
         groupName[len(leftGroupPrefix) :]: groups[groupName]
