@@ -8,7 +8,7 @@ import pytest
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
 from fontra.backends.fontra import longestCommonPrefix
-from fontra.core.classes import ImageType, OpenTypeFeatures
+from fontra.core.classes import ImageType, Kerning, OpenTypeFeatures
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -189,3 +189,55 @@ longestCommonPrefixTestData = [
 @pytest.mark.parametrize("strings, expectedPrefix", longestCommonPrefixTestData)
 def test_longestCommonPrefix(strings, expectedPrefix):
     assert longestCommonPrefix(strings) == expectedPrefix
+
+
+kerningEdgeCasesTestData = [
+    (False, False, False, False, 0),
+    (True, False, False, False, 10),
+    (False, True, False, False, 10),
+    (True, True, False, False, 11),
+    (False, False, True, False, 10),
+    (True, False, True, False, 11),
+    (False, True, True, False, 11),
+    (True, True, True, False, 12),
+    (False, False, False, True, 12),
+    (True, False, False, True, 23),
+]
+
+
+@pytest.mark.parametrize(
+    "hasGroupsSide1, hasGroupsSide2, hasValues, hasVkrn, expectedNumLines",
+    kerningEdgeCasesTestData,
+)
+async def test_kerningEdgeCases(
+    tmpdir, hasGroupsSide1, hasGroupsSide2, hasValues, hasVkrn, expectedNumLines
+):
+    dstPath = tmpdir / "test.fontra"
+    font = newFileSystemBackend(dstPath)
+    kerning = {
+        "kern": Kerning(
+            groupsSide1={"A": ["A"]} if hasGroupsSide1 else {},
+            groupsSide2={"A": ["A"]} if hasGroupsSide2 else {},
+            sourceIdentifiers=["---"],
+            values={"A": {"A": [-10]}} if hasValues else {},
+        )
+    }
+    if hasVkrn:
+        kerning["vkrn"] = Kerning(
+            groupsSide1={"A": ["A"]},
+            groupsSide2={"A": ["A"]},
+            sourceIdentifiers=["---"],
+            values={"A": {"A": [-10]}},
+        )
+
+    async with aclosing(font):
+        await font.putKerning(kerning)
+
+    kerningPath = dstPath / "kerning.csv"
+
+    if expectedNumLines:
+        with open(kerningPath) as f:
+            numLines = len(f.readlines())
+            assert numLines == expectedNumLines
+    else:
+        assert not kerningPath.exists()

@@ -249,7 +249,7 @@ class FontraBackend:
         fontData.pop("kerning", None)
 
         if any(
-            kernTable.values or kernTable.groups
+            kernTable.values or kernTable.groupsSide1 or kernTable.groupsSide2
             for kernTable in self.fontData.kerning.values()
         ):
             writeKerningFile(self.kerningPath, self.fontData.kerning)
@@ -342,7 +342,11 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
 
         isFirst = True
         for kernType, kerningTable in kerning.items():
-            if not kerningTable.values and not kerningTable.groups:
+            if (
+                not kerningTable.values
+                and not kerningTable.groupsSide1
+                and not kerningTable.groupsSide2
+            ):
                 continue
 
             if not isFirst:
