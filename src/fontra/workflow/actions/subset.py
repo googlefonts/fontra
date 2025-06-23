@@ -110,26 +110,37 @@ def subsetKerning(kerning, glyphNames):
 
 
 def subsetKernTable(kernTable, glyphNames):
-    newGroups = {}
-    for groupName, group in kernTable.groups.items():
-        group = [glyphName for glyphName in group if glyphName in glyphNames]
-        if group:
-            newGroups[groupName] = group
+    newLeftGroups = subsetGroups(kernTable.leftGroups, glyphNames)
+    newRightGroups = subsetGroups(kernTable.rightGroups, glyphNames)
 
     newValues = {}
     for left, rightDict in kernTable.values.items():
         rightDict = {
             right: values
             for right, values in rightDict.items()
-            if right in glyphNames or right in newGroups
+            if right in glyphNames or right in newRightGroups
         }
-        if rightDict and (left in glyphNames or left in newGroups):
+        if rightDict and (left in glyphNames or left in newLeftGroups):
             newValues[left] = rightDict
 
     # TODO: should groups be dropped that are not used (anymore) in the subsetted
     # kerning?
 
-    return replace(kernTable, groups=newGroups, values=newValues)
+    return replace(
+        kernTable,
+        leftGroups=newLeftGroups,
+        rightGroups=newRightGroups,
+        values=newValues,
+    )
+
+
+def subsetGroups(groups, glyphNames):
+    newGroups = {}
+    for groupName, group in groups.items():
+        group = [glyphName for glyphName in group if glyphName in glyphNames]
+        if group:
+            newGroups[groupName] = group
+    return newGroups
 
 
 def getComponentNames(glyph):
