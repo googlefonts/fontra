@@ -1669,7 +1669,9 @@ def test_substituteStrings(sourceDict, substitutions, expectedDict):
 
 def test_legacy_kern_data():
     # Test that the input file indeed uses the legacy kerning.csv format
-    kerningPath = workflowDataDir / "input-upconvert-legacy-kerning.fontra/kerning.csv"
+    kerningPath = (
+        workflowDataDir / "input-upconvert-legacy-kerning.fontra" / "kerning.csv"
+    )
     csvData = kerningPath.read_text()
     assert "GROUPS" in csvData
     assert "GROUPS1" not in csvData
