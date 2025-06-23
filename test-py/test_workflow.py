@@ -1341,9 +1341,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             """
             steps:
             - input: fontra-read
-              source: "test-py/data/workflow/input1-A.fontra"
-            - filter: subset-axes
-              dropAxisNames: ["italic"]
+              source: "test-py/data/workflow/input-merge-kerning-A.fontra"
             - filter: generate-kern-feature
               dropKern: true
             - output: fontra-write
