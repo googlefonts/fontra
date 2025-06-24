@@ -1341,9 +1341,7 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             """
             steps:
             - input: fontra-read
-              source: "test-py/data/workflow/input1-A.fontra"
-            - filter: subset-axes
-              dropAxisNames: ["italic"]
+              source: "test-py/data/workflow/input-merge-kerning-A.fontra"
             - filter: generate-kern-feature
               dropKern: true
             - output: fontra-write
@@ -1598,6 +1596,18 @@ def test_command(tmpdir, configYAMLSources, substitutions):
             False,
             [],
         ),
+        (
+            "upconvert-legacy-kerning",
+            """
+            steps:
+            - input: fontra-read
+              source: test-py/data/workflow/input-upconvert-legacy-kerning.fontra
+            - output: fontra-write
+              destination: "output-upconvert-legacy-kerning.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
@@ -1655,3 +1665,14 @@ async def test_workflow_actions(
 def test_substituteStrings(sourceDict, substitutions, expectedDict):
     d = substituteStrings(sourceDict, substitutions)
     assert d == expectedDict
+
+
+def test_legacy_kern_data():
+    # Test that the input file indeed uses the legacy kerning.csv format
+    kerningPath = (
+        workflowDataDir / "input-upconvert-legacy-kerning.fontra" / "kerning.csv"
+    )
+    csvData = kerningPath.read_text()
+    assert "GROUPS" in csvData
+    assert "GROUPS1" not in csvData
+    assert "GROUPS2" not in csvData

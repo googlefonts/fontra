@@ -31,12 +31,13 @@ describe("KerningController Tests", () => {
 
   const testKerning = {
     kern: {
-      groups: { "left.O": ["O", "D", "Q"], "right.O": ["O", "C", "G", "Q"] },
+      groupsSide1: { O: ["O", "D", "Q"] },
+      groupsSide2: { O: ["O", "C", "G", "Q"] },
       sourceIdentifiers: ["a", "b", "c", "d", "e", "f"],
       values: {
         "T": { A: [-100, null, null, -200, null, null] },
-        "left.O": {
-          "right.O": [10, null, null, null, null, null],
+        "@O": {
+          "@O": [10, null, null, null, null, null],
           "Q": [20, null, 40, null, null, null],
         },
         "Q": { Q: [1, null, null, null, null, null] },

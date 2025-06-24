@@ -1,14 +1,7 @@
 import { recordChanges } from "./change-recorder.js";
 import { ChangeCollector, wildcard } from "./changes.js";
 import { DiscreteVariationModel } from "./discrete-variation-model.js";
-import {
-  assert,
-  enumerate,
-  isObjectEmpty,
-  longestCommonPrefix,
-  throttleCalls,
-  zip,
-} from "./utils.js";
+import { assert, enumerate, isObjectEmpty, throttleCalls, zip } from "./utils.js";
 
 export class KerningController {
   constructor(kernTag, kerning, fontController) {
@@ -28,7 +21,12 @@ export class KerningController {
 
   get kernData() {
     return (
-      this.kerning[this.kernTag] || { groups: {}, values: {}, sourceIdentifiers: [] }
+      this.kerning[this.kernTag] || {
+        groupsSide1: {},
+        groupsSide2: {},
+        values: {},
+        sourceIdentifiers: [],
+      }
     );
   }
 
@@ -44,25 +42,9 @@ export class KerningController {
         rightPairNames.add(rightPairName);
       }
     }
-    const groupNames = new Set(Object.keys(this.kernData.groups));
-    const leftPairGroupNames = [...leftPairNames].filter((n) => groupNames.has(n));
-    const rightPairGroupNames = [...rightPairNames].filter((n) => groupNames.has(n));
 
-    // TODO/FIXME:
-    // 1. add default for when there are no group names,
-    // 2. use heuristings if there's only one group name
-    // Probably: fall back to "public.kern1" and "@MMK_L_" etc.
-    this.leftPrefix = longestCommonPrefix(leftPairGroupNames);
-    this.rightPrefix = longestCommonPrefix(rightPairGroupNames);
-
-    this.leftPairGroupMapping = makeGlyphGroupMapping(
-      leftPairGroupNames,
-      this.kernData.groups
-    );
-    this.rightPairGroupMapping = makeGlyphGroupMapping(
-      rightPairGroupNames,
-      this.kernData.groups
-    );
+    this.leftPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide1);
+    this.rightPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide2);
 
     const locations = this.kernData.sourceIdentifiers.map(
       (sourceIdentifier) => this.fontController.sources[sourceIdentifier].location
@@ -368,11 +350,11 @@ class KerningEditContext {
   }
 }
 
-function makeGlyphGroupMapping(groupNames, groups) {
+function makeGlyphGroupMapping(groups) {
   const mapping = {};
-  for (const groupName of groupNames) {
-    groups[groupName].forEach((glyphName) => {
-      mapping[glyphName] = groupName;
+  for (const [groupName, glyphNames] of Object.entries(groups)) {
+    glyphNames.forEach((glyphName) => {
+      mapping[glyphName] = "@" + groupName;
     });
   }
   return mapping;
@@ -383,7 +365,8 @@ function ensureKerningData(kerning, kernTag) {
     // We don't have data yet for this kern tag
     kerning[kernTag] = {
       sourceIdentifiers: [],
-      groups: {},
+      groupsSide1: {},
+      groupsSide2: {},
       values: {},
     };
   }

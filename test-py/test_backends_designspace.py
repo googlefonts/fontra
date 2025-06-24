@@ -117,16 +117,16 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
 
 async def test_getCustomDataSingleUFO(testFontSingleUFO):
     customData = await testFontSingleUFO.getCustomData()
-    assert 15 == len(customData)
+    assert 14 == len(customData)
 
 
 async def test_putCustomDataSingleUFO(writableTestFontSingleUFO):
     customData = await writableTestFontSingleUFO.getCustomData()
-    assert 17 == len(customData)
+    assert 16 == len(customData)
     customData["testing"] = 12
     await writableTestFontSingleUFO.putCustomData(customData)
     customData = await writableTestFontSingleUFO.getCustomData()
-    assert 18 == len(customData)
+    assert 17 == len(customData)
 
 
 @pytest.mark.parametrize(
@@ -1112,18 +1112,33 @@ async def test_kerning_read_write(writableTestFont):
 
     assert len(kerning["kern"].sourceIdentifiers) == 5
     kerning["kern"].values["A"]["J"] = [None, -25, -30, -15, None]
-    kerning["kern"].groups["public.kern1.@MMK_L_A"].append("X")
+    kerning["kern"].groupsSide1["A"].append("X")
 
     await writableTestFont.putKerning(kerning)
 
     reopenedFont = getFileSystemBackend(writableTestFont.dsDoc.path)
     reopenedKerning = await reopenedFont.getKerning()
     assert reopenedKerning["kern"].values["A"]["J"] == [None, -25, -30, -15, None]
-    assert reopenedKerning["kern"].groups["public.kern1.@MMK_L_A"] == [
+    assert reopenedKerning["kern"].groupsSide1["A"] == [
         "A",
         "Aacute",
         "Adieresis",
         "X",
+    ]
+
+    assert reopenedKerning["kern"].values["@A"]["T"] == [
+        None,
+        None,
+        -190,
+        None,
+        None,
+    ]
+    assert reopenedKerning["kern"].values["T"]["@A"] == [
+        -75,
+        None,
+        -215,
+        -150,
+        None,
     ]
 
 

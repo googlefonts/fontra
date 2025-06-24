@@ -8,7 +8,7 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 from ..core.async_property import async_property
 from ..core.classes import (
@@ -249,7 +249,7 @@ class FontraBackend:
         fontData.pop("kerning", None)
 
         if any(
-            kernTable.values or kernTable.groups
+            kernTable.values or kernTable.groupsSide1 or kernTable.groupsSide2
             for kernTable in self.fontData.kerning.values()
         ):
             writeKerningFile(self.kerningPath, self.fontData.kerning)
@@ -342,7 +342,11 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
 
         isFirst = True
         for kernType, kerningTable in kerning.items():
-            if not kerningTable.values and not kerningTable.groups:
+            if (
+                not kerningTable.values
+                and not kerningTable.groupsSide1
+                and not kerningTable.groupsSide2
+            ):
                 continue
 
             if not isFirst:
@@ -353,8 +357,13 @@ def writeKerningFile(path: pathlib.Path, kerning: dict[str, Kerning]) -> None:
             writer.writerow([kernType])
             writer.writerow([])
 
-            writer.writerow(["GROUPS"])
-            for groupName, group in sorted(kerningTable.groups.items()):
+            writer.writerow(["GROUPS1"])
+            for groupName, group in sorted(kerningTable.groupsSide1.items()):
+                writer.writerow([groupName] + group)
+            writer.writerow([])
+
+            writer.writerow(["GROUPS2"])
+            for groupName, group in sorted(kerningTable.groupsSide2.items()):
                 writer.writerow([groupName] + group)
             writer.writerow([])
 
@@ -383,11 +392,27 @@ def readKerningFile(path: pathlib.Path) -> dict[str, Kerning]:
             if kernType is None:
                 break
 
-            groups = kerningReadGroups(rowIter)
+            groupsSide1, isLegacy = kerningReadGroups(rowIter, "GROUPS1", True)
+            groupsSide2, _ = (
+                (None, None)
+                if isLegacy
+                else kerningReadGroups(rowIter, "GROUPS2", False)
+            )
+
             sourceIdentifiers, values = kerningReadValues(rowIter)
 
+            if isLegacy:
+                groupsSide1, groupsSide2, values = upconvertKerning(
+                    groupsSide1, values, kernType
+                )
+
+            assert groupsSide2 is not None
+
             kerning[kernType] = Kerning(
-                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+                groupsSide1=groupsSide1,
+                groupsSide2=groupsSide2,
+                sourceIdentifiers=sourceIdentifiers,
+                values=values,
             )
 
     return kerning
@@ -408,10 +433,12 @@ def kerningReadType(rowIter):
     return row[0]
 
 
-def kerningReadGroups(rowIter):
+def kerningReadGroups(rowIter, keyword, allowLegacy):
     lineNumber, row = nextNonBlankRow(rowIter)
-    if not row or row[0] != "GROUPS":
-        raise KerningParseError(f"expected GROUPS keyword (line {lineNumber})")
+    if not row or (row[0] != keyword and (not allowLegacy or row[0] != "GROUPS")):
+        raise KerningParseError(f"expected {keyword} keyword (line {lineNumber})")
+
+    isLegacy = row[0] == "GROUPS"
 
     groups = {}
 
@@ -420,7 +447,7 @@ def kerningReadGroups(rowIter):
             break
         groups[row[0]] = row[1:]
 
-    return groups
+    return groups, isLegacy
 
 
 def kerningReadValues(rowIter):
@@ -524,3 +551,91 @@ def componentNamesFromGlyphData(glyphData):
         for layerData in glyphData.get("layers", {}).values()
         for compoData in layerData["glyph"].get("components", [])
     }
+
+
+def longestCommonPrefix(strings: Sequence[str]) -> str:
+    if not strings:
+        return ""
+
+    firstString = strings[0]
+
+    i = 0
+
+    while i < len(firstString):
+        c = firstString[i]
+        if any(i >= len(s) or s[i] != c for s in strings):
+            break
+        i += 1
+
+    return firstString[:i]
+
+
+def guessPrefix(groupNames, prefixes):
+    commonPrefix = longestCommonPrefix(groupNames)
+
+    for prefix in prefixes:
+        if commonPrefix.startswith(prefix):
+            return prefix
+
+    return ""
+
+
+horLeftPrefixes = ["public.kern1.", "@MMK_L_"]
+horRightPrefixes = ["public.kern2.", "@MMK_R_"]
+verTopPrefixes = ["kern.top."]
+verBottomPrefixes = ["kern.bottom."]
+
+
+def upconvertKerning(groups, values, kernType):
+    groupSide1Names = set()
+    groupSide2Names = set()
+
+    for leftName, valueDict in values.items():
+        if leftName in groups:
+            groupSide1Names.add(leftName)
+        for rightName in valueDict:
+            if rightName in groups:
+                groupSide2Names.add(rightName)
+
+    groupSide1Names = sorted(groupSide1Names)
+    groupSide2Names = sorted(groupSide2Names)
+
+    leftPrefixes = verTopPrefixes if kernType == "vkrn" else horLeftPrefixes
+    rightPrefixes = verBottomPrefixes if kernType == "vkrn" else horRightPrefixes
+
+    groupSide1Prefix = guessPrefix(groupSide1Names, leftPrefixes)
+    groupSide2Prefix = guessPrefix(groupSide2Names, rightPrefixes)
+
+    groupsSide1 = {
+        groupName[len(groupSide1Prefix) :]: groups[groupName]
+        for groupName in groups
+        if groupName.startswith(groupSide1Prefix)
+    }
+    groupsSide2 = {
+        groupName[len(groupSide2Prefix) :]: groups[groupName]
+        for groupName in groups
+        if groupName.startswith(groupSide2Prefix)
+    }
+
+    newValues = {}
+
+    for leftName, valueDict in values.items():
+        leftName = fixPrefix(leftName, groupSide1Prefix)
+        newValues[leftName] = {}
+        for rightName, values in valueDict.items():
+            rightName = fixPrefix(rightName, groupSide2Prefix)
+            newValues[leftName][rightName] = values
+
+    return groupsSide1, groupsSide2, newValues
+
+
+def fixPrefix(kernPairName, groupPrefix):
+    return (
+        (
+            "@" + kernPairName[len(groupPrefix) :]
+            if kernPairName.startswith(groupPrefix)
+            else kernPairName
+        )
+        if groupPrefix
+        else kernPairName
+    )

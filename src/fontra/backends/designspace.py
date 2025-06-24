@@ -1173,16 +1173,23 @@ class DesignspaceBackend:
                 valueDicts[leftKey][rightKey][dsSource.identifier] = value
 
         values = {
-            left: {
-                right: [valueDict.get(key) for key in sourceIdentifiers]
+            adjustGroupPrefix(left): {
+                adjustGroupPrefix(right): [
+                    valueDict.get(key) for key in sourceIdentifiers
+                ]
                 for right, valueDict in rightDict.items()
             }
             for left, rightDict in valueDicts.items()
         }
 
+        groupsSide1, groupsSide2 = splitGroups(groups)
+
         return {
             "kern": Kerning(
-                groups=groups, sourceIdentifiers=sourceIdentifiers, values=values
+                groupsSide1=groupsSide1,
+                groupsSide2=groupsSide2,
+                sourceIdentifiers=sourceIdentifiers,
+                values=values,
             )
         }
 
@@ -1226,7 +1233,10 @@ class DesignspaceBackend:
                 if dsSource.isSparse:
                     continue
                 if kernType == "kern":
-                    dsSource.layer.reader.writeGroups(kerningTable.groups)
+                    groups = prefixGroups(
+                        kerningTable.groupsSide1, "public.kern1."
+                    ) | prefixGroups(kerningTable.groupsSide2, "public.kern2.")
+                    dsSource.layer.reader.writeGroups(groups)
                     ufoKerning = kerningPerSource.get(dsSource.identifier, {})
                     dsSource.layer.reader.writeKerning(ufoKerning)
                 else:
@@ -2357,3 +2367,43 @@ def convertImageData(data, type):
     outFile = io.BytesIO()
     image.save(outFile, type)
     return ImageData(type=type, data=outFile.getvalue())
+
+
+def adjustGroupPrefix(kernPairName: str) -> str:
+    if kernPairName.startswith(("public.kern1.", "public.kern2.")):
+        return "@" + kernPairName[13:]
+    return kernPairName
+
+
+def addLeftPrefix(kernPairName: str) -> str:
+    return replacePrefix(kernPairName, "@", "public.kern1.")
+
+
+def addRightPrefix(kernPairName: str) -> str:
+    return replacePrefix(kernPairName, "@", "public.kern2.")
+
+
+def replacePrefix(s: str, oldPrefix: str, newPrefix: str) -> str:
+    return newPrefix + s[len(oldPrefix) :] if s.startswith(oldPrefix) else s
+
+
+def prefixGroups(groups, prefix):
+    return {prefix + groupName: glyphNames for groupName, glyphNames in groups.items()}
+
+
+def splitGroups(
+    groups: dict[str, list[str]]
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    groupsSide1 = {}
+    groupsSide2 = {}
+
+    for groupName, glyphNames in groups.items():
+        if groupName.startswith("public.kern1."):
+            groupsSide1[groupName[13:]] = glyphNames
+        elif groupName.startswith("public.kern2."):
+            groupsSide2[groupName[13:]] = glyphNames
+        else:
+            # not a kerning group -- drop
+            pass
+
+    return groupsSide1, groupsSide2

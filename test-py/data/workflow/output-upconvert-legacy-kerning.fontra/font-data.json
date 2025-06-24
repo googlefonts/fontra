@@ -2,50 +2,29 @@
 "axes": {
 "axes": [
 {
-"name": "width",
-"label": "width",
-"tag": "wdth",
-"minValue": 0,
-"defaultValue": 0,
-"maxValue": 1000
+"name": "weight",
+"label": "Weight",
+"tag": "wght",
+"minValue": 400,
+"defaultValue": 400,
+"maxValue": 900
 },
 {
-"name": "weight",
-"label": "weight",
-"tag": "wght",
+"name": "width",
+"label": "Width",
+"tag": "wdth",
 "minValue": 100,
 "defaultValue": 100,
-"maxValue": 900,
-"mapping": [
-[
-100,
-150
-],
-[
-900,
-850
-]
-]
-},
-{
-"name": "italic",
-"label": "italic",
-"tag": "ital",
-"values": [
-0,
-1
-],
-"defaultValue": 0
+"maxValue": 200
 }
 ]
 },
 "sources": {
-"1ec2c51f": {
-"name": "Support",
+"0075ca4f": {
+"name": "Regular",
 "location": {
-"italic": 0,
-"weight": 595,
-"width": 0
+"weight": 400,
+"width": 100
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -70,12 +49,11 @@
 }
 }
 },
-"2994c76c": {
-"name": "BoldCond",
+"09259dfc": {
+"name": "Bold Wide",
 "location": {
-"italic": 0,
-"weight": 850,
-"width": 0
+"weight": 900,
+"width": 200
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -100,12 +78,11 @@
 }
 }
 },
-"3b69794b": {
-"name": "LightCond",
+"d77f29e2": {
+"name": "Wide",
 "location": {
-"italic": 0,
-"weight": 150,
-"width": 0
+"weight": 400,
+"width": 200
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {
@@ -130,42 +107,11 @@
 }
 }
 },
-"ad13e1f0": {
-"name": "BoldExtended",
+"f563722c": {
+"name": "Bold",
 "location": {
-"italic": 0,
-"weight": 850,
-"width": 1000
-},
-"lineMetricsHorizontalLayout": {
-"ascender": {
-"value": 800,
-"zone": 16
-},
-"capHeight": {
-"value": 750,
-"zone": 16
-},
-"xHeight": {
-"value": 500,
-"zone": 16
-},
-"baseline": {
-"value": 0,
-"zone": -16
-},
-"descender": {
-"value": -250,
-"zone": -16
-}
-}
-},
-"f7622ab2": {
-"name": "LightExtended",
-"location": {
-"italic": 0,
-"weight": 150,
-"width": 1000
+"weight": 900,
+"width": 100
 },
 "lineMetricsHorizontalLayout": {
 "ascender": {

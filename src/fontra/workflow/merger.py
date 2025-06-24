@@ -284,10 +284,10 @@ def _mergeAxes(axisA, axisB):
 
 
 def _mergeKernTable(kernTableA, kernTableB):
-    if not set(kernTableA.groups).isdisjoint(set(kernTableB.groups)):
-        kernTableA = _disambiguateKerningGroupNames(kernTableA, kernTableB)
+    kernTableA = _disambiguateKerningGroupNames(kernTableA, kernTableB)
 
-    assert set(kernTableA.groups).isdisjoint(set(kernTableB.groups))
+    assert set(kernTableA.groupsSide1).isdisjoint(set(kernTableB.groupsSide1))
+    assert set(kernTableA.groupsSide2).isdisjoint(set(kernTableB.groupsSide2))
     assert set(kernTableA.values).isdisjoint(set(kernTableB.values))
 
     mergedSourceIdentifiers = list(kernTableA.sourceIdentifiers)
@@ -304,20 +304,52 @@ def _mergeKernTable(kernTableA, kernTableB):
     mappedValuesB = _remapKernValuesBySourceIdentifiers(kernTableB.values, sidMapB)
 
     return Kerning(
-        groups=kernTableA.groups | kernTableB.groups,
+        groupsSide1=kernTableA.groupsSide1 | kernTableB.groupsSide1,
+        groupsSide2=kernTableA.groupsSide2 | kernTableB.groupsSide2,
         sourceIdentifiers=mergedSourceIdentifiers,
         values=mappedValuesA | mappedValuesB,
     )
 
 
 def _disambiguateKerningGroupNames(kernTableA, kernTableB):
-    groupsNamesA = set(kernTableA.groups)
-    groupsNamesB = set(kernTableB.groups)
+    groupSide1NameMap, pairSide1NameMap = _getConflictResolutionMappings(
+        kernTableA.groupsSide1, kernTableB.groupsSide2
+    )
+
+    groupSide2NameMap, pairSide2NameMap = _getConflictResolutionMappings(
+        kernTableA.groupsSide2, kernTableB.groupsSide2
+    )
+
+    if not groupSide1NameMap and not groupSide2NameMap:
+        return kernTableA
+
+    groupsSide1 = _renameGroups(kernTableA.groupsSide1, groupSide1NameMap)
+    groupsSide2 = _renameGroups(kernTableA.groupsSide2, groupSide2NameMap)
+
+    values = {
+        pairSide1NameMap.get(left, left): {
+            pairSide2NameMap.get(right, right): values
+            for right, values in rightDict.items()
+        }
+        for left, rightDict in kernTableA.values.items()
+    }
+
+    return replace(
+        kernTableA, groupsSide1=groupsSide1, groupsSide2=groupsSide2, values=values
+    )
+
+
+def _getConflictResolutionMappings(groupsA, groupsB):
+    groupsNamesA = set(groupsA)
+    groupsNamesB = set(groupsB)
+
+    if groupsNamesA.isdisjoint(groupsNamesB):
+        return {}, {}
 
     conflictingNames = groupsNamesA & groupsNamesB
     usedNames = groupsNamesA | groupsNamesB
 
-    renameMap = {}
+    groupNameMap = {}
     for name in sorted(conflictingNames):
         count = 1
         while True:
@@ -326,20 +358,15 @@ def _disambiguateKerningGroupNames(kernTableA, kernTableB):
                 break
             count += 1
         usedNames.add(newName)
-        renameMap[name] = newName
+        groupNameMap[name] = newName
 
-    newGroups = {
-        renameMap.get(name, name): group for name, group in kernTableA.groups.items()
-    }
+    pairNameMap = {"@" + k: "@" + v for k, v in groupNameMap.items()}
 
-    newValues = {
-        renameMap.get(left, left): {
-            renameMap.get(right, right): values for right, values in rightDict.items()
-        }
-        for left, rightDict in kernTableA.values.items()
-    }
+    return groupNameMap, pairNameMap
 
-    return replace(kernTableA, groups=newGroups, values=newValues)
+
+def _renameGroups(groups, renameMap):
+    return {renameMap.get(name, name): group for name, group in groups.items()}
 
 
 def _remapKernValuesBySourceIdentifiers(kerningValues, sidMap):
