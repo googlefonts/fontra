@@ -157,6 +157,8 @@ export default class SelectionInfoPanel extends Panel {
       );
     }
 
+    const kerningController = await this.fontController.getKerningController("kern");
+
     const formContents = [];
     if (glyphName) {
       formContents.push({
@@ -243,6 +245,25 @@ export default class SelectionInfoPanel extends Panel {
             setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
               const translationX = value - layerGlyphController.rightMargin;
               layerGlyph.xAdvance += translationX;
+            },
+          },
+        });
+        formContents.push({
+          type: "edit-text-double",
+          key: '["kern-l-r"]',
+          label: translate("sidebar.selection-info.kern-group-l-r"),
+          field1: {
+            key: '["kernLeft"]',
+            value: kerningController.rightPairGroupMapping[glyphName] || "",
+            setValuePlain: (fieldItem, value) => {
+              kerningController.editGroupSide2(glyphName, value.trim());
+            },
+          },
+          field2: {
+            key: '["kernRight"]',
+            value: kerningController.leftPairGroupMapping[glyphName] || "",
+            setValuePlain: (fieldItem, value) => {
+              kerningController.editGroupSide1(glyphName, value.trim());
             },
           },
         });
@@ -626,55 +647,59 @@ export default class SelectionInfoPanel extends Panel {
     const varGlyph = await this.fontController.getGlyph(glyphName);
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
-      const changePath = JSON.parse(fieldItem.key);
-      const senderInfo = { senderID: this, fieldKeyPath: changePath };
+      if (fieldItem.setValuePlain) {
+        assert(!valueStream, "unexpected valueStream");
+        fieldItem.setValuePlain(fieldItem, value);
+      } else {
+        await this._onFieldChangeForGlyph(
+          glyphName,
+          varGlyph,
+          fieldItem,
+          value,
+          valueStream
+        );
+      }
+    };
+  }
 
-      const getFieldValue = fieldItem.getValue || defaultGetFieldValue;
-      const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
-      const deleteFieldValue = fieldItem.deleteValue || defaultDeleteFieldValue;
+  async _onFieldChangeForGlyph(glyphName, varGlyph, fieldItem, value, valueStream) {
+    const changePath = JSON.parse(fieldItem.key);
+    const senderInfo = { senderID: this, fieldKeyPath: changePath };
 
-      await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-        const layerInfo = [];
-        for (const [layerName, layerGlyph] of Object.entries(
-          this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
-        )) {
-          const layerGlyphController =
-            await this.fontController.getLayerGlyphController(
-              glyphName,
-              layerName,
-              varGlyph.getSourceIndexForLayerName(layerName)
-            );
-          layerInfo.push({
-            layerName,
-            layerGlyph,
-            layerGlyphController,
-            orgValue: getFieldValue(layerGlyph, layerGlyphController, fieldItem),
-          });
-        }
+    const getFieldValue = fieldItem.getValue || defaultGetFieldValue;
+    const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
+    const deleteFieldValue = fieldItem.deleteValue || defaultDeleteFieldValue;
 
-        let changes;
+    await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
+      const layerInfo = [];
+      for (const [layerName, layerGlyph] of Object.entries(
+        this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      )) {
+        const layerGlyphController = await this.fontController.getLayerGlyphController(
+          glyphName,
+          layerName,
+          varGlyph.getSourceIndexForLayerName(layerName)
+        );
+        layerInfo.push({
+          layerName,
+          layerGlyph,
+          layerGlyphController,
+          orgValue: getFieldValue(layerGlyph, layerGlyphController, fieldItem),
+        });
+      }
 
-        if (valueStream) {
-          // Continuous changes (eg. slider drag)
-          for await (const value of valueStream) {
-            for (const { layerGlyph, layerGlyphController, orgValue } of layerInfo) {
-              if (orgValue !== undefined) {
-                setFieldValue(layerGlyph, layerGlyphController, fieldItem, orgValue); // Ensure getting the correct undo change
-              } else {
-                deleteFieldValue(layerGlyph, layerGlyphController, fieldItem);
-              }
+      let changes;
+
+      if (valueStream) {
+        // Continuous changes (eg. slider drag)
+        for await (const value of valueStream) {
+          for (const { layerGlyph, layerGlyphController, orgValue } of layerInfo) {
+            if (orgValue !== undefined) {
+              setFieldValue(layerGlyph, layerGlyphController, fieldItem, orgValue); // Ensure getting the correct undo change
+            } else {
+              deleteFieldValue(layerGlyph, layerGlyphController, fieldItem);
             }
-            changes = applyNewValue(
-              glyph,
-              layerInfo,
-              value,
-              fieldItem,
-              this.multiEditChangesAreAbsolute
-            );
-            await sendIncrementalChange(changes.change, true); // true: "may drop"
           }
-        } else {
-          // Simple, atomic change
           changes = applyNewValue(
             glyph,
             layerInfo,
@@ -682,23 +707,33 @@ export default class SelectionInfoPanel extends Panel {
             fieldItem,
             this.multiEditChangesAreAbsolute
           );
+          await sendIncrementalChange(changes.change, true); // true: "may drop"
         }
-
-        const undoLabel =
-          changePath.length == 1
-            ? `${changePath.at(-1)}`
-            : `${changePath.at(-2)}.${changePath.at(-1)}`;
-        return {
-          changes: changes,
-          undoLabel: undoLabel,
-          broadcast: true,
-        };
-      }, senderInfo);
-
-      if (["xAdvance", "leftMargin", "rightMargin"].includes(changePath[0])) {
-        this._updateGlyphMetrics(glyphName, changePath[0]);
+      } else {
+        // Simple, atomic change
+        changes = applyNewValue(
+          glyph,
+          layerInfo,
+          value,
+          fieldItem,
+          this.multiEditChangesAreAbsolute
+        );
       }
-    };
+
+      const undoLabel =
+        changePath.length == 1
+          ? `${changePath.at(-1)}`
+          : `${changePath.at(-2)}.${changePath.at(-1)}`;
+      return {
+        changes: changes,
+        undoLabel: undoLabel,
+        broadcast: true,
+      };
+    }, senderInfo);
+
+    if (["xAdvance", "leftMargin", "rightMargin"].includes(changePath[0])) {
+      this._updateGlyphMetrics(glyphName, changePath[0]);
+    }
   }
 
   async _updateGlyphMetrics(glyphName, changedKey) {
