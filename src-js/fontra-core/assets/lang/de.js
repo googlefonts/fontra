@@ -180,6 +180,7 @@ export const strings = {
   "edit-tools-pointer.undo.rotate-selection": "Auswahl drehen",
   "edit-tools-pointer.undo.toggle-smooth": '"smooth" umschalten',
   "editor.hand-tool": "Hand Werkzeug",
+  "editor.kerning-tool": "Kerning Tool",
   "editor.knife-tool": "Messer Werkzeug",
   "editor.pen-tool": "Stift Werkzeug",
   "editor.pen-tool-cubic": "Stift Werkzeug (kubisch)",

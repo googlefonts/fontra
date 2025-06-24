@@ -168,6 +168,7 @@ export const strings = {
   "edit-tools-pointer.undo.rotate-selection": "旋转",
   "edit-tools-pointer.undo.toggle-smooth": "切换平滑节点",
   "editor.hand-tool": "拖拽工具",
+  "editor.kerning-tool": "Kerning Tool",
   "editor.knife-tool": "切割工具",
   "editor.pen-tool": "钢笔工具",
   "editor.pen-tool-cubic": "钢笔工具 (cubic)",

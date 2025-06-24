@@ -179,6 +179,7 @@ export const strings = {
   "edit-tools-pointer.undo.rotate-selection": "選択範囲の回転",
   "edit-tools-pointer.undo.toggle-smooth": "ポイントをスムーズにする",
   "editor.hand-tool": "手のひらツール",
+  "editor.kerning-tool": "Kerning Tool",
   "editor.knife-tool": "ナイフツール",
   "editor.pen-tool": "ペンツール",
   "editor.pen-tool-cubic": "ペンツール（三次ベジェ曲線）",

@@ -178,6 +178,7 @@ export const strings = {
   "edit-tools-pointer.undo.rotate-selection": "rotate selection",
   "edit-tools-pointer.undo.toggle-smooth": "Toggle Smooth",
   "editor.hand-tool": "Outil de déplacement",
+  "editor.kerning-tool": "Kerning Tool",
   "editor.knife-tool": "Outil couteau",
   "editor.pen-tool": "Outil de dessin",
   "editor.pen-tool-cubic": "Outil de dessin (Cubique)",
