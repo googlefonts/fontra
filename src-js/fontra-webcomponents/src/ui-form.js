@@ -97,9 +97,11 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-value.edit-number-x-y,
+    .ui-form-value.edit-text-double,
     .ui-form-value.universal-row {
       display: flex;
       gap: 0.3rem;
+      width: 100%;
     }
 
     .ui-form-icon {
@@ -243,6 +245,11 @@ export class Form extends SimpleElement {
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
+  }
+
+  _addEditTextDouble(valueElement, fieldItem) {
+    this._addEditText(valueElement, fieldItem.field1);
+    this._addEditText(valueElement, fieldItem.field2);
   }
 
   _addEditNumberXY(valueElement, fieldItem) {
