@@ -101,7 +101,6 @@ export class Form extends SimpleElement {
     .ui-form-value.universal-row {
       display: flex;
       gap: 0.3rem;
-      width: 100%;
     }
 
     .ui-form-icon {
