@@ -368,6 +368,7 @@ export const strings = {
   "sidebar.selection-info.glyph-locking.tooltip.read-only": "Glyph is read-only",
   "sidebar.selection-info.glyph-locking.tooltip.unlock": "Unlock glyph",
   "sidebar.selection-info.glyph-name": "Glyph name",
+  "sidebar.selection-info.kern-group-l-r": "Kern group L/R",
   "sidebar.selection-info.multi-source": "Multi-source value changes are absolute",
   "sidebar.selection-info.sidebearings": "Sidebearings",
   "sidebar.selection-info.title": "Glyph info",

@@ -370,6 +370,7 @@ export const strings = {
   "sidebar.selection-info.glyph-locking.tooltip.read-only": "読み取り専用グリフ",
   "sidebar.selection-info.glyph-locking.tooltip.unlock": "グリフをロック解除",
   "sidebar.selection-info.glyph-name": "グリフ名",
+  "sidebar.selection-info.kern-group-l-r": "Kern group L/R",
   "sidebar.selection-info.multi-source": "複数ソースの編集において、値を絶対値に揃える",
   "sidebar.selection-info.sidebearings": "サイドベアリング",
   "sidebar.selection-info.title": "グリフ情報",

@@ -350,6 +350,7 @@ export const strings = {
   "sidebar.selection-info.glyph-locking.tooltip.read-only": "字形为只读",
   "sidebar.selection-info.glyph-locking.tooltip.unlock": "解锁字形",
   "sidebar.selection-info.glyph-name": "字形名称",
+  "sidebar.selection-info.kern-group-l-r": "Kern group L/R",
   "sidebar.selection-info.multi-source": "多源编辑参数轴值时使用绝对值",
   "sidebar.selection-info.sidebearings": "边距",
   "sidebar.selection-info.title": "字形信息",

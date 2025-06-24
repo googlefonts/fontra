@@ -380,6 +380,7 @@ export const strings = {
     "Glyph ist schreibgeschützt",
   "sidebar.selection-info.glyph-locking.tooltip.unlock": "Glyph entsperren",
   "sidebar.selection-info.glyph-name": "Glyph-Name",
+  "sidebar.selection-info.kern-group-l-r": "Kern group L/R",
   "sidebar.selection-info.multi-source": "Multi-Source-Werteänderungen sind absolut",
   "sidebar.selection-info.sidebearings": "Glyph-Rand",
   "sidebar.selection-info.title": "Glyph-Info",
