@@ -383,6 +383,7 @@ export const strings = {
     "Le glyph est en lecture seule",
   "sidebar.selection-info.glyph-locking.tooltip.unlock": "Dévérouiller le glyphe",
   "sidebar.selection-info.glyph-name": "Nom du glyphe",
+  "sidebar.selection-info.kern-group-l-r": "Kern group L/R",
   "sidebar.selection-info.multi-source":
     "Valeurs absolues pour l'édition multiple de sources",
   "sidebar.selection-info.sidebearings": "Approches",

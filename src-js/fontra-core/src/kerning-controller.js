@@ -35,16 +35,7 @@ export class KerningController {
   }
 
   _setup() {
-    const leftPairNames = new Set(Object.keys(this.kernData.values));
-    const rightPairNames = new Set();
-    for (const leftPairName of leftPairNames) {
-      for (const rightPairName of Object.keys(this.kernData.values[leftPairName])) {
-        rightPairNames.add(rightPairName);
-      }
-    }
-
-    this.leftPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide1);
-    this.rightPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide2);
+    this._updatePairGroupMappings();
 
     const locations = this.kernData.sourceIdentifiers.map(
       (sourceIdentifier) => this.fontController.sources[sourceIdentifier].location
@@ -55,6 +46,11 @@ export class KerningController {
     );
 
     this._pairFunctions = {};
+  }
+
+  _updatePairGroupMappings() {
+    this.leftPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide1);
+    this.rightPairGroupMapping = makeGlyphGroupMapping(this.kernData.groupsSide2);
   }
 
   get sourceIdentifiers() {
@@ -132,8 +128,8 @@ export class KerningController {
   }
 
   getPairsToTry(leftGlyph, rightGlyph) {
-    const leftGroup = this.leftPairGroupMapping[leftGlyph];
-    const rightGroup = this.rightPairGroupMapping[rightGlyph];
+    const leftGroup = addGroupPrefix(this.leftPairGroupMapping[leftGlyph]);
+    const rightGroup = addGroupPrefix(this.rightPairGroupMapping[rightGlyph]);
     return [
       [leftGlyph, rightGlyph],
       [leftGlyph, rightGroup],
@@ -173,6 +169,64 @@ export class KerningController {
 
   getEditContext(pairSelectors) {
     return new KerningEditContext(this, pairSelectors);
+  }
+
+  async editGroupSide1(glyphName, groupName) {
+    await this._editGroup(glyphName, groupName.trim(), "groupsSide1");
+  }
+
+  async editGroupSide2(glyphName, groupName) {
+    await this._editGroup(glyphName, groupName.trim(), "groupsSide2");
+  }
+
+  async _editGroup(glyphName, newGroupName, groupsProperty) {
+    const senderID = null;
+    await this.fontController.performEdit(
+      `edit kerning ${groupsProperty}`,
+      "kerning",
+      (root) => {
+        const kerningTable = root.kerning[this.kernTag];
+        const groups = kerningTable[groupsProperty];
+        assert(groups);
+
+        for (const groupName of Object.keys(groups)) {
+          if (groupName === newGroupName) {
+            continue;
+          }
+          const group = groups[groupName];
+          if (group.includes(glyphName)) {
+            groups[groupName] = group.filter(
+              (glyphNameInGroup) => glyphNameInGroup !== glyphName
+            );
+            if (!groups[groupName].length) {
+              delete groups[groupName];
+            }
+          }
+        }
+
+        if (newGroupName) {
+          if (groups[newGroupName]) {
+            const group = groups[newGroupName];
+            if (!group.includes(glyphName)) {
+              const index = groups[newGroupName].findIndex(
+                (glyphNameInGroup) => glyphName < glyphNameInGroup
+              );
+              if (index >= 0) {
+                group.splice(index, 0, glyphName);
+              } else {
+                group.append(glyphName);
+              }
+            }
+          } else {
+            groups[newGroupName] = [glyphName];
+          }
+        } else {
+          // The glyph is not part of any group anymore
+        }
+        this._updatePairGroupMappings();
+      },
+      senderID
+    );
   }
 }
 
@@ -354,7 +408,7 @@ function makeGlyphGroupMapping(groups) {
   const mapping = {};
   for (const [groupName, glyphNames] of Object.entries(groups)) {
     glyphNames.forEach((glyphName) => {
-      mapping[glyphName] = "@" + groupName;
+      mapping[glyphName] = groupName;
     });
   }
   return mapping;
@@ -370,4 +424,11 @@ function ensureKerningData(kerning, kernTag) {
       values: {},
     };
   }
+}
+
+function addGroupPrefix(groupName) {
+  if (groupName) {
+    groupName = "@" + groupName;
+  }
+  return groupName;
 }
