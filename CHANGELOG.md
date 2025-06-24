@@ -1,5 +1,12 @@
 # Changelog for Fontra
 
+## 2025-06-21
+
+- Initial support for editing kerning has landed. There is a new Kerning tool among the edit tools: ove the pointer to a combination and the pair will highlight and you can drag it to change the value. Or use arrow left or right. Tou can select multiple pairs using shift-click. A kern group can be assigned for either side of the glyph in the selection info panel, when a glyph is selected. [Tracking issue 1501](https://github.com/googlefonts/fontra/issues/1501).
+- The relatively new sorting behavior in the Glyph sources panel is not loved by everyone. There is now a little hamburger menu where you can turn off sorting. [Issue 2126](https://github.com/googlefonts/fontra/issues/2126) [PR 2182](https://github.com/googlefonts/fontra/pull/2182)
+- [Glyphs backend] Olli Meier implemented OpenType feature reading and writing for the Glyphs backend. [fontra-glyphs PR 95](https://github.com/googlefonts/fontra-glyphs/pull/95)
+- [Windows] Fixed a bug on Windows where Fontra Pak would refuse to launch if another application was listening to the default port (8000). [Issue 2180](https://github.com/googlefonts/fontra/issues/2180) [PR 2181](https://github.com/googlefonts/fontra/pull/2181) [fontra-pak PR 172](https://github.com/googlefonts/fontra-pak/pull/172)
+
 ## 2025-06-04
 
 - Fix warning caused by HTML Canvas API misuse. [Issue 2171](https://github.com/googlefonts/fontra/issues/2171) [PR 2174](https://github.com/googlefonts/fontra/pull/2174)
