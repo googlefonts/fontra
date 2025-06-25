@@ -1,5 +1,10 @@
 # Changelog for Fontra
 
+## 2025-06-25
+
+- [Glyphs backend] Added support for writing kerning [fontra-glyphs PR 99](https://github.com/googlefonts/fontra-glyphs/pull/99)
+- [Glyphs backend] Added support for deleting glyphs [fontra-glyphs PR 100](https://github.com/googlefonts/fontra-glyphs/pull/100)
+
 ## 2025-06-21
 
 - Initial support for editing kerning has landed. There is a new Kerning tool among the edit tools: ove the pointer to a combination and the pair will highlight and you can drag it to change the value. Or use arrow left or right. Tou can select multiple pairs using shift-click. A kern group can be assigned for either side of the glyph in the selection info panel, when a glyph is selected. [Tracking issue 1501](https://github.com/googlefonts/fontra/issues/1501).
