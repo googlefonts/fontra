@@ -1551,6 +1551,7 @@ export class EditorController extends ViewController {
     if (this.sceneSettings.selectedGlyph.isEditing) {
       const { layerGlyphs, flattenedPath, backgroundImageData } =
         this._prepareCopyOrCutLayers(undefined, false);
+
       await this._writeLayersToClipboard(
         null,
         layerGlyphs,
@@ -1741,11 +1742,18 @@ export class EditorController extends ViewController {
 
     const {
       point: pointIndices,
-      component: componentIndices,
+      component: componentIndicesFromComponent,
+      componentOrigin: componentIndicesFromOrigin,
       anchor: anchorIndices,
       guideline: guidelineIndices,
       backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
+
+    const componentIndices = mergeComponentIndices(
+      componentIndicesFromComponent,
+      componentIndicesFromOrigin
+    );
+
     let path;
     let components;
     let anchors;
@@ -3581,4 +3589,16 @@ function collapseSubTools(editToolsElement) {
     child.style.visibility = index ? "hidden" : "visible";
     child.dataset.tooltipposition = index ? "right" : "bottom";
   }
+}
+
+function mergeComponentIndices(componentIndices1, componentIndices2) {
+  const indexSet = new Set();
+  for (const indices of [componentIndices1, componentIndices2]) {
+    for (const i of indices || []) {
+      indexSet.add(i);
+    }
+  }
+  const componentIndices = [...indexSet];
+  componentIndices.sort((a, b) => a - b);
+  return componentIndices;
 }
