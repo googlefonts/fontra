@@ -214,7 +214,7 @@ export class KerningController {
               if (index >= 0) {
                 group.splice(index, 0, glyphName);
               } else {
-                group.append(glyphName);
+                group.push(glyphName);
               }
             }
           } else {
