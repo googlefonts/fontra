@@ -199,7 +199,9 @@ class FontraServer:
         if not authToken:
             raise web.HTTPUnauthorized()
         info = sys.version_info
-        pythonVersion = f"{info.major}.{info.minor}.{info.micro}"
+        pythonVersion = f"{info.major}.{info.minor}.{info.micro}" + (
+            " free-threading" if not sys._is_gil_enabled() else ""
+        )
         if info.releaselevel != "final":
             pythonVersion += info.releaselevel
         serverInfo = {
