@@ -198,12 +198,17 @@ class FontraServer:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             raise web.HTTPUnauthorized()
+
+        isFreeThreaded = hasattr(sys, "_is_gil_enabled") and not sys._is_gil_enabled()
         info = sys.version_info
+
         pythonVersion = f"{info.major}.{info.minor}.{info.micro}" + (
-            " free-threading" if not sys._is_gil_enabled() else ""
+            " free-threading" if isFreeThreaded else ""
         )
+
         if info.releaselevel != "final":
             pythonVersion += info.releaselevel
+
         serverInfo = {
             "Fontra version": fontraVersion,
             "Python version": pythonVersion,
