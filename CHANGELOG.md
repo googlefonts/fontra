@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-06-27
+
+- [Glyphs backend] Improve editing experience with larger .glyphs files. [fontra-glyphs PR 101](https://github.com/googlefonts/fontra-glyphs/pull/101)
+
 ## 2025-06-25
 
 - [Glyphs backend] Added support for writing kerning [fontra-glyphs PR 99](https://github.com/googlefonts/fontra-glyphs/pull/99)
