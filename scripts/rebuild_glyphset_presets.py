@@ -206,6 +206,31 @@ def getWickedLettersGeorgianGlyphSets():
     }
 
 
+def getBengaliGlyphSets():
+    sourceURL = "https://github.com/mitradranirban/fbf-bn-glyphset/tree/main"
+
+    glyphSets = [
+        {
+            "name": "FBF Bengali",
+            "url": jsDelivrURL(
+                "mitradranirban", "fbf-bn-glyphset", "fbf-bn-glyphset.csv"
+            ),
+        }
+    ]
+
+    return {
+        "name": "Free Bangla Fonts Project, Bengali",
+        "sourceURL": sourceURL,
+        "dataOptions": {
+            "dataFormat": "tsv/csv",
+            "hasHeader": True,
+            "codePointColumn": "HexaDecimal Code",
+            "glyphNameColumn": "Name",
+        },
+        "glyphSets": glyphSets,
+    }
+
+
 def collectCollections():
     collections = []
     collections.append(getGoogleFontsGlyphSets())
@@ -213,6 +238,7 @@ def collectCollections():
     collections.append(getAdobeLatinCyrGreekGlyphSets())
     collections.append(getKoeberlinLatinGlyphSets())
     collections.append(getWickedLettersGeorgianGlyphSets())
+    collections.append(getBengaliGlyphSets())
     return collections
 
 
@@ -229,4 +255,5 @@ if __name__ == "__main__":
         repoDir / "src-js" / "fontra-core" / "assets" / "data" / "glyphset-presets.json"
     )
     with open(glyphSetDataPath, "w") as f:
-        json.dump(collections, f, indent=2) + "\n"
+        json.dump(collections, f, indent=2)
+        f.write("\n")
