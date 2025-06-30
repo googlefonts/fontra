@@ -40,7 +40,7 @@ describe("KerningController Tests", () => {
           "@O": [10, null, null, null, null, null],
           "Q": [20, null, 40, null, null, null],
         },
-        "Q": { Q: [1, null, null, null, null, null] },
+        "Q": { Q: [1, null, null, null, null] }, // missing value
       },
     },
   };
@@ -55,6 +55,7 @@ describe("KerningController Tests", () => {
     { leftGlyph: "O", rightGlyph: "Q", expectedValue: 10, location: { Weight: 500 } },
     { leftGlyph: "O", rightGlyph: "Q", expectedValue: null, location: { Weight: 600 } },
     { leftGlyph: "Q", rightGlyph: "Q", expectedValue: 1, location: {} },
+    { leftGlyph: "Q", rightGlyph: "Q", expectedValue: 0.5, location: { Weight: 500 } },
   ];
 
   parametrize("KerningController basic test", testCasesBasic, (testCase) => {
