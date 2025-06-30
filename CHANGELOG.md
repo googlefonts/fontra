@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-06-30
+
+- Fixed a bug that broke interpolation when adding kerning to a new source. [PR 2191](https://github.com/googlefonts/fontra/pull/2191)
+
 ## 2025-06-27
 
 - [Glyphs backend] Improve editing experience with larger .glyphs files. [fontra-glyphs PR 101](https://github.com/googlefonts/fontra-glyphs/pull/101)
