@@ -27,10 +27,10 @@ export class Form extends SimpleElement {
 
     .ui-form-label {
       text-align: right;
-      align-self: center;
       overflow-x: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      line-height: 1.6em;
     }
 
     .ui-form-full-width {
@@ -60,6 +60,8 @@ export class Form extends SimpleElement {
       display: grid;
       grid-template-columns: auto auto;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
     }
 
     input {
@@ -100,15 +102,17 @@ export class Form extends SimpleElement {
     .ui-form-value.edit-text-double,
     .ui-form-value.universal-row {
       display: flex;
-      gap: 0.3rem;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     .ui-form-icon {
       overflow-x: unset;
       width: 1.5em;
+      height: 1.5em;
       white-space: nowrap;
-      margin-left: 1.3em;
-      margin-right: 1.3em;
+      margin-left: 1.25em;
+      margin-right: 1.25em;
     }
 
     .ui-form-icon.ui-form-icon-button {
@@ -119,7 +123,6 @@ export class Form extends SimpleElement {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 0.35rem 0.35rem;
     }
   `;
 

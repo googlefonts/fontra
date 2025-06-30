@@ -34,6 +34,10 @@ export default class TransformationPanel extends Panel {
   static stylesForm = `
   .ui-form-label {
     overflow-x: unset;
+    display: grid;
+    align-items: center;
+    justify-content: end;
+    height: 1.6em;
   }
 
   .origin-radio-buttons {

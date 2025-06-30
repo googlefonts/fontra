@@ -23,6 +23,13 @@ export default class Panel extends SimpleElement {
     .panel-section--full-height {
       height: 100%;
     }
+    .panel-section--checkbox {
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: left;
+      gap: 0.1em;
+      align-items: center;
+    }
   `;
 
   constructor(editorController) {

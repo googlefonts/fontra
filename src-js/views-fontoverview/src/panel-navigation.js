@@ -60,10 +60,10 @@ export class FontOverviewNavigation extends HTMLElement {
       }
 
       .glyphset-button-group {
-        justify-self: end;
         display: grid;
         grid-template-columns: auto auto;
         gap: 0.2em;
+        align-items: center;
       }
 
       icon-button {
