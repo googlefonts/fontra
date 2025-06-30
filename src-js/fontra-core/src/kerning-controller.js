@@ -100,8 +100,11 @@ export class KerningController {
         // We don't have kerning for this pair
         pairFunction = null;
       } else {
-        // Replace missing values with zeros
+        // Replace missing values with zeros and ensure there are enough values
         sourceValues = sourceValues.map((v) => (v == null ? 0 : v));
+        while (sourceValues.length < this.sourceIdentifiers.length) {
+          sourceValues.push(0);
+        }
         const deltas = this.model.getDeltas(sourceValues);
         pairFunction = (location) =>
           this.model.interpolateFromDeltas(location, deltas).instance;
