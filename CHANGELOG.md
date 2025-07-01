@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-07-01
+
+- Fixed a bug that caused interpolated kerning to show the wrong value after editing a kerning pair. [PR 2194](https://github.com/googlefonts/fontra/pull/2194)
+
 ## 2025-06-30
 
 - Fixed a bug that broke interpolation when adding kerning to a new source. [PR 2191](https://github.com/googlefonts/fontra/pull/2191)
