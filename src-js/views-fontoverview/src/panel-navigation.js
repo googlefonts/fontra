@@ -440,7 +440,7 @@ export class FontOverviewNavigation extends HTMLElement {
     return errorButton;
   }
 
-  _makeCheckboxUI(settingsKey, glyphSets) {
+  _makeCheckboxUI(settingsKey, checkboxItems) {
     let checkboxController = this._checkboxControllers[settingsKey];
     if (!checkboxController) {
       checkboxController = makeCheckboxController(
@@ -451,7 +451,7 @@ export class FontOverviewNavigation extends HTMLElement {
     }
 
     return html.div({ class: "checkbox-group" }, [
-      ...glyphSets
+      ...checkboxItems
         .map(({ key, label, extraItem }) => [
           labeledCheckbox(label, checkboxController, key),
           extraItem ? extraItem : html.div(),
