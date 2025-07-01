@@ -3,6 +3,7 @@
 ## 2025-07-01
 
 - Fixed a bug that caused interpolated kerning to show the wrong value after editing a kerning pair. [PR 2194](https://github.com/googlefonts/fontra/pull/2194)
+- Fixed a problem with the placeholder string for undefined glyphs in the edit canvas. [Issue 2192](https://github.com/googlefonts/fontra/issues/2192) [PR 2195](https://github.com/googlefonts/fontra/pull/2195)
 
 ## 2025-06-30
 
