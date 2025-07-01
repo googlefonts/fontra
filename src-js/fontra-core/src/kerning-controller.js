@@ -92,6 +92,12 @@ export class KerningController {
     return this.kernData.values[leftName]?.[rightName];
   }
 
+  clearPairCache(leftName, rightName) {
+    if (this._pairFunctions[leftName]?.[rightName]) {
+      delete this._pairFunctions[leftName][rightName];
+    }
+  }
+
   _getPairFunction(leftName, rightName) {
     let pairFunction = this._pairFunctions[leftName]?.[rightName];
     if (pairFunction === undefined) {
@@ -299,6 +305,7 @@ class KerningEditContext {
 
       const values = font.kerning[this.kerningController.kernTag].values;
       for (const { sourceIdentifier, leftName, rightName } of this.pairSelectors) {
+        this.kerningController.clearPairCache(leftName, rightName);
         if (!kernData.sourceIdentifiers.includes(sourceIdentifier)) {
           kernData.sourceIdentifiers = [
             ...kernData.sourceIdentifiers,
