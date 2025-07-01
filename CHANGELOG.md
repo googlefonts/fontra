@@ -4,6 +4,7 @@
 
 - Fixed a bug that caused interpolated kerning to show the wrong value after editing a kerning pair. [PR 2194](https://github.com/googlefonts/fontra/pull/2194)
 - Fixed a problem with the placeholder string for undefined glyphs in the edit canvas. [Issue 2192](https://github.com/googlefonts/fontra/issues/2192) [PR 2195](https://github.com/googlefonts/fontra/pull/2195)
+- Fix writing of the units-per-em value when copying/exporting to .designspace/.ufo. [Issue 2196](https://github.com/googlefonts/fontra/issues/2196) [PR 2197](https://github.com/googlefonts/fontra/pull/2197)
 
 ## 2025-06-30
 
