@@ -10,6 +10,7 @@ export class IconButton extends UnlitElement {
     }
 
     button {
+      display: flex;
       background-color: transparent;
       border: none;
       padding: 0;
@@ -18,6 +19,11 @@ export class IconButton extends UnlitElement {
       height: 100%;
       cursor: pointer;
       contain: content;
+    }
+
+    button > inline-svg {
+      width: 100%;
+      height: 100%;
     }
 
     button svg {

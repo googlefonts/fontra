@@ -73,7 +73,10 @@ export default class SelectionInfoPanel extends Panel {
           { class: "panel-section panel-section--flex panel-section--scrollable" },
           [this.infoForm]
         ),
-        html.div({ class: "panel-section" }, this.getBehaviorElements()),
+        html.div(
+          { class: "panel-section panel-section--checkbox" },
+          this.getBehaviorElements()
+        ),
       ]
     );
   }
@@ -166,7 +169,7 @@ export default class SelectionInfoPanel extends Panel {
         label: translate("sidebar.selection-info.title"),
         auxiliaryElement: html.createDomElement("icon-button", {
           "id": "glyphLocking",
-          "style": `width: 1.3em;`,
+          "style": `width: 1.3em; height: 1.3em;`,
           "src":
             glyphLocked || this.fontController.readOnly
               ? "/tabler-icons/lock.svg"
