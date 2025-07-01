@@ -123,6 +123,11 @@ fontInfoNameMapping = [
 ]
 
 
+ufoFontInfoAttributes = [infoAttr for _, infoAttr in fontInfoNameMapping] + [
+    "unitsPerEm"
+]
+
+
 # CustomData, Font Family Level:
 ufoInfoAttributesToRoundTripFamilyLevel = [
     "openTypeNameUniqueID",
@@ -900,7 +905,7 @@ class DesignspaceBackend:
 
         reader = self.ufoManager.getReader(ufoPath)  # this creates the UFO
         info = UFOFontInfo()
-        for _, infoAttr in fontInfoNameMapping:
+        for infoAttr in ufoFontInfoAttributes:
             value = getattr(self.defaultFontInfo, infoAttr, None)
             if value is not None:
                 setattr(info, infoAttr, value)

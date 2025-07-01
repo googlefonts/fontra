@@ -1068,6 +1068,23 @@ async def test_changeUnitsPerEmCheckFontInfo(writableTestFont):
     assert reopenedInfo == info
 
 
+async def test_putUnitsPerEmMissing(tmpdir, writableTestFont):
+    # https://github.com/googlefonts/fontra/issues/2196
+
+    await writableTestFont.putUnitsPerEm(2000)
+    await writableTestFont.putFeatures(OpenTypeFeatures(text=""))
+    assert await writableTestFont.getUnitsPerEm() == 2000
+
+    outPath = tmpdir / "test.designspace"
+    outBackend = newFileSystemBackend(outPath)
+
+    await copyFont(writableTestFont, outBackend)
+
+    reopened = getFileSystemBackend(outPath)
+    unitsPerEm = await reopened.getUnitsPerEm()
+    assert unitsPerEm == 2000
+
+
 async def test_lineMetricsVerticalLayout(tmpdir):
     tmpdir = pathlib.Path(tmpdir)
     fontPath = tmpdir / "test.designspace"
