@@ -154,8 +154,9 @@ registerVisualizationLayerDefinition({
         -lineDistance * glyphNameFontSize
       );
     }
+    const codePoint = positionedGlyph.character?.codePointAt(0);
     const { glyphString, direction } = guessGlyphPlaceholderString(
-      positionedGlyph.character?.codePointAt(0),
+      codePoint ? [codePoint] : [],
       positionedGlyph.glyphName
     );
     if (glyphString) {
