@@ -19,6 +19,6 @@
   "devDependencies": {
     "chai": "^5.2.0",
     "chai-almost": "^1.0.1",
-    "mocha": "^11.5.0"
+    "mocha": "^11.7.1"
   }
 }
