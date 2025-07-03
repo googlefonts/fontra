@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-07-03
+
+- [Glyphs backend] Implemented "Find glyphs that use _this glyph_". [fontra-glyphs Issue 103](https://github.com/googlefonts/fontra-glyphs/issues/103) [fontra-glyphs PR 104](https://github.com/googlefonts/fontra-glyphs/pull/104)
+
 ## 2025-07-01
 
 - Fixed a bug that caused interpolated kerning to show the wrong value after editing a kerning pair. [PR 2194](https://github.com/googlefonts/fontra/pull/2194)
