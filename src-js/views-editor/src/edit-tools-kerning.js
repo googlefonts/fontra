@@ -197,7 +197,7 @@ export class KerningTool extends BaseTool {
       return;
     }
     if (event.altKey) {
-          deltaX *= 5;
+      deltaX *= 5;
     } else if (event.shiftKey) {
       deltaX *= 10;
     }
