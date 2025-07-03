@@ -325,7 +325,7 @@ export class KerningTool extends BaseTool {
 
   activate() {
     super.activate();
-    // this.sceneSettings.selectedGlyph = null;
+    this.sceneSettings.selectedGlyph = null;
     this.sceneController.hoveredGlyph = null;
     if (this._selectionState?.glyphLines === this.sceneSettings.glyphLines) {
       this._selectionState.selectors.forEach((selector) =>
