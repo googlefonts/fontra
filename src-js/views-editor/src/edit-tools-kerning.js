@@ -196,8 +196,7 @@ export class KerningTool extends BaseTool {
       return;
     }
 
-    const factor = getFactor(event);
-    deltaX *= factor;
+    deltaX *= getFactor(event);
 
     const { editContext, values } = await this.getEditContext();
     if (!editContext) {
