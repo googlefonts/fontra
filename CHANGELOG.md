@@ -2,7 +2,7 @@
 
 ## 2025-07-03
 
-- [Glyphs backend] Implemented "Find glyphs that use _this glyph_". [fontra-glyphs Issue 103](https://github.com/googlefonts/fontra-glyphs/issues/103) [fontra-glyphs PR 104](https://github.com/googlefonts/fontra-glyphs/pull/104)
+- [Glyphs backend] Implemented "Find glyphs that use _this glyph_". [fontra-glyphs issue 103](https://github.com/googlefonts/fontra-glyphs/issues/103) [fontra-glyphs PR 104](https://github.com/googlefonts/fontra-glyphs/pull/104)
 
 ## 2025-07-01
 
@@ -59,7 +59,7 @@
 
 ## 2025-03-30
 
-- [fontra-glyphs] The Glyphs backend now supports background layers, for reading and writing. [fontra-glyphs Issue 88](https://github.com/googlefonts/fontra-glyphs/issues/88) [fontra-glyphs PR 92](https://github.com/googlefonts/fontra-glyphs/pull/92)
+- [fontra-glyphs] The Glyphs backend now supports background layers, for reading and writing. [fontra-glyphs issue 88](https://github.com/googlefonts/fontra-glyphs/issues/88) [fontra-glyphs PR 92](https://github.com/googlefonts/fontra-glyphs/pull/92)
 
 ## 2025-03-26
 
