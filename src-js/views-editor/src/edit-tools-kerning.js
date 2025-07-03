@@ -247,12 +247,17 @@ export class KerningTool extends BaseTool {
     return { editContext, values };
   }
 
-  getPairNamesFromSelector(selector) {
+  getGlyphNamesFromSelector(selector) {
     const { lineIndex, glyphIndex } = selector;
     assert(glyphIndex > 0);
     const glyphs = this.sceneModel.positionedLines[lineIndex].glyphs;
     const leftGlyph = glyphs[glyphIndex - 1].glyphName;
     const rightGlyph = glyphs[glyphIndex].glyphName;
+    return { leftGlyph, rightGlyph };
+  }
+
+  getPairNamesFromSelector(selector) {
+    const { leftGlyph, rightGlyph } = this.getGlyphNamesFromSelector(selector);
     return this.kerningController.getPairNames(leftGlyph, rightGlyph);
   }
 
