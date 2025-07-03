@@ -167,10 +167,9 @@ export class KerningTool extends BaseTool {
         this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
 
         const currentX = event.x / magnification;
-        var deltaX = Math.round(currentX - initialX);
-        if (initialEvent.altKey) {
-          deltaX *= 5;
-        }
+        const factor = this._factor(event);
+        const deltaX = Math.round((currentX - initialX) / factor) * factor;
+
         yield values.map((v) => v + deltaX);
       }
 
@@ -196,11 +195,9 @@ export class KerningTool extends BaseTool {
     if (deltaY) {
       return;
     }
-    if (event.altKey) {
-      deltaX *= 5;
-    } else if (event.shiftKey) {
-      deltaX *= 10;
-    }
+
+    const factor = this._factor(event);
+    deltaX *= factor;
 
     const { editContext, values } = await this.getEditContext();
     if (!editContext) {
@@ -291,6 +288,17 @@ export class KerningTool extends BaseTool {
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
     handle.selected = select;
+  }
+
+  _factor(event){
+    const factor = event.altKey
+    ? event.shiftKey
+      ? 50
+      : 5
+    : event.shiftKey
+      ? 10
+      : 1;
+    return factor
   }
 
   _updateHandle(kerningHandle) {
