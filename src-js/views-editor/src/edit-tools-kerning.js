@@ -167,7 +167,10 @@ export class KerningTool extends BaseTool {
         this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
 
         const currentX = event.x / magnification;
-        const deltaX = Math.round(currentX - initialX);
+        var deltaX = Math.round(currentX - initialX);
+        if (initialEvent.altKey) {
+          deltaX *= 5;
+        }
         yield values.map((v) => v + deltaX);
       }
 
@@ -193,7 +196,9 @@ export class KerningTool extends BaseTool {
     if (deltaY) {
       return;
     }
-    if (event.shiftKey) {
+    if (event.altKey) {
+          deltaX *= 5;
+    } else if (event.shiftKey) {
       deltaX *= 10;
     }
 
