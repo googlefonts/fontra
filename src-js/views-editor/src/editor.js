@@ -3097,6 +3097,12 @@ export class EditorController extends ViewController {
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphSelectedContextMenuItems);
     }
+
+    const selectedTool = this.tools[this.selectedToolIdentifier];
+    if (selectedTool) {
+      menuItems.push(...selectedTool.getContextMenuItems());
+    }
+
     return menuItems;
   }
 

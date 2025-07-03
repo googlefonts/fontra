@@ -501,6 +501,19 @@ export class KerningTool extends BaseTool {
     const { lineIndex, glyphIndex } = selector;
     return this.sceneSettings.positionedLines[lineIndex]?.glyphs[glyphIndex];
   }
+
+  getContextMenuItems() {
+    const contextMenuItems = [];
+    const selector = this.hoveredHandle?.selector || this.hoveredKerning;
+
+    if (selector) {
+      const { leftName, rightName } = this.getPairNamesFromSelector(selector);
+      contextMenuItems.push({
+        title: `Make kerning exception for ${leftName} ${rightName}`,
+      });
+    }
+    return contextMenuItems;
+  }
 }
 
 class KerningHandle extends HTMLElement {
