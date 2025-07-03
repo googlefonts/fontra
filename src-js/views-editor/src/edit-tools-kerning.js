@@ -528,8 +528,7 @@ class KerningHandle extends HTMLElement {
 customElements.define("kerning-handle", KerningHandle);
 
 function getFactor(event) {
-  const factor = event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
-  return factor;
+  return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
 }
 
 function formatKerningValue(n) {
