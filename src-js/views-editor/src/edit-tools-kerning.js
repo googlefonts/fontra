@@ -135,14 +135,16 @@ export class KerningTool extends BaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    if (!this.hoveredKerning) {
+    const hoveredKerning = this.hoveredHandle?.selector || this.hoveredKerning;
+
+    if (!hoveredKerning) {
       if (!event.shiftKey) {
         this.removeAllHandles();
       }
       return;
     }
 
-    this._selectHandle(this.hoveredKerning, event.shiftKey);
+    this._selectHandle(hoveredKerning, event.shiftKey);
 
     this._prevousKerningCenter = this.getPositionedKerningCenter(
       this.kerningSelection.at(-1)
@@ -180,7 +182,7 @@ export class KerningTool extends BaseTool {
 
     generateValues = generateValues.bind(this); // Because `this` scoping
 
-    this._draggingSelector = this.hoveredKerning;
+    this._draggingSelector = hoveredKerning;
     this._prevousKerningCenter = this.getPositionedKerningCenter(
       this._draggingSelector
     );
@@ -377,6 +379,10 @@ export class KerningTool extends BaseTool {
     return this.handles.filter((handle) => handle.selected);
   }
 
+  get hoveredHandle() {
+    return this.handleContainer.querySelector("kerning-handle.hovered");
+  }
+
   removeAllHandles() {
     this.handles.forEach((handle) => handle.remove());
   }
@@ -526,6 +532,9 @@ class KerningHandle extends HTMLElement {
 
     this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
+    this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
+    this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
+    this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
   }
 
   _forwardEventToCanvas(event) {
