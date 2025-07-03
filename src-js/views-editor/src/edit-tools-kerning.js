@@ -167,7 +167,7 @@ export class KerningTool extends BaseTool {
         this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
 
         const currentX = event.x / magnification;
-        const factor = this._factor(event);
+        const factor = getFactor(event);
         const deltaX = Math.round((currentX - initialX) / factor) * factor;
 
         yield values.map((v) => v + deltaX);
@@ -196,7 +196,7 @@ export class KerningTool extends BaseTool {
       return;
     }
 
-    const factor = this._factor(event);
+    const factor = getFactor(event);
     deltaX *= factor;
 
     const { editContext, values } = await this.getEditContext();
@@ -288,11 +288,6 @@ export class KerningTool extends BaseTool {
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
     handle.selected = select;
-  }
-
-  _factor(event) {
-    const factor = event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
-    return factor;
   }
 
   _updateHandle(kerningHandle) {
@@ -531,6 +526,11 @@ class KerningHandle extends HTMLElement {
 }
 
 customElements.define("kerning-handle", KerningHandle);
+
+function getFactor(event) {
+    const factor = event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
+    return factor;
+  }
 
 function formatKerningValue(n) {
   if (n === null) {
