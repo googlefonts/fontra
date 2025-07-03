@@ -124,7 +124,8 @@ export class SceneController {
       const glyphLines = glyphLinesFromText(
         event.newValue,
         this.fontController.characterMap,
-        this.fontController.glyphMap
+        this.fontController.glyphMap,
+        this.sceneSettingsController.selectedGlyphName
       );
       this.sceneSettingsController.setItem("glyphLines", glyphLines, {
         senderID: this,
@@ -594,6 +595,16 @@ export class SceneController {
       this.fontController.addGlyphChangeListener(glyphName, listener);
     }
     this._currentSelectedGlyphName = glyphName;
+
+    const glyphLines = glyphLinesFromText(
+      this.sceneSettings.text,
+      this.fontController.characterMap,
+      this.fontController.glyphMap,
+      this._currentSelectedGlyphName
+    );
+    this.sceneSettingsController.setItem("glyphLines", glyphLines, {
+      senderID: this,
+    });
   }
 
   addCurrentGlyphChangeListener(listener) {

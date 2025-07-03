@@ -1,17 +1,17 @@
 import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
-export function glyphLinesFromText(text, characterMap, glyphMap) {
+export function glyphLinesFromText(text, characterMap, glyphMap, currentSelectedGlyphName) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(glyphNamesFromText(line, characterMap, glyphMap));
+    glyphLines.push(glyphNamesFromText(line, characterMap, glyphMap, currentSelectedGlyphName));
   }
   return glyphLines;
 }
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, characterMap, glyphMap) {
+function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphName) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -20,6 +20,9 @@ function glyphNamesFromText(text, characterMap, glyphMap) {
       i++;
       if (text[i] == "/") {
         glyphName = characterMap[char.charCodeAt(0)];
+      } else if (text[i] == "?") {
+        glyphName = currentSelectedGlyphName ? currentSelectedGlyphName : "";
+        char = charFromGlyphName(glyphName, characterMap, glyphMap);
       } else {
         glyphNameRE.lastIndex = i;
         glyphNameRE.test(text);
@@ -36,13 +39,7 @@ function glyphNamesFromText(text, characterMap, glyphMap) {
             i = j;
           }
         }
-        char = undefined;
-        for (const codePoint of glyphMap[glyphName] || []) {
-          if (characterMap[codePoint] === glyphName) {
-            char = String.fromCodePoint(codePoint);
-            break;
-          }
-        }
+        char = charFromGlyphName(glyphName, characterMap, glyphMap);
         if (glyphName && !char && !glyphMap[glyphName]) {
           // See if the "glyph name" after stripping the extension (if any)
           // happens to be a character that we know a glyph name for.
@@ -126,4 +123,15 @@ export function textFromGlyphLines(glyphLines) {
 
 function isPlainLatinLetter(glyphName) {
   return glyphName.match(/^[A-Za-z]$/);
+}
+
+function charFromGlyphName(glyphName, characterMap, glyphMap) {
+  var char = undefined;
+  for (const codePoint of glyphMap[glyphName] || []) {
+    if (characterMap[codePoint] === glyphName) {
+      char = String.fromCodePoint(codePoint);
+      break;
+    }
+  }
+  return char;
 }
