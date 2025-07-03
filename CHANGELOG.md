@@ -3,6 +3,7 @@
 ## 2025-07-03
 
 - [Glyphs backend] Implemented "Find glyphs that use _this glyph_". [fontra-glyphs issue 103](https://github.com/googlefonts/fontra-glyphs/issues/103) [fontra-glyphs PR 104](https://github.com/googlefonts/fontra-glyphs/pull/104)
+- [Kerning] Allow kerning edits to be constrained to 5, 10 or 50 units, by using alt, shift or als-shift while dragging. Make arrow key kerning editing behave the same with respect to these modifier keys. Contributed by Gaëtan Baehr. [PR 2205](https://github.com/googlefonts/fontra/pull/2205)
 
 ## 2025-07-01
 
