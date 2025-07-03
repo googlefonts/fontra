@@ -62,6 +62,8 @@ export class KerningTool extends BaseTool {
   constructor(editor) {
     super(editor);
     this.fontController = editor.fontController;
+    this.kerningController = null;
+
     this.handleContainer = document.querySelector("#metric-handle-container");
     assert(this.handleContainer);
 
@@ -218,24 +220,14 @@ export class KerningTool extends BaseTool {
       return {};
     }
 
-    const kerningController = await this.fontController.getKerningController("kern");
-
     const pairSelectors = [];
     const values = [];
     for (const handle of this.selectedHandles) {
-      const { lineIndex, glyphIndex } = handle.selector;
-      assert(glyphIndex > 0);
-      const glyphs = this.sceneModel.positionedLines[lineIndex].glyphs;
-      const leftGlyph = glyphs[glyphIndex - 1].glyphName;
-      const rightGlyph = glyphs[glyphIndex].glyphName;
-      const [leftName, rightName] = kerningController.getPairNames(
-        leftGlyph,
-        rightGlyph
-      );
+      const { leftName, rightName } = this.getPairNamesFromSelector(handle.selector);
       pairSelectors.push({ leftName, rightName, sourceIdentifier });
       if (wantValues) {
         values.push(
-          kerningController.getPairValueForSource(
+          this.kerningController.getPairValueForSource(
             leftName,
             rightName,
             sourceIdentifier
@@ -248,9 +240,18 @@ export class KerningTool extends BaseTool {
       return {};
     }
 
-    const editContext = kerningController.getEditContext(pairSelectors);
+    const editContext = this.kerningController.getEditContext(pairSelectors);
 
     return { editContext, values };
+  }
+
+  getPairNamesFromSelector(selector) {
+    const { lineIndex, glyphIndex } = selector;
+    assert(glyphIndex > 0);
+    const glyphs = this.sceneModel.positionedLines[lineIndex].glyphs;
+    const leftGlyph = glyphs[glyphIndex - 1].glyphName;
+    const rightGlyph = glyphs[glyphIndex].glyphName;
+    return this.kerningController.getPairNames(leftGlyph, rightGlyph);
   }
 
   async showDialogLocationNotAtSource() {
@@ -283,7 +284,8 @@ export class KerningTool extends BaseTool {
   }
 
   addHandle(selector, select = false) {
-    const handle = new KerningHandle(selector);
+    const { leftName, rightName } = this.getPairNamesFromSelector(selector);
+    const handle = new KerningHandle(selector, leftName, rightName);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
     handle.selected = select;
@@ -336,6 +338,10 @@ export class KerningTool extends BaseTool {
     if (!this.sceneSettings.applyKerning) {
       this.sceneSettings.applyKerning = true;
     }
+
+    this.fontController.getKerningController("kern").then((kerningController) => {
+      this.kerningController = kerningController;
+    });
 
     this.setCursor();
   }
@@ -492,13 +498,43 @@ export class KerningTool extends BaseTool {
 }
 
 class KerningHandle extends HTMLElement {
-  constructor(selector) {
+  constructor(selector, leftName, rightName) {
     super();
 
     this.selector = selector;
 
+    this.valueElement = html.div({
+      class: "value",
+      // ondblclick: (event) => ...edit value...,
+    });
+    this.leftNameElement = html.div({ class: "left-name" }, [leftName]);
+    this.rightNameElement = html.div({ class: "right-name" }, [rightName]);
+
+    if (leftName[0] === "@") {
+      this.leftNameElement.classList.add("group");
+    }
+    if (rightName[0] === "@") {
+      this.rightNameElement.classList.add("group");
+    }
+
+    this.appendChild(this.valueElement);
+    this.appendChild(this.leftNameElement);
+    this.appendChild(this.rightNameElement);
+
     this.id = selectorToId(selector);
     this.classList.add("kerning-handle");
+
+    this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
+    this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
+  }
+
+  _forwardEventToCanvas(event) {
+    const canvas = document.querySelector("#edit-canvas");
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const newEvent = new event.constructor(event.type, event);
+    canvas.dispatchEvent(newEvent);
   }
 
   update(positionedGlyph, canvasController) {
@@ -512,7 +548,7 @@ class KerningHandle extends HTMLElement {
     this.classList.toggle("positive", positionedGlyph.kernValue > 0);
     this.classList.toggle("negative", positionedGlyph.kernValue < 0);
 
-    this.innerText = formatKerningValue(positionedGlyph.kernValue);
+    this.valueElement.innerText = formatKerningValue(positionedGlyph.kernValue);
   }
 
   get selected() {

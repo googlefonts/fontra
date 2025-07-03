@@ -129,11 +129,12 @@ export class KerningController {
     for (const [leftName, rightName] of pairsToTry) {
       const sourceValues = this.getPairValues(leftName, rightName);
       if (sourceValues) {
-        return [leftName, rightName];
+        return { leftName, rightName };
       }
     }
 
-    return pairsToTry.at(-1);
+    const [leftName, rightName] = pairsToTry.at(-1);
+    return { leftName, rightName };
   }
 
   getPairsToTry(leftGlyph, rightGlyph) {

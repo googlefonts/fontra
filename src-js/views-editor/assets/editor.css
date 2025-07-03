@@ -496,19 +496,31 @@ body {
 }
 
 .kerning-handle {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0em 0.5em;
+  justify-items: center;
   position: absolute;
   top: 0px;
   left: 0px;
   font-size: 0.8em;
-  padding: 0.2em 1.2em 0.2em 1.2em;
+  padding: 0.2em 0.8em 0.2em 0.8em;
   border-radius: 0.66em;
   color: white;
   background-color: #aaa;
   cursor: pointer;
   user-select: none;
-  pointer-events: none;
+  /*pointer-events: none;*/
   transform: translate(-50%, 50%);
   opacity: 66%;
+}
+
+.kerning-handle > .value {
+  grid-column-start: span 2;
+}
+
+.kerning-handle > .group {
+  font-weight: bold;
 }
 
 .kerning-handle.selected {
