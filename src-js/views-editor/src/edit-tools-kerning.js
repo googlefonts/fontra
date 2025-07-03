@@ -290,15 +290,9 @@ export class KerningTool extends BaseTool {
     handle.selected = select;
   }
 
-  _factor(event){
-    const factor = event.altKey
-    ? event.shiftKey
-      ? 50
-      : 5
-    : event.shiftKey
-      ? 10
-      : 1;
-    return factor
+  _factor(event) {
+    const factor = event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
+    return factor;
   }
 
   _updateHandle(kerningHandle) {
