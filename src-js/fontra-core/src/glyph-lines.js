@@ -2,9 +2,9 @@ import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.j
 import { splitGlyphNameExtension } from "./utils.js";
 
 export function glyphLinesFromText(
-  text, 
-  characterMap, 
-  glyphMap, 
+  text,
+  characterMap,
+  glyphMap,
   currentSelectedGlyphName
 ) {
   const glyphLines = [];
