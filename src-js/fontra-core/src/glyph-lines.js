@@ -23,7 +23,7 @@ function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphNa
   for (let i = 0; i < text.length; i++) {
     let glyphName;
     let char = text[i];
-    let placeholder = null;
+    let isPlaceholder = false;
     if (char == "/") {
       i++;
       if (text[i] == "/") {
@@ -31,7 +31,7 @@ function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphNa
       } else if (text[i] == "?") {
         glyphName = currentSelectedGlyphName ? currentSelectedGlyphName : "";
         char = charFromGlyphName(glyphName, characterMap, glyphMap);
-        placeholder = "/?";
+        isPlaceholder = true;
       } else {
         glyphNameRE.lastIndex = i;
         glyphNameRE.test(text);
@@ -100,7 +100,7 @@ function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphNa
         character: char,
         glyphName: glyphName,
         isUndefined: isUndefined,
-        placeholder: placeholder,
+        isPlaceholder: isPlaceholder,
       });
     }
   }
@@ -117,8 +117,8 @@ export function textFromGlyphLines(glyphLines) {
         // special-case slash, since it is the glyph name indicator character,
         // and needs to be escaped
         textLine += "//";
-      } else if (glyphInfo.placeholder) {
-        textLine += glyphInfo.placeholder;
+      } else if (glyphInfo.isPlaceholder) {
+        textLine += "/?";
       } else if (glyphInfo.character) {
         textLine += glyphInfo.character;
       } else {
