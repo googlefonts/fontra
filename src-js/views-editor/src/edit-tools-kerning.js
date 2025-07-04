@@ -633,9 +633,9 @@ class KerningHandle extends HTMLElement {
     this.valueElement.innerText = formatKerningValue(positionedGlyph.kernValue);
 
     this.leftNameElement.innerText = leftName;
-    this.leftNameElement.classList.toggle("group", leftName[0] === "@");
+    this.leftNameElement.classList.toggle("group", leftName.startsWith("@"));
     this.rightNameElement.innerText = rightName;
-    this.rightNameElement.classList.toggle("group", rightName[0] === "@");
+    this.rightNameElement.classList.toggle("group", rightName.startsWith("@"));
   }
 
   get selected() {
