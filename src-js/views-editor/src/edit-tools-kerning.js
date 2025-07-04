@@ -512,12 +512,70 @@ export class KerningTool extends BaseTool {
     const selector = this.hoveredHandle?.selector || this.hoveredKerning;
 
     if (selector) {
+      const { leftGlyph, rightGlyph } = this.getGlyphNamesFromSelector(selector);
       const { leftName, rightName } = this.getPairNamesFromSelector(selector);
-      contextMenuItems.push({
-        title: `Make kerning exception for ${leftName} ${rightName}`,
-      });
+
+      const leftIsGroup = leftName.startsWith("@");
+      const rightIsGroup = rightName.startsWith("@");
+
+      if (leftIsGroup || rightIsGroup) {
+        contextMenuItems.push({
+          title: `Make kerning exception ${leftGlyph} ${rightGlyph}`,
+          callback: (event) =>
+            this.makeKerningException(leftName, rightName, leftGlyph, rightGlyph),
+        });
+      }
+
+      if (leftIsGroup && rightIsGroup) {
+        contextMenuItems.push({
+          title: `Make kerning exception ${leftGlyph} ${rightName}`,
+          callback: (event) =>
+            this.makeKerningException(leftName, rightName, leftGlyph, rightName),
+        });
+        contextMenuItems.push({
+          title: `Make kerning exception ${leftName} ${rightGlyph}`,
+          callback: (event) =>
+            this.makeKerningException(leftName, rightName, leftName, rightGlyph),
+        });
+      }
     }
     return contextMenuItems;
+  }
+
+  async makeKerningException(
+    leftNameExisting,
+    rightNameExisting,
+    leftNameNew,
+    rightNameNew
+  ) {
+    let values = this.kerningController.getPairValues(
+      leftNameExisting,
+      rightNameExisting
+    );
+
+    if (!values) {
+      values = Array(this.kerningController.sourceIdentifiers.length).fill(null);
+    } else {
+      values = [...values];
+      while (values.length < this.kerningController.sourceIdentifiers.length) {
+        values.push(null);
+      }
+    }
+
+    const pairSelectors = this.kerningController.sourceIdentifiers.map(
+      (sourceIdentifier) => ({
+        sourceIdentifier,
+        leftName: leftNameNew,
+        rightName: rightNameNew,
+      })
+    );
+
+    const editContext = this.kerningController.getEditContext(pairSelectors);
+
+    const undoLabel = `make kerning exception ${leftNameNew} ${rightNameNew}`;
+    const changes = await editContext.edit(values, undoLabel);
+
+    this.pushUndoItem(changes, undoLabel);
   }
 }
 
