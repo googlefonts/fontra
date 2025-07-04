@@ -292,7 +292,7 @@ export class KerningTool extends BaseTool {
 
   addHandle(selector, select = false) {
     const { leftName, rightName } = this.getPairNamesFromSelector(selector);
-    const handle = new KerningHandle(selector, leftName, rightName);
+    const handle = new KerningHandle(selector);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
     handle.selected = select;
@@ -305,7 +305,11 @@ export class KerningTool extends BaseTool {
     if (!positionedGlyph) {
       return;
     }
-    kerningHandle.update(positionedGlyph, this.canvasController);
+
+    const { leftName, rightName } = this.getPairNamesFromSelector(
+      kerningHandle.selector
+    );
+    kerningHandle.update(positionedGlyph, leftName, rightName, this.canvasController);
   }
 
   _selectHandle(selector, shiftKey) {
@@ -580,7 +584,7 @@ export class KerningTool extends BaseTool {
 }
 
 class KerningHandle extends HTMLElement {
-  constructor(selector, leftName, rightName) {
+  constructor(selector) {
     super();
 
     this.selector = selector;
@@ -589,15 +593,8 @@ class KerningHandle extends HTMLElement {
       class: "value",
       // ondblclick: (event) => ...edit value...,
     });
-    this.leftNameElement = html.div({ class: "left-name" }, [leftName]);
-    this.rightNameElement = html.div({ class: "right-name" }, [rightName]);
-
-    if (leftName[0] === "@") {
-      this.leftNameElement.classList.add("group");
-    }
-    if (rightName[0] === "@") {
-      this.rightNameElement.classList.add("group");
-    }
+    this.leftNameElement = html.div({ class: "left-name" });
+    this.rightNameElement = html.div({ class: "right-name" });
 
     this.appendChild(this.valueElement);
     this.appendChild(this.leftNameElement);
@@ -622,7 +619,7 @@ class KerningHandle extends HTMLElement {
     canvas.dispatchEvent(newEvent);
   }
 
-  update(positionedGlyph, canvasController) {
+  update(positionedGlyph, leftName, rightName, canvasController) {
     let { x, y } = canvasController.canvasPoint({
       x: positionedGlyph.x - positionedGlyph.kernValue / 2,
       y: positionedGlyph.y,
@@ -634,6 +631,11 @@ class KerningHandle extends HTMLElement {
     this.classList.toggle("negative", positionedGlyph.kernValue < 0);
 
     this.valueElement.innerText = formatKerningValue(positionedGlyph.kernValue);
+
+    this.leftNameElement.innerText = leftName;
+    this.leftNameElement.classList.toggle("group", leftName[0] === "@");
+    this.rightNameElement.innerText = rightName;
+    this.rightNameElement.classList.toggle("group", rightName[0] === "@");
   }
 
   get selected() {
