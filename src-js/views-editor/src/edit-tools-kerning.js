@@ -211,7 +211,7 @@ export class KerningTool extends BaseTool {
 
     const newValues = values.map((v) => v + deltaX);
     const undoLabel = "edit kerning";
-    const changes = await editContext.edit(newValues, "edit kerning");
+    const changes = await editContext.edit(newValues, undoLabel);
     this.pushUndoItem(changes, undoLabel);
   }
 
