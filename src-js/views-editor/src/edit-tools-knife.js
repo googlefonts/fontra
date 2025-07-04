@@ -12,7 +12,7 @@ import {
 } from "./visualization-layer-definitions.js";
 
 export class KnifeTool extends BaseTool {
-  iconPath = "/tabler-icons/slice.svg";
+  iconPath = "/images/knifetool.svg";
   identifier = "knife-tool";
 
   setCursor() {
