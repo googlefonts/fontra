@@ -467,5 +467,22 @@
         "url": "https://cdn.jsdelivr.net/gh/wickedletters/Georgian-Character-set/Geo_Nuskhuri.txt"
       }
     ]
+  },
+  {
+    "name": "Free Bangla Fonts Project, Bengali",
+    "sourceURL": "https://github.com/mitradranirban/fbf-bn-glyphset/tree/main",
+    "dataOptions": {
+      "dataFormat": "tsv/csv",
+      "hasHeader": true,
+      "codePointColumn": "HexaDecimal Code",
+      "glyphNameColumn": "Name",
+      "commentChars": "#"
+    },
+    "glyphSets": [
+      {
+        "name": "FBF Bengali",
+        "url": "https://cdn.jsdelivr.net/gh/mitradranirban/fbf-bn-glyphset/fontra-bn-glyphset.csv"
+      }
+    ]
   }
 ]
