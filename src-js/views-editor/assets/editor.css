@@ -510,7 +510,6 @@ body {
   background-color: #aaa;
   cursor: pointer;
   user-select: none;
-  /*pointer-events: none;*/
   transform: translate(-50%, 50%);
   opacity: 66%;
 }
