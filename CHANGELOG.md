@@ -1,5 +1,7 @@
 # Changelog for Fontra
 
+## 2025-07-04
+
 - Gaëtan Baehr and Jérémie Hornus redesigned several of the edit tools: the knife tool, the shape/rectangle/oval tool, the kerning tool and the (soon-to-be-used) sidebearings tool. [PR 2210](https://github.com/googlefonts/fontra/pull/2210)
 - [Kerning] The kerning tool now has a context menu, allowing users to make kerning exceptions for group kerning. [Issue 2204](https://github.com/googlefonts/fontra/issues/2204) [PR 2209](https://github.com/googlefonts/fontra/pull/2209)
 
