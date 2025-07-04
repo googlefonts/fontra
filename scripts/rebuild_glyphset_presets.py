@@ -213,7 +213,7 @@ def getBengaliGlyphSets():
         {
             "name": "FBF Bengali",
             "url": jsDelivrURL(
-                "mitradranirban", "fbf-bn-glyphset", "fbf-bn-glyphset.csv"
+                "mitradranirban", "fbf-bn-glyphset", "fontra-bn-glyphset.csv"
             ),
         }
     ]

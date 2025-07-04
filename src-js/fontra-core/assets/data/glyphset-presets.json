@@ -480,7 +480,7 @@
     "glyphSets": [
       {
         "name": "FBF Bengali",
-        "url": "https://cdn.jsdelivr.net/gh/mitradranirban/fbf-bn-glyphset/fbf-bn-glyphset.csv"
+        "url": "https://cdn.jsdelivr.net/gh/mitradranirban/fbf-bn-glyphset/fontra-bn-glyphset.csv"
       }
     ]
   }
