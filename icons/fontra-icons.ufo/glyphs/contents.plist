@@ -78,6 +78,8 @@
     <string>n.glif</string>
     <key>o</key>
     <string>o.glif</string>
+    <key>ovaltool</key>
+    <string>ovaltool.glif</string>
     <key>p</key>
     <string>p.glif</string>
     <key>plus</key>
@@ -94,6 +96,8 @@
     <string>q.glif</string>
     <key>r</key>
     <string>r.glif</string>
+    <key>rectangletool</key>
+    <string>rectangletool.glif</string>
     <key>reference</key>
     <string>reference.glif</string>
     <key>ruler</key>
