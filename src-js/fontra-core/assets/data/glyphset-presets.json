@@ -475,7 +475,8 @@
       "dataFormat": "tsv/csv",
       "hasHeader": true,
       "codePointColumn": "HexaDecimal Code",
-      "glyphNameColumn": "Name"
+      "glyphNameColumn": "Name",
+      "commentChars": "#"
     },
     "glyphSets": [
       {

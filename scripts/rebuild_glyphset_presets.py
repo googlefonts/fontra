@@ -226,6 +226,7 @@ def getBengaliGlyphSets():
             "hasHeader": True,
             "codePointColumn": "HexaDecimal Code",
             "glyphNameColumn": "Name",
+            "commentChars": "#",
         },
         "glyphSets": glyphSets,
     }
