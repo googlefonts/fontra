@@ -1,25 +1,37 @@
 import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
-export function glyphLinesFromText(text, characterMap, glyphMap) {
+export function glyphLinesFromText(
+  text,
+  characterMap,
+  glyphMap,
+  currentSelectedGlyphName
+) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(glyphNamesFromText(line, characterMap, glyphMap));
+    glyphLines.push(
+      glyphNamesFromText(line, characterMap, glyphMap, currentSelectedGlyphName)
+    );
   }
   return glyphLines;
 }
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, characterMap, glyphMap) {
+function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphName) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
     let char = text[i];
+    let isPlaceholder = false;
     if (char == "/") {
       i++;
       if (text[i] == "/") {
         glyphName = characterMap[char.charCodeAt(0)];
+      } else if (text[i] == "?") {
+        glyphName = currentSelectedGlyphName ? currentSelectedGlyphName : "";
+        char = charFromGlyphName(glyphName, characterMap, glyphMap);
+        isPlaceholder = true;
       } else {
         glyphNameRE.lastIndex = i;
         glyphNameRE.test(text);
@@ -36,13 +48,7 @@ function glyphNamesFromText(text, characterMap, glyphMap) {
             i = j;
           }
         }
-        char = undefined;
-        for (const codePoint of glyphMap[glyphName] || []) {
-          if (characterMap[codePoint] === glyphName) {
-            char = String.fromCodePoint(codePoint);
-            break;
-          }
-        }
+        char = charFromGlyphName(glyphName, characterMap, glyphMap);
         if (glyphName && !char && !glyphMap[glyphName]) {
           // See if the "glyph name" after stripping the extension (if any)
           // happens to be a character that we know a glyph name for.
@@ -94,6 +100,7 @@ function glyphNamesFromText(text, characterMap, glyphMap) {
         character: char,
         glyphName: glyphName,
         isUndefined: isUndefined,
+        isPlaceholder: isPlaceholder,
       });
     }
   }
@@ -110,6 +117,8 @@ export function textFromGlyphLines(glyphLines) {
         // special-case slash, since it is the glyph name indicator character,
         // and needs to be escaped
         textLine += "//";
+      } else if (glyphInfo.isPlaceholder) {
+        textLine += "/?";
       } else if (glyphInfo.character) {
         textLine += glyphInfo.character;
       } else {
@@ -126,4 +135,15 @@ export function textFromGlyphLines(glyphLines) {
 
 function isPlainLatinLetter(glyphName) {
   return glyphName.match(/^[A-Za-z]$/);
+}
+
+function charFromGlyphName(glyphName, characterMap, glyphMap) {
+  var char = undefined;
+  for (const codePoint of glyphMap[glyphName] || []) {
+    if (characterMap[codePoint] === glyphName) {
+      char = String.fromCodePoint(codePoint);
+      break;
+    }
+  }
+  return char;
 }
