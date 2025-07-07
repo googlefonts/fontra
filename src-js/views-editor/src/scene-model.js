@@ -989,6 +989,47 @@ export class SceneModel {
     }
   }
 
+  sidebearingAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
+    const result = this.lineAtPoint(point);
+    if (!result) {
+      return;
+    }
+    const { lineIndex, line } = result;
+
+    const matches = [];
+
+    for (const [glyphIndex, positionedGlyph] of enumerate(line.glyphs)) {
+      const x = positionedGlyph.x;
+      const glyph = positionedGlyph.glyph;
+
+      const leftPos = Math.min(x, x + glyph.leftMargin) - size;
+
+      const rightPos =
+        Math.max(x + glyph.xAdvance, x + glyph.xAdvance - glyph.rightMargin) + size;
+
+      const middle = (leftPos + rightPos) / 2;
+
+      if (valueInRange(leftPos, point.x, middle)) {
+        matches.push({ lineIndex, glyphIndex, metric: "left" });
+      } else if (valueInRange(middle, point.x, rightPos)) {
+        matches.push({ lineIndex, glyphIndex, metric: "right" });
+      }
+    }
+
+    if (!matches.length) {
+      return;
+    }
+
+    const match =
+      matches.find(
+        (match) =>
+          match.lineIndex === previousLineIndex &&
+          match.glyphIndex === previousGlyphIndex
+      ) || matches[0];
+
+    return match;
+  }
+
   kerningAtPoint(point, size) {
     const result = this.lineAtPoint(point);
     if (!result) {
