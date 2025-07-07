@@ -961,7 +961,7 @@ export class SceneModel {
     return foundGlyph;
   }
 
-  *_iterLinesAtPoint(point, size) {
+  lineAtPoint(point, size) {
     if (!this.positionedLines.length) {
       return;
     }
@@ -985,21 +985,25 @@ export class SceneModel {
         continue;
       }
 
-      yield { lineIndex, line };
+      return { lineIndex, line };
     }
   }
 
   kerningAtPoint(point, size) {
-    for (const { lineIndex, line } of this._iterLinesAtPoint(point, size)) {
-      for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
-        const positionedGlyph = line.glyphs[glyphIndex];
-        const leftPos = positionedGlyph.x;
-        const kernRange = [leftPos - positionedGlyph.kernValue, leftPos].sort(
-          (a, b) => a - b
-        );
-        if (valueInRange(kernRange[0] - size, point.x, kernRange[1] + size)) {
-          return { lineIndex, glyphIndex };
-        }
+    const result = this.lineAtPoint(point, size);
+    if (!result) {
+      return;
+    }
+    const { lineIndex, line } = result;
+
+    for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
+      const positionedGlyph = line.glyphs[glyphIndex];
+      const leftPos = positionedGlyph.x;
+      const kernRange = [leftPos - positionedGlyph.kernValue, leftPos].sort(
+        (a, b) => a - b
+      );
+      if (valueInRange(kernRange[0] - size, point.x, kernRange[1] + size)) {
+        return { lineIndex, glyphIndex };
       }
     }
   }
