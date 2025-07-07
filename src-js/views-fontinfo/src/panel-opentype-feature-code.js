@@ -1,6 +1,13 @@
-import { autocompletion } from "@codemirror/autocomplete";
 import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+} from "@codemirror/autocomplete";
+import {
+  defaultKeymap,
   history,
+  historyKeymap,
   indentWithTab,
   redo,
   redoDepth,
@@ -8,18 +15,35 @@ import {
   undoDepth,
 } from "@codemirror/commands";
 import {
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
   HighlightStyle,
+  indentOnInput,
   LanguageSupport,
   StreamLanguage,
   syntaxHighlighting,
 } from "@codemirror/language";
 import { simpleMode } from "@codemirror/legacy-modes/mode/simple-mode";
-import { EditorView, keymap } from "@codemirror/view";
+import { lintKeymap } from "@codemirror/lint";
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import { EditorState } from "@codemirror/state";
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  rectangularSelection,
+} from "@codemirror/view";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { scheduleCalls } from "@fontra/core/utils.js";
 import { Tag } from "@lezer/highlight";
-import { basicSetup } from "codemirror";
 import { BaseInfoPanel } from "./panel-base.js";
 
 addStyleSheet(`
@@ -90,6 +114,7 @@ const openTypeFeatureCodeSimpleMode = simpleMode({
   ],
   languageData: {
     commentTokens: { line: "#" },
+    autocomplete: myCompletions,
   },
 });
 
@@ -194,15 +219,41 @@ export class OpenTypeFeatureCodePanel extends BaseInfoPanel {
       []
     );
 
+    const customSetup = (() => [
+      lineNumbers(),
+      highlightActiveLineGutter(),
+      highlightSpecialChars(),
+      history(),
+      foldGutter(),
+      drawSelection(),
+      dropCursor(),
+      EditorState.allowMultipleSelections.of(true),
+      indentOnInput(),
+      bracketMatching(),
+      closeBrackets(),
+      autocompletion(),
+      rectangularSelection(),
+      crosshairCursor(),
+      highlightActiveLine(),
+      highlightSelectionMatches(),
+      keymap.of([
+        indentWithTab,
+        ...closeBracketsKeymap,
+        ...defaultKeymap,
+        ...searchKeymap,
+        ...historyKeymap,
+        ...foldKeymap,
+        ...completionKeymap,
+        ...lintKeymap,
+      ]),
+    ])();
+
     this.editorView = new EditorView({
       doc: features.text,
       extensions: [
         openTypeFeatureLanguage,
-        keymap.of([indentWithTab]),
-        basicSetup,
+        customSetup,
         customTheme,
-        autocompletion({ override: [myCompletions] }),
-        history(),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
