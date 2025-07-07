@@ -23,6 +23,21 @@ export class SidebearingTool extends BaseTool {
     if (event.type != "mousemove") {
       return;
     }
+
+    const sceneController = this.sceneController;
+    const point = sceneController.localPoint(event);
+    const size = sceneController.mouseClickMargin;
+
+    const hoveredSidebearing = this.sceneModel.sidebearingAtPoint(
+      point,
+      size,
+      this.hoveredSidebearing?.lineIndex,
+      this.hoveredSidebearing?.glyphIndex
+    );
+
+    if (!equalGlyphSelection(this.hoveredSidebearing, hoveredSidebearing)) {
+      this.hoveredSidebearing = hoveredSidebearing;
+    }
   }
 
   async handleDrag(eventStream, initialEvent) {
