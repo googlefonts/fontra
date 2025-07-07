@@ -961,7 +961,7 @@ export class SceneModel {
     return foundGlyph;
   }
 
-  kerningAtPoint(point, size) {
+  *_iterLinesAtPoint(point, size) {
     if (!this.positionedLines.length) {
       return;
     }
@@ -985,6 +985,12 @@ export class SceneModel {
         continue;
       }
 
+      yield { lineIndex, line };
+    }
+  }
+
+  kerningAtPoint(point, size) {
+    for (const { lineIndex, line } of this._iterLinesAtPoint(point, size)) {
       for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
         const positionedGlyph = line.glyphs[glyphIndex];
         const leftPos = positionedGlyph.x;
