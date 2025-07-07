@@ -24,6 +24,10 @@ export class SidebearingTool extends BaseTool {
       return;
     }
   }
+
+  async handleDrag(eventStream, initialEvent) {
+    //
+  }
 }
 
 let theKerningTool; // global simpleton
