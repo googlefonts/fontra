@@ -10,6 +10,22 @@ import {
   registerVisualizationLayerDefinition,
 } from "./visualization-layer-definitions.js";
 
+export class MetricsTool {
+  identifier = "metrics-tool";
+  subTools = [SidebearingTool, KerningTool];
+}
+
+export class SidebearingTool extends BaseTool {
+  iconPath = "/images/sidebearingtool.svg";
+  identifier = "sidebearing-tool";
+
+  handleHover(event) {
+    if (event.type != "mousemove") {
+      return;
+    }
+  }
+}
+
 let theKerningTool; // global simpleton
 
 function kerningVisualizationSelector(forTool) {
