@@ -961,7 +961,7 @@ export class SceneModel {
     return foundGlyph;
   }
 
-  lineAtPoint(point, size) {
+  lineAtPoint(point) {
     if (!this.positionedLines.length) {
       return;
     }
@@ -990,7 +990,7 @@ export class SceneModel {
   }
 
   kerningAtPoint(point, size) {
-    const result = this.lineAtPoint(point, size);
+    const result = this.lineAtPoint(point);
     if (!result) {
       return;
     }
