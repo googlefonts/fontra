@@ -1,5 +1,18 @@
 # Changelog for Fontra
 
+## 2025-07-08
+
+- Herlan/navv-1 contributed several improvements and additions for the OpenType Features panel:
+  - added syntax coloring
+  - added bracket matching
+  - added comment toggle (command/control /)
+  - added indentation with the tab key
+  - added rectangular selection
+  - fixed undo/redo
+  - fixed a cosmetic issue on Windows
+  - and more
+    [Issue 2101](https://github.com/googlefonts/fontra/issues/2101), [Issue 2186](https://github.com/googlefonts/fontra/issues/2186), [PR 2212](https://github.com/googlefonts/fontra/pull/2212)
+
 ## 2025-07-04
 
 - Gaëtan Baehr and Jérémie Hornus redesigned several of the edit tools: the knife tool, the shape/rectangle/oval tool, the kerning tool and the (soon-to-be-used) sidebearings tool. [PR 2210](https://github.com/googlefonts/fontra/pull/2210)
