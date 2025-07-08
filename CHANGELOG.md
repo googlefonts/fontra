@@ -5,9 +5,7 @@
 - Herlan/navv-1 contributed several improvements and additions for the OpenType Features panel:
 
   - added syntax coloring
-  - added bracket matching
   - added comment toggle (command/control /)
-  - added rectangular selection
   - fixed undo/redo
   - fixed a cosmetic issue on Windows
   - and more
