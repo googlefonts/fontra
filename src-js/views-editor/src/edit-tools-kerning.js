@@ -37,7 +37,26 @@ export class SidebearingTool extends BaseTool {
 
     if (!equalGlyphSelection(this.hoveredSidebearing, hoveredSidebearing)) {
       this.hoveredSidebearing = hoveredSidebearing;
+      this.setCursor();
     }
+  }
+
+  setCursor() {
+    let cursor = null;
+    if (
+      this.hoveredSidebearing?.metric === "left" ||
+      this.hoveredSidebearing?.metric === "left-sb"
+    ) {
+      cursor = "w-resize";
+    } else if (
+      this.hoveredSidebearing?.metric === "right" ||
+      this.hoveredSidebearing?.metric === "right-sb"
+    ) {
+      cursor = "e-resize";
+    } else if (this.hoveredSidebearing?.metric === "shape") {
+      cursor = "ew-resize";
+    }
+    this.canvasController.canvas.style.cursor = cursor;
   }
 
   async handleDrag(eventStream, initialEvent) {
