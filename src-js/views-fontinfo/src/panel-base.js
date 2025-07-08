@@ -44,7 +44,6 @@ export class BaseInfoPanel {
 
   handleKeyDown(event) {
     const actionIdentifier = getActionIdentifierFromKeyEvent(event);
-    console.log("action?", actionIdentifier);
     if (actionIdentifier) {
       event.preventDefault();
       event.stopImmediatePropagation();
