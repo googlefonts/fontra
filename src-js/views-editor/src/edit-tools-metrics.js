@@ -43,6 +43,14 @@ class MetricsBaseTool extends BaseTool {
     this._getPinPointDelta = () => this.getPinPointDelta();
   }
 
+  getScrollAdjustBehavior() {
+    return { behavior: "tool-pin-point", getPinPointDelta: this._getPinPointDelta };
+  }
+
+  getPinPointDelta() {
+    assert(false, "superclass must implement");
+  }
+
   selectorToId(selector) {
     assert(false, "superclass must implement");
   }
@@ -612,10 +620,6 @@ class KerningTool extends MetricsBaseTool {
       changes = await editContext.edit(newValues, undoLabel);
     }
     this.pushUndoItem(changes, undoLabel);
-  }
-
-  getScrollAdjustBehavior() {
-    return { behavior: "tool-pin-point", getPinPointDelta: this._getPinPointDelta };
   }
 
   getPinPointDelta() {
