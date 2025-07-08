@@ -19,10 +19,56 @@ class MetricsBaseTool extends BaseTool {
   constructor(editor) {
     super(editor);
     this.fontController = editor.fontController;
-    this.kerningController = null;
 
     this.handleContainer = document.querySelector("#metric-handle-container");
     assert(this.handleContainer);
+  }
+
+  selectorToId(selector) {
+    assert(false, "superclass must implement");
+  }
+
+  metricAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
+    assert(false, "superclass must implement");
+  }
+
+  setCursor() {
+    assert(false, "superclass must implement");
+  }
+
+  handleHover(event) {
+    if (event.type != "mousemove") {
+      return;
+    }
+    const sceneController = this.sceneController;
+    const point = sceneController.localPoint(event);
+    const size = sceneController.mouseClickMargin;
+
+    const hoveredMetric = this.metricAtPoint(
+      point,
+      size,
+      this.hoveredMetric?.lineIndex,
+      this.hoveredMetric?.glyphIndex
+    );
+    if (!equalGlyphSelection(this.hoveredMetric, hoveredMetric)) {
+      this.hoveredMetric = hoveredMetric;
+
+      const hoveredHandleId = hoveredMetric ? this.selectorToId(hoveredMetric) : null;
+
+      this.handles.forEach((handle) => {
+        if (handle.id !== hoveredHandleId && !handle.selected) {
+          handle.remove();
+        }
+      });
+
+      if (hoveredMetric) {
+        const handle = document.getElementById(hoveredHandleId);
+        if (!handle) {
+          this.addHandle(hoveredMetric);
+        }
+      }
+      this.setCursor();
+    }
   }
 
   getPositionedGlyph(selector) {
@@ -38,31 +84,30 @@ class SidebearingTool extends MetricsBaseTool {
   iconPath = "/images/sidebearingtool.svg";
   identifier = "sidebearing-tool";
 
-  handleHover(event) {
-    if (event.type != "mousemove") {
-      return;
-    }
+  selectorToId(selector) {
+    return sidebearingSelectorToId(selector);
+  }
 
-    const sceneController = this.sceneController;
-    const point = sceneController.localPoint(event);
-    const size = sceneController.mouseClickMargin;
-
-    const hoveredSidebearing = this.sceneModel.sidebearingAtPoint(
+  metricAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
+    return this.sceneModel.sidebearingAtPoint(
       point,
       size,
-      this.hoveredSidebearing?.lineIndex,
-      this.hoveredSidebearing?.glyphIndex
+      previousLineIndex,
+      previousGlyphIndex
     );
+  }
 
-    if (!equalGlyphSelection(this.hoveredSidebearing, hoveredSidebearing)) {
-      this.hoveredSidebearing = hoveredSidebearing;
-      this.setCursor();
-    }
+  addHandle(selector) {
+    // console.log("addHandle", selector);
+  }
+
+  get handles() {
+    return []; // stub
   }
 
   setCursor() {
     let cursor = null;
-    const metric = this.hoveredSidebearing?.metric;
+    const metric = this.hoveredMetric?.metric;
 
     if (metric === "left" || metric === "left-sb") {
       cursor = "w-resize";
@@ -116,7 +161,7 @@ class SidebearingHandle extends BaseMetricHandle {
   }
 }
 
-let theKerningTool; // global simpleton
+let theKerningTool; // global singleton
 
 function kerningVisualizationSelector(forTool) {
   return (visContext, layer) => {
@@ -168,6 +213,8 @@ class KerningTool extends MetricsBaseTool {
   constructor(editor) {
     super(editor);
 
+    this.kerningController = null;
+
     this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
       if (event.senderInfo?.senderID !== this) {
         this.handles.forEach((handle) => handle.remove());
@@ -207,49 +254,25 @@ class KerningTool extends MetricsBaseTool {
     theKerningTool = this;
   }
 
-  handleHover(event) {
-    if (event.type != "mousemove") {
-      return;
-    }
-    const sceneController = this.sceneController;
-    const point = sceneController.localPoint(event);
-    const size = sceneController.mouseClickMargin;
+  selectorToId(selector) {
+    return kerningSelectorToId(selector);
+  }
 
-    const hoveredKerning = this.sceneModel.kerningAtPoint(point, size);
-    if (!equalGlyphSelection(this.hoveredKerning, hoveredKerning)) {
-      this.hoveredKerning = hoveredKerning;
-
-      const hoveredHandleId = hoveredKerning
-        ? kerningSelectorToId(hoveredKerning)
-        : null;
-
-      this.handles.forEach((handle) => {
-        if (handle.id !== hoveredHandleId && !handle.selected) {
-          handle.remove();
-        }
-      });
-
-      if (hoveredKerning) {
-        const handle = document.getElementById(hoveredHandleId);
-        if (!handle) {
-          this.addHandle(hoveredKerning);
-        }
-      }
-      this.setCursor();
-    }
+  metricAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
+    return this.sceneModel.kerningAtPoint(point, size);
   }
 
   async handleDrag(eventStream, initialEvent) {
-    const hoveredKerning = this.hoveredHandle?.selector || this.hoveredKerning;
+    const hoveredMetric = this.hoveredHandle?.selector || this.hoveredMetric;
 
-    if (!hoveredKerning) {
+    if (!hoveredMetric) {
       if (!event.shiftKey) {
         this.removeAllHandles();
       }
       return;
     }
 
-    this._selectHandle(hoveredKerning, event.shiftKey);
+    this._selectHandle(hoveredMetric, event.shiftKey);
 
     this._prevousKerningCenter = this.getPositionedKerningCenter(
       this.kerningSelection.at(-1)
@@ -287,7 +310,7 @@ class KerningTool extends MetricsBaseTool {
 
     generateValues = generateValues.bind(this); // Because `this` scoping
 
-    this._draggingSelector = hoveredKerning;
+    this._draggingSelector = hoveredMetric;
     this._prevousKerningCenter = this.getPositionedKerningCenter(
       this._draggingSelector
     );
@@ -439,9 +462,7 @@ class KerningTool extends MetricsBaseTool {
   }
 
   setCursor() {
-    this.canvasController.canvas.style.cursor = this.hoveredKerning
-      ? "ew-resize"
-      : null;
+    this.canvasController.canvas.style.cursor = this.hoveredMetric ? "ew-resize" : null;
   }
 
   activate() {
@@ -470,7 +491,7 @@ class KerningTool extends MetricsBaseTool {
       glyphLines: this.sceneSettings.glyphLines,
       selectors: this.selectedHandles.map((h) => h.selector),
     };
-    delete this.hoveredKerning;
+    delete this.hoveredMetric;
     this.removeAllHandles();
   }
 
@@ -612,7 +633,7 @@ class KerningTool extends MetricsBaseTool {
 
   getContextMenuItems() {
     const contextMenuItems = [];
-    const selector = this.hoveredHandle?.selector || this.hoveredKerning;
+    const selector = this.hoveredHandle?.selector || this.hoveredMetric;
 
     if (selector) {
       const { leftGlyph, rightGlyph } = this.getGlyphNamesFromSelector(selector);
