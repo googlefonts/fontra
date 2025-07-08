@@ -44,6 +44,7 @@ export class SidebearingTool extends BaseTool {
   setCursor() {
     let cursor = null;
     const metric = this.hoveredSidebearing?.metric;
+
     if (metric === "left" || metric === "left-sb") {
       cursor = "w-resize";
     } else if (metric === "right" || metric === "right-sb") {
@@ -51,6 +52,7 @@ export class SidebearingTool extends BaseTool {
     } else if (metric === "shape") {
       cursor = "ew-resize";
     }
+
     this.canvasController.canvas.style.cursor = cursor;
   }
 
