@@ -169,7 +169,7 @@ class MetricsBaseTool extends BaseTool {
   }
 
   canUndoRedo(isRedo) {
-    return this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
+    return !!this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
   }
 
   async doUndoRedo(isRedo) {
