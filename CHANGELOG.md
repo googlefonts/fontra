@@ -7,7 +7,6 @@
   - added syntax coloring
   - added bracket matching
   - added comment toggle (command/control /)
-  - added indentation with the tab key
   - added rectangular selection
   - fixed undo/redo
   - fixed a cosmetic issue on Windows
