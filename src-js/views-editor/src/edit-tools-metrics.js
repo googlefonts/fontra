@@ -483,7 +483,6 @@ class KerningTool extends MetricsBaseTool {
   }
 
   addHandle(selector, select = false) {
-    const { leftName, rightName } = this.getPairNamesFromSelector(selector);
     const handle = new KerningHandle(selector);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
