@@ -999,20 +999,27 @@ export class SceneModel {
     const matches = [];
 
     for (const [glyphIndex, positionedGlyph] of enumerate(line.glyphs)) {
-      const x = positionedGlyph.x;
       const glyph = positionedGlyph.glyph;
 
-      const leftPos = Math.min(x, x + glyph.leftMargin) - size;
+      const xLeft = positionedGlyph.x;
+      const xRight = positionedGlyph.x + glyph.xAdvance;
 
-      const rightPos =
-        Math.max(x + glyph.xAdvance, x + glyph.xAdvance - glyph.rightMargin) + size;
+      const xLeftSB = xLeft + (glyph.leftMargin || 0);
+      const xRightSB = xRight - (glyph.rightMargin || 0);
 
-      const middle = (leftPos + rightPos) / 2;
+      const [leftZone1, leftZone2] = sorted([xLeft, xLeftSB]);
+      const [rightZone1, rightZone2] = sorted([xRight, xRightSB]);
 
-      if (valueInRange(leftPos, point.x, middle)) {
-        matches.push({ lineIndex, glyphIndex, metric: "left" });
-      } else if (valueInRange(middle, point.x, rightPos)) {
+      const middle = (leftZone1 + rightZone2) / 2;
+
+      if (valueInRange(rightZone1 - size, point.x, rightZone2 + size)) {
+        matches.push({ lineIndex, glyphIndex, metric: "right-sb" });
+      } else if (valueInRange(leftZone1 - size, point.x, leftZone2 + size)) {
+        matches.push({ lineIndex, glyphIndex, metric: "left-sb" });
+      } else if (valueInRange(middle, point.x, rightZone2)) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
+      } else if (valueInRange(leftZone1, point.x, middle)) {
+        matches.push({ lineIndex, glyphIndex, metric: "left" });
       }
     }
 
@@ -1137,4 +1144,10 @@ export function getSelectedGlyphInfo(selectedGlyph, glyphLines) {
 
 export function getSelectedGlyphName(selectedGlyph, glyphLines) {
   return getSelectedGlyphInfo(selectedGlyph, glyphLines)?.glyphName;
+}
+
+function sorted(v) {
+  v = [...v];
+  v.sort((a, b) => a - b);
+  return v;
 }
