@@ -159,6 +159,60 @@ class MetricsBaseTool extends BaseTool {
     const { lineIndex, glyphIndex } = selector;
     return this.sceneSettings.positionedLines[lineIndex]?.glyphs[glyphIndex];
   }
+
+  getUndoRedoLabel(isRedo) {
+    const info = this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
+    return (
+      (isRedo ? translate("action.redo") : translate("action.undo")) +
+      (info ? " " + info.label : "")
+    );
+  }
+
+  canUndoRedo(isRedo) {
+    return this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
+  }
+
+  async doUndoRedo(isRedo) {
+    let undoRecord = this.undoStack.popUndoRedoRecord(isRedo);
+    if (!undoRecord) {
+      return;
+    }
+    if (isRedo) {
+      undoRecord = reverseUndoRecord(undoRecord);
+    }
+
+    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
+
+    this.fontController.applyChange(undoRecord.rollbackChange);
+
+    const error = await this.fontController.editFinal(
+      undoRecord.rollbackChange,
+      undoRecord.change,
+      undoRecord.info.label,
+      true
+    );
+
+    this.sceneSettingsController.setItem("glyphLines", undoRecord.info.glyphLines, {
+      senderID: this,
+    });
+    this.sceneSettings.fontLocationSourceMapped = undoRecord.info.location;
+    this.metricSelection = undoRecord.info.metricSelection;
+  }
+
+  pushUndoItem(changes, undoLabel) {
+    const undoRecord = {
+      change: changes.change,
+      rollbackChange: changes.rollbackChange,
+      info: {
+        label: undoLabel,
+        glyphLines: this.sceneSettings.glyphLines,
+        location: this.sceneSettings.fontLocationSourceMapped,
+        metricSelection: this.metricSelection,
+      },
+    };
+
+    this.undoStack.pushUndoRecord(undoRecord);
+  }
 }
 
 class SidebearingTool extends MetricsBaseTool {
@@ -550,60 +604,6 @@ class KerningTool extends MetricsBaseTool {
 
   get hoveredHandle() {
     return this.handleContainer.querySelector("kerning-handle.hovered");
-  }
-
-  getUndoRedoLabel(isRedo) {
-    const info = this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
-    return (
-      (isRedo ? translate("action.redo") : translate("action.undo")) +
-      (info ? " " + info.label : "")
-    );
-  }
-
-  canUndoRedo(isRedo) {
-    return this.undoStack.getTopUndoRedoRecord(isRedo)?.info;
-  }
-
-  async doUndoRedo(isRedo) {
-    let undoRecord = this.undoStack.popUndoRedoRecord(isRedo);
-    if (!undoRecord) {
-      return;
-    }
-    if (isRedo) {
-      undoRecord = reverseUndoRecord(undoRecord);
-    }
-
-    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
-
-    this.fontController.applyChange(undoRecord.rollbackChange);
-
-    const error = await this.fontController.editFinal(
-      undoRecord.rollbackChange,
-      undoRecord.change,
-      undoRecord.info.label,
-      true
-    );
-
-    this.sceneSettingsController.setItem("glyphLines", undoRecord.info.glyphLines, {
-      senderID: this,
-    });
-    this.sceneSettings.fontLocationSourceMapped = undoRecord.info.location;
-    this.metricSelection = undoRecord.info.metricSelection;
-  }
-
-  pushUndoItem(changes, undoLabel) {
-    const undoRecord = {
-      change: changes.change,
-      rollbackChange: changes.rollbackChange,
-      info: {
-        label: undoLabel,
-        glyphLines: this.sceneSettings.glyphLines,
-        location: this.sceneSettings.fontLocationSourceMapped,
-        metricSelection: this.metricSelection,
-      },
-    };
-
-    this.undoStack.pushUndoRecord(undoRecord);
   }
 
   canDelete() {
