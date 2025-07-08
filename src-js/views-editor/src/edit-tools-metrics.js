@@ -71,6 +71,29 @@ class MetricsBaseTool extends BaseTool {
     }
   }
 
+  activate() {
+    super.activate();
+    this.sceneSettings.selectedGlyph = null;
+    this.sceneController.hoveredGlyph = null;
+    if (this._selectionState?.glyphLines === this.sceneSettings.glyphLines) {
+      this._selectionState.selectors.forEach((selector) =>
+        this.addHandle(selector, true)
+      );
+    }
+
+    this.setCursor();
+  }
+
+  deactivate() {
+    super.deactivate();
+    this._selectionState = {
+      glyphLines: this.sceneSettings.glyphLines,
+      selectors: this.selectedHandles.map((h) => h.selector),
+    };
+    delete this.hoveredMetric;
+    this.removeAllHandles();
+  }
+
   getPositionedGlyph(selector) {
     if (!selector) {
       return undefined;
@@ -102,6 +125,10 @@ class SidebearingTool extends MetricsBaseTool {
   }
 
   get handles() {
+    return []; // stub
+  }
+
+  get selectedHandles() {
     return []; // stub
   }
 
@@ -467,13 +494,7 @@ class KerningTool extends MetricsBaseTool {
 
   activate() {
     super.activate();
-    this.sceneSettings.selectedGlyph = null;
-    this.sceneController.hoveredGlyph = null;
-    if (this._selectionState?.glyphLines === this.sceneSettings.glyphLines) {
-      this._selectionState.selectors.forEach((selector) =>
-        this.addHandle(selector, true)
-      );
-    }
+
     if (!this.sceneSettings.applyKerning) {
       this.sceneSettings.applyKerning = true;
     }
@@ -481,18 +502,6 @@ class KerningTool extends MetricsBaseTool {
     this.fontController.getKerningController("kern").then((kerningController) => {
       this.kerningController = kerningController;
     });
-
-    this.setCursor();
-  }
-
-  deactivate() {
-    super.deactivate();
-    this._selectionState = {
-      glyphLines: this.sceneSettings.glyphLines,
-      selectors: this.selectedHandles.map((h) => h.selector),
-    };
-    delete this.hoveredMetric;
-    this.removeAllHandles();
   }
 
   get kerningSelection() {
