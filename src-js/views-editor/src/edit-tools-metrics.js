@@ -15,7 +15,26 @@ export class MetricsTool {
   subTools = [SidebearingTool, KerningTool];
 }
 
-export class SidebearingTool extends BaseTool {
+class MetricsBaseTool extends BaseTool {
+  constructor(editor) {
+    super(editor);
+    this.fontController = editor.fontController;
+    this.kerningController = null;
+
+    this.handleContainer = document.querySelector("#metric-handle-container");
+    assert(this.handleContainer);
+  }
+
+  getPositionedGlyph(selector) {
+    if (!selector) {
+      return undefined;
+    }
+    const { lineIndex, glyphIndex } = selector;
+    return this.sceneSettings.positionedLines[lineIndex]?.glyphs[glyphIndex];
+  }
+}
+
+class SidebearingTool extends MetricsBaseTool {
   iconPath = "/images/sidebearingtool.svg";
   identifier = "sidebearing-tool";
 
@@ -58,6 +77,42 @@ export class SidebearingTool extends BaseTool {
 
   async handleDrag(eventStream, initialEvent) {
     //
+  }
+}
+
+class BaseMetricHandle extends HTMLElement {
+  _forwardEventToCanvas(event) {
+    const canvas = document.querySelector("#edit-canvas");
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const newEvent = new event.constructor(event.type, event);
+    canvas.dispatchEvent(newEvent);
+  }
+}
+
+class SidebearingHandle extends BaseMetricHandle {
+  constructor(selector) {
+    super();
+
+    this.selector = selector;
+
+    this.advanceElement = html.div({ class: "advance" });
+    this.leftSidebearingElement = html.div({ class: "left-sidebearing" });
+    this.rightSidebearingElement = html.div({ class: "right-sidebearing" });
+
+    this.appendChild(this.advanceElement);
+    this.appendChild(this.leftSidebearingElement);
+    this.appendChild(this.rightSidebearingElement);
+
+    this.id = sidebearingSelectorToId(selector);
+    this.classList.add("sidebearing-handle");
+
+    this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
+    this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
+    this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
+    // this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
+    // this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
   }
 }
 
@@ -106,23 +161,19 @@ registerVisualizationLayerDefinition({
   defaultOn: true,
 });
 
-export class KerningTool extends BaseTool {
+class KerningTool extends MetricsBaseTool {
   iconPath = "/images/kerningtool.svg";
   identifier = "kerning-tool";
 
   constructor(editor) {
     super(editor);
-    this.fontController = editor.fontController;
-    this.kerningController = null;
-
-    this.handleContainer = document.querySelector("#metric-handle-container");
-    assert(this.handleContainer);
 
     this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
       if (event.senderInfo?.senderID !== this) {
         this.handles.forEach((handle) => handle.remove());
       }
     });
+
     this.sceneSettingsController.addKeyListener(
       ["viewBox", "positionedLines"],
       (event) => {
@@ -132,6 +183,7 @@ export class KerningTool extends BaseTool {
         });
       }
     );
+
     this.sceneSettingsController.addKeyListener("applyKerning", (event) => {
       if (!event.newValue && this.sceneController.selectedTool === this) {
         this.editor.setSelectedTool("pointer-tool");
@@ -167,7 +219,9 @@ export class KerningTool extends BaseTool {
     if (!equalGlyphSelection(this.hoveredKerning, hoveredKerning)) {
       this.hoveredKerning = hoveredKerning;
 
-      const hoveredHandleId = hoveredKerning ? selectorToId(hoveredKerning) : null;
+      const hoveredHandleId = hoveredKerning
+        ? kerningSelectorToId(hoveredKerning)
+        : null;
 
       this.handles.forEach((handle) => {
         if (handle.id !== hoveredHandleId && !handle.selected) {
@@ -364,7 +418,7 @@ export class KerningTool extends BaseTool {
   }
 
   _selectHandle(selector, shiftKey) {
-    const handleId = selectorToId(selector);
+    const handleId = kerningSelectorToId(selector);
     const selectedHandle = document.getElementById(handleId);
     if (!selectedHandle) {
       // Shouldn't happen, but does (rarely), some glitchy async timing thing
@@ -556,14 +610,6 @@ export class KerningTool extends BaseTool {
     return positionedGlyph.x - positionedGlyph.kernValue / 2;
   }
 
-  getPositionedGlyph(selector) {
-    if (!selector) {
-      return undefined;
-    }
-    const { lineIndex, glyphIndex } = selector;
-    return this.sceneSettings.positionedLines[lineIndex]?.glyphs[glyphIndex];
-  }
-
   getContextMenuItems() {
     const contextMenuItems = [];
     const selector = this.hoveredHandle?.selector || this.hoveredKerning;
@@ -636,7 +682,7 @@ export class KerningTool extends BaseTool {
   }
 }
 
-class KerningHandle extends HTMLElement {
+class KerningHandle extends BaseMetricHandle {
   constructor(selector) {
     super();
 
@@ -653,7 +699,7 @@ class KerningHandle extends HTMLElement {
     this.appendChild(this.leftNameElement);
     this.appendChild(this.rightNameElement);
 
-    this.id = selectorToId(selector);
+    this.id = kerningSelectorToId(selector);
     this.classList.add("kerning-handle");
 
     this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
@@ -661,15 +707,6 @@ class KerningHandle extends HTMLElement {
     this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
     this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
-  }
-
-  _forwardEventToCanvas(event) {
-    const canvas = document.querySelector("#edit-canvas");
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    const newEvent = new event.constructor(event.type, event);
-    canvas.dispatchEvent(newEvent);
   }
 
   update(positionedGlyph, leftName, rightName, canvasController) {
@@ -714,7 +751,12 @@ function formatKerningValue(n) {
   return n == undefined ? "\u00A0" : n.toString();
 }
 
-function selectorToId(kerningSelector) {
+function kerningSelectorToId(kerningSelector) {
   const { lineIndex, glyphIndex } = kerningSelector;
   return `kerning-selector-${lineIndex}/${glyphIndex}`;
+}
+
+function sidebearingSelectorToId(kerningSelector) {
+  const { lineIndex, glyphIndex } = kerningSelector;
+  return `sidebearing-selector-${lineIndex}/${glyphIndex}`;
 }
