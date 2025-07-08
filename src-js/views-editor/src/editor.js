@@ -64,8 +64,8 @@ import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialo
 import { parsePluginBasePath } from "@fontra/web-components/plugin-manager.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
-import { MetricsTool } from "./edit-tools-kerning.js";
 import { KnifeTool } from "./edit-tools-knife.js";
+import { MetricsTool } from "./edit-tools-metrics.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTools } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
