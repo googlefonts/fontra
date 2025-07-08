@@ -43,17 +43,12 @@ export class SidebearingTool extends BaseTool {
 
   setCursor() {
     let cursor = null;
-    if (
-      this.hoveredSidebearing?.metric === "left" ||
-      this.hoveredSidebearing?.metric === "left-sb"
-    ) {
+    const metric = this.hoveredSidebearing?.metric;
+    if (metric === "left" || metric === "left-sb") {
       cursor = "w-resize";
-    } else if (
-      this.hoveredSidebearing?.metric === "right" ||
-      this.hoveredSidebearing?.metric === "right-sb"
-    ) {
+    } else if (metric === "right" || metric === "right-sb") {
       cursor = "e-resize";
-    } else if (this.hoveredSidebearing?.metric === "shape") {
+    } else if (metric === "shape") {
       cursor = "ew-resize";
     }
     this.canvasController.canvas.style.cursor = cursor;
