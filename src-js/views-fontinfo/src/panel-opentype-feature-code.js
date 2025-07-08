@@ -54,12 +54,15 @@ addStyleSheet(`
   --keyword-color-dark: #75bfff;
   --glyph-class-color-light: var(--fontra-theme-marker) #b90063;
   --glyph-class-color-dark: #ff7de9;
+  --glyph-range-color-light: var(--fontra-theme-marker) #b95a00;
+  --glyph-range-color-dark: #ffbe7d;
   --named-glyph-class-color-light: var(--fontra-theme-marker) #198639;
   --named-glyph-class-color-dark: #86de74;
 
   --comment-color: var(--comment-color-light, var(--comment-color-dark));
   --keyword-color: var(--keyword-color-light, var(--keyword-color-dark));
   --glyph-class-color: var(--glyph-class-color-light, var(--glyph-class-color-dark));
+  --glyph-range-color: var(--glyph-range-color-light, var(--glyph-range-color-dark));
   --named-glyph-class-color: var(--named-glyph-class-color-light, var(--named-glyph-class-color-dark));
 }
 
@@ -107,8 +110,12 @@ const openTypeFeatureCodeSimpleMode = simpleMode({
       token: "keyword",
     },
     {
-      regex: /\[\s*(?:[a-zA-Z0-9_.]+(?:\s*-\s*[a-zA-Z0-9_.]+)?\s*)*\]/,
+      regex: /\[\s*\\?[a-zA-Z0-9_.]+(?:\s+\\?[a-zA-Z0-9_.]+)*\s*\]/,
       token: "glyphClass",
+    },
+    {
+      regex: /\[\s*(\\?[a-zA-Z0-9_.]+)\s*-\s*(\\?[a-zA-Z0-9_.]+)\s*\]/,
+      token: "glyphRange",
     },
     { regex: /@[a-zA-Z0-9_.]+/, token: "namedGlyphClass" },
   ],
@@ -122,6 +129,7 @@ openTypeFeatureCodeSimpleMode.tokenTable = {
   comment: Tag.define(),
   keyword: Tag.define(),
   glyphClass: Tag.define(),
+  glyphRange: Tag.define(),
   namedGlyphClass: Tag.define(),
 };
 
@@ -142,6 +150,10 @@ const openTypeFeatureCodeHighlighter = syntaxHighlighting(
     {
       tag: openTypeFeatureCodeSimpleMode.tokenTable.glyphClass,
       color: "var(--glyph-class-color)",
+    },
+    {
+      tag: openTypeFeatureCodeSimpleMode.tokenTable.glyphRange,
+      color: "var(--glyph-range-color)",
     },
     {
       tag: openTypeFeatureCodeSimpleMode.tokenTable.namedGlyphClass,
