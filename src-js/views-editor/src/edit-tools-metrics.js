@@ -36,6 +36,10 @@ class MetricsBaseTool extends BaseTool {
     assert(false, "superclass must implement");
   }
 
+  removeAllHandles() {
+    this.handles.forEach((handle) => handle.remove());
+  }
+
   handleHover(event) {
     if (event.type != "mousemove") {
       return;
@@ -527,10 +531,6 @@ class KerningTool extends MetricsBaseTool {
 
   get hoveredHandle() {
     return this.handleContainer.querySelector("kerning-handle.hovered");
-  }
-
-  removeAllHandles() {
-    this.handles.forEach((handle) => handle.remove());
   }
 
   getUndoRedoLabel(isRedo) {
