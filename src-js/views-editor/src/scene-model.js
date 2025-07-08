@@ -1016,6 +1016,14 @@ export class SceneModel {
         matches.push({ lineIndex, glyphIndex, metric: "right-sb" });
       } else if (valueInRange(leftZone1 - size, point.x, leftZone2 + size)) {
         matches.push({ lineIndex, glyphIndex, metric: "left-sb" });
+      } else if (
+        pointInConvexPolygon(
+          point.x - positionedGlyph.x,
+          point.y - positionedGlyph.y,
+          positionedGlyph.glyph.convexHull
+        )
+      ) {
+        matches.push({ lineIndex, glyphIndex, metric: "shape" });
       } else if (valueInRange(middle, point.x, rightZone2)) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
       } else if (valueInRange(leftZone1, point.x, middle)) {
