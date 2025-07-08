@@ -22,6 +22,25 @@ class MetricsBaseTool extends BaseTool {
 
     this.handleContainer = document.querySelector("#metric-handle-container");
     assert(this.handleContainer);
+
+    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
+      if (event.senderInfo?.senderID !== this) {
+        this.handles.forEach((handle) => handle.remove());
+      }
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      ["viewBox", "positionedLines"],
+      (event) => {
+        this.handles.forEach((handle) => {
+          this._updateHandle(handle);
+          this.getPinPointDelta(); // updates this._prevousKerningCenter
+        });
+      }
+    );
+
+    this.undoStack = new UndoStack();
+    this._getPinPointDelta = () => this.getPinPointDelta();
   }
 
   selectorToId(selector) {
@@ -246,22 +265,6 @@ class KerningTool extends MetricsBaseTool {
 
     this.kerningController = null;
 
-    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
-      if (event.senderInfo?.senderID !== this) {
-        this.handles.forEach((handle) => handle.remove());
-      }
-    });
-
-    this.sceneSettingsController.addKeyListener(
-      ["viewBox", "positionedLines"],
-      (event) => {
-        this.handles.forEach((handle) => {
-          this._updateHandle(handle);
-          this.getPinPointDelta(); // updates this._prevousKerningCenter
-        });
-      }
-    );
-
     this.sceneSettingsController.addKeyListener("applyKerning", (event) => {
       if (!event.newValue && this.sceneController.selectedTool === this) {
         this.editor.setSelectedTool("pointer-tool");
@@ -277,9 +280,6 @@ class KerningTool extends MetricsBaseTool {
       },
       false
     );
-
-    this.undoStack = new UndoStack();
-    this._getPinPointDelta = () => this.getPinPointDelta();
 
     assert(!theKerningTool);
     theKerningTool = this;
