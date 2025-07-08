@@ -1,5 +1,4 @@
 import {
-  canPerformAction,
   doPerformAction,
   getActionIdentifierFromKeyEvent,
   registerAction,
