@@ -3,6 +3,7 @@
 ## 2025-07-08
 
 - Herlan/navv-1 contributed several improvements and additions for the OpenType Features panel:
+
   - added syntax coloring
   - added bracket matching
   - added comment toggle (command/control /)
@@ -11,7 +12,8 @@
   - fixed undo/redo
   - fixed a cosmetic issue on Windows
   - and more
-    [Issue 2101](https://github.com/googlefonts/fontra/issues/2101), [Issue 2186](https://github.com/googlefonts/fontra/issues/2186), [PR 2212](https://github.com/googlefonts/fontra/pull/2212)
+
+  [Issue 2101](https://github.com/googlefonts/fontra/issues/2101), [Issue 2186](https://github.com/googlefonts/fontra/issues/2186), [PR 2212](https://github.com/googlefonts/fontra/pull/2212)
 
 ## 2025-07-04
 
