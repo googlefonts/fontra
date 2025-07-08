@@ -385,7 +385,9 @@ export class KerningTool extends BaseTool {
   }
 
   setCursor() {
-    this.canvasController.canvas.style.cursor = this.hoveredKerning ? "pointer" : null;
+    this.canvasController.canvas.style.cursor = this.hoveredKerning
+      ? "ew-resize"
+      : null;
   }
 
   activate() {
