@@ -34,7 +34,7 @@ class MetricsBaseTool extends BaseTool {
       (event) => {
         this.handles.forEach((handle) => {
           this._updateHandle(handle);
-          this.getPinPointDelta(); // updates this._prevousKerningCenter
+          this.getPinPointDelta(); // updates this._prevousMetricCenter
         });
       }
     );
@@ -48,6 +48,20 @@ class MetricsBaseTool extends BaseTool {
   }
 
   getPinPointDelta() {
+    let deltaX = 0;
+    const selector = this._draggingSelector || this.metricSelection.at(-1);
+    const currentCenter = this.getPositionedMetricCenter(selector);
+    if (currentCenter != undefined) {
+      if (this._prevousMetricCenter == undefined) {
+        this._prevousMetricCenter = currentCenter;
+      }
+      deltaX = currentCenter - this._prevousMetricCenter;
+    }
+    this._prevousMetricCenter = currentCenter;
+    return deltaX;
+  }
+
+  getPositionedMetricCenter(selector) {
     assert(false, "superclass must implement");
   }
 
@@ -65,6 +79,19 @@ class MetricsBaseTool extends BaseTool {
 
   removeAllHandles() {
     this.handles.forEach((handle) => handle.remove());
+  }
+
+  get metricSelection() {
+    return this.selectedHandles.map((handle) => handle.selector);
+  }
+
+  set metricSelection(selection) {
+    this.removeAllHandles();
+    for (const selector of selection) {
+      this.addHandle(selector, true);
+    }
+
+    this._prevousMetricCenter = this.getPositionedMetricCenter(selection.at(-1));
   }
 
   handleHover(event) {
@@ -313,8 +340,8 @@ class KerningTool extends MetricsBaseTool {
 
     this._selectHandle(hoveredMetric, event.shiftKey);
 
-    this._prevousKerningCenter = this.getPositionedKerningCenter(
-      this.kerningSelection.at(-1)
+    this._prevousMetricCenter = this.getPositionedMetricCenter(
+      this.metricSelection.at(-1)
     );
 
     if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
@@ -350,9 +377,7 @@ class KerningTool extends MetricsBaseTool {
     generateValues = generateValues.bind(this); // Because `this` scoping
 
     this._draggingSelector = hoveredMetric;
-    this._prevousKerningCenter = this.getPositionedKerningCenter(
-      this._draggingSelector
-    );
+    this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
     const undoLabel = "edit kerning";
     const changes = await editContext.editContinuous(generateValues(), undoLabel);
@@ -516,19 +541,6 @@ class KerningTool extends MetricsBaseTool {
     });
   }
 
-  get kerningSelection() {
-    return this.selectedHandles.map((handle) => handle.selector);
-  }
-
-  set kerningSelection(selection) {
-    this.removeAllHandles();
-    for (const selector of selection) {
-      this.addHandle(selector, true);
-    }
-
-    this._prevousKerningCenter = this.getPositionedKerningCenter(selection.at(-1));
-  }
-
   get handles() {
     return [...this.handleContainer.querySelectorAll("kerning-handle")];
   }
@@ -577,7 +589,7 @@ class KerningTool extends MetricsBaseTool {
       senderID: this,
     });
     this.sceneSettings.fontLocationSourceMapped = undoRecord.info.location;
-    this.kerningSelection = undoRecord.info.kerningSelection;
+    this.metricSelection = undoRecord.info.metricSelection;
   }
 
   pushUndoItem(changes, undoLabel) {
@@ -588,7 +600,7 @@ class KerningTool extends MetricsBaseTool {
         label: undoLabel,
         glyphLines: this.sceneSettings.glyphLines,
         location: this.sceneSettings.fontLocationSourceMapped,
-        kerningSelection: this.kerningSelection,
+        metricSelection: this.metricSelection,
       },
     };
 
@@ -622,21 +634,7 @@ class KerningTool extends MetricsBaseTool {
     this.pushUndoItem(changes, undoLabel);
   }
 
-  getPinPointDelta() {
-    let deltaX = 0;
-    const selector = this._draggingSelector || this.kerningSelection.at(-1);
-    const currentCenter = this.getPositionedKerningCenter(selector);
-    if (currentCenter != undefined) {
-      if (this._prevousKerningCenter == undefined) {
-        this._prevousKerningCenter = currentCenter;
-      }
-      deltaX = currentCenter - this._prevousKerningCenter;
-    }
-    this._prevousKerningCenter = currentCenter;
-    return deltaX;
-  }
-
-  getPositionedKerningCenter(selector) {
+  getPositionedMetricCenter(selector) {
     const positionedGlyph = this.getPositionedGlyph(selector);
     if (!positionedGlyph) {
       return undefined;
