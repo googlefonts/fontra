@@ -885,8 +885,8 @@ function getKerningStep(event) {
 }
 
 function formatMetricValue(n) {
-  if (n === null) {
-    return "–";
+  if (n == null) {
+    return "\u2011"; // NON-BREAKING HYPHEN
   }
   n = round(n, 1);
   return n == undefined ? "\u00A0" : n.toString();
