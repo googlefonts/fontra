@@ -332,7 +332,58 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
+    const editContext = await this.getEditContext();
+    if (!editContext) {
+      return;
+    }
     console.log("do drag");
+  }
+
+  async getEditContext() {
+    const leftGlyphNames = new Set();
+    const rightGlyphNames = new Set();
+
+    this.selectedHandles.forEach((handle) => {
+      const glyphName = this.getPositionedGlyph(handle.selector)?.glyphName;
+      if (!glyphName) {
+        return;
+      }
+      const metricSelection = handle.metricSelection;
+      if (metricSelection.has("left")) {
+        leftGlyphNames.add(glyphName);
+      }
+      if (metricSelection.has("right")) {
+        rightGlyphNames.add(glyphName);
+      }
+    });
+
+    const allGlyphNames = union(leftGlyphNames, rightGlyphNames);
+
+    const location = {
+      ...this.sceneSettings.fontLocationSourceMapped,
+      ...this.sceneSettings.glyphLocation,
+    };
+
+    const sourceIndices = {};
+    const notAtSourceGlyphs = new Set();
+
+    for (const glyphName of allGlyphNames) {
+      const varGlyph = await this.fontController.getGlyph(glyphName);
+      const sourceIndex = varGlyph.getSourceIndex(location);
+      if (sourceIndex == undefined) {
+        notAtSourceGlyphs.add(glyphName);
+      } else {
+        sourceIndices[glyphName] = sourceIndex;
+      }
+    }
+
+    if (notAtSourceGlyphs.size) {
+      // TODO: dialog
+      console.log("some glyphs not at source location", [...notAtSourceGlyphs]);
+      return;
+    }
+
+    console.log(sourceIndices);
   }
 }
 
@@ -449,6 +500,10 @@ class SidebearingHandle extends BaseMetricHandle {
       "selected",
       this._selection.has("right") || this._selection.has("shape")
     );
+  }
+
+  get metricSelection() {
+    return this._selection;
   }
 
   get selectedSelector() {
