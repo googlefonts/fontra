@@ -317,18 +317,14 @@ class SidebearingTool extends MetricsBaseTool {
   }
 
   setCursor() {
-    let cursor = null;
-    const metric = this.hoveredMetric?.metric;
+    const cursorMap = {
+      left: "w-resize",
+      right: "e-resize",
+      shape: "ew-resize",
+    };
 
-    if (metric === "left" || metric === "left-sb") {
-      cursor = "w-resize";
-    } else if (metric === "right" || metric === "right-sb") {
-      cursor = "e-resize";
-    } else if (metric === "shape") {
-      cursor = "ew-resize";
-    }
-
-    this.canvasController.canvas.style.cursor = cursor;
+    this.canvasController.canvas.style.cursor =
+      cursorMap[this.hoveredMetric?.metric] || null;
   }
 
   async handleDrag(eventStream, initialEvent) {
