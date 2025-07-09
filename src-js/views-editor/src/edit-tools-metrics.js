@@ -1,6 +1,7 @@
 import { UndoStack, reverseUndoRecord } from "@fontra/core/font-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
+import { symmetricDifference } from "@fontra/core/set-ops.js";
 import { arrowKeyDeltas, assert, round } from "@fontra/core/utils.js";
 import { dialog } from "@fontra/web-components/modal-dialog.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -353,6 +354,7 @@ class SidebearingHandle extends BaseMetricHandle {
     super();
 
     this.selector = selector;
+    this._selection = new Set();
 
     this.advanceElement = html.div({ class: "advance" }, ["advance"]);
     this.leftSidebearingElement = html.div({ class: "left-sidebearing" }, ["left"]);
@@ -394,15 +396,34 @@ class SidebearingHandle extends BaseMetricHandle {
   }
 
   updateHover(selector) {
-    console.log("update hover", selector);
+    this.selector = selector;
+    // console.log("update hover", selector);
   }
 
   get selected() {
-    // return this.classList.contains("selected");
+    return this._selection.size > 0;
   }
 
   toggleSelection(selector, onOff = undefined) {
-    // console.log(onOff, selector);
+    if (onOff === undefined) {
+      this._selection = symmetricDifference(
+        this._selection,
+        metricSelectionSet(selector)
+      );
+    } else if (onOff) {
+      this._selection = metricSelectionSet(selector);
+    } else {
+      this._selection = new Set();
+    }
+
+    this.leftSidebearingElement.classList.toggle(
+      "selected",
+      this._selection.has("left")
+    );
+    this.rightSidebearingElement.classList.toggle(
+      "selected",
+      this._selection.has("right")
+    );
   }
 }
 
@@ -862,4 +883,8 @@ function kerningSelectorToId(kerningSelector) {
 function sidebearingSelectorToId(kerningSelector) {
   const { lineIndex, glyphIndex } = kerningSelector;
   return `sidebearing-selector-${lineIndex}/${glyphIndex}`;
+}
+
+function metricSelectionSet(selector) {
+  return new Set(selector.metric.split(","));
 }

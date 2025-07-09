@@ -516,6 +516,10 @@ sidebearing-handle > .right-sidebearing {
   pointer-events: auto;
 }
 
+sidebearing-handle > .selected {
+  opacity: 100%;
+}
+
 sidebearing-handle > .advance {
   left: 50%;
   pointer-events: none;
