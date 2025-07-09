@@ -364,16 +364,19 @@ class SidebearingTool extends MetricsBaseTool {
       ...this.sceneSettings.glyphLocation,
     };
 
-    const sourceIndices = {};
+    const layerNames = {};
     const notAtSourceGlyphs = new Set();
 
     for (const glyphName of allGlyphNames) {
       const varGlyph = await this.fontController.getGlyph(glyphName);
+      if (!varGlyph) {
+        continue;
+      }
       const sourceIndex = varGlyph.getSourceIndex(location);
       if (sourceIndex == undefined) {
         notAtSourceGlyphs.add(glyphName);
       } else {
-        sourceIndices[glyphName] = sourceIndex;
+        layerNames[glyphName] = varGlyph.sources[sourceIndex].layerName;
       }
     }
 
@@ -383,7 +386,7 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    console.log(sourceIndices);
+    console.log(layerNames);
   }
 }
 
