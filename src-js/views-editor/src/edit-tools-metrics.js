@@ -87,7 +87,7 @@ class MetricsBaseTool extends BaseTool {
   }
 
   get metricSelection() {
-    return this.selectedHandles.map((handle) => handle.selector);
+    return this.selectedHandles.map((handle) => handle.selectedSelector);
   }
 
   set metricSelection(selection) {
@@ -181,9 +181,7 @@ class MetricsBaseTool extends BaseTool {
     this.sceneSettings.selectedGlyph = null;
     this.sceneController.hoveredGlyph = null;
     if (this._selectionState?.glyphLines === this.sceneSettings.glyphLines) {
-      this._selectionState.selectors.forEach((selector) =>
-        this.addHandle(selector, true)
-      );
+      this.metricSelection = this._selectionState.selectors;
     }
 
     this.setCursor();
@@ -193,7 +191,7 @@ class MetricsBaseTool extends BaseTool {
     super.deactivate();
     this._selectionState = {
       glyphLines: this.sceneSettings.glyphLines,
-      selectors: this.selectedHandles.map((h) => h.selector),
+      selectors: this.metricSelection,
     };
     delete this.hoveredMetric;
     this.removeAllHandles();
@@ -419,6 +417,13 @@ class SidebearingHandle extends BaseMetricHandle {
       "selected",
       this._selection.has("right")
     );
+  }
+
+  get selectedSelector() {
+    return {
+      ...this.selector,
+      metric: [...this._selection].sort().join(",") || this.selector.metric,
+    };
   }
 }
 
@@ -853,6 +858,10 @@ class KerningHandle extends BaseMetricHandle {
 
   toggleSelection(selector, onOff = undefined) {
     this.classList.toggle("selected", onOff);
+  }
+
+  get selectedSelector() {
+    return this.selector;
   }
 }
 
