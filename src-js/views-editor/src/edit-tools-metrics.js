@@ -309,10 +309,6 @@ class SidebearingTool extends MetricsBaseTool {
     return [...this.handleContainer.querySelectorAll("sidebearing-handle")];
   }
 
-  get selectedHandles() {
-    return []; // stub
-  }
-
   get hoveredHandle() {
     return this.handleContainer.querySelector("sidebearing-handle.hovered");
   }
