@@ -368,19 +368,32 @@ class SidebearingHandle extends BaseMetricHandle {
   }
 
   update(positionedGlyph, canvasController) {
-    const { x: left, y: top } = canvasController.canvasPoint({
+    const { x: left1, y: top } = canvasController.canvasPoint({
       x: positionedGlyph.x,
       y: positionedGlyph.y,
     });
 
-    const { x: right, y: _ } = canvasController.canvasPoint({
+    const { x: left2 } = canvasController.canvasPoint({
+      x: positionedGlyph.x + (positionedGlyph.glyph.leftMargin || 0),
+      y: positionedGlyph.y,
+    });
+
+    const { x: right1 } = canvasController.canvasPoint({
       x: positionedGlyph.x + positionedGlyph.glyph.xAdvance,
       y: positionedGlyph.y,
     });
 
-    this.style.left = `${left}px`;
+    const { x: right2 } = canvasController.canvasPoint({
+      x:
+        positionedGlyph.x +
+        positionedGlyph.glyph.xAdvance -
+        (positionedGlyph.glyph.rightMargin || 0),
+      y: positionedGlyph.y,
+    });
+
+    this.style.left = `${(left1 + left2) / 2}px`;
     this.style.top = `${top}px`;
-    this.style.width = `${right - left}px`;
+    this.style.width = `${(right1 + right2 - left1 - left2) / 2}px`;
 
     this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
     this.leftSidebearingElement.innerText =
