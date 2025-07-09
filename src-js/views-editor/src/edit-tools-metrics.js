@@ -163,11 +163,11 @@ class MetricsBaseTool extends BaseTool {
     }
 
     if (shiftKey) {
-      selectedHandle.selected = !selectedHandle.selected;
+      selectedHandle.toggleSelection(selector);
     } else {
       this.handles.forEach((handle) => {
         if (handle.id === handleId) {
-          handle.selected = true;
+          selectedHandle.toggleSelection(selector, true);
         } else if (!selectedHandle.selected) {
           handle.remove();
         }
@@ -282,7 +282,7 @@ class SidebearingTool extends MetricsBaseTool {
     const handle = new SidebearingHandle(selector);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
-    handle.selected = select;
+    handle.toggleSelection(selector, select);
   }
 
   _updateHandle(sidebearingHandle) {
@@ -405,9 +405,8 @@ class SidebearingHandle extends BaseMetricHandle {
     // return this.classList.contains("selected");
   }
 
-  set selected(onOff) {
-    console.log("set selected", onOff);
-    // this.classList.toggle("selected", onOff);
+  toggleSelection(selector, onOff = undefined) {
+    // console.log(onOff, selector);
   }
 }
 
@@ -639,7 +638,7 @@ class KerningTool extends MetricsBaseTool {
     const handle = new KerningHandle(selector);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
-    handle.selected = select;
+    handle.toggleSelection(selector, select);
   }
 
   _updateHandle(kerningHandle) {
@@ -840,7 +839,7 @@ class KerningHandle extends BaseMetricHandle {
     return this.classList.contains("selected");
   }
 
-  set selected(onOff) {
+  toggleSelection(selector, onOff = undefined) {
     this.classList.toggle("selected", onOff);
   }
 }
