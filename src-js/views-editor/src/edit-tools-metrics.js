@@ -386,7 +386,30 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    console.log(layerNames);
+    const sidebearingSelectors = [];
+    for (const [sidebearing, glyphNames] of [
+      ["left", [...leftGlyphNames]],
+      ["right", [...rightGlyphNames]],
+    ]) {
+      sidebearingSelectors.push(
+        ...glyphNames.map((glyphName) => ({
+          glyphName,
+          sidebearing,
+          layerName: layerNames[glyphName],
+        }))
+      );
+    }
+    return new SidebearingEditContext(this.fontController, sidebearingSelectors);
+  }
+}
+
+export class SidebearingEditContext {
+  // TODO: move to its own module
+
+  constructor(fontController, sidebearingSelectors) {
+    assert(sidebearingSelectors.length > 0);
+    this.fontController = fontController;
+    this.sidebearingSelectors = sidebearingSelectors;
   }
 }
 
