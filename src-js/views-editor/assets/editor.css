@@ -499,28 +499,36 @@ sidebearing-handle {
   position: absolute;
   font-size: 0.8em;
   padding: 1em;
+  user-select: none;
+  pointer-events: none;
 }
 
 sidebearing-handle > .advance,
 sidebearing-handle > .left-sidebearing,
 sidebearing-handle > .right-sidebearing {
   position: absolute;
-  background-color: #aaa;
   padding: 0.2em 0.8em 0.2em 0.8em;
   border-radius: 0.66em;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 50%);
+  opacity: 66%;
+  background-color: #aaa;
+  color: white;
+  pointer-events: auto;
 }
 
 sidebearing-handle > .advance {
   left: 50%;
+  pointer-events: none;
 }
 
 sidebearing-handle > .left-sidebearing {
   left: 0%;
+  cursor: w-resize;
 }
 
 sidebearing-handle > .right-sidebearing {
   left: 100%;
+  cursor: e-resize;
 }
 
 kerning-handle {
@@ -536,7 +544,7 @@ kerning-handle {
   border-radius: 0.66em;
   color: white;
   background-color: #aaa;
-  cursor: pointer;
+  cursor: ew-resize;
   user-select: none;
   transform: translate(-50%, 50%);
   opacity: 66%;
