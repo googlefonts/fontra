@@ -121,6 +121,8 @@ class MetricsBaseTool extends BaseTool {
       this.handles.forEach((handle) => {
         if (handle.id !== hoveredHandleId && !handle.selected) {
           handle.remove();
+        } else {
+          handle.updateHover(null);
         }
       });
 
@@ -347,7 +349,6 @@ class SidebearingHandle extends BaseMetricHandle {
   constructor(selector) {
     super();
 
-    this.selector = selector;
     this._selection = new Set();
 
     this.advanceElement = html.div({ class: "advance" }, ["advance"]);
@@ -365,6 +366,8 @@ class SidebearingHandle extends BaseMetricHandle {
     this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
     this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
+
+    this.updateHover(selector);
   }
 
   update(positionedGlyph, canvasController) {
@@ -403,7 +406,18 @@ class SidebearingHandle extends BaseMetricHandle {
   }
 
   updateHover(selector) {
-    this.selector = selector;
+    this.selector = selector || this.selector;
+
+    const [metric] = selector ? metricSelectionSet(selector) : [""];
+
+    this.leftSidebearingElement.classList.toggle(
+      "hovered",
+      metric === "left" || metric == "shape"
+    );
+    this.rightSidebearingElement.classList.toggle(
+      "hovered",
+      metric === "right" || metric == "shape"
+    );
   }
 
   get selected() {
@@ -424,11 +438,11 @@ class SidebearingHandle extends BaseMetricHandle {
 
     this.leftSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("left")
+      this._selection.has("left") || this._selection.has("shape")
     );
     this.rightSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("right")
+      this._selection.has("right") || this._selection.has("shape")
     );
   }
 

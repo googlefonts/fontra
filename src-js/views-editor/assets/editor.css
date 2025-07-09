@@ -507,7 +507,8 @@ sidebearing-handle > .advance,
 sidebearing-handle > .left-sidebearing,
 sidebearing-handle > .right-sidebearing {
   position: absolute;
-  padding: 0.2em 0.8em 0.2em 0.8em;
+  box-sizing: border-box;
+  padding: 0.1em 0.6em 0.1em 0.6em;
   border-radius: 0.66em;
   transform: translate(-50%, 50%);
   opacity: 66%;
@@ -518,6 +519,10 @@ sidebearing-handle > .right-sidebearing {
 
 sidebearing-handle > .selected {
   opacity: 100%;
+}
+
+sidebearing-handle > .hovered {
+  box-shadow: 0 0 0.7em #aaa;
 }
 
 sidebearing-handle > .advance {
