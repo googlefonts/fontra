@@ -1,7 +1,7 @@
 import { UndoStack, reverseUndoRecord } from "@fontra/core/font-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
-import { symmetricDifference } from "@fontra/core/set-ops.js";
+import { isDisjoint, symmetricDifference, union } from "@fontra/core/set-ops.js";
 import { arrowKeyDeltas, assert, round } from "@fontra/core/utils.js";
 import { dialog } from "@fontra/web-components/modal-dialog.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -416,13 +416,13 @@ class SidebearingHandle extends BaseMetricHandle {
   }
 
   toggleSelection(selector, onOff = undefined) {
+    const newSelection = metricSelectionSet(selector);
     if (onOff === undefined) {
-      this._selection = symmetricDifference(
-        this._selection,
-        metricSelectionSet(selector)
-      );
+      this._selection = symmetricDifference(this._selection, newSelection);
     } else if (onOff) {
-      this._selection = metricSelectionSet(selector);
+      this._selection = isDisjoint(this._selection, newSelection)
+        ? newSelection
+        : union(this._selection, newSelection);
     } else {
       this._selection = new Set();
     }
