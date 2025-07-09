@@ -647,7 +647,7 @@ class KerningTool extends MetricsBaseTool {
         this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
 
         const currentX = event.x / magnification;
-        const step = getKerningStep(event);
+        const step = getMetricsStep(event);
         const deltaX = Math.round((currentX - initialX) / step) * step;
 
         yield values.map((v) => v + deltaX);
@@ -674,7 +674,7 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    deltaX *= getKerningStep(event);
+    deltaX *= getMetricsStep(event);
 
     const { editContext, values } = this.getEditContext();
     if (!editContext) {
@@ -992,7 +992,7 @@ class KerningHandle extends BaseMetricHandle {
 
 customElements.define("kerning-handle", KerningHandle);
 
-function getKerningStep(event) {
+function getMetricsStep(event) {
   return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
 }
 
