@@ -123,6 +123,8 @@ class MetricsBaseTool extends BaseTool {
         const handle = document.getElementById(hoveredHandleId);
         if (!handle) {
           this.addHandle(hoveredMetric);
+        } else {
+          handle.updateHover(hoveredMetric);
         }
       }
       this.setCursor();
@@ -306,6 +308,10 @@ class SidebearingTool extends MetricsBaseTool {
     return []; // stub
   }
 
+  get hoveredHandle() {
+    return this.handleContainer.querySelector("sidebearing-handle.hovered");
+  }
+
   setCursor() {
     let cursor = null;
     const metric = this.hoveredMetric?.metric;
@@ -361,8 +367,8 @@ class SidebearingHandle extends BaseMetricHandle {
     this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
-    // this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
-    // this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
+    this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
+    this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
   }
 
   update(positionedGlyph, canvasController) {
@@ -385,6 +391,10 @@ class SidebearingHandle extends BaseMetricHandle {
       "\u21E4\u00A0" + formatMetricValue(positionedGlyph.glyph.leftMargin);
     this.rightSidebearingElement.innerText =
       formatMetricValue(positionedGlyph.glyph.rightMargin) + "\u00A0\u21E5";
+  }
+
+  updateHover(selector) {
+    console.log("update hover", selector);
   }
 
   get selected() {
@@ -820,6 +830,10 @@ class KerningHandle extends BaseMetricHandle {
     this.leftNameElement.classList.toggle("group", leftName.startsWith("@"));
     this.rightNameElement.innerText = rightName;
     this.rightNameElement.classList.toggle("group", rightName.startsWith("@"));
+  }
+
+  updateHover(selector) {
+    // nothing to do for kern handle
   }
 
   get selected() {
