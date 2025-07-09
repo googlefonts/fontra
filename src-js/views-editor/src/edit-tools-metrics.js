@@ -397,7 +397,6 @@ class SidebearingHandle extends BaseMetricHandle {
 
   updateHover(selector) {
     this.selector = selector;
-    // console.log("update hover", selector);
   }
 
   get selected() {
