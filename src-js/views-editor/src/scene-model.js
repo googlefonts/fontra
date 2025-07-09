@@ -1020,7 +1020,7 @@ export class SceneModel {
         pointInConvexPolygon(
           point.x - positionedGlyph.x,
           point.y - positionedGlyph.y,
-          positionedGlyph.glyph.convexHull
+          positionedGlyph.glyph.convexHull || []
         )
       ) {
         matches.push({ lineIndex, glyphIndex, metric: "shape" });
