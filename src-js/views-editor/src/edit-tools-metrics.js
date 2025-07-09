@@ -232,12 +232,15 @@ class SidebearingTool extends MetricsBaseTool {
     );
   }
 
-  addHandle(selector) {
-    // console.log("addHandle", selector);
+  addHandle(selector, select = false) {
+    const handle = new SidebearingHandle(selector);
+    // this._updateHandle(handle);
+    this.handleContainer.appendChild(handle);
+    // handle.selected = select;
   }
 
   get handles() {
-    return []; // stub
+    return [...this.handleContainer.querySelectorAll("sidebearing-handle")];
   }
 
   get selectedHandles() {
@@ -290,7 +293,6 @@ class SidebearingHandle extends BaseMetricHandle {
     this.appendChild(this.rightSidebearingElement);
 
     this.id = sidebearingSelectorToId(selector);
-    this.classList.add("sidebearing-handle");
 
     this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
@@ -299,6 +301,8 @@ class SidebearingHandle extends BaseMetricHandle {
     // this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
   }
 }
+
+customElements.define("sidebearing-handle", SidebearingHandle);
 
 let theKerningTool; // global singleton
 
@@ -731,7 +735,6 @@ class KerningHandle extends BaseMetricHandle {
     this.appendChild(this.rightNameElement);
 
     this.id = kerningSelectorToId(selector);
-    this.classList.add("kerning-handle");
 
     this.addEventListener("mousedown", (event) => this._forwardEventToCanvas(event));
     this.addEventListener("wheel", (event) => this._forwardEventToCanvas(event));
