@@ -81,6 +81,10 @@ class MetricsBaseTool extends BaseTool {
     this.handles.forEach((handle) => handle.remove());
   }
 
+  get selectedHandles() {
+    return this.handles.filter((handle) => handle.selected);
+  }
+
   get metricSelection() {
     return this.selectedHandles.map((handle) => handle.selector);
   }
@@ -670,10 +674,6 @@ class KerningTool extends MetricsBaseTool {
 
   get handles() {
     return [...this.handleContainer.querySelectorAll("kerning-handle")];
-  }
-
-  get selectedHandles() {
-    return this.handles.filter((handle) => handle.selected);
   }
 
   get hoveredHandle() {
