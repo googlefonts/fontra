@@ -234,9 +234,28 @@ class SidebearingTool extends MetricsBaseTool {
 
   addHandle(selector, select = false) {
     const handle = new SidebearingHandle(selector);
-    // this._updateHandle(handle);
+    this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
     // handle.selected = select;
+  }
+
+  _updateHandle(sidebearingHandle) {
+    const { lineIndex, glyphIndex } = sidebearingHandle.selector;
+    const positionedGlyph =
+      this.sceneModel.positionedLines[lineIndex]?.glyphs[glyphIndex];
+    if (!positionedGlyph) {
+      return;
+    }
+
+    sidebearingHandle.update(positionedGlyph, this.canvasController);
+  }
+
+  getPositionedMetricCenter(selector) {
+    const positionedGlyph = this.getPositionedGlyph(selector);
+    if (!positionedGlyph) {
+      return undefined;
+    }
+    return positionedGlyph.x - positionedGlyph.glyph.xAdvance / 2;
   }
 
   get handles() {
@@ -284,9 +303,9 @@ class SidebearingHandle extends BaseMetricHandle {
 
     this.selector = selector;
 
-    this.advanceElement = html.div({ class: "advance" });
-    this.leftSidebearingElement = html.div({ class: "left-sidebearing" });
-    this.rightSidebearingElement = html.div({ class: "right-sidebearing" });
+    this.advanceElement = html.div({ class: "advance" }, ["advance"]);
+    this.leftSidebearingElement = html.div({ class: "left-sidebearing" }, ["left"]);
+    this.rightSidebearingElement = html.div({ class: "right-sidebearing" }, ["right"]);
 
     this.appendChild(this.advanceElement);
     this.appendChild(this.leftSidebearingElement);
@@ -299,6 +318,30 @@ class SidebearingHandle extends BaseMetricHandle {
     this.addEventListener("contextmenu", (event) => this._forwardEventToCanvas(event));
     // this.addEventListener("mouseenter", (event) => this.classList.add("hovered"));
     // this.addEventListener("mouseleave", (event) => this.classList.remove("hovered"));
+  }
+
+  update(positionedGlyph, canvasController) {
+    const { x: left, y: top } = canvasController.canvasPoint({
+      x: positionedGlyph.x,
+      y: positionedGlyph.y,
+    });
+
+    const { x: right, y: _ } = canvasController.canvasPoint({
+      x: positionedGlyph.x + positionedGlyph.glyph.xAdvance,
+      y: positionedGlyph.y,
+    });
+
+    this.style.left = `${left}px`;
+    this.style.top = `${top}px`;
+    this.style.width = `${right - left}px`;
+
+    this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
+    this.leftSidebearingElement.innerText = formatMetricValue(
+      positionedGlyph.glyph.leftMargin
+    );
+    this.rightSidebearingElement.innerText = formatMetricValue(
+      positionedGlyph.glyph.rightMargin
+    );
   }
 }
 
@@ -744,7 +787,7 @@ class KerningHandle extends BaseMetricHandle {
   }
 
   update(positionedGlyph, leftName, rightName, canvasController) {
-    let { x, y } = canvasController.canvasPoint({
+    const { x, y } = canvasController.canvasPoint({
       x: positionedGlyph.x - positionedGlyph.kernValue / 2,
       y: positionedGlyph.y,
     });
@@ -754,7 +797,7 @@ class KerningHandle extends BaseMetricHandle {
     this.classList.toggle("positive", positionedGlyph.kernValue > 0);
     this.classList.toggle("negative", positionedGlyph.kernValue < 0);
 
-    this.valueElement.innerText = formatKerningValue(positionedGlyph.kernValue);
+    this.valueElement.innerText = formatMetricValue(positionedGlyph.kernValue);
 
     this.leftNameElement.innerText = leftName;
     this.leftNameElement.classList.toggle("group", leftName.startsWith("@"));
@@ -777,7 +820,7 @@ function getKerningStep(event) {
   return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
 }
 
-function formatKerningValue(n) {
+function formatMetricValue(n) {
   if (n === null) {
     return "–";
   }

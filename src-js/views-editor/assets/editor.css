@@ -495,6 +495,34 @@ body {
   padding: 0.5em;
 }
 
+sidebearing-handle {
+  position: absolute;
+  font-size: 0.8em;
+  padding: 1em;
+}
+
+sidebearing-handle > .advance,
+sidebearing-handle > .left-sidebearing,
+sidebearing-handle > .right-sidebearing {
+  position: absolute;
+  background-color: #aaa;
+  padding: 0.2em 0.8em 0.2em 0.8em;
+  border-radius: 0.66em;
+  transform: translate(-50%, 0);
+}
+
+sidebearing-handle > .advance {
+  left: 50%;
+}
+
+sidebearing-handle > .left-sidebearing {
+  left: 0%;
+}
+
+sidebearing-handle > .right-sidebearing {
+  left: 100%;
+}
+
 kerning-handle {
   display: grid;
   grid-template-columns: auto auto;
