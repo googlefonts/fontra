@@ -390,11 +390,11 @@ class SidebearingHandle extends BaseMetricHandle {
     this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
     this.leftSidebearingElement.innerText = formatMetricValue(
       positionedGlyph.glyph.leftMargin,
-      ""
+      "\u00A0"
     );
     this.rightSidebearingElement.innerText = formatMetricValue(
       positionedGlyph.glyph.rightMargin,
-      ""
+      "\u00A0"
     );
   }
 
