@@ -495,7 +495,7 @@ body {
   padding: 0.5em;
 }
 
-.kerning-handle {
+kerning-handle {
   display: grid;
   grid-template-columns: auto auto;
   gap: 0em 0.5em;
@@ -514,22 +514,22 @@ body {
   opacity: 66%;
 }
 
-.kerning-handle > .value {
+kerning-handle > .value {
   grid-column-start: span 2;
 }
 
-.kerning-handle > .group {
+kerning-handle > .group {
   font-weight: bold;
 }
 
-.kerning-handle.selected {
+kerning-handle.selected {
   opacity: 100%;
 }
 
-.kerning-handle.positive {
+kerning-handle.positive {
   background-color: #1759f1;
 }
 
-.kerning-handle.negative {
+kerning-handle.negative {
   background-color: #f11759;
 }
