@@ -381,12 +381,10 @@ class SidebearingHandle extends BaseMetricHandle {
     this.style.width = `${right - left}px`;
 
     this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
-    this.leftSidebearingElement.innerText = formatMetricValue(
-      positionedGlyph.glyph.leftMargin
-    );
-    this.rightSidebearingElement.innerText = formatMetricValue(
-      positionedGlyph.glyph.rightMargin
-    );
+    this.leftSidebearingElement.innerText =
+      "\u21E4\u00A0" + formatMetricValue(positionedGlyph.glyph.leftMargin);
+    this.rightSidebearingElement.innerText =
+      formatMetricValue(positionedGlyph.glyph.rightMargin) + "\u00A0\u21E5";
   }
 
   get selected() {
