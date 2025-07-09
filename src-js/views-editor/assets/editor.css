@@ -501,6 +501,7 @@ sidebearing-handle {
   padding: 1em;
   user-select: none;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 sidebearing-handle > .advance,

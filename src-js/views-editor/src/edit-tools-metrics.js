@@ -387,9 +387,9 @@ class SidebearingHandle extends BaseMetricHandle {
 
     this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
     this.leftSidebearingElement.innerText =
-      "\u21E4\u00A0" + formatMetricValue(positionedGlyph.glyph.leftMargin);
+      "\u21E4\u00A0" + formatMetricValue(positionedGlyph.glyph.leftMargin, "");
     this.rightSidebearingElement.innerText =
-      formatMetricValue(positionedGlyph.glyph.rightMargin) + "\u00A0\u21E5";
+      formatMetricValue(positionedGlyph.glyph.rightMargin, "") + "\u00A0\u21E5";
   }
 
   updateHover(selector) {
@@ -885,9 +885,9 @@ function getKerningStep(event) {
   return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
 }
 
-function formatMetricValue(n) {
+function formatMetricValue(n, fallback = "-") {
   if (n == null) {
-    return "\u2011"; // NON-BREAKING HYPHEN
+    return fallback;
   }
   n = round(n, 1);
   return n == undefined ? "\u00A0" : n.toString();
