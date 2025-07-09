@@ -129,6 +129,46 @@ class MetricsBaseTool extends BaseTool {
     }
   }
 
+  async _prepareDrag(eventStream, initialEvent) {
+    const hoveredMetric = this.hoveredHandle?.selector || this.hoveredMetric;
+
+    if (!hoveredMetric) {
+      if (!event.shiftKey) {
+        this.removeAllHandles();
+      }
+      return;
+    }
+
+    this._selectHandle(hoveredMetric, event.shiftKey);
+
+    this._prevousMetricCenter = this.getPositionedMetricCenter(
+      this.metricSelection.at(-1)
+    );
+
+    return (await shouldInitiateDrag(eventStream, initialEvent)) ? hoveredMetric : null;
+  }
+
+  _selectHandle(selector, shiftKey) {
+    const handleId = this.selectorToId(selector);
+    const selectedHandle = document.getElementById(handleId);
+    if (!selectedHandle) {
+      // Shouldn't happen, but does (rarely), some glitchy async timing thing
+      return;
+    }
+
+    if (shiftKey) {
+      selectedHandle.selected = !selectedHandle.selected;
+    } else {
+      this.handles.forEach((handle) => {
+        if (handle.id === handleId) {
+          handle.selected = true;
+        } else if (!selectedHandle.selected) {
+          handle.remove();
+        }
+      });
+    }
+  }
+
   activate() {
     super.activate();
     this.sceneSettings.selectedGlyph = null;
@@ -236,7 +276,7 @@ class SidebearingTool extends MetricsBaseTool {
     const handle = new SidebearingHandle(selector);
     this._updateHandle(handle);
     this.handleContainer.appendChild(handle);
-    // handle.selected = select;
+    handle.selected = select;
   }
 
   _updateHandle(sidebearingHandle) {
@@ -282,7 +322,12 @@ class SidebearingTool extends MetricsBaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    //
+    const selector = await this._prepareDrag(eventStream, initialEvent);
+    if (!selector) {
+      return;
+    }
+
+    console.log("do drag");
   }
 }
 
@@ -342,6 +387,15 @@ class SidebearingHandle extends BaseMetricHandle {
     this.rightSidebearingElement.innerText = formatMetricValue(
       positionedGlyph.glyph.rightMargin
     );
+  }
+
+  get selected() {
+    // return this.classList.contains("selected");
+  }
+
+  set selected(onOff) {
+    console.log("set selected", onOff);
+    // this.classList.toggle("selected", onOff);
   }
 }
 
@@ -430,22 +484,8 @@ class KerningTool extends MetricsBaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    const hoveredMetric = this.hoveredHandle?.selector || this.hoveredMetric;
-
-    if (!hoveredMetric) {
-      if (!event.shiftKey) {
-        this.removeAllHandles();
-      }
-      return;
-    }
-
-    this._selectHandle(hoveredMetric, event.shiftKey);
-
-    this._prevousMetricCenter = this.getPositionedMetricCenter(
-      this.metricSelection.at(-1)
-    );
-
-    if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
+    const selector = await this._prepareDrag(eventStream, initialEvent);
+    if (!selector) {
       return;
     }
 
@@ -477,7 +517,7 @@ class KerningTool extends MetricsBaseTool {
 
     generateValues = generateValues.bind(this); // Because `this` scoping
 
-    this._draggingSelector = hoveredMetric;
+    this._draggingSelector = selector;
     this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
     const undoLabel = "edit kerning";
@@ -602,27 +642,6 @@ class KerningTool extends MetricsBaseTool {
       kerningHandle.selector
     );
     kerningHandle.update(positionedGlyph, leftName, rightName, this.canvasController);
-  }
-
-  _selectHandle(selector, shiftKey) {
-    const handleId = kerningSelectorToId(selector);
-    const selectedHandle = document.getElementById(handleId);
-    if (!selectedHandle) {
-      // Shouldn't happen, but does (rarely), some glitchy async timing thing
-      return;
-    }
-
-    if (shiftKey) {
-      selectedHandle.selected = !selectedHandle.selected;
-    } else {
-      this.handles.forEach((handle) => {
-        if (handle.id === handleId) {
-          handle.selected = true;
-        } else if (!selectedHandle.selected) {
-          handle.remove();
-        }
-      });
-    }
   }
 
   setCursor() {
