@@ -165,13 +165,15 @@ class MetricsBaseTool extends BaseTool {
       return;
     }
 
+    const shouldDeselect = !selectedHandle.hasSelection(selector);
+
     if (shiftKey) {
       selectedHandle.toggleSelection(selector);
     } else {
       this.handles.forEach((handle) => {
         if (handle.id === handleId) {
           selectedHandle.toggleSelection(selector, true);
-        } else if (!selectedHandle.selected) {
+        } else if (shouldDeselect) {
           handle.remove();
         }
       });
@@ -415,7 +417,19 @@ class SidebearingHandle extends BaseMetricHandle {
     return this._selection.size > 0;
   }
 
+  hasSelection(selector) {
+    assert(
+      this.selector.lineIndex === selector.lineIndex &&
+        this.selector.glyphIndex === selector.glyphIndex
+    );
+    return !isDisjoint(metricSelectionSet(selector), this._selection);
+  }
+
   toggleSelection(selector, onOff = undefined) {
+    assert(
+      this.selector.lineIndex === selector.lineIndex &&
+        this.selector.glyphIndex === selector.glyphIndex
+    );
     const newSelection = metricSelectionSet(selector);
     if (onOff === undefined) {
       this._selection = symmetricDifference(this._selection, newSelection);
@@ -874,7 +888,19 @@ class KerningHandle extends BaseMetricHandle {
     return this.classList.contains("selected");
   }
 
+  hasSelection(selector) {
+    assert(
+      this.selector.lineIndex === selector.lineIndex &&
+        this.selector.glyphIndex === selector.glyphIndex
+    );
+    return true;
+  }
+
   toggleSelection(selector, onOff = undefined) {
+    assert(
+      this.selector.lineIndex === selector.lineIndex &&
+        this.selector.glyphIndex === selector.glyphIndex
+    );
     this.classList.toggle("selected", onOff);
   }
 
