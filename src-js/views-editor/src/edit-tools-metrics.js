@@ -331,7 +331,7 @@ class SidebearingTool extends MetricsBaseTool {
     if (!positionedGlyph) {
       return undefined;
     }
-    return positionedGlyph.x - positionedGlyph.glyph.xAdvance / 2;
+    return positionedGlyph.x;
   }
 
   get handles() {
