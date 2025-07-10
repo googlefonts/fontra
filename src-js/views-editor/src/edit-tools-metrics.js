@@ -478,6 +478,7 @@ export class SidebearingEditContext {
       if (!firstChanges) {
         firstChanges = lastChanges;
       }
+
       this._editIncremental(lastChanges.change, true);
     }
     this._editIncremental(lastChanges.change, false);
@@ -494,6 +495,8 @@ export class SidebearingEditContext {
       false
     );
 
+    this.fontController.notifyEditListeners("editFinal", this);
+
     return finalChanges;
   }
 
@@ -506,6 +509,8 @@ export class SidebearingEditContext {
       clearTimeout(this._throttledEditIncrementalTimeoutID);
       this.fontController.editIncremental(change);
     }
+
+    this.fontController.notifyEditListeners("editIncremental", this);
   }
 }
 
