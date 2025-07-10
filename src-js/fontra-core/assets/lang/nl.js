@@ -189,6 +189,7 @@ export const strings = {
   "editor.shape-tool": "Vorm gereedschap",
   "editor.shape-tool-ellipse": "Ellips gereedschap",
   "editor.shape-tool-rectangle": "Rechthoek gereedschap",
+  "editor.sidebearing-tool": "Sidebearing Tool",
   "font-info.copyright": "Copyright",
   "font-info.description": "Beschrijving",
   "font-info.designer": "Ontwerper",

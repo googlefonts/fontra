@@ -191,6 +191,7 @@ export const strings = {
   "editor.shape-tool": "シェイプツール",
   "editor.shape-tool-ellipse": "楕円ツール",
   "editor.shape-tool-rectangle": "長方形ツール",
+  "editor.sidebearing-tool": "Sidebearing Tool",
   "font-info.copyright": "著作権",
   "font-info.description": "説明",
   "font-info.designer": "デザイナー",
