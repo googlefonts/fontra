@@ -653,8 +653,6 @@ class KerningTool extends MetricsBaseTool {
 
         yield values.map((v) => v + deltaX);
       }
-
-      delete self._offsetDeltaX;
     }
 
     generateValues = generateValues.bind(this); // Because `this` scoping
