@@ -973,7 +973,7 @@ class KerningHandle extends BaseMetricHandle {
       this.selector.lineIndex === selector.lineIndex &&
         this.selector.glyphIndex === selector.glyphIndex
     );
-    return true;
+    return this.selected;
   }
 
   toggleSelection(selector, onOff = undefined) {
