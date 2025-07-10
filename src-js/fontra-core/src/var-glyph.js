@@ -95,14 +95,17 @@ export class StaticGlyph {
     if (reference.path.x !== undefined) {
       this.path.moveAllWithFirstPoint(reference.path.x + dx, reference.path.y + dy);
     }
+
     for (const [{ x, y }, compo] of zip(reference.components, this.components)) {
       compo.transformation.translateX = x + dx;
       compo.transformation.translateY = y + dy;
     }
+
     for (const [{ x, y }, anchor] of zip(reference.anchors, this.anchors)) {
       anchor.x = x + dx;
       anchor.y = y + dy;
     }
+
     for (const [{ x, y }, guideline] of zip(reference.guidelines, this.guidelines)) {
       guideline.x = x + dx;
       guideline.y = y + dy;
