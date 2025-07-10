@@ -610,7 +610,12 @@ class SidebearingHandle extends BaseMetricHandle {
       this.selector.lineIndex === selector.lineIndex &&
         this.selector.glyphIndex === selector.glyphIndex
     );
-    const newSelection = metricSelectionSet(selector);
+
+    let newSelection = metricSelectionSet(selector);
+    if (newSelection.has("shape")) {
+      newSelection = new Set(["left", "right"]);
+    }
+
     if (onOff === undefined) {
       this._selection = symmetricDifference(this._selection, newSelection);
     } else if (onOff) {
@@ -619,10 +624,6 @@ class SidebearingHandle extends BaseMetricHandle {
         : union(this._selection, newSelection);
     } else {
       this._selection = new Set();
-    }
-
-    if (this._selection.has("shape")) {
-      this._selection = new Set(["left", "right"]);
     }
 
     this.leftSidebearingElement.classList.toggle(
