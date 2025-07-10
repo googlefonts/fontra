@@ -331,7 +331,13 @@ class SidebearingTool extends MetricsBaseTool {
     if (!positionedGlyph) {
       return undefined;
     }
-    return positionedGlyph.x;
+    const selection = metricSelectionSet(selector);
+    return (
+      positionedGlyph.x +
+      (selection.has("left")
+        ? positionedGlyph.glyph.xAdvance / (selection.has("right") ? 2 : 1)
+        : 0)
+    );
   }
 
   get handles() {
@@ -364,7 +370,10 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    this._draggingSelector = selector;
+    const handleId = this.selectorToId(selector);
+    const metricHandle = document.getElementById(handleId);
+
+    this._draggingSelector = metricHandle.selectedSelector;
     this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
     const undoLabel = "edit sidebearings";
@@ -498,6 +507,8 @@ export class SidebearingEditContext {
           const layerGlyph = varGlyph.layers[layerName].glyph;
           if (sidebearing == "right") {
             layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
+          } else if (sidebearing == "left") {
+            layerGlyph.xAdvance = initialValues[glyphName].xAdvance - deltaX;
           }
         }
       });
