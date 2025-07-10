@@ -289,8 +289,8 @@ class KerningEditContext {
     }
   }
 
-  async edit(values, undoLabel) {
-    return await this.editContinuous([values], undoLabel);
+  async edit(values, undoLabel, event) {
+    return await this.editContinuous([{ values, event }], undoLabel);
   }
 
   async editContinuous(valuesIterator, undoLabel) {
@@ -348,7 +348,7 @@ class KerningEditContext {
 
     let firstChanges;
     let lastChanges;
-    for await (const newValues of valuesIterator) {
+    for await (const { values: newValues } of valuesIterator) {
       assert(newValues.length === this.pairSelectors.length);
       lastChanges = recordChanges(font, (font) => {
         const kernData = font.kerning[this.kerningController.kernTag];

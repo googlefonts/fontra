@@ -159,7 +159,7 @@ class MetricsBaseTool extends BaseTool {
       const step = getMetricsStep(event);
       const deltaX = Math.round((currentX - initialX) / step) * step;
 
-      yield deltaX;
+      yield { deltaX, event };
     }
   }
 
@@ -404,7 +404,7 @@ class SidebearingTool extends MetricsBaseTool {
     this.updateScrollAdjustBehavior();
 
     const undoLabel = "edit sidebearings";
-    const changes = await editContext.edit(deltaX, undoLabel);
+    const changes = await editContext.edit(deltaX, undoLabel, event);
     this.pushUndoItem(changes, undoLabel);
   }
 
@@ -479,8 +479,8 @@ export class SidebearingEditContext {
     this._throttledEditIncrementalTimeoutID = null;
   }
 
-  async edit(value, undoLabel) {
-    return await this.editContinuous([value], undoLabel);
+  async edit(deltaX, undoLabel, event) {
+    return await this.editContinuous([{ deltaX, event }], undoLabel);
   }
 
   async editContinuous(valuesIterator, undoLabel) {
@@ -500,7 +500,7 @@ export class SidebearingEditContext {
     let firstChanges;
     let lastChanges;
 
-    for await (const deltaX of valuesIterator) {
+    for await (const { deltaX, event } of valuesIterator) {
       lastChanges = recordChanges(font, (font) => {
         for (const { glyphName, layerName, sidebearing } of this.sidebearingSelectors) {
           const varGlyph = font.glyphs[glyphName];
@@ -806,8 +806,8 @@ class KerningTool extends MetricsBaseTool {
     this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
     async function* generateValues(genDeltas, values) {
-      for await (const deltaX of genDeltas) {
-        yield values.map((v) => v + deltaX);
+      for await (const { deltaX, event } of genDeltas) {
+        yield { values: values.map((v) => v + deltaX), event };
       }
     }
 
@@ -841,7 +841,7 @@ class KerningTool extends MetricsBaseTool {
 
     const newValues = values.map((v) => v + deltaX);
     const undoLabel = "edit kerning";
-    const changes = await editContext.edit(newValues, undoLabel);
+    const changes = await editContext.edit(newValues, undoLabel, event);
     this.pushUndoItem(changes, undoLabel);
   }
 
@@ -987,7 +987,7 @@ class KerningTool extends MetricsBaseTool {
     } else {
       undoLabel = "delete kerning value";
       const newValues = new Array(values.length).fill(null);
-      changes = await editContext.edit(newValues, undoLabel);
+      changes = await editContext.edit(newValues, undoLabel, event);
     }
     this.pushUndoItem(changes, undoLabel);
   }
