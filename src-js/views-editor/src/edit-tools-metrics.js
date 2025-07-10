@@ -507,15 +507,19 @@ export class SidebearingEditContext {
           const layerGlyph = varGlyph.layers[layerName].glyph;
           switch (sidebearing) {
             case "L":
-              layerGlyph.xAdvance = initialValues[glyphName].xAdvance - deltaX;
+              const clampedDeltaX = Math.min(deltaX, initialValues[glyphName].xAdvance);
+              layerGlyph.xAdvance = initialValues[glyphName].xAdvance - clampedDeltaX;
               layerGlyph.moveWithReference(
                 initialValues[glyphName].reference,
-                -deltaX,
+                -clampedDeltaX,
                 0
               );
               break;
             case "R":
-              layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
+              layerGlyph.xAdvance = Math.max(
+                initialValues[glyphName].xAdvance + deltaX,
+                0
+              );
               break;
             case "LR":
               layerGlyph.moveWithReference(
