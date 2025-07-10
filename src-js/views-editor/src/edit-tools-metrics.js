@@ -426,7 +426,7 @@ class SidebearingTool extends MetricsBaseTool {
 
     const allGlyphNames = union(leftGlyphNames, rightGlyphNames);
 
-    const layerNames = {};
+    const sidebearingSelectors = [];
     const notAtSourceGlyphs = new Set();
 
     for (const glyphName of allGlyphNames) {
@@ -439,9 +439,18 @@ class SidebearingTool extends MetricsBaseTool {
       );
       if (sourceIndex == undefined) {
         notAtSourceGlyphs.add(glyphName);
-      } else {
-        layerNames[glyphName] = varGlyph.sources[sourceIndex].layerName;
+        continue;
       }
+      const layerName = varGlyph.sources[sourceIndex].layerName;
+      const sidebearing =
+        (leftGlyphNames.has(glyphName) ? "L" : "") +
+        (rightGlyphNames.has(glyphName) ? "R" : "");
+
+      sidebearingSelectors.push({
+        glyphName,
+        sidebearing,
+        layerName,
+      });
     }
 
     if (notAtSourceGlyphs.size) {
@@ -450,19 +459,6 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    const sidebearingSelectors = [];
-    for (const [sidebearing, glyphNames] of [
-      ["left", [...leftGlyphNames]],
-      ["right", [...rightGlyphNames]],
-    ]) {
-      sidebearingSelectors.push(
-        ...glyphNames.map((glyphName) => ({
-          glyphName,
-          sidebearing,
-          layerName: layerNames[glyphName],
-        }))
-      );
-    }
     return new SidebearingEditContext(this.fontController, sidebearingSelectors);
   }
 }
@@ -505,13 +501,19 @@ export class SidebearingEditContext {
         for (const { glyphName, layerName, sidebearing } of this.sidebearingSelectors) {
           const varGlyph = font.glyphs[glyphName];
           const layerGlyph = varGlyph.layers[layerName].glyph;
-          if (sidebearing == "right") {
-            layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
-          } else if (sidebearing == "left") {
-            layerGlyph.xAdvance = initialValues[glyphName].xAdvance - deltaX;
+          switch (sidebearing) {
+            case "L":
+              layerGlyph.xAdvance = initialValues[glyphName].xAdvance - deltaX;
+              break;
+            case "R":
+              layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
+              break;
+            case "LR":
+              break;
           }
         }
       });
+
       if (!firstChanges) {
         firstChanges = lastChanges;
       }
