@@ -79,6 +79,7 @@ function getVarPackedPathProxyMethods(subject, changes) {
       const [rx, ry] = subject.getPointPosition(0);
       changes.addChange("moveAllWithFirstPoint", x, y);
       changes.addRollbackChange("moveAllWithFirstPoint", rx, ry);
+      subject.moveAllWithFirstPoint(x, y);
     },
   };
 }
