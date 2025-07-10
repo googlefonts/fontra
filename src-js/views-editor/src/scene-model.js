@@ -1019,9 +1019,12 @@ export class SceneModel {
 
       const middle = (leftZone1 + rightZone2) / 2;
 
-      if (valueInRange(rightZone1 - size, point.x, rightZone2 + size)) {
+      const leftExtra = glyph.leftMargin > 0 ? 0 : size;
+      const rightExtra = glyph.rightMargin > 0 ? 0 : size;
+
+      if (valueInRange(rightZone1 - size, point.x, rightZone2 + rightExtra)) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
-      } else if (valueInRange(leftZone1 - size, point.x, leftZone2 + size)) {
+      } else if (valueInRange(leftZone1 - leftExtra, point.x, leftZone2 + size)) {
         matches.push({ lineIndex, glyphIndex, metric: "left" });
       } else if (
         pointInConvexPolygon(
