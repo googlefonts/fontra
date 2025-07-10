@@ -531,8 +531,8 @@ export class VarPackedPath {
     const dy = firstPointY - y;
 
     for (let i = 0; i < this.coordinates.length; i += 2) {
-      this.coordinates[i] = this.coordinates[i] + dx;
-      this.coordinates[i + 1] = this.coordinates[i + 1] + dy;
+      this.coordinates[i] += dx;
+      this.coordinates[i + 1] += dy;
     }
   }
 
