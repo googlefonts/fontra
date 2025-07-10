@@ -44,6 +44,10 @@ class MetricsBaseTool extends BaseTool {
     this._getPinPointDelta = () => this.getPinPointDelta();
   }
 
+  updateScrollAdjustBehavior() {
+    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
+  }
+
   getScrollAdjustBehavior() {
     return { behavior: "tool-pin-point", getPinPointDelta: this._getPinPointDelta };
   }
@@ -230,7 +234,7 @@ class MetricsBaseTool extends BaseTool {
       undoRecord = reverseUndoRecord(undoRecord);
     }
 
-    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
+    this.updateScrollAdjustBehavior();
 
     this.fontController.applyChange(undoRecord.rollbackChange);
 
@@ -639,29 +643,25 @@ class KerningTool extends MetricsBaseTool {
     const magnification = this.canvasController.magnification;
     const initialX = initialEvent.x / magnification;
 
-    async function* generateValues() {
-      for await (const event of eventStream) {
-        if (event.x == undefined && event.pageX == undefined) {
-          continue;
-        }
+    this._draggingSelector = selector;
+    this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
-        this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
-
-        const currentX = event.x / magnification;
-        const step = getMetricsStep(event);
-        const deltaX = Math.round((currentX - initialX) / step) * step;
-
+    async function* generateValues(genDeltas, values) {
+      for await (const deltaX of genDeltas) {
         yield values.map((v) => v + deltaX);
       }
     }
 
-    generateValues = generateValues.bind(this); // Because `this` scoping
-
-    this._draggingSelector = selector;
-    this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
-
     const undoLabel = "edit kerning";
-    const changes = await editContext.editContinuous(generateValues(), undoLabel);
+    const changes = await editContext.editContinuous(
+      generateValues(
+        generateDeltasFromEventStream(eventStream, initialX, magnification, () =>
+          this.updateScrollAdjustBehavior()
+        ),
+        values
+      ),
+      undoLabel
+    );
     delete this._draggingSelector;
 
     this.pushUndoItem(changes, undoLabel);
@@ -680,7 +680,7 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
+    this.updateScrollAdjustBehavior();
 
     const newValues = values.map((v) => v + deltaX);
     const undoLabel = "edit kerning";
@@ -820,7 +820,7 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    this.sceneController.scrollAdjustBehavior = this.getScrollAdjustBehavior();
+    this.updateScrollAdjustBehavior();
 
     let undoLabel;
     let changes;
@@ -1015,4 +1015,25 @@ function sidebearingSelectorToId(kerningSelector) {
 
 function metricSelectionSet(selector) {
   return new Set(selector.metric.split(","));
+}
+
+async function* generateDeltasFromEventStream(
+  eventStream,
+  initialX,
+  magnification,
+  updateScrollAdjustBehavior
+) {
+  for await (const event of eventStream) {
+    if (event.x == undefined && event.pageX == undefined) {
+      continue;
+    }
+
+    updateScrollAdjustBehavior();
+
+    const currentX = event.x / magnification;
+    const step = getMetricsStep(event);
+    const deltaX = Math.round((currentX - initialX) / step) * step;
+
+    yield deltaX;
+  }
 }
