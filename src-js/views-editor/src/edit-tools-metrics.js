@@ -516,6 +516,11 @@ export class SidebearingEditContext {
               layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
               break;
             case "LR":
+              layerGlyph.moveWithReference(
+                initialValues[glyphName].reference,
+                deltaX,
+                0
+              );
               break;
           }
         }
