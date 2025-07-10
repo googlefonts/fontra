@@ -512,14 +512,13 @@ sidebearing-handle > .right-sidebearing {
   padding: 0.1em 0.6em 0.1em 0.6em;
   border-radius: 0.66em;
   transform: translate(-50%, 50%);
-  opacity: 66%;
-  background-color: #aaa;
+  background-color: #999a;
   color: white;
   pointer-events: auto;
 }
 
 sidebearing-handle > .selected {
-  opacity: 100%;
+  background-color: #999;
 }
 
 sidebearing-handle > .hovered {
@@ -557,11 +556,10 @@ kerning-handle {
   padding: 0.2em 0.8em 0.2em 0.8em;
   border-radius: 0.66em;
   color: white;
-  background-color: #aaa;
+  background-color: #999a;
   cursor: ew-resize;
   user-select: none;
   transform: translate(-50%, 50%);
-  opacity: 66%;
 }
 
 kerning-handle > .value {
@@ -573,13 +571,21 @@ kerning-handle > .group {
 }
 
 kerning-handle.selected {
-  opacity: 100%;
+  background-color: #999;
 }
 
 kerning-handle.positive {
-  background-color: #1759f1;
+  background-color: #1759f1aa;
 }
 
 kerning-handle.negative {
+  background-color: #f11759aa;
+}
+
+kerning-handle.positive.selected {
+  background-color: #1759f1;
+}
+
+kerning-handle.negative.selected {
   background-color: #f11759;
 }
