@@ -1,8 +1,10 @@
+import { recordChanges } from "@fontra/core/change-recorder.js";
+import { ChangeCollector } from "@fontra/core/changes.js";
 import { UndoStack, reverseUndoRecord } from "@fontra/core/font-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { isDisjoint, symmetricDifference, union } from "@fontra/core/set-ops.js";
-import { arrowKeyDeltas, assert, round } from "@fontra/core/utils.js";
+import { arrowKeyDeltas, assert, round, throttleCalls } from "@fontra/core/utils.js";
 import { dialog } from "@fontra/web-components/modal-dialog.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";
@@ -359,7 +361,18 @@ class SidebearingTool extends MetricsBaseTool {
     if (!editContext) {
       return;
     }
-    console.log("do drag");
+
+    this._draggingSelector = selector;
+    this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
+
+    const undoLabel = "edit sidebearings";
+    const changes = await editContext.editContinuous(
+      this.generateDeltasFromEventStream(eventStream, initialEvent),
+      undoLabel
+    );
+    delete this._draggingSelector;
+
+    this.pushUndoItem(changes, undoLabel);
   }
 
   async getEditContext() {
@@ -430,6 +443,69 @@ export class SidebearingEditContext {
     assert(sidebearingSelectors.length > 0);
     this.fontController = fontController;
     this.sidebearingSelectors = sidebearingSelectors;
+
+    this._throttledEditIncremental = throttleCalls(async (change) => {
+      this.fontController.editIncremental(change);
+    }, 50);
+    this._throttledEditIncrementalTimeoutID = null;
+  }
+
+  async editContinuous(valuesIterator, undoLabel) {
+    const font = { glyphs: {} };
+    const initialValues = {};
+    for (const { glyphName, layerName } of this.sidebearingSelectors) {
+      const varGlyphController = await this.fontController.getGlyph(glyphName);
+      const varGlyph = varGlyphController.glyph;
+      font.glyphs[glyphName] = varGlyph;
+      initialValues[glyphName] = {
+        xAdvance: varGlyph.layers[layerName].glyph.xAdvance,
+      };
+    }
+
+    let firstChanges;
+    let lastChanges;
+
+    for await (const deltaX of valuesIterator) {
+      lastChanges = recordChanges(font, (font) => {
+        for (const { glyphName, layerName, sidebearing } of this.sidebearingSelectors) {
+          const varGlyph = font.glyphs[glyphName];
+          const layerGlyph = varGlyph.layers[layerName].glyph;
+          if (sidebearing == "right") {
+            layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
+          }
+        }
+      });
+      if (!firstChanges) {
+        firstChanges = lastChanges;
+      }
+      this._editIncremental(lastChanges.change, true);
+    }
+    this._editIncremental(lastChanges.change, false);
+
+    const finalChanges = ChangeCollector.fromChanges(
+      lastChanges.change,
+      firstChanges.rollbackChange
+    );
+
+    await this.fontController.editFinal(
+      finalChanges.change,
+      finalChanges.rollbackChange,
+      undoLabel,
+      false
+    );
+
+    return finalChanges;
+  }
+
+  async _editIncremental(change, mayDrop = false) {
+    // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
+    // at a maximum number of changes per second, to prevent flooding the network
+    if (mayDrop) {
+      this._throttledEditIncrementalTimeoutID = this._throttledEditIncremental(change);
+    } else {
+      clearTimeout(this._throttledEditIncrementalTimeoutID);
+      this.fontController.editIncremental(change);
+    }
   }
 }
 
