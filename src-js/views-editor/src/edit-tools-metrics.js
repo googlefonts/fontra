@@ -266,6 +266,8 @@ class MetricsBaseTool extends BaseTool {
       true
     );
 
+    this.fontController.notifyEditListeners("editFinal", this);
+
     this.sceneSettingsController.setItem("glyphLines", undoRecord.info.glyphLines, {
       senderID: this,
     });
