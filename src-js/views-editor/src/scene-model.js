@@ -521,12 +521,19 @@ export class SceneModel {
     return { longestLineLength, positionedLines };
   }
 
-  async getGlyphInstance(glyphName, layerName) {
-    const location = {
+  getLocationForGlyph(glyphName) {
+    return {
       ...this.sceneSettings.fontLocationSourceMapped,
       ...this._glyphLocations[glyphName],
     };
-    return await this.fontController.getGlyphInstance(glyphName, location, layerName);
+  }
+
+  async getGlyphInstance(glyphName, layerName) {
+    return await this.fontController.getGlyphInstance(
+      glyphName,
+      this.getLocationForGlyph(glyphName),
+      layerName
+    );
   }
 
   selectionAtPoint(
