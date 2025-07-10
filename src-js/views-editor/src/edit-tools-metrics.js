@@ -142,6 +142,25 @@ class MetricsBaseTool extends BaseTool {
     }
   }
 
+  async *generateDeltasFromEventStream(eventStream, initialEvent) {
+    const magnification = this.canvasController.magnification;
+    const initialX = initialEvent.x / magnification;
+
+    for await (const event of eventStream) {
+      if (event.x == undefined && event.pageX == undefined) {
+        continue;
+      }
+
+      this.updateScrollAdjustBehavior();
+
+      const currentX = event.x / magnification;
+      const step = getMetricsStep(event);
+      const deltaX = Math.round((currentX - initialX) / step) * step;
+
+      yield deltaX;
+    }
+  }
+
   async _prepareDrag(eventStream, initialEvent) {
     const hoveredMetric = this.hoveredHandle?.selector || this.hoveredMetric;
 
@@ -640,9 +659,6 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    const magnification = this.canvasController.magnification;
-    const initialX = initialEvent.x / magnification;
-
     this._draggingSelector = selector;
     this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
@@ -655,9 +671,7 @@ class KerningTool extends MetricsBaseTool {
     const undoLabel = "edit kerning";
     const changes = await editContext.editContinuous(
       generateValues(
-        generateDeltasFromEventStream(eventStream, initialX, magnification, () =>
-          this.updateScrollAdjustBehavior()
-        ),
+        this.generateDeltasFromEventStream(eventStream, initialEvent),
         values
       ),
       undoLabel
@@ -1015,25 +1029,4 @@ function sidebearingSelectorToId(kerningSelector) {
 
 function metricSelectionSet(selector) {
   return new Set(selector.metric.split(","));
-}
-
-async function* generateDeltasFromEventStream(
-  eventStream,
-  initialX,
-  magnification,
-  updateScrollAdjustBehavior
-) {
-  for await (const event of eventStream) {
-    if (event.x == undefined && event.pageX == undefined) {
-      continue;
-    }
-
-    updateScrollAdjustBehavior();
-
-    const currentX = event.x / magnification;
-    const step = getMetricsStep(event);
-    const deltaX = Math.round((currentX - initialX) / step) * step;
-
-    yield deltaX;
-  }
 }
