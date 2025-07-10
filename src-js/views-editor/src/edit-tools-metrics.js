@@ -488,8 +488,10 @@ export class SidebearingEditContext {
       const varGlyphController = await this.fontController.getGlyph(glyphName);
       const varGlyph = varGlyphController.glyph;
       font.glyphs[glyphName] = varGlyph;
+      const layerGlyph = varGlyph.layers[layerName].glyph;
       initialValues[glyphName] = {
-        xAdvance: varGlyph.layers[layerName].glyph.xAdvance,
+        xAdvance: layerGlyph.xAdvance,
+        reference: layerGlyph.getMoveReference(),
       };
     }
 
@@ -504,6 +506,11 @@ export class SidebearingEditContext {
           switch (sidebearing) {
             case "L":
               layerGlyph.xAdvance = initialValues[glyphName].xAdvance - deltaX;
+              layerGlyph.moveWithReference(
+                initialValues[glyphName].reference,
+                -deltaX,
+                0
+              );
               break;
             case "R":
               layerGlyph.xAdvance = initialValues[glyphName].xAdvance + deltaX;
@@ -540,6 +547,11 @@ export class SidebearingEditContext {
   }
 
   async _editIncremental(change, mayDrop = false) {
+    // Hm, not nice this is needed
+    for (const { glyphName } of this.sidebearingSelectors) {
+      await this.fontController.glyphChanged(glyphName, { senderID: this });
+    }
+
     // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
     // at a maximum number of changes per second, to prevent flooding the network
     if (mayDrop) {
