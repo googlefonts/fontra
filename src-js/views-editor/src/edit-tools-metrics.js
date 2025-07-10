@@ -360,6 +360,8 @@ class SidebearingTool extends MetricsBaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    this.canvasController.canvas.focus();
+
     const selector = await this._prepareDrag(eventStream, initialEvent);
     if (!selector) {
       return;
@@ -784,6 +786,8 @@ class KerningTool extends MetricsBaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    this.canvasController.canvas.focus();
+
     const selector = await this._prepareDrag(eventStream, initialEvent);
     if (!selector) {
       return;
