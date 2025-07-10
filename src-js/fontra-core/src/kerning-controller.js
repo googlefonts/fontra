@@ -290,10 +290,7 @@ class KerningEditContext {
   }
 
   async edit(values, undoLabel) {
-    function* valuesGenerator() {
-      yield values;
-    }
-    return await this.editContinuous(valuesGenerator(), undoLabel);
+    return await this.editContinuous([values], undoLabel);
   }
 
   async editContinuous(valuesIterator, undoLabel) {
