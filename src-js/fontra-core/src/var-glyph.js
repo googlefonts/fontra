@@ -113,7 +113,7 @@ export class StaticGlyph {
 
     if (reference.backgroundImage.x !== undefined) {
       this.backgroundImage.transformation.translateX = reference.backgroundImage.x + dx;
-      this.backgroundImage.transformation.translateY = reference.backgroundImage.y + dx;
+      this.backgroundImage.transformation.translateY = reference.backgroundImage.y + dy;
     }
   }
 }
