@@ -1,5 +1,5 @@
 import { getDecomposedIdentity } from "./transform.js";
-import { mapObjectValues, normalizeGuidelines } from "./utils.js";
+import { mapObjectValues, normalizeGuidelines, zip } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 
 export class VariableGlyph {
@@ -66,6 +66,32 @@ export class StaticGlyph {
 
   copy() {
     return StaticGlyph.fromObject(this);
+  }
+
+  getMoveReference() {
+    const [x, y] = this.path.getPointPosition(0);
+    return {
+      path: { x, y },
+      components: this.components.map((compo) => ({
+        x: compo.transformation.translateX,
+        y: compo.transformation.translateY,
+      })),
+      // TODO anchors, guidelines, backgroundImage
+    };
+  }
+
+  moveWithReference(reference, dx, dy) {
+    {
+      const { x, y } = reference.path;
+      if (x !== undefined) {
+        this.path.moveAllWithFirstPoint(x + dx, y + dy);
+      }
+    }
+    for (const [{ x, y }, compo] of zip(reference.components, this.components)) {
+      compo.transformation.translateX = x + dx;
+      compo.transformation.translateY = y + dy;
+    }
+    // TODO anchors, guidelines, backgroundImage
   }
 }
 
