@@ -76,22 +76,42 @@ export class StaticGlyph {
         x: compo.transformation.translateX,
         y: compo.transformation.translateY,
       })),
-      // TODO anchors, guidelines, backgroundImage
+      anchors: this.anchors.map((anchor) => ({
+        x: anchor.x,
+        y: anchor.y,
+      })),
+      guidelines: this.guidelines.map((guideline) => ({
+        x: guideline.x,
+        y: guideline.y,
+      })),
+      backgroundImage: {
+        x: this.backgroundImage?.transformation.translateX,
+        y: this.backgroundImage?.transformation.translateY,
+      },
     };
   }
 
   moveWithReference(reference, dx, dy) {
-    {
-      const { x, y } = reference.path;
-      if (x !== undefined) {
-        this.path.moveAllWithFirstPoint(x + dx, y + dy);
-      }
+    if (reference.path.x !== undefined) {
+      this.path.moveAllWithFirstPoint(reference.path.x + dx, reference.path.y + dy);
     }
     for (const [{ x, y }, compo] of zip(reference.components, this.components)) {
       compo.transformation.translateX = x + dx;
       compo.transformation.translateY = y + dy;
     }
-    // TODO anchors, guidelines, backgroundImage
+    for (const [{ x, y }, anchor] of zip(reference.anchors, this.anchors)) {
+      anchor.x = x + dx;
+      anchor.y = y + dy;
+    }
+    for (const [{ x, y }, guideline] of zip(reference.guidelines, this.guidelines)) {
+      guideline.x = x + dx;
+      guideline.y = y + dy;
+    }
+
+    if (reference.backgroundImage.x !== undefined) {
+      this.backgroundImage.transformation.translateX = reference.backgroundImage.x + dx;
+      this.backgroundImage.transformation.translateY = reference.backgroundImage.y + dx;
+    }
   }
 }
 
