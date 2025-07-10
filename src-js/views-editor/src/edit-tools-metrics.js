@@ -593,9 +593,9 @@ class SidebearingHandle extends BaseMetricHandle {
     this.leftSidebearingElement = html.div({ class: "left-sidebearing" }, ["left"]);
     this.rightSidebearingElement = html.div({ class: "right-sidebearing" }, ["right"]);
 
-    this.appendChild(this.advanceElement);
     this.appendChild(this.leftSidebearingElement);
     this.appendChild(this.rightSidebearingElement);
+    this.appendChild(this.advanceElement);
 
     this.id = sidebearingSelectorToId(selector);
 
