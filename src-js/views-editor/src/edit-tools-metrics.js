@@ -416,10 +416,10 @@ class SidebearingTool extends MetricsBaseTool {
         return;
       }
       const metricSelection = handle.metricSelection;
-      if (metricSelection.has("left")) {
+      if (metricSelection.has("left") || metricSelection.has("shape")) {
         leftGlyphNames.add(glyphName);
       }
-      if (metricSelection.has("right")) {
+      if (metricSelection.has("right") || metricSelection.has("shape")) {
         rightGlyphNames.add(glyphName);
       }
     });
@@ -665,10 +665,7 @@ class SidebearingHandle extends BaseMetricHandle {
         this.selector.glyphIndex === selector.glyphIndex
     );
 
-    let newSelection = metricSelectionSet(selector);
-    if (newSelection.has("shape")) {
-      newSelection = new Set(["left", "right"]);
-    }
+    const newSelection = metricSelectionSet(selector);
 
     if (onOff === undefined) {
       this._selection = symmetricDifference(this._selection, newSelection);
@@ -682,11 +679,11 @@ class SidebearingHandle extends BaseMetricHandle {
 
     this.leftSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("left")
+      this._selection.has("left") || this._selection.has("shape")
     );
     this.rightSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("right")
+      this._selection.has("right") || this._selection.has("shape")
     );
   }
 
