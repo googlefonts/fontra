@@ -377,6 +377,26 @@ class SidebearingTool extends MetricsBaseTool {
     this.pushUndoItem(changes, undoLabel);
   }
 
+  async handleArrowKeys(event) {
+    let [deltaX, deltaY] = arrowKeyDeltas[event.key];
+    if (deltaY) {
+      return;
+    }
+
+    deltaX *= getMetricsStep(event);
+
+    const editContext = await this.getEditContext();
+    if (!editContext) {
+      return;
+    }
+
+    this.updateScrollAdjustBehavior();
+
+    const undoLabel = "edit sidebearings";
+    const changes = await editContext.edit(deltaX, undoLabel);
+    this.pushUndoItem(changes, undoLabel);
+  }
+
   async getEditContext() {
     const leftGlyphNames = new Set();
     const rightGlyphNames = new Set();
@@ -450,6 +470,10 @@ export class SidebearingEditContext {
       this.fontController.editIncremental(change);
     }, 50);
     this._throttledEditIncrementalTimeoutID = null;
+  }
+
+  async edit(value, undoLabel) {
+    return await this.editContinuous([value], undoLabel);
   }
 
   async editContinuous(valuesIterator, undoLabel) {
