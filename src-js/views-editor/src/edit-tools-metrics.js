@@ -359,11 +359,6 @@ class SidebearingTool extends MetricsBaseTool {
 
     const allGlyphNames = union(leftGlyphNames, rightGlyphNames);
 
-    const location = {
-      ...this.sceneSettings.fontLocationSourceMapped,
-      ...this.sceneSettings.glyphLocation,
-    };
-
     const layerNames = {};
     const notAtSourceGlyphs = new Set();
 
@@ -372,7 +367,9 @@ class SidebearingTool extends MetricsBaseTool {
       if (!varGlyph) {
         continue;
       }
-      const sourceIndex = varGlyph.getSourceIndex(location);
+      const sourceIndex = varGlyph.getSourceIndex(
+        this.sceneModel.getLocationForGlyph(glyphName)
+      );
       if (sourceIndex == undefined) {
         notAtSourceGlyphs.add(glyphName);
       } else {
@@ -518,13 +515,17 @@ class SidebearingHandle extends BaseMetricHandle {
       this._selection = new Set();
     }
 
+    if (this._selection.has("shape")) {
+      this._selection = new Set(["left", "right"]);
+    }
+
     this.leftSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("left") || this._selection.has("shape")
+      this._selection.has("left")
     );
     this.rightSidebearingElement.classList.toggle(
       "selected",
-      this._selection.has("right") || this._selection.has("shape")
+      this._selection.has("right")
     );
   }
 
