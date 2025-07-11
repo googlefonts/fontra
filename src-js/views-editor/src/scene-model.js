@@ -982,10 +982,11 @@ export class SceneModel {
       }
       const firstGlyph = line.glyphs[0];
       const lastGlyph = line.glyphs.at(-1);
+
       const metricsBox = {
-        xMin: firstGlyph.x,
+        xMin: line.bounds ? line.bounds.xMin : firstGlyph.x,
         yMin: firstGlyph.y + descender,
-        xMax: lastGlyph.x + lastGlyph.glyph.xAdvance,
+        xMax: line.bounds ? line.bounds.xMax : lastGlyph.x + lastGlyph.glyph.xAdvance,
         yMax: firstGlyph.y + ascender,
       };
       if (!pointInRect(point.x, point.y, metricsBox)) {
@@ -1017,14 +1018,22 @@ export class SceneModel {
       const [leftZone1, leftZone2] = sorted([xLeft, xLeftSB]);
       const [rightZone1, rightZone2] = sorted([xRight, xRightSB]);
 
-      const middle = (leftZone1 + rightZone2) / 2;
+      const middle = (xLeft + xRight) / 2;
 
       const leftExtra = glyph.leftMargin > 0 ? 0 : size;
       const rightExtra = glyph.rightMargin > 0 ? 0 : size;
 
-      if (valueInRange(rightZone1 - size, point.x, rightZone2 + rightExtra)) {
+      const zonesOverlap = leftZone2 > rightZone1;
+
+      if (
+        !zonesOverlap &&
+        valueInRange(rightZone1 - size, point.x, rightZone2 + rightExtra)
+      ) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
-      } else if (valueInRange(leftZone1 - leftExtra, point.x, leftZone2 + size)) {
+      } else if (
+        !zonesOverlap &&
+        valueInRange(leftZone1 - leftExtra, point.x, leftZone2 + size)
+      ) {
         matches.push({ lineIndex, glyphIndex, metric: "left" });
       } else if (
         pointInConvexPolygon(
@@ -1034,9 +1043,9 @@ export class SceneModel {
         )
       ) {
         matches.push({ lineIndex, glyphIndex, metric: "shape" });
-      } else if (valueInRange(middle, point.x, rightZone2)) {
+      } else if (valueInRange(middle, point.x, xRight)) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
-      } else if (valueInRange(leftZone1, point.x, middle)) {
+      } else if (valueInRange(xLeft, point.x, middle)) {
         matches.push({ lineIndex, glyphIndex, metric: "left" });
       }
     }
