@@ -153,11 +153,12 @@ class MetricsBaseTool extends BaseTool {
     const initialX = initialEvent.x / magnification;
 
     for await (const event of eventStream) {
+      this.updateScrollAdjustBehavior();
+
       if (event.x == undefined && event.pageX == undefined) {
+        yield { deltaX: null, event };
         continue;
       }
-
-      this.updateScrollAdjustBehavior();
 
       const currentX = event.x / magnification;
       const step = this.getStepValue(event);
@@ -338,8 +339,9 @@ class SidebearingTool extends MetricsBaseTool {
     const selection = metricSelectionSet(selector);
     return (
       positionedGlyph.x +
-      (selection.has("left")
-        ? positionedGlyph.glyph.xAdvance / (selection.has("right") ? 2 : 1)
+      (selection.has("left") || selection.has("shape")
+        ? positionedGlyph.glyph.xAdvance /
+          (selection.has("right") || selection.has("shape") ? 2 : 1)
         : 0)
     );
   }
@@ -389,7 +391,8 @@ class SidebearingTool extends MetricsBaseTool {
     const undoLabel = "edit sidebearings";
     const changes = await editContext.editContinuous(
       this.generateDeltasFromEventStream(eventStream, initialEvent),
-      undoLabel
+      undoLabel,
+      selector.metric === "left"
     );
     delete this._draggingSelector;
 
@@ -491,7 +494,7 @@ export class SidebearingEditContext {
     return await this.editContinuous([{ deltaX, event }], undoLabel);
   }
 
-  async editContinuous(valuesIterator, undoLabel) {
+  async editContinuous(valuesIterator, undoLabel, isLeftSidebearingDrag = false) {
     const font = { glyphs: {} };
     const initialValues = {};
     for (const { glyphName, layerName } of this.sidebearingSelectors) {
@@ -507,15 +510,26 @@ export class SidebearingEditContext {
 
     let firstChanges;
     let lastChanges;
+    let lastDeltaX;
 
     for await (const { deltaX, event } of valuesIterator) {
+      const newDeltaX = deltaX === null ? lastDeltaX : deltaX;
+      lastDeltaX = newDeltaX;
+      const leftDeltaX =
+        event.altKey && !isLeftSidebearingDrag ? -newDeltaX : newDeltaX;
+      const rightDeltaX =
+        event.altKey && isLeftSidebearingDrag ? -newDeltaX : newDeltaX;
       lastChanges = recordChanges(font, (font) => {
         for (const { glyphName, layerName, sidebearing } of this.sidebearingSelectors) {
           const varGlyph = font.glyphs[glyphName];
           const layerGlyph = varGlyph.layers[layerName].glyph;
+
           switch (sidebearing) {
             case "L":
-              const clampedDeltaX = Math.min(deltaX, initialValues[glyphName].xAdvance);
+              const clampedDeltaX = Math.min(
+                leftDeltaX,
+                initialValues[glyphName].xAdvance
+              );
               layerGlyph.xAdvance = initialValues[glyphName].xAdvance - clampedDeltaX;
               layerGlyph.moveWithReference(
                 initialValues[glyphName].reference,
@@ -525,14 +539,17 @@ export class SidebearingEditContext {
               break;
             case "R":
               layerGlyph.xAdvance = Math.max(
-                initialValues[glyphName].xAdvance + deltaX,
+                initialValues[glyphName].xAdvance + rightDeltaX,
                 0
               );
               break;
             case "LR":
+              layerGlyph.xAdvance = event.altKey
+                ? Math.max(initialValues[glyphName].xAdvance + 2 * rightDeltaX, 0)
+                : initialValues[glyphName].xAdvance;
               layerGlyph.moveWithReference(
                 initialValues[glyphName].reference,
-                deltaX,
+                rightDeltaX,
                 0
               );
               break;
@@ -819,6 +836,10 @@ class KerningTool extends MetricsBaseTool {
 
     async function* generateValues(genDeltas, values) {
       for await (const { deltaX, event } of genDeltas) {
+        if (deltaX === null) {
+          // possible modifier changed event
+          continue;
+        }
         yield { values: values.map((v) => v + deltaX), event };
       }
     }
