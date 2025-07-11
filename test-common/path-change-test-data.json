@@ -320,6 +320,42 @@
         "a": [2]
       },
       "expectedPath": []
+    },
+    {
+      "testName": "moveAllWithFirstPoint",
+      "inputPathName": "twoContoursMorePoints",
+      "change": {
+        "f": "moveAllWithFirstPoint",
+        "a": [11, 22]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 11,
+              "y": 22
+            },
+            {
+              "x": 17,
+              "y": 24
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [
+            {
+              "x": 61,
+              "y": 52
+            },
+            {
+              "x": 64,
+              "y": 53
+            }
+          ],
+          "isClosed": false
+        }
+      ]
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { getDecomposedIdentity } from "./transform.js";
-import { mapObjectValues, normalizeGuidelines } from "./utils.js";
+import { mapObjectValues, normalizeGuidelines, zip } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 
 export class VariableGlyph {
@@ -66,6 +66,55 @@ export class StaticGlyph {
 
   copy() {
     return StaticGlyph.fromObject(this);
+  }
+
+  getMoveReference() {
+    const [x, y] = this.path.getPointPosition(0);
+    return {
+      path: { x, y },
+      components: this.components.map((compo) => ({
+        x: compo.transformation.translateX,
+        y: compo.transformation.translateY,
+      })),
+      anchors: this.anchors.map((anchor) => ({
+        x: anchor.x,
+        y: anchor.y,
+      })),
+      guidelines: this.guidelines.map((guideline) => ({
+        x: guideline.x,
+        y: guideline.y,
+      })),
+      backgroundImage: {
+        x: this.backgroundImage?.transformation.translateX,
+        y: this.backgroundImage?.transformation.translateY,
+      },
+    };
+  }
+
+  moveWithReference(reference, dx, dy) {
+    if (reference.path.x !== undefined) {
+      this.path.moveAllWithFirstPoint(reference.path.x + dx, reference.path.y + dy);
+    }
+
+    for (const [{ x, y }, compo] of zip(reference.components, this.components)) {
+      compo.transformation.translateX = x + dx;
+      compo.transformation.translateY = y + dy;
+    }
+
+    for (const [{ x, y }, anchor] of zip(reference.anchors, this.anchors)) {
+      anchor.x = x + dx;
+      anchor.y = y + dy;
+    }
+
+    for (const [{ x, y }, guideline] of zip(reference.guidelines, this.guidelines)) {
+      guideline.x = x + dx;
+      guideline.y = y + dy;
+    }
+
+    if (reference.backgroundImage.x !== undefined) {
+      this.backgroundImage.transformation.translateX = reference.backgroundImage.x + dx;
+      this.backgroundImage.transformation.translateY = reference.backgroundImage.y + dy;
+    }
   }
 }
 

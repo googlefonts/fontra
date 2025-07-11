@@ -64,8 +64,8 @@ import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialo
 import { parsePluginBasePath } from "@fontra/web-components/plugin-manager.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
-import { KerningTool } from "./edit-tools-kerning.js";
 import { KnifeTool } from "./edit-tools-knife.js";
+import { MetricsTool } from "./edit-tools-metrics.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTools } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
@@ -587,7 +587,15 @@ export class EditorController extends ViewController {
       {
         topic: "0020-action-topics.menu.view",
         titleKey: "canvas.clean-view-and-hand-tool",
-        defaultShortCuts: [{ baseKey: "Space" }],
+        // A little hack so we match any modifier combinations,
+        // effectively ignoring the modifier
+        defaultShortCuts: [...range(1 << 4)].map((i) => ({
+          baseKey: "Space",
+          altKey: !!(i & 0x01),
+          shiftKey: !!(i & 0x02),
+          metaKey: !!(i & 0x04),
+          ctrlKey: !!(i & 0x08),
+        })),
       },
       (event) => this.enterCleanViewAndHandTool(event)
     );
@@ -893,7 +901,7 @@ export class EditorController extends ViewController {
       PenTool,
       KnifeTool,
       ShapeTool,
-      KerningTool,
+      MetricsTool,
       PowerRulerTool,
       HandTool,
     ];
@@ -1003,17 +1011,14 @@ export class EditorController extends ViewController {
 
         const showSubTools = (event, withTimeOut) => {
           clearTimeout(this._multiToolMouseDownTimer);
-          this._multiToolMouseDownTimer = setTimeout(
-            () => {
-              // Show sub tools
-              for (const child of editToolsElement.children) {
-                child.style.visibility = "visible";
-              }
-              window.addEventListener("mousedown", globalListener);
-              window.addEventListener("keydown", globalListener);
-            },
-            withTimeOut ? 500 : 0
-          );
+          this._multiToolMouseDownTimer = (withTimeOut ? setTimeout : noTimeout)(() => {
+            // Show sub tools
+            for (const child of editToolsElement.children) {
+              child.style.visibility = "visible";
+            }
+            window.addEventListener("mousedown", globalListener);
+            window.addEventListener("keydown", globalListener);
+          }, 500);
           if (!withTimeOut || toolButton !== editToolsElement.children[0]) {
             // ensure the multi-tool mousedown timer only affects the first child
             event.preventDefault();
@@ -3606,4 +3611,9 @@ function mergeComponentIndices(componentIndices1, componentIndices2) {
   const componentIndices = [...indexSet];
   componentIndices.sort((a, b) => a - b);
   return componentIndices;
+}
+
+function noTimeout(func, dummy) {
+  func();
+  return null; // dummy timer value
 }

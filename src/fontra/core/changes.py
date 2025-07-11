@@ -73,6 +73,7 @@ changeFunctions: dict[str, Callable[..., None]] = {
     "insertPoint": lambda path, contourIndex, contourPointIndex, point: path.insertPoint(
         contourIndex, contourPointIndex, point
     ),
+    "moveAllWithFirstPoint": lambda path, x, y: path.moveAllWithFirstPoint(x, y),
 }
 
 #

@@ -180,6 +180,7 @@ export const strings = {
   "editor.shape-tool": "图形工具",
   "editor.shape-tool-ellipse": "椭圆工具",
   "editor.shape-tool-rectangle": "矩形工具",
+  "editor.sidebearing-tool": "Sidebearing Tool",
   "font-info.copyright": "版权",
   "font-info.description": "描述",
   "font-info.designer": "设计师",

@@ -190,6 +190,7 @@ export const strings = {
   "editor.shape-tool": "Outil de forme",
   "editor.shape-tool-ellipse": "Outil ellipse",
   "editor.shape-tool-rectangle": "Outil rectangle",
+  "editor.sidebearing-tool": "Sidebearing Tool",
   "font-info.copyright": "Copyright",
   "font-info.description": "Description",
   "font-info.designer": "Designer",

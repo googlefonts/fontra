@@ -522,6 +522,20 @@ export class VarPackedPath {
     return contourIndex === 0 ? 0 : this.contourInfo[contourIndex - 1].endPoint + 1;
   }
 
+  moveAllWithFirstPoint(firstPointX, firstPointY) {
+    const [x, y] = this.getPointPosition(0);
+    if (x === undefined) {
+      return;
+    }
+    const dx = firstPointX - x;
+    const dy = firstPointY - y;
+
+    for (let i = 0; i < this.coordinates.length; i += 2) {
+      this.coordinates[i] += dx;
+      this.coordinates[i + 1] += dy;
+    }
+  }
+
   isStartOrEndPoint(pointIndex) {
     //
     // Returns -1 if `pointIndex` references the start point of an open contour,

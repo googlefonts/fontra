@@ -22,6 +22,17 @@ export function isSuperset(set, subset) {
   return true;
 }
 
+export function isDisjoint(setA, setB) {
+  // Return true if setA has no elements in common with setB.
+  // Sets are disjoint if and only if their intersection is the empty set.
+  for (let elem of setB) {
+    if (setA.has(elem)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function union(setA, setB) {
   let _union = new Set(setA);
   for (let elem of setB) {
