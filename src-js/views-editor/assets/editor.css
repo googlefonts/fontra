@@ -496,9 +496,7 @@ body {
 }
 
 sidebearing-handle {
-  position: absolute;
   font-size: 0.8em;
-  padding: 1em;
   user-select: none;
   pointer-events: none;
   white-space: nowrap;

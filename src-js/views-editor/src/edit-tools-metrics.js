@@ -658,9 +658,14 @@ class SidebearingHandle extends BaseMetricHandle {
       y: positionedGlyph.y,
     });
 
-    this.style.left = `${left}px`;
-    this.style.top = `${top}px`;
-    this.style.width = `${right - left}px`;
+    this.leftSidebearingElement.style.left = `${left}px`;
+    this.leftSidebearingElement.style.top = `${top}px`;
+
+    this.rightSidebearingElement.style.left = `${right}px`;
+    this.rightSidebearingElement.style.top = `${top}px`;
+
+    this.advanceElement.style.left = `${(left + right) / 2}px`;
+    this.advanceElement.style.top = `${top}px`;
 
     this.advanceElement.innerText = formatMetricValue(positionedGlyph.glyph.xAdvance);
     this.leftSidebearingElement.innerText = formatMetricValue(
