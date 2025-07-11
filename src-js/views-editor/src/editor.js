@@ -587,7 +587,15 @@ export class EditorController extends ViewController {
       {
         topic: "0020-action-topics.menu.view",
         titleKey: "canvas.clean-view-and-hand-tool",
-        defaultShortCuts: [{ baseKey: "Space" }],
+        // A little hack so we match any modifier combinations,
+        // effectively ignoring the modifier
+        defaultShortCuts: [...range(1 << 4)].map((i) => ({
+          baseKey: "Space",
+          altKey: !!(i & 0x01),
+          shiftKey: !!(i & 0x02),
+          metaKey: !!(i & 0x04),
+          ctrlKey: !!(i & 0x08),
+        })),
       },
       (event) => this.enterCleanViewAndHandTool(event)
     );
