@@ -554,6 +554,8 @@ export class SidebearingEditContext {
                   -initialValues[glyphName].xAdvance
                 );
                 layerGlyph.xAdvance = initialValues[glyphName].xAdvance + clampedDeltaX;
+              } else {
+                layerGlyph.xAdvance = initialValues[glyphName].xAdvance;
               }
 
               layerGlyph.moveWithReference(
