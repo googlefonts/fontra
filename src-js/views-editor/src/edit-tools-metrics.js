@@ -84,6 +84,10 @@ class MetricsBaseTool extends BaseTool {
     assert(false, "superclass must implement");
   }
 
+  getStepValue() {
+    assert(false, "superclass must implement");
+  }
+
   removeAllHandles() {
     this.handles.forEach((handle) => handle.remove());
   }
@@ -144,7 +148,7 @@ class MetricsBaseTool extends BaseTool {
     }
   }
 
-  async *generateDeltasFromEventStream(eventStream, initialEvent, stepFunc) {
+  async *generateDeltasFromEventStream(eventStream, initialEvent) {
     const magnification = this.canvasController.magnification;
     const initialX = initialEvent.x / magnification;
 
@@ -156,7 +160,7 @@ class MetricsBaseTool extends BaseTool {
       this.updateScrollAdjustBehavior();
 
       const currentX = event.x / magnification;
-      const step = stepFunc(event);
+      const step = this.getStepValue(event);
       const deltaX = Math.round((currentX - initialX) / step) * step;
 
       yield { deltaX, event };
@@ -359,6 +363,10 @@ class SidebearingTool extends MetricsBaseTool {
       cursorMap[this.hoveredMetric?.metric] || null;
   }
 
+  getStepValue(event) {
+    return event.shiftKey ? 10 : 1;
+  }
+
   async handleDrag(eventStream, initialEvent) {
     this.canvasController.canvas.focus();
 
@@ -380,7 +388,7 @@ class SidebearingTool extends MetricsBaseTool {
 
     const undoLabel = "edit sidebearings";
     const changes = await editContext.editContinuous(
-      this.generateDeltasFromEventStream(eventStream, initialEvent, getSidebearingStep),
+      this.generateDeltasFromEventStream(eventStream, initialEvent),
       undoLabel
     );
     delete this._draggingSelector;
@@ -394,7 +402,7 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    deltaX *= getSidebearingStep(event);
+    deltaX *= this.getStepValue(event);
 
     const editContext = await this.getEditContext();
     if (!editContext) {
@@ -789,6 +797,10 @@ class KerningTool extends MetricsBaseTool {
     return this.sceneModel.kerningAtPoint(point, size);
   }
 
+  getStepValue(event) {
+    return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
+  }
+
   async handleDrag(eventStream, initialEvent) {
     this.canvasController.canvas.focus();
 
@@ -814,7 +826,7 @@ class KerningTool extends MetricsBaseTool {
     const undoLabel = "edit kerning";
     const changes = await editContext.editContinuous(
       generateValues(
-        this.generateDeltasFromEventStream(eventStream, initialEvent, getKernStep),
+        this.generateDeltasFromEventStream(eventStream, initialEvent),
         values
       ),
       undoLabel
@@ -830,7 +842,7 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    deltaX *= getKernStep(event);
+    deltaX *= this.getStepValue(event);
 
     const { editContext, values } = this.getEditContext();
     if (!editContext) {
@@ -1147,14 +1159,6 @@ class KerningHandle extends BaseMetricHandle {
 }
 
 customElements.define("kerning-handle", KerningHandle);
-
-function getSidebearingStep(event) {
-  return event.shiftKey ? 10 : 1;
-}
-
-function getKernStep(event) {
-  return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
-}
 
 function formatMetricValue(n, fallback = "-") {
   if (n == null) {
