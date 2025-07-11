@@ -546,12 +546,19 @@ export class SidebearingEditContext {
               break;
             }
             case "LR": {
-              layerGlyph.xAdvance = event.altKey
-                ? Math.max(initialValues[glyphName].xAdvance + 2 * rightDeltaX, 0)
-                : initialValues[glyphName].xAdvance;
+              let clampedDeltaX = 2 * rightDeltaX;
+
+              if (event.altKey) {
+                clampedDeltaX = Math.max(
+                  2 * rightDeltaX,
+                  -initialValues[glyphName].xAdvance
+                );
+                layerGlyph.xAdvance = initialValues[glyphName].xAdvance + clampedDeltaX;
+              }
+
               layerGlyph.moveWithReference(
                 initialValues[glyphName].reference,
-                rightDeltaX,
+                clampedDeltaX / 2,
                 0
               );
               break;
