@@ -144,7 +144,7 @@ class MetricsBaseTool extends BaseTool {
     }
   }
 
-  async *generateDeltasFromEventStream(eventStream, initialEvent) {
+  async *generateDeltasFromEventStream(eventStream, initialEvent, stepFunc) {
     const magnification = this.canvasController.magnification;
     const initialX = initialEvent.x / magnification;
 
@@ -156,7 +156,7 @@ class MetricsBaseTool extends BaseTool {
       this.updateScrollAdjustBehavior();
 
       const currentX = event.x / magnification;
-      const step = getMetricsStep(event);
+      const step = stepFunc(event);
       const deltaX = Math.round((currentX - initialX) / step) * step;
 
       yield { deltaX, event };
@@ -380,7 +380,7 @@ class SidebearingTool extends MetricsBaseTool {
 
     const undoLabel = "edit sidebearings";
     const changes = await editContext.editContinuous(
-      this.generateDeltasFromEventStream(eventStream, initialEvent),
+      this.generateDeltasFromEventStream(eventStream, initialEvent, getSidebearingStep),
       undoLabel
     );
     delete this._draggingSelector;
@@ -394,7 +394,7 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    deltaX *= getMetricsStep(event);
+    deltaX *= getSidebearingStep(event);
 
     const editContext = await this.getEditContext();
     if (!editContext) {
@@ -814,7 +814,7 @@ class KerningTool extends MetricsBaseTool {
     const undoLabel = "edit kerning";
     const changes = await editContext.editContinuous(
       generateValues(
-        this.generateDeltasFromEventStream(eventStream, initialEvent),
+        this.generateDeltasFromEventStream(eventStream, initialEvent, getKernStep),
         values
       ),
       undoLabel
@@ -830,7 +830,7 @@ class KerningTool extends MetricsBaseTool {
       return;
     }
 
-    deltaX *= getMetricsStep(event);
+    deltaX *= getKernStep(event);
 
     const { editContext, values } = this.getEditContext();
     if (!editContext) {
@@ -1148,7 +1148,11 @@ class KerningHandle extends BaseMetricHandle {
 
 customElements.define("kerning-handle", KerningHandle);
 
-function getMetricsStep(event) {
+function getSidebearingStep(event) {
+  return event.shiftKey ? 10 : 1;
+}
+
+function getKernStep(event) {
   return event.altKey ? (event.shiftKey ? 50 : 5) : event.shiftKey ? 10 : 1;
 }
 
