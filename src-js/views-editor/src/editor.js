@@ -1003,17 +1003,14 @@ export class EditorController extends ViewController {
 
         const showSubTools = (event, withTimeOut) => {
           clearTimeout(this._multiToolMouseDownTimer);
-          this._multiToolMouseDownTimer = setTimeout(
-            () => {
-              // Show sub tools
-              for (const child of editToolsElement.children) {
-                child.style.visibility = "visible";
-              }
-              window.addEventListener("mousedown", globalListener);
-              window.addEventListener("keydown", globalListener);
-            },
-            withTimeOut ? 500 : 0
-          );
+          this._multiToolMouseDownTimer = (withTimeOut ? setTimeout : noTimeout)(() => {
+            // Show sub tools
+            for (const child of editToolsElement.children) {
+              child.style.visibility = "visible";
+            }
+            window.addEventListener("mousedown", globalListener);
+            window.addEventListener("keydown", globalListener);
+          }, 500);
           if (!withTimeOut || toolButton !== editToolsElement.children[0]) {
             // ensure the multi-tool mousedown timer only affects the first child
             event.preventDefault();
@@ -3606,4 +3603,9 @@ function mergeComponentIndices(componentIndices1, componentIndices2) {
   const componentIndices = [...indexSet];
   componentIndices.sort((a, b) => a - b);
   return componentIndices;
+}
+
+function noTimeout(func, dummy) {
+  func();
+  return null; // dummy timer value
 }
