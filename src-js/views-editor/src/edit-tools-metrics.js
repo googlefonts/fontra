@@ -109,20 +109,26 @@ class MetricsBaseTool extends BaseTool {
     this._prevousMetricCenter = this.getPositionedMetricCenter(selection.at(-1));
   }
 
-  handleHover(event) {
-    if (event.type != "mousemove") {
-      return;
-    }
+  metricAtEvent(event) {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(event);
     const size = sceneController.mouseClickMargin;
 
-    const hoveredMetric = this.metricAtPoint(
+    return this.metricAtPoint(
       point,
       size,
       this.hoveredMetric?.lineIndex,
       this.hoveredMetric?.glyphIndex
     );
+  }
+
+  handleHover(event) {
+    if (event.type != "mousemove") {
+      return;
+    }
+
+    const hoveredMetric = this.metricAtEvent(event);
+
     if (!equalGlyphSelection(this.hoveredMetric, hoveredMetric)) {
       this.hoveredMetric = hoveredMetric;
 
@@ -169,7 +175,8 @@ class MetricsBaseTool extends BaseTool {
   }
 
   async _prepareDrag(eventStream, initialEvent) {
-    const hoveredMetric = this.hoveredHandle?.selector || this.hoveredMetric;
+    const hoveredMetric = this.metricAtEvent(initialEvent);
+    this.hoveredMetric = hoveredMetric;
 
     if (!hoveredMetric) {
       if (!event.shiftKey) {
