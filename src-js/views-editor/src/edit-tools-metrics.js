@@ -525,7 +525,7 @@ export class SidebearingEditContext {
           const layerGlyph = varGlyph.layers[layerName].glyph;
 
           switch (sidebearing) {
-            case "L":
+            case "L": {
               const clampedDeltaX = Math.min(
                 leftDeltaX,
                 initialValues[glyphName].xAdvance
@@ -537,13 +537,15 @@ export class SidebearingEditContext {
                 0
               );
               break;
-            case "R":
+            }
+            case "R": {
               layerGlyph.xAdvance = Math.max(
                 initialValues[glyphName].xAdvance + rightDeltaX,
                 0
               );
               break;
-            case "LR":
+            }
+            case "LR": {
               layerGlyph.xAdvance = event.altKey
                 ? Math.max(initialValues[glyphName].xAdvance + 2 * rightDeltaX, 0)
                 : initialValues[glyphName].xAdvance;
@@ -553,6 +555,7 @@ export class SidebearingEditContext {
                 0
               );
               break;
+            }
           }
         }
       });
