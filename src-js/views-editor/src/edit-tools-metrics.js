@@ -337,11 +337,9 @@ class MetricsBaseTool extends BaseTool {
       return { lineIndex, glyphIndex };
     }
 
-    lineIndex += direction;
-
-    while (positionedLines[lineIndex]?.glyphs.length === 0) {
+    do {
       lineIndex += direction;
-    }
+    } while (positionedLines[lineIndex]?.glyphs.length === 0);
 
     if (positionedLines[lineIndex]) {
       return {
