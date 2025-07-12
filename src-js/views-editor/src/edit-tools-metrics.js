@@ -305,6 +305,51 @@ class MetricsBaseTool extends BaseTool {
 
     this.undoStack.pushUndoRecord(undoRecord);
   }
+
+  handleKeyDown(event) {
+    if (event.key !== "Tab") {
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const currentSelector = this.metricSelection.at(-1);
+    if (!currentSelector) {
+      return;
+    }
+
+    const nextSelector = this.nextSelector(currentSelector, event.shiftKey ? -1 : 1);
+    if (nextSelector) {
+      this.metricSelection = [nextSelector];
+      this._prevousMetricCenter = this.getPositionedMetricCenter(nextSelector);
+    }
+  }
+
+  nextSelector(selector, direction) {
+    assert(false, "superclass must implement");
+  }
+
+  nextGlyph(lineIndex, glyphIndex, direction) {
+    const positionedLines = this.sceneSettings.positionedLines;
+
+    if (positionedLines[lineIndex].glyphs[glyphIndex + direction]) {
+      glyphIndex += direction;
+      return { lineIndex, glyphIndex };
+    }
+
+    lineIndex += direction;
+
+    while (positionedLines[lineIndex]?.glyphs.length === 0) {
+      lineIndex += direction;
+    }
+
+    if (positionedLines[lineIndex]) {
+      return {
+        lineIndex,
+        glyphIndex: direction === 1 ? 0 : positionedLines[lineIndex].glyphs.length - 1,
+      };
+    }
+  }
 }
 
 class SidebearingTool extends MetricsBaseTool {
@@ -489,6 +534,33 @@ class SidebearingTool extends MetricsBaseTool {
 
     if (sidebearingSelectors.length) {
       return new SidebearingEditContext(this.fontController, sidebearingSelectors);
+    }
+  }
+
+  nextSelector(selector, direction) {
+    let selection = metricSelectionSet(selector);
+    if (selection.has("left") && selection.has("right")) {
+      selection = new Set(["shape"]);
+    }
+
+    const order = ["left", "shape", "right"];
+    const [current] = selection;
+    let index = order.indexOf(current) + direction;
+
+    if (index >= 0 && index < order.length) {
+      return { ...selector, metric: order[index] };
+    } else {
+      const nextGlyph = this.nextGlyph(
+        selector.lineIndex,
+        selector.glyphIndex,
+        direction
+      );
+      if (nextGlyph) {
+        return {
+          ...nextGlyph,
+          metric: direction === 1 ? "left" : "right",
+        };
+      }
     }
   }
 }
