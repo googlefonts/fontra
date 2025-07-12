@@ -543,7 +543,7 @@ class SidebearingTool extends MetricsBaseTool {
 
     const order = ["left", "shape", "right"];
     const [current] = selection;
-    let index = order.indexOf(current) + direction;
+    const index = order.indexOf(current) + direction;
 
     if (index >= 0 && index < order.length) {
       return { ...selector, metric: order[index] };
