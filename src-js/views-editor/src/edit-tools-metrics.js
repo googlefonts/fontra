@@ -396,6 +396,10 @@ class SidebearingTool extends MetricsBaseTool {
     const handleId = this.selectorToId(selector);
     const metricHandle = document.getElementById(handleId);
 
+    // Move dragging handle on top, so it'll be the last item in the selection list,
+    // which is important for the undo scroll position, when dragging multiple handles
+    metricHandle.parentElement.appendChild(metricHandle);
+
     this._draggingSelector = metricHandle.selectedSelector;
     this._prevousMetricCenter = this.getPositionedMetricCenter(this._draggingSelector);
 
