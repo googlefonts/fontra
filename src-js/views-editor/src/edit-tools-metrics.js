@@ -43,7 +43,6 @@ class MetricsBaseTool extends BaseTool {
     );
 
     this.undoStack = new UndoStack();
-    this._getPinPointDelta = () => this.getPinPointDelta();
   }
 
   updateScrollAdjustBehavior() {
@@ -51,7 +50,10 @@ class MetricsBaseTool extends BaseTool {
   }
 
   getScrollAdjustBehavior() {
-    return { behavior: "tool-pin-point", getPinPointDelta: this._getPinPointDelta };
+    return {
+      behavior: "tool-pin-point",
+      getPinPointDelta: () => this.getPinPointDelta(),
+    };
   }
 
   getPinPointDelta() {
