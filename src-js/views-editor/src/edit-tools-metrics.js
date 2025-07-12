@@ -1209,6 +1209,20 @@ class KerningTool extends MetricsBaseTool {
 
     this.pushUndoItem(changes, undoLabel);
   }
+
+  nextSelector(selector, direction) {
+    const positionedLines = this.sceneSettings.positionedLines;
+
+    do {
+      selector = this.nextGlyph(selector.lineIndex, selector.glyphIndex, direction);
+    } while (
+      selector &&
+      (selector.glyphIndex === 0 ||
+        selector.glyphIndex >= positionedLines[selector.lineIndex].glyphs.length)
+    );
+
+    return selector;
+  }
 }
 
 class KerningHandle extends BaseMetricHandle {
