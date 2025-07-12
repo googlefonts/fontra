@@ -37,8 +37,8 @@ class MetricsBaseTool extends BaseTool {
       (event) => {
         this.handles.forEach((handle) => {
           this._updateHandle(handle);
-          this.getPinPointDelta(); // updates this._prevousMetricCenter
         });
+        this.getPinPointDelta(); // updates this._prevousMetricCenter
       }
     );
 
@@ -107,8 +107,6 @@ class MetricsBaseTool extends BaseTool {
     for (const selector of selection) {
       this.addHandle(selector, true);
     }
-
-    this._prevousMetricCenter = this.getPositionedMetricCenter(selection.at(-1));
   }
 
   metricAtEvent(event) {
@@ -268,6 +266,10 @@ class MetricsBaseTool extends BaseTool {
     if (isRedo) {
       undoRecord = reverseUndoRecord(undoRecord);
     }
+
+    this._prevousMetricCenter = this.getPositionedMetricCenter(
+      undoRecord.info.metricSelection.at(-1)
+    );
 
     this.updateScrollAdjustBehavior();
 
