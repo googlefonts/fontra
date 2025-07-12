@@ -481,7 +481,9 @@ class SidebearingTool extends MetricsBaseTool {
       return;
     }
 
-    return new SidebearingEditContext(this.fontController, sidebearingSelectors);
+    if (sidebearingSelectors.length) {
+      return new SidebearingEditContext(this.fontController, sidebearingSelectors);
+    }
   }
 }
 
