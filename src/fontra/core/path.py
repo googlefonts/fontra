@@ -304,6 +304,19 @@ class PackedPath:
         )
         self._moveEndPoints(contourIndex, 1)
 
+    def moveAllWithFirstPoint(self, firstPointX, firstPointY):
+        coordinates = self.coordinates
+        if not coordinates:
+            return
+
+        x, y = self.coordinates[:2]
+        dx = firstPointX - x
+        dy = firstPointY - y
+
+        for i in range(0, len(self.coordinates), 2):
+            coordinates[i] += dx
+            coordinates[i + 1] += dy
+
     def _getContourStartPoint(self, contourIndex: int) -> int:
         return (
             0 if contourIndex == 0 else self.contourInfo[contourIndex - 1].endPoint + 1

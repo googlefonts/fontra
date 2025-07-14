@@ -624,6 +624,7 @@ export class SceneController {
     this.selectedTool?.activate();
     this.hoverSelection = new Set();
     this.updateHoverState();
+    this.canvasController.requestUpdate();
   }
 
   updateHoverState() {

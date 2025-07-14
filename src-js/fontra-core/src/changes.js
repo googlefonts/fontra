@@ -261,6 +261,7 @@ const changeFunctions = {
     path.deletePoint(contourIndex, contourPointIndex),
   "insertPoint": (path, itemCast, contourIndex, contourPointIndex, point) =>
     path.insertPoint(contourIndex, contourPointIndex, point),
+  "moveAllWithFirstPoint": (path, itemCast, x, y) => path.moveAllWithFirstPoint(x, y),
 };
 
 //
