@@ -18,7 +18,10 @@ export default class GlyphSearchPanel extends Panel {
     super(editorController);
     this.glyphSearch = this.contentElement.querySelector("#glyph-search-list");
     this.glyphSearch.addEventListener("selectedGlyphNameChanged", (event) =>
-      this.glyphNameChangedCallback(event.detail)
+      this.glyphNameChangedCallback(event.detail, false)
+    );
+    this.glyphSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) =>
+      this.glyphNameChangedCallback(event.detail, true)
     );
     this.editorController.fontController.addChangeListener({ glyphMap: null }, () => {
       this.glyphSearch.updateGlyphNamesListContent();
@@ -26,9 +29,18 @@ export default class GlyphSearchPanel extends Panel {
     this.editorController.fontController.ensureInitialized.then(() => {
       this.glyphSearch.glyphMap = this.editorController.fontController.glyphMap;
     });
+
+    this.editorController.sceneSettingsController.addKeyListener(
+      "selectedGlyphName",
+      (event) => {
+        if (event.newValue !== this.glyphSearch.getSelectedGlyphName()) {
+          this.glyphSearch.setSelectedGlyphName(event.newValue);
+        }
+      }
+    );
   }
 
-  glyphNameChangedCallback(glyphName) {
+  glyphNameChangedCallback(glyphName, isDoubleClick) {
     if (!glyphName) {
       return;
     }
@@ -36,11 +48,11 @@ export default class GlyphSearchPanel extends Panel {
       this.editorController.fontController.glyphInfoFromGlyphName(glyphName);
     let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
     const glyphLines = [...this.editorController.sceneSettings.glyphLines];
-    if (selectedGlyphState) {
+    if (selectedGlyphState && !isDoubleClick) {
       glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
         glyphInfo;
       this.editorController.sceneSettings.glyphLines = glyphLines;
-    } else {
+    } else if (!selectedGlyphState && isDoubleClick) {
       if (!glyphLines.length) {
         glyphLines.push([]);
       }
