@@ -495,6 +495,12 @@ body {
   padding: 0.5em;
 }
 
+:root {
+  --metrics-handle-color: rgb(153 153 153);
+  --positive-metrics-handle-color: rgb(23 89 241);
+  --negative-metrics-handle-color: rgb(241 23 89);
+}
+
 sidebearing-handle {
   font-size: 0.8em;
   user-select: none;
@@ -505,22 +511,31 @@ sidebearing-handle {
 sidebearing-handle > .advance,
 sidebearing-handle > .left-sidebearing,
 sidebearing-handle > .right-sidebearing {
+  --sb-bg-color: var(--metrics-handle-color);
   position: absolute;
   box-sizing: border-box;
   padding: 0.1em 0.6em 0.1em 0.6em;
   border-radius: 0.66em;
   transform: translate(-50%, 50%);
-  background-color: #999a;
+  background-color: rgb(from var(--sb-bg-color) r g b / 63%);
   color: white;
   pointer-events: auto;
 }
 
+sidebearing-handle > .positive {
+  --sb-bg-color: var(--positive-metrics-handle-color);
+}
+
+sidebearing-handle > .negative {
+  --sb-bg-color: var(--negative-metrics-handle-color);
+}
+
 sidebearing-handle > .selected {
-  background-color: #999;
+  background-color: var(--sb-bg-color);
 }
 
 sidebearing-handle > .hovered {
-  box-shadow: 0 0 0.7em #aaa;
+  box-shadow: 0 0 0.7em var(--sb-bg-color);
 }
 
 sidebearing-handle > .advance {
@@ -543,6 +558,7 @@ sidebearing-handle > .right-sidebearing {
 }
 
 kerning-handle {
+  --kern-bg-color: var(--metrics-handle-color);
   display: grid;
   grid-template-columns: auto auto;
   gap: 0em 0.5em;
@@ -554,7 +570,7 @@ kerning-handle {
   padding: 0.2em 0.8em 0.2em 0.8em;
   border-radius: 0.66em;
   color: white;
-  background-color: #999a;
+  background-color: rgb(from var(--kern-bg-color) r g b / 63%);
   cursor: ew-resize;
   user-select: none;
   transform: translate(-50%, 50%);
@@ -569,21 +585,13 @@ kerning-handle > .group {
 }
 
 kerning-handle.selected {
-  background-color: #999;
+  background-color: var(--kern-bg-color);
 }
 
 kerning-handle.positive {
-  background-color: #1759f1aa;
+  --kern-bg-color: var(--positive-metrics-handle-color);
 }
 
 kerning-handle.negative {
-  background-color: #f11759aa;
-}
-
-kerning-handle.positive.selected {
-  background-color: #1759f1;
-}
-
-kerning-handle.negative.selected {
-  background-color: #f11759;
+  --kern-bg-color: var(--negative-metrics-handle-color);
 }

@@ -761,9 +761,26 @@ class SidebearingHandle extends BaseMetricHandle {
       positionedGlyph.glyph.leftMargin,
       "\u00A0"
     );
+    this.leftSidebearingElement.classList.toggle(
+      "positive",
+      positionedGlyph.glyph.leftMargin > 0
+    );
+    this.leftSidebearingElement.classList.toggle(
+      "negative",
+      positionedGlyph.glyph.leftMargin < 0
+    );
+
     this.rightSidebearingElement.innerText = formatMetricValue(
       positionedGlyph.glyph.rightMargin,
       "\u00A0"
+    );
+    this.rightSidebearingElement.classList.toggle(
+      "positive",
+      positionedGlyph.glyph.rightMargin > 0
+    );
+    this.rightSidebearingElement.classList.toggle(
+      "negative",
+      positionedGlyph.glyph.rightMargin < 0
     );
   }
 
