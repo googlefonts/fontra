@@ -26,6 +26,15 @@ export default class GlyphSearchPanel extends Panel {
     this.editorController.fontController.ensureInitialized.then(() => {
       this.glyphSearch.glyphMap = this.editorController.fontController.glyphMap;
     });
+
+    this.editorController.sceneSettingsController.addKeyListener(
+      "selectedGlyphName",
+      (event) => {
+        if (event.newValue !== this.glyphSearch.getSelectedGlyphName()) {
+          this.glyphSearch.setSelectedGlyphName(event.newValue);
+        }
+      }
+    );
   }
 
   glyphNameChangedCallback(glyphName) {
