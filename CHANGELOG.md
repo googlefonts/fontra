@@ -9,7 +9,7 @@
   - Use shift-click to select multiple sidebearings.
   - Clicking on the glyph shape is equivalent to selecting the left sidebearing and the right sidebearing together.
   - When dragging multiple sidebearings across multiple glyphs, the sidebearings all move with the pointer.
-  - Use the alt key to make opposite sidebearings move in opposite directions. For example, if you drag a right sidebearing to the right while holding the alt key, left side bearings move to the left, and vice versa.
+  - Use the alt key to make opposite sidebearings move in opposite directions. For example, if you drag a right sidebearing to the right while holding the alt key, selected left side bearings move to the left, and vice versa.
   - Using the alt key while dragging the glyph shape will increase or decrease both sidebearings.
   - Arrow keys can use used to nudge selected sidebearings.
   - Shift-arrow key will increment/decrement sidebearing values in steps of 10.
