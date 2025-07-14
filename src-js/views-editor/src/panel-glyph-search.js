@@ -33,7 +33,10 @@ export default class GlyphSearchPanel extends Panel {
     this.editorController.sceneSettingsController.addKeyListener(
       "selectedGlyphName",
       (event) => {
-        if (event.newValue !== this.glyphSearch.getSelectedGlyphName()) {
+        if (
+          event.newValue &&
+          event.newValue !== this.glyphSearch.getSelectedGlyphName()
+        ) {
           this.glyphSearch.setSelectedGlyphName(event.newValue);
         }
       }
@@ -67,6 +70,7 @@ export default class GlyphSearchPanel extends Panel {
     }
 
     this.editorController.sceneSettings.selectedGlyph = selectedGlyphState;
+    this.editorController.sceneSettings.substituteGlyphName = glyphName;
   }
 
   getContentElement() {

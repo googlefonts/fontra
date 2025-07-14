@@ -125,7 +125,7 @@ export class SceneController {
         event.newValue,
         this.fontController.characterMap,
         this.fontController.glyphMap,
-        this._previousSelectedGlyphName
+        this.sceneSettings.substituteGlyphName
       );
       this.sceneSettingsController.setItem("glyphLines", glyphLines, {
         senderID: this,
@@ -250,6 +250,9 @@ export class SceneController {
           this.sceneSettings.selectedGlyph,
           this.sceneSettings.glyphLines
         );
+        if (this.sceneSettings.selectedGlyphName) {
+          this.sceneSettings.substituteGlyphName = this.sceneSettings.selectedGlyphName;
+        }
       },
       true
     );
@@ -396,6 +399,10 @@ export class SceneController {
 
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateCurrentGlyphChangeListeners();
+    });
+
+    this.sceneSettingsController.addKeyListener("substituteGlyphName", (event) => {
+      this._updateSubstituteGlyph();
     });
 
     this.sceneSettingsController.addKeyListener(
@@ -595,15 +602,22 @@ export class SceneController {
       this.fontController.addGlyphChangeListener(glyphName, listener);
     }
     this._currentSelectedGlyphName = glyphName;
-    if (glyphName) {
-      this._previousSelectedGlyphName = glyphName;
+  }
+
+  _updateSubstituteGlyph() {
+    if (
+      !this.sceneSettings.glyphLines.some((line) =>
+        line.some((glyphInfo) => glyphInfo.isPlaceholder)
+      )
+    ) {
+      return;
     }
 
     const glyphLines = glyphLinesFromText(
       this.sceneSettings.text,
       this.fontController.characterMap,
       this.fontController.glyphMap,
-      this._previousSelectedGlyphName
+      this.sceneSettings.substituteGlyphName
     );
     this.sceneSettingsController.setItem("glyphLines", glyphLines, {
       senderID: this,
