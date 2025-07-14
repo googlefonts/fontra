@@ -2,7 +2,7 @@
 
 ## 2025-07-14
 
-- Added a new Sidebearing tool, as a companion to the Kerning tool. Both tools occupy the same slot in the toolbar, with the Sidebearing tool being the default. Quick intro:
+- Added a new Sidebearing tool, as a companion to the Kerning tool. Both tools occupy the same slot in the toolbar, with the Sidebearing tool being the default. [Issue 2213](https://github.com/googlefonts/fontra/issues/2213), [PR 2216](https://github.com/googlefonts/fontra/pull/2216) Quick intro:
   - Hover over a glyph to see the sidebearing and advance values.
   - Click-drag near a sidebearing to move it
   - Click-drag on the glyph shape to move the glyph within its "advance area".
@@ -14,7 +14,6 @@
   - Arrow keys can use used to nudge selected sidebearings.
   - Shift-arrow key will increment/decrement sidebearing values in steps of 10.
   - The tab key can be used to navigate to the next sidebearing. Shift-tab will navigate to the previous sidebearing.
-    [Issue 2213](https://github.com/googlefonts/fontra/issues/2213), [PR 2216](https://github.com/googlefonts/fontra/pull/2216)
 - Some minor changes to the Kerning tool that we done in [PR 2216](https://github.com/googlefonts/fontra/pull/2216):
   - The cursor used for dragging is now a left-right arrow, to be more in line with the Sidebearing tool.
   - The tab key can now be used to navigate to the next kerning pair. Shift-tab will navigate to the previous kerning pair.
