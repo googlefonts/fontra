@@ -516,7 +516,7 @@ sidebearing-handle > .right-sidebearing {
   box-sizing: border-box;
   padding: 0.1em 0.6em 0.1em 0.6em;
   border-radius: 0.66em;
-  transform: translate(-50%, 50%);
+  transform: translate(-50%, 100%);
   background-color: rgb(from var(--sb-bg-color) r g b / 63%);
   color: white;
   pointer-events: auto;
@@ -544,14 +544,14 @@ sidebearing-handle > .advance {
 }
 
 sidebearing-handle > .left-sidebearing {
-  transform: translate(0%, 50%);
+  transform: translate(0%, 100%);
   left: 0%;
   cursor: w-resize;
   border-radius: 0.1em 0.66em 0.66em 0.1em;
 }
 
 sidebearing-handle > .right-sidebearing {
-  transform: translate(-100%, 50%);
+  transform: translate(-100%, 100%);
   left: 100%;
   cursor: e-resize;
   border-radius: 0.66em 0.1em 0.1em 0.66em;
