@@ -47,10 +47,13 @@ export default class GlyphSearchPanel extends Panel {
     if (!glyphName) {
       return;
     }
+
     const glyphInfo =
       this.editorController.fontController.glyphInfoFromGlyphName(glyphName);
+
     let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
     const glyphLines = [...this.editorController.sceneSettings.glyphLines];
+
     if (selectedGlyphState && !isDoubleClick) {
       if (
         !glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex]
