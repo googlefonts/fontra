@@ -610,6 +610,7 @@ export class SceneController {
         line.some((glyphInfo) => glyphInfo.isPlaceholder)
       )
     ) {
+      // No /? placeholder in the input, nothing to do
       return;
     }
 
