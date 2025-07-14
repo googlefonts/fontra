@@ -446,6 +446,7 @@ export const strings = {
   "sidebar.user-settings.glyph.referencefont": "Referenz-Font",
   "sidebar.user-settings.glyph.sidebearings":
     "Glyph-Rand für nicht editierende Glyphen",
+  "sidebar.user-settings.glyph.sidebearings-tool": "Sidebearings (tool)",
   "sidebar.user-settings.glyph.statuscolor": "Entwicklungsstatus Farbe",
   "sidebar.user-settings.glyph.upmgrid": "UPM-Raster (Units-per-em)",
   "sidebar.user-settings.guidelines": "Hilfslinien",

@@ -437,6 +437,7 @@ export const strings = {
   "sidebar.user-settings.glyph.powerruler": "Power Ruler",
   "sidebar.user-settings.glyph.referencefont": "Referentiefont",
   "sidebar.user-settings.glyph.sidebearings": "Breedtes voor overige glyphs",
+  "sidebar.user-settings.glyph.sidebearings-tool": "Sidebearings (tool)",
   "sidebar.user-settings.glyph.statuscolor": "Onwikkelingsstatuskleur",
   "sidebar.user-settings.glyph.upmgrid": "Units-per-em grid",
   "sidebar.user-settings.guidelines": "Guidelines",

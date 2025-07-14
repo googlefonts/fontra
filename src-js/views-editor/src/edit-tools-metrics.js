@@ -11,6 +11,7 @@ import { equalGlyphSelection } from "./scene-controller.js";
 import {
   glyphSelector,
   registerVisualizationLayerDefinition,
+  strokeLine,
 } from "./visualization-layer-definitions.js";
 
 export class MetricsTool {
@@ -350,9 +351,79 @@ class MetricsBaseTool extends BaseTool {
   }
 }
 
+let theSidebearingTool; // global singleton
+
+function sidebearingVisualizationSelector(forTool) {
+  return (visContext, layer) => {
+    if (forTool === theSidebearingTool?.isActive) {
+      return glyphSelector("notediting")(visContext, layer);
+    } else {
+      return [];
+    }
+  };
+}
+
+const sidebearingVisualizationDefinition = {
+  identifier: "fontra.sidebearings.unselected",
+  name: "sidebar.user-settings.glyph.sidebearings",
+  selectionFunc: sidebearingVisualizationSelector(false),
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 190,
+  screenParameters: { strokeWidth: 1, extent: 16 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: _drawMiniSideBearings,
+};
+
+registerVisualizationLayerDefinition(sidebearingVisualizationDefinition);
+
+registerVisualizationLayerDefinition({
+  ...sidebearingVisualizationDefinition,
+  identifier: "fontra.sidebearings-tool",
+  name: "sidebar.user-settings.glyph.sidebearings-tool",
+  selectionFunc: sidebearingVisualizationSelector(true),
+  defaultOn: true,
+});
+
+registerVisualizationLayerDefinition({
+  ...sidebearingVisualizationDefinition,
+  identifier: "fontra.sidebearings",
+  name: "sidebar.selection-info.sidebearings",
+  selectionFunc: glyphSelector("editing"),
+});
+
+function _drawMiniSideBearings(
+  context,
+  positionedGlyph,
+  parameters,
+  model,
+  controller
+) {
+  const glyph = positionedGlyph.glyph;
+  context.strokeStyle = parameters.strokeColor;
+  context.lineWidth = parameters.strokeWidth;
+  const extent = parameters.extent;
+  strokeLine(context, 0, -extent, 0, extent);
+  strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
+  if (extent < glyph.xAdvance / 2) {
+    strokeLine(context, 0, 0, extent, 0);
+    strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
+  } else {
+    strokeLine(context, 0, 0, glyph.xAdvance, 0);
+  }
+}
+
 class SidebearingTool extends MetricsBaseTool {
   iconPath = "/images/sidebearingtool.svg";
   identifier = "sidebearing-tool";
+
+  constructor(editor) {
+    super(editor);
+
+    assert(!theSidebearingTool);
+    theSidebearingTool = this;
+  }
 
   selectorToId(selector) {
     return sidebearingSelectorToId(selector);

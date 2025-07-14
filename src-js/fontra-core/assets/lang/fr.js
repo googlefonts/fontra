@@ -454,6 +454,7 @@ export const strings = {
   "sidebar.user-settings.glyph.powerruler": "Power Ruler",
   "sidebar.user-settings.glyph.referencefont": "Fonte de référence",
   "sidebar.user-settings.glyph.sidebearings": "Approches pour les glyphes non édités",
+  "sidebar.user-settings.glyph.sidebearings-tool": "Sidebearings (tool)",
   "sidebar.user-settings.glyph.statuscolor": "Couleurs des statuts de développement",
   "sidebar.user-settings.glyph.upmgrid": "Grille UPM (Units-per-em)",
   "sidebar.user-settings.guidelines": "Guides",

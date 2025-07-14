@@ -414,6 +414,7 @@ export const strings = {
   "sidebar.user-settings.glyph.powerruler": "测量尺",
   "sidebar.user-settings.glyph.referencefont": "参考字体",
   "sidebar.user-settings.glyph.sidebearings": "非编辑字形的边距",
+  "sidebar.user-settings.glyph.sidebearings-tool": "Sidebearings (tool)",
   "sidebar.user-settings.glyph.statuscolor": "开发状态颜色标签",
   "sidebar.user-settings.glyph.upmgrid": "UPM 网格",
   "sidebar.user-settings.guidelines": "参考线",

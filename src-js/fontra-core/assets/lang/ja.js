@@ -439,6 +439,7 @@ export const strings = {
   "sidebar.user-settings.glyph.referencefont": "リファレンスフォントを表示",
   "sidebar.user-settings.glyph.sidebearings":
     "非編集中のグリフのサイドベアリングを表示",
+  "sidebar.user-settings.glyph.sidebearings-tool": "Sidebearings (tool)",
   "sidebar.user-settings.glyph.statuscolor": "開発ステータスカラーを表示",
   "sidebar.user-settings.glyph.upmgrid": "UPMグリッドを表示",
   "sidebar.user-settings.guidelines": "ガイドラインを表示",
