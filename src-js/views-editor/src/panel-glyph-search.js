@@ -52,9 +52,14 @@ export default class GlyphSearchPanel extends Panel {
     let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
     const glyphLines = [...this.editorController.sceneSettings.glyphLines];
     if (selectedGlyphState && !isDoubleClick) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.editorController.sceneSettings.glyphLines = glyphLines;
+      if (
+        !glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex]
+          .isPlaceholder
+      ) {
+        glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
+          glyphInfo;
+        this.editorController.sceneSettings.glyphLines = glyphLines;
+      }
     } else if (!selectedGlyphState && isDoubleClick) {
       if (!glyphLines.length) {
         glyphLines.push([]);
