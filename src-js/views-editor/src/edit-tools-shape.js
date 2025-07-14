@@ -13,7 +13,7 @@ export class ShapeTool {
 }
 
 export class ShapeToolRect extends BaseTool {
-  iconPath = "/tabler-icons/square-plus-2.svg";
+  iconPath = "/images/rectangletool.svg";
   identifier = "shape-tool-rectangle";
   shapeNames = ["rectangle", "square"];
 
@@ -196,7 +196,7 @@ export function getUnpackedContoursRect(x, y, width, height, contourType = "cubi
 }
 
 export class ShapeToolEllipse extends ShapeToolRect {
-  iconPath = "/tabler-icons/circle-plus-2.svg";
+  iconPath = "/images/ovaltool.svg";
   identifier = "shape-tool-ellipse";
   shapeNames = ["ellipse", "circle"];
 

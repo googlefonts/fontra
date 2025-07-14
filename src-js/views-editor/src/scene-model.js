@@ -521,12 +521,19 @@ export class SceneModel {
     return { longestLineLength, positionedLines };
   }
 
-  async getGlyphInstance(glyphName, layerName) {
-    const location = {
+  getLocationForGlyph(glyphName) {
+    return {
       ...this.sceneSettings.fontLocationSourceMapped,
       ...this._glyphLocations[glyphName],
     };
-    return await this.fontController.getGlyphInstance(glyphName, location, layerName);
+  }
+
+  async getGlyphInstance(glyphName, layerName) {
+    return await this.fontController.getGlyphInstance(
+      glyphName,
+      this.getLocationForGlyph(glyphName),
+      layerName
+    );
   }
 
   selectionAtPoint(
@@ -961,7 +968,7 @@ export class SceneModel {
     return foundGlyph;
   }
 
-  kerningAtPoint(point, size) {
+  lineAtPoint(point) {
     if (!this.positionedLines.length) {
       return;
     }
@@ -975,25 +982,113 @@ export class SceneModel {
       }
       const firstGlyph = line.glyphs[0];
       const lastGlyph = line.glyphs.at(-1);
+      const lastGlyphRight = lastGlyph.x + lastGlyph.glyph.xAdvance;
+
       const metricsBox = {
-        xMin: firstGlyph.x,
+        xMin: line.bounds ? Math.min(firstGlyph.x, line.bounds.xMin) : firstGlyph.x,
         yMin: firstGlyph.y + descender,
-        xMax: lastGlyph.x + lastGlyph.glyph.xAdvance,
+        xMax: line.bounds ? Math.max(lastGlyphRight, line.bounds.xMax) : lastGlyphRight,
         yMax: firstGlyph.y + ascender,
       };
       if (!pointInRect(point.x, point.y, metricsBox)) {
         continue;
       }
 
-      for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
-        const positionedGlyph = line.glyphs[glyphIndex];
-        const leftPos = positionedGlyph.x;
-        const kernRange = [leftPos - positionedGlyph.kernValue, leftPos].sort(
-          (a, b) => a - b
-        );
-        if (valueInRange(kernRange[0] - size, point.x, kernRange[1] + size)) {
-          return { lineIndex, glyphIndex };
-        }
+      return { lineIndex, line };
+    }
+  }
+
+  sidebearingAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
+    const glyphHit = this.glyphAtPoint(point);
+    let lineIndex;
+    let glyphsToTry;
+
+    if (glyphHit) {
+      lineIndex = glyphHit.lineIndex;
+      glyphsToTry = [
+        [
+          glyphHit.glyphIndex,
+          this.positionedLines[lineIndex].glyphs[glyphHit.glyphIndex],
+        ],
+      ];
+    } else {
+      const lineHit = this.lineAtPoint(point);
+      if (!lineHit) {
+        return;
+      }
+      lineIndex = lineHit.lineIndex;
+      glyphsToTry = enumerate(lineHit.line.glyphs);
+    }
+
+    const matches = [];
+
+    for (const [glyphIndex, positionedGlyph] of glyphsToTry) {
+      const glyph = positionedGlyph.glyph;
+
+      const xLeft = positionedGlyph.x;
+      const xRight = positionedGlyph.x + glyph.xAdvance;
+
+      const xLeftSB = xLeft + (glyph.leftMargin || 0);
+      const xRightSB = xRight - (glyph.rightMargin || 0);
+
+      const [leftZone1, leftZone2] = sorted([xLeft, xLeftSB]);
+      const [rightZone1, rightZone2] = sorted([xRight, xRightSB]);
+
+      const middle = (xLeft + xRight) / 2;
+
+      const leftExtra = glyph.leftMargin > 0 ? 0 : size;
+      const rightExtra = glyph.rightMargin > 0 ? 0 : size;
+
+      const zonesOverlap = leftZone2 > rightZone1;
+
+      if (
+        !zonesOverlap &&
+        valueInRange(rightZone1 - size, point.x, rightZone2 + rightExtra)
+      ) {
+        matches.push({ lineIndex, glyphIndex, metric: "right" });
+      } else if (
+        !zonesOverlap &&
+        valueInRange(leftZone1 - leftExtra, point.x, leftZone2 + size)
+      ) {
+        matches.push({ lineIndex, glyphIndex, metric: "left" });
+      } else if (glyphHit) {
+        matches.push({ lineIndex, glyphIndex, metric: "shape" });
+      } else if (valueInRange(middle, point.x, xRight)) {
+        matches.push({ lineIndex, glyphIndex, metric: "right" });
+      } else if (valueInRange(xLeft, point.x, middle)) {
+        matches.push({ lineIndex, glyphIndex, metric: "left" });
+      }
+    }
+
+    if (!matches.length) {
+      return;
+    }
+
+    const match =
+      matches.find(
+        (match) =>
+          match.lineIndex === previousLineIndex &&
+          match.glyphIndex === previousGlyphIndex
+      ) || matches[0];
+
+    return match;
+  }
+
+  kerningAtPoint(point, size) {
+    const result = this.lineAtPoint(point);
+    if (!result) {
+      return;
+    }
+    const { lineIndex, line } = result;
+
+    for (let glyphIndex = 1; glyphIndex < line.glyphs.length; glyphIndex++) {
+      const positionedGlyph = line.glyphs[glyphIndex];
+      const leftPos = positionedGlyph.x;
+      const kernRange = [leftPos - positionedGlyph.kernValue, leftPos].sort(
+        (a, b) => a - b
+      );
+      if (valueInRange(kernRange[0] - size, point.x, kernRange[1] + size)) {
+        return { lineIndex, glyphIndex };
       }
     }
   }
@@ -1086,4 +1181,10 @@ export function getSelectedGlyphInfo(selectedGlyph, glyphLines) {
 
 export function getSelectedGlyphName(selectedGlyph, glyphLines) {
   return getSelectedGlyphInfo(selectedGlyph, glyphLines)?.glyphName;
+}
+
+function sorted(v) {
+  v = [...v];
+  v.sort((a, b) => a - b);
+  return v;
 }

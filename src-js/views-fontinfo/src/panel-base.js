@@ -1,3 +1,8 @@
+import {
+  doPerformAction,
+  getActionIdentifierFromKeyEvent,
+} from "@fontra/core/actions.js";
+
 import { UndoStack, reverseUndoRecord } from "@fontra/core/font-controller.js";
 import * as html from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
@@ -38,12 +43,11 @@ export class BaseInfoPanel {
   }
 
   handleKeyDown(event) {
-    if (event[commandKeyProperty]) {
-      if (event.key == "z") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        this.doUndoRedo(event.shiftKey);
-      }
+    const actionIdentifier = getActionIdentifierFromKeyEvent(event);
+    if (actionIdentifier) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      doPerformAction(actionIdentifier, event);
     }
   }
 

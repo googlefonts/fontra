@@ -1,8 +1,45 @@
 # Changelog for Fontra
 
+## 2025-07-14
+
+- Added a new Sidebearing tool, as a companion to the Kerning tool. Both tools occupy the same slot in the toolbar, with the Sidebearing tool being the default. [Issue 2213](https://github.com/googlefonts/fontra/issues/2213), [PR 2216](https://github.com/googlefonts/fontra/pull/2216) Quick intro:
+  - Hover over a glyph to see the sidebearing and advance values.
+  - Click-drag near a sidebearing to move it
+  - Click-drag on the glyph shape to move the glyph within its "advance area".
+  - Use shift-click to select multiple sidebearings.
+  - Clicking on the glyph shape is equivalent to selecting the left sidebearing and the right sidebearing together.
+  - When dragging multiple sidebearings across multiple glyphs, the sidebearings all move with the pointer.
+  - Use the alt key to make opposite sidebearings move in opposite directions. For example, if you drag a right sidebearing to the right while holding the alt key, selected left side bearings move to the left, and vice versa.
+  - Using the alt key while dragging the glyph shape will increase or decrease both sidebearings.
+  - Arrow keys can use used to nudge selected sidebearings.
+  - Shift-arrow key will increment/decrement sidebearing values in steps of 10.
+  - The tab key can be used to navigate to the next sidebearing. Shift-tab will navigate to the previous sidebearing.
+- Some minor changes to the Kerning tool that we done in [PR 2216](https://github.com/googlefonts/fontra/pull/2216):
+  - The cursor used for dragging is now a left-right arrow, to be more in line with the Sidebearing tool.
+  - The tab key can now be used to navigate to the next kerning pair. Shift-tab will navigate to the previous kerning pair.
+
+## 2025-07-08
+
+- Herlan/navv-1 contributed several improvements and additions for the OpenType Features panel:
+
+  - added syntax coloring
+  - added comment toggle (command/control /)
+  - fixed undo/redo
+  - fixed a cosmetic issue on Windows
+  - and more
+
+  [Issue 2101](https://github.com/googlefonts/fontra/issues/2101), [Issue 2186](https://github.com/googlefonts/fontra/issues/2186), [PR 2212](https://github.com/googlefonts/fontra/pull/2212)
+
+## 2025-07-04
+
+- Gaëtan Baehr and Jérémie Hornus redesigned several of the edit tools: the knife tool, the shape/rectangle/oval tool, the kerning tool and the (soon-to-be-used) sidebearings tool. [PR 2210](https://github.com/googlefonts/fontra/pull/2210)
+- [Kerning] The kerning tool now has a context menu, allowing users to make kerning exceptions for group kerning. [Issue 2204](https://github.com/googlefonts/fontra/issues/2204) [PR 2209](https://github.com/googlefonts/fontra/pull/2209)
+- Added a Bengali glyph set, kindly contributed by Dr Anirban Mitra. [Issue 2189](https://github.com/googlefonts/fontra/issues/2189) [PR 2190](https://github.com/googlefonts/fontra/pull/2190)
+
 ## 2025-07-03
 
 - [Glyphs backend] Implemented "Find glyphs that use _this glyph_". [fontra-glyphs issue 103](https://github.com/googlefonts/fontra-glyphs/issues/103) [fontra-glyphs PR 104](https://github.com/googlefonts/fontra-glyphs/pull/104)
+- [Kerning] Allow kerning edits to be constrained to 5, 10 or 50 units, by using alt, shift or als-shift while dragging. Make arrow key kerning editing behave the same with respect to these modifier keys. Contributed by Gaëtan Baehr. [PR 2205](https://github.com/googlefonts/fontra/pull/2205)
 
 ## 2025-07-01
 

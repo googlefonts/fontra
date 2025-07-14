@@ -25,6 +25,10 @@ export class BaseTool {
   handleKeyDown(event) {
     //
   }
+
+  getContextMenuItems() {
+    return [];
+  }
 }
 
 const MINIMUM_DRAG_DISTANCE = 2;

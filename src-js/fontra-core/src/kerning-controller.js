@@ -129,11 +129,12 @@ export class KerningController {
     for (const [leftName, rightName] of pairsToTry) {
       const sourceValues = this.getPairValues(leftName, rightName);
       if (sourceValues) {
-        return [leftName, rightName];
+        return { leftName, rightName };
       }
     }
 
-    return pairsToTry.at(-1);
+    const [leftName, rightName] = pairsToTry.at(-1);
+    return { leftName, rightName };
   }
 
   getPairsToTry(leftGlyph, rightGlyph) {
@@ -288,11 +289,8 @@ class KerningEditContext {
     }
   }
 
-  async edit(values, undoLabel) {
-    function* valuesGenerator() {
-      yield values;
-    }
-    return await this.editContinuous(valuesGenerator(), undoLabel);
+  async edit(values, undoLabel, event) {
+    return await this.editContinuous([{ values, event }], undoLabel);
   }
 
   async editContinuous(valuesIterator, undoLabel) {
@@ -350,7 +348,7 @@ class KerningEditContext {
 
     let firstChanges;
     let lastChanges;
-    for await (const newValues of valuesIterator) {
+    for await (const { values: newValues } of valuesIterator) {
       assert(newValues.length === this.pairSelectors.length);
       lastChanges = recordChanges(font, (font) => {
         const kernData = font.kerning[this.kerningController.kernTag];
