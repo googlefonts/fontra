@@ -1,5 +1,24 @@
 # Changelog for Fontra
 
+## 2025-07-14
+
+- Added a new Sidebearing tool, as a companion to the Kerning tool. Both tools occupy the same slot in the toolbar, with the Sidebearing tool being the default. Quick intro:
+  - Hover over a glyph to see the sidebearing and advance values.
+  - Click-drag near a sidebearing to move it
+  - Click-drag on the glyph shape to move the glyph within its "advance area".
+  - Use shift-click to select multiple sidebearings.
+  - Clicking on the glyph shape is equivalent to selecting the left sidebearing and the right sidebearing together.
+  - When dragging multiple sidebearings across multiple glyphs, the sidebearings all move with the pointer.
+  - Use the alt key to make opposite sidebearings move in opposite directions. For example, if you drag a right sidebearing to the right while holding the alt key, left side bearings move to the left, and vice versa.
+  - Using the alt key while dragging the glyph shape will increase or decrease both sidebearings.
+  - Arrow keys can use used to nudge selected sidebearings.
+  - Shift-arrow key will increment/decrement sidebearing values in steps of 10.
+  - The tab key can be used to navigate to the next sidebearing. Shift-tab will navigate to the previous sidebearing.
+    [Issue 2213](https://github.com/googlefonts/fontra/issues/2213), [PR 2216](https://github.com/googlefonts/fontra/pull/2216)
+- Some minor changes to the Kerning tool that we done in [PR 2216](https://github.com/googlefonts/fontra/pull/2216):
+  - The cursor used for dragging is now a left-right arrow, to be more in line with the Sidebearing tool.
+  - The tab key can now be used to navigate to the next kerning pair. Shift-tab will navigate to the previous kerning pair.
+
 ## 2025-07-08
 
 - Herlan/navv-1 contributed several improvements and additions for the OpenType Features panel:
