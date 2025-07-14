@@ -999,15 +999,30 @@ export class SceneModel {
   }
 
   sidebearingAtPoint(point, size, previousLineIndex, previousGlyphIndex) {
-    const result = this.lineAtPoint(point);
-    if (!result) {
-      return;
+    const glyphHit = this.glyphAtPoint(point);
+    let lineIndex;
+    let glyphsToTry;
+
+    if (glyphHit) {
+      lineIndex = glyphHit.lineIndex;
+      glyphsToTry = [
+        [
+          glyphHit.glyphIndex,
+          this.positionedLines[lineIndex].glyphs[glyphHit.glyphIndex],
+        ],
+      ];
+    } else {
+      const lineHit = this.lineAtPoint(point);
+      if (!lineHit) {
+        return;
+      }
+      lineIndex = lineHit.lineIndex;
+      glyphsToTry = enumerate(lineHit.line.glyphs);
     }
-    const { lineIndex, line } = result;
 
     const matches = [];
 
-    for (const [glyphIndex, positionedGlyph] of enumerate(line.glyphs)) {
+    for (const [glyphIndex, positionedGlyph] of glyphsToTry) {
       const glyph = positionedGlyph.glyph;
 
       const xLeft = positionedGlyph.x;
@@ -1036,13 +1051,7 @@ export class SceneModel {
         valueInRange(leftZone1 - leftExtra, point.x, leftZone2 + size)
       ) {
         matches.push({ lineIndex, glyphIndex, metric: "left" });
-      } else if (
-        pointInConvexPolygon(
-          point.x - positionedGlyph.x,
-          point.y - positionedGlyph.y,
-          positionedGlyph.glyph.convexHull || []
-        )
-      ) {
+      } else if (glyphHit) {
         matches.push({ lineIndex, glyphIndex, metric: "shape" });
       } else if (valueInRange(middle, point.x, xRight)) {
         matches.push({ lineIndex, glyphIndex, metric: "right" });
