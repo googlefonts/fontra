@@ -3212,6 +3212,7 @@ export class EditorController extends ViewController {
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
+    this.sceneSettings.substituteGlyphName = viewInfo["substituteGlyphName"];
 
     if (viewInfo["editLayerName"]) {
       this.sceneSettings.editLayerName = viewInfo["editLayerName"];
@@ -3266,6 +3267,10 @@ export class EditorController extends ViewController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
+    if (this.sceneSettings.substituteGlyphName) {
+      viewInfo["substituteGlyphName"] = this.sceneSettings.substituteGlyphName;
+    }
+
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
     if (this.sceneSettings.fontAxesUseSourceCoordinates) {
       viewInfo["fontAxesUseSourceCoordinates"] = true;
