@@ -120,11 +120,14 @@ export class GlyphSearchList extends SimpleElement {
     return this.glyphNamesList.items[this.glyphNamesList.selectedItemIndex]?.glyphName;
   }
 
-  setSelectedGlyphName(glyphName) {
+  setSelectedGlyphName(glyphName, shouldDispatchEvent = false) {
     const index = this.glyphNamesList.items.findIndex(
       (item) => item.glyphName === glyphName
     );
-    this.glyphNamesList.setSelectedItemIndex(index >= 0 ? index : undefined);
+    this.glyphNamesList.setSelectedItemIndex(
+      index >= 0 ? index : undefined,
+      shouldDispatchEvent
+    );
   }
 
   getFilteredGlyphNames() {
