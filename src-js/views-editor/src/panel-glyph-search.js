@@ -31,9 +31,12 @@ export default class GlyphSearchPanel extends Panel {
     });
 
     this.editorController.sceneSettingsController.addKeyListener(
-      "selectedGlyphName",
+      ["selectedGlyphName", "substituteGlyphName"],
       (event) => {
-        if (event.newValue !== this.glyphSearch.getSelectedGlyphName()) {
+        if (
+          event.newValue &&
+          event.newValue !== this.glyphSearch.getSelectedGlyphName()
+        ) {
           this.glyphSearch.setSelectedGlyphName(event.newValue);
         }
       }
@@ -44,14 +47,22 @@ export default class GlyphSearchPanel extends Panel {
     if (!glyphName) {
       return;
     }
+
     const glyphInfo =
       this.editorController.fontController.glyphInfoFromGlyphName(glyphName);
+
     let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
     const glyphLines = [...this.editorController.sceneSettings.glyphLines];
+
     if (selectedGlyphState && !isDoubleClick) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.editorController.sceneSettings.glyphLines = glyphLines;
+      if (
+        !glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex]
+          .isPlaceholder
+      ) {
+        glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
+          glyphInfo;
+        this.editorController.sceneSettings.glyphLines = glyphLines;
+      }
     } else if (!selectedGlyphState && isDoubleClick) {
       if (!glyphLines.length) {
         glyphLines.push([]);
@@ -67,6 +78,7 @@ export default class GlyphSearchPanel extends Panel {
     }
 
     this.editorController.sceneSettings.selectedGlyph = selectedGlyphState;
+    this.editorController.sceneSettings.substituteGlyphName = glyphName;
   }
 
   getContentElement() {

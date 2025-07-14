@@ -158,6 +158,7 @@ export class EditorController extends ViewController {
         "fontAxesSkipMapping",
         "selectedGlyph",
         "selection",
+        "substituteGlyphName",
         "text",
         "viewBox",
       ],
@@ -2899,20 +2900,22 @@ export class EditorController extends ViewController {
       return;
     }
 
-    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
-    if (!selectedGlyphName) {
-      return;
+    let newGlyphName;
+    const selectedGlyphName = panel.glyphSearch.getSelectedGlyphName();
+    if (selectedGlyphName) {
+      const index = glyphNames.indexOf(selectedGlyphName);
+      const newIndex =
+        index == -1
+          ? selectPrevious
+            ? glyphNames.length - 1
+            : 0
+          : modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
+      newGlyphName = glyphNames[newIndex];
+    } else {
+      newGlyphName = selectPrevious ? glyphNames.at(-1) : glyphNames[0];
     }
-    const index = glyphNames.indexOf(selectedGlyphName);
-    const newIndex =
-      index == -1
-        ? selectPrevious
-          ? glyphNames.length - 1
-          : 0
-        : modulo(index + (selectPrevious ? -1 : 1), glyphNames.length);
 
-    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphNames[newIndex]);
-    this.insertGlyphInfos([glyphInfo], 0, true);
+    panel.glyphSearch.setSelectedGlyphName(newGlyphName, true);
   }
 
   async doFindGlyphsThatUseGlyph() {
@@ -3210,6 +3213,7 @@ export class EditorController extends ViewController {
     }
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
+    this.sceneSettings.substituteGlyphName = viewInfo["substituteGlyphName"];
 
     if (viewInfo["editLayerName"]) {
       this.sceneSettings.editLayerName = viewInfo["editLayerName"];
@@ -3264,6 +3268,10 @@ export class EditorController extends ViewController {
     if (this.sceneSettings.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneSettings.selectedGlyph;
     }
+    if (this.sceneSettings.substituteGlyphName) {
+      viewInfo["substituteGlyphName"] = this.sceneSettings.substituteGlyphName;
+    }
+
     viewInfo["location"] = this.sceneSettings.fontLocationUser;
     if (this.sceneSettings.fontAxesUseSourceCoordinates) {
       viewInfo["fontAxesUseSourceCoordinates"] = true;
