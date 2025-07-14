@@ -158,6 +158,7 @@ export class EditorController extends ViewController {
         "fontAxesSkipMapping",
         "selectedGlyph",
         "selection",
+        "substituteGlyphName",
         "text",
         "viewBox",
       ],

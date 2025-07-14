@@ -31,7 +31,7 @@ export default class GlyphSearchPanel extends Panel {
     });
 
     this.editorController.sceneSettingsController.addKeyListener(
-      "selectedGlyphName",
+      ["selectedGlyphName", "substituteGlyphName"],
       (event) => {
         if (
           event.newValue &&
