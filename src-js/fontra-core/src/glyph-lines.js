@@ -1,16 +1,11 @@
 import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./glyph-data.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
-export function glyphLinesFromText(
-  text,
-  characterMap,
-  glyphMap,
-  currentSelectedGlyphName
-) {
+export function glyphLinesFromText(text, characterMap, glyphMap, substituteGlyphName) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
     glyphLines.push(
-      glyphNamesFromText(line, characterMap, glyphMap, currentSelectedGlyphName)
+      glyphNamesFromText(line, characterMap, glyphMap, substituteGlyphName)
     );
   }
   return glyphLines;
@@ -18,7 +13,7 @@ export function glyphLinesFromText(
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphName) {
+function glyphNamesFromText(text, characterMap, glyphMap, substituteGlyphName) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -29,7 +24,7 @@ function glyphNamesFromText(text, characterMap, glyphMap, currentSelectedGlyphNa
       if (text[i] == "/") {
         glyphName = characterMap[char.charCodeAt(0)];
       } else if (text[i] == "?") {
-        glyphName = currentSelectedGlyphName ? currentSelectedGlyphName : "";
+        glyphName = substituteGlyphName || "--placeholder--";
         char = charFromGlyphName(glyphName, characterMap, glyphMap);
         isPlaceholder = true;
       } else {
