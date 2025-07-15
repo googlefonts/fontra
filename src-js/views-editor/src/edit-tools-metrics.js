@@ -29,7 +29,10 @@ class MetricsBaseTool extends BaseTool {
 
     this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
       if (event.senderInfo?.senderID !== this) {
-        this.handles.forEach((handle) => handle.remove());
+        const positionedLines = this.sceneSettings.positionedLines;
+        this.metricSelection = this.metricSelection.filter(
+          (selector) => positionedLines[selector.lineIndex]?.glyphs[selector.glyphIndex]
+        );
       }
     });
 
