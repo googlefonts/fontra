@@ -1100,7 +1100,7 @@ export class SceneModel {
 
   get descender() {
     const lineMetrics = this.fontSourceInstance?.lineMetricsHorizontalLayout;
-    return lineMetrics?.descender?.value || model.fontController.unitsPerEm * -0.2;
+    return lineMetrics?.descender?.value || this.fontController.unitsPerEm * -0.2;
   }
 
   getSceneBounds() {
