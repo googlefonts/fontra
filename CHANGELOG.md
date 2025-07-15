@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-07-16
+
+- [Kerning tool] Changed delete vs. alt-delete behavior: plain delete will now delete the selected kerning pairs across the entire designspace. Alt-delete will only delete the selected kerning pairs for the currently selected source location. [PR 2224](https://github.com/googlefonts/fontra/pull/2224)
+
 ## 2025-07-15
 
 - Implemented a special placeholder notation `/?` for the text entry field, which will be substituted by the "current glyph". This is handy when spacing, kerning, or just looking at the current glyph in different context. Largely contributed by Gaëtan Baehr. [Issue 2198](https://github.com/googlefonts/fontra/issues/2198), [PR 2206](https://github.com/googlefonts/fontra/pull/2206) Some notes:
