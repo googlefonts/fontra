@@ -1,5 +1,12 @@
 # Changelog for Fontra
 
+## 2025-07-15
+
+- Implemented a special placeholder notation `/?` for the text entry field, which will be substituted by the "current glyph". This is handy when spacing, kerning, or just looking at the current glyph in different context. Largely contributed by Gaëtan Baehr. [Issue 2198](https://github.com/googlefonts/fontra/issues/2198), [PR 2206](https://github.com/googlefonts/fontra/pull/2206) Some notes:
+  - When deselecting the current glyph (by clicking elsewhere), the "current glyph" is not reset, but kept.
+  - The glyph search panel can be used to change the "current glyph", even if there's no glyph selected in the canvas.
+  - The "select next/previous glyph" shortcuts work on the "current glyph", even if there's no glyph selected in the canvas.
+
 ## 2025-07-14
 
 - Added a new Sidebearing tool, as a companion to the Kerning tool. Both tools occupy the same slot in the toolbar, with the Sidebearing tool being the default. [Issue 2213](https://github.com/googlefonts/fontra/issues/2213), [PR 2216](https://github.com/googlefonts/fontra/pull/2216) Quick intro:
