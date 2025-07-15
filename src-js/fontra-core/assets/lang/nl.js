@@ -145,6 +145,7 @@ export const strings = {
   "dialog.cant-edit-glyph.content.locked-glyph": "The glyph is locked.",
   "dialog.cant-edit-glyph.title": "Can’t edit glyph “%0”",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",
+  "dialog.cant-edit-sidebearings.title": "Can’t edit sidebearings",
   "dialog.create": "Creëer",
   "dialog.create-new-glyph.body": 'Klik "Creëer" om een nieuwe glyph "%0" te maken%1.',
   "dialog.create-new-glyph.body.2": ' voor karakter "%0" (%1)',

@@ -145,6 +145,7 @@ export const strings = {
   "dialog.cant-edit-glyph.content.locked-glyph": "Der Glyph ist gesperrt.",
   "dialog.cant-edit-glyph.title": "Kann Glyphen “%0” nicht bearbeiten",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",
+  "dialog.cant-edit-sidebearings.title": "Can’t edit sidebearings",
   "dialog.create": "Erstellen",
   "dialog.create-new-glyph.body":
     'Klicke "Erstellen" um einen neuen Glyphen hinzuzufügen mit dem Namen "%0"%1.',

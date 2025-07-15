@@ -143,6 +143,7 @@ export const strings = {
   "dialog.cant-edit-glyph.content.locked-glyph": "Le glyphe est vérouillé",
   "dialog.cant-edit-glyph.title": "Ne peut pas éditer le glyphe «%0»",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",
+  "dialog.cant-edit-sidebearings.title": "Can’t edit sidebearings",
   "dialog.create": "Créer",
   "dialog.create-new-glyph.body":
     'Cliquez «Créer» si vous voulez créer un nouveau glyphe nommé  "%0"%1.',

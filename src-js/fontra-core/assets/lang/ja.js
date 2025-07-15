@@ -144,6 +144,7 @@ export const strings = {
   "dialog.cant-edit-glyph.content.locked-glyph": "このグリフはロックされています。",
   "dialog.cant-edit-glyph.title": "グリフ“%0”を編集できませんでした。",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",
+  "dialog.cant-edit-sidebearings.title": "Can’t edit sidebearings",
   "dialog.create": "作成",
   "dialog.create-new-glyph.body":
     "グリフ名“%0”%1を作成する場合、“作成”をクリックしてください。",

@@ -599,8 +599,7 @@ class SidebearingTool extends MetricsBaseTool {
     }
 
     if (notAtSourceGlyphs.size) {
-      // TODO: dialog
-      console.log("some glyphs not at source location", [...notAtSourceGlyphs]);
+      this.showDialogLocationNotAtSource([...notAtSourceGlyphs].sort());
       return;
     }
 
@@ -633,6 +632,31 @@ class SidebearingTool extends MetricsBaseTool {
           metric: direction === 1 ? "left" : "right",
         };
       }
+    }
+  }
+
+  async showDialogLocationNotAtSource(glyphNames) {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    const result = await dialog(
+      translate("dialog.cant-edit-sidebearings.title"),
+      translate("dialog.cant-edit-glyph.content.location-not-at-source") +
+        "\n" +
+        glyphNames.join(", "),
+      [
+        {
+          title: translate("dialog.cancel"),
+          resultValue: "cancel",
+          isCancelButton: true,
+        },
+        {
+          title: translate("sources.button.go-to-nearest-source"),
+          resultValue: "goToNearestSource",
+          isDefaultButton: true,
+        },
+      ]
+    );
+    if (result === "goToNearestSource") {
+      this.editor.goToNearestSource();
     }
   }
 }
