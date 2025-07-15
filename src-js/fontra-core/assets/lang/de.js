@@ -142,6 +142,8 @@ export const strings = {
   "dialog.cant-edit-glyph.content": "Der Font ist schreibgeschützt.",
   "dialog.cant-edit-glyph.content.location-not-at-source":
     "Die Location ist nicht bei einer Source.",
+  "dialog.cant-edit-glyph.content.location-not-at-source-for-glyphs":
+    "The location is not at a source for the following glyphs: %0",
   "dialog.cant-edit-glyph.content.locked-glyph": "Der Glyph ist gesperrt.",
   "dialog.cant-edit-glyph.title": "Kann Glyphen “%0” nicht bearbeiten",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",

@@ -136,6 +136,8 @@ export const strings = {
   "dialog.cant-create-glyph.title": "无法添加字形 “%0”",
   "dialog.cant-edit-glyph.content": "该字体为只读文件",
   "dialog.cant-edit-glyph.content.location-not-at-source": "当前位置不是一个源。",
+  "dialog.cant-edit-glyph.content.location-not-at-source-for-glyphs":
+    "The location is not at a source for the following glyphs: %0",
   "dialog.cant-edit-glyph.content.locked-glyph": "该字形已被锁定。",
   "dialog.cant-edit-glyph.title": "无法编辑字形 “%0”",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",

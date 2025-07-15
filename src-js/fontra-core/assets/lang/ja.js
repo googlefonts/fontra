@@ -141,6 +141,8 @@ export const strings = {
   "dialog.cant-edit-glyph.content": "このフォントは読み取り専用です。",
   "dialog.cant-edit-glyph.content.location-not-at-source":
     "現在の補完軸の値はソースと異なります。",
+  "dialog.cant-edit-glyph.content.location-not-at-source-for-glyphs":
+    "The location is not at a source for the following glyphs: %0",
   "dialog.cant-edit-glyph.content.locked-glyph": "このグリフはロックされています。",
   "dialog.cant-edit-glyph.title": "グリフ“%0”を編集できませんでした。",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",

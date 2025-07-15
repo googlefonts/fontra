@@ -140,6 +140,8 @@ export const strings = {
   "dialog.cant-edit-glyph.content": "La fonte est en lecture seule",
   "dialog.cant-edit-glyph.content.location-not-at-source":
     "La localisation n'est pas sur une source",
+  "dialog.cant-edit-glyph.content.location-not-at-source-for-glyphs":
+    "The location is not at a source for the following glyphs: %0",
   "dialog.cant-edit-glyph.content.locked-glyph": "Le glyphe est vérouillé",
   "dialog.cant-edit-glyph.title": "Ne peut pas éditer le glyphe «%0»",
   "dialog.cant-edit-kerning.title": "Can’t edit kerning",

@@ -639,9 +639,10 @@ class SidebearingTool extends MetricsBaseTool {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
       translate("dialog.cant-edit-sidebearings.title"),
-      translate("dialog.cant-edit-glyph.content.location-not-at-source") +
-        "\n" +
-        glyphNames.join(", "),
+      translate(
+        "dialog.cant-edit-glyph.content.location-not-at-source-for-glyphs",
+        glyphNames.join(", ")
+      ),
       [
         {
           title: translate("dialog.cancel"),
