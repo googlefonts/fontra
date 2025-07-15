@@ -1198,7 +1198,7 @@ class KerningTool extends MetricsBaseTool {
   }
 
   async doDelete(event) {
-    const deepDelete = event.altKey;
+    const deepDelete = !event.altKey;
 
     const { editContext, values } = this.getEditContext(!deepDelete);
     if (!editContext) {
