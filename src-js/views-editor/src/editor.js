@@ -2754,13 +2754,51 @@ export class EditorController extends ViewController {
   }
 
   async doAddGuidelineBetweenPoints(global = false) {
+    // this function can only be called when exactly 2 points are selected
+
     this.visualizationLayersSettings.model["fontra.guidelines"] = true;
-    const { point: pointSelection } = parseSelection(this.sceneModel.selection);
+    const {
+      point: pointSelection,
+      anchor: anchorSelection,
+      guideline: guidelineSelection,
+    } = parseSelection(this.sceneModel.selection);
 
-    const selectedPath = this.sceneModel.getSelectedPositionedGlyph().glyph.path;
+    const glyph = this.sceneModel.getSelectedPositionedGlyph().glyph;
 
-    const pointA = selectedPath.getPoint(pointSelection[0]);
-    const pointB = selectedPath.getPoint(pointSelection[1]);
+    let pointA;
+    let pointB;
+
+    if (pointSelection) {
+      pointA = glyph.path.getPoint(pointSelection[0]);
+
+      if (pointSelection.length == 2) {
+        pointB = glyph.path.getPoint(pointSelection[1]);
+      }
+    }
+
+    if (anchorSelection) {
+      if (!pointA) {
+        pointA = glyph.anchors[anchorSelection[0]];
+      } else {
+        pointB = glyph.anchors[anchorSelection[0]];
+      }
+
+      if (anchorSelection.length == 2) {
+        pointB = glyph.anchors[anchorSelection[1]];
+      }
+    }
+
+    if (guidelineSelection) {
+      if (!pointA) {
+        pointA = glyph.guidelines[guidelineSelection[0]];
+      } else {
+        pointB = glyph.guidelines[guidelineSelection[0]];
+      }
+
+      if (guidelineSelection.length == 2) {
+        pointB = glyph.guidelines[guidelineSelection[1]];
+      }
+    }
 
     const angle =
       ((Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) * 180) / Math.PI + 360) %
