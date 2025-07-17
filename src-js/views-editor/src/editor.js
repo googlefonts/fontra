@@ -370,6 +370,13 @@ export class EditorController extends ViewController {
       );
 
       registerAction(
+        "action.add-guideline-between-points",
+        { topic },
+        () => this.doAddGuidelineBetweenPoints(),
+        () => this.canEditGlyph() && this.sceneController.selection.size == 2
+      );
+
+      registerAction(
         "action.lock-guideline",
         { topic },
         () => this.doLockGuideline(!this.selectionHasLockedGuidelines()),
@@ -1388,6 +1395,9 @@ export class EditorController extends ViewController {
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-component" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
+    this.glyphEditContextMenuItems.push({
+      actionIdentifier: "action.add-guideline-between-points",
+    });
 
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.lock-guideline" });
 
@@ -2741,6 +2751,81 @@ export class EditorController extends ViewController {
       ]
     );
     return { contentElement, warningElement };
+  }
+
+  async doAddGuidelineBetweenPoints(global = false) {
+    // this function can only be called when exactly 2 points are selected
+
+    this.visualizationLayersSettings.model["fontra.guidelines"] = true;
+    const {
+      point: pointSelection,
+      anchor: anchorSelection,
+      guideline: guidelineSelection,
+    } = parseSelection(this.sceneModel.selection);
+
+    const glyph = this.sceneModel.getSelectedPositionedGlyph().glyph;
+
+    let pointA;
+    let pointB;
+
+    if (pointSelection) {
+      pointA = glyph.path.getPoint(pointSelection[0]);
+
+      if (pointSelection.length == 2) {
+        pointB = glyph.path.getPoint(pointSelection[1]);
+      }
+    }
+
+    if (anchorSelection) {
+      if (!pointA) {
+        pointA = glyph.anchors[anchorSelection[0]];
+      } else {
+        pointB = glyph.anchors[anchorSelection[0]];
+      }
+
+      if (anchorSelection.length == 2) {
+        pointB = glyph.anchors[anchorSelection[1]];
+      }
+    }
+
+    if (guidelineSelection) {
+      if (!pointA) {
+        pointA = glyph.guidelines[guidelineSelection[0]];
+      } else {
+        pointB = glyph.guidelines[guidelineSelection[0]];
+      }
+
+      if (guidelineSelection.length == 2) {
+        pointB = glyph.guidelines[guidelineSelection[1]];
+      }
+    }
+
+    const angle =
+      ((Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) * 180) / Math.PI + 360) %
+      360;
+
+    // position the guideline so that the point handle and the guideline handle don't overlap
+    // we put it at B reflected around A, so that it's still exactly aligned with the edge, even after quantization
+    const point = { x: pointA.x * 2 - pointB.x, y: pointA.y * 2 - pointB.y };
+
+    const newGuideline = {
+      x: point.x,
+      y: point.y,
+      angle: angle,
+      locked: false,
+    };
+
+    if (!global) {
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          layerGlyph.guidelines.push({ ...newGuideline });
+        }
+        const newGuidelineIndex = instance.guidelines.length - 1;
+        this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
+        return translate("action.add-guideline");
+      });
+    }
   }
 
   doSelectAllNone(selectNone) {
