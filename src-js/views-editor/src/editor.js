@@ -51,6 +51,7 @@ import {
   readFromClipboard,
   reversed,
   scheduleCalls,
+  unionIndexSets,
   writeObjectToURLFragment,
   writeToClipboard,
 } from "@fontra/core/utils.js";
@@ -1749,14 +1750,16 @@ export class EditorController extends ViewController {
       point: pointIndices,
       component: componentIndicesFromComponent,
       componentOrigin: componentIndicesFromOrigin,
+      componentTCenter: componentTCenterSelection,
       anchor: anchorIndices,
       guideline: guidelineIndices,
       backgroundImage: backgroundImageIndices,
     } = parseSelection(this.sceneController.selection);
 
-    const componentIndices = mergeComponentIndices(
+    const componentIndices = unionIndexSets(
       componentIndicesFromComponent,
-      componentIndicesFromOrigin
+      componentIndicesFromOrigin,
+      componentTCenterSelection
     );
 
     let path;
@@ -3607,18 +3610,6 @@ function collapseSubTools(editToolsElement) {
     child.style.visibility = index ? "hidden" : "visible";
     child.dataset.tooltipposition = index ? "right" : "bottom";
   }
-}
-
-function mergeComponentIndices(componentIndices1, componentIndices2) {
-  const indexSet = new Set();
-  for (const indices of [componentIndices1, componentIndices2]) {
-    for (const i of indices || []) {
-      indexSet.add(i);
-    }
-  }
-  const componentIndices = [...indexSet];
-  componentIndices.sort((a, b) => a - b);
-  return componentIndices;
 }
 
 function noTimeout(func, dummy) {
