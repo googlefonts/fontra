@@ -416,6 +416,9 @@ export class Form extends SimpleElement {
       };
     }
 
+    this._fieldGetters[fieldItem.key] = () => rangeElement.value;
+    this._fieldSetters[fieldItem.key] = (value) => (rangeElement.value = value);
+
     valueElement.appendChild(rangeElement);
   }
 
