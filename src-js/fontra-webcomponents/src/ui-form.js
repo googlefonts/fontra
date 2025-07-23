@@ -260,7 +260,7 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumber(valueElement, fieldItem, allowEmptyField = false) {
-    if (fieldItem.expression) {
+    if (fieldItem.evaluateExpression) {
       return this._addEditNumberExpression(valueElement, fieldItem, allowEmptyField);
     }
 
@@ -354,7 +354,7 @@ export class Form extends SimpleElement {
             value = Math.min(value, fieldItem.maxValue);
           }
           event.target.value = value;
-          event.target.onchange(event);
+          this._fieldChanging(fieldItem, value, undefined);
           break;
         }
         case "ArrowDown": {
@@ -363,7 +363,7 @@ export class Form extends SimpleElement {
             value = Math.max(value, fieldItem.minValue);
           }
           event.target.value = value;
-          event.target.onchange(event);
+          this._fieldChanging(fieldItem, value, undefined);
           break;
         }
       }
@@ -374,7 +374,9 @@ export class Form extends SimpleElement {
       if (allowEmptyField && inputElement.value === "") {
         value = null;
       } else {
-        value = parseFloat(inputElement.value);
+        value = fieldItem.evaluateExpression
+          ? fieldItem.evaluateExpression(inputElement.value)
+          : parseFloat(inputElement.value);
         if (isNaN(value)) {
           value = this._lastValidFieldValues[fieldItem.key];
           inputElement.value = value;
