@@ -349,6 +349,7 @@ export class Form extends SimpleElement {
       const increment = event.shiftKey ? 10 : 1;
       switch (event.key) {
         case "ArrowUp": {
+          event.preventDefault();
           let value = Number(event.target.value) + increment;
           if (fieldItem.maxValue != undefined) {
             value = Math.min(value, fieldItem.maxValue);
@@ -358,6 +359,7 @@ export class Form extends SimpleElement {
           break;
         }
         case "ArrowDown": {
+          event.preventDefault();
           let value = Number(event.target.value) - increment;
           if (fieldItem.minValue != undefined) {
             value = Math.max(value, fieldItem.minValue);
