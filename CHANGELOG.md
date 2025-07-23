@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-07-23
+
+- [fontra-pak] New contributor sintfar fixed an issue that in some cases caused an error dialog to appear when exiting Fontra Pak on Windows. [fontra-pak PR 178](https://github.com/googlefonts/fontra-pak/pull/178)
+
 ## 2025-07-16
 
 - [Kerning tool] Changed delete vs. alt-delete behavior: plain delete will now delete the selected kerning pairs across the entire designspace. Alt-delete will only delete the selected kerning pairs for the currently selected source location. [PR 2224](https://github.com/googlefonts/fontra/pull/2224)
