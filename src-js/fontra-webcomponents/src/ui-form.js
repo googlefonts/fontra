@@ -372,24 +372,34 @@ export class Form extends SimpleElement {
     };
 
     inputElement.onchange = async (event) => {
-      let value;
+      let value, valueObject;
       if (allowEmptyField && inputElement.value === "") {
         value = null;
       } else {
-        value = fieldItem.evaluateExpression
-          ? await fieldItem.evaluateExpression(inputElement.value)
-          : parseFloat(inputElement.value);
-        if (isNaN(value)) {
-          value = this._lastValidFieldValues[fieldItem.key];
-          inputElement.value = value;
+        if (fieldItem.evaluateExpression) {
+          value = await fieldItem.evaluateExpression(inputElement.value);
+          if (value?.value !== undefined) {
+            valueObject = value;
+            value = value.value;
+            inputElement.value = maybeRound(value, fieldItem.numDigits);
+          }
+        } else {
+          value = parseFloat(inputElement.value);
         }
-        let validity = "";
-        if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
-          validity = "value below minimum";
-        } else if (fieldItem.maxValue != undefined && value > fieldItem.maxValue) {
-          validity = "value above minimum";
+
+        if (!valueObject) {
+          if (isNaN(value)) {
+            value = this._lastValidFieldValues[fieldItem.key];
+            inputElement.value = value;
+          }
+          let validity = "";
+          if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
+            validity = "value below minimum";
+          } else if (fieldItem.maxValue != undefined && value > fieldItem.maxValue) {
+            validity = "value above minimum";
+          }
+          inputElement.setCustomValidity(validity);
         }
-        inputElement.setCustomValidity(validity);
       }
 
       if (!inputElement.reportValidity()) {
@@ -403,7 +413,7 @@ export class Form extends SimpleElement {
       }
 
       this._lastValidFieldValues[fieldItem.key] = value;
-      this._fieldChanging(fieldItem, value, undefined);
+      this._fieldChanging(fieldItem, valueObject || value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) =>
