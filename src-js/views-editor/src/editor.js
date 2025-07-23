@@ -373,7 +373,18 @@ export class EditorController extends ViewController {
         "action.add-guideline-between-points",
         { topic },
         () => this.doAddGuidelineBetweenPoints(),
-        () => this.canEditGlyph() && this.sceneController.selection.size == 2
+        () => {
+          const {
+            point: pointSelection,
+            anchor: anchorSelection,
+            guideline: guidelineSelection,
+          } = parseSelection(this.sceneController.selection);
+          const sum =
+            (pointSelection?.length || 0) +
+            (anchorSelection?.length || 0) +
+            (guidelineSelection?.length || 0);
+          return this.canEditGlyph() && sum == 2;
+        }
       );
 
       registerAction(
