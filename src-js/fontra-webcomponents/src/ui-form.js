@@ -389,7 +389,6 @@ export class Form extends SimpleElement {
     rangeElement.minValue = fieldItem.minValue;
     rangeElement.defaultValue = fieldItem.defaultValue;
     rangeElement.maxValue = fieldItem.maxValue;
-    rangeElement.step = fieldItem.step;
 
     {
       // Slider change closure
@@ -415,9 +414,6 @@ export class Form extends SimpleElement {
         }
       };
     }
-
-    this._fieldGetters[fieldItem.key] = () => rangeElement.value;
-    this._fieldSetters[fieldItem.key] = (value) => (rangeElement.value = value);
 
     valueElement.appendChild(rangeElement);
   }
