@@ -212,6 +212,12 @@ export default class SelectionInfoPanel extends Panel {
           label: translate("sidebar.selection-info.advance-width"),
           value: instance.xAdvance,
           numDigits: 1,
+          evaluateExpression: async (expression) =>
+            await this._evaluateMetricsExpression(
+              expression,
+              varGlyphController,
+              "xAdvance"
+            ),
           minValue: 0,
         });
         formContents.push({
@@ -223,11 +229,21 @@ export default class SelectionInfoPanel extends Panel {
             value: glyphController.leftMargin,
             numDigits: 1,
             disabled: glyphController.leftMargin == undefined,
+            evaluateExpression: async (expression) =>
+              await this._evaluateMetricsExpression(
+                expression,
+                varGlyphController,
+                "leftMargin"
+              ),
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.leftMargin;
             },
             setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-              const translationX = value - layerGlyphController.leftMargin;
+              const translationX = maybeClampValue(
+                value - layerGlyphController.leftMargin,
+                -layerGlyph.xAdvance,
+                undefined
+              );
               for (const i of range(0, layerGlyph.path.coordinates.length, 2)) {
                 layerGlyph.path.coordinates[i] += translationX;
               }
@@ -241,12 +257,22 @@ export default class SelectionInfoPanel extends Panel {
             key: '["rightMargin"]',
             value: glyphController.rightMargin,
             numDigits: 1,
+            evaluateExpression: async (expression) =>
+              await this._evaluateMetricsExpression(
+                expression,
+                varGlyphController,
+                "rightMargin"
+              ),
             disabled: glyphController.rightMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.rightMargin;
             },
             setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-              const translationX = value - layerGlyphController.rightMargin;
+              const translationX = maybeClampValue(
+                value - layerGlyphController.rightMargin,
+                -layerGlyph.xAdvance,
+                undefined
+              );
               layerGlyph.xAdvance += translationX;
             },
           },
@@ -754,6 +780,51 @@ export default class SelectionInfoPanel extends Panel {
     const fieldKey = JSON.stringify([keyToUpdata]);
     this.infoForm.setValue(fieldKey, glyphController[keyToUpdata]);
   }
+
+  async _evaluateMetricsExpression(expression, varGlyphController, metricProperty) {
+    let value = Number(expression);
+    if (!isNaN(value)) {
+      return value;
+    }
+
+    const referencedGlyphName = expression.trim();
+    if (!this.fontController.hasGlyph(referencedGlyphName)) {
+      return { error: `glyph ${referencedGlyphName} not found` };
+    }
+
+    const { mainLayerName, locations } = this._getEditingLocations(varGlyphController);
+    const metrics = {};
+    const referencedGlyph = await this.fontController.getGlyph(referencedGlyphName);
+    for (const [layerName, location] of Object.entries(locations)) {
+      const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
+      const instanceController = await referencedGlyph.instantiateController(
+        location,
+        layerName,
+        getGlyphFunc
+      );
+      metrics[layerName] = {
+        xAdvance: instanceController.xAdvance,
+        leftMargin: instanceController.leftMargin,
+        rightMargin: instanceController.rightMargin,
+      };
+    }
+
+    return {
+      getValue: (layerName) => metrics[layerName][metricProperty],
+      value: metrics[mainLayerName][metricProperty],
+    };
+  }
+
+  _getEditingLocations(varGlyphController) {
+    const layerNames = new Set(this.sceneController.editingLayerNames);
+    const locations = {};
+    for (const [sourceIndex, source] of enumerate(varGlyphController.sources)) {
+      if (layerNames.has(source.layerName) && !locations[source.layerName]) {
+        locations[source.layerName] = varGlyphController.getSourceLocation(source);
+      }
+    }
+    return { mainLayerName: this.sceneController.editingLayerNames[0], locations };
+  }
 }
 
 function addTransformationItems(formContents, keyFunc, transformation) {
@@ -861,12 +932,15 @@ function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
 
   const primaryOrgValue = layerInfo[0].orgValue;
   const isNumber = typeof primaryOrgValue === "number";
-  const delta = isNumber && !absolute ? value - primaryOrgValue : null;
+  const delta =
+    isNumber && !absolute && !value?.getValue ? value - primaryOrgValue : null;
   return recordChanges(glyph, (glyph) => {
     const layers = glyph.layers;
     for (const { layerName, layerGlyphController, orgValue } of layerInfo) {
+      const layerValue = value?.getValue ? value.getValue(layerName) : value;
+
       let newValue =
-        delta === null || orgValue === undefined ? value : orgValue + delta;
+        delta === null || orgValue === undefined ? layerValue : orgValue + delta;
       if (isNumber) {
         newValue = maybeClampValue(newValue, fieldItem.minValue, fieldItem.maxValue);
       }
