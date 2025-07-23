@@ -260,6 +260,10 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumber(valueElement, fieldItem, allowEmptyField = false) {
+    if (fieldItem.expression) {
+      return this._addEditNumberExpression(valueElement, fieldItem, allowEmptyField);
+    }
+
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
@@ -320,6 +324,80 @@ export class Form extends SimpleElement {
         }
         inputElement.value = value;
       }
+      this._lastValidFieldValues[fieldItem.key] = value;
+      this._fieldChanging(fieldItem, value, undefined);
+    };
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = (value) =>
+      (inputElement.value = maybeRound(value, fieldItem.numDigits));
+    valueElement.appendChild(inputElement);
+  }
+
+  _addEditNumberExpression(valueElement, fieldItem, allowEmptyField = false) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
+    const inputElement = document.createElement("input");
+    inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+
+    if (fieldItem["data-tooltip"]) {
+      // data-tooltip doesn't work for input number,
+      // default title is used
+      inputElement.setAttribute("title", fieldItem["data-tooltip"]);
+    }
+
+    inputElement.disabled = fieldItem.disabled;
+    inputElement.onkeydown = (event) => {
+      const increment = event.shiftKey ? 10 : 1;
+      switch (event.key) {
+        case "ArrowUp": {
+          let value = Number(event.target.value) + increment;
+          if (fieldItem.maxValue != undefined) {
+            value = Math.min(value, fieldItem.maxValue);
+          }
+          event.target.value = value;
+          event.target.onchange(event);
+          break;
+        }
+        case "ArrowDown": {
+          let value = Number(event.target.value) - increment;
+          if (fieldItem.minValue != undefined) {
+            value = Math.max(value, fieldItem.minValue);
+          }
+          event.target.value = value;
+          event.target.onchange(event);
+          break;
+        }
+      }
+    };
+
+    inputElement.onchange = (event) => {
+      let value;
+      if (allowEmptyField && inputElement.value === "") {
+        value = null;
+      } else {
+        value = parseFloat(inputElement.value);
+        if (isNaN(value)) {
+          value = this._lastValidFieldValues[fieldItem.key];
+          inputElement.value = value;
+        }
+        let validity = "";
+        if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
+          validity = "value below minimum";
+        } else if (fieldItem.maxValue != undefined && value > fieldItem.maxValue) {
+          validity = "value above minimum";
+        }
+        inputElement.setCustomValidity(validity);
+      }
+
+      if (!inputElement.reportValidity()) {
+        if (inputElement.min != undefined) {
+          value = Math.max(value, inputElement.min);
+        }
+        if (inputElement.max != undefined) {
+          value = Math.min(value, inputElement.max);
+        }
+        inputElement.value = value;
+      }
+
       this._lastValidFieldValues[fieldItem.key] = value;
       this._fieldChanging(fieldItem, value, undefined);
     };

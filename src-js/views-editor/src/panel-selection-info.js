@@ -212,6 +212,7 @@ export default class SelectionInfoPanel extends Panel {
           label: translate("sidebar.selection-info.advance-width"),
           value: instance.xAdvance,
           numDigits: 1,
+          expression: true,
           minValue: 0,
         });
         formContents.push({
@@ -222,6 +223,7 @@ export default class SelectionInfoPanel extends Panel {
             key: '["leftMargin"]',
             value: glyphController.leftMargin,
             numDigits: 1,
+            expression: true,
             disabled: glyphController.leftMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.leftMargin;
@@ -241,6 +243,7 @@ export default class SelectionInfoPanel extends Panel {
             key: '["rightMargin"]',
             value: glyphController.rightMargin,
             numDigits: 1,
+            expression: true,
             disabled: glyphController.rightMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.rightMargin;
