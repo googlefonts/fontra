@@ -149,7 +149,6 @@ export class EditorController extends ViewController {
       [
         "align",
         "applyKerning",
-        "cleanViewSizePreview",
         "editLayerName",
         "editingLayers",
         "fontLocationUser",
@@ -3071,10 +3070,6 @@ export class EditorController extends ViewController {
   }
 
   enterCleanViewAndHandTool(event) {
-    if (this.sceneSettings.cleanViewSizePreview) {
-      this.savedViewBox = this.sceneSettings.viewBox;
-      this.zoomToFontSize(this.sceneSettings.textSize, false);
-    }
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.requestUpdate();
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
@@ -3096,15 +3091,6 @@ export class EditorController extends ViewController {
     }
     this.setSelectedTool(this.savedSelectedToolIdentifier);
     delete this.savedSelectedToolIdentifier;
-    if (this.savedViewBox) {
-      // wait one frame so that the canvas size has settled back to normal
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.sceneSettings.viewBox = this.savedViewBox;
-          delete this.savedViewBox;
-        });
-      });
-    }
   }
 
   buildContextMenuItems(event) {
@@ -3193,8 +3179,6 @@ export class EditorController extends ViewController {
     }
     this.sceneSettings.align = viewInfo["align"] || "center";
     this.sceneSettings.applyKerning = viewInfo["applyKerning"] === false ? false : true;
-    this.sceneSettings.cleanViewSizePreview =
-      viewInfo["cleanViewSizePreview"] === true ? true : false;
     if (viewInfo["viewBox"]) {
       this.sceneController.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -3334,9 +3318,6 @@ export class EditorController extends ViewController {
     }
     if (!this.sceneSettings.applyKerning) {
       viewInfo["applyKerning"] = this.sceneSettings.applyKerning;
-    }
-    if (this.sceneSettings.cleanViewSizePreview) {
-      viewInfo["cleanViewSizePreview"] = this.sceneSettings.cleanViewSizePreview;
     }
 
     const url = new URL(window.location);
