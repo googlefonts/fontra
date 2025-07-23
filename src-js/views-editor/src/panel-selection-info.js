@@ -229,7 +229,11 @@ export default class SelectionInfoPanel extends Panel {
               return layerGlyphController.leftMargin;
             },
             setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-              const translationX = value - layerGlyphController.leftMargin;
+              const translationX = maybeClampValue(
+                value - layerGlyphController.leftMargin,
+                -layerGlyph.xAdvance,
+                undefined
+              );
               for (const i of range(0, layerGlyph.path.coordinates.length, 2)) {
                 layerGlyph.path.coordinates[i] += translationX;
               }
@@ -249,7 +253,11 @@ export default class SelectionInfoPanel extends Panel {
               return layerGlyphController.rightMargin;
             },
             setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-              const translationX = value - layerGlyphController.rightMargin;
+              const translationX = maybeClampValue(
+                value - layerGlyphController.rightMargin,
+                -layerGlyph.xAdvance,
+                undefined
+              );
               layerGlyph.xAdvance += translationX;
             },
           },
