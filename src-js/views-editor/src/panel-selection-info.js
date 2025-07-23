@@ -789,7 +789,7 @@ export default class SelectionInfoPanel extends Panel {
 
     const referencedGlyphName = expression;
     if (!this.fontController.hasGlyph(referencedGlyphName)) {
-      return;
+      return { error: `glyph ${referencedGlyphName} not found` };
     }
 
     const { mainLayerName, locations } = this._getEditingLocations(varGlyphController);

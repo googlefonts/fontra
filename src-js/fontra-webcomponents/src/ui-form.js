@@ -371,16 +371,25 @@ export class Form extends SimpleElement {
       }
     };
 
+    inputElement.oninput = (event) => {
+      inputElement.setCustomValidity("");
+    };
+
     inputElement.onchange = async (event) => {
-      let value, valueObject;
+      let value, valueObject, validitationError;
       if (allowEmptyField && inputElement.value === "") {
         value = null;
       } else {
         if (fieldItem.evaluateExpression) {
           value = await fieldItem.evaluateExpression(inputElement.value);
-          if (value?.value !== undefined) {
+          if (typeof value !== "number" && typeof value !== "string") {
             valueObject = value;
             value = value.value;
+            if (valueObject.error) {
+              validitationError = valueObject.error;
+              value = this._lastValidFieldValues[fieldItem.key];
+              valueObject = undefined;
+            }
             inputElement.value = maybeRound(value, fieldItem.numDigits);
           }
         } else {
@@ -390,17 +399,17 @@ export class Form extends SimpleElement {
         if (!valueObject) {
           if (isNaN(value)) {
             value = this._lastValidFieldValues[fieldItem.key];
-            inputElement.value = value;
+            inputElement.value = maybeRound(value, fieldItem.numDigits);
           }
-          let validity = "";
           if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
-            validity = "value below minimum";
+            validitationError = "value below minimum";
           } else if (fieldItem.maxValue != undefined && value > fieldItem.maxValue) {
-            validity = "value above minimum";
+            validitationError = "value above minimum";
           }
-          inputElement.setCustomValidity(validity);
         }
       }
+
+      inputElement.setCustomValidity(validitationError || "");
 
       if (!inputElement.reportValidity()) {
         if (inputElement.min != undefined) {
