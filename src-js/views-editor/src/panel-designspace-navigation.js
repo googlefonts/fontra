@@ -47,7 +47,7 @@ import { showMenu } from "@fontra/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "@fontra/web-components/modal-dialog.js";
 import { Accordion } from "@fontra/web-components/ui-accordion.js";
 
-import { NumberFormatter } from "@fontra/core/ui-utils.js";
+import { NumberFormatter } from "@fontra/core/formatters.js";
 import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";

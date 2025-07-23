@@ -5,13 +5,12 @@ import {
 import { recordChanges } from "@fontra/core/change-recorder.js";
 import { ensureDenseSource } from "@fontra/core/font-controller.js";
 import { openTypeSettingsFontSourcesLevel } from "@fontra/core/font-info-data.js";
+import { NumberFormatter, OptionalNumberFormatter } from "@fontra/core/formatters.js";
 import * as html from "@fontra/core/html-utils.js";
 import { addStyleSheet } from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { ObservableController } from "@fontra/core/observable-object.js";
 import {
-  NumberFormatter,
-  OptionalNumberFormatter,
   labelForElement,
   labeledCheckbox,
   labeledTextInput,
