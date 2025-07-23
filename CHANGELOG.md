@@ -2,6 +2,7 @@
 
 ## 2025-07-23
 
+- [Selection info panel] Improved the sidebearing fields (advance, left sidebearing, right sidebearing) to alternatively accept a glyph name, to copy the value from. For example, if you enter `A` in the left sidebearing field, the left sidebearing from glyph `A` is copied into the field, once you type enter or leave the field otherwise. [Issue 2230](https://github.com/googlefonts/fontra/issues/2230), [PR 2231](https://github.com/googlefonts/fontra/pull/2231)
 - [fontra-pak] New contributor sintfar fixed an issue that in some cases caused an error dialog to appear when exiting Fontra Pak on Windows. [fontra-pak PR 178](https://github.com/googlefonts/fontra-pak/pull/178)
 
 ## 2025-07-16
