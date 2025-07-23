@@ -787,7 +787,7 @@ export default class SelectionInfoPanel extends Panel {
       return value;
     }
 
-    const referencedGlyphName = expression;
+    const referencedGlyphName = expression.trim();
     if (!this.fontController.hasGlyph(referencedGlyphName)) {
       return { error: `glyph ${referencedGlyphName} not found` };
     }
