@@ -369,13 +369,13 @@ export class Form extends SimpleElement {
       }
     };
 
-    inputElement.onchange = (event) => {
+    inputElement.onchange = async (event) => {
       let value;
       if (allowEmptyField && inputElement.value === "") {
         value = null;
       } else {
         value = fieldItem.evaluateExpression
-          ? fieldItem.evaluateExpression(inputElement.value)
+          ? await fieldItem.evaluateExpression(inputElement.value)
           : parseFloat(inputElement.value);
         if (isNaN(value)) {
           value = this._lastValidFieldValues[fieldItem.key];
