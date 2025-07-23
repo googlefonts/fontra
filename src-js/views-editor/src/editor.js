@@ -2761,43 +2761,19 @@ export class EditorController extends ViewController {
       point: pointSelection,
       anchor: anchorSelection,
       guideline: guidelineSelection,
-    } = parseSelection(this.sceneModel.selection);
+    } = parseSelection(this.sceneController.selection);
 
     const glyph = this.sceneModel.getSelectedPositionedGlyph().glyph;
 
-    let pointA;
-    let pointB;
+    const points = [];
 
-    if (pointSelection) {
-      pointA = glyph.path.getPoint(pointSelection[0]);
+    points.push(...(pointSelection?.map((index) => glyph.path.getPoint(index)) || []));
+    points.push(...(anchorSelection?.map((index) => glyph.anchors[index]) || []));
+    points.push(...(guidelineSelection?.map((index) => glyph.guidelines[index]) || []));
 
-      if (pointSelection.length == 2) {
-        pointB = glyph.path.getPoint(pointSelection[1]);
-      }
-    }
-
-    if (anchorSelection) {
-      if (!pointA) {
-        pointA = glyph.anchors[anchorSelection[0]];
-      } else {
-        pointB = glyph.anchors[anchorSelection[0]];
-      }
-
-      if (anchorSelection.length == 2) {
-        pointB = glyph.anchors[anchorSelection[1]];
-      }
-    }
-
-    if (guidelineSelection) {
-      if (!pointA) {
-        pointA = glyph.guidelines[guidelineSelection[0]];
-      } else {
-        pointB = glyph.guidelines[guidelineSelection[0]];
-      }
-
-      if (guidelineSelection.length == 2) {
-        pointB = glyph.guidelines[guidelineSelection[1]];
-      }
+    const [pointA, pointB] = points;
+    if (!pointA || !pointB) {
+      return;
     }
 
     const angle =
