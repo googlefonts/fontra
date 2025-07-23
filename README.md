@@ -31,7 +31,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
   `python3.10 -m venv venv --prompt=fontra`
 
-  (Replace `python3.10` with `python3.11` if you have 3.11 instead.)
+  (Replace `python3.10` appropriately if you have a newer version installed.)
 
 - Activate venv:
 
