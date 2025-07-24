@@ -789,7 +789,7 @@ export class SceneModel {
       const distance = Math.abs(
         Math.cos(angle) * (guideline.y - y) - Math.sin(angle) * (guideline.x - x)
       );
-      if (distance < size) {
+      if (distance < size / 2) {
         return new Set([`guideline/${i}`]);
       }
     }
