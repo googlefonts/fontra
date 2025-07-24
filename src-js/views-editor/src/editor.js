@@ -38,6 +38,7 @@ import {
   commandKeyProperty,
   enumerate,
   fetchJSON,
+  gcd,
   hyphenatedToCamelCase,
   hyphenatedToLabel,
   isActiveElementTypeable,
@@ -84,6 +85,7 @@ import {
   translate,
   translatePlural,
 } from "@fontra/core/localization.js";
+import { addVectors, mulVectorScalar, subVectors } from "@fontra/core/vector.js";
 import { ViewController } from "@fontra/core/view-controller.js";
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphNotePanel from "./panel-glyph-note.js";
@@ -2787,13 +2789,22 @@ export class EditorController extends ViewController {
       return;
     }
 
-    const angle =
-      ((Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) * 180) / Math.PI + 360) %
-      360;
+    const delta = subVectors(pointB, pointA);
 
-    // position the guideline so that the point handle and the guideline handle don't overlap
-    // we put it at B reflected around A, so that it's still exactly aligned with the edge, even after quantization
-    const point = { x: pointA.x * 2 - pointB.x, y: pointA.y * 2 - pointB.y };
+    const angle = ((Math.atan2(delta.y, delta.x) * 180) / Math.PI + 360) % 360;
+
+    // we want to pick an origin point for the guideline that won't have any quantization error.
+    // ideally this will be between pointA and pointB, but it may have to be outside.
+
+    // the number of integer-component steps we can take from pointA to pointB
+    const nSteps = Math.abs(gcd(delta.x, delta.y));
+    const step = mulVectorScalar(delta, 1 / nSteps);
+    const midpointOffset = mulVectorScalar(step, Math.floor(nSteps / 2));
+    // if there's no good point in between, choose the closest suitable point outside instead
+    const point =
+      midpointOffset.x || midpointOffset.y
+        ? addVectors(pointA, midpointOffset)
+        : subVectors(pointA, step);
 
     const newGuideline = {
       x: point.x,
