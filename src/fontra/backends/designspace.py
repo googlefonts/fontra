@@ -1983,15 +1983,22 @@ def _formatChannelValue(ch):
     return s
 
 
-def packGuidelines(guidelines):
+def packGuidelines(guidelines, lib):
+    for key in list(lib):
+        if key.startswith(RF_GUIDELINE_LOCK_LIB_PREFIX):
+            del lib[key]
     packedGuidelines = []
-    for g in guidelines:
+    for index, g in enumerate(guidelines):
+        identifier = f"fontra-guideline-{index}"
         pg = {}
         if g.name is not None:
             pg["name"] = g.name
         pg["x"] = g.x
         pg["y"] = g.y
         pg["angle"] = g.angle
+        if g.locked:
+            lib[RF_GUIDELINE_LOCK_LIB_PREFIX + identifier] = True
+            pg["identifier"] = identifier
         packedGuidelines.append(pg)
     return packedGuidelines
 
@@ -2029,7 +2036,7 @@ def populateUFOLayerGlyph(
     layerGlyph.anchors = [
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
     ]
-    layerGlyph.guidelines = packGuidelines(staticGlyph.guidelines)
+    layerGlyph.guidelines = packGuidelines(staticGlyph.guidelines, layerGlyph.lib)
 
     if staticGlyph.backgroundImage is not None and imageFileName is not None:
         layerGlyph.image = packBackgroundImage(
@@ -2283,7 +2290,9 @@ def updateFontInfoFromFontSource(reader, fontSource):
         if ufoName is not None:
             setattr(fontInfo, ufoName, round(metric.value))
 
-    fontInfo.guidelines = packGuidelines(fontSource.guidelines)
+    lib = reader.readLib()
+
+    fontInfo.guidelines = packGuidelines(fontSource.guidelines, lib)
 
     # set custom data
     for infoAttr, value in fontSource.customData.items():
@@ -2297,7 +2306,6 @@ def updateFontInfoFromFontSource(reader, fontSource):
 
     reader.writeInfo(fontInfo)
 
-    lib = reader.readLib()
     if zones:
         lib[LINE_METRICS_HOR_ZONES_KEY] = zones
     else:
