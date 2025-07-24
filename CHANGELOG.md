@@ -2,6 +2,7 @@
 
 ## 2025-07-24
 
+- Read/write guideline.locked flags from/to UFO. [Issue 1390](https://github.com/googlefonts/fontra/issues/1390), [PR 2235](https://github.com/googlefonts/fontra/pull/2235)
 - Allow glyph guidelines to be selected anywhere along the line, instead of just at their anchor point. [PR 2234](https://github.com/googlefonts/fontra/pull/2234)
 
 ## 2025-07-23
