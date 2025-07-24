@@ -91,17 +91,18 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 - Read .designspace ✅
 - Write .designspace ✅
-- Respond to external .designspace changes (automatic reload)
+- Respond to external .designspace changes (automatic reload) ✅
 - Read .ufo ✅
 - Write .ufo ✅
 - Respond to external .ufo changes (automatic reload) ✅
 - Read .ttf + variable .ttf ✅
 - Read .otf + variable .otf ✅
 - Write .ttf + variable .ttf (For “hot fixes”. Currently not planned, will still require export step.)
-- Write .otf + variable .otf (Ditto.)
+- Write .otf + variable .otf ✅
 - Respond to external .ttf and .otf changes (automatic reload)
+- Respond to external .fontra, .glyphs and .glyphspackage changes (automatic reload)
 - Read .glyphs and .glyphspackage ✅ (Via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
-- Write .glyphs and .glyphspackage
+- Write .glyphs and .glyphspackage ✅ (partial, via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
 
 ### Text viewing / editing
 
