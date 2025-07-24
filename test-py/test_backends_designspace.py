@@ -266,7 +266,7 @@ async def test_addGuidelines(writableTestFont):
     layerName = "test"
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
     glyph.layers[layerName].glyph.guidelines.append(
-        Guideline(name="Left", x=60, angle=90)
+        Guideline(name="Left", x=60, angle=90, locked=True)
     )
     # add guideline without a name
     glyph.layers[layerName].glyph.guidelines.append(Guideline(y=500))
