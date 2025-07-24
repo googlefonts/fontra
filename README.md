@@ -98,7 +98,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Read .ttf + variable .ttf ✅
 - Read .otf + variable .otf ✅
 - Write .ttf + variable .ttf (For “hot fixes”. Currently not planned, will still require export step.)
-- Write .otf + variable .otf ✅
+- Write .otf + variable .otf ✅ (Via “export as” in Fontra Pak)
 - Respond to external .ttf and .otf changes (automatic reload)
 - Respond to external .fontra, .glyphs and .glyphspackage changes (automatic reload)
 - Read .glyphs and .glyphspackage ✅ (Via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
