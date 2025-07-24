@@ -115,7 +115,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Zoom with gestures ✅
 - Zoom with short-cuts ✅
 - Advanced character / glyph search
-- Display kerning
+- Display kerning ✅
 - Apply proper text shaping
 - Full screen mode ✅
 - Right-to-left mode
@@ -149,7 +149,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Anchors ✅
 - Guidelines (local, glyph level) ✅
 - Guidelines (global, font level)
-- View background layers
+- View background layers ✅
 - Background image for tracing / reference ✅
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
@@ -163,7 +163,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Cell-based font overview ✅
 - List-based font overview
 - Edit font meta data (“font info”) ✅
-- Edit kerning
+- Edit kerning ✅
 - Edit OpenType features
 - Edit variation axes ✅
 - Visualize and edit variation axis mapping (avar) ✅
