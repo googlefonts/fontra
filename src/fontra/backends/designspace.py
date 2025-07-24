@@ -2029,10 +2029,8 @@ def populateUFOLayerGlyph(
     layerGlyph.anchors = [
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
     ]
-    layerGlyph.guidelines = [
-        {"name": g.name, "x": g.x, "y": g.y, "angle": g.angle}
-        for g in staticGlyph.guidelines
-    ]
+    layerGlyph.guidelines = packGuidelines(staticGlyph.guidelines)
+
     if staticGlyph.backgroundImage is not None and imageFileName is not None:
         layerGlyph.image = packBackgroundImage(
             staticGlyph.backgroundImage, imageFileName
