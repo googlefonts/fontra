@@ -72,6 +72,7 @@ GLYPH_CUSTOM_DATA_LIB_KEY = "xyz.fontra.customData"
 GLYPH_SOURCE_CUSTOM_DATA_LIB_KEY = "xyz.fontra.glyph.source.customData"
 LINE_METRICS_HOR_ZONES_KEY = "xyz.fontra.lineMetricsHorizontalLayout.zones"
 GLYPH_NOTE_LIB_KEY = "fontra.glyph.note"
+RF_GUIDELINE_LOCK_LIB_PREFIX = "com.typemytype.robofont.guideline.locked."
 
 
 defaultUFOInfoAttrs = {
@@ -1725,7 +1726,7 @@ class DSSource:
                 if value is not None:
                     lineMetricsVerticalLayout[fontraName] = LineMetric(value=value)
 
-            guidelines = unpackGuidelines(fontInfo.guidelines)
+            guidelines = unpackGuidelines(fontInfo.guidelines, lib)
             italicAngle = getattr(fontInfo, "italicAngle", 0)
 
             for infoAttr in ufoInfoAttributesToRoundTrip:
@@ -1870,7 +1871,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         ),  # Default height in UFO is 0 :-(
         verticalOrigin=verticalOrigin,
         anchors=unpackAnchors(glyph.anchors),
-        guidelines=unpackGuidelines(glyph.guidelines),
+        guidelines=unpackGuidelines(glyph.guidelines, glyph.lib),
         backgroundImage=unpackBackgroundImage(glyph.image),
     )
 
@@ -1894,14 +1895,18 @@ def unpackAnchors(anchors):
     return [Anchor(name=a.get("name"), x=a["x"], y=a["y"]) for a in anchors]
 
 
-def unpackGuidelines(guidelines):
+def unpackGuidelines(guidelines, lib):
     return [
         Guideline(
             name=g.get("name"),
             x=g.get("x", 0),
             y=g.get("y", 0),
             angle=g.get("angle", 0),
-            locked=False,  # g.get("locked", False),
+            locked=(
+                lib.get(RF_GUIDELINE_LOCK_LIB_PREFIX + g["identifier"], False)
+                if "identifier" in g
+                else False
+            ),
             # TODO: Guidelines, how do we handle customData like:
             # color=g.get("color"),
             # identifier=g.get("identifier"),
