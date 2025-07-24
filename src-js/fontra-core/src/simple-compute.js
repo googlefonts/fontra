@@ -350,3 +350,23 @@ export function compute(expression, functions, variables) {
 
   return Number(result);
 }
+
+export function nameCapture(namesObject, getter = null) {
+  if (!getter) {
+    getter = (namesObject, prop) => namesObject[prop];
+  }
+  const names = new Set();
+  const namespace = new Proxy(
+    {},
+    {
+      get(subject, prop) {
+        if (namesObject[prop] !== undefined) {
+          names.add(prop);
+          return getter(namesObject, prop);
+        }
+      },
+    }
+  );
+
+  return { names, namespace };
+}

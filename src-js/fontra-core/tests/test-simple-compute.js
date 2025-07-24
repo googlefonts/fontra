@@ -1,4 +1,4 @@
-import { compute } from "@fontra/core/simple-compute.js";
+import { compute, nameCapture } from "@fontra/core/simple-compute.js";
 import { expect } from "chai";
 import { parametrize } from "./test-support.js";
 
@@ -49,6 +49,47 @@ describe("simple-compute", () => {
       expect(compute(testItem.expression, undefined, testItem.variables)).to.equal(
         testItem.expectedResult
       );
+    }
+  });
+
+  const nameCaptureTestData = [
+    {
+      expression: "a",
+      variables: { a: 12 },
+      expectedResult: 12,
+      expectedNames: new Set(["a"]),
+    },
+    {
+      expression: "a",
+      variables: {},
+      expectedException: "Undefined name: 'a'",
+    },
+    {
+      expression: "a + b",
+      variables: { a: 12, b: 1 },
+      expectedResult: 13,
+      expectedNames: new Set(["a", "b"]),
+    },
+    {
+      expression: "a + b",
+      variables: { a: 12, b: 1 },
+      expectedResult: 2,
+      expectedNames: new Set(["a", "b"]),
+      getter: (namesObject, prop) => 1,
+    },
+  ];
+
+  parametrize("compute + nameCapture", nameCaptureTestData, (testItem) => {
+    const { names, namespace } = nameCapture(testItem.variables, testItem.getter);
+    if (testItem.expectedException) {
+      expect(() => compute(testItem.expression, undefined, namespace)).to.throw(
+        testItem.expectedException
+      );
+    } else {
+      expect(compute(testItem.expression, undefined, namespace)).to.equal(
+        testItem.expectedResult
+      );
+      expect(names).to.deep.equal(testItem.expectedNames);
     }
   });
 });
