@@ -66,13 +66,13 @@ describe("simple-compute", () => {
     },
     {
       expression: "a + b",
-      variables: { a: 12, b: 1 },
+      variables: { a: 12, b: 1, c: 4, d: 43 },
       expectedResult: 13,
       expectedNames: new Set(["a", "b"]),
     },
     {
       expression: "a + b",
-      variables: { a: 12, b: 1 },
+      variables: { a: [1, 2, 3], b: [4, 5, 6] },
       expectedResult: 2,
       expectedNames: new Set(["a", "b"]),
       getter: (namesObject, prop) => 1,
