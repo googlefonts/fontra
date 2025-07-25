@@ -2,6 +2,7 @@
 
 ## 2025-07-25
 
+- Fixed serious bug in writing kerning to UFO: group references did not use the correct prefix. [Issue 2238](https://github.com/googlefonts/fontra/issues/2238), [PR 2239](https://github.com/googlefonts/fontra/pull/2239)
 - Add "inline calculator" functionality to the metrics fields in the selection info panel. Expressions evaluate to a concrete value once you type enter or leave the field. [Issue 2236](https://github.com/googlefonts/fontra/issues/2236), [PR 2237](https://github.com/googlefonts/fontra/pull/2237) Quick rundown:
   - It supports most common operators and parentheses, for example `10 * (5 + 3) / 2`.
   - It allows to use glyph names as variable names, to refer to the metric value for that glyph. For example, if you type `E` in the advance width field, it will take the advance width of the `E` glyph and put that in the field. Likewise, if you type `E` in the left sidebearing field, it will put the left sidebearing value from the `E` glyph in the field.
