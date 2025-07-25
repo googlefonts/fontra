@@ -1,5 +1,15 @@
 # Changelog for Fontra
 
+## 2025-07-24
+
+- Read/write guideline.locked flags from/to UFO. [Issue 1390](https://github.com/googlefonts/fontra/issues/1390), [PR 2235](https://github.com/googlefonts/fontra/pull/2235)
+- Allow glyph guidelines to be selected anywhere along the line, instead of just at their anchor point. [PR 2234](https://github.com/googlefonts/fontra/pull/2234)
+
+## 2025-07-23
+
+- [Selection info panel] Improved the sidebearing fields (advance, left sidebearing, right sidebearing) to alternatively accept a glyph name, to copy the value from. For example, if you enter `A` in the left sidebearing field, the left sidebearing from glyph `A` is copied into the field, once you type enter or leave the field otherwise. [Issue 2230](https://github.com/googlefonts/fontra/issues/2230), [PR 2231](https://github.com/googlefonts/fontra/pull/2231)
+- [fontra-pak] New contributor sintfar fixed an issue that in some cases caused an error dialog to appear when exiting Fontra Pak on Windows. [fontra-pak PR 178](https://github.com/googlefonts/fontra-pak/pull/178)
+
 ## 2025-07-16
 
 - [Kerning tool] Changed delete vs. alt-delete behavior: plain delete will now delete the selected kerning pairs across the entire designspace. Alt-delete will only delete the selected kerning pairs for the currently selected source location. [PR 2224](https://github.com/googlefonts/fontra/pull/2224)

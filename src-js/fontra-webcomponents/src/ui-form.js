@@ -260,6 +260,10 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumber(valueElement, fieldItem, allowEmptyField = false) {
+    if (fieldItem.evaluateExpression) {
+      return this._addEditNumberExpression(valueElement, fieldItem, allowEmptyField);
+    }
+
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
@@ -322,6 +326,103 @@ export class Form extends SimpleElement {
       }
       this._lastValidFieldValues[fieldItem.key] = value;
       this._fieldChanging(fieldItem, value, undefined);
+    };
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = (value) =>
+      (inputElement.value = maybeRound(value, fieldItem.numDigits));
+    valueElement.appendChild(inputElement);
+  }
+
+  _addEditNumberExpression(valueElement, fieldItem, allowEmptyField = false) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
+    const inputElement = document.createElement("input");
+    inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+
+    if (fieldItem["data-tooltip"]) {
+      // data-tooltip doesn't work for input number,
+      // default title is used
+      inputElement.setAttribute("title", fieldItem["data-tooltip"]);
+    }
+
+    inputElement.disabled = fieldItem.disabled;
+    inputElement.onkeydown = (event) => {
+      const increment = event.shiftKey ? 10 : 1;
+      switch (event.key) {
+        case "ArrowUp": {
+          event.preventDefault();
+          let value = Number(event.target.value) + increment;
+          if (fieldItem.maxValue != undefined) {
+            value = Math.min(value, fieldItem.maxValue);
+          }
+          event.target.value = value;
+          this._fieldChanging(fieldItem, value, undefined);
+          break;
+        }
+        case "ArrowDown": {
+          event.preventDefault();
+          let value = Number(event.target.value) - increment;
+          if (fieldItem.minValue != undefined) {
+            value = Math.max(value, fieldItem.minValue);
+          }
+          event.target.value = value;
+          this._fieldChanging(fieldItem, value, undefined);
+          break;
+        }
+      }
+    };
+
+    inputElement.oninput = (event) => {
+      inputElement.setCustomValidity("");
+    };
+
+    inputElement.onchange = async (event) => {
+      let value, valueObject, validitationError;
+      if (allowEmptyField && inputElement.value === "") {
+        value = null;
+      } else {
+        if (fieldItem.evaluateExpression) {
+          value = await fieldItem.evaluateExpression(inputElement.value);
+          if (typeof value !== "number" && typeof value !== "string") {
+            valueObject = value;
+            value = value.value;
+            if (valueObject.error) {
+              validitationError = valueObject.error;
+              value = this._lastValidFieldValues[fieldItem.key];
+              valueObject = undefined;
+            }
+            inputElement.value = maybeRound(value, fieldItem.numDigits);
+          }
+        } else {
+          value = parseFloat(inputElement.value);
+        }
+
+        if (!valueObject) {
+          if (isNaN(value)) {
+            value = this._lastValidFieldValues[fieldItem.key];
+            inputElement.value = maybeRound(value, fieldItem.numDigits);
+          }
+          if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
+            validitationError = "value below minimum";
+          } else if (fieldItem.maxValue != undefined && value > fieldItem.maxValue) {
+            validitationError = "value above minimum";
+          }
+        }
+      }
+
+      inputElement.setCustomValidity(validitationError || "");
+
+      if (!inputElement.reportValidity()) {
+        if (inputElement.min != undefined) {
+          value = Math.max(value, inputElement.min);
+        }
+        if (inputElement.max != undefined) {
+          value = Math.min(value, inputElement.max);
+        }
+        inputElement.value = value;
+      }
+
+      this._lastValidFieldValues[fieldItem.key] = value;
+      this._fieldChanging(fieldItem, valueObject || value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) =>

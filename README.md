@@ -31,7 +31,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
   `python3.10 -m venv venv --prompt=fontra`
 
-  (Replace `python3.10` with `python3.11` if you have 3.11 instead.)
+  (Replace `python3.10` appropriately if you have a newer version installed.)
 
 - Activate venv:
 
@@ -91,17 +91,18 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 - Read .designspace ✅
 - Write .designspace ✅
-- Respond to external .designspace changes (automatic reload)
+- Respond to external .designspace changes (automatic reload) ✅
 - Read .ufo ✅
 - Write .ufo ✅
 - Respond to external .ufo changes (automatic reload) ✅
 - Read .ttf + variable .ttf ✅
 - Read .otf + variable .otf ✅
 - Write .ttf + variable .ttf (For “hot fixes”. Currently not planned, will still require export step.)
-- Write .otf + variable .otf (Ditto.)
+- Write .otf + variable .otf ✅ (Via “export as” in Fontra Pak)
 - Respond to external .ttf and .otf changes (automatic reload)
+- Respond to external .fontra, .glyphs and .glyphspackage changes (automatic reload)
 - Read .glyphs and .glyphspackage ✅ (Via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
-- Write .glyphs and .glyphspackage
+- Write .glyphs and .glyphspackage ✅ (partial, via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
 
 ### Text viewing / editing
 
@@ -115,7 +116,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Zoom with gestures ✅
 - Zoom with short-cuts ✅
 - Advanced character / glyph search
-- Display kerning
+- Display kerning ✅
 - Apply proper text shaping
 - Full screen mode ✅
 - Right-to-left mode
@@ -149,7 +150,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Anchors ✅
 - Guidelines (local, glyph level) ✅
 - Guidelines (global, font level)
-- View background layers
+- View background layers ✅
 - Background image for tracing / reference ✅
 - Edit local variation axes ✅
 - Edit local sources/layers ✅
@@ -163,8 +164,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Cell-based font overview ✅
 - List-based font overview
 - Edit font meta data (“font info”) ✅
-- Edit kerning
-- Edit OpenType features
+- Edit kerning ✅
+- Edit OpenType features ✅
 - Edit variation axes ✅
 - Visualize and edit variation axis mapping (avar) ✅
 - Visualize and edit cross-axis variation axis mapping (avar-2) ✅
@@ -177,7 +178,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 ### Deployment
 
-- Basic standalone desktop application for macOS and Windows ✅ (Via [Fontra Pak](https://github.com/googlefonts/fontra-pak))
+- Basic standalone desktop application for macOS, Windows and Linux ✅ (Via [Fontra Pak](https://github.com/googlefonts/fontra-pak))
 - Basic multi-user server deployment with database storage ✅ (Via [fontra-rcjk](https://github.com/googlefonts/fontra-rcjk), [django-robo-cjk](https://github.com/googlefonts/django-robo-cjk), behind [NGINX](https://www.nginx.com/))
 - Research GitHub REST API: can Fontra be a GitHub gateway in a practical way?
 - Research database solutions for server-based font storage
