@@ -345,7 +345,7 @@ export function compute(expression, functions, variables) {
   }
 
   if (result === false || result === null) {
-    throw new SimpleComputeError("unknown error");
+    throw new SimpleComputeError("syntax error");
   }
 
   return Number(result);

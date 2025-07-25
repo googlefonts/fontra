@@ -29,7 +29,7 @@ describe("simple-compute", () => {
     { expression: "a/2", variables: { a: 3 }, expectedResult: 1.5 },
     { expression: "((a))", variables: { a: 3 }, expectedResult: 3 },
     { expression: "(a)", variables: { a: 3 }, expectedResult: 3 },
-    { expression: "(a", variables: { a: 3 }, expectedException: "unknown error" },
+    { expression: "(a", variables: { a: 3 }, expectedException: "syntax error" },
     {
       expression: "*",
       variables: { a: 3 },
@@ -37,7 +37,7 @@ describe("simple-compute", () => {
     },
     {
       expression: "1 *",
-      expectedException: "unknown error",
+      expectedException: "syntax error",
     },
   ];
 
