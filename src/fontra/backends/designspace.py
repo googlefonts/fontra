@@ -1230,7 +1230,11 @@ class DesignspaceBackend:
             kerningPerSource: dict = defaultdict(dict)
 
             for left, rightDict in kerningTable.values.items():
+                left = "public.kern1." + left[1:] if left.startswith("@") else left
                 for right, values in rightDict.items():
+                    right = (
+                        "public.kern2." + right[1:] if right.startswith("@") else right
+                    )
                     for sourceIdentifier, value in zip(sourceIdentifiers, values):
                         if value is not None:
                             kerningPerSource[sourceIdentifier][left, right] = value
