@@ -128,7 +128,7 @@ export function compute(expression, functions, variables) {
           let tmptmp = tmp;
           let tmp_i = i;
           while (
-            /^[a-z_\.]$/i.test(expression.charAt(tmp_i)) ||
+            /^[a-z_\.!]$/i.test(expression.charAt(tmp_i)) ||
             (tmptmp.length > 0 && nonFirstRegex.test(expression.charAt(tmp_i)))
           ) {
             tmptmp += expression.charAt(tmp_i);
@@ -360,9 +360,10 @@ export function nameCapture(namesObject, getter = null) {
     {},
     {
       get(subject, prop) {
-        if (namesObject[prop] !== undefined) {
+        const name = getter(namesObject, prop);
+        if (name !== undefined) {
           names.add(prop);
-          return getter(namesObject, prop);
+          return name;
         }
       },
     }
