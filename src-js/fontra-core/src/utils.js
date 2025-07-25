@@ -141,13 +141,6 @@ export const arrowKeyDeltas = {
   ArrowRight: [1, 0],
 };
 
-export function gcd(x, y) {
-  if (y === 0) {
-    return x;
-  }
-  return gcd(y, x % y);
-}
-
 export function modulo(v, n) {
   // Modulo with Python behavior for negative values of `v`
   // Assumes `n` to be positive
