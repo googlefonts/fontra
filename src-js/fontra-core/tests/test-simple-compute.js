@@ -18,6 +18,7 @@ describe("simple-compute", () => {
     { expression: "2 * (3 + 1)", expectedResult: 8 },
     { expression: "2 * 3 + 1", expectedResult: 7 },
     { expression: "a", variables: { a: 3 }, expectedResult: 3 },
+    { expression: "a!", variables: { "a!": 3 }, expectedResult: 3 },
     { expression: "-a", variables: { a: 3 }, expectedResult: -3 },
     { expression: "aa23", variables: { aa23: 4 }, expectedResult: 4 },
     { expression: "a.alt", variables: { "a.alt": 4 }, expectedResult: 4 },
