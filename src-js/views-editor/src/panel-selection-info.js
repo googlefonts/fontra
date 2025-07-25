@@ -783,6 +783,11 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _evaluateMetricsExpression(expression, varGlyphController, metricProperty) {
+    const sidebearingOpposites = {
+      leftMargin: "rightMargin",
+      rightMargin: "leftMargin",
+    };
+
     let value = Number(expression);
     if (!isNaN(value)) {
       return value;
@@ -790,7 +795,13 @@ export default class SelectionInfoPanel extends Panel {
 
     const { names, namespace } = nameCapture(
       this.fontController.glyphMap,
-      (nameObject, glyphName) => (nameObject[glyphName] ? 1 : undefined)
+      (nameObject, name) =>
+        nameObject[name] ||
+        (sidebearingOpposites[metricProperty] &&
+          name.endsWith("!") &&
+          nameObject[name.slice(0, -1)])
+          ? 1
+          : undefined
     );
 
     try {
@@ -802,7 +813,8 @@ export default class SelectionInfoPanel extends Panel {
     const { mainLayerName, locations } = this._getEditingLocations(varGlyphController);
 
     const layerVariables = {};
-    for (const referencedGlyphName of names) {
+    for (const name of names) {
+      const referencedGlyphName = name.endsWith("!") ? name.slice(0, -1) : name;
       const referencedGlyph = await this.fontController.getGlyph(referencedGlyphName);
       for (const [layerName, location] of Object.entries(locations)) {
         const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
@@ -816,6 +828,10 @@ export default class SelectionInfoPanel extends Panel {
         }
         layerVariables[layerName][referencedGlyphName] =
           instanceController[metricProperty];
+        if (name.endsWith("!") && sidebearingOpposites[metricProperty]) {
+          layerVariables[layerName][referencedGlyphName + "!"] =
+            instanceController[sidebearingOpposites[metricProperty]];
+        }
       }
     }
 
