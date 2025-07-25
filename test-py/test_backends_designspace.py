@@ -1158,6 +1158,12 @@ async def test_kerning_read_write(writableTestFont):
         None,
     ]
 
+    # verify we wrote the correct prefixes
+    # https://github.com/googlefonts/fontra/issues/2238
+    someKerningPath = pathlib.Path(reopenedFont.dsDoc.sources[0].path) / "kerning.plist"
+    someKerningData = someKerningPath.read_text()
+    assert "<key>public.kern2.A</key>" in someKerningData
+
 
 async def test_roundtrip_single_UFO(testFontSingleUFO, tmpdir):
     tmpdir = pathlib.Path(tmpdir)
