@@ -1,5 +1,13 @@
 # Changelog for Fontra
 
+## 2025-07-25
+
+- Add "inline calculator" functionality to the metrics fields in the selection info panel. Expressions evaluate to a concrete value once you type enter or leave the field. [Issue 2236](https://github.com/googlefonts/fontra/issues/2236), [PR 2237](https://github.com/googlefonts/fontra/pull/2237) Quick rundown:
+  - It supports most common operators and parentheses, for example `10 * (5 + 3) / 2`.
+  - It allows to use glyph names as variable names, to refer to the metric value for that glyph. For example, if you type `E` in the advance width field, it will take the advance width of the `E` glyph and put that in the field. Likewise, if you type `E` in the left sidebearing field, it will put the left sidebearing value from the `E` glyph in the field.
+  - Glyph names can also be used as part of an expression, for example `E + 10`.
+  - There is a special notation for the _opposite_ sidebearing, by adding a `!` to the glyph name: if in the _left_ sidebearing field you use `E!` in the expression, it will take the _right_ sidebearing from `E`.
+
 ## 2025-07-24
 
 - Read/write guideline.locked flags from/to UFO. [Issue 1390](https://github.com/googlefonts/fontra/issues/1390), [PR 2235](https://github.com/googlefonts/fontra/pull/2235)
