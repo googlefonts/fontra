@@ -337,7 +337,7 @@ export class Form extends SimpleElement {
   _addEditNumberExpression(valueElement, fieldItem, allowEmptyField = false) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
-    inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+    inputElement.value = maybeRoundToString(fieldItem.value, fieldItem.numDigits);
 
     if (fieldItem["data-tooltip"]) {
       // data-tooltip doesn't work for input number,
@@ -391,13 +391,13 @@ export class Form extends SimpleElement {
             value = this._lastValidFieldValues[fieldItem.key];
             valueObject = undefined;
           }
-          inputElement.value = maybeRound(value, fieldItem.numDigits);
+          inputElement.value = maybeRoundToString(value, fieldItem.numDigits);
         }
 
         if (!valueObject) {
           if (isNaN(value)) {
             value = this._lastValidFieldValues[fieldItem.key];
-            inputElement.value = maybeRound(value, fieldItem.numDigits);
+            inputElement.value = maybeRoundToString(value, fieldItem.numDigits);
           }
           if (fieldItem.minValue != undefined && value < fieldItem.minValue) {
             validitationError = "value below minimum";
@@ -424,7 +424,7 @@ export class Form extends SimpleElement {
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) =>
-      (inputElement.value = maybeRound(value, fieldItem.numDigits));
+      (inputElement.value = maybeRoundToString(value, fieldItem.numDigits));
     valueElement.appendChild(inputElement);
   }
 
@@ -637,6 +637,10 @@ export class Form extends SimpleElement {
 
 function maybeRound(value, digits) {
   return digits === undefined ? value : round(value, digits);
+}
+
+function maybeRoundToString(value, digits) {
+  return value === undefined ? "" : digits === undefined ? value : round(value, digits);
 }
 
 customElements.define("ui-form", Form);
