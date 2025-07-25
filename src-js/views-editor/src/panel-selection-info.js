@@ -2,6 +2,7 @@ import { recordChanges } from "@fontra/core/change-recorder.js";
 import * as html from "@fontra/core/html-utils.js";
 import { translate } from "@fontra/core/localization.js";
 import { rectFromPoints, rectSize, unionRect } from "@fontra/core/rectangle.js";
+import { compute, nameCapture } from "@fontra/core/simple-compute.js";
 import { getDecomposedIdentity } from "@fontra/core/transform.js";
 import {
   assert,
@@ -782,36 +783,72 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _evaluateMetricsExpression(expression, varGlyphController, metricProperty) {
+    const sidebearingOpposites = {
+      leftMargin: "rightMargin",
+      rightMargin: "leftMargin",
+    };
+
     let value = Number(expression);
     if (!isNaN(value)) {
       return value;
     }
 
-    const referencedGlyphName = expression.trim();
-    if (!this.fontController.hasGlyph(referencedGlyphName)) {
-      return { error: `glyph ${referencedGlyphName} not found` };
+    const { names, namespace } = nameCapture(
+      this.fontController.glyphMap,
+      (nameObject, name) =>
+        nameObject[name] ||
+        (sidebearingOpposites[metricProperty] &&
+          name.endsWith("!") &&
+          nameObject[name.slice(0, -1)])
+          ? 1
+          : undefined
+    );
+
+    try {
+      const dummyResult = compute(expression, undefined, namespace);
+    } catch (e) {
+      return { error: e.message };
     }
 
     const { mainLayerName, locations } = this._getEditingLocations(varGlyphController);
-    const metrics = {};
-    const referencedGlyph = await this.fontController.getGlyph(referencedGlyphName);
-    for (const [layerName, location] of Object.entries(locations)) {
-      const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
-      const instanceController = await referencedGlyph.instantiateController(
-        location,
-        layerName,
-        getGlyphFunc
-      );
-      metrics[layerName] = {
-        xAdvance: instanceController.xAdvance,
-        leftMargin: instanceController.leftMargin,
-        rightMargin: instanceController.rightMargin,
-      };
+
+    const layerVariables = {};
+    for (const name of names) {
+      const referencedGlyphName = name.endsWith("!") ? name.slice(0, -1) : name;
+      const referencedGlyph = await this.fontController.getGlyph(referencedGlyphName);
+      for (const [layerName, location] of Object.entries(locations)) {
+        const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
+        const instanceController = await referencedGlyph.instantiateController(
+          location,
+          layerName,
+          getGlyphFunc
+        );
+        if (!layerVariables[layerName]) {
+          layerVariables[layerName] = {};
+        }
+        layerVariables[layerName][referencedGlyphName] =
+          instanceController[metricProperty];
+        if (name.endsWith("!") && sidebearingOpposites[metricProperty]) {
+          layerVariables[layerName][referencedGlyphName + "!"] =
+            instanceController[sidebearingOpposites[metricProperty]];
+        }
+      }
     }
 
     return {
-      getValue: (layerName) => metrics[layerName][metricProperty],
-      value: metrics[mainLayerName][metricProperty],
+      getValue: (layerName) => {
+        try {
+          return ensureFiniteNumber(
+            compute(expression, undefined, layerVariables[layerName])
+          );
+        } catch (e) {
+          console.error(e);
+        }
+        return 0;
+      },
+      value: ensureFiniteNumber(
+        compute(expression, undefined, layerVariables[mainLayerName])
+      ),
     };
   }
 
@@ -966,6 +1003,14 @@ function makeCodePointsString(codePoints) {
         `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromCodePoint(code)})`
     )
     .join(" ");
+}
+
+function ensureFiniteNumber(value, fallback = 0) {
+  if (isNaN(value) || Math.abs(value) === Infinity) {
+    console.log(`bad expression result: ${value}, fall back to 0`);
+    value = fallback;
+  }
+  return value;
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);

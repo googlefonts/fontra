@@ -2,6 +2,7 @@ import * as html from "@fontra/core/html-utils.js";
 import { SimpleElement } from "@fontra/core/html-utils.js";
 import { QueueIterator } from "@fontra/core/queue-iterator.js";
 import {
+  assert,
   enumerate,
   hyphenatedToCamelCase,
   round,
@@ -380,20 +381,17 @@ export class Form extends SimpleElement {
       if (allowEmptyField && inputElement.value === "") {
         value = null;
       } else {
-        if (fieldItem.evaluateExpression) {
-          value = await fieldItem.evaluateExpression(inputElement.value);
-          if (typeof value !== "number" && typeof value !== "string") {
-            valueObject = value;
-            value = value.value;
-            if (valueObject.error) {
-              validitationError = valueObject.error;
-              value = this._lastValidFieldValues[fieldItem.key];
-              valueObject = undefined;
-            }
-            inputElement.value = maybeRound(value, fieldItem.numDigits);
+        assert(fieldItem.evaluateExpression);
+        value = await fieldItem.evaluateExpression(inputElement.value);
+        if (typeof value !== "number" && typeof value !== "string") {
+          valueObject = value;
+          value = value.value;
+          if (valueObject.error) {
+            validitationError = valueObject.error;
+            value = this._lastValidFieldValues[fieldItem.key];
+            valueObject = undefined;
           }
-        } else {
-          value = parseFloat(inputElement.value);
+          inputElement.value = maybeRound(value, fieldItem.numDigits);
         }
 
         if (!valueObject) {
@@ -412,10 +410,10 @@ export class Form extends SimpleElement {
       inputElement.setCustomValidity(validitationError || "");
 
       if (!inputElement.reportValidity()) {
-        if (inputElement.min != undefined) {
-          value = Math.max(value, inputElement.min);
+        if (fieldItem.minValue != undefined) {
+          value = Math.max(value, fieldItem.minValue);
         }
-        if (inputElement.max != undefined) {
+        if (fieldItem.maxValue != undefined) {
           value = Math.min(value, inputElement.max);
         }
         inputElement.value = value;
