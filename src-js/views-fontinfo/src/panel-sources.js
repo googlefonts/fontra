@@ -18,6 +18,7 @@ import {
 } from "@fontra/core/ui-utils.js";
 import {
   arrowKeyDeltas,
+  deepCopyObject,
   modulo,
   range,
   round,
@@ -995,7 +996,7 @@ function getInterpolatedSourceData(fontController, newLocation) {
   // }
 
   // TODO: ensure that instancer returns a copy of the source
-  return JSON.parse(JSON.stringify(fontSourceInstance));
+  return deepCopyObject(fontSourceInstance);
 }
 
 const lineMetricsHorizontalLayoutDefaults = {
