@@ -1,6 +1,7 @@
 import { applyChange } from "@fontra/core/changes.js";
 import { FontSourcesInstancer } from "@fontra/core/font-sources-instancer.js";
 import { KerningController } from "@fontra/core/kerning-controller.js";
+import { deepCopyObject } from "@fontra/core/utils.js";
 import { expect } from "chai";
 import { parametrize } from "./test-support.js";
 
@@ -128,7 +129,7 @@ describe("KerningController Tests", () => {
   parametrize("KerningController editing test", testCasesEditing, async (testCase) => {
     const testFont = { kerning: testKerning };
 
-    const editedFont = copyObject(testFont);
+    const editedFont = deepCopyObject(testFont);
 
     const controller = new KerningController(
       "kern",
@@ -153,13 +154,13 @@ describe("KerningController Tests", () => {
     }
 
     // Check rollback changes
-    const revertedFont = copyObject(editedFont);
+    const revertedFont = deepCopyObject(editedFont);
     applyChange(revertedFont, changes.rollbackChange);
     expect(revertedFont).to.not.deep.equal(editedFont);
     expect(revertedFont).to.deep.equal(testFont);
 
     // Check forward changes
-    const newlyEditedFont = copyObject(testFont);
+    const newlyEditedFont = deepCopyObject(testFont);
     applyChange(newlyEditedFont, changes.change);
     expect(newlyEditedFont).to.deep.equal(editedFont);
     expect(newlyEditedFont).to.not.deep.equal(testFont);
@@ -180,7 +181,7 @@ describe("KerningController Tests", () => {
     ];
     const testFont = { kerning: {} };
 
-    const editedFont = copyObject(testFont);
+    const editedFont = deepCopyObject(testFont);
 
     const controller = new KerningController(
       "kern",
@@ -204,7 +205,3 @@ describe("KerningController Tests", () => {
     }
   });
 });
-
-function copyObject(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}

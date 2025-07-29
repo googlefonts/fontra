@@ -1,3 +1,4 @@
+import { deepCopyObject } from "@fontra/core/utils.js";
 import { expect } from "chai";
 
 import {
@@ -22,7 +23,7 @@ describe("applyChange Tests", () => {
     const inputDataName = test["inputDataName"];
     const expectedData = test["expectedData"];
 
-    const subject = copyObject(inputData[inputDataName]);
+    const subject = deepCopyObject(inputData[inputDataName]);
     it(`applyChange Test #${i} -- ${testName}`, () => {
       applyChange(subject, test["change"]);
       expect(subject).to.deep.equal(expectedData);
@@ -481,7 +482,3 @@ describe("ChangeCollector tests", () => {
     });
   });
 });
-
-function copyObject(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
