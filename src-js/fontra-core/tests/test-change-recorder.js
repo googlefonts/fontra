@@ -279,7 +279,7 @@ const testData = [
     expectedChange: {
       c: [
         {
-          a: ["list", [123]],
+          a: ["list", []],
           f: "=",
         },
         {
