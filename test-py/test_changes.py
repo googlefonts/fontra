@@ -40,9 +40,11 @@ applyChangeTestData = [
     "testName, inputDataName, change, expectedData", applyChangeTestData
 )
 def test_applyChange(testName, inputDataName, change, expectedData):
+    change2 = deepcopy(change)
     subject = deepcopy(applyChangeTestInputData[inputDataName])
     applyChange(subject, change)
     assert subject == expectedData
+    assert change == change2
 
 
 @pytest.mark.parametrize(
