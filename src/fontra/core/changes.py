@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import (
     Any,
     Callable,
@@ -113,7 +114,7 @@ def _applyChange(subject: Any, change: dict[str, Any], *, itemCast=None) -> None
 
     if functionName is not None:
         changeFunc: Callable[..., None] = changeFunctions[functionName]
-        args = change.get("a", [])
+        args = deepcopy(change.get("a", []))
         if functionName in baseChangeFunctions:
             if itemCast is None and args:
                 itemCast = getItemCast(subject, args[0], "type")
