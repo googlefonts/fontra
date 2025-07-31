@@ -1,4 +1,3 @@
-import { deepCopyObject } from "@fontra/core/utils.js";
 import { expect } from "chai";
 
 import {
@@ -10,6 +9,7 @@ import {
   matchChangePath,
   matchChangePattern,
 } from "@fontra/core/changes.js";
+import { deepCopyObject } from "@fontra/core/utils.js";
 import { getTestData } from "./test-support.js";
 
 describe("applyChange Tests", () => {
@@ -25,8 +25,11 @@ describe("applyChange Tests", () => {
 
     const subject = deepCopyObject(inputData[inputDataName]);
     it(`applyChange Test #${i} -- ${testName}`, () => {
-      applyChange(subject, test["change"]);
+      const change = deepCopyObject(test["change"]);
+      applyChange(subject, change);
       expect(subject).to.deep.equal(expectedData);
+      // ensure the change object wasn't modified itself
+      expect(change).to.deep.equal(test["change"]);
     });
   }
 });
