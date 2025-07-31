@@ -44,6 +44,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
     subject = deepcopy(applyChangeTestInputData[inputDataName])
     applyChange(subject, change)
     assert subject == expectedData
+    # ensure the change object wasn't modified itself
     assert change == change2
 
 
