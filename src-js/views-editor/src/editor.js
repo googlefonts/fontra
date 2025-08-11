@@ -85,6 +85,7 @@ import {
   translate,
   translatePlural,
 } from "@fontra/core/localization.js";
+import { subVectors } from "@fontra/core/vector.js";
 import { ViewController } from "@fontra/core/view-controller.js";
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphNotePanel from "./panel-glyph-note.js";
@@ -368,6 +369,24 @@ export class EditorController extends ViewController {
         { topic },
         () => this.doAddGuideline(),
         () => this.canEditGlyph()
+      );
+
+      registerAction(
+        "action.add-guideline-between-points",
+        { topic },
+        () => this.doAddGuidelineBetweenPoints(),
+        () => {
+          const {
+            point: pointSelection,
+            anchor: anchorSelection,
+            guideline: guidelineSelection,
+          } = parseSelection(this.sceneController.selection);
+          const sum =
+            (pointSelection?.length || 0) +
+            (anchorSelection?.length || 0) +
+            (guidelineSelection?.length || 0);
+          return this.canEditGlyph() && sum == 2;
+        }
       );
 
       registerAction(
@@ -1389,6 +1408,9 @@ export class EditorController extends ViewController {
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-component" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-anchor" });
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.add-guideline" });
+    this.glyphEditContextMenuItems.push({
+      actionIdentifier: "action.add-guideline-between-points",
+    });
 
     this.glyphEditContextMenuItems.push({ actionIdentifier: "action.lock-guideline" });
 
@@ -2744,6 +2766,53 @@ export class EditorController extends ViewController {
       ]
     );
     return { contentElement, warningElement };
+  }
+
+  async doAddGuidelineBetweenPoints(global = false) {
+    // this function can only be called when exactly 2 points are selected
+
+    this.visualizationLayersSettings.model["fontra.guidelines"] = true;
+    const {
+      point: pointSelection,
+      anchor: anchorSelection,
+      guideline: guidelineSelection,
+    } = parseSelection(this.sceneController.selection);
+
+    const glyph = this.sceneModel.getSelectedPositionedGlyph().glyph;
+
+    const points = [];
+
+    points.push(...(pointSelection?.map((index) => glyph.path.getPoint(index)) || []));
+    points.push(...(anchorSelection?.map((index) => glyph.anchors[index]) || []));
+    points.push(...(guidelineSelection?.map((index) => glyph.guidelines[index]) || []));
+
+    const [pointA, pointB] = points;
+    if (!pointA || !pointB) {
+      return;
+    }
+
+    const delta = subVectors(pointB, pointA);
+
+    const angle = ((Math.atan2(delta.y, delta.x) * 180) / Math.PI + 360) % 360;
+
+    const newGuideline = {
+      x: pointA.x,
+      y: pointA.y,
+      angle: angle,
+      locked: false,
+    };
+
+    if (!global) {
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
+          layerGlyph.guidelines.push({ ...newGuideline });
+        }
+        const newGuidelineIndex = instance.guidelines.length - 1;
+        this.sceneController.selection = new Set([`guideline/${newGuidelineIndex}`]);
+        return translate("action.add-guideline");
+      });
+    }
   }
 
   doSelectAllNone(selectNone) {
