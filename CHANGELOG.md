@@ -2,6 +2,7 @@
 
 ## 2025-08-13
 
+- Fixed a bug with pasting into a new glyph source (where the glyph source is created implicitly as part of the edit): the pasted item was added twice. [Issue 2241](https://github.com/googlefonts/fontra/issues/2241), [PR 2245](https://github.com/googlefonts/fontra/pull/2245)
 - New "Add guideline between two points" functionality. It is an Edit menu and context menu item. Contributed by Dec/752986 [PR 2226](https://github.com/googlefonts/fontra/pull/2226)
 
 ## 2025-07-25
