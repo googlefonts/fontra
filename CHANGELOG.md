@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-08-13
+
+- New "Add guideline between two points" functionality. It is an Edit menu and context menu item. Contributed by Dec/752986 [PR 2226](https://github.com/googlefonts/fontra/pull/2226)
+
 ## 2025-07-25
 
 - Fixed a serious bug with writing kerning to UFO: group references did not use the correct prefix. [Issue 2238](https://github.com/googlefonts/fontra/issues/2238), [PR 2239](https://github.com/googlefonts/fontra/pull/2239)
