@@ -154,7 +154,7 @@ export class KerningController {
     let value = null;
 
     for (const [leftName, rightName] of pairsToTry) {
-      if (sourceIdentifier) {
+      if (sourceIdentifier && this.sourceIdentifiers.includes(sourceIdentifier)) {
         const sourceValue = this.getPairValueForSource(
           leftName,
           rightName,
