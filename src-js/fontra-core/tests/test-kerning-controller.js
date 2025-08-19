@@ -17,6 +17,7 @@ describe("KerningController Tests", () => {
     ],
     sources: {
       a: { location: { Weight: 400 } },
+      ab: { location: { Weight: 500 } },
       b: { location: { Weight: 600 } },
       c: { location: { Weight: 800 } },
       d: { location: { Weight: 400, Width: 200 } },
@@ -203,5 +204,30 @@ describe("KerningController Tests", () => {
       const value = instance.getGlyphPairValue("T", "A");
       expect(value).to.equal(150);
     }
+  });
+
+  it("test insertInterpolatedSource", () => {
+    const expectedKerning = {
+      kern: {
+        groupsSide1: { O: ["O", "D", "Q"] },
+        groupsSide2: { O: ["O", "C", "G", "Q"] },
+        sourceIdentifiers: ["a", "b", "c", "d", "e", "f", "ab"],
+        values: {
+          "T": { A: [-100, null, null, -200, null, null, -50] },
+          "@O": {
+            "@O": [10, null, null, null, null, null, 5],
+            "Q": [20, null, 40, null, null, null, 10],
+          },
+          "Q": { Q: [1, null, null, null, null, null, 1] }, // rounded: 0.5 -> 1
+        },
+      },
+    };
+
+    const editedKerning = deepCopyObject(testKerning);
+
+    const controller = new KerningController("kern", editedKerning, testFontController);
+
+    const changes = controller.insertInterpolatedSource("ab", { Weight: 500 });
+    expect(editedKerning).to.deep.equal(expectedKerning);
   });
 });
