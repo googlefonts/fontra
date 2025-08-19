@@ -183,6 +183,7 @@ export class SourcesPanel extends BaseInfoPanel {
     const root = { sources: this.fontController.sources };
     const changes = recordChanges(root, (root) => {
       delete root.sources[selectedSourceIdentifier];
+      // TODO: Delete kerning
     });
     if (changes.hasChange) {
       await this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -205,12 +206,34 @@ export class SourcesPanel extends BaseInfoPanel {
       sourceIdentifier = crypto.randomUUID().slice(0, 8);
     } while (sourceIdentifier in this.fontController.sources);
 
-    const root = { sources: this.fontController.sources };
-    const changes = recordChanges(root, (root) => {
+    const root = {
+      sources: this.fontController.sources,
+      kerning: await this.fontController.getKerning(),
+    };
+
+    const sourceChanges = recordChanges(root, (root) => {
       root.sources[sourceIdentifier] = newSource;
     });
-    if (changes.hasChange) {
-      this.postChange(changes.change, changes.rollbackChange, undoLabel);
+
+    const kerningChanges = [];
+    for (const [kernTag, kernData] of Object.entries(root.kerning)) {
+      const kerningController = await this.fontController.getKerningController(kernTag);
+      const changes = kerningController.insertInterpolatedSource(
+        sourceIdentifier,
+        newSource.location,
+        kernData
+      );
+      kerningChanges.push(changes);
+    }
+
+    const finalChanges = sourceChanges.concat(...kerningChanges);
+
+    if (finalChanges.hasChange) {
+      await this.postChange(
+        finalChanges.change,
+        finalChanges.rollbackChange,
+        undoLabel
+      );
       selectedSourceIdentifier = sourceIdentifier;
       this.setupUI();
     }
