@@ -218,7 +218,7 @@ describe("KerningController Tests", () => {
             "@O": [10, null, null, null, null, null, 5],
             "Q": [20, null, 40, null, null, null, 10],
           },
-          "Q": { Q: [1, null, null, null, null, null, 1] },
+          "Q": { Q: [1, null, null, null, null, null, 1] }, // rounded: 0.5 -> 1
         },
       },
     };
