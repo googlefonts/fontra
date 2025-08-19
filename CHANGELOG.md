@@ -3,6 +3,7 @@
 ## 2025-08-19
 
 - When adding a new font source, instantiate the kerning for the new location. [Issue 2252](https://github.com/googlefonts/fontra/issues/2252), [PR 2254](https://github.com/googlefonts/fontra/pull/2254)
+- When deleting a font source, also delete associated kerning sources. [Issue 2255](https://github.com/googlefonts/fontra/issues/2255), [PR 2256](https://github.com/googlefonts/fontra/pull/2256)
 
 ## 2025-08-13
 
