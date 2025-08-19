@@ -308,8 +308,6 @@ export class KerningController {
     }
 
     kernData.sourceIdentifiers.splice(index, 1);
-
-    this.clearCaches();
   }
 }
 
