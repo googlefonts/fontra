@@ -1,5 +1,9 @@
 # Changelog for Fontra
 
+## 2025-08-19
+
+- When adding a new font source, instantiate the kerning for the new location. [Issue 2252](https://github.com/googlefonts/fontra/issues/2252), [PR 2254](https://github.com/googlefonts/fontra/pull/2254)
+
 ## 2025-08-13
 
 - Fixed a bug with pasting into a new glyph source (where the glyph source is created implicitly as part of the edit): the pasted item was added twice. [Issue 2241](https://github.com/googlefonts/fontra/issues/2241), [PR 2245](https://github.com/googlefonts/fontra/pull/2245)
