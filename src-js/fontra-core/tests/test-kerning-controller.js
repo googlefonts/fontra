@@ -230,4 +230,29 @@ describe("KerningController Tests", () => {
     const changes = controller.insertInterpolatedSource("ab", { Weight: 500 });
     expect(editedKerning).to.deep.equal(expectedKerning);
   });
+
+  it("test deleteSource", () => {
+    const expectedKerning = {
+      kern: {
+        groupsSide1: { O: ["O", "D", "Q"] },
+        groupsSide2: { O: ["O", "C", "G", "Q"] },
+        sourceIdentifiers: ["a", "b", "d", "e", "f"],
+        values: {
+          "T": { A: [-100, null, -200, null, null] },
+          "@O": {
+            "@O": [10, null, null, null, null],
+            "Q": [20, null, null, null, null],
+          },
+          "Q": { Q: [1, null, null, null] },
+        },
+      },
+    };
+
+    const editedKerning = deepCopyObject(testKerning);
+
+    const controller = new KerningController("kern", editedKerning, testFontController);
+
+    const changes = controller.deleteSource("c");
+    expect(editedKerning).to.deep.equal(expectedKerning);
+  });
 });

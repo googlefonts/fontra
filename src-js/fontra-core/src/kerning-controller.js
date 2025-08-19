@@ -275,6 +275,40 @@ export class KerningController {
 
     kernData.sourceIdentifiers.push(sourceIdentifier);
   }
+
+  deleteSource(sourceIdentifier) {
+    const font = { kerning: this.kerning };
+
+    const changes = recordChanges(font, (font) => {
+      this._deleteSource(sourceIdentifier, font);
+    });
+    this.clearCaches();
+    return changes;
+  }
+
+  _deleteSource(sourceIdentifier, font) {
+    const kernData = font.kerning[this.kernTag];
+
+    const index = kernData.sourceIdentifiers.indexOf(sourceIdentifier);
+    if (index === -1) {
+      // Unknown source identifier
+      return;
+    }
+
+    for (const [leftName, valueDict] of Object.entries(kernData.values)) {
+      for (const [rightName, values] of Object.entries(valueDict)) {
+        // Make a copy of values
+        const newValues = [...values];
+
+        if (newValues.length > index) {
+          newValues.splice(index, 1);
+          kernData.values[leftName][rightName] = newValues;
+        }
+      }
+    }
+
+    kernData.sourceIdentifiers.splice(index, 1);
+  }
 }
 
 class KerningInstance {
