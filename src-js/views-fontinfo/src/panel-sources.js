@@ -180,13 +180,33 @@ export class SourcesPanel extends BaseInfoPanel {
       "sources.undo.delete",
       this.fontController.sources[selectedSourceIdentifier].name
     );
-    const root = { sources: this.fontController.sources };
-    const changes = recordChanges(root, (root) => {
+    const root = {
+      sources: this.fontController.sources,
+      kerning: await this.fontController.getKerning(),
+    };
+
+    // First, delete kerning source
+    const kerningChanges = [];
+    for (const kernTag of Object.keys(root.kerning)) {
+      const kerningController = await this.fontController.getKerningController(kernTag);
+      const changes = kerningController.deleteSource(selectedSourceIdentifier);
+      kerningChanges.push(changes);
+    }
+
+    // Then delete font source
+    const sourceChanges = recordChanges(root, (root) => {
       delete root.sources[selectedSourceIdentifier];
-      // TODO: Delete kerning
     });
-    if (changes.hasChange) {
-      await this.postChange(changes.change, changes.rollbackChange, undoLabel);
+
+    const allChanges = [...kerningChanges, sourceChanges];
+    const finalChanges = allChanges[0].concat(...allChanges.slice(1));
+
+    if (finalChanges.hasChange) {
+      await this.postChange(
+        finalChanges.change,
+        finalChanges.rollbackChange,
+        undoLabel
+      );
       selectedSourceIdentifier = undefined;
       await sleepAsync(0); // Breathe, so the font controller can purge some caches
       this.setupUI();
