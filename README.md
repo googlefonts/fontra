@@ -1,3 +1,5 @@
+This repository is now archived. Go to https://github.com/fontra/fontra for new development.
+
 # Fontra
 
 ![Fontra Icon](https://github.com/googlefonts/fontra/blob/main/fontra-icon.svg?raw=true)
